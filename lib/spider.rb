@@ -9,7 +9,6 @@
   (See LINCENSE file for details)
 
 =end
-
 require 'rubygems'
 require 'anemone'
 require 'nokogiri'
@@ -20,18 +19,18 @@ require 'pp'
 # Spider class<br/>
 # Crawls the specified URL in opts[:url] and analyzes the HTML code
 # extracting forms, links and cookies depending on user opts.
-# 
+#
 # @author: Zapotek <zapotek@segfault.gr>
 # @version: 0.1-planning
 #
 class Spider
-  
+
   #
   # Structure of the site in hash format:
   #
-  # "url" => {    
-  #   "links" => [], 
-  #   "forms" => [], 
+  # "url" => {
+  #   "links" => [],
+  #   "forms" => [],
   #   "cookies" => []
   # }
   #
@@ -44,9 +43,9 @@ class Spider
   attr_reader :links
   # Array of extracted cookies
   attr_reader :cookies
-  
+
   # Hash of options passed to initialize( user_opts ).
-  # 
+  #
   # Default:
   #  opts = {
   #        :threads              =>  3,
@@ -62,8 +61,6 @@ class Spider
   #        :accept_cookies       =>  true
   #  }
   attr_reader :opts
-  
-  
   #
   # Constructor <br/>
   # Instantiates Spider with user options.<br/>
@@ -86,20 +83,34 @@ class Spider
       :cookies              =>  nil,
       :accept_cookies       =>  true
     }.merge user_opts
-    
-    
+
     if valid_url?( @opts[:url] )
       @url = @opts[:url]
     else
       return
     end
-    
-    @site_structure = Hash.new
+
     i = 1
+    @site_structure = Hash.new
+    @opts[:include] =@opts[:include] ? @opts[:include] : Regexp.new( '.*' )
+
     Anemone.crawl( url, opts ) do |anemone|
-      anemone.on_every_page do |page|
+      anemone.on_pages_like( @opts[:include] ) do |page|
 
         url = page.url.to_s
+
+        if url =~ @opts[:exclude]
+          
+          if @opts[:arachni_verbose]
+            puts '[Skipping: Matched exclude rule] ' + url
+          end
+          
+          next
+        end
+        
+        puts "[OK] " + url if @opts[:arachni_verbose]
+        #        ap @opts
+
         @site_structure[url] = Hash.new
 
         if @opts[:audit_forms]
@@ -115,17 +126,17 @@ class Spider
         end
 
         page.discard_doc!()
-        
-        if( @opts[:link_depth_limit] != false && 
-            @opts[:link_depth_limit] <= i )
+
+        if( @opts[:link_depth_limit] != false &&
+        @opts[:link_depth_limit] <= i )
           return
         end
 
         i+=1
-          
+
       end
     end
-    
+
     return @site_structure
   end
 
@@ -167,16 +178,16 @@ class Spider
     elements = []
     doc.search( name ).each_with_index do |input, i|
 
-      elements[i] = Hash.new
-      input.each {
-        |attribute|
-        elements[i][attribute[0]] = attribute[1]
-      }
+    elements[i] = Hash.new
+    input.each {
+    |attribute|
+    elements[i][attribute[0]] = attribute[1]
+    }
 
-      input.children.each {
-        |child|
-        child.each{ |attribute| elements[i][attribute[0]] = attribute[1] }
-      }
+    input.children.each {
+    |child|
+    child.each{ |attribute| elements[i][attribute[0]] = attribute[1] }
+    }
 
     end rescue []
 
@@ -191,22 +202,22 @@ class Spider
   def get_cookies( page )
     cookies_str = page.headers['set-cookie'].to_s
     cookies = WEBrick::Cookie.parse_set_cookies( cookies_str )
-    
+
     cookies_arr = []
-    
+
     cookies.each_with_index {
       |cookie, i|
       cookies_arr[i] = Hash.new
-      
+
       cookie.instance_variables.each {
         |var|
         value = cookie.instance_variable_get( var ).to_s
         value.strip!
         cookies_arr[i][var.to_s.gsub( /@/, '' )] =
-          value.gsub( /[\"\\\[\]]/, '' )
+        value.gsub( /[\"\\\[\]]/, '' )
       }
     }
-    
+
     return cookies_arr
   end
 
