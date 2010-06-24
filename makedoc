@@ -1,0 +1,6 @@
+#!/bin/sh
+# $Id$
+#
+# Simple shell script to generate documentation
+#
+yardoc --verbose --title "Arachni - Web Application Vulnerability Scanner"  - LICENSE AUTHORS
