@@ -25,7 +25,7 @@ require 'ap'
 require 'pp'
 
 VERSION  = '0.1-planning'
-REVISION = '$Rev$'
+REVISION = '$Rev: 8 $'
  
 #
 # Outputs Arachni banner.<br/>

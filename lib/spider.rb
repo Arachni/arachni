@@ -1,7 +1,7 @@
 =begin
   $Id$
 
-                  Arachni v0.1-planning
+                  Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
@@ -11,9 +11,11 @@
 =end
 require 'rubygems'
 require 'anemone'
+require 'lib/anemone/http'
 require 'nokogiri'
 require 'ap'
 require 'pp'
+
 
 #
 # Spider class<br/>
@@ -81,7 +83,11 @@ class Spider
       :redirect_limit       =>  5,
       :storage              =>  nil,
       :cookies              =>  nil,
-      :accept_cookies       =>  true
+      :accept_cookies       =>  true,
+      :proxy_addr           =>  nil,
+      :proxy_port           =>  nil,
+      :proxy_user           =>  nil,
+      :proxy_pass           =>  nil
     }.merge user_opts
 
     if valid_url?( @opts[:url] )
@@ -93,7 +99,7 @@ class Spider
     i = 1
     @site_structure = Hash.new
     @opts[:include] =@opts[:include] ? @opts[:include] : Regexp.new( '.*' )
-
+    $opts = @opts
     Anemone.crawl( url, opts ) do |anemone|
       anemone.on_pages_like( @opts[:include] ) do |page|
 

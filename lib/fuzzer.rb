@@ -1,7 +1,7 @@
 =begin
   $Id$
 
-                  Arachni v0.1-planning
+                  Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
