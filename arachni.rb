@@ -2,7 +2,7 @@
 =begin
   $Id$
 
-                  Arachni v0.1-planning
+                  Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
@@ -19,7 +19,6 @@
 #
 
 require 'rubygems'
-require 'anemone'
 require 'getoptlong'
 require 'lib/spider'
 require 'ap'
@@ -115,7 +114,7 @@ Supported options:
   
   --proxy=<server:port>       specify proxy
   
-  --proxy-type=<type>         specify proxy type
+  --proxy-auth=<user:passwd>  specify proxy auth credentials
   
 
 USAGE
@@ -141,7 +140,7 @@ opts = GetoptLong.new(
 [ '--mods','-m', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--site-auth','-a', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--proxy-type','-x', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--proxy-auth','-x', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--cookie-jar','-j', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
@@ -201,10 +200,12 @@ opts.each do |opt, arg|
     runtime_args[:site_auth] = arg
 
   when '--proxy'
-    runtime_args[:proxy] = arg
+    runtime_args[:proxy_addr], runtime_args[:proxy_port] =
+      arg.to_s.split( /:/ )
 
-  when '--proxy-type'
-    runtime_args[:proxy_type] = arg
+  when '--proxy-auth'
+    runtime_args[:proxy_user], runtime_args[:proxy_pass] =
+      arg.to_s.split( /:/ )
 
   when '--cookie-jar'
     runtime_args[:cookie_jar] = arg
@@ -237,7 +238,7 @@ rescue
   exit 0
 end
 
-#ap runtime_args
+ap runtime_args
 
 if runtime_args[:url] == nil
   puts "Error: Missing url argument (try --help)"
