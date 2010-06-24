@@ -29,7 +29,7 @@ VERSION  = '0.1-planning'
 REVISION = '$Rev$'
  
 #
-# Output Arachni banner.<br/>
+# Outputs Arachni banner.<br/>
 # Displays version number, revision number, author details etc.
 #
 def banner
@@ -43,7 +43,7 @@ def banner
 end
 
 #
-# Output help/usage information.<br/>
+# Outputs help/usage information.<br/>
 # Displays supported options and parameters.
 #
 def usage
@@ -52,6 +52,7 @@ Usage:  arachni \[options\] url
 
 Supported options:
   
+  General ----------------------
 
   -h
   --help                      output this
@@ -59,27 +60,36 @@ Supported options:
   -r
   --resume                    resume suspended session
   
+  -v                          be verbose
+  
+  --cookie-jar=<cookiejar>    specify cookiejar
+  
+  --user-agent=<user agent>   specify user agent
+  
+  
+  Crawler -----------------------
+  
   -e <regex>
   --exclude=<regex>           exclude urls matching regex
   
-  -s
-  --stay                      stay in domain
+  -i <regex>
+  --include=<regex>           include urls matching this regex only
+
+  --obey-robots-txt           obey robots.txt file (default: false)
   
-  -v                          be verbose
+  --depth=<number>            depth limit (default: inf)
+                                How deep Arachni should go into the site structure.
+                                
+  --link-depth=<number>       how many links to follow (default: inf)                              
   
-  -l
-  --lsmod                     list available modules
+  --redirect-limit=<number>   how many redirects to follow (default: inf)
 
   --threads=<number>          how many threads to instantiate (default: 3)
                                 More threads does not necessarily mean more speed,
                                 be careful when adjusting thread count.
 
-    
-  -m <modname,modname..>
-  --mods=<modname,modname..>  comma separated list of modules to deploy
-  
-  --site-auth=<user:passwd>   specify user credentials
-  
+  Auditor ------------------------                                
+                                
   -g
   --audit-links               audit link variables (GET)
   
@@ -89,29 +99,24 @@ Supported options:
   
   -c
   --audit-cookies             audit cookies (COOKIE)
+
   
-  --obey-robots-txt           obey robots.txt file (default: false)
+  Modules ------------------------
+                                                                    
+  -l
+  --lsmod                     list available modules
 
-  --depth=<number>            depth limit (default: inf)
-                                How deep Arachni should go into the site structure.
-                                
-  --link-depth=<number>       how many links to follow (default: inf)                              
+    
+  -m <modname,modname..>
+  --mods=<modname,modname..>  comma separated list of modules to deploy
+  
 
-  --redirect-limit=<number>   how many redirects to follow (default: inf)
-USAGE
-
-#puts <<USAGE
-#  --delay=<number>            delay between crawl requests (default: 0ms)
-#USAGE
-
-puts <<USAGE                                    
+  Proxy --------------------------
+  
   --proxy=<server:port>       specify proxy
   
   --proxy-type=<type>         specify proxy type
   
-  --cookie-jar=<cookiejar>    specify cookiejar
-  
-  --user-agent=<user agent>   specify user agent
 
 USAGE
 
@@ -121,7 +126,6 @@ banner
 
 opts = GetoptLong.new(
 [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-[ '--stay', '-s', GetoptLong::NO_ARGUMENT ],
 [ '--resume', '-r', GetoptLong::NO_ARGUMENT ],
 [ '--verbosity', '-v', GetoptLong::OPTIONAL_ARGUMENT ],
 [ '--lsmod', '-l', GetoptLong::NO_ARGUMENT ],
@@ -133,14 +137,15 @@ opts = GetoptLong.new(
 #[ '--delay','-k', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--redirect-limit','-q', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--threads','-t', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--link-depth','-i', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--link-depth','-u', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--mods','-m', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--site-auth','-a', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy-type','-x', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--cookie-jar','-j', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ]
+[ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--include','-i', GetoptLong::REQUIRED_ARGUMENT ]
 )
 
 runtime_args = {};
@@ -151,16 +156,13 @@ opts.each do |opt, arg|
 
   when '--help'
     usage
-    break
+    exit 0
     
-  when '--stay'
-    runtime_args[:stay] = true
-
   when '--resume'
     runtime_args[:resume] = true
 
   when '--verbosity'
-    runtime_args[:verbose] = true
+    runtime_args[:arachni_verbose] = true
 
   when '--obey_robots_txt'
     runtime_args[:obey_robots_txt] = true
@@ -174,8 +176,8 @@ opts.each do |opt, arg|
   when '--redirect-limit'
     runtime_args[:redirect_limit] = arg.to_i
 
-  when '--delay'
-    runtime_args[:delay] = arg.to_i
+#  when '--delay'
+#    runtime_args[:delay] = arg.to_i
                         
   when '--lsmod'
     #
@@ -211,20 +213,35 @@ opts.each do |opt, arg|
     runtime_args[:user_agent] = arg
 
   when '--exclude'
-    runtime_args[:exclude] = arg
+    runtime_args[:exclude] = Regexp.new( arg )
+   
+  when '--include'
+    runtime_args[:include] = Regexp.new( arg )
 
   end
 end
 
-#puts opts.inspect
-
 runtime_args[:url] = ARGV.shift
-  
-#puts runtimeArgs.inspect
+
+begin
+  runtime_args[:url] = URI.parse( URI.encode( runtime_args[:url] ) )
+rescue
+  puts "Error: Invalid URL argument."
+  puts "URL must be of type 'scheme://username:password@subdomain.domain.tld:port/path?query_string#anchor'"
+  puts
+  puts "Examples:"
+  puts "    http://www.google.com"
+  puts "    https://secure.wikimedia.org/wikipedia/en/wiki/Main_Page"
+  puts "    http://zapotek:secret@www.myweb.com/index.php"
+  puts
+  exit 0
+end
+
+#ap runtime_args
 
 if runtime_args[:url] == nil
-  usage
-  puts "Missing url argument (try --help)"
+  puts "Error: Missing url argument (try --help)"
+  puts
   exit 0
 end
 
