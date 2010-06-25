@@ -20,6 +20,7 @@
 
 require 'rubygems'
 require 'getoptlong'
+require 'lib/net/http'
 require 'lib/spider'
 require 'ap'
 require 'pp'
@@ -143,7 +144,6 @@ opts = GetoptLong.new(
 [ '--threads','-t', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--link-depth','-u', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--mods','-m', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--site-auth','-a', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy-auth','-x', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy-type','-f', GetoptLong::REQUIRED_ARGUMENT ],
@@ -202,9 +202,6 @@ opts.each do |opt, arg|
   when '--mods'
     runtime_args[:mods] = arg
 
-  when '--site-auth'
-    runtime_args[:site_auth] = arg
-
   when '--proxy'
     runtime_args[:proxy_addr], runtime_args[:proxy_port] =
       arg.to_s.split( /:/ )
@@ -217,10 +214,10 @@ opts.each do |opt, arg|
     runtime_args[:proxy_type] = arg.to_s
     
   when '--cookie-jar'
-    runtime_args[:cookie_jar] = arg
+    runtime_args[:cookie_jar] = arg.to_s
 
   when '--user-agent'
-    runtime_args[:user_agent] = arg
+    runtime_args[:user_agent] = arg.to_s
 
   when '--exclude'
     runtime_args[:exclude] = Regexp.new( arg )
