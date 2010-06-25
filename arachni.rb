@@ -116,13 +116,18 @@ Supported options:
   
   --proxy-auth=<user:passwd>  specify proxy auth credentials
   
+  --proxy-type=<type>         proxy type can be either socks or http
+                              (Default: http)
+  
 
 USAGE
 
 end
 
+# Print out Arachni's banner
 banner
 
+# Construct getops struct
 opts = GetoptLong.new(
 [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 [ '--resume', '-r', GetoptLong::NO_ARGUMENT ],
@@ -141,6 +146,7 @@ opts = GetoptLong.new(
 [ '--site-auth','-a', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy-auth','-x', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--proxy-type','-f', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--cookie-jar','-j', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
@@ -206,7 +212,10 @@ opts.each do |opt, arg|
   when '--proxy-auth'
     runtime_args[:proxy_user], runtime_args[:proxy_pass] =
       arg.to_s.split( /:/ )
-
+      
+  when '--proxy-type'
+    runtime_args[:proxy_type] = arg.to_s
+    
   when '--cookie-jar'
     runtime_args[:cookie_jar] = arg
 
@@ -222,8 +231,12 @@ opts.each do |opt, arg|
   end
 end
 
+#
+# Try and parse URL.
+# If it fails inform the user of that fact and
+# give him some approriate examples.
+#
 runtime_args[:url] = ARGV.shift
-
 begin
   runtime_args[:url] = URI.parse( URI.encode( runtime_args[:url] ) )
 rescue
@@ -238,8 +251,26 @@ rescue
   exit 0
 end
 
+#
+# If proxy type is socks include socksify
+# and let it proxy all tcp connections for us.
+#
+# Then nil out the proxy opts or else they're going to be
+# passed as an http proxy to Anemone::HTTP.refresh_connection()
+#
+if runtime_args[:proxy_type] == 'socks'
+  require 'socksify'
+  
+  TCPSocket.socks_server = runtime_args[:proxy_addr]
+  TCPSocket.socks_port = runtime_args[:proxy_port]
+    
+  runtime_args[:proxy_addr] = nil
+  runtime_args[:proxy_port] = nil
+end
+
 ap runtime_args
 
+# Check for missing url
 if runtime_args[:url] == nil
   puts "Error: Missing url argument (try --help)"
   puts
