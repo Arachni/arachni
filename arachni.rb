@@ -13,6 +13,9 @@
 
 #
 # Arachni driver
+# Handles command line arguments and drives all the components of the system
+#
+# This is a temporary solution.
 #
 # @author: Zapotek <zapotek@segfault.gr>
 # @version: 0.1-planning
@@ -32,6 +35,11 @@ REVISION = '$Rev: 8 $'
 # Outputs Arachni banner.<br/>
 # Displays version number, revision number, author details etc.
 #
+# @see VERSION
+# @see REVISION
+#
+# @return [void]
+#
 def banner
 
   puts 'Arachni v' + VERSION + ' [' + REVISION + '] initiated.
@@ -45,6 +53,8 @@ end
 #
 # Outputs help/usage information.<br/>
 # Displays supported options and parameters.
+#
+# @return [void]
 #
 def usage
   puts <<USAGE

@@ -3,4 +3,4 @@
 #
 # Simple shell script to generate documentation
 #
-yardoc --verbose --title "Arachni - Web Application Vulnerability Scanner"  - LICENSE AUTHORS
+yardoc --verbose --title "Arachni - Web Application Vulnerability Scanner" lib/* *.rb  - LICENSE AUTHORS

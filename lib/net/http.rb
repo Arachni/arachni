@@ -16,8 +16,10 @@ require 'net/http'
 # Unfortunaetely Anemone doesn't support HTTP authentication 
 # so we need to override Net::HTTPHeader.initialize_http_header( )
 # 
-# May not be such a bad thing after all, since it'll apply
+# May not be such a bad thing after all since it'll apply
 # to the whole system but it feels kinda dirty.
+#
+# Note: It's not directly used by Arachni.
 #
 module Net::HTTPHeader
   

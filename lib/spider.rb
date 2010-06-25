@@ -23,28 +23,31 @@ require 'pp'
 # Crawls the specified URL in opts[:url] and analyzes the HTML code
 # extracting forms, links and cookies depending on user opts.
 #
-# @author: Zapotek <zapotek@segfault.gr>
+# @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
 #
 class Spider
 
-  #
-  # Structure of the site in hash format:
-  #
-  # "url" => {
-  #   "links" => [],
-  #   "forms" => [],
-  #   "cookies" => []
-  # }
+  # 
+  # Structure of the site in Hash structure
+  # @return [Hash<String, Hash<Array, Hash>>]
   #
   attr_reader :site_structure
+  
   # URL to crawl
+  # @return [URL]
   attr_reader :url
+  
   # Array of extracted HTML forms
+  # @return [Array<Hash <String, String> >]
   attr_reader :forms
+  
   # Array of extracted HTML links
+  # @return [Array<Hash <String, String> >]
   attr_reader :links
+  
   # Array of extracted cookies
+  # @return [Array<Hash <String, String> >]
   attr_reader :cookies
 
   # Hash of options passed to initialize( user_opts ).
@@ -63,14 +66,16 @@ class Spider
   #        :cookies              =>  nil,
   #        :accept_cookies       =>  true
   #  }
+  # @return [Hash]
   attr_reader :opts
+  
+  
   #
   # Constructor <br/>
-  # Instantiates Spider with user options.<br/>
-  # <br/>
-  # @param  user_opts  hash with option => value pairs
-  #
-  # @return site_tree
+  # Instantiates Spider with user options.
+  # 
+  # @param  [{String => Symbol}] user_opts  hash with option => value pairs
+  # @return [Hash<String, Hash<Array, Hash>>] site_tree
   def initialize( user_opts )
 
     @opts = {
@@ -147,40 +152,41 @@ class Spider
     return @site_structure
   end
 
+  
   # Checks if URL is valid.
   #
-  # @param  url   URL String
+  # @param  [URL]   URL
   #
-  # @return bool
+  # @return [true, false]
   def valid_url?( url )
     return true
   end
 
   # Extracts forms from HTML document
   #
-  # @param  doc   Nokogiri doc
+  # @param [Nokogiri::HTML::Document] doc  Nokogiri doc
   #
-  # @return Array of forms
+  # @return [Array<Hash <String, String> >] array of forms
   def get_forms( doc )
     get_elements_by_name( 'form', doc )
   end
 
   # Extracts links from HTML document
   #
-  # @param  doc   Nokogiri doc
+  # @param [Nokogiri::HTML::Document] doc  Nokogiri doc
   #
-  # @return Array of links
+  # @return [Array<Hash <String, String> >] of links
   def get_links( doc )
     get_elements_by_name( 'a', doc )
   end
 
   # Extracts elements by name from HTML document
   #
-  # @param  name  name String ('form', 'a', 'div', etc.)
+  # @param [String] name 'form', 'a', 'div', etc.
   #
-  # @param  doc   Nokogiri doc
+  # @param [Nokogiri::HTML::Document] doc   Nokogiri doc
   #
-  # @return Array of elements
+  # @return [Array<Hash <String, String> >] of elements
   def get_elements_by_name( name, doc )
     elements = []
     doc.search( name ).each_with_index do |input, i|
@@ -203,9 +209,9 @@ class Spider
 
   # Extracts cookies from Anemone page
   #
-  # @param  page  Anemone page
+  # @param  [Anemone::Page] page Anemone page
   #
-  # @return Array of cookies
+  # @return [Array<Hash <String, String> >] of cookies
   def get_cookies( page )
     cookies_str = page.headers['set-cookie'].to_s
     cookies = WEBrick::Cookie.parse_set_cookies( cookies_str )
