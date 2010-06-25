@@ -7,14 +7,14 @@ The following tasks are the milestone for version v0.1
 
  - suspend/resume
     
- - cookie jar
+ - cookie jar ------------------------------
  - ssl support ----------------------------- [Done]
  - user agent spoofing --------------------- [Done]
  - proxy support --------------------------- [Done]
  - proxy auth ( basic and digest ) --------- [Done]
  - site auth ( basic and digest ) ---------- [Done]
- - local cache for GET and HEAD requests
- - local dns cache
+ - local cache for GET and HEAD requests --- [Done]
+ - local dns cache ------------------------- [Done]
  
  
  Crawler *****************************************
@@ -27,44 +27,46 @@ The following tasks are the milestone for version v0.1
  Analyzer ****************************************
 
  - form, link, cookies extraction ---------- [Done]
- - extensive logging/stats
+ - extensive logging/stats ----------------- 
  
  
  ModInterpreter **********************************
 
- - modular design
+ - modular design -------------------------- 
 
 
  Modules *****************************************
  
  - file upload using multipart POST requests
- - fuzzer
- - LFI/RFI    
- - database injection
+ - fuzzer ---------------------------------- 
+ - LFI/RFI --------------------------------- 
+ - database injection ---------------------- 
     (PHP/JSP/ASP SQL Injections and XPath Injections)
     
- - XSS
- - LDAP Injection
- - command injection
+ - XSS -------------------------------------
+ - LDAP Injection --------------------------
+ - command injection -----------------------
     (eval(), system(), passtru()...)
     
- - CRLF Injection
+ - CRLF Injection --------------------------
     (HTTP Response Splitting, session fixation...)
     
 
  Reporting *************************************** 
  
- - template reporting
+ - template reporting ----------------------
  
 
  Next level analysis *****************************
  
- - Simple AJAX check
+ - Simple AJAX check -----------------------
     (parse every JavaScript and get the URL and try to get the parameters)
  
- - Hybrid analysis/Crystal ball testing for PHP application using PHP-SAT
+ - Hybrid analysis/Crystal -----------------
+    ball testing for PHP application using PHP-SAT
  
- - JavaScript source code analyzer: Evaluation of the quality/correctness
+ - JavaScript source code analyzer: --------
+    Evaluation of the quality/correctness
      of the JavaScript with JavaScript Lint
  
  
