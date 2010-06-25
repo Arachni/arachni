@@ -41,6 +41,7 @@ Requirements
   * ruby1.9.1 or higher
   * Nokogiri gem
   * Anemone gem
+  * Sockify gem
   * to be continued...
 
 Bug reports/Feature requests
