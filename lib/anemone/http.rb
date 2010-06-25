@@ -18,14 +18,14 @@ require 'anemone'
 # adding proxy support
 #
 class Anemone::HTTP
-  def refresh_connection(url)
+  def refresh_connection( url )
 
     puts "My HTTP!"
-
-    http = Net::HTTP.new(url.host, url.port,
+ 
+    http = Net::HTTP.new( url.host, url.port,
         $opts[:proxy_addr], $opts[:proxy_port],
-        $opts[:proxy_user], $opts[:proxy_pass])
-          
+        $opts[:proxy_user], $opts[:proxy_pass] )
+    
     if url.scheme == 'https'
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
