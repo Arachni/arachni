@@ -11,8 +11,9 @@
 =end
 require 'rubygems'
 require 'anemone'
-require 'lib/anemone/http'
 require 'nokogiri'
+require 'lib/anemone/http'
+require 'lib/net/http'
 require 'ap'
 require 'pp'
 
