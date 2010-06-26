@@ -34,22 +34,31 @@ class Spider
   #
   attr_reader :site_structure
   
+  #
   # URL to crawl
   # @return [URL]
+  #
   attr_reader :url
   
+  #
   # Array of extracted HTML forms
   # @return [Array<Hash <String, String> >]
+  #
   attr_reader :forms
   
+  #
   # Array of extracted HTML links
   # @return [Array<Hash <String, String> >]
+  #
   attr_reader :links
   
+  #
   # Array of extracted cookies
   # @return [Array<Hash <String, String> >]
+  #
   attr_reader :cookies
 
+  #
   # Hash of options passed to initialize( user_opts ).
   #
   # Default:
@@ -66,7 +75,9 @@ class Spider
   #        :cookies              =>  nil,
   #        :accept_cookies       =>  true
   #  }
+  #
   # @return [Hash]
+  #
   attr_reader :opts
   
   
@@ -76,6 +87,7 @@ class Spider
   # 
   # @param  [{String => Symbol}] user_opts  hash with option => value pairs
   # @return [Hash<String, Hash<Array, Hash>>] site_tree
+  #
   def initialize( user_opts )
 
     @opts = {
@@ -152,21 +164,25 @@ class Spider
     return @site_structure
   end
 
-  
+
+  #  
   # Checks if URL is valid.
   #
   # @param  [URL]   URL
   #
   # @return [true, false]
+  #
   def valid_url?( url )
     return true
   end
 
+  #
   # Extracts forms from HTML document
   #
   # @param [Anemone::Page] page Anemone page
   #
   # @return [Array<Hash <String, String> >] array of forms
+  #
   def get_forms( page )
     
     elements = []
@@ -187,6 +203,50 @@ class Spider
     elements
   end
 
+  #
+  # Extracts links from HTML document
+  #
+  # @param [Anemone::Page] page Anemone page
+  #
+  # @return [Array<Hash <String, String> >] of links
+  #
+  def get_links( page )
+    get_elements_by_name( 'a', page )
+  end
+    
+  #
+  # Extracts cookies from Anemone page
+  #
+  # @param  [Anemone::Page] page Anemone page
+  #
+  # @return [Array<Hash <String, String> >] of cookies
+  #
+  def get_cookies( page )
+    cookies_str = page.headers['set-cookie'].to_s
+    cookies = WEBrick::Cookie.parse_set_cookies( cookies_str )
+  
+    cookies_arr = []
+  
+    cookies.each_with_index {
+      |cookie, i|
+      cookies_arr[i] = Hash.new
+  
+      cookie.instance_variables.each {
+        |var|
+        value = cookie.instance_variable_get( var ).to_s
+        value.strip!
+        cookies_arr[i][var.to_s.gsub( /@/, '' )] =
+        value.gsub( /[\"\\\[\]]/, '' )
+      }
+    }
+  
+    return cookies_arr
+  end
+  
+  
+  
+  private
+  
   #
   # Parses the attributes inside the <form ....> tag
   # 
@@ -253,22 +313,13 @@ class Spider
   end
   
   
-  # Extracts links from HTML document
-  #
-  # @param [Anemone::Page] page Anemone page
-  #
-  # @return [Array<Hash <String, String> >] of links
-  def get_links( page )
-    get_elements_by_name( 'a', page )
-  end
-
   # Extracts elements by name from HTML document
   #
   # @param [String] name 'form', 'a', 'div', etc.
-  #
   # @param [Anemone::Page] page Anemone page
   #
   # @return [Array<Hash <String, String> >] of elements
+  #
   def get_elements_by_name( name, page )
     elements = []
     page.doc.search( name ).each_with_index do |input, i|
@@ -287,34 +338,6 @@ class Spider
     end rescue []
   
     return elements
-  end
-  
-
-  # Extracts cookies from Anemone page
-  #
-  # @param  [Anemone::Page] page Anemone page
-  #
-  # @return [Array<Hash <String, String> >] of cookies
-  def get_cookies( page )
-    cookies_str = page.headers['set-cookie'].to_s
-    cookies = WEBrick::Cookie.parse_set_cookies( cookies_str )
-
-    cookies_arr = []
-
-    cookies.each_with_index {
-      |cookie, i|
-      cookies_arr[i] = Hash.new
-
-      cookie.instance_variables.each {
-        |var|
-        value = cookie.instance_variable_get( var ).to_s
-        value.strip!
-        cookies_arr[i][var.to_s.gsub( /@/, '' )] =
-        value.gsub( /[\"\\\[\]]/, '' )
-      }
-    }
-
-    return cookies_arr
   end
 
 end
