@@ -126,11 +126,11 @@ class Spider
         @site_structure[url] = Hash.new
 
         if @opts[:audit_forms]
-          @site_structure[url]['forms'] = get_forms( page.doc )
+          @site_structure[url]['forms'] = get_forms( page )
         end
 
         if @opts[:audit_links]
-          @site_structure[url]['links'] = get_links( page.doc )
+          @site_structure[url]['links'] = get_links( page )
         end
 
         if @opts[:audit_cookies]
@@ -164,48 +164,131 @@ class Spider
 
   # Extracts forms from HTML document
   #
-  # @param [Nokogiri::HTML::Document] doc  Nokogiri doc
+  # @param [Anemone::Page] page Anemone page
   #
   # @return [Array<Hash <String, String> >] array of forms
-  def get_forms( doc )
-    get_elements_by_name( 'form', doc )
+  def get_forms( page )
+    
+    elements = []
+      
+    forms = page.body.scan( /<form(.*?)<\/form>/ixm )
+    
+    forms.each_with_index {
+      |form, i|
+      form = form[0]
+      
+      elements[i] = Hash.new
+      
+      elements[i] = get_form_inputs( form )
+      elements[i]['attrs'] = get_form_attrs( form )
+#      puts '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    }
+    
+    elements
   end
 
+  #
+  # Parses the attributes inside the <form ....> tag
+  # 
+  # @param  [String] form   HTML code for the form tag
+  # 
+  # @return [Array<Hash<String, String>>]
+  # 
+  def get_form_attrs( form )
+    form_attr_html = form.scan( /(.*?)>/ixm )
+    get_attrs_from_tag( 'form', '<form ' + form_attr_html[0][0] + '>' )[0]
+  end
+
+  #
+  # Parses the attributes of input fields
+  # @param  [String] html   HTML code for the form tag
+  # 
+  # @return [Hash<Hash<String, String>>]
+  # 
+  def get_form_inputs( html )
+    inputs = html.scan( /<input(.*?)>/ixm )
+#    ap inputs
+    
+    elements = Hash.new
+    inputs.each_with_index {
+      |input, i|
+      elements[i] =
+        get_attrs_from_tag( 'input', '<input ' + input[0] + '/>' )[0]
+    }
+    
+    elements
+#    puts '-------------'
+  end
+
+
+  #
+  # Gets attributes from HTML code of a tag
+  #
+  # @param  [String] tag    tag name (a, form, input)  
+  # @param  [String] html   HTML code for the form tag
+  # 
+  # @return [Array<Hash<String, String>>]
+  # 
+  def get_attrs_from_tag( tag, html )
+    doc = Nokogiri::HTML( html )
+    
+    elements = []
+    doc.search( tag ).each_with_index {
+      |element, i|
+      
+      elements[i] = Hash.new
+       
+        element.each {
+         |attribute|
+#         ap attribute
+         
+         elements[i][attribute[0].downcase] = attribute[1]
+       }
+       
+#      pp element.attributes
+    }
+#    puts '------------------'
+
+    elements
+  end
+  
+  
   # Extracts links from HTML document
   #
-  # @param [Nokogiri::HTML::Document] doc  Nokogiri doc
+  # @param [Anemone::Page] page Anemone page
   #
   # @return [Array<Hash <String, String> >] of links
-  def get_links( doc )
-    get_elements_by_name( 'a', doc )
+  def get_links( page )
+    get_elements_by_name( 'a', page )
   end
 
   # Extracts elements by name from HTML document
   #
   # @param [String] name 'form', 'a', 'div', etc.
   #
-  # @param [Nokogiri::HTML::Document] doc   Nokogiri doc
+  # @param [Anemone::Page] page Anemone page
   #
   # @return [Array<Hash <String, String> >] of elements
-  def get_elements_by_name( name, doc )
+  def get_elements_by_name( name, page )
     elements = []
-    doc.search( name ).each_with_index do |input, i|
-
+    page.doc.search( name ).each_with_index do |input, i|
+  
     elements[i] = Hash.new
     input.each {
-    |attribute|
-    elements[i][attribute[0]] = attribute[1]
+      |attribute|
+      elements[i][attribute[0]] = attribute[1]
     }
-
+  
     input.children.each {
-    |child|
-    child.each{ |attribute| elements[i][attribute[0]] = attribute[1] }
+      |child|
+      child.each{ |attribute| elements[i][attribute[0]] = attribute[1] }
     }
-
+  
     end rescue []
-
+  
     return elements
   end
+  
 
   # Extracts cookies from Anemone page
   #
