@@ -248,7 +248,9 @@ begin
   runtime_args[:url] = URI.parse( URI.encode( runtime_args[:url] ) )
 rescue
   puts "Error: Invalid URL argument."
-  puts "URL must be of type 'scheme://username:password@subdomain.domain.tld:port/path?query_string#anchor'"
+  puts "URL must be of type 'scheme://username:password@subdomain." +
+         "domain.tld:port/path?query_string#anchor'"
+  puts "If there is no subdomain do *not* ommit the \"www\"."
   puts
   puts "Examples:"
   puts "    http://www.google.com"
