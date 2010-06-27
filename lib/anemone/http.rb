@@ -20,7 +20,7 @@ require 'anemone'
 class Anemone::HTTP
   def refresh_connection( url )
 
-    puts "My HTTP!"
+#    puts "My HTTP!"
  
     http = Net::HTTP.new( url.host, url.port,
         $opts[:proxy_addr], $opts[:proxy_port],
@@ -33,4 +33,5 @@ class Anemone::HTTP
     
     @connections[url.host][url.port] = http.start
   end
+  
 end
