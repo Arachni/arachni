@@ -109,12 +109,6 @@ class Spider
       :proxy_pass           =>  nil
     }.merge user_opts
 
-    if valid_url?( @opts[:url] )
-      @url = @opts[:url]
-    else
-      return
-    end
-
     i = 1
     @site_structure = Hash.new
     @opts[:include] =@opts[:include] ? @opts[:include] : Regexp.new( '.*' )
@@ -190,18 +184,6 @@ class Spider
     end
 
     return @site_structure
-  end
-
-
-  #  
-  # Checks if URL is valid.
-  #
-  # @param  [URL]   URL
-  #
-  # @return [true, false]
-  #
-  def valid_url?( url )
-    return true
   end
 
   #
