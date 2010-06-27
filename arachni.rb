@@ -23,8 +23,8 @@
 
 require 'rubygems'
 require 'getoptlong'
-require 'lib/net/http'
 require 'lib/spider'
+require 'lib/analyzer'
 require 'ap'
 require 'pp'
 
@@ -296,6 +296,21 @@ end
 puts 'Analysing site structure...'
 
 spider = Spider.new( runtime_args )
+analyzer = Analyzer.new( runtime_args )
 
-#ap runtime_args
-ap spider.site_structure
+#spider.on_every_page( ) {
+#  |page|
+#  pp page
+#}
+
+site_structure = Hash.new
+sitemap = spider.run {
+  | url, html, headers |
+  
+  site_structure[url] = analyzer.run( url, html, headers ).clone
+
+}
+
+ap site_structure
+ap sitemap
+#pp spider
