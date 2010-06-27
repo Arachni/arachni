@@ -18,46 +18,14 @@ require 'lib/net/http'
 require 'ap'
 require 'pp'
 
-
 #
 # Spider class<br/>
-# Crawls the specified URL in opts[:url] and analyzes the HTML code
-# extracting forms, links and cookies depending on user opts.
+# Crawls the URL in opts[:url] and grabs the HTML code and headers
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
 #
 class Spider
-
-  # 
-  # Structure of the site in Hash structure
-  # @return [Hash<String, Hash<Array, Hash>>]
-  #
-  attr_reader :site_structure
-  
-  #
-  # URL to crawl
-  # @return [URL]
-  #
-  attr_reader :url
-  
-  #
-  # Array of extracted HTML forms
-  # @return [Array<Hash <String, String> >]
-  #
-  attr_reader :forms
-  
-  #
-  # Array of extracted HTML links
-  # @return [Array<Hash <String, String> >]
-  #
-  attr_reader :links
-  
-  #
-  # Array of extracted cookies
-  # @return [Array<Hash <String, String> >]
-  #
-  attr_reader :cookies
 
   #
   # Hash of options passed to initialize( user_opts ).
@@ -80,16 +48,28 @@ class Spider
   # @return [Hash]
   #
   attr_reader :opts
-  
+
+  #
+  # Sitemap, array of links
+  #
+  # @return [Array]
+  #
+  attr_reader :sitemap
+
+  #
+  # Code block to be executed on each page
+  #
+  # @return [Proc]
+  #
+  attr_reader :on_every_page_blocks
   
   #
   # Constructor <br/>
-  # Instantiates Spider with user options.
-  # 
-  # @param  [{String => Symbol}] user_opts  hash with option => value pairs
-  # @return [Hash<String, Hash<Array, Hash>>] site_tree
+  # Instantiates Spider class with user options.
   #
-  def initialize( user_opts )
+  # @param  [{String => Symbol}] opts  hash with option => value pairs
+  #
+  def initialize( opts )
 
     @opts = {
       :threads              =>  3,
@@ -99,7 +79,7 @@ class Spider
       :obey_robots_txt      =>  false,
       :depth_limit          =>  false,
       :link_count_limit     =>  false,
-      :redirect_limit       =>  5,
+      :redirect_limit       =>  false,
       :storage              =>  nil,
       :cookies              =>  nil,
       :accept_cookies       =>  true,
@@ -107,247 +87,78 @@ class Spider
       :proxy_port           =>  nil,
       :proxy_user           =>  nil,
       :proxy_pass           =>  nil
-    }.merge user_opts
+    }.merge opts
+
+    @sitemap = []
+    @on_every_page_blocks = []
+
+    @opts[:include] = @opts[:include] ? @opts[:include] : Regexp.new( '.*' )
+
+    @url = @opts[:url]
+    $opts = @opts
+  end
+
+  #
+  # Runs the Spider and passes the url, html
+  # and cookies to the block as strings
+  #
+  # @param [Proc] block  a block expecting url, html, cookies
+  #
+  # @return [Array] array of links, a sitemap
+  #
+  def run( &block )
 
     i = 1
-    @site_structure = Hash.new
-    @opts[:include] =@opts[:include] ? @opts[:include] : Regexp.new( '.*' )
-    $opts = @opts
-    Anemone.crawl( url, opts ) do |anemone|
-      
-#      print 'anemone: '
-#      pp anemone
-#      puts '---------------'
+    Anemone.crawl( @opts[:url], @opts ) do |anemone|
       anemone.on_pages_like( @opts[:include] ) do |page|
 
-#        pp page
-#        puts '---------------'
-          
         url = page.url.to_s
-     
         if url =~ @opts[:exclude]
-          
-          if @opts[:arachni_verbose]
-            puts '[Skipping: Matched exclude rule] ' + url
-          end
-          
+          puts '[Skipping: Matched exclude rule] ' + url if @opts[:arachni_verbose]
           next
         end
-        
-        if page.error  
-          puts "[Error: " + (page.error.to_s) + "] " + url 
-            next
-        end
-        
-        print "[HTTP: #{page.code}] " + url
-        print "\t\t[" if @opts[:arachni_verbose]
 
-        @site_structure[url] = Hash.new
-        
-        elem_count = 0
-        if @opts[:audit_forms]
-          @site_structure[url]['forms'] = get_forms( page )
-          elem_count += form_count = @site_structure[url]['forms'].length
-          print "Forms: #{form_count} - " if @opts[:arachni_verbose]
+        if page.error
+          puts "[Error: " + (page.error.to_s) + "] " + url
+          next
         end
 
-        if @opts[:audit_links]
-          @site_structure[url]['links'] = get_links( page )
-          elem_count += link_count = @site_structure[url]['links'].length
-          print "Links: #{link_count} - " if @opts[:arachni_verbose]
+        @sitemap.push( url )
+
+        puts "[HTTP: #{page.code}] " + url if @opts[:arachni_verbose]
+
+        if block
+          block.call( url, page.body, page.headers['set-cookie'].to_s )
         end
 
-        if @opts[:audit_cookies]
-          @site_structure[url]['cookies'] = get_cookies( page )
-          elem_count += cookie_count =  @site_structure[url]['cookies'].length
-          print "Cookies: #{cookie_count}" if @opts[:arachni_verbose]
+        @on_every_page_blocks.each do |block|
+          block.call( page )
         end
 
-        if elem_count == 0
-          print " - No elements, ignoring... " if @opts[:arachni_verbose]
-          @site_structure.delete( url )
-        end
-
-        print "]" if @opts[:arachni_verbose]
-        puts
-        
         page.discard_doc!()
 
         if( @opts[:link_count_limit] != false &&
         @opts[:link_count_limit] <= i )
-          return
+          return @sitemap.uniq
         end
 
         i+=1
-
       end
     end
 
-    return @site_structure
+    return @sitemap.uniq
   end
 
   #
-  # Extracts forms from HTML document
+  # Hook for further analysis of pages, statistics etc.
   #
-  # @param [Anemone::Page] page Anemone page
+  # @param [Proc] block code to be executed for every page
   #
-  # @return [Array<Hash <String, String> >] array of forms
+  # @return [self]
   #
-  def get_forms( page )
-    
-    elements = []
-      
-    forms = page.body.scan( /<form(.*?)<\/form>/ixm )
-    
-    forms.each_with_index {
-      |form, i|
-      form = form[0]
-      
-      elements[i] = Hash.new
-      
-      elements[i] = get_form_inputs( form )
-      elements[i]['attrs'] = get_form_attrs( form )
-#      puts '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-    }
-    
-    elements
-  end
-
-  #
-  # Extracts links from HTML document
-  #
-  # @param [Anemone::Page] page Anemone page
-  #
-  # @return [Array<Hash <String, String> >] of links
-  #
-  def get_links( page )
-    get_elements_by_name( 'a', page )
-  end
-    
-  #
-  # Extracts cookies from Anemone page
-  #
-  # @param  [Anemone::Page] page Anemone page
-  #
-  # @return [Array<Hash <String, String> >] of cookies
-  #
-  def get_cookies( page )
-    cookies_str = page.headers['set-cookie'].to_s
-    cookies = WEBrick::Cookie.parse_set_cookies( cookies_str )
-  
-    cookies_arr = []
-  
-    cookies.each_with_index {
-      |cookie, i|
-      cookies_arr[i] = Hash.new
-  
-      cookie.instance_variables.each {
-        |var|
-        value = cookie.instance_variable_get( var ).to_s
-        value.strip!
-        cookies_arr[i][var.to_s.gsub( /@/, '' )] =
-        value.gsub( /[\"\\\[\]]/, '' )
-      }
-    }
-  
-    return cookies_arr
-  end
-  
-  
-  
-  private
-  
-  #
-  # Parses the attributes inside the <form ....> tag
-  # 
-  # @param  [String] form   HTML code for the form tag
-  # 
-  # @return [Array<Hash<String, String>>]
-  # 
-  def get_form_attrs( form )
-    form_attr_html = form.scan( /(.*?)>/ixm )
-    get_attrs_from_tag( 'form', '<form ' + form_attr_html[0][0] + '>' )[0]
-  end
-
-  #
-  # Parses the attributes of input fields
-  # @param  [String] html   HTML code for the form tag
-  # 
-  # @return [Hash<Hash<String, String>>]
-  # 
-  def get_form_inputs( html )
-    inputs = html.scan( /<input(.*?)>/ixm )
-#    ap inputs
-    
-    elements = Hash.new
-    inputs.each_with_index {
-      |input, i|
-      elements[i] =
-        get_attrs_from_tag( 'input', '<input ' + input[0] + '/>' )[0]
-    }
-    
-    elements
-#    puts '-------------'
-  end
-
-
-  #
-  # Gets attributes from HTML code of a tag
-  #
-  # @param  [String] tag    tag name (a, form, input)  
-  # @param  [String] html   HTML code for the form tag
-  # 
-  # @return [Array<Hash<String, String>>]
-  # 
-  def get_attrs_from_tag( tag, html )
-    doc = Nokogiri::HTML( html )
-    
-    elements = []
-    doc.search( tag ).each_with_index {
-      |element, i|
-      
-      elements[i] = Hash.new
-       
-        element.each {
-         |attribute|
-#         ap attribute
-         
-         elements[i][attribute[0].downcase] = attribute[1]
-       }
-       
-#      pp element.attributes
-    }
-#    puts '------------------'
-
-    elements
-  end
-  
-  
-  # Extracts elements by name from HTML document
-  #
-  # @param [String] name 'form', 'a', 'div', etc.
-  # @param [Anemone::Page] page Anemone page
-  #
-  # @return [Array<Hash <String, String> >] of elements
-  #
-  def get_elements_by_name( name, page )
-    elements = []
-    page.doc.search( name ).each_with_index do |input, i|
-  
-    elements[i] = Hash.new
-    input.each {
-      |attribute|
-      elements[i][attribute[0]] = attribute[1]
-    }
-  
-    input.children.each {
-      |child|
-      child.each{ |attribute| elements[i][attribute[0]] = attribute[1] }
-    }
-  
-    end rescue []
-  
-    return elements
+  def on_every_page( &block )
+    @on_every_page_blocks.push( block )
+    self
   end
 
 end
