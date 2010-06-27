@@ -85,12 +85,15 @@ Supported options:
   -i <regex>
   --include=<regex>           include urls matching this regex only
 
+  -f
+  --follow-subdomains         follow links to subdomains (default: off)
+  
   --obey-robots-txt           obey robots.txt file (default: false)
   
   --depth=<number>            depth limit (default: inf)
                                 How deep Arachni should go into the site structure.
                                 
-  --link-depth=<number>       how many links to follow (default: inf)                              
+  --link-count=<number>       how many links to follow (default: inf)                              
   
   --redirect-limit=<number>   how many redirects to follow (default: inf)
 
@@ -105,7 +108,7 @@ Supported options:
   
   -p
   --audit-forms               audit form variables
-                                (Usually POST, can also be GET)
+                                (usually POST, can also be GET)
   
   -c
   --audit-cookies             audit cookies (COOKIE)
@@ -128,7 +131,7 @@ Supported options:
   --proxy-auth=<user:passwd>  specify proxy auth credentials
   
   --proxy-type=<type>         proxy type can be either socks or http
-                              (Default: http)
+                              (default: http)
   
 
 USAGE
@@ -142,7 +145,7 @@ banner
 opts = GetoptLong.new(
 [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 [ '--resume', '-r', GetoptLong::NO_ARGUMENT ],
-[ '--verbosity', '-v', GetoptLong::OPTIONAL_ARGUMENT ],
+[ '--verbosity', '-v', GetoptLong::NO_ARGUMENT ],
 [ '--lsmod', '-l', GetoptLong::NO_ARGUMENT ],
 [ '--audit-links', '-g', GetoptLong::NO_ARGUMENT ],
 [ '--audit-forms', '-p', GetoptLong::NO_ARGUMENT ],
@@ -152,15 +155,16 @@ opts = GetoptLong.new(
 #[ '--delay','-k', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--redirect-limit','-q', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--threads','-t', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--link-depth','-u', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--link-count','-u', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--mods','-m', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--proxy-auth','-x', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--proxy-type','-f', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--proxy-type','-y', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--cookie-jar','-j', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--include','-i', GetoptLong::REQUIRED_ARGUMENT ]
+[ '--include','-i', GetoptLong::REQUIRED_ARGUMENT ],
+[ '--follow-subdomains','-f', GetoptLong::NO_ARGUMENT ]
 )
 
 runtime_args = {};
@@ -185,8 +189,8 @@ opts.each do |opt, arg|
   when '--depth'
     runtime_args[:depth_limit] = arg.to_i
   
-  when '--link-depth'
-    runtime_args[:link_depth_limit] = arg.to_i
+  when '--link-count'
+    runtime_args[:link_count_limit] = arg.to_i
           
   when '--redirect-limit'
     runtime_args[:redirect_limit] = arg.to_i
@@ -234,6 +238,9 @@ opts.each do |opt, arg|
    
   when '--include'
     runtime_args[:include] = Regexp.new( arg )
+  
+  when '--follow-subdomains'
+    runtime_args[:follow_subdomains] = true
 
   end
 end
