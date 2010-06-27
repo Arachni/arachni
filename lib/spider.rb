@@ -13,6 +13,7 @@ require 'rubygems'
 require 'anemone'
 require 'nokogiri'
 require 'lib/anemone/http'
+require 'lib/anemone/page'
 require 'lib/net/http'
 require 'ap'
 require 'pp'
@@ -97,7 +98,7 @@ class Spider
       :delay                =>  0,
       :obey_robots_txt      =>  false,
       :depth_limit          =>  false,
-      :link_depth_limit     =>  false,
+      :link_count_limit     =>  false,
       :redirect_limit       =>  5,
       :storage              =>  nil,
       :cookies              =>  nil,
@@ -119,10 +120,17 @@ class Spider
     @opts[:include] =@opts[:include] ? @opts[:include] : Regexp.new( '.*' )
     $opts = @opts
     Anemone.crawl( url, opts ) do |anemone|
+      
+#      print 'anemone: '
+#      pp anemone
+#      puts '---------------'
       anemone.on_pages_like( @opts[:include] ) do |page|
 
+#        pp page
+#        puts '---------------'
+          
         url = page.url.to_s
-
+     
         if url =~ @opts[:exclude]
           
           if @opts[:arachni_verbose]
@@ -132,27 +140,47 @@ class Spider
           next
         end
         
-        puts "[OK] " + url if @opts[:arachni_verbose]
-        #        ap @opts
+        if page.error  
+          puts "[Error: " + (page.error.to_s) + "] " + url 
+            next
+        end
+        
+        print "[HTTP: #{page.code}] " + url
+        print "\t\t[" if @opts[:arachni_verbose]
 
         @site_structure[url] = Hash.new
-
+        
+        elem_count = 0
         if @opts[:audit_forms]
           @site_structure[url]['forms'] = get_forms( page )
+          elem_count += form_count = @site_structure[url]['forms'].length
+          print "Forms: #{form_count} - " if @opts[:arachni_verbose]
         end
 
         if @opts[:audit_links]
           @site_structure[url]['links'] = get_links( page )
+          elem_count += link_count = @site_structure[url]['links'].length
+          print "Links: #{link_count} - " if @opts[:arachni_verbose]
         end
 
         if @opts[:audit_cookies]
           @site_structure[url]['cookies'] = get_cookies( page )
+          elem_count += cookie_count =  @site_structure[url]['cookies'].length
+          print "Cookies: #{cookie_count}" if @opts[:arachni_verbose]
         end
 
+        if elem_count == 0
+          print " - No elements, ignoring... " if @opts[:arachni_verbose]
+          @site_structure.delete( url )
+        end
+
+        print "]" if @opts[:arachni_verbose]
+        puts
+        
         page.discard_doc!()
 
-        if( @opts[:link_depth_limit] != false &&
-        @opts[:link_depth_limit] <= i )
+        if( @opts[:link_count_limit] != false &&
+        @opts[:link_count_limit] <= i )
           return
         end
 
