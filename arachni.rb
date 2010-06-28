@@ -25,234 +25,32 @@ require 'rubygems'
 require 'getoptlong'
 require 'lib/spider'
 require 'lib/analyzer'
+require 'lib/module/http'
+require 'lib/module'
+require 'lib/module_registrar'
+require 'lib/module_registry'
 require 'ap'
 require 'pp'
 
 VERSION  = '0.1-planning'
 REVISION = '$Rev: 8 $'
- 
-#
-# Outputs Arachni banner.<br/>
-# Displays version number, revision number, author details etc.
-#
-# @see VERSION
-# @see REVISION
-#
-# @return [void]
-#
-def banner
 
-  puts 'Arachni v' + VERSION + ' [' + REVISION + '] initiated.
-     Author: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
-     Website: http://www.segfault.gr
-
-'
-
-end
-
-#
-# Outputs help/usage information.<br/>
-# Displays supported options and parameters.
-#
-# @return [void]
-#
-def usage
-  puts <<USAGE
-Usage:  arachni \[options\] url
-
-Supported options:
-  
-  General ----------------------
-
-  -h
-  --help                      output this
-  
-  -r
-  --resume                    resume suspended session
-  
-  -v                          be verbose
-  
-  --cookie-jar=<cookiejar>    specify cookiejar
-  
-  --user-agent=<user agent>   specify user agent
-  
-  
-  Crawler -----------------------
-  
-  -e <regex>
-  --exclude=<regex>           exclude urls matching regex
-  
-  -i <regex>
-  --include=<regex>           include urls matching this regex only
-
-  -f
-  --follow-subdomains         follow links to subdomains (default: off)
-  
-  --obey-robots-txt           obey robots.txt file (default: false)
-  
-  --depth=<number>            depth limit (default: inf)
-                                How deep Arachni should go into the site structure.
-                                
-  --link-count=<number>       how many links to follow (default: inf)                              
-  
-  --redirect-limit=<number>   how many redirects to follow (default: inf)
-
-  --threads=<number>          how many threads to instantiate (default: 3)
-                                More threads does not necessarily mean more speed,
-                                be careful when adjusting thread count.
-
-  Auditor ------------------------                                
-                                
-  -g
-  --audit-links               audit link variables (GET)
-  
-  -p
-  --audit-forms               audit form variables
-                                (usually POST, can also be GET)
-  
-  -c
-  --audit-cookies             audit cookies (COOKIE)
-
-  
-  Modules ------------------------
-                                                                    
-  -l
-  --lsmod                     list available modules
-
-    
-  -m <modname,modname..>
-  --mods=<modname,modname..>  comma separated list of modules to deploy
-  
-
-  Proxy --------------------------
-  
-  --proxy=<server:port>       specify proxy
-  
-  --proxy-auth=<user:passwd>  specify proxy auth credentials
-  
-  --proxy-type=<type>         proxy type can be either socks or http
-                              (default: http)
-  
-
-USAGE
-
-end
+require 'usage'
 
 # Print out Arachni's banner
 banner
 
-# Construct getops struct
-opts = GetoptLong.new(
-[ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-[ '--resume', '-r', GetoptLong::NO_ARGUMENT ],
-[ '--verbosity', '-v', GetoptLong::NO_ARGUMENT ],
-[ '--lsmod', '-l', GetoptLong::NO_ARGUMENT ],
-[ '--audit-links', '-g', GetoptLong::NO_ARGUMENT ],
-[ '--audit-forms', '-p', GetoptLong::NO_ARGUMENT ],
-[ '--audit-cookies', '-c', GetoptLong::NO_ARGUMENT ],
-[ '--obey-robots-txt', '-o', GetoptLong::NO_ARGUMENT ],
-[ '--depth','-d', GetoptLong::REQUIRED_ARGUMENT ],
-#[ '--delay','-k', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--redirect-limit','-q', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--threads','-t', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--link-count','-u', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--mods','-m', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--proxy','-z', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--proxy-auth','-x', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--proxy-type','-y', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--cookie-jar','-j', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--include','-i', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--follow-subdomains','-f', GetoptLong::NO_ARGUMENT ]
-)
-
-runtime_args = {};
-
-opts.each do |opt, arg|
-
-  case opt
-
-  when '--help'
-    usage
-    exit 0
-    
-  when '--resume'
-    runtime_args[:resume] = true
-
-  when '--verbosity'
-    runtime_args[:arachni_verbose] = true
-
-  when '--obey_robots_txt'
-    runtime_args[:obey_robots_txt] = true
-
-  when '--depth'
-    runtime_args[:depth_limit] = arg.to_i
-  
-  when '--link-count'
-    runtime_args[:link_count_limit] = arg.to_i
-          
-  when '--redirect-limit'
-    runtime_args[:redirect_limit] = arg.to_i
-
-#  when '--delay'
-#    runtime_args[:delay] = arg.to_i
-                        
-  when '--lsmod'
-    #
-
-  when '--threads'
-    runtime_args[:threads] = arg.to_i
-          
-  when '--audit-links'
-    runtime_args[:audit_links] = true
-
-  when '--audit-forms'
-    runtime_args[:audit_forms] = true
-
-  when '--audit-cookies'
-    runtime_args[:audit_cookies] = true
-
-  when '--mods'
-    runtime_args[:mods] = arg
-
-  when '--proxy'
-    runtime_args[:proxy_addr], runtime_args[:proxy_port] =
-      arg.to_s.split( /:/ )
-
-  when '--proxy-auth'
-    runtime_args[:proxy_user], runtime_args[:proxy_pass] =
-      arg.to_s.split( /:/ )
-      
-  when '--proxy-type'
-    runtime_args[:proxy_type] = arg.to_s
-    
-  when '--cookie-jar'
-    runtime_args[:cookie_jar] = arg.to_s
-
-  when '--user-agent'
-    runtime_args[:user_agent] = arg.to_s
-
-  when '--exclude'
-    runtime_args[:exclude] = Regexp.new( arg )
-   
-  when '--include'
-    runtime_args[:include] = Regexp.new( arg )
-  
-  when '--follow-subdomains'
-    runtime_args[:follow_subdomains] = true
-
-  end
-end
+require 'getoptslong'
 
 #
 # Try and parse URL.
 # If it fails inform the user of that fact and
 # give him some approriate examples.
 #
-runtime_args[:url] = ARGV.shift
+$runtime_args[:url] = ARGV.shift
+  
 begin
-  runtime_args[:url] = URI.parse( URI.encode( runtime_args[:url] ) )
+  $runtime_args[:url] = URI.parse( URI.encode( $runtime_args[:url] ) )
 rescue
   puts "Error: Invalid URL argument."
   puts "URL must be of type 'scheme://username:password@subdomain." +
@@ -274,20 +72,20 @@ end
 # Then nil out the proxy opts or else they're going to be
 # passed as an http proxy to Anemone::HTTP.refresh_connection()
 #
-if runtime_args[:proxy_type] == 'socks'
+if $runtime_args[:proxy_type] == 'socks'
   require 'socksify'
   
-  TCPSocket.socks_server = runtime_args[:proxy_addr]
-  TCPSocket.socks_port = runtime_args[:proxy_port]
+  TCPSocket.socks_server = $runtime_args[:proxy_addr]
+  TCPSocket.socks_port = $runtime_args[:proxy_port]
     
-  runtime_args[:proxy_addr] = nil
-  runtime_args[:proxy_port] = nil
+  $runtime_args[:proxy_addr] = nil
+  $runtime_args[:proxy_port] = nil
 end
 
-ap runtime_args
+ap $runtime_args
 
 # Check for missing url
-if runtime_args[:url] == nil
+if $runtime_args[:url] == nil
   puts "Error: Missing url argument (try --help)"
   puts
   exit 0
@@ -295,19 +93,57 @@ end
 
 puts 'Analysing site structure...'
 
-spider = Spider.new( runtime_args )
-analyzer = Analyzer.new( runtime_args )
-
+spider   = Arachni::Spider.new( $runtime_args )
+analyzer = Arachni::Analyzer.new( $runtime_args )
 #spider.on_every_page( ) {
 #  |page|
 #  pp page
 #}
 
-site_structure = Hash.new
+modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
+  
+puts 'modreg:'
+puts '---------'
+pp modreg
+
+puts
+puts 'modreg.ls_available:'
+puts '---------'
+ap modreg.ls_available( )
+
+puts
+puts 'modreg.mod_load:'
+puts '---------'
+ap modreg.mod_load( 'test' )
+ap modreg.mod_load( 'test2' )
+
+puts
+puts 'modreg.ls_loaded:'
+puts '----------'
+ap modreg.ls_loaded( )
+puts
+
+puts
+puts 'modreg.mod_info:'
+puts '---------'
+modreg.ls_loaded.each_with_index {
+  |tmp, i|
+  ap modreg.mod_info( i )
+}
+puts
+
+structure = site_structure = Hash.new
 sitemap = spider.run {
   | url, html, headers |
   
-  site_structure[url] = analyzer.run( url, html, headers ).clone
+  
+  structure = site_structure[url] = analyzer.run( url, html, headers ).clone
+  
+  page_data = {
+    'url' => url,
+    'html' => html,
+    'headers' => headers 
+  }  
 
 }
 

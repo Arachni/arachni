@@ -10,6 +10,7 @@
 
 =end
 
+module Arachni
 #
 # Analyzer class<br/>
 # Analyzes HTML code extracting forms, links and cookies
@@ -66,11 +67,11 @@ class Analyzer
   #
   # @param [String] url the url of the HTML code, mainly used for debugging
   # @param [String] html HTML code  to be analyzed
-  # @param [String] cookie_headers the cookie part of the HTTP headers
+  # @param [Hash] headers HTTP headers
   #
   # @return [Hash<String, Hash<Array, Hash>>] HTML elements
   #
-  def run( url, html, cookie_headers )
+  def run( url, html, headers )
 
     @url = url
 
@@ -90,7 +91,7 @@ class Analyzer
     end
 
     if @opts[:audit_cookies]
-      @structure['cookies'] = @cookies = get_cookies( cookie_headers )
+      @structure['cookies'] = @cookies = get_cookies( headers['set-cookie'].to_s )
       elem_count += cookie_count =  @structure['cookies'].length
       print "Cookies: #{cookie_count}" if @opts[:arachni_verbose]
     end
@@ -140,7 +141,12 @@ class Analyzer
   # @return [Array<Hash <String, String> >] of links
   #
   def get_links( html )
-    get_elements_by_name( 'a', html )
+    links = []
+    get_elements_by_name( 'a', html ).each_with_index {
+      |link, i|
+      links[i] = link
+      links[i]['vars'] = get_link_vars( link['href'] )
+    }
   end
 
   #
@@ -173,6 +179,24 @@ class Analyzer
 
   private
 
+  
+  def get_link_vars( link )
+    if !link then return {} end
+      
+    var_string = link.split( /\?/ )[1]
+    if !var_string then return {} end
+  
+    var_hash = Hash.new
+    var_string.split( /&/ ).each {
+      |pair|
+      name, value = pair.split( /=/ )
+      var_hash[name] = value
+    }
+
+    var_hash
+    
+  end
+  
   #
   # Parses the attributes inside the <form ....> tag
   #
@@ -267,4 +291,5 @@ class Analyzer
     return elements
   end
 
+end
 end

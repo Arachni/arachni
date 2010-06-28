@@ -18,6 +18,7 @@ require 'lib/net/http'
 require 'ap'
 require 'pp'
 
+module Arachni
 #
 # Spider class<br/>
 # Crawls the URL in opts[:url] and grabs the HTML code and headers
@@ -100,7 +101,7 @@ class Spider
 
   #
   # Runs the Spider and passes the url, html
-  # and cookies to the block as strings
+  # and headers Hash
   #
   # @param [Proc] block  a block expecting url, html, cookies
   #
@@ -128,7 +129,7 @@ class Spider
         puts "[HTTP: #{page.code}] " + url if @opts[:arachni_verbose]
 
         if block
-          block.call( url, page.body, page.headers['set-cookie'].to_s )
+          block.call( url, page.body, page.headers )
         end
 
         @on_every_page_blocks.each do |block|
@@ -161,4 +162,5 @@ class Spider
     self
   end
 
+end
 end
