@@ -23,13 +23,10 @@ require 'net/http'
 #
 module Net::HTTPHeader
   
+  alias :old_initialize_http_header :initialize_http_header
+  
   def initialize_http_header( initheader )
-    @header = {}
-    return unless initheader
-    initheader.each do |key, value|
-      warn "net/http: warning: duplicated HTTP header: #{key}" if key?(key) and $VERBOSE
-      @header[key.downcase] = [value.strip]
-    end
+    old_initialize_http_header( initheader )
     
     # this is our little modification
     basic_auth( $opts[:url].user, $opts[:url].password )
