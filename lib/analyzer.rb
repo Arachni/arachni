@@ -180,9 +180,6 @@ class Analyzer
     return cookies_arr
   end
 
-  private
-
-  
   def get_link_vars( link )
     if !link then return {} end
       
@@ -199,6 +196,8 @@ class Analyzer
     var_hash
     
   end
+
+  private
   
   #
   # Parses the attributes inside the <form ....> tag
