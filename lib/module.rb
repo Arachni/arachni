@@ -44,7 +44,7 @@ class Module
   # @param [Hash<String, Hash<Array, Hash>>]  structure
   #
   def initialize( page_data, structure )
-    @http = Arachni::HTTP.new( page_data['url'] )
+    @http = Arachni::HTTP.new( page_data['url']['href'] )
     
     @page_data = page_data
     @structure = structure
