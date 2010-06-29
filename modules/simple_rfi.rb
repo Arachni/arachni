@@ -31,23 +31,19 @@ class SimpleRFI < Arachni::Module
   
   def run( )
     puts '-------- In SimpleRFI.run()'
-#    pp @http
-    links = get_links( )
-    links.each {
-      |link|
+    link = page_data['url']
+    
+    
+    link['vars'].keys.each {
+      |var|
+      res = @http.get( link['href'], { var => 'http://www.google.com' } )
       
-#      if !link['href'] then next end
+      if res.body.scan( /google/ixm )
+        puts "------------ RFI Found in: var #{var}" + '::' + link['href']
+      end
       
-#      ap link['vars'].keys
-      
-      link['vars'].keys.each {
-        |var|
-        res = @http.get( link['href'], { var => 'http://www.google.com' } )
-        puts "------------ RFI Found in: " + link['href'] if res.body.scan( /google/ixm )
-      }
     }
   end
-
 
   def clean_up( )
     puts '-------- In SimpleRFI.clean_up()'
