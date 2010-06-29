@@ -110,7 +110,7 @@ if $runtime_args[:proxy_type] == 'socks'
   $runtime_args[:proxy_port] = nil
 end
 
-ap $runtime_args
+#ap $runtime_args
 
 # Check for missing url
 if $runtime_args[:url] == nil
@@ -118,8 +118,6 @@ if $runtime_args[:url] == nil
   puts
   exit 0
 end
-
-puts 'Analysing site structure...'
 
 spider   = Arachni::Spider.new( $runtime_args )
 analyzer = Arachni::Analyzer.new( $runtime_args )
@@ -143,11 +141,11 @@ analyzer = Arachni::Analyzer.new( $runtime_args )
 #ap modreg.mod_load( 'test' )
 #ap modreg.mod_load( 'test2' )
 
-puts
-puts 'modreg.ls_loaded:'
-puts '----------'
-ap modreg.ls_loaded( )
-puts
+#puts
+#puts 'modreg.ls_loaded:'
+#puts '----------'
+#ap modreg.ls_loaded( )
+#puts
 
 #puts
 #puts 'modreg.mod_info:'
@@ -158,18 +156,25 @@ puts
 #}
 #puts
 
-loaded_modules = modreg.ls_loaded( )
+puts
+puts 'ModuleRegistry reports the following modules are loaded:'
+puts '----------'
+ap loaded_modules = modreg.ls_loaded( )
+puts
 
 structure = site_structure = Hash.new
-mods_run_last = []
+mods_run_last_data = []
 
+puts 'Analysing site structure...'
+puts '---------------------------'
+puts
 sitemap = spider.run {
   | url, html, headers |
   
   structure = site_structure[url] = analyzer.run( url, html, headers ).clone
   
   page_data = {
-    'url' => url,
+    'url' => { 'href' => url, 'vars' => analyzer.get_link_vars( url )},
     'html' => html,
     'headers' => headers 
   }
@@ -178,7 +183,8 @@ sitemap = spider.run {
     loaded_modules.each {
       |mod|
       
-#      ap mod
+      puts '+ ' + mod.to_s
+      puts'---------------------------'
       mod_new = mod.new( page_data, structure )
 #      pp mod_new
       
@@ -188,21 +194,23 @@ sitemap = spider.run {
       puts
     }
   else
-    mods_run_last.push( { page_data => structure} )
+    mods_run_last_data.push( { page_data => structure} )
   end
   
   
 }
 
 if $runtime_args[:mods_run_last]
-  mods_run_last.each {
+  mods_run_last_data.each {
    |data| 
     
     loaded_modules.each {
       |mod|
       
+      puts '+ ' + mod.to_s
+      puts'---------------------------'
 #      ap mod
-      mod_new = mod.new( data.keys[0], data )
+      mod_new = mod.new( data.keys[0], data.values[0] )
 #      pp mod_new
       
       mod_new.prepare
@@ -212,8 +220,8 @@ if $runtime_args[:mods_run_last]
     }
   }
 end
-  
 
-ap site_structure
-ap sitemap
+
+#ap site_structure
+#ap sitemap
 #pp spider
