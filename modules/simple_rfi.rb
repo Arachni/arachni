@@ -14,7 +14,7 @@
 module Arachni
 module Modules
   
-class Test < Arachni::Module
+class SimpleRFI < Arachni::Module
 
   include Arachni::ModuleRegistrar
     
@@ -25,26 +25,39 @@ class Test < Arachni::Module
   end
 
   def prepare( )
-    puts '-------- In Test.prepare()'
+    puts '-------- In SimpleRFI.prepare()'
   end
   
   
   def run( )
-    puts '-------- In Test.run()'
+    puts '-------- In SimpleRFI.run()'
+#    pp @http
+    links = get_links( )
+    links.each {
+      |link|
+      
+#      if !link['href'] then next end
+      
+#      ap link['vars'].keys
+      
+      link['vars'].keys.each {
+        |var|
+        res = @http.get( link['href'], { var => 'http://www.google.com' } )
+        puts "------------ RFI Found in: " + link['href'] if res.body.scan( /google/ixm )
+      }
+    }
   end
 
 
   def clean_up( )
-    puts '-------- In Test.clean_up()'
+    puts '-------- In SimpleRFI.clean_up()'
   end
   
   
   def self.info
     {
-      'Name'           => 'Sample module Test1',
-      'Description'    => %q{
-        Sample module code. 
-      },
+      'Name'           => 'SimpleRFI',
+      'Description'    => %q{Simple Remote File Inclusion recon module},
       'Author'         => 'zapotek',
       'Version'        => '$Rev$',
       'References'     =>
