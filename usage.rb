@@ -102,6 +102,10 @@ Supported options:
   -m <modname,modname..>
   --mods=<modname,modname..>  comma separated list of modules to deploy
   
+  --mods-run-last             run modules after the website has been analyzed
+                                (default: modules are run on every page
+                                  encountered to minimize network latency.) 
+  
 
   Proxy --------------------------
   

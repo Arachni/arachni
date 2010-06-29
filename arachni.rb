@@ -43,6 +43,34 @@ banner
 require 'getoptslong'
 
 #
+# Ensure that the user selected some modules
+#
+if !$runtime_args[:mods]
+  puts "Error: No modules were specified."
+  puts "Run arachni with the '-h' parameter for help or " +
+  "with the '-l' parameter to see all available modules."
+  exit 0
+end
+
+#
+# Check the validity of user provided module names 
+#
+modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
+$runtime_args[:mods].each {
+  |mod_name|
+  
+  if( !modreg.ls_available(  )[mod_name] )
+    puts "Error: Module #{mod_name} wasn't found."
+    puts "Run arachni with the '-l' parameter to see all available modules."
+    exit 0
+  end
+  
+  # load the module
+  modreg.mod_load( mod_name )
+  
+}
+
+#
 # Try and parse URL.
 # If it fails inform the user of that fact and
 # give him some approriate examples.
@@ -100,22 +128,20 @@ analyzer = Arachni::Analyzer.new( $runtime_args )
 #  pp page
 #}
 
-modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
-  
-puts 'modreg:'
-puts '---------'
-pp modreg
+#puts 'modreg:'
+#puts '---------'
+#pp modreg
+#
+#puts
+#puts 'modreg.ls_available:'
+#puts '---------'
+#ap modreg.ls_available( )
 
-puts
-puts 'modreg.ls_available:'
-puts '---------'
-ap modreg.ls_available( )
-
-puts
-puts 'modreg.mod_load:'
-puts '---------'
-ap modreg.mod_load( 'test' )
-ap modreg.mod_load( 'test2' )
+#puts
+#puts 'modreg.mod_load:'
+#puts '---------'
+#ap modreg.mod_load( 'test' )
+#ap modreg.mod_load( 'test2' )
 
 puts
 puts 'modreg.ls_loaded:'
@@ -123,19 +149,22 @@ puts '----------'
 ap modreg.ls_loaded( )
 puts
 
-puts
-puts 'modreg.mod_info:'
-puts '---------'
-modreg.ls_loaded.each_with_index {
-  |tmp, i|
-  ap modreg.mod_info( i )
-}
-puts
+#puts
+#puts 'modreg.mod_info:'
+#puts '---------'
+#modreg.ls_loaded.each_with_index {
+#  |tmp, i|
+#  ap modreg.mod_info( i )
+#}
+#puts
+
+loaded_modules = modreg.ls_loaded( )
 
 structure = site_structure = Hash.new
+mods_run_last = []
+
 sitemap = spider.run {
   | url, html, headers |
-  
   
   structure = site_structure[url] = analyzer.run( url, html, headers ).clone
   
@@ -143,9 +172,47 @@ sitemap = spider.run {
     'url' => url,
     'html' => html,
     'headers' => headers 
-  }  
-
+  }
+  
+  if !$runtime_args[:mods_run_last]
+    loaded_modules.each {
+      |mod|
+      
+#      ap mod
+      mod_new = mod.new( page_data, structure )
+#      pp mod_new
+      
+      mod_new.prepare
+      mod_new.run
+      mod_new.clean_up
+      puts
+    }
+  else
+    mods_run_last.push( { page_data => structure} )
+  end
+  
+  
 }
+
+if $runtime_args[:mods_run_last]
+  mods_run_last.each {
+   |data| 
+    
+    loaded_modules.each {
+      |mod|
+      
+#      ap mod
+      mod_new = mod.new( data.keys[0], data )
+#      pp mod_new
+      
+      mod_new.prepare
+      mod_new.run
+      mod_new.clean_up
+      puts
+    }
+  }
+end
+  
 
 ap site_structure
 ap sitemap

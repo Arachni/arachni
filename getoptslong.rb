@@ -33,7 +33,8 @@ opts = GetoptLong.new(
 [ '--user-agent','-b', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--exclude','-e', GetoptLong::REQUIRED_ARGUMENT ],
 [ '--include','-i', GetoptLong::REQUIRED_ARGUMENT ],
-[ '--follow-subdomains','-f', GetoptLong::NO_ARGUMENT ]
+[ '--follow-subdomains','-f', GetoptLong::NO_ARGUMENT ],
+[ '--mods-run-last','-s', GetoptLong::NO_ARGUMENT ]
 )
 
 $runtime_args = {};
@@ -41,7 +42,6 @@ $runtime_args['dir'] = Hash.new
 $runtime_args['dir']['pwd'] = File.dirname( File.expand_path(__FILE__) ) + '/'
 $runtime_args['dir']['modules'] = $runtime_args['dir']['pwd'] + 'modules/'
 $runtime_args['dir']['lib'] = $runtime_args['dir']['pwd'] + 'lib/'
-  
 
 opts.each do |opt, arg|
 
@@ -73,16 +73,20 @@ opts.each do |opt, arg|
 #    $runtime_args[:delay] = arg.to_i
                         
   when '--lsmod'
-    modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
     i = 0
+    puts 'Available modules:'
+    puts
+    modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
     modreg.ls_available().each_pair {
       |mod_name, path|
       
       modreg.mod_load( mod_name )
       
       puts "#{mod_name}:"
-      ap modreg.mod_info( i )
-      i +=1
+      puts "--------------------"
+      modreg.mod_info_s( i )
+      i+=1
+      puts
     }
     exit 0
     
@@ -99,7 +103,7 @@ opts.each do |opt, arg|
     $runtime_args[:audit_cookies] = true
 
   when '--mods'
-    $runtime_args[:mods] = arg
+    $runtime_args[:mods] = arg.to_s.split( /,/ )
 
   when '--proxy'
     $runtime_args[:proxy_addr], $runtime_args[:proxy_port] =
@@ -126,6 +130,9 @@ opts.each do |opt, arg|
   
   when '--follow-subdomains'
     $runtime_args[:follow_subdomains] = true
+      
+  when '--mods-run-last'
+    $runtime_args[:mods_run_last] = true
 
   end
 end
