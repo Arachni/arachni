@@ -144,6 +144,9 @@ class Analyzer
     links = []
     get_elements_by_name( 'a', html ).each_with_index {
       |link, i|
+      
+      link['href'] = to_absolute( link['href'] )
+      
       links[i] = link
       links[i]['vars'] = get_link_vars( link['href'] )
     }
@@ -291,5 +294,36 @@ class Analyzer
     return elements
   end
 
+  #
+  # Converts relative URL *link* into an absolute URL based on the
+  # location of the page
+  #
+  # @param [String] link
+  #
+  # @return [String]
+  #
+  def to_absolute( link )
+    
+    begin
+      if URI.parse( link ).host
+        return link
+      end
+    rescue Exception => e
+      return nil if link.nil?
+#      return link
+    end
+        
+    # remove anchor
+    link = URI.encode(link.to_s.gsub(/#[a-zA-Z0-9_-]*$/,''))
+  
+    relative = URI(link)
+    url = URI.parse( @url )
+    
+    absolute = url.merge(relative)
+  
+    absolute.path = '/' if absolute.path.empty?
+    return absolute.to_s
+  end
+  
 end
 end
