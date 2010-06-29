@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 =begin
-  $Id$
+  $Id: arachni.rb 47 2010-06-29 20:35:49Z zapotek $
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -33,7 +33,7 @@ require 'ap'
 require 'pp'
 
 VERSION  = '0.1-planning'
-REVISION = '$Rev: 8 $'
+REVISION = '$Rev$'
 
 require 'usage'
 
