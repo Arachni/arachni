@@ -37,7 +37,7 @@ The following tasks are the milestone for version v0.1
  - trap Ctrl-C interrupt ------------------- [Done]
  |---> If '--mods-run-last' is on and the user
         interrupts the analysis process allow
-        him to audit the already analyzed pages.
+        him to audit the so far analyzed pages.
  
  
  Crawler *****************************************
