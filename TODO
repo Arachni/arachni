@@ -5,68 +5,126 @@ The following tasks are the milestone for version v0.1
 
  General *****************************************
 
- - suspend/resume
-    
+ - suspend/resume --------------------------
  - cookie jar ------------------------------
  - ssl support ----------------------------- [Done]
  - user agent spoofing --------------------- [Done]
- - proxy support --------------------------- [Done]
- - proxy auth ( basic and digest ) --------- [Done]
- - site auth ( basic and digest ) ---------- [Done]
+ - proxy support ( SOCKS & HTTP(S)) -------- [Done]
+ |---> SOCKS support kindly provided by socksify.
+ 
+ - proxy auth ( basic and digest(?) )------- [Done]
+ - site auth ( basic and digest(?) ) ------- [Done]
  - local cache for GET and HEAD requests --- [Done]
  - local dns cache ------------------------- [Done]
+ |---> I think Ruby's libs do that.
+ 
+ - custom output lib ----------------------- [Done]
+ |---> The system uses its own print wrappers
+        to output messages. Will make it easier
+        to implement other UIs in the future.
+        
+ - highlighted CLI output ------------------ [Done]
+ |---> Metasploit style.
+ 
+ - run mods last --------------------------- [Done]
+ |---> Allows to run the modules after site
+        analysis has concluded.
+        
+ - UI abstraction -------------------------- [Proto]
+ |---> Only CLI for the time being but web & GUI
+        are relatively easy to implement now.
+        
+ - trap Ctrl-C interrupt ------------------- [Done]
+ |---> If '--mods-run-last' is on and the user
+        interrupts the analysis process allow
+        him to audit the already analyzed pages.
  
  
  Crawler *****************************************
 
  - exclude url filter ---------------------- [Done]
+ |---> Using regular expression.
  - include only url filter ----------------- [Done]
+ |---> Using regular expression.
  - stay in domain ---------------------------[Done]
+ |---> By default and it'll probably
+        stay that way.
+        
+ - follow subdomains ------------------------[Done]
+ - multi-threaded -------------------------- [Done]
+ - depth limit -- -------------------------- [Done]
+ - link count limit ------------------------ [Done]
+ - redirect limit -------------------------- [Done]
  
  
  Analyzer ****************************************
 
  - form, link, cookies extraction ---------- [Done]
+ |---> Need to add support for radio buttons.
  - extensive logging/stats ----------------- 
+ |---> Boring crap but needs to be done.
+        Anyone else up for it?
  
  
- ModInterpreter **********************************
+ Module Management *******************************
 
- - modular design -------------------------- 
+ - modular design -------------------------- [Done]
+ - helper audit methods -------------------- [Done]
+ |---> For forms, links and cookies.
+        Writting RFI, SQL injection, XSS etc
+        mods is now a matter of minutes
+        if not seconds.
+         
+ - helper HTTP interface ------------------- [Done]
+ |---> A pretty and easy to use
+        Net::HTTP wrapper.
+ 
+ - multi-threaded -------------------------- [Done]
+ |---> Need to add a thread limit, right now
+        all mods run in parallel.
 
 
  Modules *****************************************
  
- - file upload using multipart POST requests
- - fuzzer ---------------------------------- 
- - LFI/RFI --------------------------------- 
+ - file upload using POST -----------------
+ |---> Try to upload dangerous files.
+        Executables, scripts etc.
+        
+ - fuzzer ----------------------------------
+ |---> Add helper or let it up
+        to the module writter?
+         
+ - LFI/RFI --------------------------------- [Sample]
  - database injection ---------------------- 
-    (PHP/JSP/ASP SQL Injections and XPath Injections)
+ |---> PHP/JSP/ASP SQL Injections and
+        XPath Injections.
     
  - XSS -------------------------------------
  - LDAP Injection --------------------------
- - command injection -----------------------
-    (eval(), system(), passtru()...)
+ - command injection ----------------------- [Sample]
+ |---> eval(), system(), passtru() etc.
     
  - CRLF Injection --------------------------
-    (HTTP Response Splitting, session fixation...)
+ |---> HTTP Response Splitting,
+        session fixation etc.
     
 
  Reporting *************************************** 
  
  - template reporting ----------------------
+ |---> Any designers up for it?
  
 
  Next level analysis *****************************
  
  - Simple AJAX check -----------------------
-    (parse every JavaScript and get the URL and try to get the parameters)
+ |---> Parse every JavaScript and get the
+        URL and try to get the parameters.
  
- - Hybrid analysis/Crystal -----------------
-    ball testing for PHP application using PHP-SAT
+ - Hybrid analysis/Crystal ball ------------
+ |---> For PHP application using PHP-SAT.
  
- - JavaScript source code analyzer: --------
-    Evaluation of the quality/correctness
-     of the JavaScript with JavaScript Lint
- 
+ - JavaScript source code analyzer ---------
+ |---> Evaluation of the quality/correctness
+        of JavaScript with JavaScript Lint.
  

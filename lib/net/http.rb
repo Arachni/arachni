@@ -9,27 +9,31 @@
   (See LINCENSE file for details)
 
 =end
-
 require 'net/http'
 
+# TODO: remove global vars
+
 #
-# Unfortunaetely Anemone doesn't support HTTP authentication 
+# Unfortunaetely Anemone doesn't support HTTP authentication
 # so we need to override Net::HTTPHeader.initialize_http_header( )
-# 
+#
 # May not be such a bad thing after all since it'll apply
 # to the whole system but it feels kinda dirty.
 #
-# Note: It's not directly used by Arachni.
-#
 module Net::HTTPHeader
-  
-  alias :old_initialize_http_header :initialize_http_header
-  
-  def initialize_http_header( initheader )
+
+alias :old_initialize_http_header :initialize_http_header
+
+def initialize_http_header( initheader )
     old_initialize_http_header( initheader )
-    
-    # this is our little modification
-    basic_auth( $opts[:url].user, $opts[:url].password )
-  end
-  
+
+    begin
+
+        url = URI.parse( URI.encode( $runtime_args[:url] ) )
+        
+        # this is our little modification
+        basic_auth( url.user, url.password )
+    end
+end
+
 end

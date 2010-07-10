@@ -19,6 +19,7 @@ require 'ap'
 require 'pp'
 
 module Arachni
+
 #
 # Spider class<br/>
 # Crawls the URL in opts[:url] and grabs the HTML code and headers
@@ -28,139 +29,141 @@ module Arachni
 #
 class Spider
 
-  #
-  # Hash of options passed to initialize( user_opts ).
-  #
-  # Default:
-  #  opts = {
-  #        :threads              =>  3,
-  #        :discard_page_bodies  =>  false,
-  #        :user_agent           =>  "Arachni/0.1",
-  #        :delay                =>  0,
-  #        :obey_robots_txt      =>  false,
-  #        :depth_limit          =>  false,
-  #        :link_depth_limit     =>  false,
-  #        :redirect_limit       =>  5,
-  #        :storage              =>  nil,
-  #        :cookies              =>  nil,
-  #        :accept_cookies       =>  true
-  #  }
-  #
-  # @return [Hash]
-  #
-  attr_reader :opts
+    include Arachni::UI::Output
 
-  #
-  # Sitemap, array of links
-  #
-  # @return [Array]
-  #
-  attr_reader :sitemap
+    #
+    # Hash of options passed to initialize( user_opts ).
+    #
+    # Default:
+    #  opts = {
+    #        :threads              =>  3,
+    #        :discard_page_bodies  =>  false,
+    #        :user_agent           =>  "Arachni/0.1",
+    #        :delay                =>  0,
+    #        :obey_robots_txt      =>  false,
+    #        :depth_limit          =>  false,
+    #        :link_depth_limit     =>  false,
+    #        :redirect_limit       =>  5,
+    #        :storage              =>  nil,
+    #        :cookies              =>  nil,
+    #        :accept_cookies       =>  true
+    #  }
+    #
+    # @return [Hash]
+    #
+    attr_reader :opts
 
-  #
-  # Code block to be executed on each page
-  #
-  # @return [Proc]
-  #
-  attr_reader :on_every_page_blocks
-  
-  #
-  # Constructor <br/>
-  # Instantiates Spider class with user options.
-  #
-  # @param  [{String => Symbol}] opts  hash with option => value pairs
-  #
-  def initialize( opts )
+    #
+    # Sitemap, array of links
+    #
+    # @return [Array]
+    #
+    attr_reader :sitemap
 
-    @opts = {
-      :threads              =>  3,
-      :discard_page_bodies  =>  false,
-      :user_agent           =>  "Arachni/0.1",
-      :delay                =>  0,
-      :obey_robots_txt      =>  false,
-      :depth_limit          =>  false,
-      :link_count_limit     =>  false,
-      :redirect_limit       =>  false,
-      :storage              =>  nil,
-      :cookies              =>  nil,
-      :accept_cookies       =>  true,
-      :proxy_addr           =>  nil,
-      :proxy_port           =>  nil,
-      :proxy_user           =>  nil,
-      :proxy_pass           =>  nil
-    }.merge opts
+    #
+    # Code block to be executed on each page
+    #
+    # @return [Proc]
+    #
+    attr_reader :on_every_page_blocks
 
-    @sitemap = []
-    @on_every_page_blocks = []
+    #
+    # Constructor <br/>
+    # Instantiates Spider class with user options.
+    #
+    # @param  [{String => Symbol}] opts  hash with option => value pairs
+    #
+    def initialize( opts )
 
-    @opts[:include] = @opts[:include] ? @opts[:include] : Regexp.new( '.*' )
+        @opts = {
+            :threads              =>  3,
+            :discard_page_bodies  =>  false,
+            :delay                =>  0,
+            :obey_robots_txt      =>  false,
+            :depth_limit          =>  false,
+            :link_count_limit     =>  false,
+            :redirect_limit       =>  false,
+            :storage              =>  nil,
+            :cookies              =>  nil,
+            :accept_cookies       =>  true,
+            :proxy_addr           =>  nil,
+            :proxy_port           =>  nil,
+            :proxy_user           =>  nil,
+            :proxy_pass           =>  nil
+        }.merge opts
 
-    @url = @opts[:url]
-    $opts = @opts
-  end
+        @sitemap = []
+        @on_every_page_blocks = []
 
-  #
-  # Runs the Spider and passes the url, html
-  # and headers Hash
-  #
-  # @param [Proc] block  a block expecting url, html, cookies
-  #
-  # @return [Array] array of links, a sitemap
-  #
-  def run( &block )
+        @opts[:include] =
+            @opts[:include] ? @opts[:include] : Regexp.new( '.*' )
 
-    i = 1
-    Anemone.crawl( @opts[:url], @opts ) do |anemone|
-      anemone.on_pages_like( @opts[:include] ) do |page|
-
-        url = page.url.to_s
-        if url =~ @opts[:exclude]
-          puts '[Skipping: Matched exclude rule] ' + url if @opts[:arachni_verbose]
-          next
-        end
-
-        if page.error
-          puts "[Error: " + (page.error.to_s) + "] " + url
-          next
-        end
-
-        @sitemap.push( url )
-
-        puts "[HTTP: #{page.code}] " + url if @opts[:arachni_verbose]
-
-        if block
-          block.call( url, page.body, page.headers )
-        end
-
-        @on_every_page_blocks.each do |block|
-          block.call( page )
-        end
-
-        page.discard_doc!()
-
-        if( @opts[:link_count_limit] != false &&
-        @opts[:link_count_limit] <= i )
-          return @sitemap.uniq
-        end
-
-        i+=1
-      end
+        #    @url = @opts[:url]
     end
 
-    return @sitemap.uniq
-  end
+    #
+    # Runs the Spider and passes the url, html
+    # and headers Hash
+    #
+    # @param [Proc] block  a block expecting url, html, cookies
+    #
+    # @return [Array] array of links, a sitemap
+    #
+    def run( &block )
 
-  #
-  # Hook for further analysis of pages, statistics etc.
-  #
-  # @param [Proc] block code to be executed for every page
-  #
-  # @return [self]
-  #
-  def on_every_page( &block )
-    @on_every_page_blocks.push( block )
-    self
-  end
+        i = 1
+        Anemone.crawl( @opts[:url], @opts ) do |anemone|
+            anemone.on_pages_like( @opts[:include] ) do |page|
+
+                url = page.url.to_s
+                if url =~ @opts[:exclude]
+                    print_verbose( '[Skipping: Matched exclude rule] ' + url )
+                    next
+                end
+
+                if page.error
+                    print_error( "[Error: " + (page.error.to_s) + "] " + url )
+                    next
+                end
+
+                @sitemap.push( url )
+
+                print_line
+                print_status( "[HTTP: #{page.code}] " + url )
+
+                if block
+                    block.call( url, page.body, page.headers )
+                end
+
+                @on_every_page_blocks.each do |block|
+                    block.call( page )
+                end
+
+                page.discard_doc!()
+
+                if( @opts[:link_count_limit] != false &&
+                @opts[:link_count_limit] <= i )
+                    return @sitemap.uniq
+                end
+
+                i+=1
+            end
+        end
+
+        return @sitemap.uniq
+    end
+
+    #
+    # Hook for further analysis of pages, statistics etc.
+    #
+    # @param [Proc] block code to be executed for every page
+    #
+    # @return [self]
+    #
+    def on_every_page( &block )
+        @on_every_page_blocks.push( block )
+        self
+    end
 
 end
 end

@@ -42,32 +42,51 @@ banner
 
 require 'getoptslong'
 
+if !$runtime_args[:audit_links] &&
+   !$runtime_args[:audit_forms] &&
+   !$runtime_args[:audit_cookies]
+        
+    puts "Error: No audit options were specified."
+    puts "Run arachni with the '-h' parameter for help."
+    puts
+    exit 0
+end
+
+#
+# make sure we have a user agent
+#
+if !$runtime_args[:user_agent]
+    $runtime_args[:user_agent] = 'Arachni/' + VERSION
+end
+
 #
 # Ensure that the user selected some modules
 #
 if !$runtime_args[:mods]
-  puts "Error: No modules were specified."
-  puts "Run arachni with the '-h' parameter for help or " +
-  "with the '-l' parameter to see all available modules."
-  exit 0
+    puts "Error: No modules were specified."
+    puts "Run arachni with the '-h' parameter for help or \n" +
+    "with the '-l' parameter to see all available modules."
+    puts
+    exit 0
 end
 
 #
-# Check the validity of user provided module names 
+# Check the validity of user provided module names
 #
 modreg = Arachni::ModuleRegistry.new( $runtime_args['dir']['modules'] )
 $runtime_args[:mods].each {
-  |mod_name|
-  
-  if( !modreg.ls_available(  )[mod_name] )
-    puts "Error: Module #{mod_name} wasn't found."
-    puts "Run arachni with the '-l' parameter to see all available modules."
-    exit 0
-  end
-  
-  # load the module
-  modreg.mod_load( mod_name )
-  
+    |mod_name|
+
+    if( !modreg.ls_available(  )[mod_name] )
+        puts "Error: Module #{mod_name} wasn't found."
+        puts "Run arachni with the '-l'" + 
+            " parameter to see all available modules."
+        exit 0
+    end
+
+    # load the module
+    modreg.mod_load( mod_name )
+
 }
 
 #
@@ -75,22 +94,20 @@ $runtime_args[:mods].each {
 # If it fails inform the user of that fact and
 # give him some approriate examples.
 #
-$runtime_args[:url] = ARGV.shift
-  
 begin
-  $runtime_args[:url] = URI.parse( URI.encode( $runtime_args[:url] ) )
+    $runtime_args[:url] = URI.parse( URI.encode( $runtime_args[:url] ) )
 rescue
-  puts "Error: Invalid URL argument."
-  puts "URL must be of type 'scheme://username:password@subdomain." +
-         "domain.tld:port/path?query_string#anchor'"
-  puts "Be careful with the \"www\"."
-  puts
-  puts "Examples:"
-  puts "    http://www.google.com"
-  puts "    https://secure.wikimedia.org/wikipedia/en/wiki/Main_Page"
-  puts "    http://zapotek:secret@www.myweb.com/index.php"
-  puts
-  exit 0
+    puts "Error: Invalid URL argument."
+    puts "URL must be of type 'scheme://username:password@subdomain." +
+    "domain.tld:port/path?query_string#anchor'"
+    puts "Be careful with the \"www\"."
+    puts
+    puts "Examples:"
+    puts "    http://www.google.com"
+    puts "    https://secure.wikimedia.org/wikipedia/en/wiki/Main_Page"
+    puts "    http://zapotek:secret@www.myweb.com/index.php"
+    puts
+    exit 0
 end
 
 #
@@ -101,22 +118,22 @@ end
 # passed as an http proxy to Anemone::HTTP.refresh_connection()
 #
 if $runtime_args[:proxy_type] == 'socks'
-  require 'socksify'
-  
-  TCPSocket.socks_server = $runtime_args[:proxy_addr]
-  TCPSocket.socks_port = $runtime_args[:proxy_port]
-    
-  $runtime_args[:proxy_addr] = nil
-  $runtime_args[:proxy_port] = nil
+    require 'socksify'
+
+    TCPSocket.socks_server = $runtime_args[:proxy_addr]
+    TCPSocket.socks_port = $runtime_args[:proxy_port]
+
+    $runtime_args[:proxy_addr] = nil
+    $runtime_args[:proxy_port] = nil
 end
 
 #ap $runtime_args
 
 # Check for missing url
 if $runtime_args[:url] == nil
-  puts "Error: Missing url argument (try --help)"
-  puts
-  exit 0
+    puts "Error: Missing url argument (try --help)"
+    puts
+    exit 0
 end
 
 spider   = Arachni::Spider.new( $runtime_args )
@@ -156,6 +173,56 @@ analyzer = Arachni::Analyzer.new( $runtime_args )
 #}
 #puts
 
+def run_mods( mods, page_data, structure )
+    #  mods.each {
+    #    |mod|
+    #
+    #    if $_interrupted == true
+    #      puts
+    #      puts 'Site audit was interrupted, exiting...'
+    #      puts
+    #      exit 0
+    #    end
+    #
+    #    puts '+ ' + mod.to_s
+    #    puts'---------------------------'
+    ##      ap mod
+    #    mod_new = mod.new( page_data, structure )
+    ##      pp mod_new
+    #
+    #    mod_new.prepare
+    #    mod_new.run
+    #    mod_new.clean_up
+    #    puts
+    #  }
+    mod_threads = []
+    for mod in mods
+        mod_threads << Thread.new( mod ) {
+            |curr_mod|
+
+            if $_interrupted == true
+                puts
+                puts 'Site audit was interrupted, exiting...'
+                puts
+                exit 0
+            end
+
+            puts '+ ' + mod.to_s
+            puts'---------------------------'
+            #      ap mod
+            mod_new = mod.new( page_data, structure )
+            #      pp mod_new
+
+            mod_new.prepare
+            mod_new.run
+            mod_new.clean_up
+        }
+    end
+
+    mod_threads.each { |thread|  thread.join }
+
+end
+
 puts
 puts 'ModuleRegistry reports the following modules are loaded:'
 puts '----------'
@@ -168,59 +235,60 @@ mods_run_last_data = []
 puts 'Analysing site structure...'
 puts '---------------------------'
 puts
+
+$_interrupted = false
+trap( "INT" ) { $_interrupted = true }
+skip_to_audit = false
+
 sitemap = spider.run {
-  | url, html, headers |
-  
-  structure = site_structure[url] = analyzer.run( url, html, headers ).clone
-  
-  page_data = {
-    'url' => { 'href' => url, 'vars' => analyzer.get_link_vars( url )},
-    'html' => html,
-    'headers' => headers 
-  }
-  
-  if !$runtime_args[:mods_run_last]
-    loaded_modules.each {
-      |mod|
-      
-      puts '+ ' + mod.to_s
-      puts'---------------------------'
-      mod_new = mod.new( page_data, structure )
-#      pp mod_new
-      
-      mod_new.prepare
-      mod_new.run
-      mod_new.clean_up
-      puts
+    | url, html, headers |
+
+    structure = site_structure[url] = analyzer.run( url, html, headers ).clone
+
+    page_data = {
+        'url' => { 'href' => url, 'vars' => analyzer.get_link_vars( url )},
+        'html' => html,
+        'headers' => headers
     }
-  else
-    mods_run_last_data.push( { page_data => structure} )
-  end
-  
-  
+
+    if !$runtime_args[:mods_run_last]
+        run_mods( loaded_modules, page_data, structure )
+    else
+
+        if $_interrupted == true
+            puts
+            puts 'Site analysis was interrupted, do you want to audit' +
+            ' the analyzed pages?'
+            puts 'Audit?(\'y\' to audit, \'n\' to exit)(y/n)'
+
+            if gets[0] == 'y'
+                skip_to_audit = true
+            else
+                puts 'Exiting...'
+                exit 0
+            end
+
+        end
+        mods_run_last_data.push( { page_data => structure} )
+
+    end
+
+    if skip_to_audit == true
+        puts 'Skipping to audit.'
+        puts
+        break
+        $_interrupted = false
+    end
+
 }
 
 if $runtime_args[:mods_run_last]
-  mods_run_last_data.each {
-   |data| 
-    
-    loaded_modules.each {
-      |mod|
-      
-      puts '+ ' + mod.to_s
-      puts'---------------------------'
-#      ap mod
-      mod_new = mod.new( data.keys[0], data.values[0] )
-#      pp mod_new
-      
-      mod_new.prepare
-      mod_new.run
-      mod_new.clean_up
-      puts
-    }
-  }
-end
 
+    mods_run_last_data.each {
+        |data|
+        run_mods( loaded_modules, data.keys[0], data.values[0] )
+    }
+end
 
 #ap site_structure
 #ap sitemap

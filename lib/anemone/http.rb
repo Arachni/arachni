@@ -9,7 +9,6 @@
   (See LINCENSE file for details)
 
 =end
-
 require 'rubygems'
 require 'anemone'
 
@@ -18,20 +17,20 @@ require 'anemone'
 # adding proxy support
 #
 class Anemone::HTTP
-  def refresh_connection( url )
 
-#    puts "My HTTP!"
- 
-    http = Net::HTTP.new( url.host, url.port,
-        $opts[:proxy_addr], $opts[:proxy_port],
-        $opts[:proxy_user], $opts[:proxy_pass] )
-    
-    if url.scheme == 'https'
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    def refresh_connection( url )
+
+        # TODO: remove global vars
+        http = Net::HTTP.new( url.host, url.port,
+        $runtime_args[:proxy_addr], $runtime_args[:proxy_port],
+        $runtime_args[:proxy_user], $runtime_args[:proxy_pass] )
+
+        if url.scheme == 'https'
+            http.use_ssl = true
+            http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+
+        @connections[url.host][url.port] = http.start
     end
-    
-    @connections[url.host][url.port] = http.start
-  end
-  
+
 end

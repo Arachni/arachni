@@ -10,6 +10,10 @@
 
 =end
 
+module Arachni
 
-class Auditor
+class Fuzzer
+    
+end
+
 end

@@ -10,29 +10,32 @@
 
 =end
 
-
 module Arachni
 
-  #
-  # Arachni::ModuleRegistrar module<br/>
-  # When inserted into modules it registers
-  # them with Arachni::ModuleRegistry 
-  #
-  # @author: Zapotek <zapotek@segfault.gr> <br/>
-  # @version: 0.1-planning
-  #
-  module ModuleRegistrar
-  
+#
+# Arachni::ModuleRegistrar module<br/>
+# When included into modules it registers
+# them with Arachni::ModuleRegistry
+#
+# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @version: 0.1-planning
+#
+module ModuleRegistrar
+
     #
     # Callback invoked whenever Arachni::ModuleRegistrar
     # is included in another module or class.
+    #
     def ModuleRegistrar.included( mod )
-  #    puts
-  #    puts 'ModuleRegistrar'
-  #    puts '----------------'
-  #    puts mod.name
-      Arachni::ModuleRegistry.register( mod )
+        Arachni::ModuleRegistry.register( mod )
     end
-  
+    
+    #
+    # Used by modules to register their results with the ModuleRegistry.
+    #
+    def register_results( results )
+        Arachni::ModuleRegistry.register_results( results )
+    end
+
 end
 end

@@ -18,8 +18,12 @@ the security of a web application.
 Features
 -----------
 A feature list follows:
+    o Modular design
     o Multi-threaded crawler
+    o Multi-threaded module execution
     o SSL support
+    o Proxy support (HTTP, SOCKS)
+    o Basic HTTP auth
     o Can audit: links (GET), forms (POST & GET) and cookies
     o User-agent spoofing
     o to be continued...
@@ -43,6 +47,7 @@ Requirements
   * Anemone gem
   * Sockify gem
   * to be continued...
+
 
 Bug reports/Feature requests
 -------------------------------

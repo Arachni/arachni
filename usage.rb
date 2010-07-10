@@ -21,8 +21,9 @@
 #
 def banner
 
-  puts 'Arachni v' + VERSION + ' [' + REVISION + '] initiated.
+    puts 'Arachni v' + VERSION + ' [' + REVISION + '] initiated.
      Author: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
+                                         <tasos.laskos@gmail.com>
      Website: http://www.segfault.gr
 
 '
@@ -36,11 +37,12 @@ end
 # @return [void]
 #
 def usage
-  puts <<USAGE
+    puts <<USAGE
 Usage:  arachni \[options\] url
 
 Supported options:
   
+
   General ----------------------
 
   -h
@@ -50,7 +52,11 @@ Supported options:
   --resume                    resume suspended session
   
   -v                          be verbose
-  
+
+  --threads=<number>          how many threads to instantiate (default: 3)
+                              More threads does not necessarily mean more speed,
+                              be careful when adjusting the thread count.
+                                
   --cookie-jar=<cookiejar>    specify cookiejar
   
   --user-agent=<user agent>   specify user agent
@@ -76,10 +82,7 @@ Supported options:
   
   --redirect-limit=<number>   how many redirects to follow (default: inf)
 
-  --threads=<number>          how many threads to instantiate (default: 3)
-                                More threads does not necessarily mean more speed,
-                                be careful when adjusting thread count.
-
+  
   Auditor ------------------------                                
                                 
   -g

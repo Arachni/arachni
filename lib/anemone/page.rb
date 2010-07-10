@@ -15,34 +15,34 @@
 # adding support for subdomain crawling
 #
 class Anemone::Page
-  
-  #
-  # Returns +true+ if *uri* is in the same domain as the page, returns
-  # +false+ otherwise
-  #
-  def in_domain?( uri )
-    
-    if $opts[:follow_subdomains]
-      return extract_domain( uri ) ==  extract_domain( @url )
-    end
-  
-    uri.host == @url.host
-  end
 
-  #
-  # Extracts the domain from a URI object
-  #
-  # @param [URI] url
-  #
-  # @return [String]
-  #
-  def extract_domain( url )
-    
-    splits = url.host.split( /\./ )
-    
-    if splits.length == 1 then return true end
-    
-    splits[-2] + "." + splits[-1]
-  end
-  
+    #
+    # Returns +true+ if *uri* is in the same domain as the page, returns
+    # +false+ otherwise
+    #
+    def in_domain?( uri )
+        # TODO: remove global vars
+        if $runtime_args[:follow_subdomains]
+            return extract_domain( uri ) ==  extract_domain( @url )
+        end
+
+        uri.host == @url.host
+    end
+
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+
+        splits = url.host.split( /\./ )
+
+        if splits.length == 1 then return true end
+
+        splits[-2] + "." + splits[-1]
+    end
+
 end
