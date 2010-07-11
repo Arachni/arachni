@@ -36,6 +36,8 @@ class CLI
         
         @opts = @opts.merge( opts )
 
+        banner
+        
         @modreg = Arachni::ModuleRegistry.new( @opts['dir']['modules'] )
 
         parse_opts
@@ -47,8 +49,6 @@ class CLI
     end
 
     def run( )
-        banner
-
         print_status( 'Initing...' )
 
         ls_loaded
@@ -177,33 +177,45 @@ class CLI
     
     def run_mods( page_data, structure )
 
-        mod_threads = []
+        mod_queue = Queue.new
         
-        # TODO: apply a thread limit
-        for mod in @modreg.ls_loaded
-            mod_threads << Thread.new( mod ) {
-                |curr_mod|
-
-                if $_interrupted == true
+        threads = ( 1..@opts[:threads] ).map {
+            |i|
+            Thread.new( mod_queue ) {
+                |q|
+                until( q == ( curr_mod = q.deq ) )
+                    print_debug( "thread-" + i.to_s + " " + curr_mod.inspect )
+                        
+                    if $_interrupted == true
+                        print_line
+                        print_info( 'Site audit was interrupted, exiting...' )
+                        print_line
+                        exit 0
+                    end
+                    
                     print_line
-                    print_info( 'Site audit was interrupted, exiting...' )
-                    print_line
-                    exit 0
+                    print_status( curr_mod.to_s )
+                    print_status( '---------------------------' )
+                    mod_new = curr_mod.new( page_data, structure )
+                    
+                    mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
+                    mod_new.run
+                    mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
                 end
-
-                print_line
-                print_status( curr_mod.to_s )
-                print_status( '---------------------------' )
-                mod_new = curr_mod.new( page_data, structure )
-
-                mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
-                mod_new.run
-                mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
             }
+        }
+        
+        # enque the loaded mods
+        for mod in @modreg.ls_loaded
+            mod_queue.enq mod
         end
-
-        mod_threads.each { |thread|  thread.join }
-
+        
+        # send terminators down the queue
+        threads.size.times { mod_queue.enq mod_queue }
+        
+        # wait for threads to finish
+        threads.each { |t| t.join }
+            
     end
     
 
@@ -359,6 +371,18 @@ class CLI
             @opts[:proxy_port] = nil
         end
 
+        #
+        # If proxy type is socks include socksify
+        # and let it proxy all tcp connections for us.
+        #
+        # Then nil out the proxy opts or else they're going to be
+        # passed as an http proxy to Anemone::HTTP.refresh_connection()
+        #
+        if !@opts[:threads]
+            print_info( 'No thread limit specified, defaulting to 3.' )
+            @opts[:threads] = 3
+        end
+        
     end
 
     #
