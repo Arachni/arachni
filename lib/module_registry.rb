@@ -87,26 +87,6 @@ class ModuleRegistry
     end
 
     #
-    # Grabs the information of a module based on its ID
-    # in the @@module_registry and returns it as a string
-    #
-    # @param  [Integer] reg_id
-    #
-    # @return [String]  the info of the module
-    #
-    def mod_info_s( reg_id )
-        
-        info = mod_info( reg_id )
-        
-        print_line( "Name:\t\t"       + info["Name"].strip )
-        print_line( "Description:\t"  + info["Description"].strip )
-        print_line( "Author:\t\t"     + info["Author"].strip )
-        print_line( "Version:\t"      + info["Version"].strip )
-        print_line( "References:\t"   + info["References"].to_s )
-        print_line( "Targets:\t"      + info["Targets"].to_s )
-    end
-
-    #
     # Lists the loaded modules
     #
     # @return [Array<Arachni::Module>]  contents of the @@module_registry

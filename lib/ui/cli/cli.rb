@@ -247,8 +247,17 @@ class CLI
             print_line( "#{mod_name}:" )
             print_line( "--------------------" )
 
-            @modreg.mod_info_s( i )
+            info = @modreg.mod_info( i )
 
+#            info = mod_info( reg_id )
+            
+            print_line( "Name:\t\t"       + info["Name"].strip )
+            print_line( "Description:\t"  + info["Description"].strip )
+            print_line( "Author:\t\t"     + info["Author"].strip )
+            print_line( "Version:\t"      + info["Version"].strip )
+            print_line( "References:\t"   + info["References"].to_s )
+            print_line( "Targets:\t"      + info["Targets"].to_s )
+            
             i+=1
 
             print_line
