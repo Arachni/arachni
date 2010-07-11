@@ -184,12 +184,15 @@ class CLI
             Thread.new( mod_queue ) {
                 |q|
                 until( q == ( curr_mod = q.deq ) )
-                    print_debug( "thread-" + i.to_s + " " + curr_mod.inspect )
-                        
+                    print_debug( )
+                    print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
+                    print_debug( )
+                    
                     if $_interrupted == true
                         print_line
                         print_info( 'Site audit was interrupted, exiting...' )
                         print_line
+                        print_results( )
                         exit 0
                     end
                     
