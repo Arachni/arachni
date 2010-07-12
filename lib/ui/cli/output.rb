@@ -16,8 +16,8 @@ module UI
 
 module Output
 
-    @verbose = false
-    @debug   = false
+    @@verbose = false
+    @@debug   = false
     
     def print_color( sign, color, string )
         print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
@@ -40,12 +40,12 @@ module Output
     end
     
     def print_debug( str = '' )
-        if !@debug then return end
+        if !@@debug then return end
         print_color( '[!]', 36, str )
     end
     
     def print_verbose( str = '' )
-        if !@verbose then return end
+        if !@@verbose then return end
         print_color( '[v]', 37, str )
     end
     
@@ -54,11 +54,11 @@ module Output
     end
     
     def verbose!
-        @verbose = true
+        @@verbose = true
     end
     
     def debug!
-        @debug = true
+        @@debug = true
     end
 
 end
