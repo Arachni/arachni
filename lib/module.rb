@@ -108,7 +108,7 @@ class Module
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                audit
     #
-    def audit_links( injection_str, id_regex, id = nil )
+    def audit_links( injection_str, id_regex = nil, id = nil, &block )
 
         results = []
         page_data['url']['vars'].keys.each {
@@ -120,6 +120,11 @@ class Module
             res = @http.get( page_data['url']['href'],
                 { var => injection_str } )
 
+            if block_given?
+                block.call( var, res )
+                return
+            end
+                                    
             if ( id && res.body.scan( id_regex )[0] == id ) ||
                ( !id && res.body.scan( id_regex )[0].size > 0 )
 
@@ -149,7 +154,7 @@ class Module
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                audit
     #
-    def audit_forms( injection_str, id_regex, id = nil  )
+    def audit_forms( injection_str, id_regex = nil, id = nil, &block )
         
         results = []
             
@@ -171,6 +176,11 @@ class Module
                 res = @http.post( form['attrs']['action'],
                     { input['name'] => injection_str } )
 
+                if block_given?
+                    block.call( input['name'], res )
+                    return
+                end
+                                
                 if ( id && res.body.scan( id_regex )[0] == id ) ||
                    ( !id && res.body.scan( id_regex )[0].size > 0 )
 
@@ -199,7 +209,7 @@ class Module
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                audit
     #
-    def audit_cookies( injection_str, id_regex, id = nil )
+    def audit_cookies( injection_str, id_regex = nil, id = nil, &block )
         results = []
         get_cookies.each {
             |cookie|
@@ -211,6 +221,11 @@ class Module
 
             res = @http.cookie( page_data['url']['href'], [cookie], nil )
 
+            if block_given?
+                block.call( cookie['name'], res )
+                return
+            end
+            
             if ( id && res.body.scan( id_regex )[0] == id ) ||
                ( !id && res.body.scan( id_regex )[0].size > 0 )
 
