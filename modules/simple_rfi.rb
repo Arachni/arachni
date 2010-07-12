@@ -98,7 +98,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
 #        @__rfi_id = 'd3612e6ae8c17e46fa8592c8bdb8f2f3'
 
         # inject this url to asses RFI
-            @__injection_url = 'http://google.com'
+            @__injection_url = 'hTtP://google.com'
 #        @__injection_url = 'http://localhost/zapotek/fis/file.txt'
 
         #
