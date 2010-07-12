@@ -64,15 +64,12 @@ class XSS < Arachni::Module
     
     def run( )
         
-        @__injection_strs.each_with_index {
-            |str, i|
+        @__injection_strs.each {
+            |str|
             
             enc_str = URI.encode( str )
-            
             @results['forms'] |=  audit_forms( str, Regexp.new( str ), str )
-                
             @results['links'] |=  audit_links( enc_str, Regexp.new( str ), str )
-            
             @results['cookies'] |= audit_cookies( enc_str, Regexp.new( str ), str )
         }
         
