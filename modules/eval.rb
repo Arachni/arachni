@@ -54,7 +54,7 @@ class Eval < Arachni::Module
             "echo " + @__rand1 + "+" + @__rand2 + ";",# PHP
             "print " + @__rand1 + "+" + @__rand2 + ";", # Perl
             "print " + @__rand1 + " + " + @__rand2, # Python
-            "Response.Write\x28\x22" +  @__rand1  + '+' + @__rand2 + "\x22\x29", # ASP
+            "Response.Write\x28" +  @__rand1  + '+' + @__rand2 + "\x29", # ASP
             "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
     end
