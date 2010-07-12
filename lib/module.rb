@@ -103,10 +103,16 @@ class Module
     # @param    [String]     injection_str
     # @param    [String]     id_regex     regular expression string
     # @param    [String]     id  string to double check the id_regex
-    #                                matched data
+    #                            matched data
+    #
+    # @param    [Block]     block to be executed right after the
+    #                            request has been made.
+    #                            It will be passed the currently audited
+    #                            variable and the response.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
-    #                                                audit
+    #                                                the audit, if no block
+    #                                                has been given
     #
     def audit_links( injection_str, id_regex = nil, id = nil, &block )
 
@@ -151,8 +157,14 @@ class Module
     # @param    [String]     id  string to double check the id_regex
     #                                matched data
     #
+    # @param    [Block]     block to be executed right after the
+    #                            request has been made.
+    #                            It will be passed the currently audited
+    #                            variable and the response.
+    #
     # @param    [Array<Hash<String, String>>]    the positive results of
-    #                                                audit
+    #                                                the audit, if no block
+    #                                                has been given
     #
     def audit_forms( injection_str, id_regex = nil, id = nil, &block )
         
@@ -206,8 +218,14 @@ class Module
     # @param    [String]     id  string to double check the id_regex
     #                                matched data
     #
+    # @param    [Block]     block to be executed right after the
+    #                            request has been made.
+    #                            It will be passed the currently audited
+    #                            variable and the response.
+    #
     # @param    [Array<Hash<String, String>>]    the positive results of
-    #                                                audit
+    #                                                the audit, if no block
+    #                                                has been given
     #
     def audit_cookies( injection_str, id_regex = nil, id = nil, &block )
         results = []
