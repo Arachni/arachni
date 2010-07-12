@@ -1,5 +1,5 @@
 =begin
-  $Id: simple_cmd_exec.rb 56 2010-07-12 16:40:39Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
