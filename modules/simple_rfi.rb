@@ -21,7 +21,7 @@ module Modules
 #
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev$
+# @version: $Rev: 50 $
 #
 class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
 
@@ -167,7 +167,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             'Name'           => 'SimpleRFI',
             'Description'    => %q{Simple Remote File Inclusion recon module},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '$Rev: 50 $',
             'References'     =>
                 [
                 ],
