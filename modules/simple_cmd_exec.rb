@@ -1,5 +1,5 @@
 =begin
-  $Id$
+  $Id: simple_cmd_exec.rb 56 2010-07-12 16:40:39Z zapotek $
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -57,7 +57,7 @@ class SimpleCmdExec < Arachni::Module
             'Name'           => 'SimpleCmdExec',
             'Description'    => %q{Simple shell command execution recon module},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 48 $',
+            'Version'        => '$Rev$',
             'References'     =>
                 [
                 ],

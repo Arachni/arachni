@@ -15,7 +15,7 @@ require 'pp'
 require 'ap'
 
 VERSION  = '0.1-planning'
-REVISION = '$Rev: 49 $'
+REVISION = '$Rev$'
 
 require 'getoptslong'
 require $runtime_args['dir']['lib'] + 'ui/cli/cli'

@@ -1,5 +1,5 @@
 =begin
-  $Id$
+  $Id: xss.rb 56 2010-07-12 16:40:39Z zapotek $
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -85,7 +85,7 @@ class XSS < Arachni::Module
             'Name'           => 'XSS',
             'Description'    => %q{Cross-Site Scripting recon module},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 48 $',
+            'Version'        => '$Rev$',
             'References'     =>
              [ 
              'XSS (Cross Site Scripting) Cheat Sheet' => 'http://ha.ckers.org/xss.html',

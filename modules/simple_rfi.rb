@@ -1,5 +1,5 @@
 =begin
-  $Id$
+  $Id: simple_rfi.rb 56 2010-07-12 16:40:39Z zapotek $
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -21,7 +21,7 @@ module Modules
 #
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev: 50 $
+# @version: $Rev$
 #
 class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
 
@@ -167,7 +167,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             'Name'           => 'SimpleRFI',
             'Description'    => %q{Simple Remote File Inclusion recon module},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 50 $',
+            'Version'        => '$Rev$',
             'References'     =>
                 [
                 ],
