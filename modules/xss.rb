@@ -83,11 +83,10 @@ class XSS < Arachni::Module
             'Description'    => %q{Cross-Site Scripting recon module},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
-            'References'     =>
-             [ 
-             'XSS (Cross Site Scripting) Cheat Sheet' => 'http://ha.ckers.org/xss.html',
-             'Secunia Advisory SA9716' => 'http://secunia.com/advisories/9716/'
-             ],
+            'References'     => {
+                'ha.ckers' => 'http://ha.ckers.org/xss.html',
+                'Secunia'  => 'http://secunia.com/advisories/9716/'
+            },
             'Targets'        => { 'Generic' => 'all' }
         }
     end

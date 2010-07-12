@@ -270,8 +270,18 @@ class CLI
             print_line( "Description:\t"  + info["Description"].strip )
             print_line( "Author:\t\t"     + info["Author"].strip )
             print_line( "Version:\t"      + info["Version"].strip )
-            print_line( "References:\t"   + info["References"].to_s )
-            print_line( "Targets:\t"      + info["Targets"].to_s )
+                
+            print_line( "References:" )
+            info["References"].keys.each {
+                |key|
+                print_info( key + "\t\t" + info["References"][key] )
+            }
+            
+            print_line( "Targets:" )
+            info["Targets"].keys.each {
+                |key|
+                print_info( key + "\t\t" + info["Targets"][key] )
+            }
             
             i+=1
 

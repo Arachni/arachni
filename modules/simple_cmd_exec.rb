@@ -58,9 +58,9 @@ class SimpleCmdExec < Arachni::Module
             'Description'    => %q{Simple shell command execution recon module},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
-            'References'     =>
-                [
-                ],
+            'References'     => {
+                
+            },
             'Targets'        => { 'PHP' => 'all' }
         }
     end

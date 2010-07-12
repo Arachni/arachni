@@ -87,9 +87,9 @@ class Eval < Arachni::Module
                 into the web application.},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
-            'References'     =>
-             [ 
-             ],
+            'References'     => {
+              
+             },
             'Targets'        => { 'Generic' => 'all' }
         }
     end
