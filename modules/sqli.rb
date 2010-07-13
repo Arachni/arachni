@@ -40,70 +40,70 @@ class SQLInjection < Arachni::Module
 
     def prepare( )
         @__id  = %q{
-        /System\.Data\.OleDb\.OleDbException/
-        /\[SQL\ Server\]/
-        /\[Microsoft\]\[ODBC\ SQL\ Server\ Driver\]/
-        /\[SQLServer\ JDBC\ Driver\]/
-        /\[SqlException/
-        /System\.Data\.SqlClient\.SqlException/
-        /Unclosed\ quotation\ mark\ after\ the\ character\ string/
-        /'80040e14'/
-        /mssql_query\(\)/
-        /odbc_exec\(\)/
-        /Microsoft\ OLE\ DB\ Provider\ for\ ODBC\ Drivers/
-        /Microsoft\ OLE\ DB\ Provider\ for\ SQL\ Server/
-        /Incorrect\ syntax\ near/
-        /Sintaxis\ incorrecta\ cerca\ de/
-        /Syntax\ error\ in\ string\ in\ query\ expression/
-        /ADODB\.Field\ \(0x800A0BCD\)<br>/
-        /Procedure\ '[^']+'\ requires\ parameter\ '[^']+'/
-        /ADODB\.Recordset'/
-        /Unclosed\ quotation\ mark\ before\ the\ character\ string/
-        /SQLCODE/
-        /DB2\ SQL\ error:/
-        /SQLSTATE/
-        /\[IBM\]\[CLI\ Driver\]\[DB2\/6000\]/
-        /\[CLI\ Driver\]/
-        /\[DB2\/6000\]/
-        /Sybase\ message:/
-        /Syntax\ error\ in\ query\ expression/
-        /Data\ type\ mismatch\ in\ criteria\ expression\./
-        /Microsoft\ JET\ Database\ Engine/
-        /\[Microsoft\]\[ODBC\ Microsoft\ Access\ Driver\]/
-        /(PLS|ORA)-[0-9][0-9][0-9][0-9]/
-        /PostgreSQL\ query\ failed:/
-        /supplied\ argument\ is\ not\ a\ valid\ PostgreSQL\ result/
-        /pg_query\(\)\ \[:/
-        /pg_exec\(\)\ \[:/
-        /supplied\ argument\ is\ not\ a\ valid\ MySQL/
-        /Column\ count\ doesn't\ match\ value\ count\ at\ row/
-        /mysql_fetch_array\(\)/
-        /mysql_/
-        /on\ MySQL\ result\ index/
-        /You\ have\ an\ error\ in\ your\ SQL\ syntax;/
-        /You\ have\ an\ error\ in\ your\ SQL\ syntax\ near/
-        /MySQL\ server\ version\ for\ the\ right\ syntax\ to\ use/
-        /\[MySQL\]\[ODBC/
-        /Column\ count\ doesn't\ match/
-        /the\ used\ select\ statements\ have\ different\ number\ of\ columns/
-        /Table\ '[^']+'\ doesn't\ exist/
-        /com\.informix\.jdbc/
-        /Dynamic\ Page\ Generation\ Error:/
-        /An\ illegal\ character\ has\ been\ found\ in\ the\ statement/
-        /<b>Warning<\/b>:\ ibase_/
-        /Dynamic\ SQL\ Error/
-        /\[DM_QUERY_E_SYNTAX\]/
-        /has\ occurred\ in\ the\ vicinity\ of:/
-        /A\ Parser\ Error\ \(syntax\ error\)/
-        /java\.sql\.SQLException/
-        /Unexpected\ end\ of\ command\ in\ statement/
-        /\[Macromedia\]\[SQLServer\ JDBC\ Driver\]/
-        /SELECT .*?\ FROM\ .*?/
-        /UPDATE\ .*?\ SET\ .*?/
-        /INSERT\ INTO\ .*?/
-        /Unknown\ column/
-        /where\ clause/
-        /SqlServer/
+        System.Data.OleDb.OleDbException
+        \[SQL Server\]
+        \[Microsoft\]\[ODBC SQL Server Driver\]
+        \[SQLServer JDBC Driver\]
+        \[SqlException
+        System.Data.SqlClient.SqlException
+        Unclosed quotation mark after the character string
+        '80040e14'
+        mssql_query\(\)
+        odbc_exec\(\)
+        Microsoft OLE DB Provider for ODBC Drivers
+        Microsoft OLE DB Provider for SQL Server
+        Incorrect syntax near
+        Sintaxis incorrecta cerca de
+        Syntax error in string in query expression
+        ADODB.Field \(0x800A0BCD\)<br>
+        Procedure '[^']+' requires parameter '[^']+'
+        ADODB.Recordset\'
+        Unclosed quotation mark before the character string
+        SQLCODE
+        DB2 SQL error:
+        SQLSTATE
+        \[IBM\]\[CLI Driver\]\[DB26000\]
+        \[CLI Driver\]
+        \[DB26000\]
+        Sybase message:
+        Syntax error in query expression
+        Data type mismatch in criteria expression.
+        Microsoft JET Database Engine
+        \[Microsoft\]\[ODBC Microsoft Access Driver\]
+        (PLS|ORA)-[0-9][0-9][0-9][0-9]
+        PostgreSQL query failed:
+        supplied argument is not a valid PostgreSQL result
+        pg_query\(\) \[:
+        pg_exec\(\) \[:
+        supplied argument is not a valid MySQL
+        Column count doesn't match value count at row
+        mysql_fetch_array\(\)
+        mysql_
+        on MySQL result index
+        You have an error in your SQL syntax;
+        You have an error in your SQL syntax near
+        MySQL server version for the right syntax to use
+        \[MySQL\]\[ODBC
+        Column count doesn't match
+        the used select statements have different number of columns
+        Table '[^']+' doesn't exist
+        com.informix.jdbc
+        Dynamic Page Generation Error:
+        An illegal character has been found in the statement
+        <b>Warning<b>: ibase_
+        Dynamic SQL Error
+        \[DM_QUERY_E_SYNTAX\]
+        has occurred in the vicinity of:
+        A Parser Error \(syntax error\)
+        java\.sql\.SQLException
+        Unexpected end of command in statement
+        \[Macromedia\]\[SQLServer JDBC Driver\]
+        SELECT .*? FROM .*?
+        UPDATE .*? SET .*?
+        INSERT INTO .*?
+        Unknown column
+        where clause
+        SqlServer
         }
         
         @__injection_strs = [
@@ -158,6 +158,9 @@ class SQLInjection < Arachni::Module
         
         for id in @__id.each_line
             id = id.strip
+            if id.size == 0 then next end
+            
+            id = Regexp.new( id )
             
             if ( res.body.scan( id )[0] && res.body.scan( id )[0].size > 0 )
                 
