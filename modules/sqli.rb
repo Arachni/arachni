@@ -20,7 +20,7 @@ module Modules
 #
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev: 64 $
+# @version: $Rev$
 #
 class SQLInjection < Arachni::Module
 
@@ -144,7 +144,7 @@ class SQLInjection < Arachni::Module
             'Name'           => 'SQLInjection',
             'Description'    => %q{SQL injection recon module},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 64 $',
+            'Version'        => '$Rev$',
             'References'     => {
             },
             'Targets'        => { 'Generic' => 'all' }
