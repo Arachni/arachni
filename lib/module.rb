@@ -120,8 +120,8 @@ class Module
         page_data['url']['vars'].keys.each {
             |var|
 
-            print_status( 'Auditing: ' + var + ' var in ' +
-                page_data['url']['href'] )
+            print_status( self.class.info['Name']  + ' is auditing: ' +
+                var + ' var in ' + page_data['url']['href'] )
                 
             res = @http.get( page_data['url']['href'],
                 { var => injection_str } )
@@ -136,7 +136,7 @@ class Module
 
                 results << { var => page_data['url']['href'] }
 
-                print_ok( "Positive result found in: var #{var}" + '::' +
+                print_ok( self.class.info['Name'] + " in: var #{var}" + '::' +
                 page_data['url']['href'] )
 
             end
@@ -182,7 +182,7 @@ class Module
                     next
                 end
 
-                print_status( 'Auditing: ' + input['name'] + ' input for ' +
+                print_status( self.class.info['Name']  + ' is auditing: ' + input['name'] + ' input for ' +
                     form['attrs']['action'] )
 
                 res = @http.post( form['attrs']['action'],
@@ -198,7 +198,7 @@ class Module
 
                     results << { input['name'] => page_data['url']['href'] }
 
-                    print_ok( "Positive result found in: form input: " +
+                    print_ok( self.class.info['Name'] + " in: form input: " +
                     input['name'] + ':: action: ' + form['attrs']['action'] )
                 end
             }
@@ -234,7 +234,8 @@ class Module
 
             cookie['value'] = injection_str
 
-            print_status( 'Auditing: ' + cookie['name'] + ' cookie in ' +
+            print_status( self.class.info['Name']  + ' is auditing: ' +
+                cookie['name'] + ' cookie in ' +
                 page_data['url']['href'] )
 
             res = @http.cookie( page_data['url']['href'], [cookie], nil )
@@ -249,7 +250,7 @@ class Module
 
                 results << { cookie['name'] => page_data['url']['href'] }
 
-                print_ok( "Positive result found in: cookie #{cookie['name']}" +
+                print_ok( self.class.info['Name'] + " in: cookie #{cookie['name']}" +
                 '::' + page_data['url']['href'] )
             end
         }
