@@ -178,9 +178,13 @@ class Module
     def audit_forms( injection_str, id_regex = nil, id = nil, &block )
         
         results = []
+        if !get_forms then return results end
             
         get_forms.each {
             |form|
+            
+            if !form['auditable'] then return results end
+                
             form['auditable'].each_with_index {
                 |input, i|
 
