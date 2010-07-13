@@ -16,6 +16,7 @@ opts = GetoptLong.new(
     [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
     [ '--resume',            '-r', GetoptLong::NO_ARGUMENT ],
     [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
+    [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
     [ '--lsmod',             '-l', GetoptLong::NO_ARGUMENT ],
     [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
@@ -55,6 +56,9 @@ opts.each do |opt, arg|
         when '--help'
             $runtime_args[:help] = true
 
+        when '--only-positives'
+            $runtime_args[:only_positives] = true
+                
         when '--resume'
             $runtime_args[:resume] = true
 

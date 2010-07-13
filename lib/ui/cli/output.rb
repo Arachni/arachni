@@ -18,6 +18,7 @@ module Output
 
     @@verbose = false
     @@debug   = false
+    @@only_positives  = false
     
     def print_color( sign, color, string )
         print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
@@ -28,10 +29,12 @@ module Output
     end
     
     def print_status( str = '' )
+        if @@only_positives then return end
         print_color( '[*]', 34, str )
     end
     
     def print_info( str = '' )
+        if @@only_positives then return end
         print_color( '[~]', 30, str )
     end
     
@@ -40,16 +43,19 @@ module Output
     end
     
     def print_debug( str = '' )
+        if @@only_positives then return end
         if !@@debug then return end
         print_color( '[!]', 36, str )
     end
     
     def print_verbose( str = '' )
+        if @@only_positives then return end
         if !@@verbose then return end
         print_color( '[v]', 37, str )
     end
     
     def print_line( str = '' )
+        if @@only_positives then return end
         puts str
     end
     
@@ -61,6 +67,9 @@ module Output
         @@debug = true
     end
 
+    def only_positives!
+        @@only_positives = true
+    end
 end
 
 end

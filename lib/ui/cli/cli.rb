@@ -238,7 +238,8 @@ class CLI
                 when 'debug'
                     debug!
 
-                when 'resume'
+                when 'only_positives'
+                    only_positives!
 
                 when 'lsmod'
                     lsmod
@@ -442,6 +443,8 @@ class CLI
     -v                          be verbose
     
     --debug                     show debugging output
+    
+    --only-positives            echo positive results *only*
   
     --threads=<number>          how many threads to instantiate (default: 3)
                                 More threads does not necessarily mean more speed,
