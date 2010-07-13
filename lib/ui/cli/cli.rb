@@ -381,22 +381,22 @@ class CLI
             exit 0
         end
 
-        #
-        # If proxy type is socks include socksify
-        # and let it proxy all tcp connections for us.
-        #
-        # Then nil out the proxy opts or else they're going to be
-        # passed as an http proxy to Anemone::HTTP.refresh_connection()
-        #
-        if @opts[:proxy_type] == 'socks'
-            require 'socksify'
-
-            TCPSocket.socks_server = @opts[:proxy_addr]
-            TCPSocket.socks_port = @opts[:proxy_port]
-
-            @opts[:proxy_addr] = nil
-            @opts[:proxy_port] = nil
-        end
+#        #
+#        # If proxy type is socks include socksify
+#        # and let it proxy all tcp connections for us.
+#        #
+#        # Then nil out the proxy opts or else they're going to be
+#        # passed as an http proxy to Anemone::HTTP.refresh_connection()
+#        #
+#        if @opts[:proxy_type] == 'socks'
+#            require 'socksify'
+#
+#            TCPSocket.socks_server = @opts[:proxy_addr]
+#            TCPSocket.socks_port = @opts[:proxy_port]
+#
+#            @opts[:proxy_addr] = nil
+#            @opts[:proxy_port] = nil
+#        end
 
         #
         # If proxy type is socks include socksify
