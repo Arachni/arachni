@@ -231,6 +231,35 @@ class CLI
                 when 'help'
                     usage
                     exit 0
+                    
+                when 'mods'
+                    #
+                    # Check the validity of user provided module names
+                    #
+                    @opts[:mods].each {
+                        |mod_name|
+                        
+                        # if the mod name is '*' load all modules
+                        if mod_name == '*'
+                            print_info( 'Loading all modules...' )
+                            @modreg.ls_available(  ).keys.each {
+                                |mod|
+                                @modreg.mod_load( mod )
+                            }
+                            break
+                        end
+                            
+                        if( !@modreg.ls_available(  )[mod_name] )
+                            print_error( "Error: Module #{mod_name} wasn't found." )
+                            print_info( "Run arachni with the '-l' ' + 
+                                'parameter to see all available modules." )
+                            exit 0
+                        end
+            
+                        # load the module
+                        @modreg.mod_load( mod_name )
+            
+                    }
 
                 when 'arachni_verbose'
                     verbose!
@@ -319,23 +348,7 @@ class CLI
             exit 0
         end
 
-        #
-        # Check the validity of user provided module names
-        #
-        @opts[:mods].each {
-            |mod_name|
 
-            if( !@modreg.ls_available(  )[mod_name] )
-                print_error( "Error: Module #{mod_name} wasn't found." )
-                print_info( "Run arachni with the '-l' ' + 
-                    'parameter to see all available modules." )
-                exit 0
-            end
-
-            # load the module
-            @modreg.mod_load( mod_name )
-
-        }
 
         # Check for missing url
         if @opts[:url] == nil
@@ -497,6 +510,7 @@ class CLI
       
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
+                                  (use '*' to deploy all modules)
     
     --mods-run-last             run modules after the website has been analyzed
                                   (default: modules are run on every page

@@ -120,6 +120,15 @@ class Module
         page_data['url']['vars'].keys.each {
             |var|
 
+            # catch global interrupts and exit...
+            if $_interrupted == true
+                print_line
+                print_info( 'Site audit was interrupted, exiting...' )
+                print_line
+                print_results( )
+                exit 0
+            end
+            
             print_status( self.class.info['Name']  + ' is auditing: ' +
                 var + ' var in ' + page_data['url']['href'] )
                 
@@ -175,6 +184,15 @@ class Module
             form['auditable'].each_with_index {
                 |input, i|
 
+                # catch global interrupts and exit...
+                if $_interrupted == true
+                    print_line
+                    print_info( 'Site audit was interrupted, exiting...' )
+                    print_line
+                    print_results( )
+                    exit 0
+                end
+                
                 input['value'] = injection_str
 
                 if !input['name']
@@ -232,6 +250,15 @@ class Module
         get_cookies.each {
             |cookie|
 
+            # catch global interrupts and exit...
+            if $_interrupted == true
+                print_line
+                print_info( 'Site audit was interrupted, exiting...' )
+                print_line
+                print_results( )
+                exit 0
+            end
+            
             cookie['value'] = injection_str
 
             print_status( self.class.info['Name']  + ' is auditing: ' +
