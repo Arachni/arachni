@@ -50,7 +50,6 @@ class XSS < Arachni::Module
              "<\0SCrIPT>alert(\"RANDOMIZE\")</SCrIPT>",
              "<SCR\0IPt>alert(\"RANDOMIZE\")</Sc\0RIPt>",
              "<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>",
-             "</A/style=\"xss:exp/**/ression(alert('XSS'))\">",
              "jAvasCript:alert(\"RANDOMIZE\");",
              "javas\tcript:alert(\"RANDOMIZE\");",
              "javas&#x09;cript:alert(\"RANDOMIZE\");",
