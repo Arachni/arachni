@@ -131,3 +131,20 @@ opts.each do |opt, arg|
 end
 
 $runtime_args[:url] = ARGV.shift
+
+#
+# If proxy type is socks include socksify
+# and let it proxy all tcp connections for us.
+#
+# Then nil out the proxy opts or else they're going to be
+# passed as an http proxy to Anemone::HTTP.refresh_connection()
+#
+if $runtime_args[:proxy_type] == 'socks'
+    require 'socksify'
+
+    TCPSocket.socks_server = $runtime_args[:proxy_addr]
+    TCPSocket.socks_port = $runtime_args[:proxy_port]
+
+    $runtime_args[:proxy_addr] = nil
+    $runtime_args[:proxy_port] = nil
+end
