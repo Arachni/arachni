@@ -127,11 +127,24 @@ class Analyzer
             return {}
         end
 
-        forms.each_with_index {
-            |form, i|
+        i = 0
+        forms.each {
+            |form|
             form = form[0]
 
             elements[i] = Hash.new
+            elements[i]['attrs']    = get_form_attrs( form )
+            elements[i]['attrs']['action'] =
+                    to_absolute( elements[i]['attrs']['action'] )
+            
+            if !elements[i]['attrs']['action']
+                elements[i]['attrs']['action'] = @opts[:url].to_s
+            end
+                        
+            if !in_domain?( URI.parse( elements[i]['attrs']['action'] ) )
+                next
+            end
+            
             elements[i]['textarea'] = get_form_textareas( form )
             elements[i]['select']   = get_form_selects( form )
             elements[i]['input']    = get_form_inputs( form )
@@ -143,8 +156,8 @@ class Analyzer
             elements[i]['auditable'] =
                 merge_select_with_input( elements[i]['auditable'],
                     elements[i]['select'] )
-
-            elements[i]['attrs']    = get_form_attrs( form )
+            
+            i += 1 
         }
 
         elements
@@ -182,7 +195,8 @@ class Analyzer
             link['href'] = to_absolute( link['href'] )
 
             if !link['href'] then next end
-
+            if !in_domain?( URI.parse( link['href'] ) ) then next end
+                
             links[i] = link
             links[i]['vars'] = get_link_vars( link['href'] )
         }
@@ -408,5 +422,33 @@ class Analyzer
         return absolute.to_s
     end
 
+    #
+    # Returns +true+ if *uri* is in the same domain as the page, returns
+    # +false+ otherwise
+    #
+    def in_domain?( uri )
+        if @opts[:follow_subdomains]
+            return extract_domain( uri ) ==  extract_domain( @opts[:url] )
+        end
+    
+        uri.host == URI.parse( @url ).host
+    end
+    
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+    
+        splits = url.host.split( /\./ )
+
+        if splits.length == 1 then return true end
+
+        splits[-2] + "." + splits[-1]
+    end
+    
 end
 end
