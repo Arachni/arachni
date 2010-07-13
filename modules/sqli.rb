@@ -109,7 +109,8 @@ class SQLInjection < Arachni::Module
         @__injection_strs = [
             '\'',
             '--',
-            ';'
+            ';',
+            '`'
         ]
         
     end
