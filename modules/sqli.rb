@@ -159,8 +159,8 @@ class SQLInjection < Arachni::Module
         for id in @__id.each_line
             id = id.strip
             
-            if ( res.body.scan( id )[0] )
-            
+            if ( res.body.scan( id )[0] && res.body.scan( id )[0].size > 0 )
+                
                 @results[where] << { var => page_data['url']['href'] }
                                 
                 print_ok( "SQL injection found in: #{where} var #{var}" +
