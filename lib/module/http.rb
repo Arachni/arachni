@@ -21,6 +21,8 @@ module Arachni
 #
 class HTTP
 
+    include Arachni::UI::Output
+    
     #
     # The url of the session
     #
@@ -50,16 +52,9 @@ class HTTP
 
         @opts = @opts.merge( opts)
 
-        @session = Net::HTTP.new( @url.host, @url.port,
-        @opts[:proxy_addr], @opts[:proxy_port],
-        @opts[:proxy_user], @opts[:proxy_pass] )
-
-        if @url.scheme == 'https'
-            @session.use_ssl = true
-            @session.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-
-        @session = @session.start
+        # create a new HTTP session
+        refresh( )
+        
         # TODO: remove global vars
         @init_headers = { 'user-agent' => $runtime_args[:user_agent]}
 #        @init_headers = {}
@@ -75,7 +70,33 @@ class HTTP
     #
     def get( url, url_vars )
         url = parse_url( url )
-        @session.get( url.path +  a_to_s( url_vars ), @init_headers )
+        
+        begin
+            @session.get( url.path +  a_to_s( url_vars ), @init_headers )
+
+        # broken pipe probably
+        rescue Errno::EPIPE => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            
+            # try one more time
+            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+        
+        # some other exception
+        # just print what went wrong with some debugging info and move on
+        rescue Exception => e
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_debug( 'Exception: ' +  e.inspect )
+            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
+            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
+            print_debug( 'HTTP session:' )
+            print_debug_pp( @session )
+            print_error( 'Proceeding anyway... ' )
+        end
     end
 
     #
@@ -92,8 +113,34 @@ class HTTP
 
         req = Net::HTTP::Post.new( url, @init_headers )
         req.set_form_data( form_vars )
-        res = @session.request( req )
-        res
+
+        begin
+            res = @session.request( req )
+            return res
+            
+        # broken pipe probably
+        rescue Errno::EPIPE => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+
+            # try one more time
+            res = @session.request( req )
+
+        # some other exception
+        # just print what went wrong with some debugging and then move on
+        rescue Exception => e
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_debug( 'Exception: ' +  e.inspect )
+            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
+            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
+            print_debug( 'HTTP session:' )
+            print_debug_pp( @session )
+            print_error( 'Proceeding anyway... ' )
+        end
     end
 
     #
@@ -115,7 +162,33 @@ class HTTP
             @init_headers['cookie'] +=  "#{name}=#{value}; "
         }
 
-        @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+        begin
+            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+            
+        # broken pipe probably
+        rescue Errno::EPIPE => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            
+            # try one more time
+            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+            
+        # some other exception
+        # just print what went wrong with some debugging and then move on
+        rescue Exception => e
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_debug( 'Exception: ' +  e.inspect )
+            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
+            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
+            print_debug( 'HTTP session:' )
+            print_debug_pp( @session )
+            print_error( 'Proceeding anyway... ' )
+        end
+
     end
 
     #
@@ -146,6 +219,22 @@ class HTTP
             str += pair[0] +  '=' + pair[1] + '&'
         }
         str
+    end
+    
+    # Creates a new HTTP session
+    def refresh( )
+        
+        @session = Net::HTTP.new( @url.host, @url.port,
+        @opts[:proxy_addr], @opts[:proxy_port],
+        @opts[:proxy_user], @opts[:proxy_pass] )
+
+        if @url.scheme == 'https'
+            @session.use_ssl = true
+            @session.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+
+        @session = @session.start
+
     end
 
 end
