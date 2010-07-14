@@ -46,7 +46,12 @@ module Output
         if !@@debug then return end
         print_color( '[!]', 36, str )
     end
-    
+
+    def print_debug_pp( obj = nil )
+        if !@@debug then return end
+        pp obj
+    end
+        
     def print_verbose( str = '' )
         if @@only_positives then return end
         if !@@verbose then return end
