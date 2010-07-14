@@ -43,7 +43,6 @@ module Output
     end
     
     def print_debug( str = '' )
-        if @@only_positives then return end
         if !@@debug then return end
         print_color( '[!]', 36, str )
     end
