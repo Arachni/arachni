@@ -117,6 +117,8 @@ class Module
     def audit_links( injection_str, id_regex = nil, id = nil, &block )
 
         results = []
+            
+        # iterate through all url vars and audit each one
         page_data['url']['vars'].keys.each {
             |var|
 
@@ -129,26 +131,28 @@ class Module
                 exit 0
             end
             
+            # tell the user what we're doing
             print_status( self.class.info['Name']  + ' is auditing: ' +
                 var + ' var in ' + page_data['url']['href'] )
-                
+            
+            # audit the url vars
             res = @http.get( page_data['url']['href'],
                 { var => injection_str } )
 
+            # something might have gone bad,
+            # make it doesn't ruin the rest of the show...
+            if !res || !res.body then next end
+            
+            # call the passed block
             if block_given?
                 block.call( var, res )
                 return
             end
-                                    
-            if ( id && res.body.scan( id_regex )[0] == id ) ||
-               ( !id && res.body.scan( id_regex )[0].size > 0 )
-
-                results << { var => page_data['url']['href'] }
-
-                print_ok( self.class.info['Name'] + " in: var #{var}" + '::' +
-                page_data['url']['href'] )
-
-            end
+            
+            # get matches
+            result = get_matches( 'links', var, res, id_regex, id )
+            # and append them to the results array
+            results << result if result
         }
 
         results
@@ -178,13 +182,15 @@ class Module
     def audit_forms( injection_str, id_regex = nil, id = nil, &block )
         
         results = []
-        if !get_forms then return results end
-            
+        
+        # iterate through each form
         get_forms.each {
             |form|
             
+            # if we don't have any auditable elements just return
             if !form['auditable'] then return results end
-                
+            
+            # iterate through each auditable element
             form['auditable'].each_with_index {
                 |input, i|
 
@@ -197,6 +203,7 @@ class Module
                     exit 0
                 end
                 
+                # inject our own value
                 input['value'] = injection_str
 
                 if !input['name']
@@ -204,25 +211,29 @@ class Module
                     next
                 end
 
-                print_status( self.class.info['Name']  + ' is auditing: ' + input['name'] + ' input for ' +
+                # inform the user what we're auditing
+                print_status( self.class.info['Name']  + ' is auditing: ' +
+                    input['name'] + ' input for ' +
                     form['attrs']['action'] )
 
+                # post the form
                 res = @http.post( form['attrs']['action'],
                     { input['name'] => injection_str } )
 
+                # make sure that we have a response before continuing
+                if !res || !res.body then next end
+                
+                # call the block, if there's one
                 if block_given?
                     block.call( input['name'], res )
                     return
                 end
-                                
-                if ( id && res.body.scan( id_regex )[0] == id ) ||
-                   ( !id && res.body.scan( id_regex )[0].size > 0 )
 
-                    results << { input['name'] => page_data['url']['href'] }
-
-                    print_ok( self.class.info['Name'] + " in: form input: " +
-                    input['name'] + ':: action: ' + form['attrs']['action'] )
-                end
+                # get matches
+                result = get_matches( 'forms', input['name'],
+                                res, id_regex, id )
+                # and append them
+                results << result if result
             }
         }
         results
@@ -250,7 +261,10 @@ class Module
     #                                                has been given
     #
     def audit_cookies( injection_str, id_regex = nil, id = nil, &block )
+        
         results = []
+        
+        # iterate through each cookie    
         get_cookies.each {
             |cookie|
 
@@ -263,27 +277,30 @@ class Module
                 exit 0
             end
             
+            # inject our own value
             cookie['value'] = injection_str
 
+            # tell the user what we're auditing
             print_status( self.class.info['Name']  + ' is auditing: ' +
                 cookie['name'] + ' cookie in ' +
                 page_data['url']['href'] )
 
+            # make a get request with our cookies
             res = @http.cookie( page_data['url']['href'], [cookie], nil )
 
+            # check for a response
+            if !res || !res.body then next end
+            
             if block_given?
                 block.call( cookie['name'], res )
                 return
             end
             
-            if ( id && res.body.scan( id_regex )[0] == id ) ||
-               ( !id && res.body.scan( id_regex )[0].size > 0 )
-
-                results << { cookie['name'] => page_data['url']['href'] }
-
-                print_ok( self.class.info['Name'] + " in: cookie #{cookie['name']}" +
-                '::' + page_data['url']['href'] )
-            end
+            # get possible matches
+            result = get_matches( 'cookies', cookie['name'],
+                        res, id_regex, id )
+            # and append them
+            results << result if result
         }
 
         results
@@ -314,6 +331,21 @@ class Module
     #
     def get_cookies
         @structure['cookies']
+    end
+    
+    private
+
+    def get_matches( where, var, res, id_regex, id )
+        
+        # fairly obscure condition...pardon me...
+        if ( id && res.body.scan( id_regex )[0] == id ) ||
+           ( !id && res.body.scan( id_regex )[0].size > 0 )
+        
+            print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
+            '::' + page_data['url']['href'] )
+                
+            return { var => page_data['url']['href'] }
+        end
     end
 
 end
