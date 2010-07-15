@@ -117,7 +117,7 @@ class Spider
 
                 url = page.url.to_s
                 if url =~ @opts[:exclude]
-                    print_verbose( '[Skipping: Matched exclude rule] ' + url )
+                    print_info( '[Skipping: Matched exclude rule] ' + url )
                     next
                 end
 
