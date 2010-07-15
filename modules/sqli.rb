@@ -147,6 +147,10 @@ class SQLInjection < Arachni::Module
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
+                'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
+                'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
+                'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
+                'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
             'Targets'        => { 'Generic' => 'all' }
         }

@@ -169,7 +169,8 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
-                
+                'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
+                'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
             'Targets'        => { 'PHP' => 'all' }
         }

@@ -27,14 +27,18 @@ module Modules
 #
 class ResponseSplitting < Arachni::Module
 
+    # register us with the system
     include Arachni::ModuleRegistrar
+    # get output interface
     include Arachni::UI::Output
 
     def initialize( page_data, structure )
         super( page_data, structure )
 
+        # initialize the header
         @__header = ''
         
+        # initialize the hash that's hold the results
         @results = Hash.new
         @results['links'] = []
         @results['forms'] = []
@@ -46,7 +50,7 @@ class ResponseSplitting < Arachni::Module
         
         # the header to inject...
         # what we will check for in the response header
-        # is the "x-crlf-safe" field.
+        # is the existence of the "x-crlf-safe" field.
         # if we find it it means that the site is vulnerable
         @__header = "\r\nContent-Type: text/html\r\nHTTP/1.1" +
             " 200 OK\r\nContent-Type: text/html\r\nX-CRLF-Safe: No\r\n\r\n"
@@ -54,23 +58,31 @@ class ResponseSplitting < Arachni::Module
     
     def run( )
         
+        # URL encode the header to be injected
         enc_header = URI.encode( @__header )
-            
+        
+        # try to inject the header via the forms of the page
+        # and pass a block that will check for a positive result
         audit_forms( enc_header ) {
             |var, res|
             __log_results( 'forms', var, res )
         }
-                
+        
+        # try to inject the header via the link variables
+        # and pass a block that will check for a positive result        
         audit_links( enc_header ) {
             |var, res|
             __log_results( 'links', var, res )
         }
-                
+        
+        # try to inject the header via cookies
+        # and pass a block that will check for a positive result
         audit_cookies( enc_header ) {
             |var, res|
             __log_results( 'cookies', var, res )
         }
         
+        #register our results with the system
         register_results( { 'ResponseSplitting' => @results } )
     end
 
