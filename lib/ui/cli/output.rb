@@ -66,12 +66,24 @@ module Output
         @@verbose = true
     end
     
+    def verbose?
+        @@verbose
+    end
+    
     def debug!
         @@debug = true
     end
 
+    def debug?
+        @@debug
+    end
+        
     def only_positives!
         @@only_positives = true
+    end
+    
+    def only_positives?
+        @@only_positives
     end
 end
 
