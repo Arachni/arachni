@@ -127,13 +127,14 @@ class Module
                 print_line
                 print_info( 'Site audit was interrupted, exiting...' )
                 print_line
-                print_results( )
+#                print_results( )
                 exit 0
             end
             
             # tell the user what we're doing
-            print_status( self.class.info['Name']  + ' is auditing: ' +
-                var + ' var in ' + page_data['url']['href'] )
+            print_status( self.class.info['Name']  + 
+                " is auditing:\tlink var '" +
+                var + "' of " + page_data['url']['href'] )
             
             # audit the url vars
             res = @http.get( page_data['url']['href'],
@@ -150,7 +151,8 @@ class Module
             end
             
             # get matches
-            result = get_matches( 'links', var, res, id_regex, id )
+            result = get_matches( 'links', var, res, injection_str,
+                                   id_regex, id )
             # and append them to the results array
             results << result if result
         }
@@ -199,7 +201,7 @@ class Module
                     print_line
                     print_info( 'Site audit was interrupted, exiting...' )
                     print_line
-                    print_results( )
+#                    print_results( )
                     exit 0
                 end
                 
@@ -211,9 +213,11 @@ class Module
                     next
                 end
 
+#                ap form['attrs']
                 # inform the user what we're auditing
-                print_status( self.class.info['Name']  + ' is auditing: ' +
-                    input['name'] + ' input for ' +
+                print_status( self.class.info['Name']  + 
+                    " is auditing:\tform input '" +
+                    input['name'] + "' with action " +
                     form['attrs']['action'] )
 
                 # post the form
@@ -231,7 +235,7 @@ class Module
 
                 # get matches
                 result = get_matches( 'forms', input['name'],
-                                res, id_regex, id )
+                                res, injection_str, id_regex, id )
                 # and append them
                 results << result if result
             }
@@ -273,7 +277,7 @@ class Module
                 print_line
                 print_info( 'Site audit was interrupted, exiting...' )
                 print_line
-                print_results( )
+#                print_results( )
                 exit 0
             end
             
@@ -281,8 +285,9 @@ class Module
             cookie['value'] = injection_str
 
             # tell the user what we're auditing
-            print_status( self.class.info['Name']  + ' is auditing: ' +
-                cookie['name'] + ' cookie in ' +
+            print_status( self.class.info['Name']  + 
+                " is auditing:\tcookie '" +
+                cookie['name'] + "' of " +
                 page_data['url']['href'] )
 
             # make a get request with our cookies
@@ -298,7 +303,7 @@ class Module
             
             # get possible matches
             result = get_matches( 'cookies', cookie['name'],
-                        res, id_regex, id )
+                        res, injection_str, id_regex, id )
             # and append them
             results << result if result
         }
@@ -335,7 +340,7 @@ class Module
     
     private
 
-    def get_matches( where, var, res, id_regex, id )
+    def get_matches( where, var, res, injection_str, id_regex, id )
         
         # fairly obscure condition...pardon me...
         if ( id && res.body.scan( id_regex )[0] == id ) ||
@@ -343,8 +348,21 @@ class Module
         
             print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
             '::' + page_data['url']['href'] )
-                
-            return { var => page_data['url']['href'] }
+            
+            print_verbose( "Injectied str:\t" + injection_str )    
+            print_verbose( "ID str:\t\t" + id )
+            print_verbose( "Matched regex:\t" + id_regex.to_s )
+
+    
+            return {
+                'var'   => var,
+                'url'   => page_data['url']['href'],
+                'audit' => {
+                    'inj'     => injection_str,
+                    'id'      => id,
+                    'regex'   => id_regex.to_s
+                }
+            }
         end
     end
 
