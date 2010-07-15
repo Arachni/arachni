@@ -193,7 +193,7 @@ class Analyzer
             |link, i|
 
             link['href'] = to_absolute( link['href'] )
-
+            
             if !link['href'] then next end
             if !in_domain?( URI.parse( link['href'] ) ) then next end
                 
@@ -443,6 +443,8 @@ class Analyzer
     #
     def extract_domain( url )
     
+        if !url.host then return false end
+            
         splits = url.host.split( /\./ )
 
         if splits.length == 1 then return true end

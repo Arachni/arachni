@@ -38,6 +38,8 @@ class Anemone::Page
     #
     def extract_domain( url )
 
+        if !url.host then return false end
+            
         splits = url.host.split( /\./ )
 
         if splits.length == 1 then return true end
