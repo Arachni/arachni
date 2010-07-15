@@ -24,14 +24,19 @@ module Modules
 #
 class SQLInjection < Arachni::Module
 
+    # register us with the system
     include Arachni::ModuleRegistrar
+    # get output module
     include Arachni::UI::Output
 
     def initialize( page_data, structure )
         super( page_data, structure )
 
-        @__id = @__injection_strs = []
+        # initialize variables 
+        @__id = []
+        @__injection_strs = []
         
+        # initialize the results hash
         @results = Hash.new
         @results['links'] = []
         @results['forms'] = []
@@ -39,6 +44,8 @@ class SQLInjection < Arachni::Module
     end
 
     def prepare( )
+        
+        # prepare the regular expressions that will id SQL error messages
         @__id  = %q{
         System.Data.OleDb.OleDbException
         \[SQL Server\]
@@ -106,6 +113,8 @@ class SQLInjection < Arachni::Module
         SqlServer
         }
         
+        # prepare the strings that will hopefully cause the webapp
+        # to output SQL error messages
         @__injection_strs = [
             '\'',
             '--',
@@ -117,25 +126,33 @@ class SQLInjection < Arachni::Module
     
     def run( )
         
+        # iterate through the regular expression strings
         @__injection_strs.each {
             |str|
             
+            # send the bad characters in @__injection_strs via the page forms
+            # and pass a block that will check for a positive result
             audit_forms( str ) {
                 |var, res|
                 __log_results( 'forms', var, res, str )
             }
-                    
+            
+            # send the bad characters in @__injection_strs via link vars
+            # and pass a block that will check for a positive result        
             audit_links( str ) {
                 |var, res|
                 __log_results( 'links', var, res, str )
             }
                     
+            # send the bad characters in @__injection_strs via cookies
+            # and pass a block that will check for a positive result
             audit_cookies( str ) {
                 |var, res|
                 __log_results( 'cookies', var, res, str )
             }
         }
         
+        # register our results with the framework
         register_results( { 'SQLInjection' => @results } )
     end
 
@@ -160,15 +177,25 @@ class SQLInjection < Arachni::Module
     
     def __log_results( where, var, res, injection_str )
         
+        # iterate through the regular expressions in @__id
+        # and try to match them with the body of the HTTP response
         for id in @__id.each_line
+            
+            # strip whitespace from the regexp
             id = id.strip
+            
+            # just to make sure...
             if id.size == 0 then next end
             
+            # create a regular expression from the regexp strings
             id_regex = Regexp.new( id )
             
+            # try to match them with the body of the HTTP response,
+            # if it matches we have a positive result
             if ( res.body.scan( id_regex )[0] &&
                  res.body.scan( id_regex )[0].size > 0 )
                 
+                # append the result to the results hash
                 @results[where] << {
                     'var'   => var,
                     'url'   => page_data['url']['href'],
@@ -179,10 +206,12 @@ class SQLInjection < Arachni::Module
                     }
                 }
         
+                # inform the user that we have a match
                 print_ok( self.class.info['Name'] +
                     " in: #{where} var #{var}" +
                     '::' + page_data['url']['href'] )
-                                
+                
+                # give the user some more info if he wants 
                 print_verbose( "Injected str:\t" + injection_str )    
                 print_verbose( "ID str:\t\t" + id )
                 print_verbose( "Matched regex:\t" + id_regex.to_s )
