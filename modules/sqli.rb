@@ -122,17 +122,17 @@ class SQLInjection < Arachni::Module
             
             audit_forms( str ) {
                 |var, res|
-                __log_results( 'forms', var, res )
+                __log_results( 'forms', var, res, str )
             }
                     
             audit_links( str ) {
                 |var, res|
-                __log_results( 'links', var, res )
+                __log_results( 'links', var, res, str )
             }
                     
             audit_cookies( str ) {
                 |var, res|
-                __log_results( 'cookies', var, res )
+                __log_results( 'cookies', var, res, str )
             }
         }
         
@@ -154,20 +154,36 @@ class SQLInjection < Arachni::Module
     
     private
     
-    def __log_results( where, var, res )
+    def __log_results( where, var, res, injection_str )
         
         for id in @__id.each_line
             id = id.strip
             if id.size == 0 then next end
             
-            id = Regexp.new( id )
+            id_regex = Regexp.new( id )
             
-            if ( res.body.scan( id )[0] && res.body.scan( id )[0].size > 0 )
+            if ( res.body.scan( id_regex )[0] &&
+                 res.body.scan( id_regex )[0].size > 0 )
                 
-                @results[where] << { var => page_data['url']['href'] }
+                @results[where] << {
+                    'var'   => var,
+                    'url'   => page_data['url']['href'],
+                    'audit' => {
+                        'inj'     => injection_str,
+                        'id'      => id,
+                        'regex'   => id_regex.to_s
+                    }
+                }
+        
+                print_ok( self.class.info['Name'] +
+                    " in: #{where} var #{var}" +
+                    '::' + page_data['url']['href'] )
                                 
-                print_ok( "SQL injection found in: #{where} var #{var}" +
-                            '::' + page_data['url']['href'] )
+                print_verbose( "Injectied str:\t" + injection_str )    
+                print_verbose( "ID str:\t\t" + id )
+                print_verbose( "Matched regex:\t" + id_regex.to_s )
+                print_verbose( '---------' ) if only_positives?
+
             end
             
         end
