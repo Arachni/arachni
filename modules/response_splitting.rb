@@ -97,9 +97,16 @@ class ResponseSplitting < Arachni::Module
     def __log_results( where, var, res )
         if res.get_fields( 'x-crlf-safe' )
         
-            @results[where] << { var => page_data['url']['href'] }
-                            
-            print_ok( "Response splitting found in: #{where} var #{var}" +
+            @results[where] << {
+                'var'   => var,
+                'url'   => page_data['url']['href'],
+                'audit' => {
+                    'inj'     => @__header,
+                    'id'      => 'x-crlf-safe'
+                }
+            }
+
+            print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
                         '::' + page_data['url']['href'] )
         end
     end
