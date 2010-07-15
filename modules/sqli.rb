@@ -183,7 +183,7 @@ class SQLInjection < Arachni::Module
                     " in: #{where} var #{var}" +
                     '::' + page_data['url']['href'] )
                                 
-                print_verbose( "Injectied str:\t" + injection_str )    
+                print_verbose( "Injected str:\t" + injection_str )    
                 print_verbose( "ID str:\t\t" + id )
                 print_verbose( "Matched regex:\t" + id_regex.to_s )
                 print_verbose( '---------' ) if only_positives?
