@@ -102,7 +102,7 @@ class Analyzer
         end
 
         msg += "]\n\n"
-        print_verbose( msg )
+        print_verbose( msg ) if !only_positives?
 
         return @structure
     end
