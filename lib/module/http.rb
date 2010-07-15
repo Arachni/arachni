@@ -74,6 +74,8 @@ class HTTP
         begin
             @session.get( url.path +  a_to_s( url_vars ), @init_headers )
 
+        # catch the time-out and refresh
+        rescue Timeout::Error => e
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -82,9 +84,8 @@ class HTTP
             
             # refresh the connection
             refresh( )
-            
             # try one more time
-            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+            retry
         
         # some other exception
         # just print what went wrong with some debugging info and move on
@@ -118,6 +119,8 @@ class HTTP
             res = @session.request( req )
             return res
             
+        # catch the time-out and refresh
+        rescue Timeout::Error => e
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -126,9 +129,8 @@ class HTTP
             
             # refresh the connection
             refresh( )
-
             # try one more time
-            res = @session.request( req )
+            retry
 
         # some other exception
         # just print what went wrong with some debugging and then move on
@@ -164,7 +166,9 @@ class HTTP
 
         begin
             @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
-            
+        
+        # catch the time-out and refresh
+        rescue Timeout::Error => e
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -173,9 +177,8 @@ class HTTP
             
             # refresh the connection
             refresh( )
-            
             # try one more time
-            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
+            retry
             
         # some other exception
         # just print what went wrong with some debugging and then move on
@@ -224,16 +227,16 @@ class HTTP
     # Creates a new HTTP session
     def refresh( )
         
-        @session = Net::HTTP.new( @url.host, @url.port,
+        session = Net::HTTP.new( @url.host, @url.port,
         @opts[:proxy_addr], @opts[:proxy_port],
         @opts[:proxy_user], @opts[:proxy_pass] )
 
         if @url.scheme == 'https'
-            @session.use_ssl = true
-            @session.verify_mode = OpenSSL::SSL::VERIFY_NONE
+            session.use_ssl = true
+            session.verify_mode = OpenSSL::SSL::VERIFY_NONE
         end
 
-        @session = @session.start
+        @session = session.start
 
     end
 
