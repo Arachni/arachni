@@ -53,7 +53,6 @@ module Output
     end
         
     def print_verbose( str = '' )
-        if @@only_positives then return end
         if !@@verbose then return end
         print_color( '[v]', 37, str )
     end
