@@ -289,7 +289,7 @@ class CLI
 
             @modreg.mod_load( mod_name )
 
-            print_line( "#{mod_name}:" )
+            print_status( "#{mod_name}:" )
             print_line( "--------------------" )
 
             info = @modreg.mod_info( i )
