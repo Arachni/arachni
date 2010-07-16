@@ -111,6 +111,12 @@ class Analyzer
     #
     # Extracts forms from HTML document
     #
+    # @see #get_form_attrs
+    # @see #get_form_textareas
+    # @see #get_form_selects
+    # @see #get_form_inputs
+    # @see #merge_select_with_input
+    #
     # @param  [String] html
     #
     # @return [Array<Hash <String, String> >] array of forms
@@ -163,25 +169,10 @@ class Analyzer
         elements
     end
 
-    def merge_select_with_input( inputs, selects )
-
-        new_arr = []
-        inputs.each {
-            |input|
-            new_arr << input
-        }
-
-        i = new_arr.size
-        selects.each {
-            |select|
-            new_arr << select['attrs']
-        }
-
-        new_arr
-    end
-
     #
     # Extracts links from HTML document
+    #
+    # @see #get_link_vars
     #
     # @param  [String] html
     #
@@ -230,6 +221,45 @@ class Analyzer
         return cookies_arr
     end
 
+    private
+
+    #
+    # Merges an array of form inputs with an array of form selects
+    #
+    # @see #get_forms
+    #
+    # @param    [Array]  form inputs
+    # @param    [Array]  form selects
+    #
+    # @return   [Array]  merged array
+    #
+    def merge_select_with_input( inputs, selects )
+    
+        new_arr = []
+        inputs.each {
+            |input|
+            new_arr << input
+        }
+    
+        i = new_arr.size
+        selects.each {
+            |select|
+            new_arr << select['attrs']
+        }
+    
+        new_arr
+    end
+
+
+    #
+    # Extracts variables and their values from a link
+    #
+    # @see #get_links
+    #
+    # @param [String]    link
+    #
+    # @return [Hash]    name=>value pairs
+    #  
     def get_link_vars( link )
         if !link then return {} end
 
@@ -247,10 +277,11 @@ class Analyzer
 
     end
 
-    private
-
     #
     # Parses the attributes inside the <form ....> tag
+    #
+    # @see #get_forms
+    # @see #get_attrs_from_tag
     #
     # @param  [String] form   HTML code for the form tag
     #
@@ -261,6 +292,17 @@ class Analyzer
         get_attrs_from_tag( 'form', '<form ' + form_attr_html[0][0] + '>' )[0]
     end
 
+
+    #
+    # Extracts HTML select elements, their attributes and their options
+    #
+    # @see #get_forms
+    # @see #get_form_selects_options
+    #
+    # @param    [String]    HTML
+    #
+    # @return    [Array]    array of select elements
+    #    
     def get_form_selects( html )
         selects = html.scan( /<select(.*?)>/ixm )
 
@@ -279,6 +321,17 @@ class Analyzer
         elements
     end
 
+    #
+    # Extracts HTML option elements and their attributes
+    # from select elements
+    #
+    # @see #get_forms
+    # @see #get_form_selects
+    #
+    # @param    [String]    HTML selects
+    #
+    # @return    [Array]    array of option elements
+    #    
     def get_form_selects_options( html )
         options = html.scan( /<option(.*?)>/ixm )
 
@@ -294,6 +347,16 @@ class Analyzer
         elements
     end
 
+    #
+    # Extracts HTML textarea elements and their attributes
+    # from forms
+    #
+    # @see #get_forms
+    #
+    # @param    [String]    HTML
+    #
+    # @return    [Array]    array of textarea elements
+    #    
     def get_form_textareas( html )
         inputs = html.scan( /<textarea(.*?)>/ixm )
 
@@ -309,6 +372,9 @@ class Analyzer
 
     #
     # Parses the attributes of input fields
+    #
+    # @see #get_forms
+    #
     # @param  [String] html   HTML code for the form tag
     #
     # @return [Hash<Hash<String, String>>]
