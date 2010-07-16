@@ -166,6 +166,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         {
             'Name'           => 'SimpleRFI',
             'Description'    => %q{Simple Remote File Inclusion recon module},
+            'Methods'        => ['get', 'post', 'cookie'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

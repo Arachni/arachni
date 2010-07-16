@@ -80,6 +80,7 @@ class XSS < Arachni::Module
         {
             'Name'           => 'XSS',
             'Description'    => %q{Cross-Site Scripting recon module},
+            'Methods'        => ['get', 'post', 'cookie'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

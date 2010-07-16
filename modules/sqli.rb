@@ -161,6 +161,7 @@ class SQLInjection < Arachni::Module
         {
             'Name'           => 'SQLInjection',
             'Description'    => %q{SQL injection recon module},
+            'Methods'        => ['get', 'post', 'cookie'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

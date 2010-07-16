@@ -298,6 +298,8 @@ class CLI
             
             print_line( "Name:\t\t"       + info["Name"].strip )
             print_line( "Description:\t"  + info["Description"].strip )
+            print_line( "HTTP Methods:\t" +
+                info["Methods"].join( ', ' ).downcase )
             print_line( "Author:\t\t"     + info["Author"].strip )
             print_line( "Version:\t"      + info["Version"].strip )
                 
