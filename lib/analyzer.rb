@@ -221,6 +221,32 @@ class Analyzer
         return cookies_arr
     end
 
+    #
+    # Extracts variables and their values from a link
+    #
+    # @see #get_links
+    #
+    # @param [String]    link
+    #
+    # @return [Hash]    name=>value pairs
+    #  
+    def get_link_vars( link )
+        if !link then return {} end
+    
+        var_string = link.split( /\?/ )[1]
+        if !var_string then return {} end
+    
+        var_hash = Hash.new
+        var_string.split( /&/ ).each {
+            |pair|
+            name, value = pair.split( /=/ )
+            var_hash[name] = value
+        }
+    
+        var_hash
+    
+    end
+    
     private
 
     #
@@ -250,32 +276,6 @@ class Analyzer
         new_arr
     end
 
-
-    #
-    # Extracts variables and their values from a link
-    #
-    # @see #get_links
-    #
-    # @param [String]    link
-    #
-    # @return [Hash]    name=>value pairs
-    #  
-    def get_link_vars( link )
-        if !link then return {} end
-
-        var_string = link.split( /\?/ )[1]
-        if !var_string then return {} end
-
-        var_hash = Hash.new
-        var_string.split( /&/ ).each {
-            |pair|
-            name, value = pair.split( /=/ )
-            var_hash[name] = value
-        }
-
-        var_hash
-
-    end
 
     #
     # Parses the attributes inside the <form ....> tag
