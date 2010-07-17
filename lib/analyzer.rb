@@ -63,6 +63,9 @@ class Analyzer
         @url = ''
         @opts = opts
         @structure = Hash.new
+        @structure['forms']   = []
+        @structure['links']   = []
+        @structure['cookies'] = []
     end
 
     #
@@ -214,7 +217,7 @@ class Analyzer
                 value = cookie.instance_variable_get( var ).to_s
                 value.strip!
                 cookies_arr[i][var.to_s.gsub( /@/, '' )] =
-                value.gsub( /[\"\\\[\]]/, '' )
+                    value.gsub( /[\"\\\[\]]/, '' )
             }
         }
 
