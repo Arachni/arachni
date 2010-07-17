@@ -264,9 +264,10 @@ class HTTP
     # Creates a new HTTP session
     def refresh( )
         
+        # TODO: remove global vars
         session = Net::HTTP.new( @url.host, @url.port,
-        @opts[:proxy_addr], @opts[:proxy_port],
-        @opts[:proxy_user], @opts[:proxy_pass] )
+        $runtime_args[:proxy_addr], $runtime_args[:proxy_port],
+        $runtime_args[:proxy_user], $runtime_args[:proxy_pass] )
 
         if @url.scheme == 'https'
             session.use_ssl = true
