@@ -91,7 +91,7 @@ class Eval < Arachni::Module
         }
         
         # register our results with the system
-        register_results( { 'Eval' => @results } )
+        register_results( { self.class => @results } )
     end
 
     

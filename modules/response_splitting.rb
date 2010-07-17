@@ -83,7 +83,7 @@ class ResponseSplitting < Arachni::Module
         }
         
         #register our results with the system
-        register_results( { 'ResponseSplitting' => @results } )
+        register_results( { self.class => @results } )
     end
 
     

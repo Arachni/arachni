@@ -153,7 +153,7 @@ class SQLInjection < Arachni::Module
         }
         
         # register our results with the framework
-        register_results( { 'SQLInjection' => @results } )
+        register_results( { self.class => @results } )
     end
 
     

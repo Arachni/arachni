@@ -153,7 +153,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # Doesn't *have* to be in clean_up().
         #
-        register_results( { 'SimpleRFI' => @results } )
+        register_results( { self.class => @results } )
     end
 
     #

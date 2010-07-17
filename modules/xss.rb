@@ -72,7 +72,7 @@ class XSS < Arachni::Module
             @results['cookies'] |= audit_cookies( enc_str, Regexp.new( str ), str )
         }
         
-        register_results( { 'XSS' => @results } )
+        register_results( { self.class => @results } )
     end
 
     

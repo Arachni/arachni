@@ -48,7 +48,7 @@ class SimpleCmdExec < Arachni::Module
         @results['cookies'] =
             audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id )
         
-        register_results( { 'SimpleCmdExec' => @results } )
+        register_results( { self.class => @results } )
     end
 
     
