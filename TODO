@@ -6,7 +6,7 @@ The following tasks are the milestone for version v0.1
  General *****************************************
 
  - suspend/resume --------------------------
- - cookie jar ------------------------------
+ - cookie jar ------------------------------ [Done]
  - ssl support ----------------------------- [Done]
  - user agent spoofing --------------------- [Done]
  - proxy support ( SOCKS & HTTP(S)) -------- [Done]
