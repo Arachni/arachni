@@ -473,10 +473,13 @@ class CLI
     --only-positives            echo positive results *only*
   
     --threads=<number>          how many threads to instantiate (default: 3)
-                                More threads does not necessarily mean more speed,
-                                be careful when adjusting the thread count.
+                                  More threads does not necessarily mean more speed,
+                                  be careful when adjusting the thread count.
                                   
-    --cookie-jar=<cookiejar>    specify cookiejar
+    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
+                                  Cookies in this file will not be audited,
+                                  so remove any cookies that you do want to audit.
+                                
     
     --user-agent=<user agent>   specify user agent
     
@@ -537,7 +540,7 @@ class CLI
     --proxy-auth=<user:passwd>  specify proxy auth credentials
     
     --proxy-type=<type>         proxy type can be either socks or http
-                                (default: http)
+                                  (default: http)
     
   
 USAGE
