@@ -113,14 +113,12 @@ class Spider
 
         i = 1
         Anemone.crawl( @opts[:url], @opts ) do |anemone|
+            
+            anemone.skip_links_like( @opts[:exclude] ) if @opts[:exclude]
+               
             anemone.on_pages_like( @opts[:include] ) do |page|
 
                 url = page.url.to_s
-                if url =~ @opts[:exclude]
-                    print_info( '[Skipping: Matched exclude rule] ' + url )
-                    next
-                end
-
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
                     next
