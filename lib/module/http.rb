@@ -30,6 +30,8 @@ class HTTP
     #
     attr_reader :url
     
+    attr_reader :cookie_jar
+    
     #
     # The HTTP session
     #
@@ -55,8 +57,10 @@ class HTTP
         # create a new HTTP session
         refresh( )
         
+        @init_headers = Hash.new
         # TODO: remove global vars
-        @init_headers = { 'user-agent' => $runtime_args[:user_agent]}
+        @init_headers['user-agent'] = $runtime_args[:user_agent]
+        @init_headers['cookie'] = ''
 #        @init_headers = {}
     end
 
@@ -156,11 +160,15 @@ class HTTP
     #
     def cookie( url, cookie_vars, url_vars = nil)
 
-        @init_headers['cookie'] = ''
         cookie_vars.each {
             |a_cookie|
-            name =  a_cookie['name']
+
+            name  =  a_cookie['name']
             value =  a_cookie['value']
+            
+            # don't audit cookies in the cookie jar                
+            if( @cookie_jar && @cookie_jar[name] ) then next end
+            
             @init_headers['cookie'] +=  "#{name}=#{value}; "
         }
 
@@ -194,6 +202,35 @@ class HTTP
 
     end
 
+    def set_cookies( cookie_hash )
+        @cookie_jar = cookie_hash.each_pair {
+            |name, value|
+            @init_headers['cookie'] += "#{name}=#{value};" 
+        }
+    end
+        
+    def HTTP.parse_cookiejar( cookie_jar )
+        
+        cookies = Hash.new
+        
+        jar = File.open( cookie_jar, 'r' ) 
+        jar.each_line {
+            |line|
+            
+            # skip empty lines
+            if (line = line.strip).size == 0 then next end
+                
+            # skip comment lines
+            if line[0] == '#' then next end
+                
+            cookie_arr = line.split( "\t" )
+            
+            cookies[cookie_arr[-2]] = cookie_arr[-1]
+        }
+        
+        cookies
+    end
+    
     #
     # Encodes and parses a URL String
     #
