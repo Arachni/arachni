@@ -12,6 +12,7 @@
 require 'rubygems'
 require 'anemone'
 require 'nokogiri'
+require 'lib/anemone/core'
 require 'lib/anemone/http'
 require 'lib/anemone/page'
 require 'lib/net/http'
