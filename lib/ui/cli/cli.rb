@@ -35,7 +35,7 @@ class CLI
         @opts = Hash.new
         
         @opts = @opts.merge( opts )
-
+            
         banner
         
         @modreg = Arachni::ModuleRegistry.new( @opts['dir']['modules'] )
@@ -112,11 +112,12 @@ class CLI
             @analyzer.run( url, html, headers ).clone
 
             page_data = {
-                'url' => { 'href' => url,
-                'vars' => @analyzer.get_link_vars( url )
+                'url'        => { 'href' => url,
+                'vars'       => @analyzer.get_link_vars( url )
                 },
-                'html' => html,
-                'headers' => headers
+                'html'       => html,
+                'headers'    => headers,
+                'cookies' => @opts[:cookies]
             }
 
             if !@opts[:mods_run_last]
@@ -270,6 +271,9 @@ class CLI
                 when 'only_positives'
                     only_positives!
 
+                when 'cookie_jar'
+                    @opts[:cookies] = HTTP.parse_cookiejar( @opts[:cookie_jar] )
+
                 when 'lsmod'
                     lsmod
                     exit 0
@@ -410,6 +414,13 @@ class CLI
         if !@opts[:threads]
             print_info( 'No thread limit specified, defaulting to 3.' )
             @opts[:threads] = 3
+        end
+        
+        # make sure the provided cookie-jar file exists
+        if @opts[:cookie_jar] && !File.exist?( @opts[:cookie_jar] )
+            print_error( 'Error: Cookie-jar \'' + @opts[:cookie_jar] +
+                        '\' doesn\'t exist.' )
+            exit 0
         end
         
     end
