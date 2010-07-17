@@ -53,7 +53,11 @@ class Module
     #
     def initialize( page_data, structure )
         @http = Arachni::HTTP.new( page_data['url']['href'] )
-
+            
+        if( page_data['cookies'] )
+            @http.set_cookies( page_data['cookies'] )
+        end
+        
         @page_data = page_data
         @structure = structure
     end
@@ -330,14 +334,28 @@ class Module
     end
 
     #
-    # Returns cookies from @structure
+    # Returns cookies from @structure as a name=>value hash
+    #
+    # @return    [Hash]    the cookie attributes, values, etc
+    #
+    def get_cookies_simple
+        cookies = Hash.new( )
+        @structure['cookies'].each {
+            |cookie|
+            cookies[cookie['name']] = cookie['value']
+        }
+        cookies
+    end
+
+    #
+    # Returns extended cookie information from @structure
     #
     # @return    [Array]    the cookie attributes, values, etc
     #
     def get_cookies
         @structure['cookies']
     end
-    
+        
     private
 
     def get_matches( where, var, res, injection_str, id_regex, id )
