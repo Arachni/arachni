@@ -22,6 +22,7 @@ opts = GetoptLong.new(
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
+    [ '--delay',                   GetoptLong::REQUIRED_ARGUMENT ],
     [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--threads',           '-t', GetoptLong::REQUIRED_ARGUMENT ],

@@ -108,6 +108,10 @@ class CLI
         sitemap = @spider.run {
             | url, html, headers |
 
+#            if( @opts[:delay] )
+#                sleep( @opts[:delay] )
+#            end
+            
             structure = site_structure[url] =
             @analyzer.run( url, html, headers ).clone
 
@@ -277,6 +281,9 @@ class CLI
                 when 'lsmod'
                     lsmod
                     exit 0
+                    
+#                when 'delay'
+#                    @opts[:delay] = Float.new( @opts[:delay] ) 
 
             end
         end
@@ -467,7 +474,12 @@ class CLI
     --resume                    resume suspended session
     
     -v                          be verbose
-    
+
+USAGE
+#    --delay                     how long to wait between HTTP requests
+#                                  Time is set in seconds, you can use floating point.
+
+        print_line <<USAGE 
     --debug                     show debugging output
     
     --only-positives            echo positive results *only*
