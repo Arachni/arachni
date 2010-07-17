@@ -202,13 +202,29 @@ class HTTP
 
     end
 
+    #
+    # Sets cookies for the HTTP session
+    #
+    # @param    [Hash]    name=>value pair cookies
+    #
+    # @return    [void]
+    #
     def set_cookies( cookie_hash )
         @cookie_jar = cookie_hash.each_pair {
             |name, value|
             @init_headers['cookie'] += "#{name}=#{value};" 
         }
     end
-        
+    
+    #
+    # Class method
+    #
+    # Parses netscape HTTP cookie file
+    #
+    # @param    [String]    the location of the cookie file
+    #
+    # @return    [Hash]     cookies in name=>value pairs
+    #    
     def HTTP.parse_cookiejar( cookie_jar )
         
         cookies = Hash.new
