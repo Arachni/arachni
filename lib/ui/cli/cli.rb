@@ -488,6 +488,7 @@ class CLI
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
+                                  You can use it multiple times.
     
     -i <regex>
     --include=<regex>           include urls matching this regex only

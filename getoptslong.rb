@@ -49,6 +49,8 @@ $runtime_args['dir']['pwd']  =
 $runtime_args['dir']['modules'] = $runtime_args['dir']['pwd'] + 'modules/'
 $runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
 
+$runtime_args[:exclude] = []
+    
 opts.each do |opt, arg|
 
     case opt
@@ -116,7 +118,7 @@ opts.each do |opt, arg|
             $runtime_args[:user_agent] = arg.to_s
 
         when '--exclude'
-            $runtime_args[:exclude] = Regexp.new( arg )
+            $runtime_args[:exclude] << Regexp.new( arg )
 
         when '--include'
             $runtime_args[:include] = Regexp.new( arg )
