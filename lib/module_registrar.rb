@@ -33,8 +33,40 @@ module ModuleRegistrar
     #
     # Used by modules to register their results with the ModuleRegistry.
     #
+    # @param    [Array<Vulnerability>]    results    module results
+    #
     def register_results( results )
         Arachni::ModuleRegistry.register_results( results )
+    end
+    
+    #
+    # Used by modules to store persistent data they want to share
+    #
+    # @param    [Object]  key     the key under which to store the value data
+    # @param    [Object]  value   the value of the key
+    #
+    def add_storage( key, value )
+        ModuleRegistry.add_storage( { key => value } )
+    end
+    
+    #
+    # Used by modules to get persistent data from storage
+    #
+    # @param    [Object]  key     get the data under that key
+    #
+    # @return    [Object]    the data under key
+    #
+    def get_storage( key )
+        ModuleRegistry.get_storage( key )
+    end
+    
+    #
+    # Gets the entire storage array
+    #
+    # @return    [Array<Hash>]
+    #
+    def get_store( )
+        ModuleRegistry.get_store( )
     end
 
 end

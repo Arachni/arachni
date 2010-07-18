@@ -21,6 +21,8 @@ module Arachni
 #
 class ModuleRegistry
 
+    include Arachni::UI::Output
+    
     #
     # Path to the module directory
     #
@@ -35,7 +37,9 @@ class ModuleRegistry
     #
     # @return [Array<Arachni::Module>]
     #
-    class << self; attr_accessor :module_registry, :module_results end
+    class << self
+        attr_reader :module_registry, :module_results, :module_storage
+    end
 
     #
     # Initializes Arachni::ModuleRegistry with the module library
@@ -46,6 +50,8 @@ class ModuleRegistry
         @mod_lib = mod_lib
         @@module_registry = []
         @@module_results = []
+        @@module_storage = []
+            
         @available_mods = Hash.new
     end
 
@@ -97,13 +103,37 @@ class ModuleRegistry
 
     #
     # Loads and registers a module by it's filename, without the extension
+    # It also takes care of its dependencies.
     #
     # @param [String] mod_name  the module to load
     #
     # @return [Arachni::Module] the loaded modules
     #
     def mod_load( mod_name )
+        
         ModuleRegistry.register( get_module_by_name( mod_name ) )
+        
+        # grab the module we just registered
+        mod = @@module_registry[-1]
+
+         # if it doesn't have any dependencies we're done
+        if( !mod.methods.index( :deps ) ) then return end
+        
+        # go through its dependencies and load them recursively
+        mod.deps.each {
+            |dep_mod|
+                
+            if ( !dep_mod ) then next end
+            
+            begin
+                mod_load( dep_mod )
+            rescue Exception => e
+                print_error( "In '#{mod_name}' dependencies: " + e.to_s )
+                exit 0
+            end
+
+        }
+        
     end
 
     #
@@ -114,7 +144,11 @@ class ModuleRegistry
     # @return [Arachni::Module]
     #
     def get_module_by_name( name )
-        load( get_path_from_name( name ) )
+        begin
+            load( get_path_from_name( name ) )
+        rescue Exception => e
+            raise e
+        end
     end
 
     #
@@ -125,7 +159,11 @@ class ModuleRegistry
     # @return [String]  the path of the module
     #
     def get_path_from_name( name )
-        ls_available( )[name]['path'].to_s
+        begin
+            ls_available( )[name]['path'].to_s
+        rescue Exception => e
+            raise 'Uknown module \'' + name + '\'.'
+        end
     end
 
     #
@@ -180,6 +218,44 @@ class ModuleRegistry
         @@module_registry
     end
 
+    #
+    # Stores an object regulated by ModuleRegistrar#add_storage
+    # in @@module_storage
+    #
+    # @see ModuleRegistrar#add_storage
+    #
+    # @param    [Object]    obj
+    #
+    def ModuleRegistry.add_storage( obj )
+        @@module_storage << obj
+    end
+    
+    #
+    # Gets data from storage by key,
+    # regulated by ModuleRegistrar#get_storage
+    #
+    # @see ModuleRegistrar#add_storage
+    #
+    # @param    [Object]    key
+    #
+    # @return    [Object]    the data under key
+    #
+    def ModuleRegistry.get_storage( key )
+        @@module_storage.each {
+            |item|
+            if( item.keys[0] == key ) then return item[key] end
+        }
+    end
+    
+    #
+    # Gets the entire storage array
+    #
+    # @return    [Array<Hash>]
+    #
+    def ModuleRegistry.get_store( )
+        @@module_storage
+    end
+    
     #
     # Class method
     #

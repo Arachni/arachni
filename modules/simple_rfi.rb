@@ -182,6 +182,21 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             
         }
     end
+    
+    #
+    # OPTIONAL
+    #
+    # In case you depend on other modules you can return an array
+    # of their names (not their class names, the module names as they
+    # appear by the "-l" CLI argument) and they will be loaded for you.
+    #
+    # This is also great for creating audit/discovery/whatever profiles.
+    #
+    def self.deps
+        # example:
+        # ['eval', 'sqli']
+        []
+    end
 
     #
     # The following are our own helper methods.
