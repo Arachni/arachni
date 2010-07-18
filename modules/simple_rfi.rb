@@ -157,7 +157,6 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
     # REQUIRED
     #
     # Do not ommit any of the info.
-    # If you don't have something to say here just leave the values empty.
     #
     def self.info
         {
@@ -171,7 +170,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
             'Targets'        => { 'PHP' => 'all' },
-                
+            
             'Vulnerability'   => {
                 'Description' => %q{A remote file inclusion vulnerability exists.},
                 'CWE'         => '94',
@@ -203,7 +202,15 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
+            # create a vulnerability and add it to the results array
             @results << Vulnerability.new(
+                
+                # the returned array of audit methods conviniently
+                # holds part of the hash that is expected by Vulnerability.new()
+                #
+                # to complete the hash we merge it with the module's
+                # class method info(), with the added field of
+                # 'elem' which specifies the HTML element that is vulnerable.
                 res.merge( { 'elem' => 'link' }.
                     merge( self.class.info )
                 )
@@ -222,6 +229,13 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
          audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
              |res|
              @results << Vulnerability.new(
+
+                 # the returned array of audit methods conviniently
+                 # holds part of the hash that is expected by Vulnerability.new()
+                 #
+                 # to complete the hash we merge it with the module's
+                 # class method info(), with the added field of
+                 # 'elem' which specifies the HTML element that is vulnerable.
                  res.merge( { 'elem' => 'form' }.
                      merge( self.class.info )
                  )
@@ -239,6 +253,13 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
+            
+            # the returned array of audit methods conviniently
+            # holds part of the hash that is expected by Vulnerability.new()
+            #
+            # to complete the hash we merge it with the module's
+            # class method info(), with the added field of
+            # 'elem' which specifies the HTML element that is vulnerable.
             @results << Vulnerability.new(
                 res.merge( { 'elem' => 'cookie' }.
                     merge( self.class.info )
