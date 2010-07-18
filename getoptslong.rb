@@ -23,6 +23,7 @@ opts = GetoptLong.new(
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
     [ '--delay',                   GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--threads',           '-t', GetoptLong::REQUIRED_ARGUMENT ],
@@ -50,7 +51,8 @@ $runtime_args['dir']['pwd']  =
 $runtime_args['dir']['modules'] = $runtime_args['dir']['pwd'] + 'modules/'
 $runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
 
-$runtime_args[:exclude] = []
+$runtime_args[:exclude]   = []
+$runtime_args[:redundant] = []
     
 opts.each do |opt, arg|
 
@@ -70,6 +72,12 @@ opts.each do |opt, arg|
 
         when '--debug'
             $runtime_args[:debug] = true
+                        
+        when '--redundant'
+            $runtime_args[:redundant] << {
+                'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
+                'count'   => Integer( arg.to_s.split( /:/ )[1] ),
+            }
 
         when '--obey_robots_txt'
             $runtime_args[:obey_robots_txt] = true
