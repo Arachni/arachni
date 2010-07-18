@@ -111,9 +111,9 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         # this hash will keep the audit results to be registered
         # with the system, using:
         #
-        # register_results( { 'SimpleRFI' => @results } )
+        # register_results( @results )
         #
-        # the structure of the results must be preserved
+        # Should be an array of Vulnerability objects
         #
         @results = []
     end
