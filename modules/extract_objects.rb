@@ -1,5 +1,5 @@
 =begin
-  $Id: simple_cmd_exec.rb 127 2010-07-18 02:17:45Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -27,7 +27,7 @@ module Modules
 #
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev: 127 $
+# @version: $Rev$
 #
 # @see AuditObjects AuditObjects module
 #
@@ -56,7 +56,7 @@ class ExtractObjects < Arachni::Module
             'Description'    => %q{Extracts all 'object' elements from a webpage.},
             'Methods'        => ['get'],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 127 $',
+            'Version'        => '$Rev$',
             'References'     => {
                 
             },
