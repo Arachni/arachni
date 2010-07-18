@@ -205,7 +205,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             # create a vulnerability and add it to the results array
             @results << Vulnerability.new(
                 
-                # the returned array of audit methods conviniently
+                # the returned hash of audit methods conviniently
                 # holds part of the hash that is expected by Vulnerability.new()
                 #
                 # to complete the hash we merge it with the module's
@@ -230,7 +230,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
              |res|
              @results << Vulnerability.new(
 
-                 # the returned array of audit methods conviniently
+                 # the returned hash of audit methods conviniently
                  # holds part of the hash that is expected by Vulnerability.new()
                  #
                  # to complete the hash we merge it with the module's
@@ -254,7 +254,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
             
-            # the returned array of audit methods conviniently
+            # the returned hash of audit methods conviniently
             # holds part of the hash that is expected by Vulnerability.new()
             #
             # to complete the hash we merge it with the module's
