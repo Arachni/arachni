@@ -32,10 +32,7 @@ class XSS < Arachni::Module
 
         @__injection_strs = []
         
-        @results = Hash.new
-        @results['links'] = []
-        @results['forms'] = []
-        @results['cookies'] = []
+        @results = []
     end
 
     def prepare( )
@@ -67,12 +64,37 @@ class XSS < Arachni::Module
             |str|
             
             enc_str = URI.encode( str )
-            @results['forms'] |=  audit_forms( str, Regexp.new( str ), str )
-            @results['links'] |=  audit_links( enc_str, Regexp.new( str ), str )
-            @results['cookies'] |= audit_cookies( enc_str, Regexp.new( str ), str )
+            
+            audit_forms( str, Regexp.new( str ), str ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'form' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
+            
+            audit_links( enc_str, Regexp.new( str ), str ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'link' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
+            
+            audit_cookies( enc_str, Regexp.new( str ), str ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'cookie' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
+            
         }
         
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     
@@ -87,7 +109,18 @@ class XSS < Arachni::Module
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
-            'Targets'        => { 'Generic' => 'all' }
+            'Targets'        => { 'Generic' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{Client-side code, like JavaScript, can
+                    be injected into the web application.},
+                'CWE'         => '79',
+                'Severity'    => 'High',
+                'CVSSV2'       => '9.0',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+
         }
     end
 

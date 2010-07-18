@@ -34,21 +34,39 @@ class SimpleCmdExec < Arachni::Module
         @__cmd_id         = '100434'
         @__injection_str  = '; expr 978 + 99456'
         
-        @results = Hash.new
+        @results = []
     end
 
     def run( )
         
-        @results['links'] =
-            audit_links( @__injection_str, @__cmd_id_regex, @__cmd_id )
+        audit_links( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+            |res|
+            @results << Vulnerability.new(
+                res.merge( { 'elem' => 'link' }.
+                    merge( self.class.info )
+                )
+            )
+        }
 
-        @results['forms'] =
-            audit_forms( @__injection_str, @__cmd_id_regex, @__cmd_id )
+        audit_forms( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+            |res|
+            @results << Vulnerability.new(
+                res.merge( { 'elem' => 'form' }.
+                    merge( self.class.info )
+                )
+            )
+        }
 
-        @results['cookies'] =
-            audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id )
+        audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+            |res|
+            @results << Vulnerability.new(
+                res.merge( { 'elem' => 'cookie' }.
+                    merge( self.class.info )
+                )
+            )
+        }
         
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     
@@ -62,7 +80,18 @@ class SimpleCmdExec < Arachni::Module
             'References'     => {
                 
             },
-            'Targets'        => { 'PHP' => 'all' }
+            'Targets'        => { 'PHP' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{The web application allows an attacker to
+                    execute OS commands.},
+                'CWE'         => '78',
+                'Severity'    => 'High',
+                'CVSSV2'       => '9.0',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+
         }
     end
 

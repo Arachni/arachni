@@ -373,13 +373,12 @@ class Module
             print_verbose( '---------' ) if only_positives?
     
             return {
-                'var'   => var,
-                'url'   => page_data['url']['href'],
-                'audit' => {
-                    'inj'     => injection_str,
-                    'id'      => id,
-                    'regex'   => id_regex.to_s
-                }
+                'var'          => var,
+                'url'          => page_data['url']['href'],
+                'injected'     => injection_str,
+                'id'           => id,
+                'regexp'       => id_regex.to_s,
+                'regexp_match' => res.body.scan( id_regex )
             }
         end
     end

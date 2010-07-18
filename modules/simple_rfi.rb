@@ -115,10 +115,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # the structure of the results must be preserved
         #
-        @results = Hash.new
-        @results['links'] = []
-        @results['forms'] = []
-        @results['cookies'] = []
+        @results = []
     end
 
     #
@@ -153,7 +150,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # Doesn't *have* to be in clean_up().
         #
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     #
@@ -170,10 +167,20 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
-                'WASC'      => 'http://projects.webappsec.org/Remote-File-Inclusion',
-                'Wikipedia' => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
+                'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
+                'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
-            'Targets'        => { 'PHP' => 'all' }
+            'Targets'        => { 'PHP' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{A remote file inclusion vulnerability exists.},
+                'CWE'         => '94',
+                'Severity'    => 'High',
+                'CVSSV2'       => '7.5',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+            
         }
     end
 
@@ -194,8 +201,14 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # Look in Arachni::Module#audit_links for documentation.
         #
-        res = audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id )
-        @results['links'] = res if res && res.size > 0
+        audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+            |res|
+            @results << Vulnerability.new(
+                res.merge( { 'elem' => 'link' }.
+                    merge( self.class.info )
+                )
+            )
+        }
     end
 
     def __audit_forms(  )
@@ -206,8 +219,14 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # Look in Arachni::Module#audit_forms for documentation.
         #        
-        res = audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id )
-        @results['forms'] = res if res && res.size > 0
+         audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+             |res|
+             @results << Vulnerability.new(
+                 res.merge( { 'elem' => 'form' }.
+                     merge( self.class.info )
+                 )
+             )
+         }
     end
 
     def __audit_cookies( )
@@ -218,8 +237,14 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
         #
         # Look in Arachni::Module#audit_cookies for documentation.
         #
-        res = audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id )
-        @results['cookies'] = res if res && res.size > 0
+        audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+            |res|
+            @results << Vulnerability.new(
+                res.merge( { 'elem' => 'cookie' }.
+                    merge( self.class.info )
+                )
+            )
+        }
     end
 
 end

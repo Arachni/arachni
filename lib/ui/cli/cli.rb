@@ -14,6 +14,7 @@ require 'rubygems'
 require $runtime_args['dir']['lib'] + 'ui/cli/output'
 require $runtime_args['dir']['lib'] + 'spider'
 require $runtime_args['dir']['lib'] + 'analyzer'
+require $runtime_args['dir']['lib'] + 'vulnerability'
 require $runtime_args['dir']['lib'] + 'module/http'
 require $runtime_args['dir']['lib'] + 'module'
 require $runtime_args['dir']['lib'] + 'module_registrar'
@@ -65,32 +66,32 @@ class CLI
             print_status( 'No results were compiled by the modules.' )
         end
 
-        my_results = Hash.new
-        Arachni::ModuleRegistry.get_results.each {
-            |result|
-            result.keys.each {
-                |key|
-                
-                if( !my_results[key] )
-                    my_results[key] = Hash.new
-                end
-                
-                result[key].keys.each {
-                    |deep_key|
+#        my_results = Hash.new
+#        Arachni::ModuleRegistry.get_results.each {
+#            |result|
+#            result.keys.each {
+#                |key|
+#                
+#                if( !my_results[key] )
+#                    my_results[key] = Hash.new
+#                end
+#                
+#                result[key].keys.each {
+#                    |deep_key|
+#
+#                    if !result[key][deep_key] ||
+#                        result[key][deep_key].size == 0 then next end
+#
+#                    if( !my_results[key][deep_key] )
+#                        my_results[key][deep_key] = []
+#                    end
+#
+#                    my_results[key][deep_key] << result[key][deep_key][0]
+#                }
+#            }
+#        }
 
-                    if !result[key][deep_key] ||
-                        result[key][deep_key].size == 0 then next end
-
-                    if( !my_results[key][deep_key] )
-                        my_results[key][deep_key] = []
-                    end
-
-                    my_results[key][deep_key] << result[key][deep_key][0]
-                }
-            }
-        }
-
-        ap my_results
+        ap results
     end
 
     def analyze_site
@@ -256,8 +257,8 @@ class CLI
                             
                         if( !@modreg.ls_available(  )[mod_name] )
                             print_error( "Error: Module #{mod_name} wasn't found." )
-                            print_info( "Run arachni with the '-l' ' + 
-                                'parameter to see all available modules." )
+                            print_info( "Run arachni with the '-l' " + 
+                                "parameter to see all available modules." )
                             exit 0
                         end
             

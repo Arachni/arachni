@@ -157,7 +157,7 @@ class ModuleRegistry
     # @param    [Array]
     #
     def ModuleRegistry.register_results( results )
-        @@module_results << results
+        @@module_results += results
     end
 
     #

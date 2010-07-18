@@ -37,10 +37,7 @@ class SQLInjection < Arachni::Module
         @__injection_strs = []
         
         # initialize the results hash
-        @results = Hash.new
-        @results['links'] = []
-        @results['forms'] = []
-        @results['cookies'] = []
+        @results = []
     end
 
     def prepare( )
@@ -134,26 +131,26 @@ class SQLInjection < Arachni::Module
             # and pass a block that will check for a positive result
             audit_forms( str ) {
                 |var, res|
-                __log_results( 'forms', var, res, str )
+                __log_results( 'form', var, res, str )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
             audit_links( str ) {
                 |var, res|
-                __log_results( 'links', var, res, str )
+                __log_results( 'link', var, res, str )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
             audit_cookies( str ) {
                 |var, res|
-                __log_results( 'cookies', var, res, str )
+                __log_results( 'cookie', var, res, str )
             }
         }
         
         # register our results with the framework
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     
@@ -170,7 +167,17 @@ class SQLInjection < Arachni::Module
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
-            'Targets'        => { 'Generic' => 'all' }
+            'Targets'        => { 'Generic' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{SQL code can be injected into the web application.},
+                'CWE'         => '89',
+                'Severity'    => 'High',
+                'CVSSV2'       => '9.0',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+
         }
     end
     
@@ -193,20 +200,21 @@ class SQLInjection < Arachni::Module
             
             # try to match them with the body of the HTTP response,
             # if it matches we have a positive result
-            if ( res.body.scan( id_regex )[0] &&
+            if ( ( match = res.body.scan( id_regex )[0] ) &&
                  res.body.scan( id_regex )[0].size > 0 )
                 
                 # append the result to the results hash
-                @results[where] << {
-                    'var'   => var,
-                    'url'   => page_data['url']['href'],
-                    'audit' => {
-                        'inj'     => injection_str,
-                        'id'      => id,
-                        'regex'   => id_regex.to_s
-                    }
-                }
-        
+                @results << Vulnerability.new( {
+                        'var'          => var,
+                        'url'          => page_data['url']['href'],
+                        'injected'     => injection_str,
+                        'id'           => id,
+                        'regexp'       => id_regex.to_s,
+                        'regexp_match' => match,
+                        'elem' => where
+                    }.merge( self.class.info )
+                )
+                
                 # inform the user that we have a match
                 print_ok( self.class.info['Name'] +
                     " in: #{where} var #{var}" +

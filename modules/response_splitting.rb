@@ -39,11 +39,7 @@ class ResponseSplitting < Arachni::Module
         @__header = ''
         
         # initialize the hash that's hold the results
-        @results = Hash.new
-        @results['links'] = []
-        @results['forms'] = []
-        @results['cookies'] = []
-            
+        @results = []
     end
 
     def prepare( )
@@ -65,25 +61,25 @@ class ResponseSplitting < Arachni::Module
         # and pass a block that will check for a positive result
         audit_forms( enc_header ) {
             |var, res|
-            __log_results( 'forms', var, res )
+            __log_results( 'form', var, res )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
         audit_links( enc_header ) {
             |var, res|
-            __log_results( 'links', var, res )
+            __log_results( 'link', var, res )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
         audit_cookies( enc_header ) {
             |var, res|
-            __log_results( 'cookies', var, res )
+            __log_results( 'cookie', var, res )
         }
         
         #register our results with the system
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     
@@ -101,7 +97,18 @@ class ResponseSplitting < Arachni::Module
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
-            'Targets'        => { 'Generic' => 'all' }
+            'Targets'        => { 'Generic' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{The web application includes user input
+                     in the response HTTP header.},
+                'CWE'         => '20',
+                'Severity'    => 'Medium',
+                'CVSSV2'       => '5.0',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+
         }
     end
     
@@ -110,14 +117,16 @@ class ResponseSplitting < Arachni::Module
     def __log_results( where, var, res )
         if res.get_fields( 'x-crlf-safe' )
         
-            @results[where] << {
-                'var'   => var,
-                'url'   => page_data['url']['href'],
-                'audit' => {
-                    'inj'     => @__header,
-                    'id'      => 'x-crlf-safe'
-                }
-            }
+            @results << Vulnerability.new( {
+                    'var'          => var,
+                    'url'          => page_data['url']['href'],
+                    'injected'     => @__header,
+                    'id'           => 'x-crlf-safe',
+                    'regexp'       => nil,
+                    'regexp_match' => nil,
+                    'elem' => where
+                }.merge( self.class.info )
+            )
 
             print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
                         '::' + page_data['url']['href'] )

@@ -49,11 +49,7 @@ class Eval < Arachni::Module
         @__rand  =  (287630581954 + 4196403186331128).to_s
         
         # our results hash
-        @results = Hash.new
-        @results['links'] = []
-        @results['forms'] = []
-        @results['cookies'] = []
-            
+        @results = []
     end
 
     def prepare( )
@@ -78,20 +74,39 @@ class Eval < Arachni::Module
             enc_str = URI.encode( str )
             
             # audit forms and add the results to the results array
-            @results['forms'] |= 
-                audit_forms( str, Regexp.new( @__rand ), @__rand )
+            audit_forms( str, Regexp.new( @__rand ), @__rand ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'form' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
             
             # audit links and add the results to the results array    
-            @results['links'] |= 
-                audit_links( str, Regexp.new( @__rand ), @__rand )
+            audit_links( str, Regexp.new( @__rand ), @__rand ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'link' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
             
             # audit cookies and add the results to the results array
-            @results['cookies'] |=
-                audit_cookies( str, Regexp.new( @__rand ), @__rand )
+            audit_cookies( str, Regexp.new( @__rand ), @__rand ).each {
+                |res|
+                @results << Vulnerability.new(
+                    res.merge( { 'elem' => 'cookie' }.
+                        merge( self.class.info )
+                    )
+                )
+            }
+            
         }
         
         # register our results with the system
-        register_results( { self.class => @results } )
+        register_results( @results )
     end
 
     
@@ -110,7 +125,17 @@ class Eval < Arachni::Module
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
              },
-            'Targets'        => { 'Generic' => 'all' }
+            'Targets'        => { 'Generic' => 'all' },
+                
+            'Vulnerability'   => {
+                'Description' => %q{Code can be injected into the web application.},
+                'CWE'         => '94',
+                'Severity'    => 'High',
+                'CVSSV2'       => '7.5',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+
         }
     end
 
