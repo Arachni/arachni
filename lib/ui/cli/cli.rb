@@ -113,6 +113,40 @@ class CLI
 #                sleep( @opts[:delay] )
 #            end
             
+            if $_interrupted == true
+                print_line
+                print_info( 'Exiting...' )
+                exit 0
+            end
+            
+            skip = false
+            @opts[:redundant].each_with_index {
+                |redundant, i|
+                
+                if( @opts[:redundant][i]['count'] == 0 )
+                    skip = true
+                    next
+                end
+                
+                if( url =~ redundant['regexp'] )
+                    
+                    print_info( 'Matched redundancy rule: ' + 
+                        redundant['regexp'].to_s + ' for page \'' +
+                        url + '\'' )
+                        
+                    print_info( 'Count-down: ' +
+                        @opts[:redundant][i]['count'].to_s )
+                        
+                    @opts[:redundant][i]['count'] -= 1
+                end
+            }
+            
+            if( skip == true )
+                print_info( 'Page discarded...' )
+                next
+            end
+            
+            
             structure = site_structure[url] =
             @analyzer.run( url, html, headers ).clone
 
@@ -362,8 +396,6 @@ class CLI
             exit 0
         end
 
-
-
         # Check for missing url
         if @opts[:url] == nil
             print_error( "Error: Missing url argument (try --help)" )
@@ -505,7 +537,11 @@ USAGE
     
     -i <regex>
     --include=<regex>           include urls matching this regex only
-  
+
+    --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
+                                  (URLs matching <regex> will be crawled <count> links deep.)
+                                  (Can be used multiple times.)
+    
     -f
     --follow-subdomains         follow links to subdomains (default: off)
     

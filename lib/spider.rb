@@ -120,6 +120,7 @@ class Spider
             anemone.on_pages_like( @opts[:include] ) do |page|
 
                 url = page.url.to_s
+                
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
                     next
@@ -129,7 +130,7 @@ class Spider
 
                 print_line
                 print_status( "[HTTP: #{page.code}] " + url )
-
+                
                 if block
                     block.call( url, page.body, page.headers )
                 end
