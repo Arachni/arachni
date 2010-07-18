@@ -113,11 +113,11 @@ class CLI
 #                sleep( @opts[:delay] )
 #            end
             
-            if $_interrupted == true
-                print_line
-                print_info( 'Exiting...' )
-                exit 0
-            end
+#            if $_interrupted == true
+#                print_line
+#                print_info( 'Exiting...' )
+#                exit 0
+#            end
             
             structure = site_structure[url] =
             @analyzer.run( url, html, headers ).clone
