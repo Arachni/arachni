@@ -87,7 +87,13 @@ class ModuleRegistry
             |mod, i|
 
             if i == reg_id
-                return mod.info
+                info =  mod.info
+                
+                if( mod.methods.index( :deps ) ) 
+                    info = info.merge( { 'Dependencies' => mod.deps } )
+                end
+                
+                return info
             end
         }
     end

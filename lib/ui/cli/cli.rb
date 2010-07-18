@@ -318,6 +318,12 @@ class CLI
             print_line( "Description:\t"  + info["Description"].strip )
             print_line( "HTTP Methods:\t" +
                 info["Methods"].join( ', ' ).downcase )
+            
+            if( info["Dependencies"] )
+                print_line( "Dependencies:\t" +
+                    info["Dependencies"].join( ', ' ).downcase )
+            end
+            
             print_line( "Author:\t\t"     + info["Author"].strip )
             print_line( "Version:\t"      + info["Version"].strip )
                 
