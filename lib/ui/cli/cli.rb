@@ -16,12 +16,30 @@ module Arachni
 
 module UI
 
+#
+# Arachni::UI:CLI class<br/>
+# Provides a command line interface for the Arachni Framework.
+#
+# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @version: 0.1-planning
+#
 class CLI
 
+    #
+    # Instance options
+    #
+    # @return    [Hash]
+    #
     attr_reader :opts
 
+    # the output interface for CLI
     include Arachni::UI::Output
 
+    #
+    # Initializes the command line interface and the framework
+    #
+    # @param    [Hash]    options
+    #
     def initialize( opts )
         
         @arachni = Arachni::Framework.new( opts )
@@ -31,6 +49,9 @@ class CLI
         parse_opts( )
     end
 
+    #
+    # Runs Arachni
+    #
     def run( )
         banner( )
         
@@ -170,7 +191,8 @@ class CLI
     #
     def banner
 
-        print_line 'Arachni v' + VERSION + ' [' + REVISION + '] initiated.
+        print_line 'Arachni v' + @arachni.version + ' [' +
+            @arachni.revision + '] initiated.
        Author: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
        Website: http://www.segfault.gr'

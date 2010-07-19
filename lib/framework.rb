@@ -259,7 +259,15 @@ class Framework
         return mod_info
     
     end
+    
+    def version
+        VERSION
+    end
 
+    def revision
+        REVISION
+    end
+    
     private
     
     #
