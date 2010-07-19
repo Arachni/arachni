@@ -47,12 +47,14 @@ class ModuleRegistry
     # @param [String] mod_lib path the the module directory
     #
     def initialize( mod_lib )
+        
         @mod_lib = mod_lib
+        
         @@module_registry = []
-        @@module_results = []
-        @@module_storage = []
+        @@module_results  = []
+        @@module_storage  = []
             
-        @available_mods = Hash.new
+        @available_mods   = Hash.new
     end
 
     #
@@ -141,7 +143,7 @@ class ModuleRegistry
         }
         
     end
-
+    
     #
     # Gets a module by its filename, without the extension
     #
@@ -173,7 +175,7 @@ class ModuleRegistry
     end
 
     #
-    # Registers a module with us.
+    # Registers a module with the framework
     #
     # Used by ModuleRegistrar *only*
     #
@@ -183,6 +185,13 @@ class ModuleRegistry
     end
 
     #
+    # Un-registers all modules
+    #
+    def ModuleRegistry.clean( )
+        @@module_registry    = []
+    end
+    
+    #
     # Class method
     #
     # Lists the loaded modules
@@ -190,7 +199,7 @@ class ModuleRegistry
     # @return [Array<Arachni::Module>]  the @@module_registry
     #
     def ModuleRegistry.get_registry( )
-        @@module_registry
+        @@module_registry.uniq
     end
 
     #
