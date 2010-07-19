@@ -93,16 +93,16 @@ The following tasks are the milestone for version v0.1
         to the module writter?
          
  - LFI/RFI --------------------------------- [Sample]
- - database injection ---------------------- 
+ - database injection ---------------------- [Sample]
  |---> PHP/JSP/ASP SQL Injections and
         XPath Injections.
     
- - XSS -------------------------------------
+ - XSS ------------------------------------- [Sample]
  - LDAP Injection --------------------------
  - command injection ----------------------- [Sample]
  |---> eval(), system(), passtru() etc.
     
- - CRLF Injection --------------------------
+ - CRLF Injection -------------------------- [Sample]
  |---> HTTP Response Splitting,
         session fixation etc.
     
