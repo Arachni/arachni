@@ -39,7 +39,7 @@ class CLI
         begin
             ls_loaded( )
             @arachni.run( )
-        rescue Arachni::Exceptions::NoAuditOpts => e
+        rescue Exception => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help." )
             print_line
@@ -48,15 +48,6 @@ class CLI
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
             print_info( "with the '-l' parameter to see all available modules." )
-            print_line
-            exit 0
-            
-        rescue Arachni::Exceptions::NoURL => e
-            print_error( e.to_s + " (try '-h' for help)" )
-            print_line
-            exit 0
-        rescue Arachni::Exceptions::InvalidURL => e
-            print_error( e.to_s )
             print_line
             exit 0
         end
