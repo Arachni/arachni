@@ -45,6 +45,10 @@ class Framework
     #
     include Arachni::UI::Output
     
+    VERSION  = '0.1-planning'
+    
+    REVISION = '$Rev$'
+
     #
     # Instance options
     #
