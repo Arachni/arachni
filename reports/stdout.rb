@@ -33,8 +33,10 @@ class Stdout < Arachni::Report::Base
 
     #
     # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    # @param [String]    outfile    where to save the report
     #
-    def initialize( vulns )
+    def initialize( vulns, outfile = nil )
+        print_info( outfile )
         @vulns = vulns
     end
     
@@ -44,7 +46,14 @@ class Stdout < Arachni::Report::Base
     # Use it to run your report.
     #
     def run( )
-        ap @vulns
+        
+        print_line( )
+        print_info( 'The following vulnerabilities were detected:' )
+        
+        @vulns.each {
+            |vuln|
+            ap vuln
+        }
     end
     
     #

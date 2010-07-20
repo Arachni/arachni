@@ -408,10 +408,15 @@ class Framework
     #
     def run_reps( )
     
-        for report in ls_loaded_reps
-             new_rep = report.new( get_results )
+        reps = lsrep
+        ls_loaded_reps.each_with_index {
+             |report, i|
+             
+             new_rep = report.new( get_results,
+                 @opts[:reports][reps[i]['rep_name']]  )
+             
              new_rep.run( )
-        end
+        }
             
     end
 

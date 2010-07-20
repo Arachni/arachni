@@ -42,11 +42,11 @@ class CLI
     #
     def initialize( opts )
         
-        @opts = opts
+        ap @opts = opts
         
         if !@opts[:reports]
             @opts[:reports] = []
-            @opts[:reports][0] = 'stdout'
+            @opts[:reports][0] = { 'stdout' => nil }
         end
         
         @arachni = Arachni::Framework.new( opts )
@@ -132,7 +132,7 @@ class CLI
 
                 when 'reports'
                     begin
-                        @arachni.rep_load( @opts[:reports] )
+                        @arachni.rep_load( @opts[:reports].keys )
                     rescue Arachni::Exceptions::ReportNotFound => e
                         print_error( e.to_s )
                         print_line
@@ -353,12 +353,13 @@ USAGE
 
     Reports ------------------------
     
-    --lsrep                     list available reports
+    --lsrep                       list available reports
     
     
-    --reports=<repname,..>      comma separated list of reports to run
-                                  (use '*' to deploy all reports)
-                                      
+    --report=<repname>:<outfile>  <repname>: the name of the report as displayed by '--lsrep'
+                                  <outfile>: where to save the report
+                                    (Can be used multiple times.)
+                                  
                                   
     Proxy --------------------------
     
