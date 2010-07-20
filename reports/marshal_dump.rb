@@ -32,7 +32,7 @@ class MarshalDump < Arachni::Report::Base
     include Arachni::UI::Output
 
     #
-    # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    # @param [Array]  audit  the result of the audit
     # @param [String]    outfile    where to save the report
     #
     def initialize( audit, outfile = 'marshal.dump' )

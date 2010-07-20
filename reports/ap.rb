@@ -28,11 +28,11 @@ class AP < Arachni::Report::Base
     include Arachni::UI::Output
 
     #
-    # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    # @param [Array]  audit  the result of the audit
     # @param [String]    outfile    where to save the report
     #
-    def initialize( vulns, outfile = nil )
-        @vulns   = vulns
+    def initialize( audit, outfile = nil )
+        @audit   = audit
     end
     
     #
@@ -45,7 +45,7 @@ class AP < Arachni::Report::Base
         print_line( )
         print_status( 'Awesome printing marshal dump...' )
         
-        ap @vulns
+        ap @audit
         
         print_status( 'Done!' )
     end
