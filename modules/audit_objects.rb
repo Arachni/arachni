@@ -43,6 +43,10 @@ class AuditObjects < Arachni::Module::Base
         # you can get the objects you want by key
         objects = get_storage( 'objects' )
 
+        if( objects.size == 0 )
+            return
+        end
+        
         # or you can get the whole storage
 #        storage =  get_store( )
                 
@@ -66,11 +70,10 @@ class AuditObjects < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
 #            'Vulnerability'   => {
-#                'Description' => %q{The web application allows an attacker to
-#                    execute OS commands.},
-#                'CWE'         => '78',
-#                'Severity'    => 'High',
-#                'CVSSV2'       => '9.0',
+#                'Description' => %q{.},
+#                'CWE'         => '',
+#                'Severity'    => '',
+#                'CVSSV2'       => '',
 #                'Remedy_Guidance'    => '',
 #                'Remedy_Code' => '',
 #            }
