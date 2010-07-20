@@ -18,9 +18,9 @@ require $runtime_args['dir']['lib'] + 'spider'
 require $runtime_args['dir']['lib'] + 'analyzer'
 require $runtime_args['dir']['lib'] + 'vulnerability'
 require $runtime_args['dir']['lib'] + 'module/http'
-require $runtime_args['dir']['lib'] + 'module'
-require $runtime_args['dir']['lib'] + 'module_registrar'
-require $runtime_args['dir']['lib'] + 'module_registry'
+require $runtime_args['dir']['lib'] + 'module/base'
+require $runtime_args['dir']['lib'] + 'module/registrar'
+require $runtime_args['dir']['lib'] + 'module/registry'
 require 'ap'
 require 'pp'
 
@@ -66,7 +66,7 @@ class Framework
         
         @opts = @opts.merge( opts )
             
-        @modreg = Arachni::ModuleRegistry.new( @opts['dir']['modules'] )
+       @modreg = Arachni::Module::Registry.new( @opts['dir']['modules'] )
 
         parse_opts( )
 
@@ -84,7 +84,7 @@ class Framework
     # @return    [Array<Vulnerability>]
     #
     def get_results
-        Arachni::ModuleRegistry.get_results( )
+        Arachni::Module::Registry.get_results( )
     end
 
     #
@@ -254,7 +254,7 @@ class Framework
         }
         
         # clean the registry inloading all modules
-        ModuleRegistry.clean( )
+        Arachni::Module::Registry.clean( )
         
         return mod_info
     

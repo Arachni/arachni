@@ -22,10 +22,10 @@ module Modules
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: $Rev$
 #
-class SQLInjection < Arachni::Module
+class SQLInjection < Arachni::Module::Base
 
     # register us with the system
-    include Arachni::ModuleRegistrar
+    include Arachni::Module::Registrar
     # get output module
     include Arachni::UI::Output
 

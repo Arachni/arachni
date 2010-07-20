@@ -11,6 +11,7 @@
 =end
 
 module Arachni
+module Module
 
 #
 # Arachni::ModuleRegistry class<br/>
@@ -19,7 +20,7 @@ module Arachni
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
 #
-class ModuleRegistry
+class Registry
 
     include Arachni::UI::Output
     
@@ -119,7 +120,7 @@ class ModuleRegistry
     #
     def mod_load( mod_name )
         
-        ModuleRegistry.register( get_module_by_name( mod_name ) )
+        Registry.register( get_module_by_name( mod_name ) )
         
         # grab the module we just registered
         mod = @@module_registry[-1]
@@ -179,15 +180,15 @@ class ModuleRegistry
     #
     # Used by ModuleRegistrar *only*
     #
-    def ModuleRegistry.register( mod )
+    def Registry.register( mod )
         @@module_registry << mod
-        ModuleRegistry.clean_up(  )
+        Registry.clean_up(  )
     end
 
     #
     # Un-registers all modules
     #
-    def ModuleRegistry.clean( )
+    def Registry.clean( )
         @@module_registry    = []
     end
     
@@ -198,7 +199,7 @@ class ModuleRegistry
     #
     # @return [Array<Arachni::Module>]  the @@module_registry
     #
-    def ModuleRegistry.get_registry( )
+    def Registry.get_registry( )
         @@module_registry.uniq
     end
 
@@ -209,7 +210,7 @@ class ModuleRegistry
     #
     # @param    [Array]
     #
-    def ModuleRegistry.register_results( results )
+    def Registry.register_results( results )
         @@module_results += results
     end
 
@@ -220,7 +221,7 @@ class ModuleRegistry
     #
     # @param    [Array]
     #
-    def ModuleRegistry.get_results( )
+    def Registry.get_results( )
         @@module_results
     end
 
@@ -241,7 +242,7 @@ class ModuleRegistry
     #
     # @param    [Object]    obj
     #
-    def ModuleRegistry.add_storage( obj )
+    def Registry.add_storage( obj )
         @@module_storage << obj
     end
     
@@ -255,7 +256,7 @@ class ModuleRegistry
     #
     # @return    [Object]    the data under key
     #
-    def ModuleRegistry.get_storage( key )
+    def Registry.get_storage( key )
         @@module_storage.each {
             |item|
             if( item.keys[0] == key ) then return item[key] end
@@ -267,7 +268,7 @@ class ModuleRegistry
     #
     # @return    [Array<Hash>]
     #
-    def ModuleRegistry.get_store( )
+    def Registry.get_store( )
         @@module_storage
     end
     
@@ -279,14 +280,14 @@ class ModuleRegistry
     #
     # @return [Array<Arachni::Module>]  the new @@module_registry
     #
-    def ModuleRegistry.clean_up( )
+    def Registry.clean_up( )
 
         clean_reg = []
         @@module_registry.each {
             |mod|
 
             begin
-                if mod < Arachni::Module
+                if mod < Arachni::Module::Base
                     clean_reg << mod
                 end
             rescue Exception => e
@@ -297,5 +298,6 @@ class ModuleRegistry
         @@module_registry = clean_reg
     end
 
+end
 end
 end

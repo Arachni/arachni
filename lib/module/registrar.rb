@@ -11,6 +11,7 @@
 =end
 
 module Arachni
+module Module
 
 #
 # Arachni::ModuleRegistrar module<br/>
@@ -20,14 +21,14 @@ module Arachni
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
 #
-module ModuleRegistrar
+module Registrar
 
     #
     # Callback invoked whenever Arachni::ModuleRegistrar
     # is included in another module or class.
     #
-    def ModuleRegistrar.included( mod )
-        Arachni::ModuleRegistry.register( mod )
+    def Registrar.included( mod )
+        Registry.register( mod )
     end
     
     #
@@ -36,7 +37,7 @@ module ModuleRegistrar
     # @param    [Array<Vulnerability>]    results    module results
     #
     def register_results( results )
-        Arachni::ModuleRegistry.register_results( results )
+        Registry.register_results( results )
     end
     
     #
@@ -46,7 +47,7 @@ module ModuleRegistrar
     # @param    [Object]  value   the value of the key
     #
     def add_storage( key, value )
-        ModuleRegistry.add_storage( { key => value } )
+        Registry.add_storage( { key => value } )
     end
     
     #
@@ -57,7 +58,7 @@ module ModuleRegistrar
     # @return    [Object]    the data under key
     #
     def get_storage( key )
-        ModuleRegistry.get_storage( key )
+        Registry.get_storage( key )
     end
     
     #
@@ -66,8 +67,9 @@ module ModuleRegistrar
     # @return    [Array<Hash>]
     #
     def get_store( )
-        ModuleRegistry.get_store( )
+        Registry.get_store( )
     end
 
+end
 end
 end

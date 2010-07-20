@@ -29,9 +29,9 @@ module Modules
 #
 # @see ExtractObjects ExtractObjects module
 #
-class AuditObjects < Arachni::Module
+class AuditObjects < Arachni::Module::Base
 
-    include Arachni::ModuleRegistrar
+    include Arachni::Module::Registrar
     include Arachni::UI::Output
 
     def initialize( page_data, structure )

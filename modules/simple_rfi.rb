@@ -23,7 +23,7 @@ module Modules
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: $Rev$
 #
-class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
+class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module
 
     #
     # Arachni::HTTP instance
@@ -49,7 +49,7 @@ class SimpleRFI < Arachni::Module # *always* extend Arachni::Module
     # Register us with the system.
     # If you ommit this the system won't be able to see you.
     #
-    include Arachni::ModuleRegistrar
+    include Arachni::Module::Registrar
     
     #
     # REQUIRED

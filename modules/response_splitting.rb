@@ -25,10 +25,10 @@ module Modules
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: $Rev$
 #
-class ResponseSplitting < Arachni::Module
+class ResponseSplitting < Arachni::Module::Base
 
     # register us with the system
-    include Arachni::ModuleRegistrar
+    include Arachni::Module::Registrar
     # get output interface
     include Arachni::UI::Output
 

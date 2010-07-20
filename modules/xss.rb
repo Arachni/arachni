@@ -22,9 +22,9 @@ module Modules
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: $Rev$
 #
-class XSS < Arachni::Module
+class XSS < Arachni::Module::Base
 
-    include Arachni::ModuleRegistrar
+    include Arachni::Module::Registrar
     include Arachni::UI::Output
 
     def initialize( page_data, structure )

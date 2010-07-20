@@ -11,6 +11,8 @@
 =end
 
 module Arachni
+module Module
+
 
 #
 # Arachni::Module class<br/>
@@ -21,7 +23,7 @@ module Arachni
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
 #
-class Module
+class Base
 
     #
     # Arachni::HTTP instance for the modules
@@ -403,5 +405,6 @@ class Module
         header
     end
 
+end
 end
 end
