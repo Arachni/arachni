@@ -115,6 +115,17 @@ class Registry
     end
     
     #
+    # Class method
+    #
+    # Empties the report registry
+    #
+    # @return [Array<Arachni::Reports>]  the @@registry
+    #
+    def Registry.clean( )
+        @@registry = []
+    end
+    
+    #
     # Grabs the information of a report based on its ID
     # in the @@registry
     #
@@ -130,7 +141,7 @@ class Registry
             end
         }
     end
-    
+
     #
     # Registers a report with the framework
     #
@@ -166,7 +177,7 @@ class Registry
 
         }
 
-        @@registry = clean_reg.uniq
+        @@registry = clean_reg.uniq.flatten
     end
 
 end
