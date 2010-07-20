@@ -88,7 +88,13 @@ class Framework
     # @return    [Array<Vulnerability>]
     #
     def get_results
-        Arachni::Module::Registry.get_results( )
+        results = {
+            'version'  => VERSION,
+            'revision' => REVISION,
+            'options'  => @opts,
+            'vulns'    => Arachni::Module::Registry.get_results( ),
+            'date'     => Time.now.to_s
+        }
     end
 
     #
@@ -111,7 +117,7 @@ class Framework
         
         
         if( @opts[:reports] )
-            run_reps( )
+            run_reps( get_results )
         end
     end
     
@@ -245,13 +251,14 @@ class Framework
     # @param [Array]    Array of reports to load
     #
     def rep_load( reports = ['stdout'] )
+        
         #
         # Check the validity of user provided module names
         #
         reports.each {
             |report|
             
-            # if the mod name is '*' load all modules
+            # if the report name is '*' load all reports
             if report == '*'
                 @repreg.ls_available(  ).keys.each {
                     |rep|
@@ -266,12 +273,35 @@ class Framework
             end
     
             begin
-                # load the module
+                # load the report
                 @repreg.rep_load( report )
             rescue Exception => e
                 raise e
             end
         }
+    end
+
+    #
+    # Convert a marshal dump of the audit results to a report
+    #
+    # @param [String]    location of the dump file
+    #
+    def rep_convert( dump_path )
+        
+        results = rep_load_dump( dump_path )
+        
+        run_reps( results )
+        exit 0
+    end
+        
+    #
+    # Loads a marshal dump
+    #
+    # @param [String]    location of the dump file
+    #
+    def rep_load_dump( dump_path )
+        f = File.open( dump_path )
+        return Marshal.load( f )
     end
     
     #
@@ -327,13 +357,13 @@ class Framework
         i = 0
         rep_info = []
         
-        @repreg.ls_available().each_pair {
+        @repreg.ls_available( ).each_pair {
             |rep_name, path|
     
             @repreg.rep_load( rep_name )
-    
+
             info = @repreg.info( i )
-    
+
             info["rep_name"]    = rep_name
             info["Path"]        = path['path'].strip
             
@@ -342,9 +372,8 @@ class Framework
             rep_info << info
         }
         
-        # clean the registry inloading all modules
+        # clean the registry unloading all modules
 #        Arachni::Report::Registry.clean( )
-        
         return rep_info
     
     end
@@ -406,18 +435,19 @@ class Framework
     #
     # Takes care of report execution
     #
-    def run_reps( )
+    def run_reps( results )
     
-        reps = lsrep
         ls_loaded_reps.each_with_index {
-             |report, i|
-             
-             new_rep = report.new( get_results,
-                 @opts[:reports][reps[i]['rep_name']]  )
-             
-             new_rep.run( )
-        }
+            |report, i|
+
+            if( @opts[:repsave] && @opts[:repsave].size == 0 )
+                new_rep = report.new( results )
+            else
+                new_rep = report.new( results, @opts[:repsave] )
+            end
             
+            new_rep.run( )
+        }
     end
 
     
@@ -458,6 +488,8 @@ class Framework
     #
     def validate_opts
 
+        if @opts[:repload] then return end
+            
         # TODO: remove global vars
         if !@opts[:user_agent]
             @opts[:user_agent] = $runtime_args[:user_agent] =
@@ -495,6 +527,7 @@ class Framework
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
+        
 #        #
 #        # If proxy type is socks include socksify
 #        # and let it proxy all tcp connections for us.
