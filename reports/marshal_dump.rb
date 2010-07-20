@@ -53,21 +53,27 @@ class MarshalDump < Arachni::Report::Base
         to_dump = Hash.new
         i = 0
         
-        to_dump['version']  = @audit['version']
-        to_dump['revision'] = @audit['revision']
-        to_dump['options']  = @audit['options']
-        to_dump['date']     = @audit['date'] 
-        to_dump['vulns']    = []
+        to_dump          = @audit.dup
+        to_dump['vulns'] = []
+        
+        to_dump['options'] = Hash.new
+        @audit['options'].each_pair {
+            |key, value|
+            to_dump['options'][__normalize( key )] = value
+        }
+    
+        to_dump['options']['url'] = @audit['options'][:url].to_s
             
         @audit['vulns'].each {
             |vulnerability|
             
             to_dump['vulns'][i] = Hash.new
-            
+                
             vulnerability.each { 
                 |vuln|
                 to_dump['vulns'][i] = to_dump['vulns'][i].merge( vuln )
             }
+            
             i += 1
         }
         
@@ -91,6 +97,12 @@ class MarshalDump < Arachni::Report::Base
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
         }
+    end
+    
+    private
+    
+    def __normalize( key )
+        return key.to_s
     end
     
 end
