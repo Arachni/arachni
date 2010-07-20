@@ -42,7 +42,7 @@ class CLI
     #
     def initialize( opts )
         
-        ap @opts = opts
+        @opts = opts
         
         if !@opts[:reports]
             @opts[:reports] = []
