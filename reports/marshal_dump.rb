@@ -21,7 +21,7 @@ module Reports
 #
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev: 163 $
+# @version: $Rev$
 #
 class MarshalDump < Arachni::Report::Base
     
@@ -89,7 +89,7 @@ class MarshalDump < Arachni::Report::Base
             'Name'           => 'MarshalDump',
             'Description'    => %q{Serializes and saves the audit results.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 163 $',
+            'Version'        => '$Rev$',
         }
     end
     

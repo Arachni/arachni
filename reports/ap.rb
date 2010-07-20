@@ -17,7 +17,7 @@ module Reports
 # Awesome prints a marshal dump
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: $Rev: 163 $
+# @version: $Rev$
 #
 class AP < Arachni::Report::Base
     
@@ -60,7 +60,7 @@ class AP < Arachni::Report::Base
             'Name'           => 'AP',
             'Description'    => %q{Awesome prints a marshal dump.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 163 $',
+            'Version'        => '$Rev$',
         }
     end
     
