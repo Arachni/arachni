@@ -41,7 +41,7 @@ class Base
             'Name'           => '',
             'Description'    => %q{},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 155 $',
+            'Version'        => '$Rev$',
         }
     end
     

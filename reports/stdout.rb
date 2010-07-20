@@ -12,16 +12,37 @@
 
 module Arachni
 module Reports    
-
+    
+#
+# Simple report tutorial.
+# It outputs the vulnerabilities on stdout.
+#
+# Currently only for debugging.
+#
+#
+# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @version: $Rev$
+#
 class Stdout < Arachni::Report::Base
     
+    # register us with the system
     include Arachni::Report::Registrar
+    
+    # get the output interface
     include Arachni::UI::Output
 
+    #
+    # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    #
     def initialize( vulns )
         @vulns = vulns
     end
     
+    #
+    # REQUIRED
+    #
+    # Use it to run your report.
+    #
     def run( )
         ap @vulns
     end
@@ -34,9 +55,9 @@ class Stdout < Arachni::Report::Base
     def self.info
         {
             'Name'           => 'Stdout',
-            'Description'    => %q{Prints the results on standard output.},
+            'Description'    => %q{Prints the results to standard output.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 155 $',
+            'Version'        => '$Rev$',
         }
     end
     
