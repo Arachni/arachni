@@ -42,9 +42,16 @@ class CLI
     #
     def initialize( opts )
         
+        @opts = opts
+        
+        if !@opts[:reports]
+            @opts[:reports] = []
+            @opts[:reports][0] = 'stdout'
+        end
+        
         @arachni = Arachni::Framework.new( opts )
         
-        @opts = opts
+        banner( )
         
         parse_opts( )
     end
@@ -53,7 +60,6 @@ class CLI
     # Runs Arachni
     #
     def run( )
-        banner( )
         
         print_status( 'Initing...' )
                 
@@ -89,8 +95,6 @@ class CLI
         if !results || results.size == 0
             print_status( 'No results were compiled by the modules.' )
         end
-
-        ap results
     end
 
     def ls_loaded
@@ -98,7 +102,7 @@ class CLI
         print_debug( 'ModuleRegistry reports the following modules as loaded:' )
         print_debug( '----------' )
 
-        @arachni.ls_loaded( ).each {
+        @arachni.ls_loaded_mods( ).each {
             |mod|
             print_debug( mod )
         }
@@ -118,8 +122,23 @@ class CLI
                     exit 0
                     
                 when 'mods'
-                    @arachni.mod_load( @opts[:mods] )
-                    
+                    begin
+                        @arachni.mod_load( @opts[:mods] )
+                    rescue Arachni::Exceptions::DepModNotFound => e
+                        print_error( e.to_s )
+                        print_line
+                        exit 0
+                    end
+
+                when 'reports'
+                    begin
+                        @arachni.rep_load( @opts[:reports] )
+                    rescue Arachni::Exceptions::ReportNotFound => e
+                        print_error( e.to_s )
+                        print_line
+                        exit 0
+                    end
+                                        
                 when 'arachni_verbose'
                     verbose!
 
@@ -132,7 +151,11 @@ class CLI
                 when 'lsmod'
                     lsmod
                     exit 0
-                    
+                
+                when 'lsrep'
+                    lsrep
+                    exit 0
+                                        
 #                when 'delay'
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
 
@@ -186,6 +209,30 @@ class CLI
 
     end
 
+    def lsrep
+        i = 0
+        print_info( 'Available reports:' )
+        print_line
+
+        @arachni.lsrep().each {
+            |info|
+            
+            print_status( "#{info['rep_name']}:" )
+            print_line( "--------------------" )
+
+            print_line( "Name:\t\t"       + info["Name"] )
+            print_line( "Description:\t"  + info["Description"] )
+            print_line( "Author:\t\t"     + info["Author"] )
+            print_line( "Version:\t"      + info["Version"] )
+            print_line( "Path:\t"         + info['Path'] )
+
+            i+=1
+
+            print_line
+        }
+
+    end
+    
     #
     # Outputs Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
@@ -292,7 +339,6 @@ USAGE
     
     Modules ------------------------
                                                                       
-    -l
     --lsmod                     list available modules
   
       
@@ -303,8 +349,17 @@ USAGE
     --mods-run-last             run modules after the website has been analyzed
                                   (default: modules are run on every page
                                     encountered to minimize network latency.) 
+
+
+    Reports ------------------------
     
-  
+    --lsrep                     list available reports
+    
+    
+    --reports=<repname,..>      comma separated list of reports to run
+                                  (use '*' to deploy all reports)
+                                      
+                                  
     Proxy --------------------------
     
     --proxy=<server:port>       specify proxy

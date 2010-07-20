@@ -17,7 +17,8 @@ opts = GetoptLong.new(
     [ '--resume',            '-r', GetoptLong::NO_ARGUMENT ],
     [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
     [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
-    [ '--lsmod',             '-l', GetoptLong::NO_ARGUMENT ],
+    [ '--lsmod',                   GetoptLong::NO_ARGUMENT ],
+    [ '--lsrep',                   GetoptLong::NO_ARGUMENT ],
     [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
@@ -29,6 +30,7 @@ opts = GetoptLong.new(
     [ '--threads',           '-t', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--reports',                 GetoptLong::REQUIRED_ARGUMENT ],        
     [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
@@ -49,6 +51,7 @@ $runtime_args['dir']['pwd']  =
     File.dirname( File.expand_path(__FILE__) ) + '/'
         
 $runtime_args['dir']['modules'] = $runtime_args['dir']['pwd'] + 'modules/'
+$runtime_args['dir']['reports'] = $runtime_args['dir']['pwd'] + 'reports/'
 $runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
 
 $runtime_args[:exclude]   = []
@@ -93,7 +96,10 @@ opts.each do |opt, arg|
 
         when '--lsmod'
             $runtime_args[:lsmod] = true
-
+    
+        when '--lsrep'
+            $runtime_args[:lsrep] = true
+                
         when '--threads'
             $runtime_args[:threads] = arg.to_i
 
@@ -109,6 +115,9 @@ opts.each do |opt, arg|
         when '--mods'
             $runtime_args[:mods] = arg.to_s.split( /,/ )
 
+        when '--reports'
+            $runtime_args[:reports] = arg.to_s.split( /,/ )
+                
         when '--proxy'
             $runtime_args[:proxy_addr], $runtime_args[:proxy_port] =
                 arg.to_s.split( /:/ )

@@ -137,7 +137,8 @@ class Registry
             begin
                 mod_load( dep_mod )
             rescue Exception => e
-                print_error( "In '#{mod_name}' dependencies: " + e.to_s )
+                raise( Arachni::Exceptions::DepModNotFound,
+                    "In '#{mod_name}' dependencies: " + e.to_s )
                 exit 0
             end
 

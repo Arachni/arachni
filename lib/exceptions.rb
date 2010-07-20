@@ -40,7 +40,17 @@ module Exceptions
         include Exceptions
         
     end
+
+    class DepModNotFound < StandardError
+        include Exceptions
         
+    end
+            
+    class ReportNotFound < StandardError
+        include Exceptions
+        
+    end
+    
     class NoURL < StandardError
         include Exceptions
             

@@ -21,6 +21,9 @@ require $runtime_args['dir']['lib'] + 'module/http'
 require $runtime_args['dir']['lib'] + 'module/base'
 require $runtime_args['dir']['lib'] + 'module/registrar'
 require $runtime_args['dir']['lib'] + 'module/registry'
+require $runtime_args['dir']['lib'] + 'report/base'
+require $runtime_args['dir']['lib'] + 'report/registry'
+require $runtime_args['dir']['lib'] + 'report/registrar'
 require 'ap'
 require 'pp'
 
@@ -66,8 +69,9 @@ class Framework
         
         @opts = @opts.merge( opts )
             
-       @modreg = Arachni::Module::Registry.new( @opts['dir']['modules'] )
-
+        @modreg = Arachni::Module::Registry.new( @opts['dir']['modules'] )
+        @repreg = Arachni::Report::Registry.new( @opts['dir']['reports'] )
+        
         parse_opts( )
 
         @spider   = Arachni::Spider.new( @opts )
@@ -104,6 +108,11 @@ class Framework
         end
         
         audit( )
+        
+        
+        if( @opts[:reports] )
+            run_reps( )
+        end
     end
     
     #
@@ -175,7 +184,6 @@ class Framework
             }
         end
 
-        get_results
     end
 
     #
@@ -183,16 +191,25 @@ class Framework
     #
     # @return    [Array<Class>]
     #
-    def ls_loaded
+    def ls_loaded_mods
         @modreg.ls_loaded( )
     end
-
+    
+    #
+    # Returns an array of all loaded reports
+    #
+    # @return    [Array<Class>]
+    #
+    def ls_loaded_reps
+        @repreg.ls_loaded( )
+    end
+    
     #
     # Loads modules
     #
     # @param [Array]    Array of modules to load
     #
-    def mod_load( mods = ['*'] )
+    def mod_load( mods = '*' )
         #
         # Check the validity of user provided module names
         #
@@ -213,11 +230,50 @@ class Framework
                     "Error: Module #{mod_name} wasn't found." )
             end
     
-            # load the module
-            @modreg.mod_load( mod_name )
+            begin
+                # load the module
+                @modreg.mod_load( mod_name )
+            rescue Exception => e
+                raise e
+            end
         }
     end
 
+    #
+    # Loads reports
+    #
+    # @param [Array]    Array of reports to load
+    #
+    def rep_load( reports = ['stdout'] )
+        #
+        # Check the validity of user provided module names
+        #
+        reports.each {
+            |report|
+            
+            # if the mod name is '*' load all modules
+            if report == '*'
+                @repreg.ls_available(  ).keys.each {
+                    |rep|
+                    @repreg.rep_load( rep )
+                }
+                break
+            end
+                
+            if( !@repreg.ls_available(  )[report] )
+                raise( Arachni::Exceptions::ReportNotFound,
+                    "Error: Report #{report} wasn't found." )
+            end
+    
+            begin
+                # load the module
+                @repreg.rep_load( report )
+            rescue Exception => e
+                raise e
+            end
+        }
+    end
+    
     #
     # Returns an array of hashes with information
     # about all available modules
@@ -257,6 +313,39 @@ class Framework
         Arachni::Module::Registry.clean( )
         
         return mod_info
+    
+    end
+    
+    #
+    # Returns an array of hashes with information
+    # about all available reports
+    #
+    # @return    [Array<Hash>]
+    #
+    def lsrep
+        
+        i = 0
+        rep_info = []
+        
+        @repreg.ls_available().each_pair {
+            |rep_name, path|
+    
+            @repreg.rep_load( rep_name )
+    
+            info = @repreg.info( i )
+    
+            info["rep_name"]    = rep_name
+            info["Path"]        = path['path'].strip
+            
+            i+=1
+            
+            rep_info << info
+        }
+        
+        # clean the registry inloading all modules
+#        Arachni::Report::Registry.clean( )
+        
+        return rep_info
     
     end
     
@@ -302,7 +391,7 @@ class Framework
         }
         
         # enque the loaded mods
-        for mod in ls_loaded
+        for mod in ls_loaded_mods
             mod_queue.enq mod
         end
         
@@ -313,6 +402,19 @@ class Framework
         threads.each { |t| t.join }
             
     end
+    
+    #
+    # Takes care of report execution
+    #
+    def run_reps( )
+    
+        for report in ls_loaded_reps
+             new_rep = report.new( get_results )
+             new_rep.run( )
+        end
+            
+    end
+
     
     #
     # Takes care of some options that need slight processing
