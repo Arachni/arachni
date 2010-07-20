@@ -15,8 +15,8 @@ module Module
 
 
 #
-# Arachni::Module class<br/>
-# Module base class, to be extended by Arachni::Modules.
+# Arachni's base module class<br/>
+# To be extended by Arachni::Modules.
 #    
 # Defines basic structure and provides utilities to modules.
 #
@@ -54,7 +54,7 @@ class Base
     # @param [Hash<String, Hash<Array, Hash>>]  structure
     #
     def initialize( page_data, structure )
-        @http = Arachni::HTTP.new( page_data['url']['href'] )
+        @http = Arachni::Module::HTTP.new( page_data['url']['href'] )
             
         if( page_data['cookies'] )
             @http.set_cookies( page_data['cookies'] )

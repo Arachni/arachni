@@ -14,9 +14,9 @@ module Arachni
 module Module
 
 #
-# Arachni::ModuleRegistrar module<br/>
+# Arachni::Module::Registrar module<br/>
 # When included into modules it registers
-# them with Arachni::ModuleRegistry
+# them with Arachni::Module::Registry
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: 0.1-planning
@@ -24,7 +24,7 @@ module Module
 module Registrar
 
     #
-    # Callback invoked whenever Arachni::ModuleRegistrar
+    # Callback invoked whenever Arachni::Module::Registrar
     # is included in another module or class.
     #
     def Registrar.included( mod )
@@ -32,7 +32,7 @@ module Registrar
     end
     
     #
-    # Used by modules to register their results with the ModuleRegistry.
+    # Used by modules to register their results with the Registry.
     #
     # @param    [Array<Vulnerability>]    results    module results
     #

@@ -14,7 +14,7 @@ module Arachni
 module Module
 
 #
-# Arachni::ModuleRegistry class<br/>
+# Arachni::Module::Registry class<br/>
 # Holds and manages the registry of the modules
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
@@ -43,7 +43,7 @@ class Registry
     end
 
     #
-    # Initializes Arachni::ModuleRegistry with the module library
+    # Initializes Arachni::Module::Registry with the module library
     #
     # @param [String] mod_lib path the the module directory
     #
@@ -178,7 +178,7 @@ class Registry
     #
     # Registers a module with the framework
     #
-    # Used by ModuleRegistrar *only*
+    # Used by the Registrar *only*
     #
     def Registry.register( mod )
         @@module_registry << mod
@@ -235,10 +235,10 @@ class Registry
     end
 
     #
-    # Stores an object regulated by ModuleRegistrar#add_storage
+    # Stores an object regulated by Registrar#add_storage
     # in @@module_storage
     #
-    # @see ModuleRegistrar#add_storage
+    # @see Registrar#add_storage
     #
     # @param    [Object]    obj
     #
@@ -248,9 +248,9 @@ class Registry
     
     #
     # Gets data from storage by key,
-    # regulated by ModuleRegistrar#get_storage
+    # regulated by Registrar#get_storage
     #
-    # @see ModuleRegistrar#add_storage
+    # @see Registrar#add_storage
     #
     # @param    [Object]    key
     #
@@ -276,7 +276,7 @@ class Registry
     # Class method
     #
     # Cleans the registry from boolean values
-    # passed with the Arachni::Module objects and updates it
+    # passed with the Arachni::Module::Base objects and updates it
     #
     # @return [Array<Arachni::Module>]  the new @@module_registry
     #

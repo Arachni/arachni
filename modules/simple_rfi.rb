@@ -23,23 +23,23 @@ module Modules
 # @author: Zapotek <zapotek@segfault.gr> <br/>
 # @version: $Rev$
 #
-class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module
+class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     #
-    # Arachni::HTTP instance
+    # Arachni::Module::HTTP instance
     #
     # You don't really need to declare this,
     # you inherit it from Arachni::Module
     #
-    # It's an initialized object of the Arachni::HTTP class configured
-    # with proxy, authentication, SSL settings etc.
+    # It's an initialized object of the Arachni::Module::HTTP instance
+    # class configured with proxy, authentication, SSL settings etc.
     #
-    # Look at Arachni::HTTP doc to see what you get.
+    # Look at Arachni::Module::HTTP instance doc to see what you get.
     #
     # If you need direct access to the Net::HTTP session you can get
     # it from @http.session
     #
-    # @return [Arachni::HTTP]
+    # @return [Arachni::Module::HTTP]
     #
     attr_reader :http
 

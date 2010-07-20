@@ -11,9 +11,10 @@
 =end
 
 module Arachni
+module Module
 
 #
-# Arachni::HTTP class<br/>
+# Arachni::Module::HTTP class<br/>
 # Provides a simple HTTP interface for modules
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
@@ -297,5 +298,6 @@ class HTTP
 
     end
 
+end
 end
 end
