@@ -45,7 +45,7 @@ class CLI
         @opts = opts
         
         # always print results to stdout also
-        if( @opts[:reports].size == 0 )
+        if( @opts[:reports].size == 0 && !@opts[:lsrep] )
             @opts[:reports] << 'stdout'
         end
         
