@@ -31,6 +31,8 @@ opts = GetoptLong.new(
     [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
@@ -56,7 +58,7 @@ $runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
 
 $runtime_args[:exclude]   = []
 $runtime_args[:redundant] = []
-$runtime_args[:reports]   = Hash.new
+$runtime_args[:reports]   = []
     
 opts.each do |opt, arg|
 
@@ -117,9 +119,14 @@ opts.each do |opt, arg|
             $runtime_args[:mods] = arg.to_s.split( /,/ )
 
         when '--report'
-            $runtime_args[:reports][arg.to_s.split( /:/ )[0]] =
-                    arg.to_s.split( /:/ )[1]
+            $runtime_args[:reports] << arg
         
+        when '--repload'
+            $runtime_args[:repload] = arg
+        
+        when '--repsave'
+            $runtime_args[:repsave] = arg
+                
         when '--proxy'
             $runtime_args[:proxy_addr], $runtime_args[:proxy_port] =
                 arg.to_s.split( /:/ )
