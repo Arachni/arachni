@@ -378,9 +378,29 @@ class Module
                 'injected'     => injection_str,
                 'id'           => id,
                 'regexp'       => id_regex.to_s,
-                'regexp_match' => res.body.scan( id_regex )
+                'regexp_match' => res.body.scan( id_regex ),
+                'response'     => res.body,
+                'headers'      => {
+                    'request'    => get_request_headers( ),
+                    'response'   => get_response_headers( res ),    
+                }
             }
         end
+    end
+    
+    def get_request_headers( )
+        @http.init_headers    
+    end
+    
+    def get_response_headers( res )
+        
+        header = Hash.new
+        res.each_capitalized {
+            |key|
+            header[key] = res.get_fields( key ).join( "\n" )
+        }
+        
+        header
     end
 
 end

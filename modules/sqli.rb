@@ -211,7 +211,13 @@ class SQLInjection < Arachni::Module
                         'id'           => id,
                         'regexp'       => id_regex.to_s,
                         'regexp_match' => match,
-                        'elem' => where
+                        'elem'         => where,
+                        'response'     => res.body,
+                        'headers'      => {
+                            'request'    => get_request_headers( ),
+                            'response'   => get_response_headers( res ),    
+                        }
+
                     }.merge( self.class.info )
                 )
                 

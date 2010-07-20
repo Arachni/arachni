@@ -115,7 +115,7 @@ class ResponseSplitting < Arachni::Module
     private
     
     def __log_results( where, var, res )
-        if res.get_fields( 'x-crlf-safe' )
+        if res.get_fields( 'x-crlf-safe' ) || true
         
             @results << Vulnerability.new( {
                     'var'          => var,
@@ -124,7 +124,12 @@ class ResponseSplitting < Arachni::Module
                     'id'           => 'x-crlf-safe',
                     'regexp'       => nil,
                     'regexp_match' => nil,
-                    'elem' => where
+                    'elem'         => where,
+                    'response'     => res.body,
+                    'headers'      => {
+                        'request'    => get_request_headers( ),
+                        'response'   => get_response_headers( res ),    
+                    }
                 }.merge( self.class.info )
             )
 

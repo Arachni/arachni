@@ -30,6 +30,9 @@ class HTTP
     #
     attr_reader :url
     
+    
+    attr_reader :init_headers
+    
     attr_reader :cookie_jar
     
     #
