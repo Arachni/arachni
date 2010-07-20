@@ -44,9 +44,13 @@ class CLI
         
         @opts = opts
         
-        if !@opts[:reports]
-            @opts[:reports] = []
-            @opts[:reports][0] = { 'stdout' => nil }
+        # always print results to stdout also
+        if( @opts[:reports].size == 0 )
+            @opts[:reports] << 'stdout'
+        end
+        
+        if( @opts[:repsave] && !@opts[:repload] )
+            @opts[:reports] << 'marshal_dump'
         end
         
         @arachni = Arachni::Framework.new( opts )
@@ -132,12 +136,21 @@ class CLI
 
                 when 'reports'
                     begin
-                        @arachni.rep_load( @opts[:reports].keys )
+                        @arachni.rep_load( @opts[:reports] )
                     rescue Arachni::Exceptions::ReportNotFound => e
                         print_error( e.to_s )
                         print_line
                         exit 0
                     end
+                    
+                when 'repload'
+                    begin
+                        @arachni.rep_convert( @opts[:repload] )
+                    rescue Arachni::Exceptions::ReportNotFound => e
+                        print_error( e.to_s )
+                        print_line
+                        exit 0
+                    end                    
                                         
                 when 'arachni_verbose'
                     verbose!
@@ -355,10 +368,13 @@ USAGE
     
     --lsrep                       list available reports
     
+    --repsave=<path>              saves a marshal dump of the results                     
+    
+    --repload=<path>              loads a marshal dump of the audit results
+                                  and lets you create a new report
     
     --report=<repname>:<outfile>  <repname>: the name of the report as displayed by '--lsrep'
                                   <outfile>: where to save the report
-                                    (Can be used multiple times.)
                                   
                                   
     Proxy --------------------------
