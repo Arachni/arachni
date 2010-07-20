@@ -14,8 +14,8 @@ module Arachni
 module Reports    
     
 #
-# Simple report tutorial.
-# It outputs the vulnerabilities on stdout.
+# Default report.
+# Outputs the vulnerabilities on stdout.
 #
 # Currently only for debugging.
 #
