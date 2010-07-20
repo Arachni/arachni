@@ -35,8 +35,8 @@ class Stdout < Arachni::Report::Base
     # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
     # @param [String]    outfile    where to save the report
     #
-    def initialize( vulns, outfile = nil )
-        @vulns = vulns
+    def initialize( audit, outfile = nil )
+        @audit = audit
     end
     
     #
@@ -47,14 +47,14 @@ class Stdout < Arachni::Report::Base
     def run( )
         
         print_line( )
-        print_ok( @vulns.size.to_s + ' vulnerabilities were detected.' )
+        print_ok( @audit['vulns'].size.to_s + ' vulnerabilities were detected.' )
         print_line( )
         
-        @vulns.each {
+        @audit['vulns'].each {
             |vuln|
             
-            print_status( vuln.mod_name )
-            print_status( '--------------' )
+            print_info( vuln.mod_name )
+            print_info( '**************' )
             
             vuln.each_pair {
                 |key, val|
@@ -153,6 +153,7 @@ class Stdout < Arachni::Report::Base
             }
             
             print_line( )
+            print_line( )
         }
     end
     
@@ -164,7 +165,8 @@ class Stdout < Arachni::Report::Base
     def self.info
         {
             'Name'           => 'Stdout',
-            'Description'    => %q{Prints the results to standard output.},
+            'Description'    => %q{Prints the results to standard output.
+                (Not Marshal dump safe, should only be used by the framework directly.)},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
         }
