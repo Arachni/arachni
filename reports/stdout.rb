@@ -53,7 +53,7 @@ class Stdout < Arachni::Report::Base
         @audit['vulns'].each {
             |vuln|
             
-            print_info( vuln.mod_name )
+            print_ok( vuln.mod_name )
             print_info( '**************' )
             
             vuln.each_pair {
