@@ -65,6 +65,14 @@ class CLI
             @opts[:reports] << 'marshal_dump'
         end
         
+        # instantiate the big-boy!
+        @arachni = Arachni::Framework.new( opts )
+        
+        # echo a banner
+        banner( )
+        
+        # work on the user supplied arguments
+        parse_opts( )
     end
 
     #
@@ -75,19 +83,7 @@ class CLI
         print_status( 'Initing...' )
                 
         begin
-            # instantiate the big-boy!
-            @arachni = Arachni::Framework.new( opts )
-            
-            # echo a banner
-            banner( )
-            
-            # work on the user supplied arguments
-            parse_opts( )
-            
-            # list the loaded modules
-            # will only output if --debug is on
             ls_loaded( )
-            
             @arachni.run( )
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
@@ -113,7 +109,7 @@ class CLI
 
     def ls_loaded
         print_line
-        print_debug( 'Module registry reports the following modules as loaded:' )
+        print_debug( 'ModuleRegistry reports the following modules as loaded:' )
         print_debug( '----------' )
 
         @arachni.ls_loaded_mods( ).each {

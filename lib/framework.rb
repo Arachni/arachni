@@ -73,12 +73,22 @@ class Framework
         @repreg = Arachni::Report::Registry.new( @opts['dir']['reports'] )
         
         parse_opts( )
+
+        #
+        # for now these should remain here
+        #
         
-        # pass any exceptions to the UI
-        begin
-            validate_opts
-        rescue
-            raise
+        # TODO: remove global vars
+        if !@opts[:user_agent]
+            @opts[:user_agent] = $runtime_args[:user_agent] =
+                'Arachni/' + VERSION
+        end
+        
+        # TODO: remove global vars
+        if @opts[:authed_by]
+            authed_by = " (Scan authorized by: #{@opts[:authed_by]})" 
+            @opts[:user_agent]         += authed_by 
+            $runtime_args[:user_agent] += authed_by
         end
         
         @spider   = Arachni::Spider.new( @opts )
@@ -112,7 +122,16 @@ class Framework
     # @return    [Array<Vulnerability>] the results of the audit
     #
     def run
+        
+        # pass any exceptions to the UI
+        begin
+            validate_opts
+        rescue
+            raise
+        end
+        
         audit( )
+        
         
         if( @opts[:reports] )
             run_reps( get_results )
@@ -489,19 +508,6 @@ class Framework
 
         if @opts[:repload] then return end
             
-        # TODO: remove global vars
-        if !@opts[:user_agent]
-            @opts[:user_agent] = $runtime_args[:user_agent] =
-                'Arachni/' + VERSION
-        end
-        
-        # TODO: remove global vars
-        if @opts[:authed_by]
-            authed_by = " (Scan authorized by: #{@opts[:authed_by]})" 
-            @opts[:user_agent]         += authed_by 
-            $runtime_args[:user_agent] += authed_by
-        end
-        
         if !@opts[:audit_links] &&
             !@opts[:audit_forms] &&
             !@opts[:audit_cookies]
