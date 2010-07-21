@@ -149,35 +149,17 @@ class Framework
                 'headers'    => headers,
                 'cookies' => @opts[:cookies]
             }
-
+        
             if !@opts[:mods_run_last]
                 run_mods( page_data, site_structure[url] )
             else
-
-                if $_interrupted == true
-                    print_line
-                    print_info( 'Site analysis was interrupted,' +
-                    ' do you want to audit the analyzed pages?' )
-
-                    print_info( 'Audit?(\'y\' to audit, \'n\' to exit)(y/n)' )
-
-                    if gets[0] == 'y'
-                        skip_to_audit = true
-                    else
-                        print_info( 'Exiting...' )
-                        exit 0
-                    end
-
-                end
-                
+                handle_interrupt( )
                 mods_run_last_data.push( { page_data => site_structure[url]} )
-                    
             end
 
             if skip_to_audit == true
                 print_info( 'Skipping to audit.' )
                 print_line
-                $_interrupted = false
                 break
             end
 
@@ -388,6 +370,25 @@ class Framework
     
     private
     
+    def handle_interrupt( )
+        
+        if( $_interrupted == false ) then return false end
+        
+        print_line
+        print_info( 'Arachni was interrupted,' +
+            ' do you want to continue?' )
+            
+        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+            
+        if gets[0] == 'e'
+            print_info( 'Exiting...' )
+            exit 0
+        end
+        
+        $_interrupted = false
+
+    end
+    
     #
     # Takes care of module execution and threading
     #
@@ -395,7 +396,7 @@ class Framework
 
         mod_queue = Queue.new
         
-        threads = ( 1..@opts[:threads] ).map {
+        @threads = ( 1..@opts[:threads] ).map {
             |i|
             Thread.new( mod_queue ) {
                 |q|
@@ -404,10 +405,6 @@ class Framework
                     print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
                     print_debug( )
                     
-                    if $_interrupted == true
-                        raise( 'Site audit was interrupted, exiting...' )
-                    end
-                    
                     print_status( curr_mod.to_s )
                     
                     mod_new = curr_mod.new( page_data, structure )
@@ -415,6 +412,10 @@ class Framework
                     mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
                     mod_new.run
                     mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
+                    
+                    while( handle_interrupt(  ) )
+                    end
+                     
                 end
             }
         }
@@ -425,10 +426,10 @@ class Framework
         end
         
         # send terminators down the queue
-        threads.size.times { mod_queue.enq mod_queue }
+        @threads.size.times { mod_queue.enq mod_queue }
         
         # wait for threads to finish
-        threads.each { |t| t.join }
+        @threads.each { |t| t.join }
             
     end
     
