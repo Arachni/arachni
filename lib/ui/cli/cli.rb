@@ -71,7 +71,7 @@ class CLI
         # echo a banner
         banner( )
         
-        # 
+        # work on the user supplied arguments
         parse_opts( )
     end
 
