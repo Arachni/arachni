@@ -1,0 +1,105 @@
+$Id$
+
+This file contains some brief instructions on contributing to Arachni.    
+
+Code Style
+==========
+
+In order to maintain consistency and keep the code pretty you should
+adhere to the following guidelines:
+
+ - 4 spaces, no tabs
+ - Maximum line length 75-80 columns, try not to exceed that limit
+ - {} instead of "do" for blocks and keep the iterator var in it's own line
+    Like so:
+        arr.each {
+            |item|
+        }
+
+In general, take a look in the existing code and try to follow that style.
+
+
+Code No-Nos
+===========
+
+1. Don't print to standard output.
+The interface in use won't be able to see your output and route it
+accordingly.
+
+Arahcni provides you with wrappers that you can use, take a look in:
+    lib/ui/cli/output.rb
+
+All UIs will provide these methods to handle your output, use them.
+
+
+2. Don't use "sleep".
+It is unlikely that you will need it, but if you do, use
+"select(nil, nil, nil, <time>)" instead to avoid multi-threading issues.
+
+
+3. Avoid creating your own instance of Net::HTTP.
+If you are writing a module you are provided with wrappers for Net:HTTP
+pre-configured with proxy, auth and ssl settings
+
+You also have access to the instantiated Net:HTTP session so use that
+if you must.
+
+Take a look in the tutorial module to see what you get:
+    modules/simple_rfi.rb
+    
+The base module will also give you some insights:
+    lib/module/base.rb
+
+If you absolutely have to bypass Arachni's facilities you must obey the
+run-time settings in "$runtime_args".
+
+
+Creating New Modules
+====================
+Arachni provides you with examples for the usual types of modules.
+
+This is your main guide:
+    modules/simple_rfi.rb
+    
+This covers most of the usual tasks when writing a module.
+It lets Arachni do all the work.
+
+For something more elaborate look in:
+    modules/response_splitting.rb
+    modules/sqli.rb
+    
+These modules do their own vulnerability checking and logging.
+
+If you want to create coupled modules take a look in:
+    modules/extract_objects.rb
+    modules/audit_objects.rb
+
+In this case "extract_objects.rb" extracts information from the
+web pages and saves it in the module datastore.
+
+The datastore is persistent and shared between all modules.
+
+"audit_objects.rb" then gets the data harvested by "extract_objects.rb"
+and handles it accordingly.
+
+In general, before writing a module copy an existing one that's close
+to your needs and modify it.
+
+
+Creating New Reports
+====================
+The only thing that you should keep in mind when creating a new report
+is to adhere to the structure shown in:
+    reports/ap.rb
+    
+However, do provide an appropriate default "outfile" value in "initialize".
+
+Other than that you can do whatever you want, you have all of Ruby's
+power to work with. 
+
+
+Licensing
+=========
+All code must be contributed with a GPL v2 compatible license.
+Do place licensing information in your code files.
+
