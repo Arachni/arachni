@@ -128,15 +128,6 @@ class Base
         page_data['url']['vars'].keys.each {
             |var|
 
-            # catch global interrupts and exit...
-            if $_interrupted == true
-                print_line
-                print_info( 'Site audit was interrupted, exiting...' )
-                print_line
-#                print_results( )
-                exit 0
-            end
-            
             # tell the user what we're doing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tlink var '" +
@@ -202,15 +193,6 @@ class Base
             form['auditable'].each_with_index {
                 |input, i|
 
-                # catch global interrupts and exit...
-                if $_interrupted == true
-                    print_line
-                    print_info( 'Site audit was interrupted, exiting...' )
-                    print_line
-#                    print_results( )
-                    exit 0
-                end
-                
                 # inject our own value
                 input['value'] = injection_str
 
@@ -278,15 +260,6 @@ class Base
         get_cookies.each {
             |cookie|
 
-            # catch global interrupts and exit...
-            if $_interrupted == true
-                print_line
-                print_info( 'Site audit was interrupted, exiting...' )
-                print_line
-#                print_results( )
-                exit 0
-            end
-            
             # inject our own value
             cookie['value'] = injection_str
 
@@ -359,7 +332,7 @@ class Base
     end
         
     private
-
+    
     def get_matches( where, var, res, injection_str, id_regex, id )
         
         # fairly obscure condition...pardon me...
