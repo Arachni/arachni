@@ -6,7 +6,7 @@
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
-  (See LINCENSE file for details)
+  (See LICENSE file for details)
 
 =end
 
@@ -21,7 +21,7 @@ module Module
 # Defines basic structure and provides utilities to modules.
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: 0.1-planning
+# @version: 0.1-pre
 #
 class Base
 

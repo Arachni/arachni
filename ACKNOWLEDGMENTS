@@ -1,6 +1,6 @@
 $Id$
 
-  Arachni v0.1-planning
+  Arachni v0.1-pre
 
 
 I’d like to thank:
@@ -11,3 +11,7 @@ I’d like to thank:
     * The people who preferred to remain anonymous
 
 for allowing me to test Arachni against their websites.
+
+Also:
+    * Steve Pinkham
+for patches.

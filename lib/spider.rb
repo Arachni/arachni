@@ -6,16 +6,17 @@
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
-  (See LINCENSE file for details)
+  (See LICENSE file for details)
 
 =end
 require 'rubygems'
 require 'anemone'
 require 'nokogiri'
-require 'lib/anemone/core'
-require 'lib/anemone/http'
-require 'lib/anemone/page'
-require 'lib/net/http'
+$:.unshift(File.expand_path(File.dirname(__FILE__))) 
+require 'lib/anemone/core.rb'
+require 'lib/anemone/http.rb'
+require 'lib/anemone/page.rb'
+require 'lib/net/http.rb'
 require 'ap'
 require 'pp'
 
@@ -26,7 +27,7 @@ module Arachni
 # Crawls the URL in opts[:url] and grabs the HTML code and headers
 #
 # @author: Zapotek <zapotek@segfault.gr> <br/>
-# @version: 0.1-planning
+# @version: 0.1-pre
 #
 class Spider
 

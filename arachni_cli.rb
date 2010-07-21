@@ -7,14 +7,15 @@
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
-  (See LINCENSE file for details)
+  (See LICENSE file for details)
 
 =end
 
 require 'pp'
 require 'ap'
 
-require 'getoptslong'
+$:.unshift(File.expand_path(File.dirname(__FILE__))) 
+require 'getoptslong.rb'
 require $runtime_args['dir']['lib'] + 'ui/cli/cli'
 
 cli = Arachni::UI::CLI.new( $runtime_args )
