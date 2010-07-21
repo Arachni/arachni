@@ -65,14 +65,6 @@ class CLI
             @opts[:reports] << 'marshal_dump'
         end
         
-        # instantiate the big-boy!
-        @arachni = Arachni::Framework.new( opts )
-        
-        # echo a banner
-        banner( )
-        
-        # work on the user supplied arguments
-        parse_opts( )
     end
 
     #
@@ -83,7 +75,19 @@ class CLI
         print_status( 'Initing...' )
                 
         begin
+            # instantiate the big-boy!
+            @arachni = Arachni::Framework.new( opts )
+            
+            # echo a banner
+            banner( )
+            
+            # work on the user supplied arguments
+            parse_opts( )
+            
+            # list the loaded modules
+            # will only output if --debug is on
             ls_loaded( )
+            
             @arachni.run( )
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
@@ -323,6 +327,10 @@ USAGE
                                 
     
     --user-agent=<user agent>   specify user agent
+    
+    --authed-by=<who>           who authorized the scan, include name and e-mail address
+                                  It'll make it easier on the sys-admins.
+                                  (Will be appended to the user-agent string.)
     
     
     Crawler -----------------------

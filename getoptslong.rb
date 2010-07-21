@@ -32,6 +32,7 @@ opts = GetoptLong.new(
     [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
@@ -126,7 +127,10 @@ opts.each do |opt, arg|
         
         when '--repsave'
             $runtime_args[:repsave] = arg
-                
+        
+        when '--authed-by'
+            $runtime_args[:authed_by] = arg
+                        
         when '--proxy'
             $runtime_args[:proxy_addr], $runtime_args[:proxy_port] =
                 arg.to_s.split( /:/ )

@@ -14,7 +14,7 @@
 require 'pp'
 require 'ap'
 
-$:.unshift(File.expand_path(File.dirname(__FILE__))) 
+$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) ) 
 require 'getoptslong.rb'
 require $runtime_args['dir']['lib'] + 'ui/cli/cli'
 
