@@ -44,19 +44,34 @@ class CLI
         
         @opts = opts
         
-        # always print results to stdout also
+        #
+        # the stdout report is the default one for the CLI,
+        # each UI should have it's own default
+        #
+        # always load the stdout report unless the user requested
+        # to see a list of the available reports
+        #
+        # *do not* forget this check, otherwise the reports registry
+        # will desync
+        #
         if( @opts[:reports].size == 0 && !@opts[:lsrep] )
             @opts[:reports] << 'stdout'
         end
         
+        # when this is true the user didn't ask us to convert an existing
+        # report but create a new one, so add the marshal_dump report
+        # to the reports list
         if( @opts[:repsave] && !@opts[:repload] )
             @opts[:reports] << 'marshal_dump'
         end
         
+        # instantiate the big-boy!
         @arachni = Arachni::Framework.new( opts )
         
+        # echo a banner
         banner( )
         
+        # 
         parse_opts( )
     end
 
@@ -88,18 +103,9 @@ class CLI
             print_line
             exit 0
         end
-        
-        print_results( )
     end
 
     private
-
-    def print_results
-        results = @arachni.get_results( )
-        if !results || results.size == 0
-            print_status( 'No results were compiled by the modules.' )
-        end
-    end
 
     def ls_loaded
         print_line
@@ -123,6 +129,23 @@ class CLI
 
                 when 'help'
                     usage
+                    exit 0
+                    
+                when 'arachni_verbose'
+                    verbose!
+
+                when 'debug'
+                    debug!
+
+                when 'only_positives'
+                    only_positives!
+
+                when 'lsmod'
+                    lsmod
+                    exit 0
+                
+                when 'lsrep'
+                    lsrep
                     exit 0
                     
                 when 'mods'
@@ -158,22 +181,7 @@ class CLI
                         exit 0
                     end                    
                                         
-                when 'arachni_verbose'
-                    verbose!
 
-                when 'debug'
-                    debug!
-
-                when 'only_positives'
-                    only_positives!
-
-                when 'lsmod'
-                    lsmod
-                    exit 0
-                
-                when 'lsrep'
-                    lsrep
-                    exit 0
                                         
 #                when 'delay'
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
