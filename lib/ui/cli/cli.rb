@@ -113,7 +113,7 @@ class CLI
 
     def ls_loaded
         print_line
-        print_debug( 'ModuleRegistry reports the following modules as loaded:' )
+        print_debug( 'Module registry reports the following modules as loaded:' )
         print_debug( '----------' )
 
         @arachni.ls_loaded_mods( ).each {
