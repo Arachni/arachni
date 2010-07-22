@@ -48,9 +48,9 @@ class Framework
     #
     include Arachni::UI::Output
     
-    VERSION  = '0.1-pre'
-    
-    REVISION = '$Rev$'
+    VERSION      = '0.1-pre'
+    REVISION     = '$Rev$'
+    REPORT_EXT   = '.afr'
 
     #
     # Instance options
@@ -391,6 +391,10 @@ class Framework
         REVISION
     end
     
+    def report_ext
+        REPORT_EXT
+    end
+    
     private
     
     def handle_interrupt( )
@@ -464,10 +468,10 @@ class Framework
         ls_loaded_reps.each_with_index {
             |report, i|
 
-            if( @opts[:repsave] && @opts[:repsave].size == 0 )
+            if( !@opts[:repsave] || @opts[:repsave].size == 0 )
                 new_rep = report.new( results )
             else
-                new_rep = report.new( results, @opts[:repsave] )
+                new_rep = report.new( results, @opts[:repsave] + REPORT_EXT )
             end
             
             new_rep.run( )

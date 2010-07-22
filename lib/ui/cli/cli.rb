@@ -32,6 +32,8 @@ class CLI
     #
     attr_reader :opts
 
+    PROFILE_EXT     = '.afp'
+    
     # the output interface for CLI
     include Arachni::UI::Output
 
@@ -303,7 +305,7 @@ class CLI
         profile.delete( :authed_by )
         
         begin
-            f = File.open( filename, 'w' )
+            f = File.open( filename + PROFILE_EXT, 'w' )
             Marshal.dump( profile, f )
         rescue Exception => e
             banner( )
@@ -383,6 +385,7 @@ USAGE
                                   (Will be appended to the user-agent string.)
     
     --save-profile=<file>       saves the current run profile/options to <file>
+                                  (The file will be saved with an extention of: #{PROFILE_EXT})
                                   
     --load-profile=<file>       loads a run profile from <file>
                                   (You can complement it with more options, except for:
@@ -447,7 +450,8 @@ USAGE
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves a marshal dump of the results                     
+    --repsave=<file>              saves a marshal dump of the results
+                                    (The file will be saved with an extention of: #{@arachni.report_ext})               
     
     --repload=<file>              loads a marshal dump of the audit results
                                   and lets you create a new report
