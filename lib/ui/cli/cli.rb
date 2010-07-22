@@ -44,6 +44,16 @@ class CLI
         
         @opts = opts
         
+        if( @opts[:load_profile] )
+            begin
+                load_profile( @opts[:load_profile] )
+            rescue Exceptions => e
+                print_error( e.to_s )
+                print_line
+                exit 0
+            end
+        end
+                
         #
         # the stdout report is the default one for the CLI,
         # each UI should have it's own default
@@ -66,7 +76,7 @@ class CLI
         end
         
         # instantiate the big-boy!
-        @arachni = Arachni::Framework.new( opts )
+        @arachni = Arachni::Framework.new( @opts  )
         
         # echo a banner
         banner( )
@@ -123,7 +133,8 @@ class CLI
     
     def parse_opts(  )
 
-        @opts.each do |opt, arg|
+        @opts.each {
+            |opt, arg|
 
             case opt.to_s
 
@@ -147,17 +158,26 @@ class CLI
                 when 'lsrep'
                     lsrep
                     exit 0
+
+                when 'save_profile'
+                    begin
+                        save_profile( arg )
+                    rescue Exceptions => e
+                        print_error( e.to_s )
+                        print_line
+                        exit 0
+                    end                    
                     
                 when 'mods'
                     begin
-                        @arachni.mod_load( @opts[:mods] )
+                        @arachni.mod_load( arg )
                     rescue Arachni::Exceptions::ModNotFound => e
                         print_error( e.to_s )
                         print_info( "Run arachni with the '-l' parameter" +
                             " to see all available modules." )
                         print_line
                         exit 0
-                    rescue Arachni::Exceptions::DepModNotFound => e
+                    rescue Exception => e
                         print_error( e.to_s )
                         print_line
                         exit 0
@@ -165,8 +185,8 @@ class CLI
 
                 when 'reports'
                     begin
-                        @arachni.rep_load( @opts[:reports] )
-                    rescue Arachni::Exceptions::ReportNotFound => e
+                        @arachni.rep_load( arg )
+                    rescue Exception => e
                         print_error( e.to_s )
                         print_line
                         exit 0
@@ -174,8 +194,8 @@ class CLI
                     
                 when 'repload'
                     begin
-                        @arachni.rep_convert( @opts[:repload] )
-                    rescue Arachni::Exceptions::ReportNotFound => e
+                        @arachni.rep_convert( arg )
+                    rescue Exception => e
                         print_error( e.to_s )
                         print_line
                         exit 0
@@ -187,7 +207,7 @@ class CLI
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
 
             end
-        end
+        }
 
     end
 
@@ -260,6 +280,40 @@ class CLI
 
     end
     
+    def load_profile( filename )
+        begin
+            f = File.open( filename )
+            @opts.delete( :load_profile )
+            # TODO remove global vars
+            $runtime_args = @opts = @opts.merge( Marshal.load( f ) )
+        rescue Exception => e
+            banner( )
+            print_error( e.to_s )
+            print_line( )
+            exit 0
+        end
+    end
+    
+    def save_profile( filename )
+        profile = @opts
+        
+        profile.delete( 'dir' )
+        profile.delete( :load_profile )
+        profile.delete( :save_profile )
+        profile.delete( :authed_by )
+        
+        begin
+            f = File.open( filename, 'w' )
+            Marshal.dump( profile, f )
+        rescue Exception => e
+            banner( )
+            print_error( e.to_s )
+            print_line( )
+            exit 0
+        end
+
+    end
+    
     #
     # Outputs Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
@@ -328,6 +382,13 @@ USAGE
                                   It'll make it easier on the sys-admins.
                                   (Will be appended to the user-agent string.)
     
+    --save-profile=<file>       saves the current run profile/options to <file>
+                                  
+    --load-profile=<file>       loads a run profile from <file>
+                                  (You can complement it with more options, except for:
+                                      * --mods
+                                      * --redundant)
+                                  
     
     Crawler -----------------------
     
@@ -386,13 +447,13 @@ USAGE
     
     --lsrep                       list available reports
     
-    --repsave=<path>              saves a marshal dump of the results                     
+    --repsave=<file>              saves a marshal dump of the results                     
     
-    --repload=<path>              loads a marshal dump of the audit results
+    --repload=<file>              loads a marshal dump of the audit results
                                   and lets you create a new report
     
-    --report=<repname>:<outfile>  <repname>: the name of the report as displayed by '--lsrep'
-                                  <outfile>: where to save the report
+    --report=<repname>:<file>     <repname>: the name of the report as displayed by '--lsrep'
+                                  <file>: where to save the report
                                   
                                   
     Proxy --------------------------

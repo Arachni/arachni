@@ -134,7 +134,13 @@ class Framework
         
         
         if( @opts[:reports] )
-            run_reps( get_results )
+            begin
+                run_reps( get_results )
+            rescue Exception => e
+                print_error( e.to_s )
+                print_line
+                exit 0
+            end
         end
     end
     

@@ -34,6 +34,8 @@ opts = GetoptLong.new(
     [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--load-profile',            GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--save-profile',            GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
@@ -127,7 +129,13 @@ opts.each do |opt, arg|
         
         when '--repsave'
             $runtime_args[:repsave] = arg
-        
+
+        when '--save-profile'
+            $runtime_args[:save_profile] = arg
+
+        when '--load-profile'
+            $runtime_args[:load_profile] = arg
+                        
         when '--authed-by'
             $runtime_args[:authed_by] = arg
                         
