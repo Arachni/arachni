@@ -123,19 +123,18 @@ class Base
     def audit_links( injection_str, id_regex = nil, id = nil, &block )
 
         results = []
-            
+        
         # iterate through all url vars and audit each one
-        page_data['url']['vars'].keys.each {
-            |var|
+        inject_each_var( page_data['url']['vars'], injection_str ).each {
+            |vars|
 
             # tell the user what we're doing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tlink var '" +
-                var + "' of " + page_data['url']['href'] )
+                vars['altered'] + "' of " + page_data['url']['href'] )
             
             # audit the url vars
-            res = @http.get( page_data['url']['href'],
-                { var => injection_str } )
+            res = @http.get( page_data['url']['href'], vars['hash'] )
 
             # something might have gone bad,
             # make it doesn't ruin the rest of the show...
@@ -148,8 +147,9 @@ class Base
             end
             
             # get matches
-            result = get_matches( 'links', var, res, injection_str,
+            result = get_matches( 'links', vars['altered'], res, injection_str,
                                    id_regex, id )
+                                   
             # and append them to the results array
             results << result if result
         }
@@ -183,34 +183,24 @@ class Base
         results = []
         
         # iterate through each form
-        get_forms.each {
-            |form|
+        get_forms.each_with_index {
+            |form, i|
             
             # if we don't have any auditable elements just return
             if !form['auditable'] then return results end
             
             # iterate through each auditable element
-            form['auditable'].each_with_index {
-                |input, i|
+            inject_each_var( form['auditable'][i], injection_str ).each {
+                |input|
 
-                # inject our own value
-                input['value'] = injection_str
-
-                if !input['name']
-                    #        input['name'] = '<n/a>'
-                    next
-                end
-
-#                ap form['attrs']
                 # inform the user what we're auditing
                 print_status( self.class.info['Name']  + 
                     " is auditing:\tform input '" +
-                    input['name'] + "' with action " +
+                    input['altered'] + "' with action " +
                     form['attrs']['action'] )
 
                 # post the form
-                res = @http.post( form['attrs']['action'],
-                    { input['name'] => injection_str } )
+                res = @http.post( form['attrs']['action'], input )
 
                 # make sure that we have a response before continuing
                 if !res || !res.body then next end
@@ -222,8 +212,9 @@ class Base
                 end
 
                 # get matches
-                result = get_matches( 'forms', input['name'],
+                result = get_matches( 'forms', input['altered'],
                                 res, injection_str, id_regex, id )
+                                
                 # and append them
                 results << result if result
             }
@@ -260,9 +251,6 @@ class Base
         inject_each_var( get_cookies_simple, injection_str ).each {
             |cookie|
 
-            # inject our own value
-#            cookie['value'] = injection_str
-
             # tell the user what we're auditing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tcookie '" +
@@ -270,7 +258,8 @@ class Base
                 page_data['url']['href'] )
 
             # make a get request with our cookies
-            res = @http.cookie( page_data['url']['href'], cookie['hash'], nil )
+            res = @http.cookie( page_data['url']['href']  + @http.a_to_s(
+                a_to_s( url_vars ) ), cookie['hash'], nil )
 
             # check for a response
             if !res || !res.body then next end
@@ -404,6 +393,9 @@ class Base
         var_combo = []
         url_vars.keys.each {
             |k|
+            
+        if( !url_vars[k] ) then url_vars[k] = '' end 
+            
             var_combo << { 
                 'altered' => k,
                 'hash'    => url_vars.merge( { k => to_inj } ) }
