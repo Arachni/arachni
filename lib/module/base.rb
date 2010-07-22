@@ -377,6 +377,27 @@ class Base
         
         header
     end
+    
+    def get_data_file( filename, &block )
+        
+        # the path of the module that called us
+        mod_path = block.source_location[0]
+        
+        # the name of the module that called us
+        mod_name = File.basename( mod_path, ".rb")
+        
+        # the path to the module's data file directory
+        path    = File.expand_path( File.dirname( mod_path ) ) +
+            '/' + mod_name + '/'
+                
+        file = File.open( path + '/' + filename ).each {
+            |line|
+            yield line
+        }
+        
+        file.close
+             
+    end
 
 end
 end

