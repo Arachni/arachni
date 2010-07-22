@@ -388,17 +388,26 @@ class Base
              
     end
     
-    def  inject_each_var( url_vars, to_inj )
+    #
+    # Iterates through a hash setting each value to to_inj
+    # and returns an array of new hashes
+    #
+    # @param    [Hash]    hash    name=>value pairs
+    # @param    [String]    to_inj    the string to inject
+    #
+    # @return    [Array]
+    #
+    def inject_each_var( hash, to_inj )
         
         var_combo = []
-        url_vars.keys.each {
+        hash.keys.each {
             |k|
             
-        if( !url_vars[k] ) then url_vars[k] = '' end 
+        if( !hash[k] ) then hash[k] = '' end 
             
             var_combo << { 
                 'altered' => k,
-                'hash'    => url_vars.merge( { k => to_inj } ) }
+                'hash'    => hash.merge( { k => to_inj } ) }
         }
         
         var_combo
