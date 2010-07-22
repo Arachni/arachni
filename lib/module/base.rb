@@ -263,8 +263,6 @@ class Base
             # inject our own value
 #            cookie['value'] = injection_str
 
-            ap cookie
-            
             # tell the user what we're auditing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tcookie '" +
