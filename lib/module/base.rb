@@ -142,7 +142,7 @@ class Base
             
             # call the passed block
             if block_given?
-                block.call( var, res )
+                block.call( vars['altered'], res )
                 return
             end
             
@@ -207,7 +207,7 @@ class Base
                 
                 # call the block, if there's one
                 if block_given?
-                    block.call( input['name'], res )
+                    block.call( input['altered'], res )
                     return
                 end
 
@@ -265,7 +265,7 @@ class Base
             if !res || !res.body then next end
             
             if block_given?
-                block.call( cookie['name'], res )
+                block.call( cookie['altered'], res )
                 return
             end
             
