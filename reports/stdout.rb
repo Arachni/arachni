@@ -143,7 +143,7 @@ class Stdout < Arachni::Report::Base
                         print_info( key + ':' )
                         val.each {
                             |item|
-                            print_info( "\t" + item )
+                            print_info( "\t" + item.strip )
                         }
                         print_line( )
                     end 
