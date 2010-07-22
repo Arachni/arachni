@@ -499,7 +499,7 @@ class Framework
 
                 when 'cookie_jar'
                     @opts[:cookies] =
-                        HTTP.parse_cookiejar( @opts[:cookie_jar] )
+                        Arachni::Module::HTTP.parse_cookiejar( @opts[:cookie_jar] )
 
 #                when 'delay'
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
