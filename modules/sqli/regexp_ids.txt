@@ -62,3 +62,33 @@ INSERT INTO .*?
 Unknown column
 where clause
 SqlServer
+SQL syntax.*MySQL
+Warning.*mysql_.*
+valid MySQL result
+MySqlClient\.
+PostgreSQL.*ERROR
+Warning.*pg_.*
+valid PostgreSQL result
+Npgsql\.
+Driver.*SQL[\-\_\ ]*Server
+OLE DB.*SQL Server
+SQL Server.*Driver
+Warning.*mssql_.*
+Access.*Driver
+Driver.*Access
+JET Database Engine
+Access Database Engine
+ORA-[0-9][0-9][0-9][0-9]
+Oracle error
+Oracle.*Driver
+Warning.*oci_.*
+Warning.*ora_.*
+CLI Driver.*DB2
+DB2 SQL error
+Exception.*Informix
+Sybase message
+Dynamic SQL Error
+Warning.*sqlite_.*
+SQLite/JDBCDriver
+SQLite.Exception
+System.Data.SQLite.SQLiteException
