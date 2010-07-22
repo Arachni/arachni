@@ -82,6 +82,17 @@ The datastore is persistent and shared between all modules.
 "audit_objects.rb" then gets the data harvested by "extract_objects.rb"
 and handles it accordingly.
 
+One last note.
+You're probably going to be working with large arrays of strings,
+either regular expressions or strings to inject to the webapp,
+so it's better to keep them in an external file under:
+    modules/<modname>/
+
+Use "get_data_file( filename ){ |line| }" to get the file line by line.
+You just pass the filename (no path), get_data_file() will take care of the rest. 
+
+This will make the strings easier to update and keep your modules smaller.
+
 In general, before writing a module copy an existing one that's close
 to your needs and modify it.
 
