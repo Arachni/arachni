@@ -257,20 +257,22 @@ class Base
         results = []
         
         # iterate through each cookie    
-        get_cookies.each {
+        inject_each_var( get_cookies_simple, injection_str ).each {
             |cookie|
 
             # inject our own value
-            cookie['value'] = injection_str
+#            cookie['value'] = injection_str
 
+            ap cookie
+            
             # tell the user what we're auditing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tcookie '" +
-                cookie['name'] + "' of " +
+                cookie['altered'] + "' of " +
                 page_data['url']['href'] )
 
             # make a get request with our cookies
-            res = @http.cookie( page_data['url']['href'], [cookie], nil )
+            res = @http.cookie( page_data['url']['href'], cookie['hash'], nil )
 
             # check for a response
             if !res || !res.body then next end
@@ -281,7 +283,7 @@ class Base
             end
             
             # get possible matches
-            result = get_matches( 'cookies', cookie['name'],
+            result = get_matches( 'cookies', cookie['altered'],
                         res, injection_str, id_regex, id )
             # and append them
             results << result if result
@@ -398,6 +400,20 @@ class Base
         file.close
              
     end
+    
+    def  inject_each_var( url_vars, to_inj )
+        
+        var_combo = []
+        url_vars.keys.each {
+            |k|
+            var_combo << { 
+                'altered' => k,
+                'hash'    => url_vars.merge( { k => to_inj } ) }
+        }
+        
+        var_combo
+    end
+
 
 end
 end

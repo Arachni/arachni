@@ -164,17 +164,20 @@ class HTTP
     #
     def cookie( url, cookie_vars, url_vars = nil)
 
-        cookie_vars.each {
-            |a_cookie|
+        cookies = ''
+        cookie_vars.each_pair {
+            |name, value|
 
-            name  =  a_cookie['name']
-            value =  a_cookie['value']
+#            name  =  a_cookie['name']
+#            value =  a_cookie['value']
             
             # don't audit cookies in the cookie jar                
             if( @cookie_jar && @cookie_jar[name] ) then next end
             
-            @init_headers['cookie'] +=  "#{name}=#{value}; "
+            cookies +=  "#{name}=#{value}; "
         }
+        
+        @init_headers['cookie'] = cookies
 
         begin
             @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
