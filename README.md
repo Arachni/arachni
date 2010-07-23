@@ -278,6 +278,13 @@ Requirements
   * Yardoc (if you want to generate the documentation)
 
 
+Supported platforms
+----
+Arachni should work on all *nix and POSIX compliant platforms with Ruby
+and the aforementioned requirements.
+
+Windows users should run Arachni in Cygwin.
+
 Bug reports/Feature requests
 -----
 Please send your feedback using Trac's ticket system at 
