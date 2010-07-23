@@ -56,7 +56,7 @@ class ExtractObjects < Arachni::Module::Base
         {
             'Name'           => 'ExtractObjects',
             'Description'    => %q{Extracts all 'object' elements from a webpage.},
-            'Methods'        => ['get'],
+            'Elements'       => [],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

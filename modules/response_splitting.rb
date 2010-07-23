@@ -94,7 +94,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header. 
             },
-            'Methods'        => ['get', 'post', 'cookie'],
+            'Elements'       => ['forms', 'links', 'cookies'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

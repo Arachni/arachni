@@ -463,12 +463,19 @@ class Framework
             Thread.new( mod_queue ) {
                 |q|
                 until( q == ( curr_mod = q.deq ) )
+                    
+                    if( !run_module?( curr_mod, structure ) )
+                        print_verbose( 'Skipping ' + curr_mod.to_s +
+                            ', nothing to audit.' )
+                        next
+                    end
+
                     print_debug( )
                     print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
                     print_debug( )
                     
                     print_status( curr_mod.to_s )
-                    
+
                     mod_new = curr_mod.new( page_data, structure )
                     
                     mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
@@ -493,6 +500,32 @@ class Framework
         # wait for threads to finish
         @threads.each { |t| t.join }
             
+    end
+    
+    def run_module?( mod, structure )
+#        ap mod.info
+        
+        checkpoint = 0
+        structure.each_pair {
+            |name, value|
+            
+#            ap name
+#            ap value
+            
+            if( !mod.info || !mod.info['Elements'] ||
+                mod.info['Elements'].size == 0 )
+                return true
+            end
+            
+            if( mod.info['Elements'].include?( name ) && value.size != 0 )
+                checkpoint += 1
+            end
+                
+        }
+        
+        if( checkpoint == 0 ) then return nil else return true end
+        
+#        exit 0
     end
     
     #

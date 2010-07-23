@@ -248,8 +248,11 @@ class CLI
 
             print_line( "Name:\t\t"       + info["Name"] )
             print_line( "Description:\t"  + info["Description"] )
-            print_line( "HTTP Methods:\t" +
-                info["Methods"].join( ', ' ).downcase )
+            
+            if( info["Elements"] && info["Elements"].size > 0 )
+            print_line( "HTML Elements:\t" +
+                info["Elements"].join( ', ' ).downcase )
+            end
             
             if( info["Dependencies"] )
                 print_line( "Dependencies:\t" +

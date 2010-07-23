@@ -109,7 +109,7 @@ class SQLInjection < Arachni::Module::Base
         {
             'Name'           => 'SQLInjection',
             'Description'    => %q{SQL injection recon module},
-            'Methods'        => ['get', 'post', 'cookie'],
+            'Elements'       => ['forms', 'links', 'cookies'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

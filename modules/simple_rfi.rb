@@ -169,7 +169,15 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         {
             'Name'           => 'SimpleRFI',
             'Description'    => %q{Simple Remote File Inclusion recon module},
-            'Methods'        => ['get', 'post', 'cookie'],
+            #
+            # Arachni needs to know what elements the module plans to audit
+            # before invoking it. If a page doesn't have those elements
+            # there's no point putting the module in the thread queue.
+            #
+            # If you want the module to run no-matter what leave the array
+            # empty or don't define it at all.
+            # 
+            'Elements'       => ['forms', 'links', 'cookies'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

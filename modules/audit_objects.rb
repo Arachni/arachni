@@ -64,7 +64,7 @@ class AuditObjects < Arachni::Module::Base
             'Name'           => 'AuditObjects',
             'Description'    => %q{Audits all object elements discovered by
                 the ExtractObjects module.},
-            'Methods'        => ['get'],
+            'Elements'       => [],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

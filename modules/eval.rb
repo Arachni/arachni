@@ -124,7 +124,7 @@ class Eval < Arachni::Module::Base
             'Name'           => 'Eval',
             'Description'    => %q{eval() recon module. Tries to inject code
                 into the web application.},
-            'Methods'        => ['get', 'post', 'cookie'],
+            'Elements'       => ['forms', 'links', 'cookies'],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
