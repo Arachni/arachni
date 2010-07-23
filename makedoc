@@ -4,7 +4,7 @@
 # Simple shell script to generate documentation
 #
 yardoc --verbose --protected --private --title \
-"Arachni - Web Application Vulnerability Scanner" reports/* modules/* lib/* *.rb\
-  - LICENSE AUTHORS TODO ACKNOWLEDGMENTS
+"Arachni - Web Application Vulnerability Scanner" reports/* modules/* lib/* \
+  - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md
   
   
