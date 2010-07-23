@@ -1,10 +1,9 @@
-$Id$
+**Last change**:    $Id$
 
 This file contains some brief instructions on contributing to Arachni.    
 
 Code Style
-==========
-
+----
 In order to maintain consistency and keep the code pretty you should
 adhere to the following guidelines:
 
@@ -16,70 +15,64 @@ adhere to the following guidelines:
             |item|
         }
 
-In general, take a look in the existing code and try to follow that style.
+In general, take a look at the existing code and try to follow that style.
 
 
 Code No-Nos
-===========
-
-1. Don't print to standard output.
+----
+**1. Don't print to standard output.**<br/>
 The interface in use won't be able to see your output and route it
 accordingly.
 
-Arahcni provides you with wrappers that you can use, take a look in:
-    lib/ui/cli/output.rb
-
+Arachni provides you with wrappers that you can use, take a look in {Arachni::UI::Output}.<br/>
 All UIs will provide these methods to handle your output, use them.
 
 
-2. Don't use "sleep".
+**2. Don't use "sleep".**<br/>
 It is unlikely that you will need it, but if you do, use
-"select(nil, nil, nil, <time>)" instead to avoid multi-threading issues.
+"select(nil, nil, nil, &lt;time&gt;)" instead to avoid multi-threading issues.
 
 
-3. Avoid creating your own instance of Net::HTTP.
-If you are writing a module you are provided with wrappers for Net:HTTP
-pre-configured with proxy, auth and ssl settings
+**3. Avoid creating your own instance of Net::HTTP.**<br/>
+If you are writing a module you are provided with wrappers ({Arachni::Module::Base#http}) for Net:HTTP
+pre-configured with proxy, auth and ssl settings.
 
-You also have access to the instantiated Net:HTTP session so use that
+You also have access to the instantiated Net:HTTP session ({Arachni::Module::HTTP#session}) so use that
 if you must.
 
-Take a look in the tutorial module to see what you get:
-    modules/simple_rfi.rb
+Take a look in the tutorial module to see what you get: {Arachni::Modules::SimpleRFI}
     
-The base module will also give you some insights:
-    lib/module/base.rb
+The base module will also give you some insights: {Arachni::Module::Base}
 
 If you absolutely have to bypass Arachni's facilities you must obey the
 run-time settings in "$runtime_args".
 
 
 Creating New Modules
-====================
+----
 Arachni provides you with examples for the usual types of modules.
 
-This is your main guide:
-    modules/simple_rfi.rb
+This is your main guide: {Arachni::Modules::SimpleRFI}
     
 This covers most of the usual tasks when writing a module.
 It lets Arachni do all the work.
 
-For something more elaborate look in:
-    modules/response_splitting.rb
-    modules/sqli.rb
+For something more elaborate look in:<br/>
+- {Arachni::Modules::ResponseSplitting}<br/>
+- {Arachni::Modules::SQLInjection}
     
 These modules do their own vulnerability checking and logging.
 
-If you want to create coupled modules take a look in:
-    modules/extract_objects.rb
-    modules/audit_objects.rb
+If you want to create coupled modules take a look in:<br/>
+- {Arachni::Modules::ExtractObjects}<br/>
+- {Arachni::Modules::AuditObjects}
 
-In this case "extract_objects.rb" extracts information from the
+In this case {Arachni::Modules::ExtractObjects} extracts information from the
 web pages and saves it in the module datastore.
 
 The datastore is persistent and shared between all modules.
 
-"audit_objects.rb" then gets the data harvested by "extract_objects.rb"
+{Arachni::Modules::AuditObjects} then gets the data harvested by {Arachni::Modules::ExtractObjects}
 and handles it accordingly.
 
 One last note.
@@ -88,7 +81,7 @@ either regular expressions or strings to inject to the webapp,
 so it's better to keep them in an external file under:
     modules/<modname>/
 
-Use "get_data_file( filename ){ |line| }" to get the file line by line.
+Use "{Arachni::Module::Base#get_data_file}( filename ){ |line| }" to get the file line by line.<br/>
 You just pass the filename (no path), get_data_file() will take care of the rest. 
 
 This will make the strings easier to update and keep your modules smaller.
@@ -97,11 +90,11 @@ In general, before writing a module copy an existing one that's close
 to your needs and modify it.
 
 
-Creating New Reports
-====================
+Creating New Reports<br/>
+----
 The only thing that you should keep in mind when creating a new report
-is to adhere to the structure shown in:
-    reports/ap.rb
+is to adhere to the structure shown in: {Arachni::Reports::AP}.<br/>
+Also look in: {Arachni::Report::Base}.
     
 However, do provide an appropriate default "outfile" value in "initialize".
 
@@ -110,7 +103,7 @@ power to work with.
 
 
 Licensing
-=========
-All code must be contributed with a GPL v2 compatible license.
+----
+All code must be contributed with a GPL v2 compatible license.<br/>
 Do place licensing information in your code files.
 

@@ -5,6 +5,6 @@
 #
 yardoc --verbose --protected --private --title \
 "Arachni - Web Application Vulnerability Scanner" reports/* modules/* lib/* \
-  - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md
+  - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md HACKING.md
   
   
