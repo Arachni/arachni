@@ -261,8 +261,7 @@ class Base
                 page_data['url']['href'] )
 
             # make a get request with our cookies
-            res = @http.cookie( page_data['url']['href']  + @http.a_to_s(
-                a_to_s( url_vars ) ), cookie['hash'], nil )
+            res = @http.cookie( page_data['url']['href'], cookie['hash'], nil )
 
             # check for a response
             if !res || !res.body then next end
