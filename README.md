@@ -1,8 +1,9 @@
 Arachni - Web Application Vulnerability Scanning Framework
 ====================================
-**Last change**:  $Id$
-
-**Homepage**:     [http://sourceforge.net/apps/trac/arachni/wiki](http://sourceforge.net/apps/trac/arachni/wiki)   
+**Last change**:  $Id$<br/>
+**Homepage**:     [http://sourceforge.net/apps/trac/arachni/wiki](http://sourceforge.net/apps/trac/arachni/wiki)<br/>
+**Documentation**:     [http://arachni.sourceforge.net/](http://arachni.sourceforge.net/)<br/>
+**SourceForge Home**:     [http://sourceforge.net/projects/arachni/](http://sourceforge.net/projects/arachni/)   
 **SVN**:          [https://arachni.svn.sourceforge.net/svnroot/arachni/trunk](https://arachni.svn.sourceforge.net/svnroot/arachni/trunk)   
 **Author**:       [Anastasios](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)  
 **Copyright**:    2010    
