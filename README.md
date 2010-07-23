@@ -95,7 +95,15 @@ Can extract and analyze:
 
 The analyzer can graciously handle badly written HTML code
 due to the combination of regular expression analysis and [Nokogiri](http://nokogiri.org/) HTML parser.
- 
+
+The analyzer serves as the first layer of HTML analysis.<br/>
+More complex analysis, for JS, AJAX, Java Applets etc, can be achieved by adding data-mining/audit pairs of modules
+like:<br/>
+- {Arachni::Modules::ExtractObjects}<br/>
+- {Arachni::Modules::AuditObjects}
+
+This way the system can be extended to be able to handle virtually anything.
+
 **  Module Management ** ({Arachni::Module})
 
  - Modular design
