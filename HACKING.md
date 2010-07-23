@@ -7,9 +7,9 @@ Code Style
 In order to maintain consistency and keep the code pretty you should
 adhere to the following guidelines:
 
- - 4 spaces, no tabs
- - Maximum line length 75-80 columns, try not to exceed that limit
- - {} instead of "do" for blocks and keep the iterator var in it's own line
+ - 4 spaces, no tabs.
+ - Maximum line length 75-80 columns, try not to exceed that limit.
+ - {} instead of "do" for blocks and keep the iterator var in it's own line.<br/>
     Like so:
         arr.each {
             |item|
