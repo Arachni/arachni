@@ -3,8 +3,15 @@
 #
 # Simple shell script to generate documentation
 #
+
+if [ `whoami` = 'zapotek' ]; then
+    tpl_opts='-p /home/zapotek/workspace/ -t doc_templates'
+fi
+
+
 yardoc --verbose --protected --private --title \
 "Arachni - Web Application Vulnerability Scanning Framework" reports/* modules/* lib/* \
+  $tpl_opts  \
   - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md HACKING.md
   
   
