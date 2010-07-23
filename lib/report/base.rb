@@ -14,13 +14,16 @@ module Arachni
 module Report
 
 #
-# Arachni::Report::Base class<br/>
-# Think of it like an abstract class for the reports.
+# Arachni::Report::Base class
+#    
+# An abstract class for the reports.<br/>
+# All reports must extend this.
 #
-# All reports must extend it.
-#
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
+# @abstract
 #
 class Base
     

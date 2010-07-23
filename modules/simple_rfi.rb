@@ -16,12 +16,19 @@ module Modules
 
 #
 # Simple Remote File Inclusion tutorial module.
-# It audits links, forms and cookies and will give you a good idea
+#    
+# It audits links, forms and cookies and will give you a good idea<br/>
 # of how to write modules for Arachni.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
+#
+# @see http://cwe.mitre.org/data/definitions/94.html    
+# @see http://projects.webappsec.org/Remote-File-Inclusion
+# @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
 #
 class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 

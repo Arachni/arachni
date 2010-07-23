@@ -14,12 +14,22 @@ module Arachni
 module Module
 
 #
-# Arachni::Module::Registrar module<br/>
+# Arachni::Module::Registrar module
+#    
 # When included into modules it registers
 # them with Arachni::Module::Registry
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# It also acts a proxy between modules and Arachni::Module::Registry <br/>
+# enabling them to register their results and access the datastore.    
+#
+#
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
+#
+# @see Arachni::Module::Registry
+#
 #
 module Registrar
 

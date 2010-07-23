@@ -14,10 +14,20 @@ module Arachni
 module Module
 
 #
-# Arachni::Module::HTTP class<br/>
-# Provides a simple HTTP interface for modules
+# Arachni::Module::HTTP class
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# Provides a simple HTTP interface for modules.
+#
+# === Exceptions
+# Any exceptions or session corruption is handled by the class.<br/>
+# Some are ignored, on others the HTTP session is refreshed.<br/>
+# Point is, you don't need to worry about it.
+# <br/><br/>
+#
+#
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 class HTTP
@@ -64,8 +74,7 @@ class HTTP
         @init_headers = Hash.new
         # TODO: remove global vars
         @init_headers['user-agent'] = $runtime_args[:user_agent]
-        @init_headers['cookie'] = ''
-#        @init_headers = {}
+        @init_headers['cookie']     = ''
     end
 
     #

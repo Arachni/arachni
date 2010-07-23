@@ -17,19 +17,21 @@ module Modules
 #
 # This is a discovery/data mining example module.
 #
-# It extracts all object elements from a webpage
+# It extracts all object elements from a webpage<br/>
 # and adds them to module storage to be used by other modules later on.
 #
-# It will also show you how to use the module's storage system.
+# It will also show you how to use the module data storage system.
 #
-# Such modules can be used for general data mining or discovery
+# Such modules can be used for general data mining or discovery<br/>
 # and then pass their data to the system to be used by other modules.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
-# @see AuditObjects AuditObjects module
+# @see AuditObjects
 #
 #
 class ExtractObjects < Arachni::Module::Base

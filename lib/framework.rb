@@ -31,12 +31,18 @@ require 'pp'
 module Arachni
 
 #
-# Arachni::Framework class<br/>
-# The Framework class ties together all the components.
-#
+# Arachni::Framework class
+#    
+# The Framework class ties together all the components.<br/>
 # It should be wrapped by a UI class.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# It's the brains of the operation, it bosses the rest of the classes around.<br/>
+# It runs the audit, loads modules and reports and runs them according to
+# the supplied options.
+#
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 class Framework
@@ -383,32 +389,55 @@ class Framework
     
     end
     
+    #
+    # Returns the version of the framework
+    #
+    # @return    [String]
+    #
     def version
         VERSION
     end
 
+    #
+    # Returns the SVN revision of the framework
+    #
+    # @return    [String]
+    #
     def revision
         REVISION
     end
     
+    #
+    # Returns the extension of the report files
+    #
+    # @return    [String]
+    #
     def report_ext
         REPORT_EXT
     end
     
     private
     
+    #
+    # It handles Ctrl+C interrupts
+    #
+    # Once an interrupt has been trapped the system pauses and waits
+    # for user input. <br/>
+    # The user can either continue or exit.
+    #
+    #
     def handle_interrupt( )
         
         if( $_interrupted == false ) then return false end
         
         print_line
-        print_info( 'Arachni was interrupted,' +
+        print_error( 'Arachni was interrupted,' +
             ' do you want to continue?' )
             
-        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+        print_error( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
             
         if gets[0] == 'e'
-            print_info( 'Exiting...' )
+            print_error( 'Exiting...' )
             exit 0
         end
         
@@ -418,6 +447,12 @@ class Framework
     
     #
     # Takes care of module execution and threading
+    #
+    # @param    [Hash]    page_data     data related to the webpages
+    #                                      to be made available to modules
+    # @param    [Hash]    structure     the structure of the webpages<br/>
+    #                                      links, forms, cookies etc
+    #
     #
     def run_mods( page_data, structure )
 

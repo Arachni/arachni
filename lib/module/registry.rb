@@ -14,10 +14,16 @@ module Arachni
 module Module
 
 #
-# Arachni::Module::Registry class<br/>
-# Holds and manages the registry of the modules
-#
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# Arachni::Module::Registry class
+#    
+# Holds and manages the registry of the modules,
+# their results and their shared datastore.
+#    
+# It also provides methods for getting modules' info, listing available modules etc.
+#    
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 class Registry

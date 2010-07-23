@@ -17,11 +17,17 @@ module Arachni
 module UI
 
 #
-# Arachni::UI:CLI class<br/>
-# Provides a command line interface for the Arachni Framework.
+# Arachni::UI:CLI class
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# Provides a command line interface for the Arachni Framework.<br/>
+# Most of the logic is in the Framework class however profiles can only<br/>
+# be loaded and saved at this level.    
+#
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
+# @see Arachni::Framework
 #
 class CLI
 
@@ -32,6 +38,11 @@ class CLI
     #
     attr_reader :opts
 
+    #
+    # The extension of the profile files.
+    #
+    # @return    [String]
+    #
     PROFILE_EXT     = '.afp'
     
     # the output interface for CLI
@@ -119,6 +130,11 @@ class CLI
 
     private
 
+    #
+    # Outputs a list of the loaded modules using print_debug()<br/>
+    # The list will only be echoed if debug mode is on. 
+    #
+    #
     def ls_loaded
         print_line
         print_debug( 'ModuleRegistry reports the following modules as loaded:' )
@@ -132,7 +148,12 @@ class CLI
         print_line
     end
 
-    
+    #
+    # It parses and processes the user options.
+    #
+    # Loads modules, reports, saves/loads profiles etc.<br/>
+    # It basically prepares the framework before calling {Arachni::Framework#run}.
+    #
     def parse_opts(  )
 
         @opts.each {
@@ -203,8 +224,6 @@ class CLI
                         exit 0
                     end                    
                                         
-
-                                        
 #                when 'delay'
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
 
@@ -213,6 +232,9 @@ class CLI
 
     end
 
+    #
+    # Outputs all available modules and their info.
+    #
     def lsmod
         i = 0
         print_info( 'Available modules:' )
@@ -258,6 +280,9 @@ class CLI
 
     end
 
+    #
+    # Outputs all available reports and their info.
+    #
     def lsrep
         i = 0
         print_info( 'Available reports:' )
@@ -282,6 +307,11 @@ class CLI
 
     end
     
+    #
+    # Loads an Arachni Framework Profile file.
+    #
+    # @param    [String]    filename    the file to load
+    #
     def load_profile( filename )
         begin
             f = File.open( filename )
@@ -296,6 +326,12 @@ class CLI
         end
     end
     
+    #
+    # Saves options to an Arachni Framework Profile file.<br/>
+    # The file will be appended with the {PROFILE_EXT} extension.
+    #
+    # @param    [String]    filename
+    #
     def save_profile( filename )
         profile = @opts
         

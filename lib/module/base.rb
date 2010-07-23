@@ -20,8 +20,11 @@ module Module
 #    
 # Defines basic structure and provides utilities to modules.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
+# @abstract
 #
 class Base
 

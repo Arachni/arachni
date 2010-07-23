@@ -3,6 +3,8 @@
 #
 # Simple shell script to generate documentation
 #
-/var/lib/gems/1.9.1/bin/yardoc --verbose --protected --private --title \
+yardoc --verbose --protected --private --title \
 "Arachni - Web Application Vulnerability Scanner" reports/* modules/* lib/* *.rb\
   - LICENSE AUTHORS TODO ACKNOWLEDGMENTS
+  
+  

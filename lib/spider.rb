@@ -9,10 +9,12 @@
   (See LICENSE file for details)
 
 =end
+
 require 'rubygems'
 require 'anemone'
 require 'nokogiri'
-$:.unshift(File.expand_path(File.dirname(__FILE__))) 
+
+$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) ) 
 require 'lib/anemone/core.rb'
 require 'lib/anemone/http.rb'
 require 'lib/anemone/page.rb'
@@ -23,10 +25,13 @@ require 'pp'
 module Arachni
 
 #
-# Spider class<br/>
-# Crawls the URL in opts[:url] and grabs the HTML code and headers
+# Spider class
+#    
+# Crawls the URL in opts[:url] and grabs the HTML code and headers.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 class Spider

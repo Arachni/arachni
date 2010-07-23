@@ -7,17 +7,37 @@
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
   (See LICENSE file for details)
-
 =end
 
 module Arachni
 
 #
-# Analyzer class<br/>
+# Analyzer class
+#    
 # Analyzes HTML code extracting forms, links and cookies
-# depending on user opts.
+# depending on user opts.<br/>
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# It grabs <b>all</b> element attributes not just URLs and variables.<br/>
+# All URLs are converted to absolute and URLs outside the domain are ignored.<br/>
+#    
+# === Forms
+# Form analysis uses both regular expressions and the Nokogiri parser<br/>
+# in order to be able to handle badly written HTML code, such as not closed<br/>
+# tags and tag overlaps.
+#
+# In order to ease audits, in addition to parsing forms into data structures<br/>
+# like "select" and "option", all auditable inputs are put under the<br/>
+# "auditable" key.
+#    
+# === Links
+# Links are extracted using the Nokogiri parser.
+#    
+# === Cookies
+# Cookies are extracted from the HTTP headers and parsed by WEBrick::Cookie
+#    
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 class Analyzer

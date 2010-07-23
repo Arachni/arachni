@@ -17,14 +17,23 @@ module Modules
 #
 # eval() recon module.
 #
-# It audits links, forms and cookies.
+# It audits links, forms and cookies for code injection.
 #
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby
 # but still needs some more testing.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
+#
+# @see http://cwe.mitre.org/data/definitions/94.html
+# @see http://php.net/manual/en/function.eval.php
+# @see http://perldoc.perl.org/functions/eval.html
+# @see http://docs.python.org/py3k/library/functions.html#eval
+# @see http://www.aspdev.org/asp/asp-eval-execute/
+# @see http://en.wikipedia.org/wiki/Eval#Ruby
 #
 class Eval < Arachni::Module::Base
 

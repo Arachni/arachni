@@ -16,18 +16,21 @@ module Modules
 
 #
 # This module manipulates/audits/whatever
-# HTML objects discovered by ExtractObjects
+# HTML objects discovered by {ExtractObjects}.
 #
-# It serves as an example of how to pair discovery/data-mining modules
+# It serves as an example of how to pair discovery/data-mining modules<br/>
 # with other modules.
 #
-# It will also show you how to use the module's storage system.
+# It will also show you how to use the module data storage system and <br/>
+# how tell the system on which modules you depend on.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
-# @see ExtractObjects ExtractObjects module
+# @see ExtractObjects
 #
 class AuditObjects < Arachni::Module::Base
 

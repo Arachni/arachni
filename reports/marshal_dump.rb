@@ -15,12 +15,16 @@ module Reports
     
 #
 # MarshalDump report.
-# Serializes and saves the audit results.
+#    
+# Serializes and saves the audit results.<br/>
+# This report is only used by Arachni internally to create a marshal<br/>
+# dump of audit results.
 #
-# Currently only for debugging.
+# Then the dump-file can be loaded by Arachni to create new types of reports.             
 #
-#
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
 class MarshalDump < Arachni::Report::Base

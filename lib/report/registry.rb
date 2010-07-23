@@ -14,10 +14,13 @@ module Arachni
 module Report
     
 #
-# Arachni::Report::Registry class<br/>
-# Holds and manages the registry of the reports
+# Arachni::Report::Registry class
+#    
+# Holds and manages the registry of the reports.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr> <br/>
 # @version: 0.1-pre
 #
 class Registry

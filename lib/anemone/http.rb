@@ -16,6 +16,11 @@ require 'anemone'
 # Overides Anemone's HTTP class method refresh_connection( url )
 # adding proxy support
 #
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1-pre
+#
 class Anemone::HTTP
 
     def refresh_connection( url )

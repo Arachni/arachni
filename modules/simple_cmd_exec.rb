@@ -15,13 +15,17 @@ module Arachni
 module Modules
 
 #
-# Simple shell command injection module.
+# Simple shell command injection module.<br/>
 # It audits links, forms and cookies.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
+# @see http://cwe.mitre.org/data/definitions/78.html
+#    
 class SimpleCmdExec < Arachni::Module::Base
 
     include Arachni::Module::Registrar

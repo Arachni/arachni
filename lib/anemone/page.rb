@@ -11,16 +11,23 @@
 =end
 
 #
-# Overides Anemone's Page class method in_domain?( uri )
-# adding support for subdomain crawling and links() to add support
-# for frame and iframe src URLs
+# Overides Anemone's Page class methods:<br/>
+# o in_domain?( uri ): adding support for subdomain crawling<br/> 
+# o links(): adding support for frame and iframe src URLs<br/>
+#
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1-pre
 #
 class Anemone::Page
 
     alias :old_links :links
     
     #
-    # Array of distinct A tag HREFs and (i)frame SRCs from the page
+    # Array of distinct A tag HREFs and (i)frame SRCs from the page<br/>
+    # The original links() method takes care of A tags and the added code
+    # takes care of (i)frame SRCs.
     #
     def links
         @links = old_links
@@ -40,7 +47,9 @@ class Anemone::Page
     
     #
     # Returns +true+ if *uri* is in the same domain as the page, returns
-    # +false+ otherwise
+    # +false+ otherwise.
+    #
+    # The added code enables optional subdomain crawling.
     #
     def in_domain?( uri )
         # TODO: remove global vars

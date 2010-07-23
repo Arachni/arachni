@@ -15,12 +15,18 @@ module Arachni
 module Modules
 
 #
-# XSS recon module.
+# XSS recon module.<br/>
 # It audits links, forms and cookies.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
+#
+# @see http://cwe.mitre.org/data/definitions/79.html    
+# @see http://ha.ckers.org/xss.html
+# @see http://secunia.com/advisories/9716/
 #
 class XSS < Arachni::Module::Base
 

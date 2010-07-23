@@ -15,10 +15,14 @@ module Arachni
 module UI
 
 #
-# CLI Output module<br/>
-# Provides a command line output interface to the framework.
+# CLI Output module
+#    
+# Provides a command line output interface to the framework.<br/>
+# All UIs should provide an Arachni::UI::Output module with these methods.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
 #
 module Output
@@ -52,7 +56,7 @@ module Output
     
     # Prints a status message
     #
-    # Obeys @@only_positives
+    # Obeys {@@only_positives}
     #
     # @see #only_positives?
     # @see #only_positives!
@@ -67,7 +71,7 @@ module Output
     
     # Prints an info message
     #
-    # Obeys @@only_positives
+    # Obeys {@@only_positives}
     #
     # @see #only_positives?
     # @see #only_positives!
@@ -83,7 +87,7 @@ module Output
     # Prints a good message, something that went very very right,
     # like the discovery of a vulnerability
     #
-    # Disregards all flags
+    # Disregards all flags.
     #
     # @param    [String]    ok string
     # @return    [void]
@@ -94,7 +98,7 @@ module Output
     
     # Prints a debugging message
     #
-    # Obeys @@debug
+    # Obeys {@@debug}
     #
     # @see #debug?
     # @see #debug!
@@ -110,7 +114,7 @@ module Output
     # Pretty prints an object, used for debugging,
     # needs some improvement but it'll do for now
     #
-    # Obeys @@debug
+    # Obeys {@@debug}
     #
     # @see #debug?
     # @see #debug!
@@ -125,7 +129,7 @@ module Output
         
     # Prints a verbose message
     #
-    # Obeys @@verbose
+    # Obeys {@@verbose}
     #
     # @see #verbose?
     # @see #verbose!
@@ -140,7 +144,7 @@ module Output
     
     # Prints a line of message
     #
-    # Obeys @@only_positives
+    # Obeys {@@only_positives}
     #
     # @see #only_positives?
     # @see #only_positives!
@@ -153,7 +157,7 @@ module Output
         puts str
     end
     
-    # Sets the @@verbose flag to true
+    # Sets the {@@verbose} flag to true
     #
     # @see #verbose?
     #
@@ -163,7 +167,7 @@ module Output
         @@verbose = true
     end
     
-    # Returns the @@verbose flag
+    # Returns the {@@verbose} flag
     #
     # @see #verbose!
     #
@@ -173,7 +177,7 @@ module Output
         @@verbose
     end
     
-    # Sets the @@debug flag to true
+    # Sets the {@@debug} flag to true
     #
     # @see #debug?
     #
@@ -183,7 +187,7 @@ module Output
         @@debug = true
     end
 
-    # Returns the @@debug flag
+    # Returns the {@@debug} flag
     #
     # @see #debug!
     #
@@ -193,7 +197,7 @@ module Output
         @@debug
     end
         
-    # Sets the @@only_positives flag to true
+    # Sets the {@@only_positives} flag to true
     #
     # @see #only_positives?
     #
@@ -203,7 +207,7 @@ module Output
         @@only_positives = true
     end
     
-    # Returns the @@only_positives flag
+    # Returns the {@@only_positives} flag
     #
     # @see #only_positives!
     #
@@ -217,7 +221,7 @@ module Output
     
     # Prints a message prefixed with a colored sign.
     #
-    # Disregards all flags
+    # Disregards all flags.
     #
     # @param    [String]    sign
     # @param    [Integer]   shell color number

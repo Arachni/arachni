@@ -15,12 +15,20 @@ module Arachni
 module Modules
 
 #
-# SQL Injection recon module.
+# SQL Injection recon module.<br/>
 # It audits links, forms and cookies.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
+#
+# @see http://cwe.mitre.org/data/definitions/89.html    
+# @see http://unixwiz.net/techtips/sql-injection.html
+# @see http://en.wikipedia.org/wiki/SQL_injection
+# @see http://www.securiteam.com/securityreviews/5DP0N1P76E.html
+# @see http://www.owasp.org/index.php/SQL_Injection
 #
 class SQLInjection < Arachni::Module::Base
 

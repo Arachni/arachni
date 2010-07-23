@@ -13,13 +13,27 @@
 module Arachni
 module Report
     
-
+#
+# Arachni::Report::Registrar module
+#    
+# When included into reports it registers
+# them with Arachni::Report::Registry
+#
+# @author: Anastasios "Zapotek" Laskos 
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1-pre
+#
+# @see Arachni::Report::Registry
+#
+#
 module Registrar
     
     #
     # Callback invoked whenever Arachni::Report::Registrar
-    # is included in another module or class.
-    #
+    # is included in another module or class.<br/>
+    # It registers the report with the system.
+    # 
     def Registrar.included( report )
         Registry.register( report )
     end

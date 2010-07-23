@@ -19,11 +19,15 @@ module Modules
 #
 # It audits links, forms and cookies.
 #
-# @see http://www.owasp.org/index.php/HTTP_Response_Splitting
 #
-#
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
+#
+# @see http://cwe.mitre.org/data/definitions/20.html    
+# @see http://www.owasp.org/index.php/HTTP_Response_Splitting
+# @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html    
 #
 class ResponseSplitting < Arachni::Module::Base
 

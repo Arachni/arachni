@@ -14,9 +14,14 @@ module Arachni
 module Reports    
 
 #
-# Awesome prints a marshal dump
+# Awesome prints a marshal dump.
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# Since Arachni report and profile files are marshalized objects this is<br/>
+# a great way to see what's inside them.
+#
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
 class AP < Arachni::Report::Base

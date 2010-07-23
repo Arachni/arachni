@@ -15,12 +15,14 @@ module Reports
     
 #
 # Default report.
-# Outputs the vulnerabilities on stdout.
 #
-# Currently only for debugging.
+# Outputs the vulnerabilities to stdout, used with the CLI UI.<br/>
+# All UIs must have a default report.
 #
 #
-# @author: Zapotek <zapotek@segfault.gr> <br/>
+# @author: Anastasios "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
 # @version: $Rev$
 #
 class Stdout < Arachni::Report::Base
