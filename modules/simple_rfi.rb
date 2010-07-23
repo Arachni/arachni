@@ -171,7 +171,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             'Description'    => %q{Simple Remote File Inclusion recon module},
             #
             # Arachni needs to know what elements the module plans to audit
-            # before invoking it. If a page doesn't have those elements
+            # before invoking it. If a page doesn't have any of those elements
             # there's no point putting the module in the thread queue.
             #
             # If you want the module to run no-matter what leave the array

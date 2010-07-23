@@ -87,10 +87,61 @@ class Base
     # ABSTRACT - OPTIONAL
     #
     # This is called after run() has finished executing,
-    # it restores the original HTTP session.
+    #
     def clean_up( )
     end
-
+    
+    #
+    # ABSTRACT - REQUIRED
+    #
+    # Provides information about the module.
+    # Don't take this lightly and don't ommit any of the info.
+    #
+    def self.info
+        {
+            'Name'           => 'Base module abstract class',
+            'Description'    => %q{Provides an abstract the modules should implement.},
+            #
+            # Arachni needs to know what elements the module plans to audit
+            # before invoking it. If a page doesn't have any of those elements
+            # there's no point in instantiating the module.
+            #
+            # If you want the module to run no-matter what leave the array
+            # empty or don't define it at all.
+            #
+#            'Elements'       => ['links', 'forms', 'cookies'],
+            'Elements'       => [],
+            'Author'         => 'zapotek',
+            'Version'        => '$Rev$',
+            'References'     => {
+            },
+            'Targets'        => { 'Generic' => 'all' },
+            'Vulnerability'   => {
+                'Description' => %q{},
+                'CWE'         => '',
+                'Severity'    => '',
+                'CVSSV2'       => '',
+                'Remedy_Guidance'    => '',
+                'Remedy_Code' => '',
+            }
+        }
+    end
+    
+    #
+    # ABSTRACT - OPTIONAL
+    #
+    # In case you depend on other modules you can return an array
+    # of their names (not their class names, the module names as they
+    # appear by the "-l" CLI argument) and they will be loaded for you.
+    #
+    # This is also great for creating audit/discovery/whatever profiles.
+    #
+    def self.deps
+        # example:
+        # ['eval', 'sqli']
+        []
+    end
+    
     #####
     #
     # *DO NOT* override the following methods.
@@ -98,7 +149,7 @@ class Base
     #####
 
     #
-    # TODO: Put all helper auditor methods in the auditor class
+    # TODO: Put all helper auditor methods in an auditor class
     # and delegate
     #
     
