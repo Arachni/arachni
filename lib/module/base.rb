@@ -191,14 +191,16 @@ class Base
             res = @http.get( page_data['url']['href'], vars['hash'] )
 
             # something might have gone bad,
-            # make it doesn't ruin the rest of the show...
-            if !res || !res.body then next end
+            # make sure it doesn't ruin the rest of the show...
+            if !res then next end
             
             # call the passed block
             if block_given?
                 block.call( vars['altered'], res )
                 return
             end
+            
+            if !res.body then next end
             
             # get matches
             result = get_matches( 'links', vars['altered'], res, injection_str,
@@ -262,7 +264,7 @@ class Base
                     @http.post( get_forms()[i]['attrs']['action'], input['hash'] )
 
                 # make sure that we have a response before continuing
-#                if !post_res || !post_res.body then next end
+                if !post_res then next end
                 
                 # call the block, if there's one
                 if block_given?
@@ -270,6 +272,8 @@ class Base
                     return
                 end
 
+                if !post_res.body then next end
+            
                 # get matches
                 result = get_matches( 'forms', input['altered'],
                                 post_res, injection_str, id_regex, id )
@@ -323,13 +327,15 @@ class Base
             res = @http.cookie( page_data['url']['href'], cookie['hash'], nil )
 
             # check for a response
-            if !res || !res.body then next end
+            if !res then next end
             
             if block_given?
                 block.call( cookie['altered'], res )
                 return
             end
             
+            if !res.body then next end
+                
             # get possible matches
             result = get_matches( 'cookies', cookie['altered'],
                         res, injection_str, id_regex, id )
