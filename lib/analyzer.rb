@@ -163,13 +163,15 @@ class Analyzer
 
             elements[i] = Hash.new
             elements[i]['attrs']    = get_form_attrs( form )
-            elements[i]['attrs']['action'] =
-                    to_absolute( elements[i]['attrs']['action'] )
             
-            if !elements[i]['attrs']['action']
-                elements[i]['attrs']['action'] = @opts[:url].to_s
+            if( !elements[i]['attrs'] || !elements[i]['attrs']['action'] )
+                action = @url.to_s
+            else
+                action = elements[i]['attrs']['action']
             end
-                        
+                
+            elements[i]['attrs']['action'] = action
+
             if !in_domain?( URI.parse( elements[i]['attrs']['action'] ) )
                 next
             end
