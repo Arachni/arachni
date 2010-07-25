@@ -288,7 +288,7 @@ class HTTP
         str = '?'
         arr.each {
             |pair|
-            str += pair[0] +  '=' + pair[1] + '&'
+            str += pair[0].to_s +  '=' + pair[1].to_s + '&'
         }
         str
     end
