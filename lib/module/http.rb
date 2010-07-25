@@ -93,6 +93,15 @@ class HTTP
 
         # catch the time-out and refresh
         rescue Timeout::Error => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -107,13 +116,7 @@ class HTTP
         # some other exception
         # just print what went wrong with some debugging info and move on
         rescue Exception => e
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_debug( 'Exception: ' +  e.inspect )
-            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
-            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-            print_debug( 'HTTP session:' )
-            print_debug_pp( @session )
-            print_error( 'Proceeding anyway... ' )
+            handle_exception( e )
         end
     end
 
@@ -138,6 +141,15 @@ class HTTP
             
         # catch the time-out and refresh
         rescue Timeout::Error => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -152,13 +164,7 @@ class HTTP
         # some other exception
         # just print what went wrong with some debugging and then move on
         rescue Exception => e
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_debug( 'Exception: ' +  e.inspect )
-            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
-            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-            print_debug( 'HTTP session:' )
-            print_debug_pp( @session )
-            print_error( 'Proceeding anyway... ' )
+            handle_exception( e )
         end
     end
 
@@ -193,6 +199,15 @@ class HTTP
         
         # catch the time-out and refresh
         rescue Timeout::Error => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+
         # broken pipe probably
         rescue Errno::EPIPE => e
             # inform the user
@@ -207,13 +222,7 @@ class HTTP
         # some other exception
         # just print what went wrong with some debugging and then move on
         rescue Exception => e
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_debug( 'Exception: ' +  e.inspect )
-            print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
-            print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-            print_debug( 'HTTP session:' )
-            print_debug_pp( @session )
-            print_error( 'Proceeding anyway... ' )
+            handle_exception( e )
         end
 
     end
@@ -309,6 +318,18 @@ class HTTP
         @session = session.start
 
     end
+    
+    def handle_exception( e )
+        print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+        print_debug( 'Exception: ' +  e.inspect )
+        print_debug( 'Backtrace: ' +  e.backtrace.join( "\n" ) )
+        print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
+        print_debug( 'HTTP session:' )
+        print_debug_pp( @session )
+        print_debug( YAML::dump( @session ) )
+        print_error( 'Proceeding anyway... ' )
+    end
+       
 
 end
 end
