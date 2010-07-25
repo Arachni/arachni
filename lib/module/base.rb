@@ -351,9 +351,10 @@ class Base
     end
 
     #
-    # Returns cookies from @structure as a name=>value hash
+    # Returns an array of forms from @structure with the auditable
+    # inputs as a name=>value hash
     #
-    # @return    [Hash]    the cookie attributes, values, etc
+    # @return    [Array]
     #
     def get_forms_simple
         forms = []
@@ -372,9 +373,9 @@ class Base
     end
 
     #
-    # Returns cookies from @structure as a name=>value hash
+    # Returns links from @structure as a name=>value hash with href as key
     #
-    # @return    [Hash]    the cookie attributes, values, etc
+    # @return    [Hash]
     #
     def get_links_simple
         links = Hash.new
