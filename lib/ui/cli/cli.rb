@@ -111,7 +111,7 @@ class CLI
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
-            print_info( "with the '-l' parameter to see all available modules." )
+            print_info( "with the '--lsmod' parameter to see all available modules." )
             print_line
             exit 0
         rescue Arachni::Exceptions => e
