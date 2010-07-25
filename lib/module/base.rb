@@ -65,7 +65,6 @@ class Base
         
         @page_data = page_data
         @structure = structure
-        
     end
 
     #
@@ -253,22 +252,31 @@ class Base
                     input['altered'] + "' with action " +
                     get_forms()[i]['attrs']['action'] )
 
+                # the form's server-side handler may not sanitize
+                # GET input so give it a shot
+#                get_res =
+#                    @http.get( get_forms()[i]['attrs']['action'], input['hash'] )
+                    
                 # post the form
-                res = @http.post( get_forms()[i]['attrs']['action'], input['hash'] )
+                post_res =
+                    @http.post( get_forms()[i]['attrs']['action'], input['hash'] )
 
                 # make sure that we have a response before continuing
-                if !res || !res.body then next end
+#                if !post_res || !post_res.body then next end
                 
                 # call the block, if there's one
                 if block_given?
-                    block.call( input['altered'], res )
+                    block.call( input['altered'], post_res )
                     return
                 end
 
                 # get matches
                 result = get_matches( 'forms', input['altered'],
-                                res, injection_str, id_regex, id )
-                                
+                                post_res, injection_str, id_regex, id )
+                
+#                result = result.merge get_matches( 'forms', input['altered'],
+#                                get_res, injection_str, id_regex, id )
+                                                
                 # and append them
                 results << result if result
             }
