@@ -44,6 +44,15 @@ class Anemone::Page
         @links
     end
 
+    #
+    # Nokogiri document for the HTML body
+    #
+    def doc
+      return @doc if @doc
+#      @doc = Nokogiri::HTML( @body ) if @body && html? rescue nil
+      @doc = Nokogiri::HTML( @body ) if @body rescue nil
+    end
+
     
     #
     # Returns +true+ if *uri* is in the same domain as the page, returns
