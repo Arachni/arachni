@@ -170,7 +170,7 @@ class Analyzer
                 action = elements[i]['attrs']['action']
             end
                 
-            elements[i]['attrs']['action'] = action
+            elements[i]['attrs']['action'] = to_absolute( action )
 
             if !in_domain?( URI.parse( elements[i]['attrs']['action'] ) )
                 next
