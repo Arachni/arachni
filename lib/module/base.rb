@@ -65,6 +65,7 @@ class Base
         
         @page_data = page_data
         @structure = structure
+        
     end
 
     #
@@ -376,17 +377,19 @@ class Base
     # @return    [Hash]    the cookie attributes, values, etc
     #
     def get_links_simple
-        links = []
+        links = Hash.new
         @structure['links'].each_with_index {
             |link, i|
             
             if( !link['vars'] || link['vars'].size == 0 ) then next end
                 
-            links[i] = Hash.new
+            links[link['href']] = Hash.new
             link['vars'].each_pair {
                 |name, value|
-                if( !name ) then next end
-                links[i][name] = value
+                
+                if( !name || !link['href'] ) then next end
+                    
+                links[link['href']][name] = value
             }
             
         }
