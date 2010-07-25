@@ -361,12 +361,13 @@ class Base
         @structure['forms'].each_with_index {
             |form, i|
             forms[i] = Hash.new
+            
             form['auditable'].each {
                 |item|
                 
                 if( !item['name'] ) then next end
                 forms[i][item['name']] = item['value']
-            }
+            } rescue forms
             
         }
         forms
