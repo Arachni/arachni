@@ -237,24 +237,23 @@ class Base
         results = []
         
         # iterate through each form
-        get_forms.each_with_index {
+        get_forms_simple.each_with_index {
             |form, i|
-            
             # if we don't have any auditable elements just return
-            if !form['auditable'] then return results end
+            if !form then return results end
             
             # iterate through each auditable element
-            inject_each_var( form['auditable'][i], injection_str ).each {
+            inject_each_var( form, injection_str ).each {
                 |input|
 
                 # inform the user what we're auditing
                 print_status( self.class.info['Name']  + 
                     " is auditing:\tform input '" +
                     input['altered'] + "' with action " +
-                    form['attrs']['action'] )
+                    get_forms()[i]['attrs']['action'] )
 
                 # post the form
-                res = @http.post( form['attrs']['action'], input )
+                res = @http.post( get_forms()[i]['attrs']['action'], input['hash'] )
 
                 # make sure that we have a response before continuing
                 if !res || !res.body then next end
@@ -355,6 +354,50 @@ class Base
     #
     # @return    [Hash]    the cookie attributes, values, etc
     #
+    def get_forms_simple
+        forms = []
+        @structure['forms'].each_with_index {
+            |form, i|
+            forms[i] = Hash.new
+            form['auditable'].each {
+                |item|
+                
+                if( !item['name'] ) then next end
+                forms[i][item['name']] = item['value']
+            }
+            
+        }
+        forms
+    end
+
+    #
+    # Returns cookies from @structure as a name=>value hash
+    #
+    # @return    [Hash]    the cookie attributes, values, etc
+    #
+    def get_links_simple
+        links = []
+        @structure['links'].each_with_index {
+            |link, i|
+            
+            if( !link['vars'] || link['vars'].size == 0 ) then next end
+                
+            links[i] = Hash.new
+            link['vars'].each_pair {
+                |name, value|
+                if( !name ) then next end
+                links[i][name] = value
+            }
+            
+        }
+        links
+    end
+    
+    #
+    # Returns cookies from @structure as a name=>value hash
+    #
+    # @return    [Hash]    the cookie attributes, values, etc
+    #
     def get_cookies_simple
         cookies = Hash.new( )
         @structure['cookies'].each {
@@ -363,7 +406,7 @@ class Base
         }
         cookies
     end
-
+    
     #
     # Returns extended cookie information from @structure
     #
@@ -453,10 +496,13 @@ class Base
     def inject_each_var( hash, to_inj )
         
         var_combo = []
+        
+        if( !hash ) then return [] end
+            
         hash.keys.each {
             |k|
             
-        if( !hash[k] ) then hash[k] = '' end 
+            if( !hash[k] ) then hash[k] = '' end
             
             var_combo << { 
                 'altered' => k,
