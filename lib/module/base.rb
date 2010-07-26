@@ -254,7 +254,7 @@ class Base
                     input['altered'] + "' with action " +
                     get_forms()[i]['attrs']['action'] )
 
-                if( get_forms()[i]['attrs']['method'] =! 'get' )
+                if( get_forms()[i]['attrs']['method'] != 'get' )
                         res =
                             @http.post( get_forms()[i]['attrs']['action'],
                                 input['hash'] )
@@ -547,7 +547,7 @@ class Base
             if( !filled[k] ) then filled[k] = '' end
             
             filled = { 
-                'altered' => k,
+                'altered' => '__all',
                 'hash'    => filled['hash'].merge( { k => to_inj } )
             }
         }
