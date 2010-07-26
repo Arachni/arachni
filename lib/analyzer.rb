@@ -172,6 +172,15 @@ class Analyzer
                 
             elements[i]['attrs']['action'] = to_absolute( action )
 
+            if( !elements[i]['attrs']['method'] )
+                elements[i]['attrs']['method'] = 'post'
+            else
+                elements[i]['attrs']['method'] =
+                    elements[i]['attrs']['method'].downcase
+            end
+                
+            elements[i]['attrs']['action'] = to_absolute( action )
+                
             if !in_domain?( URI.parse( elements[i]['attrs']['action'] ) )
                 next
             end
