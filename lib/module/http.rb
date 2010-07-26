@@ -353,7 +353,6 @@ class HTTP
         print_debug_pp( @session )
 #        print_debug( YAML::dump( @session ) )
         print_error( 'Proceeding anyway... ' )
-        exit
     end
        
 
