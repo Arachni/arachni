@@ -22,6 +22,7 @@ opts = GetoptLong.new(
     [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
+    [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
     [ '--delay',                   GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -60,6 +61,7 @@ $runtime_args['dir']['reports'] = $runtime_args['dir']['pwd'] + 'reports/'
 $runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
 
 $runtime_args[:exclude]   = []
+$runtime_args[:include]   = []
 $runtime_args[:redundant] = []
 $runtime_args[:reports]   = []
     
@@ -118,6 +120,9 @@ opts.each do |opt, arg|
         when '--audit-cookies'
             $runtime_args[:audit_cookies] = true
 
+        when '--audit-cookie-jar'
+            $runtime_args[:audit_cookie_jar] = true
+                
         when '--mods'
             $runtime_args[:mods] = arg.to_s.split( /,/ )
 
@@ -160,7 +165,7 @@ opts.each do |opt, arg|
             $runtime_args[:exclude] << Regexp.new( arg )
 
         when '--include'
-            $runtime_args[:include] = Regexp.new( arg )
+            $runtime_args[:include] << Regexp.new( arg )
 
         when '--follow-subdomains'
             $runtime_args[:follow_subdomains] = true
