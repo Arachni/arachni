@@ -259,9 +259,6 @@ class Base
                             @http.post( get_forms()[i]['attrs']['action'],
                                 input['hash'] )
                 else
-                    injection_str = URI.escape( injection_str )
-                    input['hash'][input['altered']] = injection_str
-                    
                     # the form's server-side handler may not sanitize
                     # GET input so give it a shot
                     res =
@@ -522,7 +519,7 @@ class Base
         
         var_combo = []
         
-        if( !hash ) then return [] end
+        if( !hash || hash.size == 0 ) then return [] end
             
         hash.keys.each {
             |k|
@@ -531,9 +528,24 @@ class Base
             
             var_combo << { 
                 'altered' => k,
-                'hash'    => hash.merge( { k => to_inj } ) }
+                'hash'    => hash.merge( { k => to_inj } )
+            }
         }
         
+        filled = Hash.new
+        filled['hash'] = hash
+        filled['hash'].keys.each {
+            |k|
+            
+            if( !filled[k] ) then filled[k] = '' end
+            
+            filled = { 
+                'altered' => k,
+                'hash'    => filled['hash'].merge( { k => to_inj } )
+            }
+        }
+        
+        var_combo << filled
         var_combo
     end
 
