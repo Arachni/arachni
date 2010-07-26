@@ -58,8 +58,6 @@ class XSS < Arachni::Module::Base
         get_data_file( @__injection_strs_file ) {
             |str|
 
-            enc_str = URI.encode( str )
-            
             audit_forms( str, Regexp.new( str ), str ).each {
                 |res|
                 @results << Vulnerability.new(
@@ -69,7 +67,7 @@ class XSS < Arachni::Module::Base
                 )
             }
             
-            audit_links( enc_str, Regexp.new( str ), str ).each {
+            audit_links( str, Regexp.new( str ), str ).each {
                 |res|
                 @results << Vulnerability.new(
                     res.merge( { 'elem' => 'link' }.
@@ -78,7 +76,7 @@ class XSS < Arachni::Module::Base
                 )
             }
             
-            audit_cookies( enc_str, Regexp.new( str ), str ).each {
+            audit_cookies( str, Regexp.new( str ), str ).each {
                 |res|
                 @results << Vulnerability.new(
                     res.merge( { 'elem' => 'cookie' }.

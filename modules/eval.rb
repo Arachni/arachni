@@ -79,9 +79,6 @@ class Eval < Arachni::Module::Base
         @__injection_strs.each {
             |str|
             
-            # URL encode the code
-            enc_str = URI.encode( str )
-            
             # audit forms and add the results to the results array
             audit_forms( str, Regexp.new( @__rand ), @__rand ).each {
                 |res|

@@ -58,26 +58,23 @@ class ResponseSplitting < Arachni::Module::Base
     
     def run( )
         
-        # URL encode the header to be injected
-        enc_header = URI.encode( @__header )
-        
         # try to inject the header via the forms of the page
         # and pass a block that will check for a positive result
-        audit_forms( enc_header ) {
+        audit_forms( @__header ) {
             |var, res|
             __log_results( 'form', var, res )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
-        audit_links( enc_header ) {
+        audit_links( @__header ) {
             |var, res|
             __log_results( 'link', var, res )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
-        audit_cookies( enc_header ) {
+        audit_cookies( @__header ) {
             |var, res|
             __log_results( 'cookie', var, res )
         }
