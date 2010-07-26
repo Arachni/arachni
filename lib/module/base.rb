@@ -505,7 +505,7 @@ class Base
                 
         file = File.open( path + '/' + filename ).each {
             |line|
-            yield line
+            yield line.strip
         }
         
         file.close
