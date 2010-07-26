@@ -85,11 +85,22 @@ class HTTP
     #
     # @return [HTTP::Response]
     #
-    def get( url, url_vars )
+    def get( url, url_vars = nil )
         url = parse_url( url )
-        
+
         begin
-            @session.get( url.path +  a_to_s( url_vars ), @init_headers )
+
+            if( url.query && url.query.size > 0 )
+                query = '?' + url.query
+                append = true
+            else
+                query = ''
+                append = false
+            end
+            
+            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
+                        
+            @session.get( full_url, @init_headers )
 
         # catch the time-out and refresh
         rescue Timeout::Error => e
@@ -183,9 +194,6 @@ class HTTP
         cookie_vars.each_pair {
             |name, value|
 
-#            name  =  a_cookie['name']
-#            value =  a_cookie['value']
-            
             # don't audit cookies in the cookie jar                
             if( @cookie_jar && @cookie_jar[name] ) then next end
             
@@ -195,8 +203,20 @@ class HTTP
         @init_headers['cookie'] = cookies
 
         begin
-            @session.get( @url.path +  a_to_s( url_vars ), @init_headers )
-        
+            url = parse_url( url )
+            
+            if( url.query && url.query.size > 0 )
+                query = '?' + url.query
+                append = true
+            else
+                query = ''
+                append = false
+            end
+            
+            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
+                        
+            @session.get( full_url, @init_headers )
+
         # catch the time-out and refresh
         rescue Timeout::Error => e
             # inform the user
@@ -291,13 +311,18 @@ class HTTP
     #
     # @return [String]
     #
-    def a_to_s( arr )
+    def a_to_s( arr, append = false )
         if !arr || arr.length == 0 then return '' end
 
-        str = '?'
+        if( append == true )
+            str = '&'
+        else
+            str = '?'
+        end
+        
         arr.each {
             |pair|
-            str += pair[0].to_s +  '=' + pair[1].to_s + '&'
+            str += pair[0].to_s +  '=' + URI.escape( pair[1].to_s ) + '&'
         }
         str
     end
@@ -326,8 +351,9 @@ class HTTP
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
         print_debug( 'HTTP session:' )
         print_debug_pp( @session )
-        print_debug( YAML::dump( @session ) )
+#        print_debug( YAML::dump( @session ) )
         print_error( 'Proceeding anyway... ' )
+        exit
     end
        
 
