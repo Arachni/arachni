@@ -191,11 +191,14 @@ class HTTP
     def cookie( url, cookie_vars, url_vars = nil)
 
         cookies = ''
+        
         cookie_vars.each_pair {
             |name, value|
 
+            # TODO: remove global var
             # don't audit cookies in the cookie jar                
-            if( @cookie_jar && @cookie_jar[name] ) then next end
+            if( !$runtime_args[:audit_cookie_jar] &&
+                @cookie_jar && @cookie_jar[name] ) then next end
             
             cookies +=  "#{name}=#{value}; "
         }
