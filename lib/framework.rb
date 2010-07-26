@@ -167,8 +167,23 @@ class Framework
         sitemap = @spider.run {
             | url, html, headers |
 
-            structure = site_structure[url] =
+            site_structure[url] =
                 @analyzer.run( url, html, headers ).clone
+        
+            if( @opts[:audit_cookie_jar] )
+                
+                if( @opts[:cookies] )
+                    
+                    @opts[:cookies].each_pair {
+                        |name, value|
+                        site_structure[url]['cookies'] << {
+                            'name'    => name,
+                            'value'   => value
+                        }
+                    }
+                end
+                    
+            end
 
             page_data = {
                 'url'        => { 'href' => url,
@@ -176,7 +191,7 @@ class Framework
                 },
                 'html'       => html,
                 'headers'    => headers,
-                'cookies' => @opts[:cookies]
+                'cookies'    => @opts[:cookies]
             }
         
             if !@opts[:mods_run_last]
