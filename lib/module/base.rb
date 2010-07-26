@@ -485,6 +485,12 @@ class Base
         header
     end
     
+    #
+    # Gets module data files from 'modules/<modname>/<filename>'
+    #
+    # @param    [String]    filename filename, without the path    
+    # @param    [Block]     the block to be passed each line as it's read
+    #
     def get_data_file( filename, &block )
         
         # the path of the module that called us
@@ -534,6 +540,7 @@ class Base
         
         filled = Hash.new
         filled['hash'] = hash
+            
         filled['hash'].keys.each {
             |k|
             
@@ -546,7 +553,6 @@ class Base
         }
         
         var_combo << filled
-        var_combo
     end
 
 
