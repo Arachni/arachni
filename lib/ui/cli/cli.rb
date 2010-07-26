@@ -413,9 +413,7 @@ USAGE
                                   be careful when adjusting the thread count.
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
-                                  Cookies in this file will not be audited,
-                                  so remove any cookies that you do want to audit.
-                                
+                                                                 
     
     --user-agent=<user agent>   specify user agent
     
@@ -436,10 +434,11 @@ USAGE
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
-                                  You can use it multiple times.
+                                  (Can be used multiple times.)
     
     -i <regex>
     --include=<regex>           include urls matching this regex only
+                                  (Can be used multiple times.)
 
     --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
                                   (URLs matching <regex> will be crawled <count> links deep.)
@@ -448,7 +447,7 @@ USAGE
     -f
     --follow-subdomains         follow links to subdomains (default: off)
     
-    --obey-robots-txt           obey robots.txt file (default: false)
+    --obey-robots-txt           obey robots.txt file (default: off)
     
     --depth=<number>            depth limit (default: inf)
                                   How deep Arachni should go into the site structure.
@@ -470,6 +469,8 @@ USAGE
     -c
     --audit-cookies             audit cookies (COOKIE)
   
+    --audit-cookie-jar          audit cookies in cookiejar
+                                  (default: off)                              
     
     Modules ------------------------
                                                                       
