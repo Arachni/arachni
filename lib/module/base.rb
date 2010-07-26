@@ -254,29 +254,35 @@ class Base
                     input['altered'] + "' with action " +
                     get_forms()[i]['attrs']['action'] )
 
-                # the form's server-side handler may not sanitize
-                # GET input so give it a shot
-#                get_res =
-#                    @http.get( get_forms()[i]['attrs']['action'], input['hash'] )
+                if( get_forms()[i]['attrs']['method'] =! 'get' )
+                        res =
+                            @http.post( get_forms()[i]['attrs']['action'],
+                                input['hash'] )
+                else
+                    injection_str = URI.escape( injection_str )
+                    input['hash'][input['altered']] = injection_str
                     
-                # post the form
-                post_res =
-                    @http.post( get_forms()[i]['attrs']['action'], input['hash'] )
-
+                    # the form's server-side handler may not sanitize
+                    # GET input so give it a shot
+                    res =
+                        @http.get( get_forms()[i]['attrs']['action'],
+                            input['hash'] )
+                end
+                
                 # make sure that we have a response before continuing
-                if !post_res then next end
+                if !res then next end
                 
                 # call the block, if there's one
                 if block_given?
-                    block.call( input['altered'], post_res )
+                    block.call( input['altered'], res )
                     return
                 end
 
-                if !post_res.body then next end
+                if !res.body then next end
             
                 # get matches
                 result = get_matches( 'forms', input['altered'],
-                                post_res, injection_str, id_regex, id )
+                                res, injection_str, id_regex, id )
                 
 #                result = result.merge get_matches( 'forms', input['altered'],
 #                                get_res, injection_str, id_regex, id )
