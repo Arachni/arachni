@@ -102,7 +102,9 @@ class Framework
         
         $_interrupted = false
         trap( "INT" ) { $_interrupted = true }
-
+        
+        # deep copy
+        @orig_redundant = YAML::load( @opts[:redundant].to_yaml )
     end
 
     #
@@ -111,6 +113,9 @@ class Framework
     # @return    [Array<Vulnerability>]
     #
     def get_results
+        
+        @opts[:redundant] = @orig_redundant
+        
         results = {
             'version'  => VERSION,
             'revision' => REVISION,
