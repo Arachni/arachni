@@ -23,7 +23,7 @@ module Reports
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev: 198 $
+# @version: $Rev$
 #
 class HTML < Arachni::Report::Base
 
@@ -66,7 +66,7 @@ class HTML < Arachni::Report::Base
             'Name'           => 'HTML Report',
             'Description'    => %q{Exports a report as an HTML document.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 198 $',
+            'Version'        => '$Rev$',
         }
     end
 
