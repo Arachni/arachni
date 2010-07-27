@@ -255,8 +255,10 @@ class Framework
             
             # if the mod name is '*' load all modules
             if mod_name == '*'
+                @opts['mods'] = []
                 @modreg.ls_available(  ).keys.each {
                     |mod|
+                    @opts['mods'] << mod
                     @modreg.mod_load( mod )
                 }
                 break
