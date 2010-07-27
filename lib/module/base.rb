@@ -538,21 +538,21 @@ class Base
             }
         }
         
-        filled = Hash.new
-        filled['hash'] = hash
-            
-        filled['hash'].keys.each {
-            |k|
-            
-            if( !filled[k] ) then filled[k] = '' end
-            
-            filled = { 
-                'altered' => '__all',
-                'hash'    => filled['hash'].merge( { k => to_inj } )
-            }
-        }
+#        filled = Hash.new
+#        filled['hash'] = hash
+#            
+#        filled['hash'].keys.each {
+#            |k|
+#            
+#            if( !filled[k] ) then filled[k] = '' end
+#            
+#            filled = { 
+#                'altered' => '__all',
+#                'hash'    => filled['hash'].merge( { k => to_inj } )
+#            }
+#        }
         
-        var_combo << filled
+        var_combo
     end
 
 
