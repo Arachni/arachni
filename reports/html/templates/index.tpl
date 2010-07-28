@@ -1,20 +1,19 @@
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
-    
-    <!-- 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
+<!-- 
         $Id$
         HTML Report template for Arachni - Web Application Vulnerability Scanning Framework
      -->
-     
-    <head>
-        <title>Web Application Security Report - Arachni Framework</title>
-    </head>
-    
-    <body>
-    
-    <style>
+
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 11 February 2007), see www.w3.org" />
+
+  <title>Web Application Security Report - Arachni Framework</title>
+  <style type="text/css">
+/*<![CDATA[*/
       body { 
         padding: 0 20px;
         font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif; 
@@ -96,7 +95,6 @@
     
     .vulns {
         width: 100%;
-        padding-top: 100px;
         display: block;        
     }
     
@@ -104,203 +102,236 @@
         padding: 35px;
         border-bottom: 2px solid grey;
     }
-    </style>
-    
-    
-    <div id="main">
-    
+  /*]]>*/
+  </style>
+  <style type="text/css">
+/*<![CDATA[*/
+  iframe.c4 {width: 100%; height: 300px}
+  tr.c3, td.c3 {vertical-align: top}
+  td.c3 {vertical-align: top}
+  h3.c2 {padding-left: 400px}
+  li.c1 {list-style: none}
+  /*]]>*/
+  </style>
+</head>
+
+<body>
+  <div id="main">
     <h1>Web Application Security Report - Arachni Framework</h1>
-    
-    <h2>Configuration</h2>
-    <b>Version</b>: {{arachni.version}}<br/>
-    <b>Revision</b>: {{arachni.revision}}<br/>
-    <b>Audit date</b>: {{audit.date}}<br/>
-    <br/>
+
+    <h2>Configuration</h2><strong>Version</strong>: {{arachni.version}}<br />
+    <strong>Revision</strong>: {{arachni.revision}}<br />
+    <strong>Audit date</strong>: {{audit.date}}<br />
+    <br />
 
     <h3>Runtime options</h3>
-    
-    <div class="left">
-      <b>URL:</b> {{arachni.options.url}}<br/>
-      <b>User agent:</b> {{arachni.options.user_agent | escape}}<br/>
-      
-      <br/>
-      
-      <b>Audited elements</b>
-      <ul>
-      
-      {% if arachni.options.audit_links %}
-          <li>Links</li>
-      {% endif %}
-      
-      {% if arachni.options.audit_forms %}
-          <li>Forms</li>
-      {% endif %}
-      
-      {% if arachni.options.audit_cookies %}
-          <li>Cookies</li>
-      {% endif %}
-      
-      </ul>
-      
-      <div class="left">
-        <h4>Modules</h4>
-        <ul>
-        {% for mod in arachni.options.mods %}
-            <li>{{mod}}</li>
-        {% endfor %} 
-        </ul>
-      
-      
-      <h4>Cookies</h4>
-        <ul>
-        {% if arachni.options.cookies != empty and arachni.options.cookies != null %}
-          {% for cookie in arachni.options.cookies %}
-              <li>{{cookie.name}}: {{cookie.value | escape}}</li>
-          {% endfor %} 
-        {% else %}
-            <li>N/A</li>
-        {% endif %}
-        </ul>
-      
-    </div>
-    
-      <h4>Filters</h4>
-      <ul>
-      
-      <li>
-        Exclude:
-        <ul>
-        {% if arachni.options.exclude != empty %}
-        
-          {% for exclude in arachni.options.exclude %}
-              <li>{{exclude | escape}}</li>
-          {% endfor %}
-        {% else %}
-            <li>N/A</li>
-        {% endif %} 
-        </ul>
-        </li>
-        <li>
-        Include:
-        <ul>
-        {% if arachni.options.include != empty %}
-        
-          {% for include in arachni.options.include %}
-              <li>{{include | escape}}</li>
-          {% endfor %}
-          
-        {% else %}
-            <li>N/A</li>
-        {% endif %} 
-        </ul>
-        </li>
-        
-        <li>
-        Redundant:
-        <ul>
-        {% if arachni.options.redundant != empty %}
-          {% for redundant in arachni.options.redundant %}
-              <li>{{redundant.regexp | escape}} - Count {{redundant.count}}</li>
-          {% endfor %}
-        {% else %}
-            <li>N/A</li>
-        {% endif %} 
-        </ul>
-        </li>
-      </ul>
-    
-    <div class="vulns">
-      <h2>Vulnerabilities</h2>
-  
-      {% for vuln in audit.vulns %}
-      <div class="left">
-        <b>Module name</b>: {{vuln.mod_name}}<br/>
-        <b>Vulnerable variable</b>: {{vuln.var}}<br/>
-        <b>Vulnerable URL</b>: {{vuln.url}}<br/>
-        <b>HTML Element</b>
-        <p class="note">{{vuln.elem}}</p>
-         
-         
-        <h3>Description</h3>
-        <p class="note">{{vuln.description}}</p>
-        <br/>
-        <b>Injected value</b>:
-        <pre class="note">{{vuln.injected | escape}}</pre>
-      </div>
-      
-      <b>CWE</b>: <a href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br/>
-      <b>Severity</b>: {{vuln.severity}}<br/>
-      <b>CVSSV2</b>: {{vuln.cvssv2}}
-      
-      <h3>References</h3>
-      <ul>
-      {% if vuln.references != empty %}
-        {% for ref in vuln.references %}
-            <li>{{ref.name}} - <a href="{{ref.value}}">{{ref.value}}</a></li> 
-        {% endfor %}
-      {% else %}
-          <li>N/A</li>
-      {% endif %}
-      </ul>
-      
-      <br/><br/><br/><br/><br/><br/>
-      <br/><br/>
-      <b>ID</b>:<br/>
-      <pre class="note">{{vuln.id | escape}}</pre>
-      <b>Regular expression</b>:<br/>
-      <pre class="note">{{vuln.regexp | escape}}</pre>
-      
-      <b>Matched by the regular expression</b>:<br/>
-      <pre class="note"> {{vuln.regexp_match | escape}}<br/></pre>
 
+      <strong>URL:</strong> {{arachni.options.url}}<br />
+      <strong>User agent:</strong> {{arachni.options.user_agent | escape}}<br />
+      
       <table>
-      <tr>
+        <tr>
+        
         <th>
-          <h3 style="padding-left: 400px">Headers</h3>
+            <h4>Audited elements</h4>
         </th>
-      </tr>
-      <tr>
-      <td style="vertical-align: top">
-        <h4>Request</h4>
-        <pre class="note">
-        {% for header in vuln.headers.request %}
-            {{header | join '-' | escape}}
-        {% endfor %}
-        </pre>
+        
+        <th>
+            <h4>Modules</h4>
+        </th>
+        
+        <th>
+            <h4>Filters</h4>
+        </th>
+        
+        </tr>
+      <tr  class="c3">
+      <td>
+      <ul>
+        {% if arachni.options.audit_links %}
+        <li>Links</li>
+        {% endif %}
+        
+        {% if arachni.options.audit_forms %}
+        <li>Forms</li>
+        {% endif %}
+        
+        {% if arachni.options.audit_cookies %}</li>
+        <li>Cookies</li>
+        {% endif %}
+      </ul>
+    </td>
+
+      <td>
+        <ul>
+          {% for mod in arachni.options.mods %}
+          <li>{{mod}}</li>
+          {% endfor %}
+        </ul>
+      </td>
+      <td>
+      <ul>
+        <li>Exclude:
+
+          <ul>
+            {% if arachni.options.exclude != empty %}
+              {% for exclude in arachni.options.exclude %}</li>
+
+            <li>{{exclude | escape}}</li>
+
+              {% endfor %}
+            {% else %}
+            <li>N/A</li>
+            {% endif %}
+          </ul>
+        </li>
+        <li>Include:
+
+          <ul>
+            {% if arachni.options.include != empty %}
+              {% for include in arachni.options.include %}</li>
+
+            <li>{{include | escape}}</li>
+
+              {% endfor %}
+            {% else %}
+            <li>N/A</li>
+            {% endif %}
+          </ul>
+        </li>
+        <li>Redundant:
+
+          <ul>
+            {% if arachni.options.redundant != empty %}
+              {% for redundant in arachni.options.redundant %}
+
+            <li>{{redundant.regexp | escape}} - Count {{redundant.count}}</li>
+
+              {% endfor %}
+            {% else %}
+            <li>N/A</li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+
       </td>
       
-      <td>
-        <h4>Response</h4>
-        <pre class="note">
-        {% for header in vuln.headers.response %}
-            {{header | escape}}
-        {% endfor %}
-        </pre>
-        </td>
       </tr>
+      
+      <tr>
+      <td>
+        <h4>Cookies</h4>
+
+        <ul>
+          {% if arachni.options.cookies != empty and arachni.options.cookies != null %}
+            {% for cookie in arachni.options.cookies %}
+          <li>{{cookie.name}}: {{cookie.value | escape}}</li>
+            {% endfor %}
+          {% else %}
+          <li>N/A</li>
+          {% endif %}
+        </ul>
+        </td>
+        </tr>
       </table>
-      
-      {% if vuln.remedy_guidance != "" %}
-        <h3> Remedial guidance</h3>
+
+      <div class="vulns">
+        <h2>Vulnerabilities</h2>
+        
+        {% for vuln in audit.vulns %}
+
+        <div class="left">
+          <strong>Module name</strong>: {{vuln.mod_name}}<br />
+          <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
+          <strong>Vulnerable URL</strong>: {{vuln.url}}<br />
+          <strong>HTML Element</strong>
+
+          <p class="note">{{vuln.elem}}</p>
+
+          <h3>Description</h3>
+          <p class="note">{{vuln.description}}</p><br />
+          
+          <strong>Injected value</strong>:
+          <pre class="note">{{vuln.injected | escape}}</pre>
+          
+        </div>
+        
+        <strong>CWE</strong>: <a href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br />
+        <strong>Severity</strong>: {{vuln.severity}}<br />
+        <strong>CVSSV2</strong>: {{vuln.cvssv2}}
+
+        <h3>References</h3>
+
+        <ul>
+          {% if vuln.references != empty %}
+            {% for ref in vuln.references %}
+
+          <li>{{ref.name}} - <a href="{{ref.value}}">{{ref.value}}</a></li>
+
+            {% endfor %}
+          {% else %}
+          <li>N/A</li>
+          {% endif %}
+        </ul>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        
+        <strong>ID</strong>:<br />
+        <pre class="note">{{vuln.id | escape}}</pre>
+        
+        <strong>Regular expression</strong>:<br />
+        <pre class="note">{{vuln.regexp | escape}}</pre>
+        
+        <strong>Matched by the regular expression</strong>:<br />
+        <pre class="note">{{vuln.regexp_match | escape}}</pre>
+
+        <table>
+          <tr>
+            <th>
+              <h3 class="c2">Headers</h3>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="c3">
+              <h4>Request</h4>
+              <pre class="note">{% for header in vuln.headers.request %}
+{{header | join '-' | escape}}{% endfor %}</pre>
+            </td>
+
+            <td>
+              <h4>Response</h4>
+              <pre class="note">{% for header in vuln.headers.response %}
+{{header | escape}}{% endfor %}</pre>
+            </td>
+          </tr>
+          
+        </table>
+        
+        {% if vuln.remedy_guidance != "" %}
+        <h3>Remedial guidance</h3>
         {{vuln.remedy_guidance}}
-      {% endif %}
-      
-      {% if vuln.remedy_code != "" %}
-        <h3> Remedial code</h3>
-        <pre class="code note">{{vuln.remedy_code | escape}}</pre>
-      {% endif %}
-      
-      <br/>
-      <h3>HTML Response</h3>
-      <iframe style="width: 100%; height: 300px" src="data:text/html;base64,
-      {{vuln.escaped_response}}"></iframe>
-  
-      <p class="page_break"></p>
-      <br/>
-      {% endfor %}
-    
-    </div>
-    
-    </body>
-    
+        {% endif %}
+        
+        {% if vuln.remedy_code != "" %}
+        <h3>Remedial code</h3>
+        <pre class="code note">{{vuln.remedy_code | escape}}</pre>{% endif %}
+        
+        <br/>
+
+        <h3>HTML Response</h3><iframe class="c4" src=
+        "data:text/html;base64,%20{{vuln.escaped_response}}"></iframe>
+
+        <p class="page_break"></p><br />
+        {% endfor %}
+      </div>
+  </div>
+</body>
 </html>
