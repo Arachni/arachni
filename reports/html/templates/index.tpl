@@ -286,7 +286,7 @@
         
         {% for vuln in audit.vulns %}
 
-        <h3>{{vuln.name}}</h3>
+        <h3>[{{forloop.index}}] {{vuln.name}}</h3>
         <div class="left">
           <strong>Module name</strong>: {{vuln.mod_name}}<br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
@@ -359,7 +359,7 @@
         
         <strong>Matched by the regular expression</strong>:<br />
         <pre class="note">{% for match in variation.regexp_match %}
- {{match | prettyprint | escape}}
+ {{match | escape}}
  {% endfor %}
          </pre>
 
