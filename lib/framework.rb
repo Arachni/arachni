@@ -105,7 +105,7 @@ class Framework
         trap( "INT" ) { $_interrupted = true }
         
         # deep copy
-        @orig_redundant = YAML::load( @opts[:redundant].to_yaml )
+        @orig_redundant = deep_clone( @opts[:redundant] )
     end
 
     #
@@ -176,30 +176,31 @@ class Framework
             site_structure[url] =
                 @analyzer.run( url, html, headers ).clone
         
-            if( @opts[:audit_cookie_jar] )
-                
-                if( @opts[:cookies] )
+            if( @opts[:audit_cookie_jar] && @opts[:cookies] )
                     
-                    @opts[:cookies].each_pair {
-                        |name, value|
-                        site_structure[url]['cookies'] << {
-                            'name'    => name,
-                            'value'   => value
-                        }
+                @opts[:cookies].each_pair {
+                    |name, value|
+                    site_structure[url]['cookies'] << {
+                        'name'    => name,
+                        'value'   => value
                     }
-                end
-                    
+                }
             end
 
             page_data = {
-                'url'        => { 'href' => url,
-                'vars'       => @analyzer.get_link_vars( url )
-                },
+                'url'        => {
+                    'href'  => url,
+                    'vars'  => @analyzer.get_link_vars( url )
+                 },
                 'html'       => html,
                 'headers'    => headers,
                 'cookies'    => @opts[:cookies]
             }
         
+            if( page_data['url']['vars'].size > 0 )
+                site_structure[url]['links'] << page_data['url']
+            end
+
             if !@opts[:mods_run_last]
                 run_mods( page_data, site_structure[url] )
             else
@@ -526,14 +527,10 @@ class Framework
     end
     
     def run_module?( mod, structure )
-#        ap mod.info
         
         checkpoint = 0
         structure.each_pair {
             |name, value|
-            
-#            ap name
-#            ap value
             
             if( !mod.info || !mod.info['Elements'] ||
                 mod.info['Elements'].size == 0 )
@@ -541,14 +538,12 @@ class Framework
             end
             
             if( mod.info['Elements'].include?( name ) && value.size != 0 )
-                checkpoint += 1
+                return true
             end
-                
+            
         }
         
-        if( checkpoint == 0 ) then return nil else return true end
-        
-#        exit 0
+        return false
     end
     
     #
@@ -678,6 +673,9 @@ class Framework
         
     end
 
+    def deep_clone( obj )
+        YAML::load( obj.to_yaml )
+    end
   
 end
 
