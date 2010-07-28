@@ -105,8 +105,6 @@ class Spider
         @opts[:include] =
             @opts[:include].empty? ? [Regexp.new( '.*' )] : @opts[:include]
                 
-        ap @opts[:include]
-
         #    @url = @opts[:url]
     end
 
