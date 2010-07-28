@@ -162,7 +162,9 @@
 
 <body>
   <div id="main">
-    <h1>Web Application Security Report - Arachni Framework</h1>
+    <h1>Web Application Security Report -
+        <a target="_blank" href="http://sourceforge.net/apps/trac/arachni/">Arachni Framework</a>
+    </h1>
 
     <h2>Configuration</h2><strong>Version</strong>: {{arachni.version}}<br />
     <strong>Revision</strong>: {{arachni.revision}}<br />
@@ -300,7 +302,12 @@
         <a href="#top">[Go to top]</a>
         <br/>
         <div class="left">
-          <strong>Module name</strong>: {{vuln.mod_name}}<br />
+          <strong>Module name</strong>:
+          <a target="_blank"
+            href="http://arachni.sourceforge.net/Arachni/Modules/{{vuln.mod_name}}.html">
+            {{vuln.mod_name}}
+          </a>
+          <br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
           <strong>Vulnerable URL</strong>: {{vuln.url}}<br />
           <strong>HTML Element</strong>
