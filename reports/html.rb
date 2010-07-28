@@ -76,6 +76,58 @@ class HTML < Arachni::Report::Base
         file.close
     end
 
+    def __prepare_variations( vulns )
+        
+        variation_keys = [
+            'injected',
+            'id',
+            'regexp',
+            'regexp_match',
+            'headers',
+            'escaped_response'
+        ]
+        
+        new_vulns = Hash.new
+        vulns.each {
+            |vuln|
+            
+            if( !new_vulns[vuln['__id']] )
+                new_vulns[vuln['__id']]    = vuln
+            end
+
+            if( !new_vulns[vuln['__id']]['variations'] )
+                new_vulns[vuln['__id']]['variations'] = []
+            end
+            
+            new_vulns[vuln['__id']]['variations'] << {
+                'url'           => vuln['url'],
+                'injected'      => vuln['injected'],
+                'id'            => vuln['id'],
+                'regexp'        => vuln['regexp'],
+                'regexp_match'  => vuln['regexp_match'],
+                'headers'       => vuln['headers'],
+                'escaped_response'    => vuln['escaped_response']
+            }
+            
+            variation_keys.each {
+                |key|
+                new_vulns[vuln['__id']].delete( key )
+            }
+            
+        }
+        
+        vuln_keys = new_vulns.keys
+        new_vulns = new_vulns.to_a.flatten
+        
+        vuln_keys.each {
+            |key|
+            new_vulns.delete( key )
+        }
+        
+        new_vulns
+        
+    end
+    
     def __prepare_data( )
 
         if( @audit['options']['exclude'] )
@@ -129,11 +181,18 @@ class HTML < Arachni::Report::Base
                 req_headers << "#{name}: #{value}"
             }
             
+            @audit['vulns'][i]['__id']    =
+                vuln['mod_name'] + '::' + vuln['elem'] + '::' +
+                vuln['var'] + '::' + vuln['url'].split( /\?/ )[0]
+                    
             @audit['vulns'][i]['headers']['request']  = req_headers            
             @audit['vulns'][i]['headers']['response'] = res_headers
             @audit['vulns'][i]['references']         = refs
             @audit['vulns'][i]['escaped_response']   =
                 Base64.encode64( vuln['response'] ).gsub( /\n/, '' )
+            
+            @audit['vulns'][i].delete( 'response' )        
+            
         }
 
         tpl_data = {
@@ -143,7 +202,7 @@ class HTML < Arachni::Report::Base
             'options'  => @audit['options']
             },
             'audit' => {
-            'vulns'    => @audit['vulns'],
+            'vulns'    => __prepare_variations( @audit['vulns'] ),
             'date'     => @audit['date']
             }
         }

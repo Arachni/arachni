@@ -102,6 +102,16 @@
         padding: 35px;
         border-bottom: 2px solid grey;
     }
+    
+    .variant {
+        display: none;
+    }
+    
+    .variant_header {
+        padding-bottom: 3px;
+        border-bottom: 1px #aaa solid;
+    }
+    
   /*]]>*/
   </style>
   <style type="text/css">
@@ -113,6 +123,41 @@
   li.c1 {list-style: none}
   /*]]>*/
   </style>
+  
+  <script type="text/javascript">
+
+  function $() {
+      var elements = new Array();
+      for (var i = 0; i < arguments.length; i++) {
+              var element = arguments[i];
+              if (typeof element == 'string')
+                  element = document.getElementById(element);
+              if (arguments.length == 1)
+                  return element;
+              elements.push(element);
+      }
+      return elements;
+  }
+    
+  function toggleElem( id ){
+
+    if( $(id).style.display == 'none' || 
+        $(id).style.display == '' )
+    {
+        $(id).style.display    = 'block';
+        sign = '[-]';
+    } else {
+        $(id).style.display    = 'none';
+        sign = '[+]';
+    }
+    
+    if( $(id + '_sign') ){
+            $(id + '_sign').innerHTML = sign;
+    }
+    
+  }
+  </script>
+  
 </head>
 
 <body>
@@ -241,6 +286,7 @@
         
         {% for vuln in audit.vulns %}
 
+        <h3>{{vuln.name}}</h3>
         <div class="left">
           <strong>Module name</strong>: {{vuln.mod_name}}<br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
@@ -250,11 +296,18 @@
           <p class="note">{{vuln.elem}}</p>
 
           <h3>Description</h3>
-          <p class="note">{{vuln.description}}</p><br />
+          <p class="note">{{vuln.description}}</p>
+        
+          {% if vuln.remedy_guidance != "" %}
+          <h3>Remedial guidance</h3>
+          <p class="note">{{vuln.remedy_guidance}}</p>
+          {% endif %}
           
-          <strong>Injected value</strong>:
-          <pre class="note">{{vuln.injected | escape}}</pre>
-          
+          {% if vuln.remedy_code != "" %}
+          <h3>Remedial code</h3>
+          <pre class="code note">{{vuln.remedy_code | escape}}</pre>
+          {% endif %}
+            
         </div>
         
         <strong>CWE</strong>: <a href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br />
@@ -283,14 +336,29 @@
         <br />
         <br />
         
+        {% assign toploop_index = forloop.index %}
+        {% for variant in vuln.variations %}
+        <h3 class="variant_header">
+          <a href='javascript:toggleElem( "var_{{toploop_index}}_{{forloop.index}}" )'>
+            <span id="var_{{toploop_index}}_{{forloop.index}}_sign">[+]</span>
+            Variant {{forloop.index}}
+          </a>
+        </h3>
+        
+        <strong>Vulnerable URL</strong>: {{variant.url}}<br />
+        
+        <div class="variant" id="var_{{toploop_index}}_{{forloop.index}}">
+        <strong>Injected value</strong>:
+        <pre class="note">{{variant.injected | escape}}</pre>
+        
         <strong>ID</strong>:<br />
-        <pre class="note">{{vuln.id | escape}}</pre>
+        <pre class="note">{{variant.id | escape}}</pre>
         
         <strong>Regular expression</strong>:<br />
-        <pre class="note">{{vuln.regexp | escape}}</pre>
+        <pre class="note">{{variant.regexp | escape}}</pre>
         
         <strong>Matched by the regular expression</strong>:<br />
-        <pre class="note">{{vuln.regexp_match | escape}}</pre>
+        <pre class="note">{{variant.regexp_match | escape}}</pre>
 
         <table>
           <tr>
@@ -302,32 +370,26 @@
           <tr>
             <td class="c3">
               <h4>Request</h4>
-              <pre class="note">{% for header in vuln.headers.request %}
+              <pre class="note">{% for header in variant.headers.request %}
 {{header | join '-' | escape}}{% endfor %}</pre>
             </td>
 
             <td>
               <h4>Response</h4>
-              <pre class="note">{% for header in vuln.headers.response %}
+              <pre class="note">{% for header in variant.headers.response %}
 {{header | escape}}{% endfor %}</pre>
             </td>
           </tr>
           
         </table>
         
-        {% if vuln.remedy_guidance != "" %}
-        <h3>Remedial guidance</h3>
-        {{vuln.remedy_guidance}}
-        {% endif %}
-        
-        {% if vuln.remedy_code != "" %}
-        <h3>Remedial code</h3>
-        <pre class="code note">{{vuln.remedy_code | escape}}</pre>{% endif %}
-        
         <br/>
 
         <h3>HTML Response</h3><iframe class="c4" src=
-        "data:text/html;base64,%20{{vuln.escaped_response}}"></iframe>
+        "data:text/html;base64, {{variant.escaped_response}}"></iframe>
+        
+        </div>
+        {% endfor %}
 
         <p class="page_break"></p><br />
         {% endfor %}
