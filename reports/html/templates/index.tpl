@@ -310,7 +310,7 @@
             
         </div>
         
-        <strong>CWE</strong>: <a href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br />
+        <strong>CWE</strong>: <a target="_blank" href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br />
         <strong>Severity</strong>: {{vuln.severity}}<br />
         <strong>CVSSV2</strong>: {{vuln.cvssv2}}
 
@@ -320,7 +320,7 @@
           {% if vuln.references != empty %}
             {% for ref in vuln.references %}
 
-          <li>{{ref.name}} - <a href="{{ref.value}}">{{ref.value}}</a></li>
+          <li>{{ref.name}} - <a target="_blank" href="{{ref.value}}">{{ref.value}}</a></li>
 
             {% endfor %}
           {% else %}
@@ -358,7 +358,10 @@
         <pre class="note">{{variation.regexp | escape}}</pre>
         
         <strong>Matched by the regular expression</strong>:<br />
-        <pre class="note">{{variation.regexp_match | escape}}</pre>
+        <pre class="note">{% for match in variation.regexp_match %}
+ {{match | prettyprint | escape}}
+ {% endfor %}
+         </pre>
 
         <table>
           <tr>
