@@ -270,7 +270,7 @@
         <ul>
           {% if arachni.options.cookies != empty and arachni.options.cookies != null %}
             {% for cookie in arachni.options.cookies %}
-          <li>{{cookie.name}}: {{cookie.value | escape}}</li>
+          <li>{{cookie.name | escape}}: {{cookie.value | escape}}</li>
             {% endfor %}
           {% else %}
           <li>N/A</li>
@@ -283,9 +283,9 @@
       <p>
       <h2 id="top">{{audit.vulns | size}} vulnerabilities discovered</h2>
       {% for vuln in audit.vulns %}
-      <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name}}</a>:</h3>
+      <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}</a>:</h3>
       In <span class="note">{{vuln.elem}}</span> variable
-      <span class="note">{{vuln.var}}</span> 
+      <span class="note">{{vuln.var | escape}}</span> 
       at <span class="note">{{vuln.url}}</span>.
       {% endfor %}
       </p>
@@ -296,7 +296,7 @@
         {% for vuln in audit.vulns %}
 
         <h3 id="vuln_{{forloop.index}}">
-          <a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name}}
+          <a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}
           </a>
         </h3>
         <a href="#top">[Go to top]</a>
@@ -309,17 +309,17 @@
           </a>
           <br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
-          <strong>Vulnerable URL</strong>: {{vuln.url}}<br />
+          <strong>Vulnerable URL</strong>: {{vuln.url | escape}}<br />
           <strong>HTML Element</strong>
 
           <p class="note">{{vuln.elem}}</p>
 
           <h3>Description</h3>
-          <p class="note">{{vuln.description}}</p>
+          <p class="note">{{vuln.description | escape}}</p>
         
           {% if vuln.remedy_guidance != "" %}
           <h3>Remedial guidance</h3>
-          <p class="note">{{vuln.remedy_guidance}}</p>
+          <p class="note">{{vuln.remedy_guidance | escape}}</p>
           {% endif %}
           
           {% if vuln.remedy_code != "" %}
@@ -339,7 +339,7 @@
           {% if vuln.references != empty %}
             {% for ref in vuln.references %}
 
-          <li>{{ref.name}} - <a target="_blank" href="{{ref.value}}">{{ref.value}}</a></li>
+          <li>{{ref.name | escape}} - <a target="_blank" href="{{ref.value}}">{{ref.value}}</a></li>
 
             {% endfor %}
           {% else %}
