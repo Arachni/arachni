@@ -103,7 +103,9 @@ class Spider
         @on_every_page_blocks = []
 
         @opts[:include] =
-            @opts[:include].empty? ? Regexp.new( '.*' ) : @opts[:include]
+            @opts[:include].empty? ? [Regexp.new( '.*' )] : @opts[:include]
+                
+        ap @opts[:include]
 
         #    @url = @opts[:url]
     end
