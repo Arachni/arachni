@@ -184,7 +184,10 @@ class SQLInjection < Arachni::Module::Base
                 print_verbose( "ID str:\t\t" + id )
                 print_verbose( "Matched regex:\t" + id_regex.to_s )
                 print_verbose( '---------' ) if only_positives?
-
+        
+                # since a regexp tested positive for SQL injection
+                # we don't need to test for the rest
+                return true
             end
             
         }

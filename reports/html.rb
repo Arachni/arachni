@@ -35,11 +35,13 @@ class HTML < Arachni::Report::Base
 
     #
     # @param [Array]  audit  the result of the audit
+    # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, outfile = nil )
-        @audit   = audit
-        @outfile = outfile + '.html'
+    def initialize( audit, options, outfile = nil )
+        @audit     = audit
+        @options   = options
+        @outfile   = outfile + '.html'
         
         @tpl = File.dirname( __FILE__ ) + '/html/templates/index.tpl'
     end
@@ -64,6 +66,12 @@ class HTML < Arachni::Report::Base
     def self.info
         {
             'Name'           => 'HTML Report',
+            'Options'        => {
+                'headers' =>
+                    ['true/false (Default: true)', 'Include headers in the report?' ],
+                'html_response' =>
+                    [ 'true/false (Default: true)', 'Include the HTML response in the report?' ]
+            },
             'Description'    => %q{Exports a report as an HTML document.},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
@@ -207,7 +215,8 @@ class HTML < Arachni::Report::Base
             'audit' => {
             'vulns'    => __prepare_variations( @audit['vulns'] ),
             'date'     => @audit['date']
-            }
+            },
+            'opts'     => @options
         }
     end
 

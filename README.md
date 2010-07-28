@@ -124,7 +124,8 @@ You can find an tutorial module here: {Arachni::Modules::SimpleRFI}
     - Reports are similar to modules...but a lot simpler.
 
 
-You can find an up-to-date sample report here: {Arachni::Reports::AP}
+You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
+And a more complex HTML report here: {Arachni::Reports::HTML} 
 
 
 Usage
@@ -211,6 +212,9 @@ Usage
     -c
     --audit-cookies             audit cookies (COOKIE)
   
+    --audit-cookie-jar          audit cookies in cookiejar
+                                  (default: off)                              
+  
     
 **Modules**
                                                                       
@@ -236,6 +240,10 @@ Usage
     --repload=<file>              loads a marshal dump of the audit results
                                   and lets you create a new report
     
+    --repopts=<option1>:<value>,<option2>:<value>,...
+                                  Set options for the selected report.
+                                  (One invocation only.)                                  
+                                  
     --report=<repname>:<file>     <repname>: the name of the report as displayed by '--lsrep'
                                   <file>: where to save the report
                                   

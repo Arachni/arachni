@@ -33,6 +33,7 @@ opts = GetoptLong.new(
     [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--repopts',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--load-profile',            GetoptLong::REQUIRED_ARGUMENT ],
@@ -64,6 +65,7 @@ $runtime_args[:exclude]   = []
 $runtime_args[:include]   = []
 $runtime_args[:redundant] = []
 $runtime_args[:reports]   = []
+$runtime_args[:repopts]   = Hash.new
     
 opts.each do |opt, arg|
 
@@ -135,6 +137,14 @@ opts.each do |opt, arg|
         when '--repsave'
             $runtime_args[:repsave] = arg
 
+        when '--repopts'
+            arg.split( /,/ ).each {
+                |opt|
+                
+                name, value = opt.split( /:/ )
+                $runtime_args[:repopts][name] = value
+            }
+                
         when '--save-profile'
             $runtime_args[:save_profile] = arg
 

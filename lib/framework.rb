@@ -559,9 +559,9 @@ class Framework
             |report, i|
 
             if( !@opts[:repsave] || @opts[:repsave].size == 0 )
-                new_rep = report.new( results )
+                new_rep = report.new( results, @opts[:repopts] )
             else
-                new_rep = report.new( results, @opts[:repsave] + REPORT_EXT )
+                new_rep = report.new( results, @opts[:repopts], @opts[:repsave] + REPORT_EXT )
             end
             
             new_rep.run( )

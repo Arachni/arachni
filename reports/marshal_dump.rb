@@ -37,9 +37,10 @@ class MarshalDump < Arachni::Report::Base
 
     #
     # @param [Array]  audit  the result of the audit
+    # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, outfile = 'marshal.dump' )
+    def initialize( audit, options = nil, outfile = 'marshal.dump' )
         @audit   = audit
         @outfile = outfile
     end

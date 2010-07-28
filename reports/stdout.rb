@@ -35,9 +35,10 @@ class Stdout < Arachni::Report::Base
 
     #
     # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, outfile = nil )
+    def initialize( audit, options = nil, outfile = nil )
         @audit = audit
     end
     

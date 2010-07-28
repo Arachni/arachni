@@ -95,7 +95,13 @@ Creating New Reports<br/>
 The only thing that you should keep in mind when creating a new report
 is to adhere to the structure shown in: {Arachni::Reports::AP}.<br/>
 Also look in: {Arachni::Report::Base}.
-    
+
+If you want your users to be able to customize the report you can
+provide them with a set of options, as seen in {Arachni::Reports::HTML}'s self.info() return hash.
+
+Keep in minds though that Arachni does not do any checking for these options,
+you will have to take care of that yourself.
+
 However, do provide an appropriate default "outfile" value in "initialize".
 
 Other than that you can do whatever you want, you have all of Ruby's

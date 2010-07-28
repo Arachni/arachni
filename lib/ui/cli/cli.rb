@@ -299,6 +299,19 @@ class CLI
 
             print_line( "Name:\t\t"       + info["Name"] )
             print_line( "Description:\t"  + info["Description"] )
+                
+            if( info["Options"] && info["Options"].size > 0 )
+                print_line( "Options:\t" )
+                
+                info["Options"].each_pair {
+                    |option, info|
+                    print_info( "\t#{option} - #{info[1]}" )
+                    print_info( "\tValues: #{info[0]}" )
+                    
+                    print_line( )
+                }    
+            end
+            
             print_line( "Author:\t\t"     + info["Author"] )
             print_line( "Version:\t"      + info["Version"] )
             print_line( "Path:\t"         + info['Path'] )
@@ -496,9 +509,12 @@ USAGE
     --repload=<file>              loads a marshal dump of the audit results
                                   and lets you create a new report
     
+    --repopts=<option1>:<value>,<option2>:<value>,...
+                                  Set options for the selected report.
+                                  (One invocation only.)                                  
+                                  
     --report=<repname>:<file>     <repname>: the name of the report as displayed by '--lsrep'
                                   <file>: where to save the report
-                                  
                                   
     Proxy --------------------------
     

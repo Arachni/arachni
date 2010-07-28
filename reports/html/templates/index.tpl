@@ -329,7 +329,8 @@
             
         </div>
         
-        <strong>CWE</strong>: <a target="_blank" href="{{vuln.cwe_url}}">{{vuln.cwe}}</a><br />
+        <strong>CWE</strong>: {{vuln.cwe}}
+        (<a target="_blank" href="{{vuln.cwe_url}}">{{vuln.cwe_url}}</a>)<br />
         <strong>Severity</strong>: {{vuln.severity}}<br />
         <strong>CVSSV2</strong>: {{vuln.cvssv2}}
 
@@ -382,6 +383,7 @@
  {% endfor %}
          </pre>
 
+{% if opts.headers != 'false' %}
         <table>
           <tr>
             <th>
@@ -404,12 +406,14 @@
           </tr>
           
         </table>
-        
+{% endif %}
         <br/>
 
+{% if opts.html_response != 'false' %}
         <h3>HTML Response</h3><iframe class="c4" src=
         "data:text/html;base64, {{variation.escaped_response}}"></iframe>
-        
+{% endif %}
+
         </div>
         {% endfor %}
 

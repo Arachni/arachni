@@ -34,9 +34,10 @@ class AP < Arachni::Report::Base
 
     #
     # @param [Array]  audit  the result of the audit
+    # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, outfile = nil )
+    def initialize( audit, options = nil, outfile = nil )
         @audit   = audit
     end
     
