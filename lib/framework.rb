@@ -24,6 +24,7 @@ require $runtime_args['dir']['lib'] + 'module/registry'
 require $runtime_args['dir']['lib'] + 'report/base'
 require $runtime_args['dir']['lib'] + 'report/registry'
 require $runtime_args['dir']['lib'] + 'report/registrar'
+require 'yaml'
 require 'ap'
 require 'pp'
 
