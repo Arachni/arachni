@@ -167,7 +167,6 @@
     <h2>Configuration</h2><strong>Version</strong>: {{arachni.version}}<br />
     <strong>Revision</strong>: {{arachni.revision}}<br />
     <strong>Audit date</strong>: {{audit.date}}<br />
-    <br />
 
     <h3>Runtime options</h3>
 
@@ -187,6 +186,10 @@
         
         <th>
             <h4>Filters</h4>
+        </th>
+        
+        <th>
+            <h4>Cookies</h4>
         </th>
         
         </tr>
@@ -261,13 +264,7 @@
       </ul>
 
       </td>
-      
-      </tr>
-      
-      <tr>
       <td>
-        <h4>Cookies</h4>
-
         <ul>
           {% if arachni.options.cookies != empty and arachni.options.cookies != null %}
             {% for cookie in arachni.options.cookies %}
@@ -281,12 +278,27 @@
         </tr>
       </table>
 
+      <p>
+      <h2 id="top">{{audit.vulns | size}} vulnerabilities discovered</h2>
+      {% for vuln in audit.vulns %}
+      <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name}}</a>:</h3>
+      In <span class="note">{{vuln.elem}}</span> variable
+      <span class="note">{{vuln.var}}</span> 
+      at <span class="note">{{vuln.url}}</span>.
+      {% endfor %}
+      </p>
+
       <div class="vulns">
         <h2>Vulnerabilities</h2>
         
         {% for vuln in audit.vulns %}
 
-        <h3>[{{forloop.index}}] {{vuln.name}}</h3>
+        <h3 id="vuln_{{forloop.index}}">
+          <a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name}}
+          </a>
+        </h3>
+        <a href="#top">[Go to top]</a>
+        <br/>
         <div class="left">
           <strong>Module name</strong>: {{vuln.mod_name}}<br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
@@ -394,7 +406,10 @@
         </div>
         {% endfor %}
 
-        <p class="page_break"></p><br />
+        <p class="page_break">
+            <a href="#top">[Go to top]</a>
+        </p>
+        <br />
         {% endfor %}
       </div>
   </div>
