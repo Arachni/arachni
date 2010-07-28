@@ -91,6 +91,9 @@ class HTML < Arachni::Report::Base
         vulns.each {
             |vuln|
             
+            orig_url    = vuln['url']
+            vuln['url'] = vuln['url'].split( /\?/ )[0]
+            
             if( !new_vulns[vuln['__id']] )
                 new_vulns[vuln['__id']]    = vuln
             end
@@ -100,7 +103,7 @@ class HTML < Arachni::Report::Base
             end
             
             new_vulns[vuln['__id']]['variations'] << {
-                'url'           => vuln['url'],
+                'url'           => orig_url,
                 'injected'      => vuln['injected'],
                 'id'            => vuln['id'],
                 'regexp'        => vuln['regexp'],
