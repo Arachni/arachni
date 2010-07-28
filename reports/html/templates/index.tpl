@@ -103,11 +103,11 @@
         border-bottom: 2px solid grey;
     }
     
-    .variant {
+    .variation {
         display: none;
     }
     
-    .variant_header {
+    .variation_header {
         padding-bottom: 3px;
         border-bottom: 1px #aaa solid;
     }
@@ -337,28 +337,28 @@
         <br />
         
         {% assign toploop_index = forloop.index %}
-        {% for variant in vuln.variations %}
-        <h3 class="variant_header">
+        {% for variation in vuln.variations %}
+        <h3 class="variation_header">
           <a href='javascript:toggleElem( "var_{{toploop_index}}_{{forloop.index}}" )'>
             <span id="var_{{toploop_index}}_{{forloop.index}}_sign">[+]</span>
-            Variant {{forloop.index}}
+            Variation {{forloop.index}}
           </a>
         </h3>
         
-        <strong>Vulnerable URL</strong>: {{variant.url}}<br />
+        <strong>Vulnerable URL</strong>: {{variation.url}}<br />
         
-        <div class="variant" id="var_{{toploop_index}}_{{forloop.index}}">
+        <div class="variation" id="var_{{toploop_index}}_{{forloop.index}}">
         <strong>Injected value</strong>:
-        <pre class="note">{{variant.injected | escape}}</pre>
+        <pre class="note">{{variation.injected | escape}}</pre>
         
         <strong>ID</strong>:<br />
-        <pre class="note">{{variant.id | escape}}</pre>
+        <pre class="note">{{variation.id | escape}}</pre>
         
         <strong>Regular expression</strong>:<br />
-        <pre class="note">{{variant.regexp | escape}}</pre>
+        <pre class="note">{{variation.regexp | escape}}</pre>
         
         <strong>Matched by the regular expression</strong>:<br />
-        <pre class="note">{{variant.regexp_match | escape}}</pre>
+        <pre class="note">{{variation.regexp_match | escape}}</pre>
 
         <table>
           <tr>
@@ -370,13 +370,13 @@
           <tr>
             <td class="c3">
               <h4>Request</h4>
-              <pre class="note">{% for header in variant.headers.request %}
+              <pre class="note">{% for header in variation.headers.request %}
 {{header | join '-' | escape}}{% endfor %}</pre>
             </td>
 
             <td>
               <h4>Response</h4>
-              <pre class="note">{% for header in variant.headers.response %}
+              <pre class="note">{% for header in variation.headers.response %}
 {{header | escape}}{% endfor %}</pre>
             </td>
           </tr>
@@ -386,7 +386,7 @@
         <br/>
 
         <h3>HTML Response</h3><iframe class="c4" src=
-        "data:text/html;base64, {{variant.escaped_response}}"></iframe>
+        "data:text/html;base64, {{variation.escaped_response}}"></iframe>
         
         </div>
         {% endfor %}
