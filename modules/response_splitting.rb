@@ -101,6 +101,7 @@ class ResponseSplitting < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
+                'Name'        => %q{Response splitting},
                 'Description' => %q{The web application includes user input
                      in the response HTTP header.},
                 'CWE'         => '20',

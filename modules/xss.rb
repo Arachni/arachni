@@ -105,6 +105,7 @@ class XSS < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
+                'Name'        => %q{Cross-Site Scripting (XSS)},
                 'Description' => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
                 'CWE'         => '79',

@@ -134,6 +134,7 @@ class Eval < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
+                'Name'        => %q{Code injection},
                 'Description' => %q{Code can be injected into the web application.},
                 'CWE'         => '94',
                 'Severity'    => 'High',

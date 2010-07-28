@@ -187,6 +187,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             'Targets'        => { 'PHP' => 'all' },
             
             'Vulnerability'   => {
+                'Name'        => %q{Remote file inclusion},
                 'Description' => %q{A remote file inclusion vulnerability exists.},
                 'CWE'         => '94',
                 'Severity'    => 'High',

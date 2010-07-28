@@ -25,6 +25,7 @@ module Modules
 # @version: $Rev$
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
+# @see http://www.owasp.org/index.php/OS_Command_Injection    
 #    
 class SimpleCmdExec < Arachni::Module::Base
 
@@ -82,11 +83,13 @@ class SimpleCmdExec < Arachni::Module::Base
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
-                
+                 'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
+
             'Targets'        => { 'PHP' => 'all' },
                 
             'Vulnerability'   => {
+                'Name'        => %q{OS command injection},
                 'Description' => %q{The web application allows an attacker to
                     execute OS commands.},
                 'CWE'         => '78',

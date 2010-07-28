@@ -121,6 +121,7 @@ class SQLInjection < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
+                'Name'        => %q{SQL Injection},
                 'Description' => %q{SQL code can be injected into the web application.},
                 'CWE'         => '89',
                 'Severity'    => 'High',
