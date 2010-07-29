@@ -121,8 +121,7 @@ class Framework
             'version'  => VERSION,
             'revision' => REVISION,
             'options'  => @opts,
-            'vulns'    => Arachni::Module::Registry.get_results( ),
-            'date'     => Time.now.to_s
+            'vulns'    => Arachni::Module::Registry.get_results( )
         }
     end
 
@@ -142,8 +141,12 @@ class Framework
             raise
         end
         
+        @opts[:start_datetime] = Time.now
+            
         audit( )
         
+        @opts[:finish_datetime] = Time.now
+        @opts[:runtime] = @opts[:finish_datetime] - @opts[:start_datetime]
         
         if( @opts[:reports] )
             begin
@@ -488,7 +491,7 @@ class Framework
                 |q|
                 until( q == ( curr_mod = q.deq ) )
                     
-                    if( !run_module?( curr_mod, structure ) )
+                    if( !run_module?( curr_mod , structure ) )
                         print_verbose( 'Skipping ' + curr_mod.to_s +
                             ', nothing to audit.' )
                         next
