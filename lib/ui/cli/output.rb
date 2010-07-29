@@ -126,7 +126,22 @@ module Output
         if !@@debug then return end
         pp obj
     end
-        
+
+    # Prints the backtrace of an exception
+    #
+    # Obeys {@@debug}
+    #
+    # @see #debug?
+    # @see #debug!
+    #
+    # @param    [Exception]
+    # @return    [void]
+    #
+    def print_debug_backtrace( e = nil )
+        if !@@debug then return end
+        e.backtrace.each{ |line| print_debug( line ) }
+    end
+            
     # Prints a verbose message
     #
     # Obeys {@@verbose}
