@@ -165,10 +165,16 @@
     <h1>Web Application Security Report -
         <a target="_blank" href="http://sourceforge.net/apps/trac/arachni/">Arachni Framework</a>
     </h1>
+    <strong>Report generated on</strong>:
+    <p class="note">{{arachni.date}}</p>
+    
 
-    <h2>Configuration</h2><strong>Version</strong>: {{arachni.version}}<br />
+    <h2>Configuration</h2>
+    <strong>Version</strong>: {{arachni.version}}<br />
     <strong>Revision</strong>: {{arachni.revision}}<br />
-    <strong>Audit date</strong>: {{audit.date}}<br />
+    <strong>Audit started on</strong>: {{audit.start_datetime}}<br />
+    <strong>Audit finished on</strong>: {{audit.finish_datetime}}<br />
+    <strong>Runtime</strong>: {{audit.runtime}}<br />
 
     <h3>Runtime options</h3>
 

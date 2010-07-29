@@ -205,16 +205,25 @@ class HTML < Arachni::Report::Base
             @audit['vulns'][i].delete( 'response' )        
             
         }
-
+        
+        runtime = @audit['options']['runtime'].to_i
+        f_runtime = [runtime/3600, runtime/60 % 60, runtime % 60].map {
+            |t|
+            t.to_s.rjust( 2, '0' )
+        }.join(':')
+     
         tpl_data = {
             'arachni' => {
-            'version'  => @audit['version'],
-            'revision' => @audit['revision'],
-            'options'  => @audit['options']
+                'version'  => @audit['version'],
+                'revision' => @audit['revision'],
+                'options'  => @audit['options'],
+                'date'     => Time.now.to_s
             },
             'audit' => {
-            'vulns'    => __prepare_variations( @audit['vulns'] ),
-            'date'     => @audit['date']
+                'vulns'    => __prepare_variations( @audit['vulns'] ),
+                'start_datetime'  => @audit['options']['start_datetime'].asctime,
+                'finish_datetime' => @audit['options']['finish_datetime'].asctime,
+                'runtime'         => f_runtime
             },
             'opts'     => @options
         }
