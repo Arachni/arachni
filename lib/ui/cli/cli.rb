@@ -57,14 +57,10 @@ class CLI
         
         @opts = opts
         
+        # if we have a load profile load it and merge it with the
+        # user supplied options
         if( @opts[:load_profile] )
-            begin
-                load_profile( @opts[:load_profile] )
-            rescue Exceptions => e
-                print_error( e.to_s )
-                print_line
-                exit 0
-            end
+            load_profile( @opts[:load_profile] )
         end
                 
         #
@@ -91,7 +87,7 @@ class CLI
         # instantiate the big-boy!
         @arachni = Arachni::Framework.new( @opts  )
         
-        # echo a banner
+        # echo the banner
         banner( )
         
         # work on the user supplied arguments
@@ -106,8 +102,13 @@ class CLI
         print_status( 'Initing...' )
                 
         begin
+            
+            # this will output only if debug mode is on
             ls_loaded( )
+            
+            # start the show!
             @arachni.run( )
+            
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
@@ -324,19 +325,22 @@ class CLI
     end
     
     #
-    # Loads an Arachni Framework Profile file.
+    # Loads an Arachni Framework Profile file and merges it with the
+    # user supplied options.
     #
     # @param    [String]    filename    the file to load
     #
     def load_profile( filename )
         begin
+            
             f = File.open( filename )
             @opts.delete( :load_profile )
+            
             # TODO remove global vars
             $runtime_args = @opts = @opts.merge( Marshal.load( f ) )
         rescue Exception => e
-            banner( )
             print_error( e.to_s )
+            print_debug_backtrace( e )
             print_line( )
             exit 0
         end
