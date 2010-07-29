@@ -238,7 +238,7 @@ class Registry
     # @return [Array<Arachni::Module>]  the @@module_registry
     #
     def get_registry( )
-        @@module_registry
+        Registry.get_registry( )
     end
 
     #
