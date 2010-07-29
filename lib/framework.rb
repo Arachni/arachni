@@ -502,12 +502,8 @@ class Framework
                     print_debug( )
                     
                     print_status( curr_mod.to_s )
-
-                    mod_new = curr_mod.new( page_data, structure )
                     
-                    mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
-                    mod_new.run
-                    mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
+                    run_mod( curr_mod, page_data, structure )
                     
                     while( handle_interrupt(  ) )
                     end
@@ -527,6 +523,19 @@ class Framework
         # wait for threads to finish
         @threads.each { |t| t.join }
             
+    end
+    
+    def run_mod( curr_mod, page_data, structure )
+        begin
+            mod_new = curr_mod.new( page_data, structure )
+            
+            mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
+            mod_new.run
+            mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
+        rescue Exception => e
+            print_error( 'Error in ' + curr_mod.to_s + ': ' + e.to_s )
+            print_debug_backtrace( e )
+        end
     end
     
     def run_module?( mod, structure )
