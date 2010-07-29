@@ -122,7 +122,7 @@ class CLI
         rescue Exception => e
             print_error( e.inspect )
             print_debug( 'Backtrace:' )
-            e.backtrace.each{ |line| print_debug( line ) }
+            print_debug_backtrace( e )
             print_line
             exit 0
         end

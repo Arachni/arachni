@@ -129,7 +129,7 @@ class Spider
                 
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
-                    page.error.backtrace.each { |line| print_debug( line ) }
+                    print_debug_backtrace( page.error )
                     next
                 end
 
