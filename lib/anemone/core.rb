@@ -66,19 +66,30 @@ class Core
     #
     # Execute the on_every_page blocks for *page*
     #
+    # Modified it to fix a bug in Anemone when given more than one<br/>
+    # regular expression for "@on_pages_like_blocks".
+    #
     def do_page_blocks(page)
         @on_every_page_blocks.each do |block|
             block.call(page)
         end
 
         @on_pages_like_blocks.each do |patterns, blocks|
-            
             if matches_pattern?( page.url.to_s, patterns )
                 blocks.each { |block| block.call(page) }
             end
         end
     end
     
+    #
+    # Decides whether or not a url matches any of the regular expressions
+    # in "patterns".
+    #
+    # @param    [String]    url
+    # @param    [Array]     patterns    array of regular expressions
+    #
+    # @return    [Bool]
+    #
     def matches_pattern?( url, patterns )
         
         patterns.each {

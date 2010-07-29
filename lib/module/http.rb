@@ -347,6 +347,12 @@ class HTTP
 
     end
     
+    #
+    # Handles an exception outputting info about it and the environment<br/>
+    # when it occured, depending on the output settings.
+    #
+    # @param    [Exception]     e
+    #
     def handle_exception( e )
         print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
         print_debug( 'Exception: ' +  e.inspect )

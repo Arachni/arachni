@@ -525,19 +525,41 @@ class Framework
             
     end
     
-    def run_mod( curr_mod, page_data, structure )
+    #
+    # Runs a module and passes it the page_data and structure.<br/>
+    # It also handles any exceptions thrown by the module at runtime.
+    #
+    # @param    [Class]   mod           the module to run 
+    # @param    [Hash]    page_data     data related to the webpages
+    #                                      to be made available to modules
+    # @param    [Hash]    structure     the structure of the webpages<br/>
+    #                                      links, forms, cookies etc
+    #
+    def run_mod( mod, page_data, structure )
         begin
-            mod_new = curr_mod.new( page_data, structure )
+            mod_new = mod.new( page_data, structure )
             
-            mod_new.prepare   if curr_mod.method_defined?( 'prepare' )
+            mod_new.prepare   if mod.method_defined?( 'prepare' )
             mod_new.run
-            mod_new.clean_up  if curr_mod.method_defined?( 'clean_up' )
+            mod_new.clean_up  if mod.method_defined?( 'clean_up' )
         rescue Exception => e
-            print_error( 'Error in ' + curr_mod.to_s + ': ' + e.to_s )
+            print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
         end
     end
     
+    
+    #
+    # Decides whether or not to run a given module based on the<br/>
+    # HTML elements it plans to audit and the existence of those elements<br/> 
+    # in the current page.
+    #
+    # @param    [Class]   mod           the module to run
+    # @param    [Hash]    page_data     data related to the webpages
+    #                                      to be made available to modules
+    #
+    # @return    [Bool]
+    #
     def run_module?( mod, structure )
         
         checkpoint = 0
