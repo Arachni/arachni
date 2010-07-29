@@ -102,10 +102,10 @@ class Spider
         @sitemap = []
         @on_every_page_blocks = []
 
+        # if we have no 'include' patterns create one that will match
+        # everything, like '.*'
         @opts[:include] =
-            @opts[:include].empty? ? [Regexp.new( '.*' )] : @opts[:include]
-                
-        #    @url = @opts[:url]
+            @opts[:include].empty? ? [ Regexp.new( '.*' ) ] : @opts[:include]
     end
 
     #
@@ -119,43 +119,57 @@ class Spider
     def run( &block )
 
         i = 1
-        Anemone.crawl( @opts[:url], @opts ) do |anemone|
+        # start the crawl
+        Anemone.crawl( @opts[:url], @opts ) {
+            |anemone|
             
+            # apply 'exclude' patterns
             anemone.skip_links_like( @opts[:exclude] ) if @opts[:exclude]
-               
-            anemone.on_pages_like( @opts[:include] ) do |page|
+            
+            # apply 'include' patterns and grab matching pages
+            # as they are discovered
+            anemone.on_pages_like( @opts[:include] ) {
+                |page|
 
                 url = page.url.to_s
                 
+                # something went kaboom, tell the user and skip the page
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
                     print_debug_backtrace( page.error )
                     next
                 end
 
+                # push the url in the sitemap
                 @sitemap.push( url )
 
                 print_line
                 print_status( "[HTTP: #{page.code}] " + url )
                 
+                # call the block...if we have one
                 if block
                     block.call( url, page.body, page.headers )
                 end
 
-                @on_every_page_blocks.each do |block|
+                # run blocks specified later 
+                @on_every_page_blocks.each {
+                    |block|
                     block.call( page )
-                end
+                }
 
-                page.discard_doc!()
+                # we don't need the HTML doc anymore
+                page.discard_doc!( )
 
+                # make sure we obey the link count limit and
+                # return if we have exceeded it.
                 if( @opts[:link_count_limit] != false &&
-                @opts[:link_count_limit] <= i )
+                    @opts[:link_count_limit] <= i )
                     return @sitemap.uniq
                 end
 
                 i+=1
-            end
-        end
+            }
+        }
 
         return @sitemap.uniq
     end
