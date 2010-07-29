@@ -80,31 +80,17 @@ class Framework
         @repreg = Arachni::Report::Registry.new( @opts['dir']['reports'] )
         
         parse_opts( )
-
-        #
-        # for now these should remain here
-        #
-        
-        # TODO: remove global vars
-        if !@opts[:user_agent]
-            @opts[:user_agent] = $runtime_args[:user_agent] =
-                'Arachni/' + VERSION
-        end
-        
-        # TODO: remove global vars
-        if @opts[:authed_by]
-            authed_by = " (Scan authorized by: #{@opts[:authed_by]})" 
-            @opts[:user_agent]         += authed_by 
-            $runtime_args[:user_agent] += authed_by
-        end
+        prepare_user_agent( )
         
         @spider   = Arachni::Spider.new( @opts )
         @analyzer = Arachni::Analyzer.new( @opts )
         
+        # trap Ctrl+C interrupts
         $_interrupted = false
-        trap( "INT" ) { $_interrupted = true }
+        trap( 'INT' ) { $_interrupted = true }
         
-        # deep copy
+        # deep copy the redundancy rules to preserve their counter
+        # for the reports
         @orig_redundant = deep_clone( @opts[:redundant] )
     end
 
@@ -115,6 +101,7 @@ class Framework
     #
     def get_results
         
+        # restore the original redundacy rules and their counters
         @opts[:redundant] = @orig_redundant
         
         results = {
@@ -134,7 +121,7 @@ class Framework
     #
     def run
         
-        # pass any exceptions to the UI
+        # pass all exceptions to the UI
         begin
             validate_opts
         rescue
@@ -143,6 +130,7 @@ class Framework
         
         @opts[:start_datetime] = Time.now
             
+        # start the audit
         audit( )
         
         @opts[:finish_datetime] = Time.now
@@ -168,19 +156,21 @@ class Framework
     #
     def audit
 
-        skip_to_audit = false
-
         site_structure = Hash.new
         mods_run_last_data = []
 
+        # initiates the crawl
         sitemap = @spider.run {
             | url, html, headers |
 
+            # analyze each page the crawler returns and save it for
+            # the modules
             site_structure[url] =
                 @analyzer.run( url, html, headers ).clone
         
+            # if the user wants to audit the cookiejar cookies
+            # append them to the site structure 
             if( @opts[:audit_cookie_jar] && @opts[:cookies] )
-                    
                 @opts[:cookies].each_pair {
                     |name, value|
                     site_structure[url]['cookies'] << {
@@ -190,6 +180,7 @@ class Framework
                 }
             end
 
+            # prepare the page data for the modules
             page_data = {
                 'url'        => {
                     'href'  => url,
@@ -200,26 +191,28 @@ class Framework
                 'cookies'    => @opts[:cookies]
             }
         
+            # if the current url has variables in it append them to the
+            # site structure
             if( page_data['url']['vars'].size > 0 )
                 site_structure[url]['links'] << page_data['url']
             end
 
-            if !@opts[:mods_run_last]
+            # if the user wants to run the modules against each page
+            # the crawler finds do it now...
+            if( !@opts[:mods_run_last] )
                 run_mods( page_data, site_structure[url] )
             else
+                # ..else handle any interrupts that may occur... 
                 handle_interrupt( )
+                # ... and save the page data for later.
                 mods_run_last_data.push( { page_data => site_structure[url]} )
-            end
-
-            if skip_to_audit == true
-                print_info( 'Skipping to audit.' )
-                print_line
-                break
             end
 
         }
 
-        if @opts[:mods_run_last]
+        # if the user opted to run the modules after the crawl/analysis
+        # do it now.
+        if( @opts[:mods_run_last] )
             mods_run_last_data.each {
                 |data|
                 run_mods( data.keys[0], data.values[0] )
@@ -259,23 +252,29 @@ class Framework
             |mod_name|
             
             # if the mod name is '*' load all modules
-            if mod_name == '*'
+            # and replace it with the actual module names
+            if( mod_name == '*' )
+                
                 @opts['mods'] = []
+                
                 @modreg.ls_available(  ).keys.each {
                     |mod|
                     @opts['mods'] << mod
                     @modreg.mod_load( mod )
                 }
+                
+                # and we're done..
                 break
             end
-                
+            
+            # make sure the module name is valid...
             if( !@modreg.ls_available(  )[mod_name] )
                 raise( Arachni::Exceptions::ModNotFound,
                     "Error: Module #{mod_name} wasn't found." )
             end
-    
+
+            # ...and load the module passing all exceptions to the UI.
             begin
-                # load the module
                 @modreg.mod_load( mod_name )
             rescue Exception => e
                 raise e
@@ -289,22 +288,18 @@ class Framework
     # @param [Array]    Array of reports to load
     #
     def rep_load( reports = ['stdout'] )
+
+        #
+        # Inside info: the system will always use the current UI's default report,
+        # 'stdout' in this case, and if the 'repsave' option is passed too
+        # the system will also use the 'marshal_dump' report to save the audit results.
+        #
+        # However the user sees only one report being loaded at a time.
+        #
         
-        #
-        # Check the validity of user provided module names
-        #
         reports.each {
             |report|
             
-            # if the report name is '*' load all reports
-            if report == '*'
-                @repreg.ls_available(  ).keys.each {
-                    |rep|
-                    @repreg.rep_load( rep )
-                }
-                break
-            end
-                
             if( !@repreg.ls_available(  )[report] )
                 raise( Arachni::Exceptions::ReportNotFound,
                     "Error: Report #{report} wasn't found." )
@@ -320,7 +315,9 @@ class Framework
     end
 
     #
-    # Convert a marshal dump of the audit results to a report
+    # Converts a marshal dump of the audit results to a report.
+    #
+    # It basically loads a serialized report and passes it to a the loaded Reports.
     #
     # @param [String]    location of the dump file
     #
@@ -333,7 +330,7 @@ class Framework
     end
         
     #
-    # Loads a marshal dump
+    # Loads a marshal dumped report
     #
     # @param [String]    location of the dump file
     #
@@ -446,6 +443,25 @@ class Framework
     private
     
     #
+    # Prepares the user agent to be used throughout the system.
+    #
+    def prepare_user_agent
+        # TODO: remove global vars
+        if !@opts[:user_agent]
+            @opts[:user_agent] = $runtime_args[:user_agent] =
+                'Arachni/' + VERSION
+        end
+        
+        # TODO: remove global vars
+        if @opts[:authed_by]
+            authed_by = " (Scan authorized by: #{@opts[:authed_by]})" 
+            @opts[:user_agent]         += authed_by 
+            $runtime_args[:user_agent] += authed_by
+        end
+
+    end
+    
+    #
     # It handles Ctrl+C interrupts
     #
     # Once an interrupt has been trapped the system pauses and waits
@@ -483,14 +499,22 @@ class Framework
     #
     def run_mods( page_data, structure )
 
+        # create a queue that'll hold the modules to run
         mod_queue = Queue.new
         
+        # start a new thread for every module in the queue
+        # while obeying the thread-count limit. 
         @threads = ( 1..@opts[:threads] ).map {
             |i|
+            
+            # create a new thread...
             Thread.new( mod_queue ) {
                 |q|
+                # get a module from the queue until all queue items have been
+                # consumed
                 until( q == ( curr_mod = q.deq ) )
                     
+                    # save some time by deciding if the module is worth running
                     if( !run_module?( curr_mod , structure ) )
                         print_verbose( 'Skipping ' + curr_mod.to_s +
                             ', nothing to audit.' )
@@ -501,8 +525,9 @@ class Framework
                     print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
                     print_debug( )
                     
+                    # tell the user which module is about to be run...
                     print_status( curr_mod.to_s )
-                    
+                    # ... and run it.
                     run_mod( curr_mod, page_data, structure )
                     
                     while( handle_interrupt(  ) )
@@ -537,10 +562,18 @@ class Framework
     #
     def run_mod( mod, page_data, structure )
         begin
+            # instantiate the module
             mod_new = mod.new( page_data, structure )
             
+            # run the methods specified in the module API
+            
+            # optional
             mod_new.prepare   if mod.method_defined?( 'prepare' )
+            
+            # mandatory
             mod_new.run
+            
+            # optional
             mod_new.clean_up  if mod.method_defined?( 'clean_up' )
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
@@ -583,6 +616,12 @@ class Framework
     #
     # Takes care of report execution
     #
+    # @param  [Array,Hash]  results  depending on the state of the
+    #                                 framework this can either be an Array
+    #                                 of Vulnerability instances or a Hash
+    #                                 created by a loaded serialized report.
+    #                                         
+    #
     def run_reps( results )
     
         ls_loaded_reps.each_with_index {
@@ -591,7 +630,8 @@ class Framework
             if( !@opts[:repsave] || @opts[:repsave].size == 0 )
                 new_rep = report.new( results, @opts[:repopts] )
             else
-                new_rep = report.new( results, @opts[:repopts], @opts[:repsave] + REPORT_EXT )
+                new_rep = report.new( results, @opts[:repopts],
+                    @opts[:repsave] + REPORT_EXT )
             end
             
             new_rep.run( )
@@ -707,6 +747,13 @@ class Framework
         
     end
 
+    #
+    # Creates a deep clone of an object and returns that object.
+    #
+    # @param    [Object]    the object to clone
+    #
+    # @return   [Object]    a deep clone of the object
+    #
     def deep_clone( obj )
         YAML::load( obj.to_yaml )
     end
