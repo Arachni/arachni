@@ -124,7 +124,7 @@ class SQLInjection < Arachni::Module::Base
                 'Name'        => %q{SQL Injection},
                 'Description' => %q{SQL code can be injected into the web application.},
                 'CWE'         => '89',
-                'Severity'    => 'High',
+                'Severity'    => Vulnerability::Severity::HIGH,
                 'CVSSV2'       => '9.0',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',

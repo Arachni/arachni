@@ -137,7 +137,7 @@ class Eval < Arachni::Module::Base
                 'Name'        => %q{Code injection},
                 'Description' => %q{Code can be injected into the web application.},
                 'CWE'         => '94',
-                'Severity'    => 'High',
+                'Severity'    => Vulnerability::Severity::HIGH,
                 'CVSSV2'       => '7.5',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',

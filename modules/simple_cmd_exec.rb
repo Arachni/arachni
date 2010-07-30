@@ -93,7 +93,7 @@ class SimpleCmdExec < Arachni::Module::Base
                 'Description' => %q{The web application allows an attacker to
                     execute OS commands.},
                 'CWE'         => '78',
-                'Severity'    => 'High',
+                'Severity'    => Vulnerability::Severity::HIGH,
                 'CVSSV2'       => '9.0',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',

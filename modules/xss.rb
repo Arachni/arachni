@@ -109,7 +109,7 @@ class XSS < Arachni::Module::Base
                 'Description' => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
                 'CWE'         => '79',
-                'Severity'    => 'High',
+                'Severity'    => Vulnerability::Severity::HIGH,
                 'CVSSV2'       => '9.0',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',

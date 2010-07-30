@@ -190,7 +190,15 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 'Name'        => %q{Remote file inclusion},
                 'Description' => %q{A remote file inclusion vulnerability exists.},
                 'CWE'         => '94',
-                'Severity'    => 'High',
+                #
+                # Severity can be:
+                #
+                # Vulnerability::Severity::HIGH
+                # Vulnerability::Severity::MEDIUM
+                # Vulnerability::Severity::LOW
+                # Vulnerability::Severity::INFORMATIONAL
+                #
+                'Severity'    => Vulnerability::Severity::HIGH,
                 'CVSSV2'       => '7.5',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',

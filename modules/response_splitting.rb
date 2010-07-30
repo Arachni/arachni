@@ -105,7 +105,7 @@ class ResponseSplitting < Arachni::Module::Base
                 'Description' => %q{The web application includes user input
                      in the response HTTP header.},
                 'CWE'         => '20',
-                'Severity'    => 'Medium',
+                'Severity'    => Vulnerability::Severity::MEDIUM,
                 'CVSSV2'       => '5.0',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',
