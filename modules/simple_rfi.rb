@@ -69,12 +69,12 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # REQUIRED
     #
-    # Initialize the module and the parent.
+    # Initializes the module and the parent.
     #
-    def initialize( page_data, structure )
+    def initialize( page )
         # unless you want to do something freaky
         # *do not* ommit the following line
-        super( page_data, structure )
+        super( page )
 
         # init your stuff here
     end

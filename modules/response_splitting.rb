@@ -36,8 +36,8 @@ class ResponseSplitting < Arachni::Module::Base
     # get output interface
     include Arachni::UI::Output
 
-    def initialize( page_data, structure )
-        super( page_data, structure )
+    def initialize( page )
+        super( page )
 
         # initialize the header
         @__header = ''

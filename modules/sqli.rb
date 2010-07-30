@@ -37,8 +37,8 @@ class SQLInjection < Arachni::Module::Base
     # get output module
     include Arachni::UI::Output
 
-    def initialize( page_data, structure )
-        super( page_data, structure )
+    def initialize( page )
+        super( page )
 
         # initialize variables 
         @__id = []
@@ -159,7 +159,7 @@ class SQLInjection < Arachni::Module::Base
                 # append the result to the results hash
                 @results << Vulnerability.new( {
                         'var'          => var,
-                        'url'          => page_data['url']['href'],
+                        'url'          => @page.url,
                         'injected'     => injection_str,
                         'id'           => id,
                         'regexp'       => id_regex.to_s,
@@ -176,8 +176,7 @@ class SQLInjection < Arachni::Module::Base
                 
                 # inform the user that we have a match
                 print_ok( self.class.info['Name'] +
-                    " in: #{where} var #{var}" +
-                    '::' + page_data['url']['href'] )
+                    " in: #{where} var #{var}" + @page.url )
                 
                 # give the user some more info if he wants 
                 print_verbose( "Injected str:\t" + injection_str )    

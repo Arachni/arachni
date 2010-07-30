@@ -32,8 +32,8 @@ class SimpleCmdExec < Arachni::Module::Base
     include Arachni::Module::Registrar
     include Arachni::UI::Output
 
-    def initialize( page_data, structure )
-        super( page_data, structure )
+    def initialize( page )
+        super( page )
 
         @__cmd_id_regex   = /100434/ixm
         @__cmd_id         = '100434'

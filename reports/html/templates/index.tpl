@@ -166,7 +166,7 @@
         <a target="_blank" href="http://sourceforge.net/apps/trac/arachni/">Arachni Framework</a>
     </h1>
     <strong>Report generated on</strong>:
-    <p class="note">{{arachni.date}}</p>
+    <p class="note">{{date}}</p>
     
 
     <h2>Configuration</h2>

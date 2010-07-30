@@ -39,11 +39,11 @@ class ExtractObjects < Arachni::Module::Base
     include Arachni::Module::Registrar
     include Arachni::UI::Output
 
-    def initialize( page_data, structure )
+    def initialize( page )
         # in this case we don't need to call the parent
         
         # get all objects from the HTML code 
-        @__objects = page_data['html'].scan( /<object(.*?)<\/object>/ixm )
+        @__objects = page.html.scan( /<object(.*?)<\/object>/ixm )
     end
 
     def run( )

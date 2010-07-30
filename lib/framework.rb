@@ -16,6 +16,8 @@ require $runtime_args['dir']['lib'] + 'exceptions'
 require $runtime_args['dir']['lib'] + 'ui/cli/output'
 require $runtime_args['dir']['lib'] + 'spider'
 require $runtime_args['dir']['lib'] + 'analyzer'
+require $runtime_args['dir']['lib'] + 'page'
+require $runtime_args['dir']['lib'] + 'audit_store'
 require $runtime_args['dir']['lib'] + 'vulnerability'
 require $runtime_args['dir']['lib'] + 'module/http'
 require $runtime_args['dir']['lib'] + 'module/base'
@@ -95,29 +97,9 @@ class Framework
     end
 
     #
-    # Gets the results of the audit
-    #
-    # @return    [Array<Vulnerability>]
-    #
-    def get_results
-        
-        # restore the original redundacy rules and their counters
-        @opts[:redundant] = @orig_redundant
-        
-        results = {
-            'version'  => VERSION,
-            'revision' => REVISION,
-            'options'  => @opts,
-            'vulns'    => Arachni::Module::Registry.get_results( )
-        }
-    end
-
-    #
     # Runs the system
     #
     # It parses the instanse options and runs the audit
-    #
-    # @return    [Array<Vulnerability>] the results of the audit
     #
     def run
         
@@ -138,89 +120,124 @@ class Framework
         
         if( @opts[:reports] )
             begin
-                run_reps( get_results )
+                run_reps( get_results( ) )
             rescue Exception => e
                 print_error( e.to_s )
+                print_debug_backtrace( e )
                 print_line
                 exit 0
             end
         end
+        
+        if( @opts[:repsave] && !@opts[:repload] )
+            begin
+                rep_save( get_results( ), @opts[:repsave] )
+            rescue Exception => e
+                print_error( e.to_s )
+                print_debug_backtrace( e )
+                print_line
+                exit 0
+            end
+        end
+        
     end
     
     #
     # Audits the site.
     #
-    # Runs the spider and loaded modules.
-    #
-    # @return    [Array<Vulnerability>] the results of the audit
+    # Runs the spider, analyzes each page and runs the loaded modules.
     #
     def audit
-
-        site_structure = Hash.new
-        mods_run_last_data = []
-
+        pages = []
+            
         # initiates the crawl
         sitemap = @spider.run {
             | url, html, headers |
 
-            # analyze each page the crawler returns and save it for
-            # the modules
-            site_structure[url] =
-                @analyzer.run( url, html, headers ).clone
-        
-            # if the user wants to audit the cookiejar cookies
-            # append them to the site structure 
-            if( @opts[:audit_cookie_jar] && @opts[:cookies] )
-                @opts[:cookies].each_pair {
-                    |name, value|
-                    site_structure[url]['cookies'] << {
-                        'name'    => name,
-                        'value'   => value
-                    }
-                }
-            end
-
-            # prepare the page data for the modules
-            page_data = {
-                'url'        => {
-                    'href'  => url,
-                    'vars'  => @analyzer.get_link_vars( url )
-                 },
-                'html'       => html,
-                'headers'    => headers,
-                'cookies'    => @opts[:cookies]
-            }
-        
-            # if the current url has variables in it append them to the
-            # site structure
-            if( page_data['url']['vars'].size > 0 )
-                site_structure[url]['links'] << page_data['url']
-            end
-
+            page = analyze( url, html, headers )
+            
             # if the user wants to run the modules against each page
             # the crawler finds do it now...
             if( !@opts[:mods_run_last] )
-                run_mods( page_data, site_structure[url] )
+                run_mods( page )
             else
                 # ..else handle any interrupts that may occur... 
                 handle_interrupt( )
                 # ... and save the page data for later.
-                mods_run_last_data.push( { page_data => site_structure[url]} )
+                pages << page
             end
 
         }
 
         # if the user opted to run the modules after the crawl/analysis
         # do it now.
-        if( @opts[:mods_run_last] )
-            mods_run_last_data.each {
-                |data|
-                run_mods( data.keys[0], data.values[0] )
+        pages.each { |page| run_mods( page ) } if( @opts[:mods_run_last] )
+            
+    end
+
+    #
+    # Analyzes the html code for elements and returns a page object
+    #
+    # @param  [String]    url
+    # @param  [String]    html
+    # @param  [Array]     headers
+    #
+    # @return    [Page]
+    #
+    def analyze( url, html, headers )
+        
+        elements = Hash.new
+        
+        # analyze each page the crawler returns and save its elements
+        elements = @analyzer.run( url, html, headers ).clone
+    
+        # if the user wants to audit the cookiejar cookies
+        # append them to the page elements
+        if( audit_cookiejar?( ) )
+            elements['cookies'] =
+                merge_with_cookiejar( elements['cookies'] )
+        end
+    
+        # get the variables of the url query as an array of hashes
+        query_vars = @analyzer.get_link_vars( url )
+        
+        # if url query has variables in it append them to the page elements
+        if( query_vars.size > 0 )
+            elements['links'] << {
+                'href'  => url,
+                'vars'  => query_vars
             }
         end
 
-    end
+        return Page.new( {
+            :url         => url,
+            :query_vars  => query_vars,
+            :html        => html,
+            :headers     => headers,
+            :elements    => elements,
+            :cookiejar   => @opts[:cookies]
+        } )
 
+    end
+    
+    #
+    # Gets the results of the audit
+    #
+    # @return    [Array<Vulnerability>]
+    #
+    def get_results
+        
+        # restore the original redundacy rules and their counters
+        @opts[:redundant] = @orig_redundant
+        
+         return {
+            'version'  => VERSION,
+            'revision' => REVISION,
+            'options'  => @opts,
+            'vulns'    => Arachni::Module::Registry.get_results( )
+         }
+    end
+    
     #
     # Returns an array of all loaded modules
     #
@@ -319,24 +336,36 @@ class Framework
     #
     # It basically loads a serialized report and passes it to a the loaded Reports.
     #
-    # @param [String]    location of the dump file
+    # @param [String]  path  location of the dump file
     #
-    def rep_convert( dump_path )
+    def rep_convert( path )
         
-        results = rep_load_dump( dump_path )
+        results = rep_load_dump( path )
         
         run_reps( results )
         exit 0
     end
+
+    def rep_save( audit, path )
         
+        file = path + REPORT_EXT
+        
+        print_line( )
+        print_status( 'Dumping audit results in \'' + file  + '\'.' )
+        
+        audit_store = AuditStore.new( audit )
+        audit_store.save( file )
+        
+        print_status( 'Done!' )
+    end
+            
     #
     # Loads a marshal dumped report
     #
-    # @param [String]    location of the dump file
+    # @param [String]  path  location of the dump file
     #
-    def rep_load_dump( dump_path )
-        f = File.open( dump_path )
-        return Marshal.load( f )
+    def rep_load_dump( path )
+        return YAML::load( IO.read( path ) )
     end
     
     #
@@ -406,11 +435,7 @@ class Framework
             
             rep_info << info
         }
-        
-        # clean the registry unloading all modules
-#        Arachni::Report::Registry.clean( )
         return rep_info
-    
     end
     
     #
@@ -441,6 +466,31 @@ class Framework
     end
     
     private
+    
+    #
+    # Merges 'cookies' with the cookiejar and returns it as an array
+    #
+    # @param    [Array<Hash>]  cookies
+    #
+    # @return   [Array<Hash>]  the merged cookies
+    #
+    def merge_with_cookiejar( cookies )
+        @opts[:cookies].each_pair {
+            |name, value|
+            cookies << {
+                'name'    => name,
+                'value'   => value
+            }
+        }
+        return cookies
+    end
+    
+    #
+    # Should we audit the cookiejar?
+    #
+    def audit_cookiejar?( )
+        @opts[:audit_cookie_jar] && @opts[:cookies]
+    end
     
     #
     # Prepares the user agent to be used throughout the system.
@@ -491,13 +541,9 @@ class Framework
     #
     # Takes care of module execution and threading
     #
-    # @param    [Hash]    page_data     data related to the webpages
-    #                                      to be made available to modules
-    # @param    [Hash]    structure     the structure of the webpages<br/>
-    #                                      links, forms, cookies etc
+    # @param    [Page]    page
     #
-    #
-    def run_mods( page_data, structure )
+    def run_mods( page )
 
         # create a queue that'll hold the modules to run
         mod_queue = Queue.new
@@ -515,7 +561,7 @@ class Framework
                 until( q == ( curr_mod = q.deq ) )
                     
                     # save some time by deciding if the module is worth running
-                    if( !run_module?( curr_mod , structure ) )
+                    if( !run_module?( curr_mod , page ) )
                         print_verbose( 'Skipping ' + curr_mod.to_s +
                             ', nothing to audit.' )
                         next
@@ -528,7 +574,7 @@ class Framework
                     # tell the user which module is about to be run...
                     print_status( curr_mod.to_s )
                     # ... and run it.
-                    run_mod( curr_mod, page_data, structure )
+                    run_mod( curr_mod, page )
                     
                     while( handle_interrupt(  ) )
                     end
@@ -554,16 +600,13 @@ class Framework
     # Runs a module and passes it the page_data and structure.<br/>
     # It also handles any exceptions thrown by the module at runtime.
     #
-    # @param    [Class]   mod           the module to run 
-    # @param    [Hash]    page_data     data related to the webpages
-    #                                      to be made available to modules
-    # @param    [Hash]    structure     the structure of the webpages<br/>
-    #                                      links, forms, cookies etc
+    # @param    [Class]   mod      the module to run 
+    # @param    [Page]    page
     #
-    def run_mod( mod, page_data, structure )
+    def run_mod( mod, page )
         begin
             # instantiate the module
-            mod_new = mod.new( page_data, structure )
+            mod_new = mod.new( page )
             
             # run the methods specified in the module API
             
@@ -587,16 +630,15 @@ class Framework
     # HTML elements it plans to audit and the existence of those elements<br/> 
     # in the current page.
     #
-    # @param    [Class]   mod           the module to run
-    # @param    [Hash]    page_data     data related to the webpages
-    #                                      to be made available to modules
+    # @param    [Class]   mod   the module to run
+    # @param    [Page]    page
     #
     # @return    [Bool]
     #
-    def run_module?( mod, structure )
+    def run_module?( mod, page )
         
         checkpoint = 0
-        structure.each_pair {
+        page.elements( ).each_pair {
             |name, value|
             
             if( !mod.info || !mod.info['Elements'] ||
@@ -607,7 +649,6 @@ class Framework
             if( mod.info['Elements'].include?( name ) && value.size != 0 )
                 return true
             end
-            
         }
         
         return false

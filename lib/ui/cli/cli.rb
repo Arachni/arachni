@@ -80,9 +80,9 @@ class CLI
         # when this is true the user didn't ask us to convert an existing
         # report but create a new one, so add the marshal_dump report
         # to the reports list
-        if( @opts[:repsave] && !@opts[:repload] )
-            @opts[:reports] << 'marshal_dump'
-        end
+#        if( @opts[:repsave] && !@opts[:repload] )
+#            @opts[:reports] << 'marshal_dump'
+#        end
         
         # instantiate the big-boy!
         @arachni = Arachni::Framework.new( @opts  )
@@ -187,9 +187,7 @@ class CLI
                     begin
                         save_profile( arg )
                     rescue Exceptions => e
-                        print_error( e.to_s )
-                        print_line
-                        exit 0
+                        handle_exception( e )
                     end                    
                     
                 when 'mods'
@@ -202,27 +200,21 @@ class CLI
                         print_line
                         exit 0
                     rescue Exception => e
-                        print_error( e.to_s )
-                        print_line
-                        exit 0
+                        handle_exception( e )
                     end
 
                 when 'reports'
                     begin
                         @arachni.rep_load( arg )
                     rescue Exception => e
-                        print_error( e.to_s )
-                        print_line
-                        exit 0
+                        handle_exception( e )
                     end
                     
                 when 'repload'
                     begin
                         @arachni.rep_convert( arg )
                     rescue Exception => e
-                        print_error( e.to_s )
-                        print_line
-                        exit 0
+                        handle_exception( e )
                     end                    
                                         
 #                when 'delay'
@@ -333,11 +325,11 @@ class CLI
     def load_profile( filename )
         begin
             
-            f = File.open( filename )
             @opts.delete( :load_profile )
             
             # TODO remove global vars
-            $runtime_args = @opts = @opts.merge( Marshal.load( f ) )
+            $runtime_args = @opts =
+                @opts.merge( YAML::load( IO.read( filename ) ) )
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
@@ -362,14 +354,22 @@ class CLI
         
         begin
             f = File.open( filename + PROFILE_EXT, 'w' )
-            Marshal.dump( profile, f )
+            YAML.dump( profile, f )
         rescue Exception => e
             banner( )
             print_error( e.to_s )
+            print_debug_backtrace( e )
             print_line( )
             exit 0
         end
 
+    end
+    
+    def handle_exception( e )
+        print_error( e.to_s )
+        print_debug_backtrace( e )
+        print_line
+        exit 0
     end
     
     #

@@ -37,8 +37,8 @@ class AuditObjects < Arachni::Module::Base
     include Arachni::Module::Registrar
     include Arachni::UI::Output
 
-    def initialize( page_data, structure )
-        super( page_data, structure )
+    def initialize( page )
+        super( page )
     end
 
     def run( )

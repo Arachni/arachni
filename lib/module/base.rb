@@ -36,35 +36,26 @@ class Base
     attr_reader :http
 
     #
-    # Hash page data (url, html, headers)
+    # Arachni::Page instance
     #
-    # @return [Hash<String, String>]
+    # @return [Page]
     #
-    attr_reader :page_data
-
-    #
-    # Structure of the website
-    #
-    # @return [Hash<String, Hash<Array, Hash>>]
-    #
-    attr_reader :structure
+    attr_reader :page
 
     #
     # Initializes the module attributes and HTTP client
     #
-    # @param  [Hash<String, String>]  page_data
+    # @param  [Page]  page
     #
-    # @param [Hash<String, Hash<Array, Hash>>]  structure
-    #
-    def initialize( page_data, structure )
-        @http = Arachni::Module::HTTP.new( page_data['url']['href'] )
+    def initialize( page )
+        
+        @page = page
+        @http = Arachni::Module::HTTP.new( @page.url )
             
-        if( page_data['cookies'] )
-            @http.set_cookies( page_data['cookies'] )
+        if( @page.cookiejar )
+            @http.set_cookies( @page.cookiejar )
         end
         
-        @page_data = page_data
-        @structure = structure
     end
 
     #
@@ -187,16 +178,16 @@ class Base
         results = []
         
         # iterate through all url vars and audit each one
-        inject_each_var( page_data['url']['vars'], injection_str ).each {
+        inject_each_var( @page.query_vars, injection_str ).each {
             |vars|
 
             # tell the user what we're doing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tlink var '" +
-                vars['altered'] + "' of " + page_data['url']['href'] )
+                vars['altered'] + "' of " + @page.url )
             
             # audit the url vars
-            res = @http.get( page_data['url']['href'], vars['hash'] )
+            res = @http.get( @page.url, vars['hash'] )
 
             # something might have gone bad,
             # make sure it doesn't ruin the rest of the show...
@@ -331,11 +322,10 @@ class Base
             # tell the user what we're auditing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tcookie '" +
-                cookie['altered'] + "' of " +
-                page_data['url']['href'] )
+                cookie['altered'] + "' of " + @page.url )
 
             # make a get request with our cookies
-            res = @http.cookie( page_data['url']['href'], cookie['hash'], nil )
+            res = @http.cookie( @page.url, cookie['hash'], nil )
 
             # check for a response
             if !res then next end
@@ -363,7 +353,7 @@ class Base
     # @return    [Hash]    the form attributes, values, etc
     #
     def get_forms
-        @structure['forms']
+        @page.get_forms( )
     end
 
     #
@@ -372,7 +362,7 @@ class Base
     # @return    [Hash]    the link attributes, variables, etc
     #
     def get_links
-        @structure['links']
+        @page.get_links( )
     end
 
     #
@@ -383,7 +373,7 @@ class Base
     #
     def get_forms_simple
         forms = []
-        @structure['forms'].each_with_index {
+        get_forms( ).each_with_index {
             |form, i|
             forms[i] = Hash.new
             
@@ -405,7 +395,7 @@ class Base
     #
     def get_links_simple
         links = Hash.new
-        @structure['links'].each_with_index {
+        get_links( ).each_with_index {
             |link, i|
             
             if( !link['vars'] || link['vars'].size == 0 ) then next end
@@ -424,28 +414,28 @@ class Base
     end
     
     #
+    # Returns extended cookie information from @structure
+    #
+    # @return    [Array]    the cookie attributes, values, etc
+    #
+    def get_cookies
+        @page.get_cookies( )
+    end
+
+    #
     # Returns cookies from @structure as a name=>value hash
     #
     # @return    [Hash]    the cookie attributes, values, etc
     #
     def get_cookies_simple
         cookies = Hash.new( )
-        @structure['cookies'].each {
+        get_cookies( ).each {
             |cookie|
             cookies[cookie['name']] = cookie['value']
         }
         cookies
     end
     
-    #
-    # Returns extended cookie information from @structure
-    #
-    # @return    [Array]    the cookie attributes, values, etc
-    #
-    def get_cookies
-        @structure['cookies']
-    end
-        
     private
     
     def get_matches( where, var, res, injection_str, id_regex, id )
@@ -455,7 +445,7 @@ class Base
            ( !id && res.body.scan( id_regex )[0].size > 0 )
         
             print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
-            '::' + page_data['url']['href'] )
+            '::' + @page.url )
             
             print_verbose( "Injected str:\t" + injection_str )    
             print_verbose( "ID str:\t\t" + id )
@@ -464,7 +454,7 @@ class Base
     
             return {
                 'var'          => var,
-                'url'          => page_data['url']['href'],
+                'url'          => @page.url,
                 'injected'     => injection_str,
                 'id'           => id,
                 'regexp'       => id_regex.to_s,
