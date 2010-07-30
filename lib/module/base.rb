@@ -119,6 +119,14 @@ class Base
             'Vulnerability'   => {
                 'Description' => %q{},
                 'CWE'         => '',
+                #
+                # Severity can be:
+                #
+                # Vulnerability::Severity::HIGH
+                # Vulnerability::Severity::MEDIUM
+                # Vulnerability::Severity::LOW
+                # Vulnerability::Severity::INFORMATIONAL
+                #
                 'Severity'    => '',
                 'CVSSV2'       => '',
                 'Remedy_Guidance'    => '',
