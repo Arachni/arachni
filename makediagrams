@@ -1,0 +1,64 @@
+#!/bin/sh
+# $Id: makediagrams 211 2010-07-23 23:32:42Z zapotek $
+#
+# Simple shell script to generate diagrams.
+# After running this run makedoc.
+#
+
+dfile="DIAGRAMS.md"
+
+##
+# UML
+##
+echo -n '[1/3] Creating UML diagram using yard-graph...'
+
+yard-graph --protected --full --dependencies --private -f arachni.dot && \
+    dot -Tpng -o arachni.png arachni.dot
+
+uml_img=`ruby -e 'require "base64"; puts Base64.encode64( IO.read( "arachni.png" ) )'`
+
+rm arachni.png arachni.dot 
+echo 'Done!'
+
+##
+# rdoc
+##
+echo -n '[2/3] Creating Rdoc diagram, this may take a minute (or two)...'
+rm -rf /tmp/rdoc
+
+rdoc --op /tmp/rdoc --all --fileboxes --promiscuous --diagram \
+    --exclude=doc/ --exclude=make.* --exclude=.*\.afr.* --exclude=.*\.md$ \
+    --exclude=.*\.txt$ --exclude=.*\.sh$ --exclude=TODO --exclude=ACK \
+    --exclude=test --exclude=.*patch.* --exclude=LICENSE \
+    --exclude=.*\.afp$ --quiet
+
+rdoc_img=`ruby -e 'require "base64"; puts Base64.encode64( IO.read( "/tmp/rdoc/dot/f_13.png" ) )'`
+
+rm -rf /tmp/rdoc
+echo 'Done!'
+
+##
+# .md file
+##
+
+echo -n "[3/3] Creating ${dfile} file..."
+
+
+cat <<EOT >$dfile
+Diagrams
+----
+The diagrams may be slightly outdated, especially the methods and attributes in the UML diagram.<br/>
+However they will give you a pretty good idea of how the componets interact with each other.
+
+**RDoc**
+
+<img width="1024" src="data:image/png;base64, $rdoc_img" />
+
+**yard-graph UML**
+
+<img width="1024" src="data:image/png;base64, $uml_img" />
+EOT
+
+echo 'Done!'
+
+echo 'All done!'
