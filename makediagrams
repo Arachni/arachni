@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: makediagrams 211 2010-07-23 23:32:42Z zapotek $
+# $Id$
 #
 # Simple shell script to generate diagrams.
 # After running this run makedoc.
