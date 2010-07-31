@@ -15,7 +15,9 @@ module Arachni
 #
 # Arachni::AuditStore class
 #    
-# Makes it easier to save and load audit results for the reports.
+# Represents a finished audit session.<br/>
+# It holds information about the runtime environment,
+# the results of the audit etc...
 #    
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -24,115 +26,177 @@ module Arachni
 #
 class AuditStore
 
-    attr_reader :audit
+    #
+    # @return    [String]    the version of the framework
+    #
+    attr_reader :version
     
-    def initialize( audit, loaded = false )
+    #
+    # @return    [String]    the SVN revision of the framework
+    #
+    attr_reader :revision
+    
+    #
+    # @return    [Hash]    the runtime arguments/options of the environment
+    #
+    attr_reader :options
+    
+    #
+    # @return    [Array<Vulnerability>]  the discovered vulnerabilities
+    #
+    attr_reader :vulns
+    
+    #
+    # @return    [String]    the date and time when the audit started
+    #
+    attr_reader :start_datetime
+    
+    #
+    # @return    [String]    the date and time when the audit finished
+    #
+    attr_reader :finish_datetime
+    
+    #
+    # @return    [String]    how long the audit took
+    #
+    attr_reader :delta_time
+    
+    def initialize( audit = {} )
         
-        @audit = audit
-
-        if( loaded != true )
-            @audit = prepare_data(  )
+        # this means that the AuditStore is being constructed
+        # by AuditStore.load()
+        if( audit.size == 0 )
+            return
         end
         
+        # set instance variables from audit opts
+        audit.each {
+            |k, v|
+            self.instance_variable_set( '@' + k, v )
+        }
+        
+        @options         = prepare_options( @options )
+        @vulns           = prepare_variations( @vulns )
+        @start_datetime  = @options['start_datetime'].asctime
+        @finish_datetime = @options['finish_datetime'].asctime
+        @delta_time      = secs_to_hms( @options['delta_time'] )
     end
     
-    def AuditStore.load( path )
-        AuditStore.new( YAML::load( IO.read( path ) ), true )
+    #
+    # Loads and returns an AuditStore object from file
+    #
+    # @param    [String]    file    the file to load
+    #
+    # @return    [AuditStore]
+    #
+    def AuditStore.load( file )
+         YAML::load( IO.read( file ) )
     end
     
-    def save( path )
-        f = File.open( path, 'w' )
-        YAML.dump( @audit, f )
+    #
+    # Saves 'self' to file
+    #
+    # @param    [String]    file
+    #
+    def save( file )
+        f = File.open( file, 'w' )
+        YAML.dump( self, f )
+    end
+    
+    #
+    # Returns 'self' and all objects in its instance vars as hashes
+    #
+    # @return    [Hash]
+    #
+    def to_h
+
+        hash = obj_to_hash( self )
+        
+        vulns = []
+        hash['vulns'].each { 
+            |vuln|
+            vulns << obj_to_hash( vuln )
+        }
+        
+        hash['vulns'] = vulns
+        return hash
     end
     
     private
     
-    def prepare_data( )
-        
-        @audit = to_hash( )
-        
-        if( @audit['options']['exclude'] )
-            @audit['options']['exclude'].each_with_index {
-                |filter, i|
-                @audit['options']['exclude'][i] = filter.to_s
-            }
-        end
-
-        if( @audit['options']['include'] )
-            @audit['options']['include'].each_with_index {
-                |filter, i|
-                @audit['options']['include'][i] = filter.to_s
-            }
-        end
-
-        if( @audit['options']['redundant'] )
-            @audit['options']['redundant'].each_with_index {
-                |filter, i|
-                @audit['options']['redundant'][i]['regexp'] =
-                    filter['regexp'].to_s
-            }
-        end
-
-        if( @audit['options']['cookies'] )
-            cookies = []
-            @audit['options']['cookies'].each_pair {
-                |name, value|
-                cookies << { 'name'=> name, 'value' => value }
-            }
-            @audit['options']['cookies'] = cookies
-        end
-
-        @audit['vulns'].each_with_index {
-            |vuln, i|
-
-            refs = []
-            res_headers = []
-            req_headers = []
-            vuln['references'].each_pair {
-                |name, value|
-                refs << { 'name'=> name, 'value' => value }
-            }
-
-            vuln['headers']['response'].each_pair {
-                |name, value|
-                res_headers << "#{name}: #{value}"
-            }
-            
-            vuln['headers']['request'].each_pair {
-                |name, value|
-                req_headers << "#{name}: #{value}"
-            }
-            
-            @audit['vulns'][i]['__id']    =
-                vuln['mod_name'] + '::' + vuln['elem'] + '::' +
-                vuln['var'] + '::' + vuln['url'].split( /\?/ )[0]
-                    
-            @audit['vulns'][i]['headers']['request']  = req_headers            
-            @audit['vulns'][i]['headers']['response'] = res_headers
-            @audit['vulns'][i]['references']          = refs
+    #
+    # Converts obj to hash
+    #
+    # @param    [Object]  obj    instance of an object
+    #
+    # @return    [Hash]
+    #
+    def obj_to_hash( obj )
+        hash = Hash.new
+        obj.instance_variables.each {
+            |var|
+            hash[var.to_s.gsub( /@/, '' )] =
+                obj.instance_variable_get( var ) 
         }
-        
-        runtime = @audit['options']['runtime'].to_i
-        f_runtime = [runtime/3600, runtime/60 % 60, runtime % 60].map {
-            |t|
-            t.to_s.rjust( 2, '0' )
-        }.join(':')
-     
-        return {
-            'arachni' => {
-                'version'  => @audit['version'],
-                'revision' => @audit['revision'],
-                'options'  => @audit['options']
-            },
-            'audit' => {
-                'vulns'    => prepare_variations( @audit['vulns'] ),
-                'start_datetime'  => @audit['options']['start_datetime'].asctime,
-                'finish_datetime' => @audit['options']['finish_datetime'].asctime,
-                'runtime'         => f_runtime
-            }
-        }
+        hash
     end
     
+    #
+    # Prepares the hash to be stored in {AuditStore#options}
+    #
+    # The 'options' dimention of the array that initializes AuditObjects<br/>
+    # needs some more processing before being saved in {AuditStore#options}.
+    #
+    # @param    [Hash]
+    #
+    # @return    [Hash]
+    #
+    def prepare_options( options )
+        options[:url]    = options[:url].to_s
+        
+        new_options = Hash.new
+        options.each_pair {
+            |key, val|
+
+            new_options[key.to_s]    = val
+                        
+            case key
+            
+            when :redundant
+                new_options[key.to_s] = []
+                val.each {
+                    |red|
+                    new_options[key.to_s] << {
+                        'regexp' => red['regexp'].to_s,
+                         'count' => red['count']
+                    }
+                }
+                                
+            when :exclude, :include
+                new_options[key.to_s] = []
+                val.each {
+                    |regexp|
+                    new_options[key.to_s] << regexp.to_s
+                }
+            
+            end
+            
+        }
+        
+        return new_options
+    end
+    
+    #
+    # Parses the vulnerabilities in 'vulns' and aggregates them
+    # creating variations of the same attacks.
+    #
+    # @see Vulnerability#variations
+    #
+    # @param    [Array<Vulnerability>]    vulns
+    #
+    # @return    [Array<Vulnerability>]    new array of Vulnerability instances
+    #                                        with populated {Vulnerability#variations}
+    #
     def prepare_variations( vulns )
         
         variation_keys = [
@@ -143,35 +207,41 @@ class AuditStore
             'headers',
             'response'
         ]
-        
-        new_vulns = Hash.new
+
+        new_vulns = {}
         vulns.each {
             |vuln|
             
-            orig_url    = vuln['url']
-            vuln['url'] = vuln['url'].split( /\?/ )[0]
+            __id  = vuln.mod_name + '::' + vuln.elem + '::' +
+                vuln.var + '::' + vuln.url.split( /\?/ )[0]
+                            
+            orig_url    = vuln.url
+            vuln.url    = vuln.url.split( /\?/ )[0]
             
-            if( !new_vulns[vuln['__id']] )
-                new_vulns[vuln['__id']]    = vuln
+            if( !new_vulns[__id] )
+                new_vulns[__id] = vuln.clone
             end
 
-            if( !new_vulns[vuln['__id']]['variations'] )
-                new_vulns[vuln['__id']]['variations'] = []
+            if( !new_vulns[__id].variations )
+                new_vulns[__id].variations = []
             end
             
-            new_vulns[vuln['__id']]['variations'] << {
-                'url'           => orig_url,
-                'injected'      => vuln['injected'],
-                'id'            => vuln['id'],
-                'regexp'        => vuln['regexp'],
-                'regexp_match'  => vuln['regexp_match'],
-                'headers'       => vuln['headers'],
-                'response'      => vuln['response']
+            new_vulns[__id].variations << {
+                'url'           => orig_url.clone,
+                'injected'      => vuln.injected.clone,
+                'id'            => vuln.id.clone,
+                'regexp'        => vuln.regexp.clone,
+                'regexp_match'  => vuln.regexp_match.clone,
+                'headers'       => vuln.headers.clone,
+                'response'      => vuln.response.clone
             }
             
             variation_keys.each {
                 |key|
-                new_vulns[vuln['__id']].delete( key )
+                
+                if( new_vulns[__id].instance_variable_defined?( '@' + key ) )
+                    new_vulns[__id].remove_instance_var( '@' + key )
+                end
             }
             
         }
@@ -187,42 +257,20 @@ class AuditStore
         new_vulns
     end
     
-    def to_hash
-        to_dump = Hash.new
-        
-        
-        to_dump          = @audit.dup
-        to_dump['vulns'] = []
-        
-        to_dump['options'] = Hash.new
-        @audit['options'].each_pair {
-            |key, value|
-            to_dump['options'][normalize( key )] = value
-        }
-    
-        to_dump['options']['url'] = @audit['options'][:url].to_s
-        
-        i = 0    
-        @audit['vulns'].each {
-            |vulnerability|
-            
-            to_dump['vulns'][i] = Hash.new
-                
-            vulnerability.each { 
-                |vuln|
-                to_dump['vulns'][i] = to_dump['vulns'][i].merge( vuln )
-            }
-            
-            i += 1
-        }
-
-        return to_dump
+    #
+    # Converts seconds to a (00:00:00) (hours:minutes:seconds) string
+    #
+    # @param    [String,Float,Integer]    seconds
+    #
+    # @return    [String]     hours:minutes:seconds
+    #
+    def secs_to_hms( secs )
+        secs = secs.to_i
+        return [secs/3600, secs/60 % 60, secs % 60].map {
+            |t|
+            t.to_s.rjust( 2, '0' )
+        }.join(':')
     end
-
-    def normalize( key )
-        return key.to_s
-    end
-
     
 end
 

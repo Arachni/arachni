@@ -116,11 +116,12 @@ class Framework
         audit( )
         
         @opts[:finish_datetime] = Time.now
-        @opts[:runtime] = @opts[:finish_datetime] - @opts[:start_datetime]
+        @opts[:delta_time] = @opts[:finish_datetime] - @opts[:start_datetime]
         
+        # run reports
         if( @opts[:reports] )
             begin
-                run_reps( get_results( ) )
+                run_reps( audit_store_get( ) )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )
@@ -129,9 +130,10 @@ class Framework
             end
         end
         
+        # save the AuditStore in a file 
         if( @opts[:repsave] && !@opts[:repload] )
             begin
-                rep_save( get_results( ), @opts[:repsave] )
+                audit_store_save( @opts[:repsave] )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )
@@ -221,21 +223,21 @@ class Framework
     end
     
     #
-    # Gets the results of the audit
+    # Returns the results of the audit as an AuditStore instance
     #
-    # @return    [Array<Vulnerability>]
+    # @return    [AuditStore]
     #
-    def get_results
+    def audit_store_get
         
         # restore the original redundacy rules and their counters
         @opts[:redundant] = @orig_redundant
         
-         return {
-            'version'  => VERSION,
-            'revision' => REVISION,
-            'options'  => @opts,
-            'vulns'    => Arachni::Module::Registry.get_results( )
-         }
+         return AuditStore.new( {
+            :version  => VERSION,
+            :revision => REVISION,
+            :options  => @opts,
+            :vulns    => Arachni::Module::Registry.get_results( )
+         } )
     end
     
     #
@@ -259,7 +261,7 @@ class Framework
     #
     # Loads modules
     #
-    # @param [Array]    Array of modules to load
+    # @param [Array]  mods  Array of modules to load
     #
     def mod_load( mods = '*' )
         #
@@ -302,18 +304,10 @@ class Framework
     #
     # Loads reports
     #
-    # @param [Array]    Array of reports to load
+    # @param [Array]  reports  Array of reports to load
     #
     def rep_load( reports = ['stdout'] )
 
-        #
-        # Inside info: the system will always use the current UI's default report,
-        # 'stdout' in this case, and if the 'repsave' option is passed too
-        # the system will also use the 'marshal_dump' report to save the audit results.
-        #
-        # However the user sees only one report being loaded at a time.
-        #
-        
         reports.each {
             |report|
             
@@ -332,40 +326,42 @@ class Framework
     end
 
     #
-    # Converts a marshal dump of the audit results to a report.
+    # Converts a saved AuditStore to a report.
     #
-    # It basically loads a serialized report and passes it to a the loaded Reports.
+    # It basically loads a serialized AuditStore,<br/>
+    # passes it to a the loaded Reports and runs the reports.
     #
-    # @param [String]  path  location of the dump file
+    # @param [String]  file  location of the saved AuditStore
     #
-    def rep_convert( path )
-        
-        results = rep_load_dump( path )
-        
-        run_reps( results )
+    def rep_convert( file )
+        run_reps( audit_store_load( file ) )
         exit 0
     end
 
-    def rep_save( audit, path )
+    #
+    # Saves an AuditStore instance in file
+    #
+    # @param    [String]    file
+    #
+    def audit_store_save( file )
         
-        file = path + REPORT_EXT
+        file += REPORT_EXT
         
         print_line( )
         print_status( 'Dumping audit results in \'' + file  + '\'.' )
         
-        audit_store = AuditStore.new( audit )
-        audit_store.save( file )
+        audit_store_get( ).save( file )
         
         print_status( 'Done!' )
     end
             
     #
-    # Loads a marshal dumped report
+    # Loads an AuditStore object
     #
-    # @param [String]  path  location of the dump file
+    # @param [String]  file  location of the dump file
     #
-    def rep_load_dump( path )
-        return YAML::load( IO.read( path ) )
+    def audit_store_load( file )
+        return AuditStore.load( file )
     end
     
     #
@@ -574,7 +570,7 @@ class Framework
                     # tell the user which module is about to be run...
                     print_status( curr_mod.to_s )
                     # ... and run it.
-                    run_mod( curr_mod, page )
+                    run_mod( curr_mod, deep_clone( page ) )
                     
                     while( handle_interrupt(  ) )
                     end
@@ -657,23 +653,22 @@ class Framework
     #
     # Takes care of report execution
     #
-    # @param  [Array,Hash]  results  depending on the state of the
-    #                                 framework this can either be an Array
-    #                                 of Vulnerability instances or a Hash
-    #                                 created by a loaded serialized report.
+    # @param  [AuditStore]  audit_store
     #                                         
     #
-    def run_reps( results )
+    def run_reps( audit_store )
     
         ls_loaded_reps.each_with_index {
             |report, i|
 
+            # choose a default report name
             if( !@opts[:repsave] || @opts[:repsave].size == 0 )
-                new_rep = report.new( results, @opts[:repopts] )
-            else
-                new_rep = report.new( results, @opts[:repopts],
-                    @opts[:repsave] + REPORT_EXT )
+                @opts[:repsave] =
+                    URI.parse( @opts[:url] ).host + '-' + Time.now.to_s
             end
+            
+            new_rep = report.new( deep_clone( audit_store ), @opts[:repopts],
+                @opts[:repsave] + REPORT_EXT )
             
             new_rep.run( )
         }

@@ -14,10 +14,7 @@ module Arachni
 module Reports    
 
 #
-# Awesome prints a marshal dump.
-#
-# Since Arachni report and profile files are marshalized objects this is<br/>
-# a great way to see what's inside them.
+# Awesome prints an {AuditStore#to_h} hash.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -33,12 +30,12 @@ class AP < Arachni::Report::Base
     include Arachni::UI::Output
 
     #
-    # @param [Array]  audit  the result of the audit
+    # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, options = nil, outfile = nil )
-        @audit   = audit
+    def initialize( audit_store, options = nil, outfile = nil )
+        @audit_store   = audit_store
     end
     
     #
@@ -49,9 +46,9 @@ class AP < Arachni::Report::Base
     def run( )
         
         print_line( )
-        print_status( 'Awesome printing marshal dump...' )
+        print_status( 'Awesome printing AuditStore...' )
         
-        ap @audit
+        ap @audit_store.to_h
         
         print_status( 'Done!' )
     end
@@ -64,7 +61,7 @@ class AP < Arachni::Report::Base
     def self.info
         {
             'Name'           => 'AP',
-            'Description'    => %q{Awesome prints a marshal dump.},
+            'Description'    => %q{Awesome prints an AuditStore hash.},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
         }

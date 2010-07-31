@@ -34,20 +34,20 @@ class HTML < Arachni::Report::Base
     include Arachni::UI::Output
 
     #
-    # @param [Array]  audit  the result of the audit
+    # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, options, outfile = nil )
-        @audit     = audit
-        @options   = options
-        @outfile   = outfile + '.html'
+    def initialize( audit_store, options, outfile = html )
+        @audit_store   = audit_store
+        @options       = options
+        @outfile       = outfile + '.html'
         
         @tpl = File.dirname( __FILE__ ) + '/html/templates/index.tpl'
     end
 
     #
-    # Use it to run your report.
+    # Runs the HTML report.
     #
     def run( )
 
@@ -86,23 +86,44 @@ class HTML < Arachni::Report::Base
 
     def __prepare_data( )
 
-        @audit['audit']['vulns'].each_with_index {
+        @audit_store.vulns.each_with_index {
             |vuln, i|
 
-            vuln['variations'].each_with_index {
+            if( vuln.references )
+                refs = []
+                vuln.references.each_pair {
+                    |name, value|
+                    refs << { 'name' => name, 'value' => value }
+                }
+                                
+                @audit_store.vulns[i].references = refs
+            end
+        
+            vuln.variations.each_with_index {
                 |variation, j|
                 
-                @audit['audit']['vulns'][i]['variations'][j]['escaped_response'] =
-                    Base64.encode64( variation['response'] ).gsub( /\n/, '' )
-                
-                @audit['audit']['vulns'][i]['variations'][j].delete( 'response' )
+                if( variation['response'] )
+                    @audit_store.vulns[i].variations[j]['escaped_response'] =
+                        Base64.encode64( variation['response'] ).gsub( /\n/, '' )
+                    
+                    @audit_store.vulns[i].variations[j].delete( 'response' )
+                end
             }        
         }
      
-        @audit['date'] = Time.now.to_s
-        @audit['opts'] = @options
+        hash = @audit_store.to_h
         
-        return @audit 
+        hash['date'] = Time.now.to_s
+        hash['opts'] = @options
+            
+        cookies = []
+        hash['options']['cookies'].each_pair {
+            |name, value|
+            cookies << { 'name' => name, 'value' => value }
+        }
+        
+        hash['options']['cookies'] = cookies
+        return hash
     end
 
 end

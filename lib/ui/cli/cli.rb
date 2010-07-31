@@ -73,7 +73,7 @@ class CLI
         # *do not* forget this check, otherwise the reports registry
         # will desync
         #
-        if( @opts[:reports].size == 0 && !@opts[:lsrep] )
+        if( !@opts[:lsrep] )
             @opts[:reports] << 'stdout'
         end
         
@@ -507,18 +507,19 @@ USAGE
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves a marshal dump of the results
+    --repsave=<file>              saves the audit results in <file>
                                     (The file will be saved with an extention of: #{@arachni.report_ext})               
     
-    --repload=<file>              loads a marshal dump of the audit results
+    --repload=<file>              loads audit results from <file>
                                   and lets you create a new report
     
     --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected report.
-                                  (One invocation only.)                                  
+                                  Set options for the selected reports.
+                                  (One invocation only, options will be applied to all loaded reports.)
                                   
-    --report=<repname>:<file>     <repname>: the name of the report as displayed by '--lsrep'
-                                  <file>: where to save the report
+    --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
+                                  (Can be used multiple times.)
+                                  
                                   
     Proxy --------------------------
     

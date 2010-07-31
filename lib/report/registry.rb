@@ -52,7 +52,7 @@ class Registry
     # @return [Array<Arachni::Reports>]  contents of the @@module_registry
     #
     def ls_loaded( )
-        @@registry
+        Registry.get_registry( )
     end
     
     #
@@ -114,7 +114,7 @@ class Registry
     # @return [Array<Arachni::Reports>]  the @@registry
     #
     def Registry.get_registry( )
-        @@registry
+        @@registry.uniq
     end
     
     #

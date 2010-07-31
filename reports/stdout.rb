@@ -34,12 +34,12 @@ class Stdout < Arachni::Report::Base
     include Arachni::UI::Output
 
     #
-    # @param [Array<Vulnerability>]  vulns  the array of detected vulnerabilities
+    # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit, options = nil, outfile = nil )
-        @audit = audit
+    def initialize( audit_store, options = nil, outfile = nil )
+        @audit_store = audit_store
     end
     
     #
@@ -50,10 +50,10 @@ class Stdout < Arachni::Report::Base
     def run( )
         
         print_line( )
-        print_ok( @audit['vulns'].size.to_s + ' vulnerabilities were detected.' )
+        print_ok( @audit_store.vulns.size.to_s + ' vulnerabilities were detected.' )
         print_line( )
         
-        @audit['vulns'].each {
+        @audit_store.vulns.each {
             |vuln|
             
             print_ok( vuln.mod_name )
@@ -64,57 +64,15 @@ class Stdout < Arachni::Report::Base
                 
                 case key
                 
-                when 'mod_name', 'response', 'cwe_url'
+                when 'mod_name', 'cwe_url'
                     next
                 
-                when 'headers'
-                    print_line( )
-                    print_info( 'Headers:')
-                    print_info( '----------' )
-                    print_line( )
-                    
-                    print_info( "\tRequest" )
-                    print_info( "\t----------" )
-                    val['request'].each_pair {
-                        |name, value|
-
-                        splits = value.split( "\n" )
-                        if( splits.size == 1 )
-                            print_info( "\t#{name}: #{value}" )
-                        else
-                            splits.each {
-                                |line|
-                                print_info( "\t\t#{line}" )
-                            }
-                        end
-                        
-                    }
-                    
-                    print_line( )
-                    print_info( "\tResponse" )
-                    print_info( "\t----------" )
-                    val['response'].each_pair {
-                        |name, value|
-
-                        splits = value.split( "\n" )
-                        if( splits.size == 1 )
-                            print_info( "\t#{name}: #{value}" )
-                        else
-                            print_info( "\t#{name}:" )
-                            splits.each {
-                                |line|
-                                print_info( "\t\t#{line}" )
-                            }
-                        end
-                    }
-                    print_line( )
-
                 when 'references'
                     
                     print_line( )
                     key = key.gsub( /_/, ' ' ).capitalize
                     print_info( "#{key}:" )
-                    
+
                     val.each_pair {
                         |ref, url|
                         print_info( "\t#{ref}:\t\t#{url}" )
@@ -136,21 +94,25 @@ class Stdout < Arachni::Report::Base
                 when 'cwe'
                     print_info( key.upcase + ': ' + val + " <#{vuln.cwe_url}>" )
                     
-                else
-                    key = key.gsub( /_/, ' ' ).capitalize
+                when 'variations'
+                    print_line( )
+                    print_info( 'Variations' )
                     
-                    if( val.instance_of?( String ) )
-                        print_info( key + ': ' + val )
-                    else
-                        print_line( )
-                        print_info( key + ':' )
-                        val.each {
-                            |item|
-                            print_info( "\t" + item.strip )
+                    val.each_with_index {
+                        |variation, i|
+                        print_info( '#' + (i+1).to_s )
+                        variation.each_pair {
+                            |name, item|
+                            if( item.is_a?( String ) && name != 'response' )
+                                print_info( "\t#{name}" + ': ' + item )
+                            end
                         }
+                        
                         print_line( )
-                    end 
+                    }
                     
+                else
+                    __print_generic( key, val )
                 end
                 
             }
@@ -168,11 +130,35 @@ class Stdout < Arachni::Report::Base
     def self.info
         {
             'Name'           => 'Stdout',
-            'Description'    => %q{Prints the results to standard output.
-                (Not Marshal dump safe, should only be used by the framework directly.)},
+            'Description'    => %q{Prints the results to standard output.},
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
         }
+    end
+    
+    def __print_generic( key, val )
+        key = key.gsub( /_/, ' ' ).capitalize
+        
+        if( val.instance_of?( String ) )
+            print_info( key + ': ' + val )
+        elsif( val.instance_of?( Array ) )
+            print_line( )
+            print_info( key + ':' )
+            val.each {
+                |item|
+                print_info( "\t" + item.strip )
+            }
+            print_line( )
+        else
+            print_line( )
+            print_info( key + ':' )
+            val.each_pair {
+                |name, item|
+                print_info( "\t#{name}:\t" + item.strip )
+            }
+            print_line( )
+        end
+
     end
     
 end

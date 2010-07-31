@@ -170,16 +170,16 @@
     
 
     <h2>Configuration</h2>
-    <strong>Version</strong>: {{arachni.version}}<br />
-    <strong>Revision</strong>: {{arachni.revision}}<br />
-    <strong>Audit started on</strong>: {{audit.start_datetime}}<br />
-    <strong>Audit finished on</strong>: {{audit.finish_datetime}}<br />
-    <strong>Runtime</strong>: {{audit.runtime}}<br />
+    <strong>Version</strong>: {{version}}<br />
+    <strong>Revision</strong>: {{revision}}<br />
+    <strong>Audit started on</strong>: {{start_datetime}}<br />
+    <strong>Audit finished on</strong>: {{finish_datetime}}<br />
+    <strong>Runtime</strong>: {{delta_time}}<br />
 
     <h3>Runtime options</h3>
 
-      <strong>URL:</strong> {{arachni.options.url}}<br />
-      <strong>User agent:</strong> {{arachni.options.user_agent | escape}}<br />
+      <strong>URL:</strong> {{options.url}}<br />
+      <strong>User agent:</strong> {{options.user_agent | escape}}<br />
       
       <table>
         <tr>
@@ -204,15 +204,15 @@
       <tr  class="c3">
       <td>
       <ul>
-        {% if arachni.options.audit_links %}
+        {% if options.audit_links %}
         <li>Links</li>
         {% endif %}
         
-        {% if arachni.options.audit_forms %}
+        {% if options.audit_forms %}
         <li>Forms</li>
         {% endif %}
         
-        {% if arachni.options.audit_cookies %}</li>
+        {% if options.audit_cookies %}</li>
         <li>Cookies</li>
         {% endif %}
       </ul>
@@ -220,7 +220,7 @@
 
       <td>
         <ul>
-          {% for mod in arachni.options.mods %}
+          {% for mod in options.mods %}
           <li>{{mod}}</li>
           {% endfor %}
         </ul>
@@ -230,8 +230,8 @@
         <li>Exclude:
 
           <ul>
-            {% if arachni.options.exclude != empty %}
-              {% for exclude in arachni.options.exclude %}</li>
+            {% if options.exclude != empty %}
+              {% for exclude in options.exclude %}</li>
 
             <li>{{exclude | escape}}</li>
 
@@ -244,8 +244,8 @@
         <li>Include:
 
           <ul>
-            {% if arachni.options.include != empty %}
-              {% for include in arachni.options.include %}</li>
+            {% if options.include != empty %}
+              {% for include in options.include %}</li>
 
             <li>{{include | escape}}</li>
 
@@ -258,8 +258,8 @@
         <li>Redundant:
 
           <ul>
-            {% if arachni.options.redundant != empty %}
-              {% for redundant in arachni.options.redundant %}
+            {% if options.redundant != empty %}
+              {% for redundant in options.redundant %}
 
             <li>{{redundant.regexp | escape}} - Count {{redundant.count}}</li>
 
@@ -274,8 +274,8 @@
       </td>
       <td>
         <ul>
-          {% if arachni.options.cookies != empty and arachni.options.cookies != null %}
-            {% for cookie in arachni.options.cookies %}
+          {% if options.cookies != empty and options.cookies != null %}
+            {% for cookie in options.cookies %}
           <li>{{cookie.name | escape}}: {{cookie.value | escape}}</li>
             {% endfor %}
           {% else %}
@@ -287,8 +287,8 @@
       </table>
 
       <p>
-      <h2 id="top">{{audit.vulns | size}} vulnerabilities discovered</h2>
-      {% for vuln in audit.vulns %}
+      <h2 id="top">{{vulns | size}} vulnerabilities discovered</h2>
+      {% for vuln in vulns %}
       <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}</a>:</h3>
       In <span class="note">{{vuln.elem}}</span> variable
       <span class="note">{{vuln.var | escape}}</span> 
@@ -299,7 +299,7 @@
       <div class="vulns">
         <h2>Vulnerabilities</h2>
         
-        {% for vuln in audit.vulns %}
+        {% for vuln in vulns %}
 
         <h3 id="vuln_{{forloop.index}}">
           <a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}
