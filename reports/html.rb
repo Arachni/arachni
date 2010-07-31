@@ -115,14 +115,17 @@ class HTML < Arachni::Report::Base
         
         hash['date'] = Time.now.to_s
         hash['opts'] = @options
+
+        if( hash['options']['cookies'] )
+            cookies = []
+            hash['options']['cookies'].each_pair {
+                |name, value|
+                cookies << { 'name' => name, 'value' => value }
+            }
             
-        cookies = []
-        hash['options']['cookies'].each_pair {
-            |name, value|
-            cookies << { 'name' => name, 'value' => value }
-        }
+            hash['options']['cookies'] = cookies
+        end
         
-        hash['options']['cookies'] = cookies
         return hash
     end
 
