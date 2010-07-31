@@ -86,6 +86,8 @@ class Analyzer
         @structure['forms']   = []
         @structure['links']   = []
         @structure['cookies'] = []
+        
+        @cookies = []
     end
 
     #
@@ -117,9 +119,10 @@ class Analyzer
         end
 
         if @opts[:audit_cookies]
-            @structure['cookies'] = @cookies =
-                get_cookies( headers['set-cookie'].to_s )
-            
+            @cookies << get_cookies( headers['set-cookie'].to_s )
+            @cookies.flatten!.uniq!
+            ap @structure['cookies'] = @cookies 
+                
             elem_count += cookie_count =  @structure['cookies'].length
             msg += "Cookies: #{cookie_count}"
         end
@@ -235,8 +238,8 @@ class Analyzer
     # @return [Array<Hash <String, String> >] of cookies
     #
     def get_cookies( headers )
-        cookies = WEBrick::Cookie.parse_set_cookies( headers )
-
+         cookies = WEBrick::Cookie.parse_set_cookies( headers )
+        
         cookies_arr = []
 
         cookies.each_with_index {
@@ -250,6 +253,10 @@ class Analyzer
                 cookies_arr[i][var.to_s.gsub( /@/, '' )] =
                     value.gsub( /[\"\\\[\]]/, '' )
             }
+            
+            # detect when a cookie has been updated and discard the old one
+            @cookies.reject!{ |cookie| cookie['name'] == cookies_arr[i]['name'] }
+            
         }
 
         return cookies_arr
