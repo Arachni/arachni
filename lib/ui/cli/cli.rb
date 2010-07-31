@@ -73,7 +73,7 @@ class CLI
         # *do not* forget this check, otherwise the reports registry
         # will desync
         #
-        if( !@opts[:lsrep] )
+        if( @opts[:reports].size == 0 &&!@opts[:lsrep] )
             @opts[:reports] << 'stdout'
         end
         
@@ -518,6 +518,7 @@ USAGE
                                   (One invocation only, options will be applied to all loaded reports.)
                                   
     --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
+                                  (default: stdout)
                                   (Can be used multiple times.)
                                   
                                   
