@@ -121,7 +121,7 @@ class Analyzer
         if @opts[:audit_cookies]
             @cookies << get_cookies( headers['set-cookie'].to_s )
             @cookies.flatten!.uniq!
-            ap @structure['cookies'] = @cookies 
+            @structure['cookies'] = @cookies 
                 
             elem_count += cookie_count =  @structure['cookies'].length
             msg += "Cookies: #{cookie_count}"
@@ -238,7 +238,7 @@ class Analyzer
     # @return [Array<Hash <String, String> >] of cookies
     #
     def get_cookies( headers )
-         cookies = WEBrick::Cookie.parse_set_cookies( headers )
+        cookies = WEBrick::Cookie.parse_set_cookies( headers )
         
         cookies_arr = []
 
