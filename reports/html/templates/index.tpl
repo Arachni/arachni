@@ -400,12 +400,12 @@
           <tr>
             <td class="c3">
               <h4>Request</h4>
-              <pre class="note">{{ variation.headers.request }}</pre>
+              <pre class="note">{{ variation.headers.request | escape}}</pre>
             </td>
 
             <td>
               <h4>Response</h4>
-              <pre class="note">{{ variation.headers.response }}</pre>
+              <pre class="note">{{ variation.headers.response | escape }}</pre>
             </td>
           </tr>
           
