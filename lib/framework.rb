@@ -664,7 +664,8 @@ class Framework
             # choose a default report name
             if( !@opts[:repsave] || @opts[:repsave].size == 0 )
                 @opts[:repsave] =
-                    URI.parse( @opts[:url] ).host + '-' + Time.now.to_s
+                    URI.parse( audit_store.options['url'] ).host +
+                        '-' + Time.now.to_s
             end
             
             new_rep = report.new( deep_clone( audit_store ), @opts[:repopts],
