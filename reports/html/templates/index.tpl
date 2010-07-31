@@ -400,14 +400,12 @@
           <tr>
             <td class="c3">
               <h4>Request</h4>
-              <pre class="note">{% for header in variation.headers.request %}
-{{header | join '-' | escape}}{% endfor %}</pre>
+              <pre class="note">{{ variation.headers.request }}</pre>
             </td>
 
             <td>
               <h4>Response</h4>
-              <pre class="note">{% for header in variation.headers.response %}
-{{header | escape}}{% endfor %}</pre>
+              <pre class="note">{{ variation.headers.response }}</pre>
             </td>
           </tr>
           

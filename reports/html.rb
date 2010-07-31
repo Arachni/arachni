@@ -108,7 +108,29 @@ class HTML < Arachni::Report::Base
                     
                     @audit_store.vulns[i].variations[j].delete( 'response' )
                 end
-            }        
+                
+                if( variation['headers']['request'] )
+                    request = ''
+                    variation['headers']['request'].each_pair {
+                        |key,val|
+                        request += "#{key}:\t#{val}\n"
+                    }
+                    @audit_store.vulns[i].variations[j]['headers']['request']=
+                        request.clone
+                end
+                
+                if( variation['headers']['response'] )
+                    response = ''
+                    variation['headers']['response'].each_pair {
+                        |key,val|
+                        response += "#{key}:\t#{val}\n"
+                    }
+                    @audit_store.vulns[i].variations[j]['headers']['response']=
+                        response.clone
+                end
+                    
+            }
+            
         }
      
         hash = @audit_store.to_h
