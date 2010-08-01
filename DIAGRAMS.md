@@ -1,7 +1,5 @@
 Diagrams
 ----
-The diagrams may be slightly outdated, especially the methods and attributes in the UML diagram.<br/>
-However they will give you a pretty good idea of how the componets interact with each other.
 
 **RDoc**
 
@@ -4546,6 +4544,3 @@ AAAAAAAA8BRhRgAAAAAAAAAAAAAAAAAA4CnCjAAAAAAAAAAAAAAAAAAAwFOE
 GQEAAAAAAAAAAAAAAAAAgKcCRnrL60YAAAAAAAAAAAAAAAAAAIAx66n/D39w
 OzINrKcuAAAAAElFTkSuQmCC" />
 
-**yard-graph UML**
-
-<img width="1024" src="data:image/png;base64, " />
