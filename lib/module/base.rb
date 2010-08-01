@@ -151,7 +151,67 @@ class Base
     # TODO: Put all helper auditor methods in an auditor class
     # and delegate
     #
-    
+
+    #
+    # Audits HTTP request headers injecting the injection_str as values
+    # and then matching the response body against the id_regex.
+    #
+    # If the id argument has been provided the matched data of the
+    # id_regex will be =='ed against it.
+    #
+    # @param    [String]     injection_str
+    # @param    [String]     id_regex     regular expression string
+    # @param    [String]     id  string to double check the id_regex
+    #                            matched data
+    #
+    # @param    [Block]     block to be executed right after the
+    #                            request has been made.
+    #                            It will be passed the currently audited
+    #                            variable and the response.
+    #
+    # @param    [Array<Hash<String, String>>]    the positive results of
+    #                                                the audit, if no block
+    #                                                has been given
+    #
+    def audit_headers( injection_str, id_regex = nil, id = nil, &block )
+
+        results = []
+        
+        # iterate through header fields and audit each one
+        inject_each_var( get_request_headers( true ), injection_str ).each {
+            |vars|
+
+            # tell the user what we're doing
+            print_status( self.class.info['Name']  + 
+                " is auditing:\theader field '" +
+                vars['altered'] + "' of " + @page.url )
+            
+            # audit the url vars
+            res = @http.header( @page.url, vars['hash'] )
+
+            # something might have gone bad,
+            # make sure it doesn't ruin the rest of the show...
+            if !res then next end
+            
+            # call the passed block
+            if block_given?
+                block.call( vars['altered'], res )
+                return
+            end
+            
+            if !res.body then next end
+            
+            # get matches
+            result = get_matches( Vulnerability::Element::HEADER,
+                vars['altered'], res, injection_str, id_regex, id )
+                                   
+            # and append them to the results array
+            results << result if result
+        }
+
+        results
+    end
+        
     #
     # Audits links injecting the injection_str as value for the
     # variables and then matching the response body against the id_regex.
@@ -202,8 +262,8 @@ class Base
             if !res.body then next end
             
             # get matches
-            result = get_matches( 'links', vars['altered'], res, injection_str,
-                                   id_regex, id )
+            result = get_matches( Vulnerability::Element::LINK,
+                vars['altered'], res, injection_str, id_regex, id )
                                    
             # and append them to the results array
             results << result if result
@@ -277,8 +337,8 @@ class Base
                 if !res.body then next end
             
                 # get matches
-                result = get_matches( 'forms', input['altered'],
-                                res, injection_str, id_regex, id )
+                result = get_matches( Vulnerability::Element::LINK,
+                    input['altered'], res, injection_str, id_regex, id )
                 
 #                result = result.merge get_matches( 'forms', input['altered'],
 #                                get_res, injection_str, id_regex, id )
@@ -338,8 +398,8 @@ class Base
             if !res.body then next end
                 
             # get possible matches
-            result = get_matches( 'cookies', cookie['altered'],
-                        res, injection_str, id_regex, id )
+            result = get_matches( Vulnerability::Element::COOKIE,
+                cookie['altered'], res, injection_str, id_regex, id )
             # and append them
             results << result if result
         }
@@ -348,25 +408,30 @@ class Base
     end
 
     #
-    # Returns forms from @structure
+    # Returns extended form information from {Page#elements}
     #
-    # @return    [Hash]    the form attributes, values, etc
+    # @see Page#get_forms
+    #
+    # @return    [Aray]    forms with attributes, values, etc
     #
     def get_forms
         @page.get_forms( )
     end
 
     #
-    # Returns links from @structure
     #
-    # @return    [Hash]    the link attributes, variables, etc
+    # Returns extended link information from {Page#elements}
+    #
+    # @see Page#get_links
+    #
+    # @return    [Aray]    link with attributes, variables, etc
     #
     def get_links
         @page.get_links( )
     end
 
     #
-    # Returns an array of forms from @structure with the auditable
+    # Returns an array of forms from {#get_forms} with the auditable
     # inputs as a name=>value hash
     #
     # @return    [Array]
@@ -389,7 +454,7 @@ class Base
     end
 
     #
-    # Returns links from @structure as a name=>value hash with href as key
+    # Returns links from {#get_links} as a name=>value hash with href as key
     #
     # @return    [Hash]
     #
@@ -414,7 +479,9 @@ class Base
     end
     
     #
-    # Returns extended cookie information from @structure
+    # Returns extended cookie information from {Page#elements}
+    #
+    # @see Page#get_cookies
     #
     # @return    [Array]    the cookie attributes, values, etc
     #
@@ -423,7 +490,7 @@ class Base
     end
 
     #
-    # Returns cookies from @structure as a name=>value hash
+    # Returns cookies from {#get_cookies} as a name=>value hash
     #
     # @return    [Hash]    the cookie attributes, values, etc
     #
@@ -435,8 +502,6 @@ class Base
         }
         cookies
     end
-    
-    private
     
     def get_matches( where, var, res, injection_str, id_regex, id )
         
@@ -460,6 +525,7 @@ class Base
                 'regexp'       => id_regex.to_s,
                 'regexp_match' => res.body.scan( id_regex ),
                 'response'     => res.body,
+                'elem'         => where,
                 'headers'      => {
                     'request'    => get_request_headers( ),
                     'response'   => get_response_headers( res ),    
@@ -468,10 +534,40 @@ class Base
         end
     end
     
-    def get_request_headers( )
-        @http.init_headers    
+    #
+    # Returns a hash of request headers.
+    #
+    # If 'merge' is set to 'true' cookies will be skipped.<br/>
+    # If you need to audit cookies use {#get_cookies} or {#audit_cookies}.
+    #
+    # @see Page#request_headers
+    #
+    # @param    [Bool]    merge   merge with auditable ({Page#request_headers}) headers?
+    #
+    # @return    [Hash]
+    #
+    def get_request_headers( merge = false )
+        
+        if( merge == true && @page.request_headers )
+            begin
+            ( headers = ( @http.init_headers ).
+                merge( @page.request_headers ) ).delete( 'cookie' )
+            rescue
+                headers = {}
+            end
+            return headers 
+        end
+        
+       return @http.init_headers
     end
     
+    #
+    # Returns the headers from a Net::HTTP response as a hash
+    #
+    # @param  [Net::HTTPResponse]  res
+    #
+    # @return    [Hash] 
+    #
     def get_response_headers( res )
         
         header = Hash.new
@@ -484,7 +580,7 @@ class Base
     end
     
     #
-    # Gets module data files from 'modules/<modname>/<filename>'
+    # Gets module data files from 'modules/[modname]/[filename]'
     #
     # @param    [String]    filename filename, without the path    
     # @param    [Block]     the block to be passed each line as it's read

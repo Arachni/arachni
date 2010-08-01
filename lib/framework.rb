@@ -210,12 +210,18 @@ class Framework
                 'vars'  => query_vars
             }
         end
-
+        
+        if( elements['headers'] )
+            request_headers = elements['headers'].clone
+#            elements.delete( 'headers' )
+        end
+        
         return Page.new( {
             :url         => url,
             :query_vars  => query_vars,
             :html        => html,
             :headers     => headers,
+            :request_headers => request_headers,
             :elements    => elements,
             :cookiejar   => @opts[:cookies]
         } )
@@ -637,12 +643,18 @@ class Framework
         page.elements( ).each_pair {
             |name, value|
             
+            symbol = "audit_#{name}".to_sym
+            if( !@opts[symbol] )
+                next 
+            end
+            
             if( !mod.info || !mod.info['Elements'] ||
                 mod.info['Elements'].size == 0 )
                 return true
             end
             
-            if( mod.info['Elements'].include?( name ) && value.size != 0 )
+            if( mod.info['Elements'].include?( name.tr( 's', '' ) ) &&
+                value.size != 0 )
                 return true
             end
         }
@@ -717,7 +729,8 @@ class Framework
             
         if !@opts[:audit_links] &&
             !@opts[:audit_forms] &&
-            !@opts[:audit_cookies]
+            !@opts[:audit_cookies] &&
+            !@opts[:audit_headers]
             raise( Arachni::Exceptions::NoAuditOpts,
                 "No audit options were specified." )
         end

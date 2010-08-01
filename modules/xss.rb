@@ -58,31 +58,24 @@ class XSS < Arachni::Module::Base
         get_data_file( @__injection_strs_file ) {
             |str|
 
+            audit_headers( str, Regexp.new( str ), str ).each {
+                |res|
+                @results << Vulnerability.new( res.merge( self.class.info ) )
+            }
+            
             audit_forms( str, Regexp.new( str ), str ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'form' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             audit_links( str, Regexp.new( str ), str ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'link' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             audit_cookies( str, Regexp.new( str ), str ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'cookie' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
         }
@@ -95,7 +88,12 @@ class XSS < Arachni::Module::Base
         {
             'Name'           => 'XSS',
             'Description'    => %q{Cross-Site Scripting recon module},
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE,
+                Vulnerability::Element::HEADER
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

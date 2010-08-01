@@ -177,7 +177,11 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             # If you want the module to run no-matter what leave the array
             # empty or don't define it at all.
             # 
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {
@@ -241,19 +245,17 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
+
+            #
             # create a vulnerability and add it to the results array
-            @results << Vulnerability.new(
-                
-                # the returned hash of audit methods conviniently
-                # holds part of the hash that is expected by Vulnerability.new()
-                #
-                # to complete the hash we merge it with the module's
-                # class method info(), with the added field of
-                # 'elem' which specifies the HTML element that is vulnerable.
-                res.merge( { 'elem' => 'link' }.
-                    merge( self.class.info )
-                )
-            )
+            #
+            # the returned hash of audit methods conviniently
+            # holds part of the hash that is expected by Vulnerability.new()
+            #
+            # to complete the hash we merge it with the module's
+            # class method info()
+            #
+            @results << Vulnerability.new( res.merge( self.class.info ) )
         }
     end
 
@@ -267,18 +269,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #        
          audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
              |res|
-             @results << Vulnerability.new(
-
-                 # the returned hash of audit methods conviniently
-                 # holds part of the hash that is expected by Vulnerability.new()
-                 #
-                 # to complete the hash we merge it with the module's
-                 # class method info(), with the added field of
-                 # 'elem' which specifies the HTML element that is vulnerable.
-                 res.merge( { 'elem' => 'form' }.
-                     merge( self.class.info )
-                 )
-             )
+             @results << Vulnerability.new( res.merge( self.class.info ) )
          }
     end
 
@@ -292,18 +283,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
-            
-            # the returned hash of audit methods conviniently
-            # holds part of the hash that is expected by Vulnerability.new()
-            #
-            # to complete the hash we merge it with the module's
-            # class method info(), with the added field of
-            # 'elem' which specifies the HTML element that is vulnerable.
-            @results << Vulnerability.new(
-                res.merge( { 'elem' => 'cookie' }.
-                    merge( self.class.info )
-                )
-            )
+            @results << Vulnerability.new( res.merge( self.class.info ) )
         }
     end
 

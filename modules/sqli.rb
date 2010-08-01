@@ -82,21 +82,21 @@ class SQLInjection < Arachni::Module::Base
             # and pass a block that will check for a positive result
             audit_forms( str ) {
                 |var, res|
-                __log_results( 'form', var, res, str )
+                __log_results( Vulnerability::Element::FORM, var, res, str )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
             audit_links( str ) {
                 |var, res|
-                __log_results( 'link', var, res, str )
+                __log_results( Vulnerability::Element::LINK, var, res, str )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
             audit_cookies( str ) {
                 |var, res|
-                __log_results( 'cookie', var, res, str )
+                __log_results( Vulnerability::Element::COOKIE, var, res, str )
             }
         }
         
@@ -109,7 +109,11 @@ class SQLInjection < Arachni::Module::Base
         {
             'Name'           => 'SQLInjection',
             'Description'    => %q{SQL injection recon module},
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

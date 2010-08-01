@@ -250,6 +250,55 @@ class HTTP
 
     end
 
+    def header( url, headers, url_vars = nil)
+
+        begin
+            url = parse_url( url )
+            
+            if( url.query && url.query.size > 0 )
+                query = '?' + url.query
+                append = true
+            else
+                query = ''
+                append = false
+            end
+            
+            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
+            
+            @init_headers = @init_headers.merge( headers )
+            @session.get( full_url, @init_headers )
+
+        # catch the time-out and refresh
+        rescue Timeout::Error => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+
+        # broken pipe probably
+        rescue Errno::EPIPE => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+            
+        # some other exception
+        # just print what went wrong with some debugging and then move on
+        rescue Exception => e
+            handle_exception( e )
+        end
+
+    end
+
+    
     #
     # Sets cookies for the HTTP session
     #

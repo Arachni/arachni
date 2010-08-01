@@ -82,31 +82,19 @@ class Eval < Arachni::Module::Base
             # audit forms and add the results to the results array
             audit_forms( str, Regexp.new( @__rand ), @__rand ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'form' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             # audit links and add the results to the results array    
             audit_links( str, Regexp.new( @__rand ), @__rand ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'link' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             # audit cookies and add the results to the results array
             audit_cookies( str, Regexp.new( @__rand ), @__rand ).each {
                 |res|
-                @results << Vulnerability.new(
-                    res.merge( { 'elem' => 'cookie' }.
-                        merge( self.class.info )
-                    )
-                )
+                @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
         }
@@ -121,7 +109,11 @@ class Eval < Arachni::Module::Base
             'Name'           => 'Eval',
             'Description'    => %q{eval() recon module. Tries to inject code
                 into the web application.},
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

@@ -23,6 +23,7 @@ opts = GetoptLong.new(
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
+    [ '--audit-headers',           GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
     [ '--delay',                   GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -124,7 +125,10 @@ opts.each do |opt, arg|
 
         when '--audit-cookie-jar'
             $runtime_args[:audit_cookie_jar] = true
-                
+
+        when '--audit-headers'
+            $runtime_args[:audit_headers] = true
+
         when '--mods'
             $runtime_args[:mods] = arg.to_s.split( /,/ )
 

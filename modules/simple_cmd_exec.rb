@@ -46,29 +46,17 @@ class SimpleCmdExec < Arachni::Module::Base
         
         audit_links( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
             |res|
-            @results << Vulnerability.new(
-                res.merge( { 'elem' => 'link' }.
-                    merge( self.class.info )
-                )
-            )
+            @results << Vulnerability.new( res.merge( self.class.info ) )
         }
 
         audit_forms( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
             |res|
-            @results << Vulnerability.new(
-                res.merge( { 'elem' => 'form' }.
-                    merge( self.class.info )
-                )
-            )
+            @results << Vulnerability.new( res.merge( self.class.info ) )
         }
 
         audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
             |res|
-            @results << Vulnerability.new(
-                res.merge( { 'elem' => 'cookie' }.
-                    merge( self.class.info )
-                )
-            )
+            @results << Vulnerability.new( res.merge( self.class.info ) )
         }
         
         register_results( @results )
@@ -79,7 +67,11 @@ class SimpleCmdExec < Arachni::Module::Base
         {
             'Name'           => 'SimpleCmdExec',
             'Description'    => %q{Simple shell command execution recon module},
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

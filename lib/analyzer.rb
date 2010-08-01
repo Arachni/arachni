@@ -69,6 +69,12 @@ class Analyzer
     attr_reader :cookies
 
     #
+    # Array of valid HTML headers
+    # @return [Array<String>]
+    #
+    attr_reader :headers
+
+    #
     # Hash of options passed to initialize( opts ).
     #
     attr_reader :opts
@@ -86,6 +92,7 @@ class Analyzer
         @structure['forms']   = []
         @structure['links']   = []
         @structure['cookies'] = []
+        @structure['headers'] = []
         
         @cookies = []
     end
@@ -124,15 +131,41 @@ class Analyzer
             @structure['cookies'] = @cookies 
                 
             elem_count += cookie_count =  @structure['cookies'].length
-            msg += "Cookies: #{cookie_count}"
+            msg += "Cookies: #{cookie_count}\t"
         end
 
+        if @opts[:audit_headers]
+            @structure['headers'] = @headers = get_headers( )
+            elem_count += header_count = @structure['headers'].length
+            msg += "Headers: #{header_count}"
+        end
+        
         msg += "]\n\n"
         print_verbose( msg ) if !only_positives?
 
         return @structure
     end
 
+    #
+    # Returns a list of valid auditable HTTP header fields.
+    # 
+    # It's more of a placeholder method, it doesn't actually analyze anything.<br/>
+    # It's a long shot that any of these will be vulnerable but better
+    # be safe than sorry.
+    #
+    # @return    [Hash]    HTTP header fields
+    #
+    def get_headers( )
+        return {
+            'Accept-Charset' => '',
+            'Accept-Language' => '',
+            'Date' => '',
+            'From' => '',
+            'Referer' => '',
+            'User-Agent' => ''
+        }
+    end
+    
     # TODO: Add support for radio buttons.
     #
     # Extracts forms from HTML document

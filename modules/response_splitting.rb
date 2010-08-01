@@ -62,21 +62,21 @@ class ResponseSplitting < Arachni::Module::Base
         # and pass a block that will check for a positive result
         audit_forms( @__header ) {
             |var, res|
-            __log_results( 'form', var, res )
+            __log_results( Vulnerability::Element::FORM, var, res )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
         audit_links( @__header ) {
             |var, res|
-            __log_results( 'link', var, res )
+            __log_results( Vulnerability::Element::LINK, var, res )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
         audit_cookies( @__header ) {
             |var, res|
-            __log_results( 'cookie', var, res )
+            __log_results( Vulnerability::Element::COOKIE, var, res )
         }
         
         #register our results with the system
@@ -91,7 +91,11 @@ class ResponseSplitting < Arachni::Module::Base
                 Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header. 
             },
-            'Elements'       => ['forms', 'links', 'cookies'],
+            'Elements'       => [
+                Vulnerability::Element::FORM,
+                Vulnerability::Element::LINK,
+                Vulnerability::Element::COOKIE
+            ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
             'References'     => {

@@ -489,6 +489,9 @@ USAGE
     --audit-cookie-jar          audit cookies in cookiejar
                                   (default: off)                              
     
+    --audit-headers             audit HTTP headers
+                                  
+                                  
     Modules ------------------------
                                                                       
     --lsmod                     list available modules
