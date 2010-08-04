@@ -37,15 +37,35 @@ class Registry
     #
     attr_reader :mod_lib
 
-    #
-    # Class variable
-    #
-    # Array of module objects
-    #
-    # @return [Array<Arachni::Module>]
-    #
     class << self
-        attr_reader :module_registry, :module_results, :module_storage
+        
+        #
+        # Class variable
+        #
+        # Array of module objects
+        #
+        # @return [Array<Module>]
+        #
+        attr_reader :module_registry
+        
+        #
+        # Class variable
+        #
+        # Array of {Vulnerrability} instances discovered by modules
+        #
+        # @return [Array<Vulnerability>]
+        #
+        attr_reader :module_results
+        
+        #
+        # Class variable
+        #
+        # Array of module data
+        #
+        # @return [Array<Hash>]
+        #
+        attr_reader :module_storage
+        
     end
 
     #
@@ -244,6 +264,8 @@ class Registry
     #
     # Stores an object regulated by Registrar#add_storage
     # in @@module_storage
+    #
+    # TODO: this isn't smart, classify it by module name instead
     #
     # @see Registrar#add_storage
     #
