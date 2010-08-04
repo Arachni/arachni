@@ -56,7 +56,7 @@ class Stdout < Arachni::Report::Base
         @audit_store.vulns.each {
             |vuln|
             
-            print_ok( vuln.mod_name )
+            print_ok( vuln.name )
             print_info( '**************' )
             
             vuln.each_pair {
@@ -64,8 +64,11 @@ class Stdout < Arachni::Report::Base
                 
                 case key
                 
-                when 'mod_name', 'cwe_url'
+                when 'cwe_url', 'name'
                     next
+                    
+                when 'mod_name'
+                    print_info( "Module name: #{val}" )
                 
                 when 'references'
                     
