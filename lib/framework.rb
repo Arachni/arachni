@@ -229,7 +229,9 @@ class Framework
     end
     
     #
-    # Returns the results of the audit as an AuditStore instance
+    # Returns the results of the audit as an {AuditStore} instance
+    #
+    # @see AuditStore
     #
     # @return    [AuditStore]
     #
@@ -362,7 +364,9 @@ class Framework
     end
             
     #
-    # Loads an AuditStore object
+    # Loads an {AuditStore} object
+    #
+    # @see AuditStore
     #
     # @param [String]  file  location of the dump file
     #
@@ -543,6 +547,8 @@ class Framework
     #
     # Takes care of module execution and threading
     #
+    # @see Page
+    #
     # @param    [Page]    page
     #
     def run_mods( page )
@@ -602,6 +608,8 @@ class Framework
     # Runs a module and passes it the page_data and structure.<br/>
     # It also handles any exceptions thrown by the module at runtime.
     #
+    # @see Page
+    #
     # @param    [Class]   mod      the module to run 
     # @param    [Page]    page
     #
@@ -631,6 +639,8 @@ class Framework
     # Decides whether or not to run a given module based on the<br/>
     # HTML elements it plans to audit and the existence of those elements<br/> 
     # in the current page.
+    #
+    # @see Page
     #
     # @param    [Class]   mod   the module to run
     # @param    [Page]    page
@@ -665,8 +675,9 @@ class Framework
     #
     # Takes care of report execution
     #
+    # @see AuditStore
+    #
     # @param  [AuditStore]  audit_store
-    #                                         
     #
     def run_reps( audit_store )
     
