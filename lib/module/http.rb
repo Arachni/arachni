@@ -22,8 +22,6 @@ module Module
 # Any exceptions or session corruption is handled by the class.<br/>
 # Some are ignored, on others the HTTP session is refreshed.<br/>
 # Point is, you don't need to worry about it.
-# <br/><br/>
-#
 #
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
@@ -41,9 +39,19 @@ class HTTP
     #
     attr_reader :url
     
-    
+    #
+    # The headers with which the HTTP client is initialized<br/>
+    # This is always kept updated.
+    # 
+    # @return    [Hash]
+    #
     attr_reader :init_headers
     
+    #
+    # The user supplied cookie jar
+    #
+    # @return    [Hash]
+    #
     attr_reader :cookie_jar
     
     #
@@ -66,7 +74,7 @@ class HTTP
 
         @opts = Hash.new
 
-        @opts = @opts.merge( opts)
+        @opts = @opts.merge( opts )
 
         # create a new HTTP session
         refresh( )
@@ -88,7 +96,7 @@ class HTTP
     def get( url, url_vars = nil )
         url = parse_url( url )
 
-        begin
+        exception_jail {
 
             if( url.query && url.query.size > 0 )
                 query = '?' + url.query
@@ -100,35 +108,9 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
-            @session.get( full_url, @init_headers )
-
-        # catch the time-out and refresh
-        rescue Timeout::Error => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # broken pipe probably
-        rescue Errno::EPIPE => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
+            return @session.get( full_url, @init_headers )
+        }
         
-        # some other exception
-        # just print what went wrong with some debugging info and move on
-        rescue Exception => e
-            handle_exception( e )
-        end
     end
 
     #
@@ -141,42 +123,12 @@ class HTTP
     #
     def post( url, form_vars )
 
-        #    url = parse_url( url )
-
         req = Net::HTTP::Post.new( url, @init_headers )
         req.set_form_data( form_vars )
 
-        begin
-            res = @session.request( req )
-            return res
-            
-        # catch the time-out and refresh
-        rescue Timeout::Error => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # broken pipe probably
-        rescue Errno::EPIPE => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # some other exception
-        # just print what went wrong with some debugging and then move on
-        rescue Exception => e
-            handle_exception( e )
-        end
+        exception_jail {
+            return @session.request( req )
+        }
     end
 
     #
@@ -205,7 +157,7 @@ class HTTP
         
         @init_headers['cookie'] = cookies
 
-        begin
+        exception_jail {
             url = parse_url( url )
             
             if( url.query && url.query.size > 0 )
@@ -218,41 +170,13 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
-            @session.get( full_url, @init_headers )
-
-        # catch the time-out and refresh
-        rescue Timeout::Error => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # broken pipe probably
-        rescue Errno::EPIPE => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-            
-        # some other exception
-        # just print what went wrong with some debugging and then move on
-        rescue Exception => e
-            handle_exception( e )
-        end
-
+            return @session.get( full_url, @init_headers )
+        }
     end
 
     def header( url, headers, url_vars = nil)
 
-        begin
+        exception_jail {
             url = parse_url( url )
             
             if( url.query && url.query.size > 0 )
@@ -266,35 +190,8 @@ class HTTP
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
             @init_headers = @init_headers.merge( headers )
-            @session.get( full_url, @init_headers )
-
-        # catch the time-out and refresh
-        rescue Timeout::Error => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # broken pipe probably
-        rescue Errno::EPIPE => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-            
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-            
-        # some other exception
-        # just print what went wrong with some debugging and then move on
-        rescue Exception => e
-            handle_exception( e )
-        end
+            return @session.get( full_url, @init_headers )
+        }
 
     end
 
@@ -394,6 +291,45 @@ class HTTP
 
         @session = session.start
 
+    end
+    
+    #
+    # Wraps the "block" in exception handling code.
+    #
+    # @param    [Block]
+    #
+    def exception_jail( &block )
+        
+        begin
+            block.call
+
+        # catch the time-out and refresh
+        rescue Timeout::Error => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+
+        # broken pipe probably
+        rescue Errno::EPIPE => e
+            # inform the user
+            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+            print_info( 'Refreshing connection...' )
+            
+            # refresh the connection
+            refresh( )
+            # try one more time
+            retry
+        
+        # some other exception
+        # just print what went wrong with some debugging info and move on
+        rescue Exception => e
+            handle_exception( e )
+        end
     end
     
     #
