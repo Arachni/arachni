@@ -145,7 +145,6 @@ class Registry
             rescue Exception => e
                 raise( Arachni::Exceptions::DepModNotFound,
                     "In '#{mod_name}' dependencies: " + e.to_s )
-                exit 0
             end
 
         }
@@ -178,7 +177,8 @@ class Registry
         begin
             ls_available( )[name]['path'].to_s
         rescue Exception => e
-            raise 'Uknown module \'' + name + '\'.'
+            raise( Arachni::Exceptions::ModNotFound,
+                "Module '#{mod_name}' not found." )
         end
     end
 
