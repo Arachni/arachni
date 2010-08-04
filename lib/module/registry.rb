@@ -51,7 +51,7 @@ class Registry
         #
         # Class variable
         #
-        # Array of {Vulnerrability} instances discovered by modules
+        # Array of {Vulnerability} instances discovered by modules
         #
         # @return [Array<Vulnerability>]
         #
@@ -262,7 +262,7 @@ class Registry
     end
 
     #
-    # Stores an object regulated by Registrar#add_storage
+    # Stores an object regulated by {Registrar#add_storage}
     # in @@module_storage
     #
     # TODO: this isn't smart, classify it by module name instead
