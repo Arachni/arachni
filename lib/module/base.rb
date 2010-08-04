@@ -94,13 +94,19 @@ class Base
             'Description'    => %q{Provides an abstract the modules should implement.},
             #
             # Arachni needs to know what elements the module plans to audit
-            # before invoking it. If a page doesn't have any of those elements
+            # before invoking it.
+            # If a page doesn't have any of those elements
             # there's no point in instantiating the module.
             #
             # If you want the module to run no-matter what leave the array
-            # empty or don't define it at all.
+            # empty.
             #
-#            'Elements'       => ['links', 'forms', 'cookies'],
+            # 'Elements'       => [
+            #     Vulnerability::Element::FORM,
+            #     Vulnerability::Element::LINK,
+            #     Vulnerability::Element::COOKIE,
+            #     Vulnerability::Element::HEADER
+            # ],
             'Elements'       => [],
             'Author'         => 'zapotek',
             'Version'        => '$Rev$',
