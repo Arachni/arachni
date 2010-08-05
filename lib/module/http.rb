@@ -216,7 +216,7 @@ class HTTP
     #
     # Sets cookies for the HTTP session
     #
-    # @param    [Hash]    name=>value pair cookies
+    # @param    [Hash]  cookie_hash  name=>value pair cookies
     #
     # @return    [void]
     #
@@ -232,7 +232,7 @@ class HTTP
     #
     # Parses netscape HTTP cookie file
     #
-    # @param    [String]    the location of the cookie file
+    # @param    [String]  cookie_jar  the location of the cookie file
     #
     # @return    [Hash]     cookies in name=>value pairs
     #    
@@ -273,7 +273,11 @@ class HTTP
 
     #
     # Converts an Array of Hash<String, String> objects
-    # to a path URL String with variables
+    # to a query URL String with variables
+    #
+    # @param    [Array<Hash>]  arr    
+    # @param    [Bool]    append    create a new url query string or
+    #                                   a string to be appended to the existing url?
     #
     # @return [String]
     #
@@ -293,7 +297,11 @@ class HTTP
         str
     end
     
-    # Creates a new HTTP session
+    #
+    # Creates a new HTTP session<br/>
+    # Actually...since keep-alive is on it will either create a new connection
+    # or refresh an existing one.
+    #
     def refresh( )
         
         # TODO: remove global vars
@@ -311,7 +319,7 @@ class HTTP
     end
     
     #
-    # Wraps the "block" in exception handling code.
+    # Wraps the "block" in exception handling code and runs it.
     #
     # @param    [Block]
     #
