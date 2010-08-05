@@ -96,6 +96,12 @@ class HTTP
     def get( url, url_vars = nil )
         url = parse_url( url )
 
+        #
+        # the exception jail function wraps the block passed to it
+        # in exception handling and runs it
+        #
+        # how cool is Ruby? Seriously....
+        #
         exception_jail {
 
             if( url.query && url.query.size > 0 )
@@ -157,6 +163,7 @@ class HTTP
         
         @init_headers['cookie'] = cookies
 
+        # wrap the code in exception handling
         exception_jail {
             url = parse_url( url )
             
@@ -174,8 +181,18 @@ class HTTP
         }
     end
 
+    #
+    # Gets a url with optional url variables and modified headers
+    #
+    # @param  [URI]  url  URL to get
+    # @param  [Hash<String, String>] headers hash of name=>value pairs
+    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    #
+    # @return [HTTP::Response]
+    #
     def header( url, headers, url_vars = nil)
 
+        # wrap the code in exception handling
         exception_jail {
             url = parse_url( url )
             
