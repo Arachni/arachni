@@ -71,6 +71,12 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # Initializes the module and the parent.
     #
+    # @see Arachni::Module::Base
+    # @see Page
+    #
+    # @param    [Page]    page    you can always expect this to be provided
+    #                               by the system.
+    #
     def initialize( page )
         # unless you want to do something freaky
         # *do not* ommit the following line
@@ -88,6 +94,13 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # It may be redundant but it's optional anyways...
     #
     def prepare( )
+        #
+        # You can use print debug for debugging.
+        # Don't over-do ti though, debugging messages are supposed to
+        # be helpful don't flood the output.
+        #
+        # Debugging output will only appear if "--debug" is enabled.
+        #
         print_debug( 'In SimpleRFI.prepare()' )
 
         #
@@ -115,7 +128,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
 
         #
-        # this hash will keep the audit results to be registered
+        # this array will hold the audit results to be registered
         # with the system, using:
         #
         # register_results( @results )
@@ -237,11 +250,11 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     def __audit_links( )
         #
-        # audit_links() is inherited from Arachni::Module
+        # audit_links() is inherited from Arachni::Module::Base
         #
         # It helps you audit the current link's/url's variables.
         #
-        # Look in Arachni::Module#audit_links for documentation.
+        # Look in Arachni::Module::Base#audit_links for documentation.
         #
         audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
@@ -249,7 +262,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             #
             # create a vulnerability and add it to the results array
             #
-            # the returned hash of audit methods conviniently
+            # the return hash of audit methods conviniently
             # holds part of the hash that is expected by Vulnerability.new()
             #
             # to complete the hash we merge it with the module's
@@ -261,11 +274,11 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     def __audit_forms(  )
         #
-        # audit_forms() is inherited from Arachni::Module
+        # audit_forms() is inherited from Arachni::Module::Base
         #
         # It helps you audit all the form inputs of the current page.
         #
-        # Look in Arachni::Module#audit_forms for documentation.
+        # Look in Arachni::Module::Base#audit_forms for documentation.
         #        
          audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
              |res|
@@ -275,11 +288,11 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     def __audit_cookies( )
         #
-        # audit_cookies() is inherited from Arachni::Module
+        # audit_cookies() is inherited from Arachni::Module::Base
         #
         # It helps you audit the current page's cookies.
         #
-        # Look in Arachni::Module#audit_cookies for documentation.
+        # Look in Arachni::Module::Base#audit_cookies for documentation.
         #
         audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
             |res|
