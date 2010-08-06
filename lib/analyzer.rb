@@ -185,7 +185,24 @@ class Analyzer
         elements = []
 
         begin
-            forms = html.scan( /<form(.*?)<\/form>/ixm )
+            
+            #
+            # This imitates Firefox's behavior when it comes to
+            # broken/unclosed form tags
+            #
+            
+            # get properly closed forms
+            forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
+            
+            # now remove them from html...
+            forms.each {
+                |form|
+                html = html.gsub( form, '' )
+            }
+            
+            # and get unclosed forms.
+            forms |= html.scan( /<form(.*)(?!<\/form>)/ixm ).flatten
+            
         rescue Exception => e
             print_error( "Error: Couldn't get forms from '" + @url +
             "' [" + e.to_s + "]" )
@@ -195,7 +212,6 @@ class Analyzer
         i = 0
         forms.each {
             |form|
-            form = form[0]
 
             elements[i] = Hash.new
             elements[i]['attrs']    = get_form_attrs( form )
