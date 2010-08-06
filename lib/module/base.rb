@@ -343,7 +343,7 @@ class Base
                 if !res.body then next end
             
                 # get matches
-                result = get_matches( Vulnerability::Element::LINK,
+                result = get_matches( Vulnerability::Element::FORM,
                     input['altered'], res, injection_str, id_regex, id )
                 
 #                result = result.merge get_matches( 'forms', input['altered'],
