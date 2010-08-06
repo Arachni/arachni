@@ -93,7 +93,7 @@ class HTTP
     #
     # @return [HTTP::Response]
     #
-    def get( url, url_vars = nil )
+    def get( url, url_vars = nil, redirect = false )
         url = parse_url( url )
 
         #
@@ -112,9 +112,20 @@ class HTTP
                 append = false
             end
             
-            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
-                        
-            return @session.get( full_url, @init_headers )
+            if( redirect )
+                full_url = url.path + query
+            else
+                full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
+            end
+                    
+            res = @session.get( full_url, @init_headers )
+            
+            # handle redirections
+            if( ( redir = redirect?( res ) ).is_a?( String ) )
+                return get( redir, nil, true )
+            else
+                return res
+            end
         }
         
     end
@@ -270,6 +281,13 @@ class HTTP
     end
 
     private
+        
+    def redirect?( res )
+        if res.is_a?( Net::HTTPRedirection )
+            return '/' + res['location']
+        end
+        return res
+    end
 
     #
     # Converts an Array of Hash<String, String> objects
@@ -294,7 +312,9 @@ class HTTP
             |pair|
             str += pair[0].to_s +  '=' + URI.escape( pair[1].to_s ) + '&'
         }
-        str
+        
+        # URI.escape() doesn't escape spaces..don't ask me why...
+        str.gsub( / /, '+' )
     end
     
     #
