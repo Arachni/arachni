@@ -45,6 +45,11 @@ class Analyzer
     include Arachni::UI::Output
 
     #
+    # @return    [String]    the url of the page
+    #
+    attr_accessor :url
+    
+    #
     # Structure of the html elements in Hash format
     # @return [Hash<String, Hash<Array, Hash>>]
     #
@@ -201,7 +206,7 @@ class Analyzer
             }
             
             # and get unclosed forms.
-            forms |= html.scan( /<form(.*)(?!<\/form>)/ixm ).flatten
+            forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
             
         rescue Exception => e
             print_error( "Error: Couldn't get forms from '" + @url +
