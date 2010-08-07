@@ -663,6 +663,14 @@ class Framework
                 return true
             end
             
+            if( mod.info['Elements'].include?( 'cookie' ) )
+                return true
+            end
+        
+            if( mod.info['Elements'].include?( 'header' ) )
+                return true
+            end
+                    
             if( mod.info['Elements'].include?( name.tr( 's', '' ) ) &&
                 value.size != 0 )
                 return true
