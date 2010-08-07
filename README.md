@@ -15,6 +15,14 @@ Synopsis
 {Arachni} is feature-full and modular Ruby framework that allows
 penetration testers and administrators to evaluate the security of web applications.
 
+{Arachni} is smart, it trains itself with every HTTP response it receives
+during the audit process.<br/>
+Unlike other scanners, Arachni takes into account the dynamic
+nature of web applications and can detect changes caused while travelling<br/>
+through each path of a web application's cyclomatic complexity.<br/>
+This way attack/input vectors that would otherwise be undetectable by non-humans
+are seamlessly handled by Arachni.
+ 
 
 The project aims to:
 
