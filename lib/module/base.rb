@@ -324,8 +324,6 @@ class Base
                             @http.post( get_forms()[i]['attrs']['action'],
                                 input['hash'] )
                 else
-                    # the form's server-side handler may not sanitize
-                    # GET input so give it a shot
                     res =
                         @http.get( get_forms()[i]['attrs']['action'],
                             input['hash'] )
@@ -346,9 +344,6 @@ class Base
                 result = get_matches( Vulnerability::Element::FORM,
                     input['altered'], res, injection_str, id_regex, id )
                 
-#                result = result.merge get_matches( 'forms', input['altered'],
-#                                get_res, injection_str, id_regex, id )
-                                                
                 # and append them
                 results << result if result
             }
