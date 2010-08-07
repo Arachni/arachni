@@ -1,4 +1,4 @@
-System.Data.OleDb.OleDbException
+System\.Data\.OleDb\.OleDbException
 \[SQL Server\]
 \[Microsoft\]\[ODBC SQL Server Driver\]
 \[SQLServer JDBC Driver\]
