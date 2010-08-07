@@ -41,6 +41,10 @@ class Base
     # @return [Page]
     #
     attr_reader :page
+    
+    class << self 
+        attr_reader :audited
+    end
 
     #
     # Initializes the module attributes and HTTP client
@@ -51,7 +55,22 @@ class Base
         
         @page = page
         @http = Arachni::Module::HTTP.new( @page.url )
-            
+        
+        #
+        # This is a callback.
+        # The block will be called for every HTTP response
+        # we get during the audit.
+        #
+        # It's used to train Arachni.
+        #
+        @http.add_trainer{ |res, url| train( res, url ) }
+        
+        begin
+            @@audited.is_a?( Array )
+        rescue
+            @@audited = []
+        end
+        
         if( @page.cookiejar )
             @http.set_cookies( @page.cookiejar )
         end
@@ -187,6 +206,12 @@ class Base
         inject_each_var( get_request_headers( true ), injection_str ).each {
             |vars|
 
+            audit_id = "#{self.class.info['Name']}:" +
+                "#{@page.url}:#{Vulnerability::Element::HEADER}:" +
+                "#{vars['altered'].to_s}=#{vars['hash'].to_s}"
+            
+            next if @@audited.include?( audit_id )
+
             # tell the user what we're doing
             print_status( self.class.info['Name']  + 
                 " is auditing:\theader field '" +
@@ -194,6 +219,7 @@ class Base
             
             # audit the url vars
             res = @http.header( @page.url, vars['hash'] )
+            @@audited << audit_id
 
             # something might have gone bad,
             # make sure it doesn't ruin the rest of the show...
@@ -202,7 +228,7 @@ class Base
             # call the passed block
             if block_given?
                 block.call( vars['altered'], res )
-                return
+                next
             end
             
             if !res.body then next end
@@ -243,37 +269,53 @@ class Base
 
         results = []
         
-        # iterate through all url vars and audit each one
-        inject_each_var( @page.query_vars, injection_str ).each {
-            |vars|
+        get_links_simple.each_pair {
+            |url, link_vars|
+            
+            # if we don't have any auditable elements just return
+            if !link_vars then return results end
 
-            # tell the user what we're doing
-            print_status( self.class.info['Name']  + 
-                " is auditing:\tlink var '" +
-                vars['altered'] + "' of " + @page.url )
-            
-            # audit the url vars
-            res = @http.get( @page.url, vars['hash'] )
+#            url = url.gsub( '?' + URI.parse( url ).query, '' )
+            # iterate through all url vars and audit each one
+            inject_each_var( link_vars, injection_str ).each {
+                |vars|
+    
+                audit_id = "#{self.class.info['Name']}:" +
+                    "#{url}:#{Vulnerability::Element::LINK}:" +
+                    "#{vars['altered'].to_s}=#{vars['hash'].to_s}"
+                
+                next if @@audited.include?( audit_id )
 
-            # something might have gone bad,
-            # make sure it doesn't ruin the rest of the show...
-            if !res then next end
-            
-            # call the passed block
-            if block_given?
-                block.call( vars['altered'], res )
-                return
-            end
-            
-            if !res.body then next end
-            
-            # get matches
-            result = get_matches( Vulnerability::Element::LINK,
-                vars['altered'], res, injection_str, id_regex, id )
-                                   
-            # and append them to the results array
-            results << result if result
-        }
+                # tell the user what we're doing
+                print_status( self.class.info['Name']  + 
+                    " is auditing:\tlink var '" +
+                    vars['altered'] + "' of " + url )
+                
+                # audit the url vars
+                res = @http.get( url, vars['hash'] )
+    
+                @@audited << audit_id
+                
+                # something might have gone bad,
+                # make sure it doesn't ruin the rest of the show...
+                if !res then next end
+                
+                # call the passed block
+                if block_given?
+                    block.call( vars['altered'], res )
+                    next
+                end
+                
+                if !res.body then next end
+                
+                # get matches
+                result = get_matches( Vulnerability::Element::LINK,
+                    vars['altered'], res, injection_str, id_regex, id )
+                                       
+                # and append them to the results array
+                results << result if result
+            }
+        }    
 
         results
     end
@@ -313,6 +355,13 @@ class Base
             inject_each_var( form, injection_str ).each {
                 |input|
 
+                audit_id = "#{self.class.info['Name']}:" +
+                    "#{get_forms()[i]['attrs']['action']}:" +
+                    "#{Vulnerability::Element::FORM}:" + 
+                    "#{input['altered'].to_s}=#{input['hash'].to_s}"
+                    
+                next if @@audited.include?( audit_id )
+
                 # inform the user what we're auditing
                 print_status( self.class.info['Name']  + 
                     " is auditing:\tform input '" +
@@ -329,13 +378,15 @@ class Base
                             input['hash'] )
                 end
                 
+                @@audited << audit_id
+                
                 # make sure that we have a response before continuing
                 if !res then next end
                 
                 # call the block, if there's one
                 if block_given?
                     block.call( input['altered'], res )
-                    return
+                    next
                 end
 
                 if !res.body then next end
@@ -380,6 +431,12 @@ class Base
         inject_each_var( get_cookies_simple, injection_str ).each {
             |cookie|
 
+            audit_id = "#{self.class.info['Name']}:" +
+                "#{@page.url}:#{Vulnerability::Element::COOKIE}:" +
+                "#{cookie['altered'].to_s}=#{cookie['hash'].to_s}"
+            
+            next if @@audited.include?( audit_id )
+
             # tell the user what we're auditing
             print_status( self.class.info['Name']  + 
                 " is auditing:\tcookie '" +
@@ -387,13 +444,15 @@ class Base
 
             # make a get request with our cookies
             res = @http.cookie( @page.url, cookie['hash'], nil )
+                
+            @@audited << audit_id
 
             # check for a response
             if !res then next end
             
             if block_given?
                 block.call( cookie['altered'], res )
-                return
+                next
             end
             
             if !res.body then next end
@@ -625,7 +684,11 @@ class Base
         hash.keys.each {
             |k|
             
-            if( !hash[k] ) then hash[k] = '' end
+            hash.keys.each{
+                |key|
+                hash[key] = 'test@domain.com' if !hash[key] || hash[key].empty?
+            }
+            
             
             var_combo << { 
                 'altered' => k,
@@ -643,14 +706,74 @@ class Base
 #            
 #            filled = { 
 #                'altered' => '__all',
-#                'hash'    => filled['hash'].merge( { k => to_inj } )
+#                'hash'    => filled['hash'].merge( { k => 'test@domain.com' } )
 #            }
 #        }
         
         var_combo
     end
 
+    
+    #
+    # *DO NOT* override the following methods
+    #
+    private
+    
+    #
+    # This is used to train Arachni.
+    #
+    # It will be called to analyze every HTTP response during the audit,<br/>
+    # detect any changes our input may have caused to the web app<br/>
+    # and make the module aware of new attack vectors that may present themselves.
+    #
+    # @param    [Net::HTTPResponse]  res    the HTTP response
+    # @param    [String]    url     provide a new url in case our request
+    #                                 caused a redirection
+    #
+    def train( res, url = nil )
+        
+        # TODO: remove global vars
+        analyzer = Analyzer.new( $runtime_args )
+        
+        analyzer.url = @page.url.clone
+        
+        if( url )
+            analyzer.url = URI( @page.url ).merge( URI( URI.escape( url ) ) ).to_s
+        end
+        
+        links   = analyzer.get_links( res.body ).uniq
+        forms   = analyzer.get_forms( res.body ).uniq
+        cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).uniq
+        
+        rerun = false
+        if( links.length > @page.elements['links'].length ||
+            forms.length > @page.elements['forms'].length ||
+            cookies.length > @page.elements['cookies'].length
+          )
+            rerun = true
+            print_info( "Arachni has been trained for: #{analyzer.url}" )
+            print_info( "Re-runing #{self.class.info['Name']}." )
+        end
 
+        if( url )
+            links.push( {
+                'href' => analyzer.url,
+                'vars' => analyzer.get_link_vars( analyzer.url ) 
+            } )
+        end
+        
+        @page.elements['links']   |= links
+        @page.elements['forms']   |= forms
+        @page.elements['cookies'] |= cookies
+
+        if( rerun )
+#            ap @page.elements['links']
+#            ap links
+            run( )
+        end
+        
+    end
+    
 end
 end
 end

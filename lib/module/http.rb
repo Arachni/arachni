@@ -70,7 +70,7 @@ class HTTP
     # @return [Net::HTTP]
     #
     def initialize( url, opts = {} )
-        @url = parse_url( url)
+        @url = parse_url( url )
 
         @opts = Hash.new
 
@@ -78,6 +78,8 @@ class HTTP
 
         # create a new HTTP session
         refresh( )
+        
+        @trainers = []
         
         @init_headers = Hash.new
         # TODO: remove global vars
@@ -117,15 +119,18 @@ class HTTP
             else
                 full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             end
-                    
+             
             res = @session.get( full_url, @init_headers )
             
             # handle redirections
             if( ( redir = redirect?( res ) ).is_a?( String ) )
-                return get( redir, nil, true )
+                res = get( redir, nil, true )
+                train( res, redir )
             else
-                return res
+                train( res )
             end
+            
+            return res
         }
         
     end
@@ -144,7 +149,17 @@ class HTTP
         req.set_form_data( form_vars )
 
         exception_jail {
-            return @session.request( req )
+            res = @session.request( req )
+            
+            # handle redirections
+            if( ( redir = redirect?( res ) ).is_a?( String ) )
+                res =  get( redir, nil, true )
+                train( res, redir )
+            else
+                train( res )
+            end
+
+            return res
         }
     end
 
@@ -188,7 +203,9 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
-            return @session.get( full_url, @init_headers )
+            res = @session.get( full_url, @init_headers )
+            train( res )
+            return res
         }
     end
 
@@ -218,7 +235,9 @@ class HTTP
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
             @init_headers = @init_headers.merge( headers )
-            return @session.get( full_url, @init_headers )
+            res = @session.get( full_url, @init_headers )
+            train( res )
+            return res
         }
 
     end
@@ -280,11 +299,26 @@ class HTTP
         URI.parse( URI.encode( url ) )
     end
 
+    #
+    # Blocks passed to this method will be passed each HTTP response<br/>
+    # and in cases of redirection the new location as well.
+    #
+    def add_trainer( &block )
+        @trainers << block
+    end
+    
     private
-        
+    
+    #
+    #
+    #
+    def train( res, url = nil )
+        @trainers.each{ |trainer| trainer.call( res, url ) } 
+    end
+    
     def redirect?( res )
         if res.is_a?( Net::HTTPRedirection )
-            return '/' + res['location']
+            return res['location']
         end
         return res
     end
