@@ -166,7 +166,7 @@ class Analyzer
                 '/xml;q=0.9,*/*;q=0.8',
             'accept-charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'accept-language' => 'en-gb,en;q=0.5',
-            'accept-encoding' => 'gzip,deflate',
+            'accept-encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'from'       => @opts[:authed_by],
             'user-agent' => @opts[:user_agent],
             'referer'    => @url,
