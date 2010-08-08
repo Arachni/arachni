@@ -74,6 +74,10 @@ class Framework
     # @param    [Hash]    system opts
     #
     def initialize( opts )
+        
+        Encoding.default_external = "BINARY"
+        Encoding.default_internal = "BINARY"
+        
         @opts = Hash.new
         
         @opts = @opts.merge( opts )
@@ -699,8 +703,15 @@ class Framework
                         '-' + Time.now.to_s
             end
             
-            new_rep = report.new( deep_clone( audit_store ), @opts[:repopts],
-                @opts[:repsave] + REPORT_EXT )
+            
+            new_rep = report.new( audit_store.clone, @opts[:repopts],
+                            @opts[:repsave] + REPORT_EXT )
+            
+             # TODO:
+             # I'd prefer to use deep_clone() but yaml gives encoding errors
+             # from time to time.
+#            new_rep = report.new( deep_clone( audit_store ), @opts[:repopts],
+#                @opts[:repsave] + REPORT_EXT )
             
             new_rep.run( )
         }
