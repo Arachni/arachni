@@ -162,12 +162,15 @@ class Analyzer
     #
     def get_headers( )
         return {
-            'Accept-Charset' => '',
-            'Accept-Language' => '',
-            'Date' => '',
-            'From' => '',
-            'Referer' => '',
-            'User-Agent' => ''
+            'accept'          => 'text/html,application/xhtml+xml,application' +
+                '/xml;q=0.9,*/*;q=0.8',
+            'accept-charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+            'accept-language' => 'en-gb,en;q=0.5',
+            'accept-encoding' => 'gzip,deflate',
+            'from'       => @opts[:authed_by],
+            'user-agent' => @opts[:user_agent],
+            'referer'    => @url,
+            'pragma'     => 'no-cache'
         }
     end
     
