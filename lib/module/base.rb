@@ -750,10 +750,9 @@ class Base
                 merge( URI( URI.escape( url ) ) ).to_s
         end
         
-        links   = analyzer.get_links( res.body ).uniq.clone
-        forms   = analyzer.get_forms( res.body ).uniq.clone
-        cookies = analyzer.get_cookies( res.
-            to_hash['set-cookie'].to_s ).uniq.clone
+        links   = analyzer.get_links( res.body ).clone
+        forms   = analyzer.get_forms( res.body ).clone
+        cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).clone
         
         if( url )
             links.push( {
@@ -768,16 +767,10 @@ class Base
         @page.elements['cookies'] = train_cookies( cookies )
         new_count = train_elem_count( )
             
-#        rerun = false
         if( new_count > old_count)
-#            rerun = true
             print_info( "Arachni has been trained for: #{analyzer.url}" )
-#            print_info( "Re-runing #{self.class.info['Name']}." )
         end
 
-        
-#        run( ) if( rerun )
-        
     end
 
     def train_forms( forms )
@@ -809,7 +802,7 @@ class Base
             citem.delete( 'value' )
             id +=  citem.to_s
         }
-        return id.clone
+        return id
     end
     
     def train_links( links )
