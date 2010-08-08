@@ -174,17 +174,18 @@ class HTTP
     #
     def cookie( url, cookie_vars, url_vars = nil)
 
-        cookies = ''
+        orig_cookiejar = @init_headers['cookie'].clone 
         
-        cookie_vars.each_pair {
+        cookies = ''
+        parse_cookie_str( orig_cookiejar ).merge( cookie_vars ).each_pair {
             |name, value|
 
             # TODO: remove global var
             # don't audit cookies in the cookie jar                
-            if( !$runtime_args[:audit_cookie_jar] &&
-                @cookie_jar && @cookie_jar[name] ) then next end
+#            if( !$runtime_args[:audit_cookie_jar] &&
+#                @cookie_jar && @cookie_jar[name] ) then next end
             
-            cookies +=  "#{name}=#{value}; "
+            cookies +=  "#{name}=#{value};"
         }
         
         @init_headers['cookie'] = cookies
@@ -204,6 +205,7 @@ class HTTP
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
             res = @session.get( full_url, @init_headers )
+            @init_headers['cookie'] = orig_cookiejar.clone
             train( res )
             return res
         }
@@ -260,6 +262,15 @@ class HTTP
             |name, value|
             @init_headers['cookie'] += "#{name}=#{value};" 
         }
+    end
+    
+    def parse_cookie_str( str )
+        cookie_jar = Hash.new
+        str.split( ';' ).each {
+            |kvp|
+            cookie_jar[kvp.split( "=" )[0]] = kvp.split( "=" )[1] 
+        }
+        return cookie_jar
     end
     
     #

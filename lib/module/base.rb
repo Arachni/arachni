@@ -546,8 +546,7 @@ class Base
     # @return    [Array]    the cookie attributes, values, etc
     #
     def get_cookies
-#        @page.get_cookies( )
-        []
+        @page.get_cookies( )
     end
 
     #
@@ -564,7 +563,13 @@ class Base
             |cookie|
             cookies[cookie['name']] = cookie['value']
         }
-        cookies
+        
+        # TODO: remove global vars
+        if( $runtime_args[:audit_cookie_jar] )
+            return @page.cookiejar.merge( cookies )
+        else
+            return cookies
+        end
     end
     
     def get_matches( where, var, res, injection_str, id_regex, id )
@@ -826,9 +831,9 @@ class Base
             
             @page.elements['cookies'].each_with_index {
                 |page_cookie, i|
-                
+
                 if( page_cookie['name'] == cookie['name'] )
-                    page_cookie = cookie
+                    @page.elements['cookies'][i] = cookie
                 else
                     new_cookies << cookie
                 end
@@ -836,16 +841,14 @@ class Base
                 
         }
         
-        @page.cookiejar = {} if !@page.cookiejar
-        get_cookies_simple( new_cookies ).each_pair {
-            |k, v|
-            @page.cookiejar[k] = v
-        }
+        @page.elements['cookies'] |= new_cookies
         
-        @http.set_cookies( @page.cookiejar )
+        cookie_jar    = @http.parse_cookie_str( @http.init_headers['cookie'] )
+        cookie_jar = cookie_jar.merge( get_cookies_simple( new_cookies ) )
+        @http.set_cookies( cookie_jar )
 
         
-        return @page.elements['cookies'] | new_cookies
+        return @page.elements['cookies']
     end
 
     def train_elem_count
