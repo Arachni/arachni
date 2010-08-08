@@ -234,8 +234,12 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
+            ap headers       = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
+            
             res = @session.get( full_url, @init_headers )
+            
+            @init_headers = headers.clone
             train( res )
             return res
         }
@@ -251,6 +255,7 @@ class HTTP
     # @return    [void]
     #
     def set_cookies( cookie_hash )
+        @init_headers['cookie'] = ''
         @cookie_jar = cookie_hash.each_pair {
             |name, value|
             @init_headers['cookie'] += "#{name}=#{value};" 

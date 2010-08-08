@@ -820,11 +820,6 @@ class Base
 
     def train_cookies( cookies )
         
-        @page.cookiejar = {} if !@page.cookiejar
-        @http.set_cookies(
-            @page.cookiejar.merge( get_cookies_simple( cookies ) )
-        )
-
         new_cookies = []
         cookies.each_with_index {
             |cookie|
@@ -840,6 +835,16 @@ class Base
             }
                 
         }
+        
+        @page.cookiejar = {} if !@page.cookiejar
+        get_cookies_simple( new_cookies ).each_pair {
+            |k, v|
+            @page.cookiejar[k] = v
+        }
+        
+        @http.set_cookies( @page.cookiejar )
+
+        
         return @page.elements['cookies'] | new_cookies
     end
 
