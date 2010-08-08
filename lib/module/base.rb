@@ -840,10 +840,15 @@ class Base
             }
                 
         }
-        
+
         @page.elements['cookies'] |= new_cookies
+            
+        if( @page.elements['cookies'].length == 0 )
+            @page.elements['cookies'] = new_cookies = cookies
+        end
         
-        cookie_jar    = @http.parse_cookie_str( @http.init_headers['cookie'] )
+        
+        cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
         cookie_jar = cookie_jar.merge( get_cookies_simple( new_cookies ) )
         @http.set_cookies( cookie_jar )
 
