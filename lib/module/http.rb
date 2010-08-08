@@ -234,7 +234,7 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
-            ap headers       = @init_headers.clone
+            headers       = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
             
             res = @session.get( full_url, @init_headers )
