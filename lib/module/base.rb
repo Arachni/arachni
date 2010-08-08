@@ -546,7 +546,8 @@ class Base
     # @return    [Array]    the cookie attributes, values, etc
     #
     def get_cookies
-        @page.get_cookies( )
+#        @page.get_cookies( )
+        []
     end
 
     #
@@ -554,9 +555,12 @@ class Base
     #
     # @return    [Hash]    the cookie attributes, values, etc
     #
-    def get_cookies_simple
+    def get_cookies_simple( incookies = nil )
         cookies = Hash.new( )
-        get_cookies( ).each {
+        
+        incookies = get_cookies( ) if !incookies
+        
+        incookies.each {
             |cookie|
             cookies[cookie['name']] = cookie['value']
         }
@@ -678,9 +682,22 @@ class Base
     def inject_each_var( hash, to_inj )
         
         var_combo = []
-        
         if( !hash || hash.size == 0 ) then return [] end
+        
+        # this is the original hash, in case the default values
+        # are valid and present us with new attack vectors
+        as_is = Hash.new( )
+        as_is['altered'] = '__orig'
+        as_is['hash']    = hash.clone
             
+        as_is['hash'].keys.each {
+            |k|
+            if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
+        }
+        var_combo << as_is
+        
+        # these are audit inputs, if a value is empty or null
+        # we put a sample e-mail address in its place
         hash.keys.each {
             |k|
             
@@ -695,21 +712,7 @@ class Base
                 'hash'    => hash.merge( { k => to_inj } )
             }
         }
-        
-#        filled = Hash.new
-#        filled['hash'] = hash
-#            
-#        filled['hash'].keys.each {
-#            |k|
-#            
-#            if( !filled[k] ) then filled[k] = '' end
-#            
-#            filled = { 
-#                'altered' => '__all',
-#                'hash'    => filled['hash'].merge( { k => 'test@domain.com' } )
-#            }
-#        }
-        
+#         ap var_combo
         var_combo
     end
 
@@ -738,42 +741,114 @@ class Base
         analyzer.url = @page.url.clone
         
         if( url )
-            analyzer.url = URI( @page.url ).merge( URI( URI.escape( url ) ) ).to_s
+            analyzer.url = URI( @page.url ).
+                merge( URI( URI.escape( url ) ) ).to_s
         end
         
-        links   = analyzer.get_links( res.body ).uniq
-        forms   = analyzer.get_forms( res.body ).uniq
-        cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).uniq
+        links   = analyzer.get_links( res.body ).uniq.clone
+        forms   = analyzer.get_forms( res.body ).uniq.clone
+        cookies = analyzer.get_cookies( res.
+            to_hash['set-cookie'].to_s ).uniq.clone
         
-        rerun = false
-        if( links.length > @page.elements['links'].length ||
-            forms.length > @page.elements['forms'].length ||
-            cookies.length > @page.elements['cookies'].length
-          )
-            rerun = true
-            print_info( "Arachni has been trained for: #{analyzer.url}" )
-            print_info( "Re-runing #{self.class.info['Name']}." )
-        end
-
         if( url )
             links.push( {
                 'href' => analyzer.url,
                 'vars' => analyzer.get_link_vars( analyzer.url ) 
             } )
         end
-        
-        @page.elements['links']   |= links
-        @page.elements['forms']   |= forms
-        @page.elements['cookies'] |= cookies
 
-        if( rerun )
-#            ap @page.elements['links']
-#            ap links
-            run( )
+        old_count = train_elem_count( )
+        @page.elements['links']   = train_links( links )
+        @page.elements['forms']   = train_forms( forms )
+        @page.elements['cookies'] = train_cookies( cookies )
+        new_count = train_elem_count( )
+            
+#        rerun = false
+        if( new_count > old_count)
+#            rerun = true
+            print_info( "Arachni has been trained for: #{analyzer.url}" )
+#            print_info( "Re-runing #{self.class.info['Name']}." )
         end
+
+        
+#        run( ) if( rerun )
         
     end
+
+    def train_forms( forms )
+        
+        new_forms = []
+        forms.each {
+            |form|
+            
+            @page.elements['forms'].each_with_index {
+                |page_form, i|
+                
+                if( form_id( form ) == form_id( page_form ) )
+                    page_form = form
+                else
+                    new_forms << form
+                end
+            }
+ 
+        }
+
+        return @page.elements['forms'] | new_forms 
+    end
     
+    def form_id( form )
+        id  = form['attrs'].to_s
+        form['auditable'].map {
+            |item|
+            citem = item.clone
+            citem.delete( 'value' )
+            id +=  citem.to_s
+        }
+        return id.clone
+    end
+    
+    def train_links( links )
+        links.each {
+            |link|
+            if !@page.elements['links'].include?( link )
+                @page.elements['links'] << link
+            end
+        }
+        
+        return @page.elements['links']
+    end
+
+    def train_cookies( cookies )
+        
+        @page.cookiejar = {} if !@page.cookiejar
+        @http.set_cookies(
+            @page.cookiejar.merge( get_cookies_simple( cookies ) )
+        )
+
+        new_cookies = []
+        cookies.each_with_index {
+            |cookie|
+            
+            @page.elements['cookies'].each_with_index {
+                |page_cookie, i|
+                
+                if( page_cookie['name'] == cookie['name'] )
+                    page_cookie = cookie
+                else
+                    new_cookies << cookie
+                end
+            }
+                
+        }
+        return @page.elements['cookies'] | new_cookies
+    end
+
+    def train_elem_count
+        return @page.elements['links'].clone.length +
+            @page.elements['forms'].clone.length +
+            @page.elements['cookies'].clone.length
+    end
+        
 end
 end
 end
