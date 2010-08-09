@@ -51,146 +51,141 @@ opts = GetoptLong.new(
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ]
 )
 
-# TODO: remove global vars
-$runtime_args = {};
-$runtime_args['dir']         = Hash.new
-    
-$runtime_args['dir']['pwd']  =
-    File.dirname( File.expand_path(__FILE__) ) + '/'
-        
-$runtime_args['dir']['modules'] = $runtime_args['dir']['pwd'] + 'modules/'
-$runtime_args['dir']['reports'] = $runtime_args['dir']['pwd'] + 'reports/'
-$runtime_args['dir']['lib']  = $runtime_args['dir']['pwd'] + 'lib/'
+$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) ) 
 
-$runtime_args[:exclude]   = []
-$runtime_args[:include]   = []
-$runtime_args[:redundant] = []
-$runtime_args[:reports]   = []
-$runtime_args[:repopts]   = Hash.new
-    
-opts.each do |opt, arg|
+require 'lib/options'
+options = Arachni::Options.instance
+
+options.dir            = Hash.new
+options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['modules'] = options.dir['pwd'] + 'modules/'
+options.dir['reports'] = options.dir['pwd'] + 'reports/'
+options.dir['lib']     = options.dir['pwd'] + 'lib/'
+
+opts.each {
+    |opt, arg|
 
     case opt
 
         when '--help'
-            $runtime_args[:help] = true
+            options.help = true
 
         when '--only-positives'
-            $runtime_args[:only_positives] = true
+            options.only_positives = true
                 
         when '--resume'
-            $runtime_args[:resume] = true
+            options.resume = true
 
         when '--verbosity'
-            $runtime_args[:arachni_verbose] = true
+            options.arachni_verbose = true
 
         when '--debug'
-            $runtime_args[:debug] = true
+            options.debug = true
                         
         when '--redundant'
-            $runtime_args[:redundant] << {
+            options.redundant << {
                 'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
                 'count'   => Integer( arg.to_s.split( /:/ )[1] ),
             }
 
         when '--obey_robots_txt'
-            $runtime_args[:obey_robots_txt] = true
+            options.obey_robots_txt = true
 
         when '--depth'
-            $runtime_args[:depth_limit] = arg.to_i
+            options.depth_limit = arg.to_i
 
         when '--link-count'
-            $runtime_args[:link_count_limit] = arg.to_i
+            options.link_count_limit = arg.to_i
 
         when '--redirect-limit'
-            $runtime_args[:redirect_limit] = arg.to_i
+            options.redirect_limit = arg.to_i
 
         when '--lsmod'
-            $runtime_args[:lsmod] = true
+            options.lsmod = true
     
         when '--lsrep'
-            $runtime_args[:lsrep] = true
+            options.lsrep = true
                 
         when '--threads'
-            $runtime_args[:threads] = arg.to_i
+            options.threads = arg.to_i
 
         when '--audit-links'
-            $runtime_args[:audit_links] = true
+            options.audit_links = true
 
         when '--audit-forms'
-            $runtime_args[:audit_forms] = true
+            options.audit_forms = true
 
         when '--audit-cookies'
-            $runtime_args[:audit_cookies] = true
+            options.audit_cookies = true
 
         when '--audit-cookie-jar'
-            $runtime_args[:audit_cookie_jar] = true
+            options.audit_cookie_jar = true
 
         when '--audit-headers'
-            $runtime_args[:audit_headers] = true
+            options.audit_headers = true
 
         when '--mods'
-            $runtime_args[:mods] = arg.to_s.split( /,/ )
+            options.mods = arg.to_s.split( /,/ )
 
         when '--report'
-            $runtime_args[:reports] << arg
+            options.reports << arg
         
         when '--repload'
-            $runtime_args[:repload] = arg
+            options.repload = arg
         
         when '--repsave'
-            $runtime_args[:repsave] = arg
+            options.repsave = arg
 
         when '--repopts'
             arg.split( /,/ ).each {
                 |opt|
                 
                 name, value = opt.split( /:/ )
-                $runtime_args[:repopts][name] = value
+                options.repopts[name] = value
             }
                 
         when '--save-profile'
-            $runtime_args[:save_profile] = arg
+            options.save_profile = arg
 
         when '--load-profile'
-            $runtime_args[:load_profile] = arg
+            options.load_profile = arg
                         
         when '--authed-by'
-            $runtime_args[:authed_by] = arg
+            options.authed_by = arg
                         
         when '--proxy'
-            $runtime_args[:proxy_addr], $runtime_args[:proxy_port] =
+            options.proxy_addr, options.proxy_port =
                 arg.to_s.split( /:/ )
 
         when '--proxy-auth'
-            $runtime_args[:proxy_user], $runtime_args[:proxy_pass] =
+            options.proxy_user, options.proxy_pass =
                 arg.to_s.split( /:/ )
 
         when '--proxy-type'
-            $runtime_args[:proxy_type] = arg.to_s
+            options.proxy_type = arg.to_s
 
         when '--cookie-jar'
-            $runtime_args[:cookie_jar] = arg.to_s
+            options.cookie_jar = arg.to_s
 
         when '--user-agent'
-            $runtime_args[:user_agent] = arg.to_s
+            options.user_agent = arg.to_s
 
         when '--exclude'
-            $runtime_args[:exclude] << Regexp.new( arg )
+            options.exclude << Regexp.new( arg )
 
         when '--include'
-            $runtime_args[:include] << Regexp.new( arg )
+            options.include << Regexp.new( arg )
 
         when '--follow-subdomains'
-            $runtime_args[:follow_subdomains] = true
+            options.follow_subdomains = true
 
         when '--mods-run-last'
-            $runtime_args[:mods_run_last] = true
+            options.mods_run_last = true
 
     end
-end
+}
 
-$runtime_args[:url] = ARGV.shift
+options.url = ARGV.shift
 
 #
 # If proxy type is socks include socksify
@@ -199,12 +194,12 @@ $runtime_args[:url] = ARGV.shift
 # Then nil out the proxy opts or else they're going to be
 # passed as an http proxy to Anemone::HTTP.refresh_connection()
 #
-if $runtime_args[:proxy_type] == 'socks'
+if options.proxy_type == 'socks'
     require 'socksify'
 
-    TCPSocket.socks_server = $runtime_args[:proxy_addr]
-    TCPSocket.socks_port = $runtime_args[:proxy_port]
+    TCPSocket.socks_server = options.proxy_addr
+    TCPSocket.socks_port = options.proxy_port
 
-    $runtime_args[:proxy_addr] = nil
-    $runtime_args[:proxy_port] = nil
+    options.proxy_addr = nil
+    options.proxy_port = nil
 end

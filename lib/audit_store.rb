@@ -152,7 +152,7 @@ class AuditStore
     # @return    [Hash]
     #
     def prepare_options( options )
-        options[:url]    = options[:url].to_s
+        options['url']    = options['url'].to_s
         
         new_options = Hash.new
         options.each_pair {
@@ -162,7 +162,7 @@ class AuditStore
                         
             case key
             
-            when :redundant
+            when 'redundant'
                 new_options[key.to_s] = []
                 val.each {
                     |red|
@@ -172,7 +172,7 @@ class AuditStore
                     }
                 }
                                 
-            when :exclude, :include
+            when 'exclude', 'include'
                 new_options[key.to_s] = []
                 val.each {
                     |regexp|
@@ -187,7 +187,7 @@ class AuditStore
     end
     
     #
-    # Parses the vulnerabilities in 'vulns' and aggregates them
+    # Parses the vulnerabilities in "vulns" and aggregates them
     # creating variations of the same attacks.
     #
     # @see Vulnerability#variations

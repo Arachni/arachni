@@ -80,7 +80,9 @@ class Analyzer
     attr_reader :headers
 
     #
-    # Hash of options passed to initialize( opts ).
+    # Options instance
+    #
+    # @return    [Options]
     #
     attr_reader :opts
 
@@ -88,7 +90,7 @@ class Analyzer
     # Constructor <br/>
     # Instantiates Analyzer class with user options.
     #
-    # @param  [{String => Symbol}] opts  hash with option => value pairs
+    # @param  [Options] opts
     #
     def initialize( opts )
         @url = ''
@@ -118,29 +120,29 @@ class Analyzer
         msg = "["
 
         elem_count = 0
-        if @opts[:audit_forms]
-            @structure['forms'] = @forms = get_forms( html )
+        if @opts.audit_forms
+            @structure['forms'] = get_forms( html )
             elem_count += form_count = @structure['forms'].length
             msg += "Forms: #{form_count}\t"
         end
 
-        if @opts[:audit_links]
-            @structure['links'] = @links = get_links( html )
+        if @opts.audit_links
+            @structure['links'] = get_links( html )
             elem_count += link_count = @structure['links'].length
             msg += "Links: #{link_count}\t"
         end
 
-        if @opts[:audit_cookies]
-            @cookies << get_cookies( headers['set-cookie'].to_s )
-            @cookies.flatten!.uniq!
-            @structure['cookies'] = @cookies 
+        if @opts.audit_cookies
+            cookies << get_cookies( headers['set-cookie'].to_s )
+            cookies.flatten!.uniq!
+            @structure['cookies'] = cookies 
                 
             elem_count += cookie_count =  @structure['cookies'].length
             msg += "Cookies: #{cookie_count}\t"
         end
 
-        if @opts[:audit_headers]
-            @structure['headers'] = @headers = get_headers( )
+        if @opts.audit_headers
+            @structure['headers'] = get_headers( )
             elem_count += header_count = @structure['headers'].length
             msg += "Headers: #{header_count}"
         end
@@ -167,8 +169,8 @@ class Analyzer
             'accept-charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'accept-language' => 'en-gb,en;q=0.5',
             'accept-encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'from'       => @opts[:authed_by],
-            'user-agent' => @opts[:user_agent],
+            'from'       => @opts.authed_by,
+            'user-agent' => @opts.user_agent,
             'referer'    => @url,
             'pragma'     => 'no-cache'
         }
@@ -591,8 +593,8 @@ class Analyzer
     # +false+ otherwise
     #
     def in_domain?( uri )
-        if @opts[:follow_subdomains]
-            return extract_domain( uri ) ==  extract_domain( @opts[:url] )
+        if( @opts.follow_subdomains )
+            return extract_domain( uri ) ==  extract_domain( @url )
         end
     
         uri.host == URI.parse( @url ).host

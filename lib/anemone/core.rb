@@ -38,12 +38,12 @@ class Core
 
         url = link.to_s
         skip = false
-        @opts[:redundant].each_with_index {
+        @opts['redundant'].each_with_index {
             |redundant, i|
 
             if( url =~ redundant['regexp'] )
 
-                if( @opts[:redundant][i]['count'] == 0 )
+                if( @opts['redundant'][i]['count'] == 0 )
                     print_verbose( 'Discarding redundant page: \'' + url + '\'' )
                     return true
                 end
@@ -53,9 +53,9 @@ class Core
                 url + '\'' )
 
                 print_info( 'Count-down: ' +
-                @opts[:redundant][i]['count'].to_s )
+                @opts['redundant'][i]['count'].to_s )
 
-                @opts[:redundant][i]['count'] -= 1
+                @opts['redundant'][i]['count'] -= 1
             end
         }
 

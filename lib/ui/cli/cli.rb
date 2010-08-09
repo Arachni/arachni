@@ -10,10 +10,11 @@
 
 =end
 
-require $runtime_args['dir']['lib'] + 'framework'
     
 module Arachni
 
+require Options.instance.dir['lib'] + 'framework'
+        
 module UI
 
 #
@@ -34,7 +35,7 @@ class CLI
     #
     # Instance options
     #
-    # @return    [Hash]
+    # @return    [Options]
     #
     attr_reader :opts
 
@@ -51,7 +52,7 @@ class CLI
     #
     # Initializes the command line interface and the framework
     #
-    # @param    [Hash]    options
+    # @param    [Options]    opts
     #
     def initialize( opts )
         
@@ -59,8 +60,8 @@ class CLI
         
         # if we have a load profile load it and merge it with the
         # user supplied options
-        if( @opts[:load_profile] )
-            load_profile( @opts[:load_profile] )
+        if( @opts.load_profile )
+            load_profile( @opts.load_profile )
         end
                 
         #
@@ -73,16 +74,9 @@ class CLI
         # *do not* forget this check, otherwise the reports registry
         # will desync
         #
-        if( @opts[:reports].size == 0 &&!@opts[:lsrep] )
-            @opts[:reports] << 'stdout'
+        if( @opts.reports.size == 0 && !@opts.lsrep )
+            @opts.reports << 'stdout'
         end
-        
-        # when this is true the user didn't ask us to convert an existing
-        # report but create a new one, so add the marshal_dump report
-        # to the reports list
-#        if( @opts[:repsave] && !@opts[:repload] )
-#            @opts[:reports] << 'marshal_dump'
-#        end
         
         # instantiate the big-boy!
         @arachni = Arachni::Framework.new( @opts  )
@@ -157,7 +151,7 @@ class CLI
     #
     def parse_opts(  )
 
-        @opts.each {
+        @opts.to_h.each {
             |opt, arg|
 
             case opt.to_s
@@ -218,7 +212,7 @@ class CLI
                     end                    
                                         
 #                when 'delay'
-#                    @opts[:delay] = Float.new( @opts[:delay] ) 
+#                    @opts.delay = Float.new( arg ) 
 
             end
         }
@@ -325,11 +319,8 @@ class CLI
     def load_profile( filename )
         begin
             
-            @opts.delete( :load_profile )
-            
-            # TODO remove global vars
-            $runtime_args = @opts =
-                @opts.merge( YAML::load( IO.read( filename ) ) )
+            @opts.load_profile = nil
+            @opts.merge!( YAML::load( IO.read( filename ) ) )
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
@@ -347,10 +338,10 @@ class CLI
     def save_profile( filename )
         profile = @opts
         
-        profile.delete( 'dir' )
-        profile.delete( :load_profile )
-        profile.delete( :save_profile )
-        profile.delete( :authed_by )
+        profile.dir          = nil
+        profile.load_profile = nil
+        profile.save_profile = nil
+        profile.authed_by    = nil
         
         begin
             f = File.open( filename + PROFILE_EXT, 'w' )

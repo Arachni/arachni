@@ -564,8 +564,7 @@ class Base
             cookies[cookie['name']] = cookie['value']
         }
         
-        # TODO: remove global vars
-        if( $runtime_args[:audit_cookie_jar] )
+        if( Options.instance.audit_cookie_jar )
             return @page.cookiejar.merge( cookies )
         else
             return cookies
@@ -740,8 +739,7 @@ class Base
     #
     def train( res, url = nil )
         
-        # TODO: remove global vars
-        analyzer = Analyzer.new( $runtime_args )
+        analyzer = Analyzer.new( Options.instance )
         
         analyzer.url = @page.url.clone
         

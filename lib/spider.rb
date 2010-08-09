@@ -10,15 +10,11 @@
 
 =end
 
-require 'rubygems'
-require 'anemone'
-require 'nokogiri'
-
-$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) ) 
-require 'lib/anemone/core.rb'
-require 'lib/anemone/http.rb'
-require 'lib/anemone/page.rb'
-require 'lib/net/http.rb'
+opts = Arachni::Options.instance
+require opts.dir['lib'] + 'anemone/core.rb'
+require opts.dir['lib'] + 'anemone/http.rb'
+require opts.dir['lib'] + 'anemone/page.rb'
+require opts.dir['lib'] + 'net/http.rb'
 require 'ap'
 require 'pp'
 
@@ -39,24 +35,8 @@ class Spider
     include Arachni::UI::Output
 
     #
-    # Hash of options passed to initialize( user_opts ).
     #
-    # Default:
-    #  opts = {
-    #        :threads              =>  3,
-    #        :discard_page_bodies  =>  false,
-    #        :user_agent           =>  "Arachni/0.1",
-    #        :delay                =>  0,
-    #        :obey_robots_txt      =>  false,
-    #        :depth_limit          =>  false,
-    #        :link_depth_limit     =>  false,
-    #        :redirect_limit       =>  5,
-    #        :storage              =>  nil,
-    #        :cookies              =>  nil,
-    #        :accept_cookies       =>  true
-    #  }
-    #
-    # @return [Hash]
+    # @return [Options]
     #
     attr_reader :opts
 
@@ -78,11 +58,11 @@ class Spider
     # Constructor <br/>
     # Instantiates Spider class with user options.
     #
-    # @param  [{String => Symbol}] opts  hash with option => value pairs
+    # @param  [Options] opts
     #
     def initialize( opts )
-
-        @opts = {
+        @opts = opts
+        @anemone_opts = {
             :threads              =>  3,
             :discard_page_bodies  =>  false,
             :delay                =>  0,
@@ -97,15 +77,15 @@ class Spider
             :proxy_port           =>  nil,
             :proxy_user           =>  nil,
             :proxy_pass           =>  nil
-        }.merge opts
+        }.merge( opts.to_h )
 
         @sitemap = []
         @on_every_page_blocks = []
 
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
-        @opts[:include] =
-            @opts[:include].empty? ? [ Regexp.new( '.*' ) ] : @opts[:include]
+        @opts.include =
+            @opts.include.empty? ? [ Regexp.new( '.*' ) ] : @opts.include
     end
 
     #
@@ -120,15 +100,15 @@ class Spider
 
         i = 1
         # start the crawl
-        Anemone.crawl( @opts[:url], @opts ) {
+        Anemone.crawl( @opts.url, @anemone_opts ) {
             |anemone|
             
             # apply 'exclude' patterns
-            anemone.skip_links_like( @opts[:exclude] ) if @opts[:exclude]
+            anemone.skip_links_like( @opts.exclude ) if @opts.exclude
             
             # apply 'include' patterns and grab matching pages
             # as they are discovered
-            anemone.on_pages_like( @opts[:include] ) {
+            anemone.on_pages_like( @opts.include ) {
                 |page|
 
                 url = page.url.to_s
@@ -162,8 +142,8 @@ class Spider
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
-                if( @opts[:link_count_limit] != false &&
-                    @opts[:link_count_limit] <= i )
+                if( @opts.link_count_limit &&
+                    @opts.link_count_limit <= i )
                     return @sitemap.uniq
                 end
 

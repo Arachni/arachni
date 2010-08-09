@@ -61,8 +61,7 @@ class Anemone::Page
     # The added code enables optional subdomain crawling.
     #
     def in_domain?( uri )
-        # TODO: remove global vars
-        if $runtime_args[:follow_subdomains]
+        if( Arachni::Options.instance.follow_subdomains )
             return extract_domain( uri ) ==  extract_domain( @url )
         end
 

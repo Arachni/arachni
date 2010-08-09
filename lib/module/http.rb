@@ -82,8 +82,7 @@ class HTTP
         @trainers = []
         
         @init_headers = Hash.new
-        # TODO: remove global vars
-        @init_headers['user-agent'] = $runtime_args[:user_agent]
+        @init_headers['user-agent'] = Options.instance.user_agent
         @init_headers['cookie']     = ''
     end
 
@@ -180,9 +179,8 @@ class HTTP
         parse_cookie_str( orig_cookiejar ).merge( cookie_vars ).each_pair {
             |name, value|
 
-            # TODO: remove global var
             # don't audit cookies in the cookie jar                
-#            if( !$runtime_args[:audit_cookie_jar] &&
+#            if( !Options.instance.audit_cookie_jar] &&
 #                @cookie_jar && @cookie_jar[name] ) then next end
             
             cookies +=  "#{name}=#{value};"
@@ -374,10 +372,11 @@ class HTTP
     #
     def refresh( )
         
-        # TODO: remove global vars
+        opts = Options.instance
+
         session = Net::HTTP.new( @url.host, @url.port,
-        $runtime_args[:proxy_addr], $runtime_args[:proxy_port],
-        $runtime_args[:proxy_user], $runtime_args[:proxy_pass] )
+            opts.proxy_addr, opts.proxy_port,
+            opts.proxy_user, opts.proxy_pass )
 
         if @url.scheme == 'https'
             session.use_ssl = true

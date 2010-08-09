@@ -16,7 +16,7 @@ require 'ap'
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) ) 
 require 'getoptslong.rb'
-require $runtime_args['dir']['lib'] + 'ui/cli/cli'
+require Arachni::Options.instance.dir['lib'] + 'ui/cli/cli'
 
-cli = Arachni::UI::CLI.new( $runtime_args )
+cli = Arachni::UI::CLI.new( Arachni::Options.instance )
 cli.run

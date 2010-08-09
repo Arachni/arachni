@@ -32,8 +32,7 @@ def initialize_http_header( initheader )
     old_initialize_http_header( initheader )
 
     begin
-        # TODO: remove global vars
-        url = URI.parse( URI.encode( $runtime_args[:url] ) )
+        url = Arachni::Options.instance.url
         
         # this is our little modification
         basic_auth( url.user, url.password )

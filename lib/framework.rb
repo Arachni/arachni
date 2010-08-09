@@ -12,20 +12,24 @@
 
 
 require 'rubygems'
-require $runtime_args['dir']['lib'] + 'exceptions'
-require $runtime_args['dir']['lib'] + 'ui/cli/output'
-require $runtime_args['dir']['lib'] + 'spider'
-require $runtime_args['dir']['lib'] + 'analyzer'
-require $runtime_args['dir']['lib'] + 'page'
-require $runtime_args['dir']['lib'] + 'audit_store'
-require $runtime_args['dir']['lib'] + 'vulnerability'
-require $runtime_args['dir']['lib'] + 'module/http'
-require $runtime_args['dir']['lib'] + 'module/base'
-require $runtime_args['dir']['lib'] + 'module/registrar'
-require $runtime_args['dir']['lib'] + 'module/registry'
-require $runtime_args['dir']['lib'] + 'report/base'
-require $runtime_args['dir']['lib'] + 'report/registry'
-require $runtime_args['dir']['lib'] + 'report/registrar'
+
+require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
+opts = Arachni::Options.instance
+
+require opts.dir['lib'] + 'exceptions'
+require opts.dir['lib'] + 'ui/cli/output'
+require opts.dir['lib'] + 'spider'
+require opts.dir['lib'] + 'analyzer'
+require opts.dir['lib'] + 'page'
+require opts.dir['lib'] + 'audit_store'
+require opts.dir['lib'] + 'vulnerability'
+require opts.dir['lib'] + 'module/http'
+require opts.dir['lib'] + 'module/base'
+require opts.dir['lib'] + 'module/registrar'
+require opts.dir['lib'] + 'module/registry'
+require opts.dir['lib'] + 'report/base'
+require opts.dir['lib'] + 'report/registry'
+require opts.dir['lib'] + 'report/registrar'
 require 'yaml'
 require 'ap'
 require 'pp'
@@ -71,19 +75,17 @@ class Framework
     #
     # Initializes all the system components.
     #
-    # @param    [Hash]    system opts
+    # @param    [Options]    opts
     #
     def initialize( opts )
         
         Encoding.default_external = "BINARY"
         Encoding.default_internal = "BINARY"
         
-        @opts = Hash.new
-        
-        @opts = @opts.merge( opts )
+        @opts = opts
             
-        @modreg = Arachni::Module::Registry.new( @opts['dir']['modules'] )
-        @repreg = Arachni::Report::Registry.new( @opts['dir']['reports'] )
+        @modreg = Arachni::Module::Registry.new( @opts.dir['modules'] )
+        @repreg = Arachni::Report::Registry.new( @opts.dir['reports'] )
         
         parse_opts( )
         prepare_user_agent( )
@@ -97,7 +99,7 @@ class Framework
         
         # deep copy the redundancy rules to preserve their counter
         # for the reports
-        @orig_redundant = deep_clone( @opts[:redundant] )
+        @orig_redundant = deep_clone( @opts.redundant )
     end
 
     #
@@ -114,16 +116,16 @@ class Framework
             raise
         end
         
-        @opts[:start_datetime] = Time.now
+        @opts.start_datetime = Time.now
             
         # start the audit
         audit( )
         
-        @opts[:finish_datetime] = Time.now
-        @opts[:delta_time] = @opts[:finish_datetime] - @opts[:start_datetime]
+        @opts.finish_datetime = Time.now
+        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
         
         # run reports
-        if( @opts[:reports] )
+        if( @opts.reports )
             begin
                 run_reps( audit_store_get( ) )
             rescue Exception => e
@@ -135,9 +137,9 @@ class Framework
         end
         
         # save the AuditStore in a file 
-        if( @opts[:repsave] && !@opts[:repload] )
+        if( @opts.repsave && !@opts.repload )
             begin
-                audit_store_save( @opts[:repsave] )
+                audit_store_save( @opts.repsave )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )
@@ -164,7 +166,7 @@ class Framework
             
             # if the user wants to run the modules against each page
             # the crawler finds do it now...
-            if( !@opts[:mods_run_last] )
+            if( !@opts.mods_run_last )
                 run_mods( page )
             else
                 # ..else handle any interrupts that may occur... 
@@ -177,7 +179,7 @@ class Framework
 
         # if the user opted to run the modules after the crawl/analysis
         # do it now.
-        pages.each { |page| run_mods( page ) } if( @opts[:mods_run_last] )
+        pages.each { |page| run_mods( page ) } if( @opts.mods_run_last )
             
     end
 
@@ -227,7 +229,7 @@ class Framework
             :headers     => headers,
             :request_headers => request_headers,
             :elements    => elements,
-            :cookiejar   => @opts[:cookies]
+            :cookiejar   => @opts.cookies
         } )
 
     end
@@ -242,12 +244,12 @@ class Framework
     def audit_store_get
         
         # restore the original redundacy rules and their counters
-        @opts[:redundant] = @orig_redundant
+        @opts.redundant = @orig_redundant
         
          return AuditStore.new( {
             :version  => VERSION,
             :revision => REVISION,
-            :options  => @opts,
+            :options  => @opts.to_h,
             :vulns    => Arachni::Module::Registry.get_results( )
          } )
     end
@@ -286,11 +288,11 @@ class Framework
             # and replace it with the actual module names
             if( mod_name == '*' )
                 
-                @opts['mods'] = []
+                @opts.mods = []
                 
                 @modreg.ls_available(  ).keys.each {
                     |mod|
-                    @opts['mods'] << mod
+                    @opts.mods << mod
                     @modreg.mod_load( mod )
                 }
                 
@@ -485,7 +487,7 @@ class Framework
     # @return   [Array<Hash>]  the merged cookies
     #
     def merge_with_cookiejar( cookies )
-        @opts[:cookies].each_pair {
+        @opts.cookies.each_pair {
             |name, value|
             cookies << {
                 'name'    => name,
@@ -499,24 +501,20 @@ class Framework
     # Should we audit the cookiejar?
     #
     def audit_cookiejar?( )
-        @opts[:audit_cookie_jar] && @opts[:cookies]
+        @opts.audit_cookie_jar && @opts.cookies
     end
     
     #
     # Prepares the user agent to be used throughout the system.
     #
     def prepare_user_agent
-        # TODO: remove global vars
-        if !@opts[:user_agent]
-            @opts[:user_agent] = $runtime_args[:user_agent] =
-                'Arachni/' + VERSION
+        if( !@opts.user_agent )
+            @opts.user_agent = 'Arachni/' + VERSION
         end
         
-        # TODO: remove global vars
-        if @opts[:authed_by]
-            authed_by = " (Scan authorized by: #{@opts[:authed_by]})" 
-            @opts[:user_agent]         += authed_by 
-            $runtime_args[:user_agent] += authed_by
+        if( @opts.authed_by )
+            authed_by         = " (Scan authorized by: #{@opts.authed_by})" 
+            @opts.user_agent += authed_by 
         end
 
     end
@@ -562,7 +560,7 @@ class Framework
         
         # start a new thread for every module in the queue
         # while obeying the thread-count limit. 
-        @threads = ( 1..@opts[:threads] ).map {
+        @threads = ( 1..@opts.threads ).map {
             |i|
             
             # create a new thread...
@@ -657,11 +655,6 @@ class Framework
         page.elements( ).each_pair {
             |name, value|
             
-            symbol = "audit_#{name}".to_sym
-            if( !@opts[symbol] )
-                next 
-            end
-            
             if( !mod.info || !mod.info['Elements'] ||
                 mod.info['Elements'].size == 0 )
                 return true
@@ -697,21 +690,20 @@ class Framework
             |report, i|
 
             # choose a default report name
-            if( !@opts[:repsave] || @opts[:repsave].size == 0 )
-                @opts[:repsave] =
+            if( !@opts.repsave || @opts.repsave.size == 0 )
+                @opts.repsave =
                     URI.parse( audit_store.options['url'] ).host +
                         '-' + Time.now.to_s
             end
             
             
-            new_rep = report.new( audit_store.clone, @opts[:repopts],
-                            @opts[:repsave] + REPORT_EXT )
+            new_rep = report.new( audit_store.clone, @opts.repopts,
+                            @opts.repsave + REPORT_EXT )
             
-             # TODO:
-             # I'd prefer to use deep_clone() but yaml gives encoding errors
-             # from time to time.
-#            new_rep = report.new( deep_clone( audit_store ), @opts[:repopts],
-#                @opts[:repsave] + REPORT_EXT )
+             # TODO: I'd prefer to use deep_clone()
+             # but yaml gives encoding errors from time to time.
+#            new_rep = report.new( deep_clone( audit_store ), @opts.repopts,
+#                @opts.repsave + REPORT_EXT )
             
             new_rep.run( )
         }
@@ -723,7 +715,7 @@ class Framework
     #
     def parse_opts(  )
 
-        @opts.each do |opt, arg|
+        @opts.to_h.each do |opt, arg|
 
             case opt.to_s
 
@@ -737,8 +729,8 @@ class Framework
                     only_positives!
 
                 when 'cookie_jar'
-                    @opts[:cookies] =
-                        Arachni::Module::HTTP.parse_cookiejar( @opts[:cookie_jar] )
+                    @opts.cookies =
+                        Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
 
 #                when 'delay'
 #                    @opts[:delay] = Float.new( @opts[:delay] ) 
@@ -755,12 +747,13 @@ class Framework
     #
     def validate_opts
 
-        if @opts[:repload] then return end
+        if @opts.repload then return end
             
-        if !@opts[:audit_links] &&
-            !@opts[:audit_forms] &&
-            !@opts[:audit_cookies] &&
-            !@opts[:audit_headers]
+        if( !@opts.audit_links &&
+            !@opts.audit_forms &&
+            !@opts.audit_cookies &&
+            !@opts.audit_headers
+          )
             raise( Arachni::Exceptions::NoAuditOpts,
                 "No audit options were specified." )
         end
@@ -768,12 +761,12 @@ class Framework
         #
         # Ensure that the user selected some modules
         #
-        if !@opts[:mods]
+        if( !@opts.mods )
             raise( Arachni::Exceptions::NoMods, "No modules were specified." )
         end
 
         # Check for missing url
-        if @opts[:url] == nil
+        if( @opts.url == nil )
             raise( Arachni::Exceptions::NoURL, "Missing url argument." )
         end
 
@@ -784,7 +777,7 @@ class Framework
         #
         begin
             require 'uri'
-            @opts[:url] = URI.parse( URI.encode( @opts[:url] ) )
+            @opts.url = URI.parse( URI.encode( @opts.url ) )
         rescue
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
@@ -814,14 +807,14 @@ class Framework
         # Then nil out the proxy opts or else they're going to be
         # passed as an http proxy to Anemone::HTTP.refresh_connection()
         #
-        if !@opts[:threads]
-            @opts[:threads] = 3
+        if( !@opts.threads )
+            @opts.threads = 3
         end
         
         # make sure the provided cookie-jar file exists
-        if @opts[:cookie_jar] && !File.exist?( @opts[:cookie_jar] )
+        if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
-                'Cookie-jar \'' + @opts[:cookie_jar] +
+                'Cookie-jar \'' + @opts.cookie_jar +
                         '\' doesn\'t exist.' )
         end
         
