@@ -81,22 +81,22 @@ class SQLInjection < Arachni::Module::Base
             # send the bad characters in @__injection_strs via the page forms
             # and pass a block that will check for a positive result
             audit_forms( str ) {
-                |var, res|
-                __log_results( Vulnerability::Element::FORM, var, res, str )
+                |url, res, var|
+                __log_results( Vulnerability::Element::FORM, var, res, str, url )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
             audit_links( str ) {
-                |var, res|
-                __log_results( Vulnerability::Element::LINK, var, res, str )
+                |url, res, var|
+                __log_results( Vulnerability::Element::LINK, var, res, str, url )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
             audit_cookies( str ) {
-                |var, res|
-                __log_results( Vulnerability::Element::COOKIE, var, res, str )
+                |url, res, var|
+                __log_results( Vulnerability::Element::COOKIE, var, res, str, url )
             }
         }
         
@@ -139,7 +139,7 @@ class SQLInjection < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, injection_str )
+    def __log_results( where, var, res, injection_str, url )
         
         # iterate through the regular expressions in @__regexp_ids_file
         # and try to match them with the body of the HTTP response
@@ -163,7 +163,7 @@ class SQLInjection < Arachni::Module::Base
                 # append the result to the results hash
                 @results << Vulnerability.new( {
                         'var'          => var,
-                        'url'          => @page.url,
+                        'url'          => url,
                         'injected'     => injection_str,
                         'id'           => id,
                         'regexp'       => id_regex.to_s,
@@ -180,7 +180,7 @@ class SQLInjection < Arachni::Module::Base
                 
                 # inform the user that we have a match
                 print_ok( self.class.info['Name'] +
-                    " in: #{where} var #{var}" + @page.url )
+                    " in: #{where} var #{var}:\t" + url )
                 
                 # give the user some more info if he wants 
                 print_verbose( "Injected str:\t" + injection_str )    

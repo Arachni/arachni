@@ -192,7 +192,7 @@ class Base
     # @param    [Block]     block to be executed right after the
     #                            request has been made.
     #                            It will be passed the currently audited
-    #                            variable and the response.
+    #                            variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
@@ -227,7 +227,7 @@ class Base
             
             # call the passed block
             if block_given?
-                block.call( vars['altered'], res )
+                block.call( @page.url, res, vars['altered'] )
                 next
             end
             
@@ -235,7 +235,7 @@ class Base
             
             # get matches
             result = get_matches( Vulnerability::Element::HEADER,
-                vars['altered'], res, injection_str, id_regex, id )
+                vars['altered'], res, injection_str, id_regex, id, @page.url )
                                    
             # and append them to the results array
             results << result if result
@@ -259,7 +259,7 @@ class Base
     # @param    [Block]     block to be executed right after the
     #                            request has been made.
     #                            It will be passed the currently audited
-    #                            variable and the response.
+    #                            variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
@@ -275,7 +275,6 @@ class Base
             # if we don't have any auditable elements just return
             if !link_vars then return results end
 
-#            url = url.gsub( '?' + URI.parse( url ).query, '' )
             # iterate through all url vars and audit each one
             inject_each_var( link_vars, injection_str ).each {
                 |vars|
@@ -293,7 +292,7 @@ class Base
                 
                 # audit the url vars
                 res = @http.get( url, vars['hash'] )
-    
+
                 @@audited << audit_id
                 
                 # something might have gone bad,
@@ -302,7 +301,7 @@ class Base
                 
                 # call the passed block
                 if block_given?
-                    block.call( vars['altered'], res )
+                    block.call( url, res, vars['altered'] )
                     next
                 end
                 
@@ -310,8 +309,8 @@ class Base
                 
                 # get matches
                 result = get_matches( Vulnerability::Element::LINK,
-                    vars['altered'], res, injection_str, id_regex, id )
-                                       
+                    vars['altered'], res, injection_str, id_regex, id, url )
+                
                 # and append them to the results array
                 results << result if result
             }
@@ -335,7 +334,7 @@ class Base
     # @param    [Block]     block to be executed right after the
     #                            request has been made.
     #                            It will be passed the currently audited
-    #                            variable and the response.
+    #                            variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
@@ -351,12 +350,13 @@ class Base
             # if we don't have any auditable elements just return
             if !form then return results end
             
+            url = get_forms()[i]['attrs']['action']
             # iterate through each auditable element
             inject_each_var( form, injection_str ).each {
                 |input|
 
                 audit_id = "#{self.class.info['Name']}:" +
-                    "#{get_forms()[i]['attrs']['action']}:" +
+                    "#{url}:" +
                     "#{Vulnerability::Element::FORM}:" + 
                     "#{input['altered'].to_s}=#{input['hash'].to_s}"
                     
@@ -365,17 +365,14 @@ class Base
                 # inform the user what we're auditing
                 print_status( self.class.info['Name']  + 
                     " is auditing:\tform input '" +
-                    input['altered'] + "' with action " +
-                    get_forms()[i]['attrs']['action'] )
+                    input['altered'] + "' with action " + url )
 
                 if( get_forms()[i]['attrs']['method'] != 'get' )
                         res =
-                            @http.post( get_forms()[i]['attrs']['action'],
-                                input['hash'] )
+                            @http.post( url, input['hash'] )
                 else
                     res =
-                        @http.get( get_forms()[i]['attrs']['action'],
-                            input['hash'] )
+                        @http.get( url, input['hash'] )
                 end
                 
                 @@audited << audit_id
@@ -385,7 +382,7 @@ class Base
                 
                 # call the block, if there's one
                 if block_given?
-                    block.call( input['altered'], res )
+                    block.call( url, res, input['altered'] )
                     next
                 end
 
@@ -393,7 +390,7 @@ class Base
             
                 # get matches
                 result = get_matches( Vulnerability::Element::FORM,
-                    input['altered'], res, injection_str, id_regex, id )
+                    input['altered'], res, injection_str, id_regex, id, url )
                 
                 # and append them
                 results << result if result
@@ -417,7 +414,7 @@ class Base
     # @param    [Block]     block to be executed right after the
     #                            request has been made.
     #                            It will be passed the currently audited
-    #                            variable and the response.
+    #                            variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
@@ -451,7 +448,7 @@ class Base
             if !res then next end
             
             if block_given?
-                block.call( cookie['altered'], res )
+                block.call( @page.url, res, cookie['altered'] )
                 next
             end
             
@@ -459,7 +456,7 @@ class Base
                 
             # get possible matches
             result = get_matches( Vulnerability::Element::COOKIE,
-                cookie['altered'], res, injection_str, id_regex, id )
+                cookie['altered'], res, injection_str, id_regex, id, @page.url )
             # and append them
             results << result if result
         }
@@ -571,14 +568,14 @@ class Base
         end
     end
     
-    def get_matches( where, var, res, injection_str, id_regex, id )
+    def get_matches( where, var, res, injection_str, id_regex, id, url )
         
         # fairly obscure condition...pardon me...
         if ( id && res.body.scan( id_regex )[0] == id ) ||
            ( !id && res.body.scan( id_regex )[0].size > 0 )
         
             print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
-            '::' + @page.url )
+            '::' + url )
             
             print_verbose( "Injected str:\t" + injection_str )    
             print_verbose( "ID str:\t\t" + id )
@@ -587,7 +584,7 @@ class Base
     
             return {
                 'var'          => var,
-                'url'          => @page.url,
+                'url'          => url,
                 'injected'     => injection_str,
                 'id'           => id,
                 'regexp'       => id_regex.to_s,

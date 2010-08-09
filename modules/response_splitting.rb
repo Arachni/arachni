@@ -61,22 +61,22 @@ class ResponseSplitting < Arachni::Module::Base
         # try to inject the header via the forms of the page
         # and pass a block that will check for a positive result
         audit_forms( @__header ) {
-            |var, res|
-            __log_results( Vulnerability::Element::FORM, var, res )
+            |url, res, var|
+            __log_results( Vulnerability::Element::FORM, var, res, url )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
         audit_links( @__header ) {
-            |var, res|
-            __log_results( Vulnerability::Element::LINK, var, res )
+            |url, res, var|
+            __log_results( Vulnerability::Element::LINK, var, res, url )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
         audit_cookies( @__header ) {
-            |var, res|
-            __log_results( Vulnerability::Element::COOKIE, var, res )
+            |url, res, var|
+            __log_results( Vulnerability::Element::COOKIE, var, res, url )
         }
         
         #register our results with the system
@@ -120,12 +120,12 @@ class ResponseSplitting < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res )
+    def __log_results( where, var, res, url )
         if res.get_fields( 'x-crlf-safe' )
         
             @results << Vulnerability.new( {
                     'var'          => var,
-                    'url'          => page_data['url']['href'],
+                    'url'          => url,
                     'injected'     => @__header,
                     'id'           => 'x-crlf-safe',
                     'regexp'       => nil,
@@ -140,7 +140,7 @@ class ResponseSplitting < Arachni::Module::Base
             )
 
             print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
-                        '::' + page_data['url']['href'] )
+                        '::' + url )
         end
     end
 
