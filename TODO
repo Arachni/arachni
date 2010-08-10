@@ -39,6 +39,10 @@ The following tasks are the milestone for version v0.1
         interrupts the analysis process allow
         him to audit the so far analyzed pages.
  
+ - extensive logging/stats ----------------- 
+ |---> Boring crap but needs to be done.
+        Anyone else up for it?
+ 
  
  Crawler *****************************************
 
@@ -60,11 +64,6 @@ The following tasks are the milestone for version v0.1
  Analyzer ****************************************
 
  - form, link, cookies extraction ---------- [Done]
- |---> Need to add support for radio buttons.
- - extensive logging/stats ----------------- 
- |---> Boring crap but needs to be done.
-        Anyone else up for it?
- 
  
  Module Management *******************************
 
@@ -109,8 +108,7 @@ The following tasks are the milestone for version v0.1
 
  Reporting *************************************** 
  
- - template reporting ----------------------
- |---> Any designers up for it?
+ - template reporting ---------------------- [Done]
  
 
  Next level analysis *****************************
