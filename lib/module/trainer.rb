@@ -10,6 +10,7 @@
 
 =end
 module Arachni
+module Module
 
 #
 # Trainer module
@@ -22,7 +23,6 @@ module Arachni
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
-# @abstract
 #
 module Trainer
 
@@ -184,5 +184,5 @@ module Trainer
     end
 
 end
-
+end
 end
