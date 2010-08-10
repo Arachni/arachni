@@ -23,7 +23,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev: 287 $
+# @version: $Rev$
 #
 class Options
 
