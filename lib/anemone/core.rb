@@ -94,7 +94,7 @@ class Core
         
         patterns.each {
             |pattern|
-                return true if url =~ pattern
+            return true if url =~ pattern
         }
         
         return false
