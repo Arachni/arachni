@@ -41,7 +41,8 @@ module Trainer
     #
     def train( res, url = nil )
 
-        analyzer = Analyzer.new( Options.instance )
+        opts = Options.instance
+        analyzer = Analyzer.new( opts )
 
         analyzer.url = @page.url.clone
 
@@ -50,8 +51,8 @@ module Trainer
             merge( URI( URI.escape( url ) ) ).to_s
         end
 
-        links   = analyzer.get_links( res.body ).clone
-        forms   = analyzer.get_forms( res.body ).clone
+        links   = analyzer.get_links( res.body ).clone if opts.audit_links
+        forms   = analyzer.get_forms( res.body ).clone if opts.audit_forms
         cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).clone
 
         if( url )
@@ -81,6 +82,8 @@ module Trainer
     #
     def train_forms( forms )
 
+        if !forms then return @page.elements['forms'] end
+            
         new_forms = []
         forms.each {
             |form|
@@ -125,6 +128,8 @@ module Trainer
     # @return    [Array<Hash>]    the updated links
     #
     def train_links( links )
+        if !links then return @page.elements['links'] end
+            
         links.each {
             |link|
             if !@page.elements['links'].include?( link )
@@ -142,7 +147,9 @@ module Trainer
     # @return    [Array<Hash>]    the updated cookies
     #
     def train_cookies( cookies )
-
+        
+        if !cookies then return @page.elements['cookies'] end
+            
         new_cookies = []
         cookies.each_with_index {
             |cookie|
