@@ -282,6 +282,8 @@ class Analyzer
             link['href'] = to_absolute( link['href'] )
             
             if !link['href'] then next end
+            if( exclude?( link['href'] ) ) then next end
+            if( !include?( link['href'] ) ) then next end    
             if !in_domain?( URI.parse( link['href'] ) ) then next end
                 
             links[i] = link
@@ -618,5 +620,18 @@ class Analyzer
         splits[-2] + "." + splits[-1]
     end
     
+    def exclude?( url )
+        @opts.exclude.each {
+            |pattern|
+            return true if url =~ pattern
+        }
+    end
+    
+    def include?( url )
+        @opts.include.each {
+            |pattern|
+            return true if url =~ pattern
+        }
+    end
 end
 end
