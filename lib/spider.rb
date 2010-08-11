@@ -77,8 +77,16 @@ class Spider
             :proxy_port           =>  nil,
             :proxy_user           =>  nil,
             :proxy_pass           =>  nil
-        }.merge( opts.to_h )
+        }
 
+        hash_opts = @opts.to_h
+        @anemone_opts.each_pair {
+            |k, v|
+            @anemone_opts[k] = hash_opts[k.to_s] if hash_opts[k.to_s]
+        }
+        
+        @anemone_opts = @anemone_opts.merge( hash_opts )
+        
         @sitemap = []
         @on_every_page_blocks = []
 
