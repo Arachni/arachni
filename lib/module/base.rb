@@ -173,6 +173,7 @@ class Base
     # @return    [Aray]    forms with attributes, values, etc
     #
     def get_forms
+        if( !Options.instance.audit_forms ) then return [] end
         @page.get_forms( )
     end
 
@@ -185,6 +186,7 @@ class Base
     # @return    [Aray]    link with attributes, variables, etc
     #
     def get_links
+        if( !Options.instance.audit_links ) then return [] end
         @page.get_links( )
     end
 
@@ -244,6 +246,7 @@ class Base
     # @return    [Array]    the cookie attributes, values, etc
     #
     def get_cookies
+        if( !Options.instance.audit_cookies ) then return [] end
         @page.get_cookies( )
     end
 
