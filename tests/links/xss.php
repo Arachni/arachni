@@ -1,0 +1,24 @@
+<?php
+/* $Id$ */
+/*
+ * This page is used to test the XSS module.
+ *
+ */
+
+echo <<<EOHTML
+
+    <pre>
+This form is vulnerable to Cross-Site Scripting.
+    </pre>
+
+<a href="$_SERVER['PHP_SELF']?xss=xss">XSS</a>
+    </form>
+
+EOHTML;
+
+
+if( $_GET['xss'] && $_GET['xss'] != 'xss'  ) {
+    echo $_GET['xss'];
+}
+
+?>
