@@ -27,7 +27,6 @@ module Module
 module Auditor
     
     @@audited ||= []
-
     
     #
     # Audits HTTP request headers injecting the injection_str as values
@@ -88,7 +87,7 @@ module Auditor
             # get matches
             result = get_matches( Vulnerability::Element::HEADER,
                 vars['altered'], res, injection_str, id_regex, id, @page.url )
-                                   
+            
             # and append them to the results array
             results << result if result
         }
@@ -121,11 +120,14 @@ module Auditor
 
         results = []
         
-        get_links_simple.each_pair {
-            |url, link_vars|
+        work_on_links {
+            |link|
             
+            url       = link['href']
+            link_vars = link['vars']
+                
             # if we don't have any auditable elements just return
-            if !link_vars then return results end
+            if !link_vars then next end
 
             # iterate through all url vars and audit each one
             inject_each_var( link_vars, injection_str ).each {
@@ -144,7 +146,6 @@ module Auditor
                 
                 # audit the url vars
                 res = @http.get( url, vars['hash'] )
-
                 @@audited << audit_id
                 
                 # something might have gone bad,
@@ -196,35 +197,35 @@ module Auditor
         
         results = []
         
-        # iterate through each form
-        get_forms_simple.each_with_index {
-            |form, i|
-            # if we don't have any auditable elements just return
-            if !form then return results end
+        work_on_forms {
+            |orig_form|
+            form = get_form_simple( orig_form )
+
+            next if !form
             
-            url = get_forms()[i]['attrs']['action']
+            url    = form['attrs']['action']
+            method = form['attrs']['method']
+                
             # iterate through each auditable element
-            inject_each_var( form, injection_str ).each {
+            inject_each_var( form['auditable'], injection_str ).each {
                 |input|
 
                 audit_id = "#{self.class.info['Name']}:" +
                     "#{url}:" +
                     "#{Vulnerability::Element::FORM}:" + 
                     "#{input['altered'].to_s}=#{input['hash'].to_s}"
-                    
+                
                 next if @@audited.include?( audit_id )
-
+                
                 # inform the user what we're auditing
                 print_status( self.class.info['Name']  + 
                     " is auditing:\tform input '" +
                     input['altered'] + "' with action " + url )
 
-                if( get_forms()[i]['attrs']['method'] != 'get' )
-                        res =
-                            @http.post( url, input['hash'] )
+                if( method != 'get' )
+                    res = @http.post( url, input['hash'] )
                 else
-                    res =
-                        @http.get( url, input['hash'] )
+                    res = @http.get( url, input['hash'] )
                 end
                 
                 @@audited << audit_id
@@ -244,7 +245,7 @@ module Auditor
                 result = get_matches( Vulnerability::Element::FORM,
                     input['altered'], res, injection_str, id_regex, id, url )
                 
-                # and append them
+                # and append them to the results array
                 results << result if result
             }
         }
@@ -276,10 +277,14 @@ module Auditor
         
         results = []
         
-        # iterate through each cookie    
-        inject_each_var( get_cookies_simple, injection_str ).each {
+        # iterate through each cookie
+        work_on_cookies {
+            |orig_cookie|
+        inject_each_var( get_cookie_simple( orig_cookie ), injection_str ).each {
             |cookie|
 
+            next if Options.instance.exclude_cookies.include?( cookie['altered'] )
+            
             audit_id = "#{self.class.info['Name']}:" +
                 "#{@page.url}:#{Vulnerability::Element::COOKIE}:" +
                 "#{cookie['altered'].to_s}=#{cookie['hash'].to_s}"
@@ -311,6 +316,7 @@ module Auditor
                 cookie['altered'], res, injection_str, id_regex, id, @page.url )
             # and append them
             results << result if result
+        }
         }
 
         results
@@ -393,6 +399,11 @@ module Auditor
         var_combo
     end
 
+    def sync( &block )
+        @mutex.synchronize {
+            block.call
+        }
+    end
     
 end
 

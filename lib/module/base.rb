@@ -48,6 +48,10 @@ class Base
     #
     attr_reader :page
     
+    attr_reader :link_queue
+    attr_reader :form_queue
+    attr_reader :cookie_queue
+    
     #
     # Initializes the module attributes, HTTP client and {Trainer}
     #
@@ -58,8 +62,21 @@ class Base
     #
     def initialize( page )
         
-        @page = page
-        @http = Arachni::Module::HTTP.new( @page.url )
+        @page  = page
+        @http  = Arachni::Module::HTTP.new( @page.url )
+        
+        @form_mutex   = Mutex.new
+        @link_mutex   = Mutex.new
+        @cookie_mutex = Mutex.new
+                        
+        @form_queue   = Queue.new
+        update_form_queue( get_forms )
+        
+        @link_queue   = Queue.new
+        update_link_queue( get_links )
+        
+        @cookie_queue = Queue.new
+        update_cookie_queue( get_cookies )
         
         #
         # This is a callback.
@@ -166,6 +183,72 @@ class Base
     end
     
     #
+    # This method passes the block with each form in the page.
+    #
+    # Unlike {#get_forms} this method is "trainer-aware",<br/>
+    # meaning that should the page dynamically change and a new form <br/>
+    # presents itself during the audit Arachni will see it and pass it.
+    #
+    # @param    [Proc]    block
+    #
+    def work_on_forms( &block )
+        return if !Options.instance.audit_forms
+        
+        @form_consumer = Thread.new do
+            while( form = @form_queue.pop )
+                block.call( form )
+            end
+        end
+        
+        @form_consumer.join
+        update_form_queue( @page.elements['forms'] )
+    end
+
+    #
+    # This method passes the block with each link in the page.
+    #
+    # Unlike {#get_links} this method is "trainer-aware",<br/>
+    # meaning that should the page dynamically change and a new link <br/>
+    # presents itself during the audit Arachni will see it and pass it.
+    #
+    # @param    [Proc]    block
+    #
+    def work_on_links( &block )
+        return if !Options.instance.audit_links
+        
+        @link_consumer = Thread.new do
+            while( link = @link_queue.pop )
+                block.call( link )
+            end
+        end
+        
+        @link_consumer.join
+        update_link_queue( @page.elements['links'] )
+    end
+    
+    #
+    # This method passes the block with each cookie in the page.
+    #
+    # Unlike {#get_cookies} this method is "trainer-aware",<br/>
+    # meaning that should the page dynamically change and a new cookie <br/>
+    # presents itself during the audit Arachni will see it and pass it.
+    #
+    # @param    [Proc]    block
+    #
+    def work_on_cookies( &block )
+        return if !Options.instance.audit_cookies
+        
+        @cookie_consumer = Thread.new do
+            while( cookie = @cookie_queue.pop )
+                block.call( cookie )
+            end
+        end
+        
+        @cookie_consumer.join
+        update_cookie_queue( @page.elements['cookies'] )
+    end
+    
+    #
     # Returns extended form information from {Page#elements}
     #
     # @see Page#get_forms
@@ -173,10 +256,9 @@ class Base
     # @return    [Aray]    forms with attributes, values, etc
     #
     def get_forms
-        if( !Options.instance.audit_forms ) then return [] end
         @page.get_forms( )
     end
-
+    
     #
     #
     # Returns extended link information from {Page#elements}
@@ -186,33 +268,44 @@ class Base
     # @return    [Aray]    link with attributes, variables, etc
     #
     def get_links
-        if( !Options.instance.audit_links ) then return [] end
         @page.get_links( )
     end
 
     #
-    # Returns an array of forms from {#get_forms} with the auditable
-    # inputs as a name=>value hash
+    # Returns an array of forms from {#get_forms} with its attributes and<br/>
+    # its auditable inputs as a name=>value hash
     #
     # @return    [Array]
     #
-    def get_forms_simple
+    def get_forms_simple( )
         forms = []
         get_forms( ).each_with_index {
-            |form, i|
-            forms[i] = Hash.new
-            
-            form['auditable'].each {
-                |item|
-                
-                if( !item['name'] ) then next end
-                forms[i][item['name']] = item['value']
-            } rescue forms
-            
+            |form|
+            forms << get_form_simple( form )
         }
         forms
     end
 
+    #
+    # Returns the form with its attributes and auditable inputs as a name=>value hash
+    #
+    # @return    [Array]
+    #
+    def get_form_simple( form )
+        
+        return if !form['auditable']
+        
+        new_form = Hash.new
+        new_form['attrs'] = form['attrs']
+        new_form['auditable'] = {}
+        form['auditable'].each {
+            |item|
+            if( !item['name'] ) then next end
+            new_form['auditable'][item['name']] = item['value']
+        }
+        return new_form
+    end
+    
     #
     # Returns links from {#get_links} as a name=>value hash with href as key
     #
@@ -246,7 +339,6 @@ class Base
     # @return    [Array]    the cookie attributes, values, etc
     #
     def get_cookies
-        if( !Options.instance.audit_cookies ) then return [] end
         @page.get_cookies( )
     end
 
@@ -265,12 +357,21 @@ class Base
             cookies[cookie['name']] = cookie['value']
         }
         
-        if( Options.instance.audit_cookie_jar )
-            return @page.cookiejar.merge( cookies )
-        else
-            return cookies
-        end
+        return cookies if !@page.cookiejar
+        @page.cookiejar.merge( cookies )
     end
+    
+    #
+    # Returns a cookie from {#get_cookies} as a name=>value hash
+    #
+    # @param    [Hash]     cookie
+    #
+    # @return    [Hash]     simple cookie
+    #
+    def get_cookie_simple( cookie )
+        return { cookie['name'] => cookie['value'] }
+    end
+
     
     #
     # Returns a hash of request headers.
@@ -344,7 +445,50 @@ class Base
              
     end
     
-       
+    private
+    
+    def update_form_queue( forms )
+        
+        producer = Thread.new {
+            @form_mutex.synchronize {
+                @form_queue.clear
+                forms.each {
+                    |form|
+                    @form_queue << form
+                }
+                @form_queue << nil
+            }
+        }
+    end
+    
+    def update_link_queue( links )
+        
+        producer = Thread.new {
+            @link_mutex.synchronize {
+                @link_queue.clear
+                links.each {
+                    |link|
+                    @link_queue << link
+                }
+                @link_queue << nil
+            }
+        }
+    end
+        
+    def update_cookie_queue( cookies )
+        
+        cookie_producer = Thread.new {
+            @cookie_mutex.synchronize {
+                @cookie_queue.clear
+                cookies.each {
+                    |cookie|
+                    @cookie_queue << cookie
+                }
+                @cookie_queue << nil
+            }
+        }
+    end
+           
 end
 end
 end

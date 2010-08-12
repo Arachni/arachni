@@ -199,12 +199,8 @@ class Framework
         # analyze each page the crawler returns and save its elements
         elements = @analyzer.run( url, html, headers ).clone
     
-        # if the user wants to audit the cookiejar cookies
-        # append them to the page elements
-        if( audit_cookiejar?( ) )
-            elements['cookies'] =
-                merge_with_cookiejar( elements['cookies'] )
-        end
+        elements['cookies'] =
+            merge_with_cookiejar( elements['cookies'] )
     
         # get the variables of the url query as an array of hashes
         query_vars = @analyzer.get_link_vars( url )
@@ -487,6 +483,8 @@ class Framework
     # @return   [Array<Hash>]  the merged cookies
     #
     def merge_with_cookiejar( cookies )
+        return cookies if !@opts.cookies
+        
         @opts.cookies.each_pair {
             |name, value|
             cookies << {
@@ -495,13 +493,6 @@ class Framework
             }
         }
         return cookies
-    end
-    
-    #
-    # Should we audit the cookiejar?
-    #
-    def audit_cookiejar?( )
-        @opts.audit_cookie_jar && @opts.cookies
     end
     
     #
@@ -555,9 +546,13 @@ class Framework
     #
     def run_mods( page )
 
+#        for mod in ls_loaded_mods
+#            run_mod( mod, page )
+#        end
+#        return
+        
         # create a queue that'll hold the modules to run
         mod_queue = Queue.new
-        
         # start a new thread for every module in the queue
         # while obeying the thread-count limit. 
         @threads = ( 1..@opts.threads ).map {
@@ -584,8 +579,8 @@ class Framework
                     # tell the user which module is about to be run...
                     print_status( curr_mod.to_s )
                     # ... and run it.
-                    run_mod( curr_mod, deep_clone( page ) )
                     
+                    run_mod( curr_mod, deep_clone( page ) )
                     while( handle_interrupt(  ) )
                     end
                      

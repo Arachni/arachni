@@ -78,6 +78,8 @@ class HTML < Arachni::Report::Base
         }
     end
 
+    private
+    
     def __save( outfile, out )
         file = File.new( outfile, 'w' )
         file.write( out )

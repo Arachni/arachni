@@ -46,6 +46,7 @@ opts = GetoptLong.new(
     [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
     [ '--mods-run-last',     '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ]
@@ -175,6 +176,9 @@ opts.each {
 
         when '--include'
             options.include << Regexp.new( arg )
+            
+        when '--exclude-cookie'
+            options.exclude_cookies << arg
 
         when '--follow-subdomains'
             options.follow_subdomains = true

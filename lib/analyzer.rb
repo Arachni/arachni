@@ -311,8 +311,11 @@ class Analyzer
                 |var|
                 value = cookie.instance_variable_get( var ).to_s
                 value.strip!
-                cookies_arr[i][var.to_s.gsub( /@/, '' )] =
-                    value.gsub( /[\"\\\[\]]/, '' )
+                
+                key = normalize_name( var )
+                val = value.gsub( /[\"\\\[\]]/, '' )
+
+                cookies_arr[i][key] = val
             }
             
             # detect when a cookie has been updated and discard the old one
@@ -632,6 +635,10 @@ class Analyzer
             |pattern|
             return true if url =~ pattern
         }
+    end
+    
+    def normalize_name( name )
+        name.to_s.gsub( /@/, '' )
     end
 end
 end

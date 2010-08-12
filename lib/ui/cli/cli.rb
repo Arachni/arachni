@@ -477,8 +477,9 @@ USAGE
     -c
     --audit-cookies             audit cookies (COOKIE)
   
-    --audit-cookie-jar          audit cookies in cookiejar
-                                  (default: off)                              
+    --exclude-cookie=<name>     cookies not to audit
+                                  You should exclude session cookies.
+                                  (Can be used multiple times.)
     
     --audit-headers             audit HTTP headers
                                   

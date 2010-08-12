@@ -94,9 +94,12 @@ class HTTP
     #
     # @return [HTTP::Response]
     #
-    def get( url, url_vars = nil, redirect = false )
+    def get( url, url_vars = {}, redirect = false )
         url = parse_url( url )
 
+        url_vars = {} if( !url_vars )
+        
+        url_vars = url_vars.merge( { '__arachni__' => '' } ) 
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it
@@ -118,7 +121,7 @@ class HTTP
             else
                 full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             end
-             
+            
             res = @session.get( full_url, @init_headers )
             
             # handle redirections
@@ -175,19 +178,25 @@ class HTTP
 
         orig_cookiejar = @init_headers['cookie'].clone 
         
-        cookies = ''
-        parse_cookie_str( orig_cookiejar ).merge( cookie_vars ).each_pair {
+        cookies = Hash.new
+        jar = parse_cookie_str( orig_cookiejar )
+        
+        cookie_vars.each_pair {
             |name, value|
 
             # don't audit cookies in the cookie jar                
-#            if( !Options.instance.audit_cookie_jar] &&
-#                @cookie_jar && @cookie_jar[name] ) then next end
+#            next if Options.instance.exclude_cookies.include?( name )
             
-            cookies +=  "#{name}=#{value};"
+            cookies[name] = value
         }
         
-        @init_headers['cookie'] = cookies
-
+        cookies.reject {
+            |cookie|
+            Options.instance.exclude_cookies.include?( cookie['name'] )
+        }
+        
+        set_cookies( jar.merge( cookies ) )
+        
         # wrap the code in exception handling
         exception_jail {
             url = parse_url( url )
@@ -327,7 +336,7 @@ class HTTP
     #
     #
     def train( res, url = nil )
-        @trainers.each{ |trainer| trainer.call( res, url ) } 
+        @trainers.each{ |trainer| trainer.call( res, url ) }
     end
     
     def redirect?( res )

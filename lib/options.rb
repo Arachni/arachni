@@ -157,13 +157,6 @@ class Options
     attr_accessor :audit_cookies
     
     #
-    # Should Arachni audit the cookies in the cookiejar?
-    #
-    # @return    [Bool]
-    #
-    attr_accessor :audit_cookie_jar
-    
-    #
     # Should Arachni audit HTTP headers?
     #
     # @return    [Bool]
@@ -294,6 +287,13 @@ class Options
     attr_accessor :exclude
     
     #
+    # Cookies to exclude from audit<br/>
+    #
+    # @return    [Array]
+    #
+    attr_accessor :exclude_cookies
+    
+    #
     # Include filters <br/>
     # Only URLs that match any of these patterns will be followed
     #
@@ -330,12 +330,13 @@ class Options
             send( "#{var}=", nil )
         }
         
-        @exclude    = [] 
+        @exclude    = []
         @include    = []
         @redundant  = []
         @reports    = []
         @repopts    = Hash.new
         @dir        = Hash.new
+        @exclude_cookies    = []
         
     end
     

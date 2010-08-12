@@ -67,8 +67,12 @@ module Trainer
         @page.elements['forms']   = train_forms( forms )
         @page.elements['cookies'] = train_cookies( cookies )
         new_count = train_elem_count( )
-
+        
         if( new_count > old_count)
+            update_form_queue( @page.elements['forms'] )
+            update_link_queue( @page.elements['links'] )
+            update_cookie_queue( @page.elements['cookies'] )
+                
             print_info( "Arachni has been trained for: #{analyzer.url}" )
         end
 
@@ -88,6 +92,8 @@ module Trainer
         forms.each {
             |form|
 
+            next if form['attrs']['action'].include?( '__arachni__' )
+                
             @page.elements['forms'].each_with_index {
                 |page_form, i|
 
@@ -132,6 +138,7 @@ module Trainer
             
         links.each {
             |link|
+            
             if !@page.elements['links'].include?( link )
                 @page.elements['links'] << link
             end
@@ -147,13 +154,12 @@ module Trainer
     # @return    [Array<Hash>]    the updated cookies
     #
     def train_cookies( cookies )
-        
         if !cookies then return @page.elements['cookies'] end
             
         new_cookies = []
         cookies.each_with_index {
             |cookie|
-
+            
             @page.elements['cookies'].each_with_index {
                 |page_cookie, i|
 
@@ -173,7 +179,7 @@ module Trainer
         end
 
         cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-        cookie_jar = cookie_jar.merge( get_cookies_simple( new_cookies ) )
+        cookie_jar = cookie_jar.merge( get_cookies_simple( @page.elements['cookies'] ) )
         @http.set_cookies( cookie_jar )
 
         return @page.elements['cookies']
@@ -186,8 +192,8 @@ module Trainer
     #
     def train_elem_count
         return @page.elements['links'].clone.length +
-        @page.elements['forms'].clone.length +
-        @page.elements['cookies'].clone.length
+            @page.elements['forms'].clone.length +
+            @page.elements['cookies'].clone.length
     end
 
 end
