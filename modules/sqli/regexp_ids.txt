@@ -3,7 +3,7 @@ System\.Data\.OleDb\.OleDbException
 \[Microsoft\]\[ODBC SQL Server Driver\]
 \[SQLServer JDBC Driver\]
 \[SqlException
-System.Data.SqlClient.SqlException
+System\.Data\.SqlClient\.SqlException
 Unclosed quotation mark after the character string
 '80040e14'
 mssql_query\(\)
@@ -13,9 +13,9 @@ Microsoft OLE DB Provider for SQL Server
 Incorrect syntax near
 Sintaxis incorrecta cerca de
 Syntax error in string in query expression
-ADODB.Field \(0x800A0BCD\)<br>
+ADODB\.Field \(0x800A0BCD\)<br>
 Procedure '[^']+' requires parameter '[^']+'
-ADODB.Recordset\'
+ADODB\.Recordset\'
 Unclosed quotation mark before the character string
 SQLCODE
 DB2 SQL error:
@@ -25,7 +25,7 @@ SQLSTATE
 \[DB26000\]
 Sybase message:
 Syntax error in query expression
-Data type mismatch in criteria expression.
+Data type mismatch in criteria expression\.
 Microsoft JET Database Engine
 \[Microsoft\]\[ODBC Microsoft Access Driver\]
 (PLS|ORA)-[0-9][0-9][0-9][0-9]
@@ -45,7 +45,7 @@ MySQL server version for the right syntax to use
 Column count doesn't match
 the used select statements have different number of columns
 Table '[^']+' doesn't exist
-com.informix.jdbc
+com\.informix\.jdbc
 Dynamic Page Generation Error:
 An illegal character has been found in the statement
 <b>Warning<b>: ibase_
@@ -90,5 +90,5 @@ Sybase message
 Dynamic SQL Error
 Warning.*sqlite_.*
 SQLite/JDBCDriver
-SQLite.Exception
-System.Data.SQLite.SQLiteException
+SQLite\.Exception
+System\.Data\.SQLite\.SQLiteException
