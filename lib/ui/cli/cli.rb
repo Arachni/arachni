@@ -416,9 +416,9 @@ USAGE
     
     --only-positives            echo positive results *only*
   
-    --threads=<number>          how many threads to instantiate (default: 3)
-                                  More threads does not necessarily mean more speed,
-                                  be careful when adjusting the thread count.
+    --threads=<number>          how many threads to instantiate
+                                  If no thread limit has been specified
+                                    each module will run in its own thread.
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
