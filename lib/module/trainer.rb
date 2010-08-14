@@ -28,6 +28,7 @@ module Trainer
 
     private
     
+    
     #
     # This is used to train Arachni.
     #
@@ -62,6 +63,8 @@ module Trainer
             } )
         end
 
+        @form_train_cnt ||= 0
+
         old_count = train_elem_count( )
         @page.elements['links']   = train_links( links )
         @page.elements['forms']   = train_forms( forms )
@@ -86,6 +89,8 @@ module Trainer
     #
     def train_forms( forms )
 
+        return @page.elements['forms'] if @form_train_cnt > 20
+        
         if !forms then return @page.elements['forms'] end
             
         new_forms = []
@@ -93,6 +98,7 @@ module Trainer
             |form|
 
             next if form['attrs']['action'].include?( '__arachni__' )
+            next if form['auditable'].size == 0
                 
             @page.elements['forms'].each_with_index {
                 |page_form, i|
@@ -101,6 +107,7 @@ module Trainer
                     page_form = form
                 else
                     new_forms << form
+                    @form_train_cnt += 1
                 end
             }
 
@@ -117,8 +124,9 @@ module Trainer
     # @return    [String]
     #
     def form_id( form )
-        id  = form['attrs'].to_s
-        form['auditable'].map {
+        cform = form.dup
+        id    = cform['attrs'].to_s
+        cform['auditable'].map {
             |item|
             citem = item.clone
             citem.delete( 'value' )
