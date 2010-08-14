@@ -127,7 +127,7 @@ class Framework
         # run reports
         if( @opts.reports )
             begin
-                run_reps( audit_store_get( ) )
+                run_reps( audit_store_get( ).clone )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )
@@ -241,13 +241,13 @@ class Framework
         
         # restore the original redundacy rules and their counters
         @opts.redundant = @orig_redundant
-        
-         return AuditStore.new( {
+
+        return AuditStore.new( {
             :version  => VERSION,
             :revision => REVISION,
             :options  => @opts.to_h,
             :sitemap  => @sitemap.sort,
-            :vulns    => Arachni::Module::Registry.get_results( )
+            :vulns    => deep_clone( Arachni::Module::Registry.get_results( ) )
          } )
     end
     
@@ -693,13 +693,8 @@ class Framework
             end
             
             
-            new_rep = report.new( audit_store.clone, @opts.repopts,
+            new_rep = report.new( audit_store, @opts.repopts,
                             @opts.repsave + REPORT_EXT )
-            
-             # TODO: I'd prefer to use deep_clone()
-             # but yaml gives encoding errors from time to time.
-#            new_rep = report.new( deep_clone( audit_store ), @opts.repopts,
-#                @opts.repsave + REPORT_EXT )
             
             new_rep.run( )
         }
@@ -824,7 +819,7 @@ class Framework
     # @return   [Object]    a deep clone of the object
     #
     def deep_clone( obj )
-        YAML::load( obj.to_yaml )
+        Marshal.load( Marshal.dump( obj ) )
     end
   
 end
