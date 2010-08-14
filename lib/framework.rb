@@ -159,7 +159,7 @@ class Framework
         pages = []
             
         # initiates the crawl
-        sitemap = @spider.run {
+        @sitemap = @spider.run {
             | url, html, headers |
 
             page = analyze( url, html, headers )
@@ -246,6 +246,7 @@ class Framework
             :version  => VERSION,
             :revision => REVISION,
             :options  => @opts.to_h,
+            :sitemap  => @sitemap.sort,
             :vulns    => Arachni::Module::Registry.get_results( )
          } )
     end

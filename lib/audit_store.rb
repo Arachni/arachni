@@ -42,6 +42,11 @@ class AuditStore
     attr_reader :options
     
     #
+    # @return    [Array]   all the urls crawled
+    #
+    attr_reader :sitemap
+    
+    #
     # @return    [Array<Vulnerability>]  the discovered vulnerabilities
     #
     attr_reader :vulns
