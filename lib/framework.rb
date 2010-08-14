@@ -547,10 +547,11 @@ class Framework
     #
     def run_mods( page )
 
-#        for mod in ls_loaded_mods
-#            run_mod( mod, page )
-#        end
-#        return
+        # if there's no thread count specified run each module
+        # in it's own thread.
+        if( !@opts.threads )
+            @opts.threads = ls_loaded_mods.size
+        end
         
         # create a queue that'll hold the modules to run
         mod_queue = Queue.new
@@ -791,17 +792,6 @@ class Framework
 #            @opts[:proxy_port] = nil
 #        end
 
-        #
-        # If proxy type is socks include socksify
-        # and let it proxy all tcp connections for us.
-        #
-        # Then nil out the proxy opts or else they're going to be
-        # passed as an http proxy to Anemone::HTTP.refresh_connection()
-        #
-        if( !@opts.threads )
-            @opts.threads = 3
-        end
-        
         # make sure the provided cookie-jar file exists
         if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
