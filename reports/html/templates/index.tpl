@@ -286,6 +286,8 @@
         </tr>
       </table>
 
+      <p class="note"><a href="#sitemap">Sitemap</a></p>
+
       <p>
       <h2 id="top">{{vulns | size}} vulnerabilities discovered</h2>
       {% for vuln in vulns %}
@@ -427,6 +429,11 @@
         <br />
         {% endfor %}
       </div>
+      
+      <h2 id="sitemap">Sitemap</h2>
+      {% for url in sitemap %}
+      <a href="{{url}}">{{url}}</a><br/>
+      {% endfor%}
   </div>
 </body>
 </html>
