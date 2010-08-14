@@ -52,8 +52,7 @@ class ResponseSplitting < Arachni::Module::Base
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
         # if we find it it means that the site is vulnerable
-        @__header = "\r\nContent-Type: text/html\r\nHTTP/1.1" +
-            " 200 OK\r\nContent-Type: text/html\r\nX-CRLF-Safe: No\r\n\r\n"
+        @__header = "\r\nX-CRLF-Safe: no"
     end
     
     def run( )
@@ -121,15 +120,15 @@ class ResponseSplitting < Arachni::Module::Base
     private
     
     def __log_results( where, var, res, url )
-        if res.get_fields( 'x-crlf-safe' )
+        if res.get_fields( 'X-CRLF-Safe' )
         
             @results << Vulnerability.new( {
                     'var'          => var,
                     'url'          => url,
-                    'injected'     => @__header,
+                    'injected'     => URI.encode( @__header ),
                     'id'           => 'x-crlf-safe',
-                    'regexp'       => nil,
-                    'regexp_match' => nil,
+                    'regexp'       => 'n/a',
+                    'regexp_match' => 'n/a',
                     'elem'         => where,
                     'response'     => res.body,
                     'headers'      => {
