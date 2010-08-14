@@ -68,12 +68,6 @@ class AuditStore
     
     def initialize( audit = {} )
         
-        # this means that the AuditStore is being constructed
-        # by AuditStore.load()
-        if( audit.size == 0 )
-            return
-        end
-        
         # set instance variables from audit opts
         audit.each {
             |k, v|
@@ -220,7 +214,7 @@ class AuditStore
             __id  = vuln.mod_name + '::' + vuln.elem + '::' +
                 vuln.var + '::' + vuln.url.split( /\?/ )[0]
                             
-            orig_url    = vuln.url
+            orig_url    = vuln.url.clone
             vuln.url    = vuln.url.split( /\?/ )[0]
             
             if( !new_vulns[__id] )
