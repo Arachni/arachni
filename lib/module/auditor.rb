@@ -10,6 +10,8 @@
 
 =end
 
+require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
+
 module Arachni
 module Module
 
@@ -371,7 +373,7 @@ module Auditor
         # are valid and present us with new attack vectors
         as_is = Hash.new( )
         as_is['altered'] = '__orig'
-        as_is['hash']    = hash.clone
+        chash = as_is['hash']    = hash.clone
             
         as_is['hash'].keys.each {
             |k|
@@ -384,27 +386,17 @@ module Auditor
         hash.keys.each {
             |k|
             
-            hash.keys.each{
-                |key|
-                hash[key] = 'test@domain.com' if !hash[key] || hash[key].empty?
-            }
-            
+            hash = KeyFiller.fill( hash )
             
             var_combo << { 
                 'altered' => k,
                 'hash'    => hash.merge( { k => to_inj } )
             }
         }
-    #         ap var_combo
+        
         var_combo
     end
 
-    def sync( &block )
-        @mutex.synchronize {
-            block.call
-        }
-    end
-    
 end
 
 end
