@@ -56,7 +56,7 @@ module Trainer
         forms   = analyzer.get_forms( res.body ).clone if opts.audit_forms
         cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).clone
 
-        if( url )
+        if( url && opts.audit_links )
             links.push( {
                 'href' => analyzer.url,
                 'vars' => analyzer.get_link_vars( analyzer.url )
