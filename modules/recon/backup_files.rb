@@ -1,5 +1,5 @@
 =begin
-  $Id: eval.rb 287 2010-08-01 01:07:09Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -19,7 +19,7 @@ module Modules
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev: 287 $
+# @version: $Rev$
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -61,7 +61,7 @@ class BackupFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find sensitive backup files.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 287 $',
+            'Version'        => '$Rev$',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 
