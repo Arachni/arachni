@@ -279,7 +279,7 @@ class Framework
         if( mods[0] != "*" )
 
             sorted_mods = []
-            ap mods
+            
             # discovery modules should be loaded before audit ones
             # and ls_available() ownors that
             @modreg.ls_available(  ).map {
