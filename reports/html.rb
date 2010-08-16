@@ -111,7 +111,7 @@ class HTML < Arachni::Report::Base
                     @audit_store.vulns[i].variations[j].delete( 'response' )
                 end
                 
-                if( variation['headers']['request'] )
+                if( variation['headers']['request'].is_a?( Hash ) )
                     request = ''
                     variation['headers']['request'].each_pair {
                         |key,val|
@@ -121,7 +121,7 @@ class HTML < Arachni::Report::Base
                         request.clone
                 end
                 
-                if( variation['headers']['response'] )
+                if( variation['headers']['response'].is_a?( Hash ) )
                     response = ''
                     variation['headers']['response'].each_pair {
                         |key,val|
