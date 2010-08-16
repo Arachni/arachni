@@ -53,7 +53,7 @@ class XSS < Arachni::Module::Base
         # but don't open the file yourself, use get_data_file( filename )
         # with a block and read each line
         #
-        # the file must be under modules/<modname>/<filename>
+        # the file must be under modules/<modtype>/<modname>/<filename>
         #
         get_data_file( @__injection_strs_file ) {
             |str|

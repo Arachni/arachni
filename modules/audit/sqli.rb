@@ -57,7 +57,7 @@ class SQLInjection < Arachni::Module::Base
         # but don't open the file yourself, use get_data_file( filename )
         # with a block and read each line
         #
-        # keep your files under modules/<modname>/
+        # keep your files under modules/<modtype>/<modname>/
         #
         @__regexp_ids_file = 'regexp_ids.txt'
         
