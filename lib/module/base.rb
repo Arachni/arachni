@@ -48,10 +48,6 @@ class Base
     #
     attr_reader :page
     
-    attr_reader :link_queue
-    attr_reader :form_queue
-    attr_reader :cookie_queue
-    
     #
     # Initializes the module attributes, HTTP client and {Trainer}
     #
@@ -65,18 +61,15 @@ class Base
         @page  = page
         @http  = Arachni::Module::HTTP.new( @page.url )
         
-        @form_mutex   = Mutex.new
-        @link_mutex   = Mutex.new
-        @cookie_mutex = Mutex.new
-                        
-        @form_queue   = Queue.new
-        update_form_queue( get_forms )
+        @@last_url ||= ''
         
-        @link_queue   = Queue.new
-        update_link_queue( get_links )
-        
-        @cookie_queue = Queue.new
-        update_cookie_queue( get_cookies )
+        if( @@last_url != @page.url )
+            init_forms( get_forms )
+            init_links( get_links )
+            init_cookies( get_cookies )
+            
+            @@last_url = @page.url
+        end
         
         #
         # This is a callback.
@@ -180,72 +173,6 @@ class Base
         # example:
         # ['eval', 'sqli']
         []
-    end
-    
-    #
-    # This method passes the block with each form in the page.
-    #
-    # Unlike {#get_forms} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new form <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_forms( &block )
-        return if !Options.instance.audit_forms
-        
-        @form_consumer = Thread.new do
-            while( form = @form_queue.pop )
-                block.call( form )
-            end
-        end
-        
-        @form_consumer.join
-        update_form_queue( @page.elements['forms'] )
-    end
-
-    #
-    # This method passes the block with each link in the page.
-    #
-    # Unlike {#get_links} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new link <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_links( &block )
-        return if !Options.instance.audit_links
-        
-        @link_consumer = Thread.new do
-            while( link = @link_queue.pop )
-                block.call( link )
-            end
-        end
-        
-        @link_consumer.join
-        update_link_queue( @page.elements['links'] )
-    end
-    
-    #
-    # This method passes the block with each cookie in the page.
-    #
-    # Unlike {#get_cookies} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new cookie <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_cookies( &block )
-        return if !Options.instance.audit_cookies
-        
-        @cookie_consumer = Thread.new do
-            while( cookie = @cookie_queue.pop )
-                block.call( cookie )
-            end
-        end
-        
-        @cookie_consumer.join
-        update_cookie_queue( @page.elements['cookies'] )
     end
     
     #
@@ -445,50 +372,6 @@ class Base
              
     end
     
-    private
-    
-    def update_form_queue( forms )
-        
-        producer = Thread.new {
-            @form_mutex.synchronize {
-                @form_queue.clear
-                forms.each {
-                    |form|
-                    @form_queue << form
-                }
-                @form_queue << nil
-            }
-        }
-    end
-    
-    def update_link_queue( links )
-        
-        producer = Thread.new {
-            @link_mutex.synchronize {
-                @link_queue.clear
-                links.each {
-                    |link|
-                    @link_queue << link
-                }
-                @link_queue << nil
-            }
-        }
-    end
-        
-    def update_cookie_queue( cookies )
-        
-        cookie_producer = Thread.new {
-            @cookie_mutex.synchronize {
-                @cookie_queue.clear
-                cookies.each {
-                    |cookie|
-                    @cookie_queue << cookie
-                }
-                @cookie_queue << nil
-            }
-        }
-    end
-           
 end
 end
 end
