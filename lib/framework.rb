@@ -275,10 +275,25 @@ class Framework
     # @param [Array]  mods  Array of modules to load
     #
     def mod_load( mods = '*' )
+
+        if( mods[0] != "*" )
+
+            sorted_mods = []
+            ap mods
+            # discovery modules should be loaded before audit ones
+            # and ls_available() ownors that
+            @modreg.ls_available(  ).map {
+                |mod|
+                sorted_mods << mod[0] if mods.include?( mod[0] )
+            }
+        else
+            sorted_mods = ["*"]
+        end
+        
         #
         # Check the validity of user provided module names
         #
-        mods.each {
+        sorted_mods.each {
             |mod_name|
             
             # if the mod name is '*' load all modules

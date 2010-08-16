@@ -91,16 +91,30 @@ class Registry
     #
     def ls_available( )
 
-        Dir.glob( @mod_lib + '*.rb' ).each {
+        (ls_recon | ls_audit).each {
             |class_path|
 
             filename = class_path.gsub( Regexp.escape( @mod_lib ) , '' )
+            filename = filename.gsub( /(recon|audit)\// , '' )
             filename.gsub!( Regexp.new( '.rb' ) , '' )
 
             @available_mods[filename] = Hash.new
             @available_mods[filename]['path'] = class_path
         }
+        
         @available_mods
+    end
+
+    def ls_recon
+      ls( "recon" )
+    end
+    
+    def ls_audit
+      ls( "audit" )
+    end
+    
+    def ls( type )
+        Dir.glob( @mod_lib + "#{type}/" + '*.rb' )
     end
 
     #
