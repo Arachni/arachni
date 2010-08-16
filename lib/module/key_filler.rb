@@ -27,6 +27,11 @@ module Module
 #
 class KeyFiller
   
+    # Hash of regexps for the parameter keys
+    # and the values to to fill in
+    #
+    # @return  [Hash]
+    #
     @@regexps = {
         'name'    => 'arachni_name',
         'user'    => 'arachni_user',
@@ -40,7 +45,14 @@ class KeyFiller
         'id'      => '1'
     }
         
-        
+    #
+    # Tries to fill a hash with values of appropriate type<br/>
+    # based on the key of the parameter.
+    #
+    # @param  [Hash]  hash   hash of name=>value pairs
+    #
+    # @return   [Hash]
+    #
     def self.fill( hash )
         
         hash.keys.each{
@@ -58,6 +70,7 @@ class KeyFiller
         return hash
     end
     
+    private
     
     def self.match?( str )
       @@regexps.keys.each {
