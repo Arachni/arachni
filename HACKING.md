@@ -40,7 +40,7 @@ pre-configured with proxy, auth and ssl settings.
 You also have access to the instantiated Net:HTTP session ({Arachni::Module::HTTP#session}) so use that
 if you must.
 
-Take a look in the tutorial module to see what you get: {Arachni::Modules::SimpleRFI}
+Take a look in the tutorial module to see what you get: {Arachni::Modules::Audit::SimpleRFI}
     
 The base module will also give you some insights: {Arachni::Module::Base}
 
@@ -52,27 +52,27 @@ Creating New Modules
 ----
 Arachni provides you with examples for the usual types of modules.
 
-This is your main guide: {Arachni::Modules::SimpleRFI}
+This is your main guide: {Arachni::Modules::Audit::SimpleRFI}
     
 This covers most of the usual tasks when writing a module.
 It lets Arachni do all the work.
 
 For something more elaborate look in:<br/>
-- {Arachni::Modules::ResponseSplitting}<br/>
-- {Arachni::Modules::SQLInjection}
+- {Arachni::Modules::Audit::ResponseSplitting}<br/>
+- {Arachni::Modules::Audit::SQLInjection}
     
 These modules do their own vulnerability checking and logging.
 
 If you want to create coupled modules take a look in:<br/>
-- {Arachni::Modules::ExtractObjects}<br/>
-- {Arachni::Modules::AuditObjects}
+- {Arachni::Modules::Recon::ExtractObjects}<br/>
+- {Arachni::Modules::Audit::AuditObjects}
 
-In this case {Arachni::Modules::ExtractObjects} extracts information from the
+In this case {Arachni::Modules::Recon::ExtractObjects} extracts information from the
 web pages and saves it in the module datastore.
 
 The datastore is persistent and shared between all modules.
 
-{Arachni::Modules::AuditObjects} then gets the data harvested by {Arachni::Modules::ExtractObjects}
+{Arachni::Modules::Audit::AuditObjects} then gets the data harvested by {Arachni::Modules::Recon::ExtractObjects}
 and handles it accordingly.
 
 One last note.

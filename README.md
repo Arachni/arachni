@@ -107,8 +107,8 @@ due to the combination of regular expression analysis and [Nokogiri](http://noko
 The analyzer serves as the first layer of HTML analysis.<br/>
 More complex analysis, for JS, AJAX, Java Applets etc, can be achieved by adding data-mining/audit pairs of modules
 like:<br/>
-- {Arachni::Modules::ExtractObjects}<br/>
-- {Arachni::Modules::AuditObjects}
+- {Arachni::Modules::Recon::ExtractObjects}<br/>
+- {Arachni::Modules::Audit::AuditObjects}
 
 This way the system can be extended to be able to handle virtually anything.
 
@@ -123,7 +123,7 @@ This way the system can be extended to be able to handle virtually anything.
     - A pretty and easy to use Net::HTTP wrapper.
  - Multi-threaded module execution with adjustable thread count.
 
-You can find an tutorial module here: {Arachni::Modules::SimpleRFI}
+You can find an tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 
 **  Report Management ** ({Arachni::Report})
 
