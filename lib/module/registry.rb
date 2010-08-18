@@ -79,7 +79,7 @@ class Registry
         
         @@module_registry = []
         @@module_results  = []
-        @@module_storage  = []
+        @@module_storage  = Hash.new
             
         @available_mods   = Hash.new
     end
@@ -286,7 +286,7 @@ class Registry
     # @param    [Object]    obj
     #
     def Registry.add_storage( obj )
-        @@module_storage << obj
+        @@module_storage.merge( obj )
     end
     
     #
