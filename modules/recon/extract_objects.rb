@@ -41,14 +41,21 @@ class ExtractObjects < Arachni::Module::Base
 
     def initialize( page )
         # in this case we don't need to call the parent
-        
-        # get all objects from the HTML code 
-        @__objects = page.html.scan( /<object(.*?)<\/object>/ixm )
+        @page = page
     end
 
     def run( )
+
+        # get all objects from the HTML code 
+        @__objects = @page.html.scan( /<object(.*?)<\/object>/ixm )
+
+        #
         # add the object elements to storage
-        add_storage( 'objects', @__objects )
+        #
+        # you can use whatever key you want when saving data
+        # but it's best to use the class name...keeps things tidy
+        #
+        add_storage( self.class.info['Name'], @__objects )
     end
 
     
