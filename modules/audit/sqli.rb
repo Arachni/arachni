@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # SQL Injection recon module.<br/>
@@ -197,6 +198,7 @@ class SQLInjection < Arachni::Module::Base
         
     end
 
+end
 end
 end
 end

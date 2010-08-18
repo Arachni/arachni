@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # Simple shell command injection module.<br/>
@@ -94,6 +95,7 @@ class SimpleCmdExec < Arachni::Module::Base
         }
     end
 
+end
 end
 end
 end

@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # eval() recon module.
@@ -138,6 +139,7 @@ class Eval < Arachni::Module::Base
         }
     end
 
+end
 end
 end
 end

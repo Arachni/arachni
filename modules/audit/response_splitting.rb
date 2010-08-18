@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # HTTP Response Splitting recon module.
@@ -143,6 +144,7 @@ class ResponseSplitting < Arachni::Module::Base
         end
     end
 
+end
 end
 end
 end

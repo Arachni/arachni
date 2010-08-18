@@ -13,7 +13,7 @@
 module Arachni
 
 module Modules
-
+module Recon
 #
 # This is a discovery/data mining example module.
 #
@@ -73,7 +73,7 @@ class ExtractObjects < Arachni::Module::Base
         }
     end
     
-
+end
 end
 end
 end

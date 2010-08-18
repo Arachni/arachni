@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # Simple Remote File Inclusion tutorial module.
@@ -300,6 +301,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         }
     end
 
+end
 end
 end
 end

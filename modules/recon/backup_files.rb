@@ -13,7 +13,7 @@
 module Arachni
 
 module Modules
-
+module Recon
 #
 # Backup file discovery module.
 #
@@ -140,7 +140,7 @@ class BackupFiles < Arachni::Module::Base
             " named #{filename} at\t" + url )
     end
 
-
+end
 end
 end
 end

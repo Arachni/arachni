@@ -13,10 +13,11 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # This module manipulates/audits/whatever
-# HTML objects discovered by {ExtractObjects}.
+# HTML objects discovered by {Modules::Recon::ExtractObjects}.
 #
 # It serves as an example of how to pair discovery/data-mining modules<br/>
 # with other modules.
@@ -92,6 +93,7 @@ class AuditObjects < Arachni::Module::Base
         ['extract_objects']
     end
 
+end
 end
 end
 end

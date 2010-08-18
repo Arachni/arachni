@@ -13,6 +13,7 @@
 module Arachni
 
 module Modules
+module Audit
 
 #
 # XSS recon module.<br/>
@@ -116,6 +117,7 @@ class XSS < Arachni::Module::Base
         }
     end
 
+end
 end
 end
 end
