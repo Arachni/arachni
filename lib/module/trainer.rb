@@ -65,8 +65,8 @@ module Trainer
             } )
         end
 
-        update_forms( forms )
-        update_links( links )
+        update_forms( forms ) if opts.audit_forms
+        update_links( links ) if opts.audit_links
         update_cookies( cookies )
 
     end
