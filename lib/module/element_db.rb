@@ -185,36 +185,6 @@ module ElementDB
         
     end
 
-    def forms_include?( form )
-        @@forms.each_with_index {
-            |page_form, i|
-                  
-            return true if( form_id( form ) == form_id( page_form ) )
-                    
-        }
-        return false
-    end
-    
-    #
-    # Returns a form ID string disregarding the values of their input fields.<br/>
-    # Used to compare forms in {#update_forms}.
-    #
-    # @param    [Hash]    form
-    #
-    def form_id( form )
-      
-        cform = form.dup
-        id    = cform['attrs'].to_s
-        
-        cform['auditable'].map {
-            |item|
-            citem = item.clone
-            citem.delete( 'value' )
-            id +=  citem.to_s
-        }
-        return id
-    end
-
     #
     # Updates @@links wth new links that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
@@ -264,6 +234,38 @@ module ElementDB
             
             @http.set_cookies( cookie_jar )
         }
+    end
+
+    private
+
+    def forms_include?( form )
+        @@forms.each_with_index {
+            |page_form, i|
+                  
+            return true if( form_id( form ) == form_id( page_form ) )
+                    
+        }
+        return false
+    end
+    
+    #
+    # Returns a form ID string disregarding the values of their input fields.<br/>
+    # Used to compare forms in {#update_forms}.
+    #
+    # @param    [Hash]    form
+    #
+    def form_id( form )
+      
+        cform = form.dup
+        id    = cform['attrs'].to_s
+        
+        cform['auditable'].map {
+            |item|
+            citem = item.clone
+            citem.delete( 'value' )
+            id +=  citem.to_s
+        }
+        return id
     end
 
 end
