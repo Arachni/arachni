@@ -38,7 +38,7 @@ if( $_POST['form2_input'] == "form two input" &&
 
   echo <<<EOHTML
 
-    <form method="post" action="{$_SERVER['PHP_SELF']}" name="form3">
+    <form method="post" action="{$_SERVER['PHP_SELF']}?form3" name="form3">
     <label>Form 3 input:</label>
     <input type="text" name="form3_input" value="form three input">
     <input type="submit">
@@ -52,7 +52,7 @@ if(  $_POST['form1_input'] == "form one input" ) {
 
   echo <<<EOHTML
 
-    <form method="post" action="{$_SERVER['PHP_SELF']}" name="form2">
+    <form method="post" action="{$_SERVER['PHP_SELF']}?form2" name="form2">
     <label>Form 2 input:</label>
     <input type="text" name="form2_input" value="form two input">
     <input type="hidden" name="curveball" value="{$_SESSION['curveball']}">
@@ -80,7 +80,7 @@ Finally, this script is also vulnerable to script name/path XSS injection.
     {$_GET['msg']}
     <br/>
     <br/>
-    <form method="post" action="{$_SERVER['PHP_SELF']}" name="form1">
+    <form method="post" action="{$_SERVER['PHP_SELF']}?form1" name="form1">
     <label>Form 1 input:</label>
     <input type="text" name="form1_input" value="form one input">
     <input type="submit">
