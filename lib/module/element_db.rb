@@ -160,30 +160,33 @@ module ElementDB
       
         new_forms = []
         
-        forms.each {
-            |form|
+        @@form_mutex.synchronize {
+            forms.each {
+                |form|
                 
-            next if form['attrs']['action'].include?( '__arachni__' )
-            next if form['auditable'].size == 0
+                next if form['attrs']['action'].include?( '__arachni__' )
+                next if form['auditable'].size == 0
             
-            @@form_mutex.synchronize {
-                @@forms.each_with_index {
-                    |page_form, i|
-    
-                    if( form_id( form ) == form_id( page_form ) )
-                        page_form = form
-                    else
-                        new_forms << form
-                    end
-                }
-                
-                @@forms = forms if( @@forms.empty? )
-              
-                @@forms |= new_forms
+                @@forms << form if !forms_include?( form )
+            
             }
+            
+            @@forms = forms if( @@forms.empty? )
         }
+        
+        
     end
 
+    def forms_include?( form )
+        @@forms.each_with_index {
+            |page_form, i|
+                  
+            return true if( form_id( form ) == form_id( page_form ) )
+                    
+        }
+        return false
+    end
+    
     #
     # Returns a form ID string disregarding the values of their input fields.<br/>
     # Used to compare forms in {#update_forms}.
