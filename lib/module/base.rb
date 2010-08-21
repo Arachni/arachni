@@ -61,8 +61,11 @@ class Base
         @page  = page
         @http  = Arachni::Module::HTTP.new( @page.url )
         
-        @@last_url ||= ''
+        if( @page.cookiejar )
+            @http.set_cookies( @page.cookiejar )
+        end
         
+        @@last_url ||= ''
         if( @@last_url != @page.url )
             init_forms( get_forms )
             init_links( get_links )
@@ -79,10 +82,6 @@ class Base
         # It's used to train Arachni.
         #
         @http.add_trainer{ |res, url| train( res, url ) }
-        
-        if( @page.cookiejar )
-            @http.set_cookies( @page.cookiejar )
-        end
         
     end
 
