@@ -278,11 +278,22 @@ class Framework
 
         if( mods[0] != "*" )
 
+            avail_mods  = @modreg.ls_available(  )
+            
+            mods.each {
+                |mod_name|
+                if( !avail_mods[mod_name] )
+                      raise( Arachni::Exceptions::ModNotFound,
+                          "Error: Module #{mod_name} wasn't found." )
+                end
+            }
+
+            
             sorted_mods = []
             
             # discovery modules should be loaded before audit ones
             # and ls_available() ownors that
-            @modreg.ls_available(  ).map {
+            avail_mods.map {
                 |mod|
                 sorted_mods << mod[0] if mods.include?( mod[0] )
             }
@@ -312,12 +323,6 @@ class Framework
                 break
             end
             
-            # make sure the module name is valid...
-            if( !@modreg.ls_available(  )[mod_name] )
-                raise( Arachni::Exceptions::ModNotFound,
-                    "Error: Module #{mod_name} wasn't found." )
-            end
-
             # ...and load the module passing all exceptions to the UI.
             begin
                 @modreg.mod_load( mod_name )
