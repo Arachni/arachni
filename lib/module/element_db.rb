@@ -76,6 +76,11 @@ module ElementDB
     #
     def init_cookies( cookies )
       @@cookies = cookies
+      
+      cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
+      cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
+      @http.set_cookies( cookie_jar )
+
     end
     
     #
@@ -159,8 +164,13 @@ module ElementDB
     def update_forms( forms )
       
         new_forms = []
-        
         @@form_mutex.synchronize {
+          
+            if( @@forms.empty? )
+                @@forms = forms
+                return 
+            end
+            
             forms.each {
                 |form|
                 
@@ -170,8 +180,6 @@ module ElementDB
                 @@forms << form if !forms_include?( form )
             
             }
-            
-            @@forms = forms if( @@forms.empty? )
         }
         
         
@@ -214,7 +222,9 @@ module ElementDB
     # @param    [Array<Hash>]    links  the return object of {Analyzer#get_links}
     #
     def update_links( links )
-        @@links |= links
+      @@link_mutex.synchronize {
+          @@links |= links
+      }
     end
 
     #
@@ -227,35 +237,35 @@ module ElementDB
             
         new_cookies = []
         
-        cookies.each_with_index {
-            |cookie|
-            
-            @@cookies.each_with_index {
-                |page_cookie, i|
-
-                if( page_cookie['name'] == cookie['name'] )
-                    @@cookies[i] = cookie
-                else
-                    new_cookies << cookie
-                end
+        @@cookie_mutex.synchronize {
+            cookies.each_with_index {
+                |cookie|
+                
+                @@cookies.each_with_index {
+                    |page_cookie, i|
+    
+                    if( page_cookie['name'] == cookie['name'] )
+                        @@cookies[i] = cookie
+                    else
+                        new_cookies << cookie
+                    end
+                }
+    
             }
-
+    
+            @@cookies |= new_cookies
+    
+            if( @@cookies.length == 0 )
+                @@cookies = new_cookies = cookies
+            end
+    
+            cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
+            cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
+            
+            @http.set_cookies( cookie_jar )
         }
-
-        @@cookies |= new_cookies
-
-        if( @@cookies.length == 0 )
-            @@cookies = new_cookies = cookies
-        end
-
-        cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-        cookie_jar = cookie_jar.merge( get_cookies_simple( @@cookies ) )
-        
-        @http.set_cookies( cookie_jar )
-
     end
 
-  
 end
 
 end
