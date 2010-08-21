@@ -94,10 +94,7 @@ class Page
     # Returns the cookies elements in {Page#elements}
     #
     def get_cookies
-        elements['cookies'].reject {
-            |cookie|
-            Options.instance.exclude_cookies.include?( cookie['name'] )
-        }
+        elements['cookies']
     end
 
 end
