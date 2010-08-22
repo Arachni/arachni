@@ -162,7 +162,9 @@ module ElementDB
     # @param    [Array<Hash>] forms    the return object of {Analyzer#get_forms}
     #
     def update_forms( forms )
-      
+        
+        return if forms.size == 0
+        
         new_forms = []
         @@form_mutex.synchronize {
           
@@ -180,6 +182,7 @@ module ElementDB
                 @@forms << form if !forms_include?( form )
             
             }
+            ap @@forms
         }
         
         
@@ -192,6 +195,8 @@ module ElementDB
     # @param    [Array<Hash>]    links  the return object of {Analyzer#get_links}
     #
     def update_links( links )
+      return if links.size == 0
+      
       @@link_mutex.synchronize {
           @@links |= links
       }
@@ -204,6 +209,7 @@ module ElementDB
     # @param    [Array<Hash>]   cookies   the return object of {Analyzer#get_cookies}
     #
     def update_cookies( cookies )
+        return if cookies.size == 0
             
         new_cookies = []
         
