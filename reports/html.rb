@@ -19,6 +19,8 @@ module Reports
 #
 # Creates an HTML report of the audit.
 #
+# Requires the Liquid (http://www.liquidmarkup.org/) gem:<br/>
+#   sudo gem install liquid
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
