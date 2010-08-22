@@ -158,14 +158,12 @@ Usage
     
     --only-positives            echo positive results *only*
   
-    --threads=<number>          how many threads to instantiate (default: 3)
-                                  More threads does not necessarily mean more speed,
-                                  be careful when adjusting the thread count.
+    --threads=<number>          how many threads to instantiate
+                                  If no thread limit has been specified
+                                    each module will run in its own thread.
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
-                                  Cookies in this file will not be audited,
-                                  so remove any cookies that you do want to audit.
-                                
+                                                                 
     
     --user-agent=<user agent>   specify user agent
     
@@ -186,10 +184,11 @@ Usage
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
-                                  You can use it multiple times.
+                                  (Can be used multiple times.)
     
     -i <regex>
     --include=<regex>           include urls matching this regex only
+                                  (Can be used multiple times.)
 
     --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
                                   (URLs matching <regex> will be crawled <count> links deep.)
@@ -198,7 +197,7 @@ Usage
     -f
     --follow-subdomains         follow links to subdomains (default: off)
     
-    --obey-robots-txt           obey robots.txt file (default: false)
+    --obey-robots-txt           obey robots.txt file (default: off)
     
     --depth=<number>            depth limit (default: inf)
                                   How deep Arachni should go into the site structure.
@@ -220,8 +219,11 @@ Usage
     -c
     --audit-cookies             audit cookies (COOKIE)
   
-    --audit-cookie-jar          audit cookies in cookiejar
-                                  (default: off)                              
+    --exclude-cookie=<name>     cookies not to audit
+                                  You should exclude session cookies.
+                                  (Can be used multiple times.)
+    
+    --audit-headers             audit HTTP headers
   
     
 **Modules**
@@ -242,18 +244,19 @@ Usage
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves a marshal dump of the results
+    --repsave=<file>              saves the audit results in <file>
                                     (The file will be saved with an extention of: .afr)               
     
-    --repload=<file>              loads a marshal dump of the audit results
+    --repload=<file>              loads audit results from <file>
                                   and lets you create a new report
     
     --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected report.
-                                  (One invocation only.)                                  
+                                  Set options for the selected reports.
+                                  (One invocation only, options will be applied to all loaded reports.)
                                   
-    --report=<repname>:<file>     <repname>: the name of the report as displayed by '--lsrep'
-                                  <file>: where to save the report
+    --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
+                                  (default: stdout)
+                                  (Can be used multiple times.)
                                   
                                   
 **Proxy**
