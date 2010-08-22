@@ -291,6 +291,8 @@ Requirements
     - sudo gem install socksify
   * Awesome print
     - sudo gem install awesome_print
+  * Liquid (For {Arachni::Reports::HTML} reporting)
+    - sudo gem install liquid  
   * Yardoc (if you want to generate the documentation)
 
 
