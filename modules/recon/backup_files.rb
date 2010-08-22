@@ -14,10 +14,12 @@ module Arachni
 
 module Modules
 module Recon
+  
 #
 # Backup file discovery module.
-#
-# Just a placeholder for now...
+# 
+# Appends common backup extesions to the filename of the page under audit<br/>
+# and checks for its existence. 
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -29,43 +31,87 @@ class BackupFiles < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
+    
     # get output interface
     include Arachni::UI::Output
 
     def initialize( page )
         super( page )
 
-        # just this for now...
-        @__backup_files = ['index.php.bak']
+        @__backup_ext = [
+            '%s.old',
+            '%s.OLD',
+            '%s.bak',
+            '%s.BAK',
+            '%s.zip',
+            '%s.ZIP',
+            '%s.gz',
+            '%s.tar.gz',
+            '%s.temp',
+            '%s.save',
+            '%s.orig',
+            '%s.backup',
+            '%s.000',
+            '%s~',
+            '%s~1',
+            '%s.cs',
+            '%s.pas',
+            '%s.vb',
+            '%s.java',
+            '%s.class',
+            '%s.sav',
+            '%s.saved',
+            '%s.rar',
+            '%s.src',
+            '%s.tmp',
+            '%s.inc',
+            '%s.copy',
+            '%s1',
+            'Copy%%20of%%20%s'
+        ]
         
         # our results hash
         @results = []
     end
 
     def run( )
+
+        # ugly crap but it works, as far as I can tell...
+        path     = __get_path( @page.url )
+        regex    = path + '(.*)'
         
-        # get the path to the folder of the page we're auditing
-        path = URI.parse( @page.url ).path
+        filename = @page.url.match( Regexp.new( regex ) )
+        filename = filename[1].gsub( /\?(.*)/, '' ) 
         
-        # ruby's split doesn't work as it should, we'll use our own
-        # with a twist
-        path = __get_path( path ).join( "/" ) + '/'
+        if( filename.empty? )
+            print_debug( self.class.info['Name'] + ' is backing out. ' + 
+              'Can\'t extract filename from url: ' + @page.url )
+            return
+        end
         
-        # iterate through the injection codes
-        @__backup_files.each {
-            |file|
+        @__backup_ext.each {
+            |ext|
             
             #
-            # Test for the existance of the file.
+            # Test for the existance of the file + extension.
             #
             # We're not worrying about its contents, the Trainer will
             # analyze it and if it's HTML it'll extract any new attack vectors.
             #
-            url = path + file
-            res = @http.get( url )
+            
+            file = ext % filename # Example: index.php.bak
+            url  = path + file
+            res  = @http.get( url )
 
             __log_results( res, file, url ) if( res.code == "200" )
+            
+            file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
+            url  = path + file
+            res  = @http.get( url )
+            
+            __log_results( res, file, url ) if( res.code == "200" )
         }
+
         
         # register our results with the system
         register_results( @results )
@@ -83,7 +129,7 @@ class BackupFiles < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
-                'Name'        => %q{A sensitive backup file exists on the server.},
+                'Name'        => %q{A backup file exists on the server.},
                 'Description' => %q{},
                 'CWE'         => '530',
                 'Severity'    => Vulnerability::Severity::HIGH,
@@ -114,7 +160,7 @@ class BackupFiles < Arachni::Module::Base
           splits << tmp
         end
         
-        return splits
+        return splits.join( "/" ) + '/'
     end
     
     def __log_results( res, filename, url )
