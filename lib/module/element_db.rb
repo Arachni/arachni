@@ -182,7 +182,6 @@ module ElementDB
                 @@forms << form if !forms_include?( form )
             
             }
-            ap @@forms
         }
         
         
