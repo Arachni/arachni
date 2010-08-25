@@ -5,14 +5,13 @@
 #
 
 if [ `whoami` = 'zapotek' ]; then
-    tpl_opts='-p /home/zapotek/workspace/ -t doc_templates'
     outdir='-o /home/zapotek/workspace/arachni-gh-pages/'
     
 fi
 
 yardoc --verbose --protected --title \
   "Arachni - Web Application Vulnerability Scanning Framework" reports/* modules/* lib/* \
-  $tpl_opts $outdir \
+  $outdir \
   - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md HACKING.md
 
 rm -rf .yard*
