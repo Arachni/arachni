@@ -308,14 +308,14 @@ Windows users should run Arachni in Cygwin.
 
 Bug reports/Feature requests
 -----
-Please send your feedback using Trac's ticket system at 
-[http://sourceforge.net/apps/trac/arachni/newticket](http://sourceforge.net/apps/trac/arachni/newticket).
+Please send your feedback using Github's issue system at 
+[http://github.com/Zapotek/arachni/issues](http://github.com/Zapotek/arachni/issues).
 
 
 License
 -----
 Arachni is licensed under the GNU General Public License v2.<br/>
-See "[LICENSE](file.LICENSE.html)" for more information.
+See the "LICENSE" file for more information.
 
 
 Disclaimer
