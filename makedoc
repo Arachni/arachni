@@ -14,5 +14,6 @@ yardoc --verbose --protected --title \
   "Arachni - Web Application Vulnerability Scanning Framework" reports/* modules/* lib/* \
   $tpl_opts $outdir \
   - LICENSE AUTHORS TODO ACKNOWLEDGMENTS DIAGRAMS.md HACKING.md
-  
+
+rm -rf .yard*
   
