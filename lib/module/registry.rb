@@ -279,8 +279,6 @@ class Registry
     # Stores an object regulated by {Registrar#add_storage}
     # in @@module_storage
     #
-    # TODO: this isn't smart, classify it by module name instead
-    #
     # @see Registrar#add_storage
     #
     # @param    [Object]    obj
