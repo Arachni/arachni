@@ -47,7 +47,7 @@ class BackupFiles < Arachni::Module::Base
     def run( )
 
         # ugly crap but it works, as far as I can tell...
-        path     = __get_path( @page.url )
+        path     = Module::Utilities.get_path( @page.url )
         regex    = path + '(.*)'
         
         filename = @page.url.match( Regexp.new( regex ) )
@@ -109,28 +109,6 @@ class BackupFiles < Arachni::Module::Base
             }
 
         }
-    end
-    
-    def __get_path( url )
-      
-        splits = []
-        tmp = ''
-        
-        url.each_char {
-            |c|
-            if( c != '/' )
-                tmp += c
-            else
-                splits << tmp
-                tmp = ''
-            end
-        }
-        
-        if( !tmp =~ /\./ )
-          splits << tmp
-        end
-        
-        return splits.join( "/" ) + '/'
     end
     
     def __log_results( res, filename, url )

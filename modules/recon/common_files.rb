@@ -46,7 +46,7 @@ class CommonFiles < Arachni::Module::Base
     def run( )
 
         # ugly crap but it works, as far as I can tell...
-        path     = __get_path( @page.url )
+        path = Module::Utilities.get_path( @page.url )
         
         get_data_file( @__common_files ) {
             |file|
