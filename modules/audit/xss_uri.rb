@@ -65,7 +65,7 @@ class XSSURI < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'XSSPath',
+            'Name'           => 'XSSURI',
             'Description'    => %q{Cross-Site Scripting module for path injection},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
