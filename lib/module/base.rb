@@ -10,6 +10,7 @@
 
 =end
 
+require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/trainer'
 require Arachni::Options.instance.dir['lib'] + 'module/auditor'
 
