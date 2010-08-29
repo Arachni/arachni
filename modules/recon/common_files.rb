@@ -18,7 +18,7 @@ module Recon
 #
 # Backup file discovery module.
 #
-# Looks for common sensitive files on the server. 
+# Looks for sensitive common files on the server. 
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -37,34 +37,7 @@ class CommonFiles < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @__common_files = [
-            'sitemap.xml.gz',
-            'phpinfo.php',
-            'CVS/Repository',
-            'CVS/Root',
-            'CVS/Entries',
-            '_mmServerScripts/MMHTTPDB.php',
-            '_mmServerScripts/MMHTTPDB.asp',
-            '_mmDBScripts/MMHTTPDB.php',
-            '_mmDBScripts/MMHTTPDB.asp',
-            'r57shell.php',
-            'r57.php',
-            'c99shell.php',
-            'c99.php',
-            'nstview.php',
-            'nst.php',
-            'rst.php',
-            'r57eng.php',
-            'shell.php',
-            'r.php',
-            'lol.php',
-            'zehir.php',
-            'c-h.v2.php',
-            'php-backdoor.php',
-            'simple-backdoor.php',
-            'cmdasp.asp',
-            'config/database.yml'
-        ]
+        @__common_files = 'filenames.txt'
         
         # our results hash
         @results = []
@@ -75,7 +48,7 @@ class CommonFiles < Arachni::Module::Base
         # ugly crap but it works, as far as I can tell...
         path     = __get_path( @page.url )
         
-        @__common_files.each {
+        get_data_file( @__common_files ) {
             |file|
             
             #
@@ -100,7 +73,7 @@ class CommonFiles < Arachni::Module::Base
     def self.info
         {
             'Name'           => 'CommonFiles',
-            'Description'    => %q{Tries to find sensitive common files on the server.},
+            'Description'    => %q{Tries to find common sensitive files on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
             'Version'        => '$Rev: 385 $',
@@ -108,7 +81,7 @@ class CommonFiles < Arachni::Module::Base
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
-                'Name'        => %q{A sensitive common file exists on the server.},
+                'Name'        => %q{A common sensitive file exists on the server.},
                 'Description' => %q{},
                 'CWE'         => '530',
                 'Severity'    => Vulnerability::Severity::HIGH,

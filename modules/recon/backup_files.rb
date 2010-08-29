@@ -38,37 +38,7 @@ class BackupFiles < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @__backup_ext = [
-            '%s.old',
-            '%s.OLD',
-            '%s.bak',
-            '%s.BAK',
-            '%s.zip',
-            '%s.ZIP',
-            '%s.gz',
-            '%s.tar.gz',
-            '%s.temp',
-            '%s.save',
-            '%s.orig',
-            '%s.backup',
-            '%s.000',
-            '%s~',
-            '%s~1',
-            '%s.cs',
-            '%s.pas',
-            '%s.vb',
-            '%s.java',
-            '%s.class',
-            '%s.sav',
-            '%s.saved',
-            '%s.rar',
-            '%s.src',
-            '%s.tmp',
-            '%s.inc',
-            '%s.copy',
-            '%s1',
-            'Copy%%20of%%20%s'
-        ]
+        @__backup_ext_file = 'extensions.txt'
         
         # our results hash
         @results = []
@@ -89,7 +59,7 @@ class BackupFiles < Arachni::Module::Base
             return
         end
         
-        @__backup_ext.each {
+        get_data_file( @__backup_ext_file ) {
             |ext|
             
             #
