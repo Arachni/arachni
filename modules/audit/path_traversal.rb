@@ -25,6 +25,7 @@ module Audit
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
+# @see http://projects.webappsec.org/Path-Traversal
 #
 class PathTraversal < Arachni::Module::Base
 
@@ -77,15 +78,16 @@ class PathTraversal < Arachni::Module::Base
             'Version'        => '$Rev: 371 $',
             'References'     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
+                'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
             },
             'Targets'        => { 'Generic' => 'all' },
                 
             'Vulnerability'   => {
                 'Name'        => %q{Path Traversal},
                 'Description' => %q{Improper limitation of a pathname to a restricted directory.},
-                'CWE'         => '79',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
+                'CWE'         => '22',
+                'Severity'    => Vulnerability::Severity::MEDIUM,
+                'CVSSV2'       => '4.3',
                 'Remedy_Guidance'    => '',
                 'Remedy_Code' => '',
             }
