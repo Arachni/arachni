@@ -64,7 +64,9 @@ class KeyFiller
                 hash[key] = val
             end
             
-            hash[key] = 'arachni_default' if( !hash[key] )
+            # moronic default value...
+            # will figure  out ssomething better later...
+            hash[key] = '1' if( !hash[key] || hash[key].empty? )
         }
         
         return hash
