@@ -390,7 +390,7 @@ module Auditor
             
             var_combo << { 
                 'altered' => k,
-                'hash'    => hash.merge( { k => to_inj } )
+                'hash'    => hash.merge( { k => hash[k] + to_inj } )
             }
         }
         
