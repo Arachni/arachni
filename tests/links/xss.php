@@ -11,8 +11,7 @@ echo <<<EOHTML
 This form is vulnerable to Cross-Site Scripting.
     </pre>
 
-<a href="$_SERVER['PHP_SELF']?xss=xss">XSS</a>
-    </form>
+<a href="{$_SERVER['PHP_SELF']}?xss=xss">XSS</a>
 
 EOHTML;
 
