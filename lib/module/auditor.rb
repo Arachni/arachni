@@ -394,6 +394,9 @@ module Auditor
             }
         }
 
+        #
+        # same as above but with null terminated injection strings
+        #
         chash.keys.each {
             |k|
             
