@@ -393,6 +393,18 @@ module Auditor
                 'hash'    => hash.merge( { k => hash[k] + to_inj } )
             }
         }
+
+        chash.keys.each {
+            |k|
+            
+            chash = KeyFiller.fill( chash )
+            
+            var_combo << { 
+                'altered' => k,
+                'hash'    => chash.merge( { k => chash[k] + to_inj + "\0" } )
+            }
+        }
+
         
         var_combo
     end
