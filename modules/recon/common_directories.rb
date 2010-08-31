@@ -41,8 +41,10 @@ class CommonDirectories < Arachni::Module::Base
         super( page )
 
         @__common_directories = 'directories.txt' 
-        
-        @results = []
+ 
+        # to keep track of the requests and not repeat them
+        @@__audited ||= []
+        @results   = []
     end
 
     def run( )
@@ -54,7 +56,12 @@ class CommonDirectories < Arachni::Module::Base
             |dirname|
             
             url  = path + dirname + '/'
+            
+            next if @@__audited.include?( url )
+            print_debug( "#{self.class.info['Name']}: Checking for #{url}" )
+            
             res  = @http.get( url )
+            @@__audited << url
 
             __log_results( res, dirname, url ) if( res.code == "200" )
         }
@@ -88,6 +95,14 @@ class CommonDirectories < Arachni::Module::Base
         }
     end
     
+    #
+    # Adds a vulnerability to the @results array<br/>
+    # and outputs an "OK" message with the dirname and its url.
+    #
+    # @param  [Net::HTTPResponse]  res   the HTTP response
+    # @param  [String]  dirname   the discovered dirname 
+    # @param  [String]  url   the url of the discovered file
+    #
     def __log_results( res, dirname, url )
         
         # append the result to the results hash

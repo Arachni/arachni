@@ -39,6 +39,9 @@ class CommonFiles < Arachni::Module::Base
 
         @__common_files = 'filenames.txt'
         
+        # to keep track of the requests and not repeat them
+        @@__audited ||= []
+        
         # our results hash
         @results = []
     end
@@ -59,7 +62,12 @@ class CommonFiles < Arachni::Module::Base
             #
             
             url  = path + file
+
+            next if @@__audited.include?( url )
+            print_debug( "#{self.class.info['Name']}: Checking for #{url}" )
+
             res  = @http.get( url )
+            @@__audited << url
 
             __log_results( res, file, url ) if( res.code == "200" )
         }
@@ -114,7 +122,15 @@ class CommonFiles < Arachni::Module::Base
         
         return splits.join( "/" ) + '/'
     end
-    
+
+    #
+    # Adds a vulnerability to the @results array<br/>
+    # and outputs an "OK" message with the filename and its url.
+    #
+    # @param  [Net::HTTPResponse]  res   the HTTP response
+    # @param  [String]  filename   the discovered filename 
+    # @param  [String]  url   the url of the discovered file
+    #
     def __log_results( res, filename, url )
         
         # append the result to the results hash
