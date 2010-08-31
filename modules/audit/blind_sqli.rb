@@ -73,6 +73,9 @@ class BlindSQLInjection < Arachni::Module::Base
     
     def run( )
 
+        # temporarily out of commission
+        return
+
         delta = 0.0
         # establish a baseline
         5.times {
