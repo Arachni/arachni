@@ -49,6 +49,8 @@ class CommonDirectories < Arachni::Module::Base
 
     def run( )
 
+        print_status( "#{self.class.info['Name']} is now scanning..." )
+
         # ugly crap but it works, as far as I can tell...
         path = Module::Utilities.get_path( @page.url )
         
