@@ -179,7 +179,11 @@ module ElementDB
                 next if form['attrs']['action'].include?( '__arachni__' )
                 next if form['auditable'].size == 0
             
-                @@forms << form if !forms_include?( form )
+                if ! (index = forms_include?( form ) )
+                    @@forms << form 
+                else
+                    @@forms[index] = form
+                end
             
             }
         }
@@ -197,7 +201,14 @@ module ElementDB
       return if links.size == 0
       
       @@link_mutex.synchronize {
-          @@links |= links
+          links.each {
+              |link|
+              
+              next if !link['href']
+              next if link['href'].include?( '__arachni__' )
+                
+              @@links |= [link]
+          }
       }
     end
 
@@ -247,7 +258,7 @@ module ElementDB
         @@forms.each_with_index {
             |page_form, i|
                   
-            return true if( form_id( form ) == form_id( page_form ) )
+            return i if( form_id( form ) == form_id( page_form ) )
                     
         }
         return false
