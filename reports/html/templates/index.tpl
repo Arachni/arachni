@@ -214,6 +214,10 @@
         {% if options.audit_cookies %}</li>
         <li>Cookies</li>
         {% endif %}
+        
+        {% if options.audit_headers %}</li>
+        <li>Headers</li>
+        {% endif %}
       </ul>
     </td>
 
