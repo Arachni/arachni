@@ -35,7 +35,7 @@ class HTML < Arachni::Report::Base
     # @param [Hash]   options    options passed to the report
     # @param [String]    outfile    where to save the report
     #
-    def initialize( audit_store, options, outfile = html )
+    def initialize( audit_store, options, outfile = 'report' )
         @audit_store   = audit_store
         @options       = options
         @outfile       = outfile + '.html'
