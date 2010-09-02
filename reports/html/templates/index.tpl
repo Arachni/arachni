@@ -3,7 +3,6 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
 <!-- 
-        $Id$
         HTML Report template for Arachni - Web Application Vulnerability Scanning Framework
      -->
 
