@@ -285,6 +285,7 @@
         </tr>
       </table>
 
+      <p class="note"><a target="_blank" href="{{REPORT_FP}}">Report false positives</a></p>
       <p class="note"><a href="#sitemap">Sitemap</a></p>
 
       <p>

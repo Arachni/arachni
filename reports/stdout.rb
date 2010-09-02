@@ -116,6 +116,12 @@ class Stdout < Arachni::Report::Base
             }
             
             print_line( )
+            print_line( '-----' )
+            print_line( 'Found a false positive?' )
+            print_line( 'Report it: ' + REPORT_FP )
+            print_line( '-----' )
+            
+            print_line( )
             print_line( )
         }
     end

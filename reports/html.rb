@@ -147,7 +147,9 @@ class HTML < Arachni::Report::Base
             hash['options']['cookies'] = cookies
         end
         
-        hash['sitemap']  = @audit_store.sitemap
+        hash['sitemap']   = @audit_store.sitemap
+        hash['REPORT_FP'] = REPORT_FP
+        
         return hash
     end
 

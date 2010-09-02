@@ -27,6 +27,11 @@ class Base
     
     # get the output interface
     include Arachni::UI::Output
+
+    # where to report false positives <br/>
+    # info about this should be included in all templates     
+    REPORT_FP = 'http://github.com/Zapotek/arachni/issues'
+
     
     #
     # REQUIRED
