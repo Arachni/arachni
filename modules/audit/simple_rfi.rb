@@ -97,7 +97,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         print_debug( 'In prepare()' )
 
         #
-        # you can setup your modules environment as you wish
+        # you can setup your module's environment as you wish
         # but it's good practice to prefix your attributes and methods
         # with 2 underscores ( @__foo_attr, __foo_meth() )
         #

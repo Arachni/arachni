@@ -1,5 +1,5 @@
 =begin
-  $Id: xss.rb 371 2010-08-18 10:18:09Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -47,7 +47,6 @@ class XSSPath < Arachni::Module::Base
 
     def run( )
 
-        # ugly crap but it works, as far as I can tell...
         path = Module::Utilities.get_path( @page.url )
         
         @__injection_strs.each {
@@ -102,8 +101,8 @@ class XSSPath < Arachni::Module::Base
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
                 'url'          => url,
-                'injected'     => filename,
-                'id'           => filename,
+                'injected'     => id,
+                'id'           => id,
                 'regexp'       => 'n/a',
                 'regexp_match' => 'n/a',
                 'elem'         => Vulnerability::Element::LINK,
@@ -115,7 +114,8 @@ class XSSPath < Arachni::Module::Base
             }.merge( self.class.info ) )
                     
             # inform the user that we have a match
-            print_ok( "Found #{filename} at " + url )
+            print_ok( "Match at #{url}" )
+            print_verbose( "Inected string: #{id}" )
                 
         end
     end

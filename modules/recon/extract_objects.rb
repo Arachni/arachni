@@ -46,6 +46,10 @@ class ExtractObjects < Arachni::Module::Base
 
     def run( )
 
+        # this is an example module,
+        # there's no need for it during an audit
+        return
+        
         # get all objects from the HTML code 
         @__objects = @page.html.scan( /<object(.*?)<\/object>/ixm )
 

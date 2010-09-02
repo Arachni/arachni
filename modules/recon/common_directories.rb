@@ -103,7 +103,7 @@ class CommonDirectories < Arachni::Module::Base
     #
     def __log_results( res, dirname, url )
         
-        # append the result to the results hash
+        # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
             'url'          => url,
@@ -120,7 +120,7 @@ class CommonDirectories < Arachni::Module::Base
         }.merge( self.class.info ) )
                 
         # inform the user that we have a match
-        print_ok( "Found #{dirname} at\t" + url )
+        print_ok( "Found #{dirname} at " + url )
     end
 
 end

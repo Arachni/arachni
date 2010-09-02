@@ -41,7 +41,7 @@ class ResponseSplitting < Arachni::Module::Base
         # initialize the header
         @__header = ''
         
-        # initialize the hash that's hold the results
+        # initialize the array that will hold the results
         @results = []
     end
 
@@ -50,7 +50,8 @@ class ResponseSplitting < Arachni::Module::Base
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
-        # if we find it it means that the site is vulnerable
+        # if we find it it means that the attack was succesful
+        # thus site is vulnerable.
         @__header = "\r\nX-CRLF-Safe: no"
     end
     
@@ -77,7 +78,7 @@ class ResponseSplitting < Arachni::Module::Base
             __log_results( Vulnerability::Element::COOKIE, var, res, url )
         }
         
-        #register our results with the system
+        # register our results with the system
         register_results( @results )
     end
 
@@ -137,7 +138,7 @@ class ResponseSplitting < Arachni::Module::Base
                 }.merge( self.class.info )
             )
 
-            print_ok( "In #{where} var #{var} ( #{url} )" )
+            print_ok( "In #{where} var '#{var}' ( #{url} )" )
         end
     end
 

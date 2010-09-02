@@ -159,7 +159,7 @@ class SQLInjection < Arachni::Module::Base
             if ( ( match = res.body.scan( id_regex )[0] ) &&
                  res.body.scan( id_regex )[0].size > 0 )
                 
-                # append the result to the results hash
+                # append the result to the results array
                 @results << Vulnerability.new( {
                         'var'          => var,
                         'url'          => url,

@@ -40,7 +40,7 @@ class BackupFiles < Arachni::Module::Base
         # to keep track of the requests and not repeat them
         @@__audited ||= []
         
-        # our results hash
+        # our results array
         @results = []
     end
 
@@ -123,7 +123,7 @@ class BackupFiles < Arachni::Module::Base
     #
     def __log_results( res, filename, url )
         
-        # append the result to the results hash
+        # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
             'url'          => url,
@@ -140,7 +140,7 @@ class BackupFiles < Arachni::Module::Base
         }.merge( self.class.info ) )
                 
         # inform the user that we have a match
-        print_ok( "Found #{filename} at\t" + url )
+        print_ok( "Found #{filename} at " + url )
     end
     
     #

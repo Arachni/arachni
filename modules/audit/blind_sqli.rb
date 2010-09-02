@@ -36,6 +36,7 @@ class BlindSQLInjection < Arachni::Module::Base
     # register us with the system
     include Arachni::Module::Registrar
 
+    # how many requests to send to establish a baseline
     BASELINE_NUM  = 5
     
     def initialize( page )
@@ -88,13 +89,12 @@ class BlindSQLInjection < Arachni::Module::Base
         }
         
         # get the baseline plus 5 seconds for the query execution.
-        # of course this is just a guestimate...
+        # of course this is just a guestimation...
         baseline = deltas / BASELINE_NUM + 5.0
         
-        print_status( self.class.info['Name'] +
-        " established a maximum baseline limit of #{baseline}s." )
+        print_status( "Established a maximum baseline limit of #{baseline}s." )
         
-        # iterate through the regular expression strings
+        # iterate through the injection strings
         @__injection_strs.each {
             |str|
             
@@ -131,7 +131,7 @@ class BlindSQLInjection < Arachni::Module::Base
     def self.info
         {
             'Name'           => 'BlindSQLInjection',
-            'Description'    => %q{SQL injection recon module},
+            'Description'    => %q{Blind SQL injection audit module},
             'Elements'       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
@@ -180,8 +180,7 @@ class BlindSQLInjection < Arachni::Module::Base
         )
             
         # inform the user that we have a match
-        print_ok( self.class.info['Name'] +
-            " in: #{where} var #{var}:\t" + url )
+        print_ok( "In #{where} var '#{var}' ( #{url} )" )
                 
         # give the user some more info if he wants 
         print_verbose( "Injected str:\t" + injection_str )    

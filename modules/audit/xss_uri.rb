@@ -1,5 +1,5 @@
 =begin
-  $Id: xss.rb 371 2010-08-18 10:18:09Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -89,28 +89,6 @@ class XSSURI < Arachni::Module::Base
         }
     end
     
-    def __get_path( url )
-      
-        splits = []
-        tmp = ''
-        
-        url.each_char {
-            |c|
-            if( c != '/' )
-                tmp += c
-            else
-                splits << tmp
-                tmp = ''
-            end
-        }
-        
-        if( !tmp =~ /\./ )
-          splits << tmp
-        end
-        
-        return splits.join( "/" ) + '/'
-    end
-
     def __log_results( res, id, url )
 
         regexp = Regexp.new( Regexp.escape( id ) )

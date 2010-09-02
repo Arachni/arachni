@@ -48,15 +48,15 @@ class Eval < Arachni::Module::Base
         @__injection_strs = []
         
         # digits from a sha1 hash
-        # the codes in @__injection_strs with tell the web app
-        # to sum them and echo them
+        # the codes in @__injection_strs will tell the web app
+        # to sum them and echo the result
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
         
         # the sum of the 2 numbers as a string
         @__rand  =  (287630581954 + 4196403186331128).to_s
         
-        # our results hash
+        # our results array
         @results = []
     end
 

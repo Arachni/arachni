@@ -1,5 +1,5 @@
 =begin
-  $Id: xss.rb 371 2010-08-18 10:18:09Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
@@ -118,7 +118,7 @@ class PathTraversal < Arachni::Module::Base
             )
                 
             # inform the user that we have a match
-            print_ok( "In #{where} var #{var} ( #{url} )" )
+            print_ok( "In #{where} var '#{var}' ( #{url} )" )
             
             # give the user some more info if he wants 
             print_verbose( "Injected str:\t" + @__trv )    

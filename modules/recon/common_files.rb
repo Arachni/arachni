@@ -39,7 +39,7 @@ class CommonFiles < Arachni::Module::Base
         # to keep track of the requests and not repeat them
         @@__audited ||= []
         
-        # our results hash
+        # our results array
         @results = []
     end
 
@@ -47,7 +47,6 @@ class CommonFiles < Arachni::Module::Base
       
         print_status( "Scanning..." )
 
-        # ugly crap but it works, as far as I can tell...
         path = Module::Utilities.get_path( @page.url )
         
         get_data_file( @__common_files ) {
@@ -100,28 +99,6 @@ class CommonFiles < Arachni::Module::Base
         }
     end
     
-    def __get_path( url )
-      
-        splits = []
-        tmp = ''
-        
-        url.each_char {
-            |c|
-            if( c != '/' )
-                tmp += c
-            else
-                splits << tmp
-                tmp = ''
-            end
-        }
-        
-        if( !tmp =~ /\./ )
-          splits << tmp
-        end
-        
-        return splits.join( "/" ) + '/'
-    end
-
     #
     # Adds a vulnerability to the @results array<br/>
     # and outputs an "OK" message with the filename and its url.
@@ -132,7 +109,7 @@ class CommonFiles < Arachni::Module::Base
     #
     def __log_results( res, filename, url )
         
-        # append the result to the results hash
+        # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
             'url'          => url,
@@ -149,7 +126,7 @@ class CommonFiles < Arachni::Module::Base
         }.merge( self.class.info ) )
                 
         # inform the user that we have a match
-        print_ok( "Found #{filename} at\t" + url )
+        print_ok( "Found #{filename} at " + url )
     end
 
 end

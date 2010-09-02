@@ -43,6 +43,10 @@ class AuditObjects < Arachni::Module::Base
 
     def run( )
         
+        # this is an example module,
+        # there's no need for it during an audit
+        return
+        
         # you can get the objects you want by key
         objects = get_storage( 'objects' )
 
