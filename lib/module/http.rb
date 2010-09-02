@@ -122,7 +122,9 @@ class HTTP
                 full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             end
             
+            start  = Time.now
             res = @session.get( full_url, @init_headers )
+            res.time = Time.now - start
             
             # handle redirections
             if( ( redir = redirect?( res ) ).is_a?( String ) )
@@ -151,7 +153,10 @@ class HTTP
         req.set_form_data( form_vars )
 
         exception_jail {
+            
+            start  = Time.now
             res = @session.request( req )
+            res.time = Time.now - start
             
             # handle redirections
             if( ( redir = redirect?( res ) ).is_a?( String ) )
@@ -211,7 +216,10 @@ class HTTP
             
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
+            start  = Time.now
             res = @session.get( full_url, @init_headers )
+            res.time = Time.now - start
+            
             @init_headers['cookie'] = orig_cookiejar.clone
             train( res )
             return res
@@ -246,7 +254,9 @@ class HTTP
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
             
+            start  = Time.now
             res = @session.get( full_url, @init_headers )
+            res.time = Time.now - start
             
             @init_headers = orig_headers.clone
             train( res )
@@ -453,7 +463,6 @@ class HTTP
         print_error( 'Proceeding anyway... ' )
     end
        
-
 end
 end
 end

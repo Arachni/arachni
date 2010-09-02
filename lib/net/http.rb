@@ -40,3 +40,19 @@ def initialize_http_header( initheader )
 end
 
 end
+
+module Net
+  
+    class HTTPResponse
+
+        #
+        # The time it took for the request to complete.<br/>
+        # (To be populated by {Arachni::Module::HTTP} methods).
+        #
+        # I could hack it directly into Net::HTTPResponse
+        # but that shit's already crazy!
+        #
+        attr_accessor :time  
+    end
+end
+
