@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -25,7 +23,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -138,7 +136,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

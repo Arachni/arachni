@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -22,7 +20,7 @@ module Report
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1
 # @abstract
 #
 class Base
@@ -68,7 +66,7 @@ class Base
             },
             'Description'    => %q{This class should be extended by all reports.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
         }
     end
     

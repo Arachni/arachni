@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -23,7 +21,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev: 385 $
+# @version: 0.1
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -76,7 +74,7 @@ class CommonDirectories < Arachni::Module::Base
             'Description'    => %q{Tries to find common directories on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 385 $',
+            'Version'        => '0.1',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 

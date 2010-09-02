@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -29,7 +27,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 # @see ExtractObjects
 #
@@ -70,7 +68,7 @@ class AuditObjects < Arachni::Module::Base
                 the ExtractObjects module.},
             'Elements'       => [],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
                 
             },

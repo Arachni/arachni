@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html    
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -189,7 +189,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'

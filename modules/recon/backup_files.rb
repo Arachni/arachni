@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -24,7 +22,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -96,7 +94,7 @@ class BackupFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find sensitive backup files.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 

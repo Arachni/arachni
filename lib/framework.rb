@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -50,7 +48,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1
 #
 class Framework
 
@@ -61,8 +59,13 @@ class Framework
     #
     include Arachni::UI::Output
     
-    VERSION      = '0.1-pre'
-    REVISION     = '$Rev$'
+    # the universal system version
+    VERSION      = '0.1'
+    
+    # the version of *this* class
+    REVISION     = '0.1'
+    
+    # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
 
     #

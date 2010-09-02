@@ -1,5 +1,3 @@
-**Last change**:    $Id$
-
 This file contains some brief instructions on contributing to Arachni.    
 
 Code Style

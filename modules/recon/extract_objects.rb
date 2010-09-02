@@ -29,7 +29,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 # @see AuditObjects
 #
@@ -69,7 +69,7 @@ class ExtractObjects < Arachni::Module::Base
             'Description'    => %q{Extracts all 'object' elements from a webpage.},
             'Elements'       => [],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
                 
             },

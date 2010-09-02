@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -21,7 +19,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev: 371 $
+# @version: 0.1
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -74,7 +72,7 @@ class PathTraversal < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev: 371 $',
+            'Version'        => '0.1',
             'References'     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

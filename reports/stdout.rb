@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -23,7 +21,7 @@ module Reports
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 class Stdout < Arachni::Report::Base
     
@@ -132,7 +130,7 @@ class Stdout < Arachni::Report::Base
             'Name'           => 'Stdout',
             'Description'    => %q{Prints the results to standard output.},
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
         }
     end
     

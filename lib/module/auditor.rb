@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -24,7 +22,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1
 #
 module Auditor
     
@@ -326,7 +324,7 @@ module Auditor
         if ( id && res.body.scan( id_regex )[0] == id ) ||
            ( !id && res.body.scan( id_regex )[0].size > 0 )
         
-            print_ok( "In #{where} var #{var}" + ' ( ' + url + ' )' )
+            print_ok( "In #{where} var '#{var}' " + ' ( ' + url + ' )' )
             
             print_verbose( "Injected str:\t" + injection_str )    
             print_verbose( "ID str:\t" + id )
@@ -402,9 +400,8 @@ module Auditor
                 'hash'    => chash.merge( { k => chash[k] + to_inj + "\0" } )
             }
         }
-
         
-        var_combo
+        return var_combo
     end
 
 end

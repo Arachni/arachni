@@ -23,7 +23,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: $Rev$
+# @version: 0.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html    
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -114,7 +114,7 @@ class SQLInjection < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',

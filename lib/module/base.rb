@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -28,7 +26,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1
 # @abstract
 #
 class Base
@@ -66,10 +64,22 @@ class Base
         @page  = page
         @http  = Arachni::Module::HTTP.new( @page.url )
         
+        # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )
             @http.set_cookies( @page.cookiejar )
         end
         
+        #
+        # This is slightly tricky...
+        #
+        # Each loaded module is instantiated for each page,
+        # however modules share the elements of each page and access them
+        # via the ElementsDB.
+        #
+        # Since the ElementDB is dynamically updated by the Trainer
+        # during the audit, is should only be initialized *once* 
+        # for each page and not overwritten every single time a module is instantiated.
+        #
         @@last_url ||= ''
         if( @@last_url != @page.url )
             init_forms( get_forms )
@@ -123,7 +133,7 @@ class Base
     def self.info
         {
             'Name'           => 'Base module abstract class',
-            'Description'    => %q{Provides an abstract the modules should implement.},
+            'Description'    => %q{Provides an abstract class the modules should implement.},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it.
@@ -141,7 +151,7 @@ class Base
             # ],
             'Elements'       => [],
             'Author'         => 'zapotek',
-            'Version'        => '$Rev$',
+            'Version'        => '0.1',
             'References'     => {
             },
             'Targets'        => { 'Generic' => 'all' },

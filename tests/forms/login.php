@@ -1,5 +1,4 @@
 <?php
-/* $Id$ */
 /*
  * This page is used to test the cookiejar.
  *

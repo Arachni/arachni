@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
 
@@ -23,7 +21,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1
 #
 class KeyFiller
   
@@ -65,7 +63,7 @@ class KeyFiller
             end
             
             # moronic default value...
-            # will figure  out ssomething better later...
+            # will figure  out ssomething better in the future...
             hash[key] = '1' if( !hash[key] || hash[key].empty? )
         }
         
