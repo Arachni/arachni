@@ -35,8 +35,6 @@ class BlindSQLInjection < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
-    # get output module
-    include Arachni::UI::Output
 
     BASELINE_NUM  = 5
     

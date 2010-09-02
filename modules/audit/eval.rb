@@ -40,8 +40,6 @@ class Eval < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
-    # get output interface
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )

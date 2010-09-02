@@ -66,8 +66,7 @@ module Auditor
             next if @@audited.include?( audit_id )
 
             # tell the user what we're doing
-            print_status( self.class.info['Name']  + 
-                " is auditing:\theader field '" +
+            print_status( "Auditing header field '" +
                 vars['altered'] + "' of " + @page.url )
             
             # audit the url vars
@@ -142,8 +141,7 @@ module Auditor
                 next if @@audited.include?( audit_id )
 
                 # tell the user what we're doing
-                print_status( self.class.info['Name']  + 
-                    " is auditing:\tlink var '" +
+                print_status( "Auditing link var '" +
                     vars['altered'] + "' of " + url )
                 
                 # audit the url vars
@@ -220,8 +218,7 @@ module Auditor
                 next if @@audited.include?( audit_id )
                 
                 # inform the user what we're auditing
-                print_status( self.class.info['Name']  + 
-                    " is auditing:\tform input '" +
+                print_status( "Auditing form input '" +
                     input['altered'] + "' with action " + url )
 
                 if( method != 'get' )
@@ -294,8 +291,7 @@ module Auditor
             next if @@audited.include?( audit_id )
 
             # tell the user what we're auditing
-            print_status( self.class.info['Name']  + 
-                " is auditing:\tcookie '" +
+            print_status( "Auditing cookie '" +
                 cookie['altered'] + "' of " + @page.url )
 
             # make a get request with our cookies
@@ -330,12 +326,11 @@ module Auditor
         if ( id && res.body.scan( id_regex )[0] == id ) ||
            ( !id && res.body.scan( id_regex )[0].size > 0 )
         
-            print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
-            '::' + url )
+            print_ok( "In #{where} var #{var}" + ' ( ' + url + ' )' )
             
             print_verbose( "Injected str:\t" + injection_str )    
-            print_verbose( "ID str:\t\t" + id )
-            print_verbose( "Matched regex:\t" + id_regex.to_s )
+            print_verbose( "ID str:\t" + id )
+            print_verbose( "Matched regex: " + id_regex.to_s )
             print_verbose( '---------' ) if only_positives?
     
             return {

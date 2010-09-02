@@ -35,8 +35,6 @@ class SQLInjection < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
-    # get output module
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
@@ -180,8 +178,7 @@ class SQLInjection < Arachni::Module::Base
                 )
                 
                 # inform the user that we have a match
-                print_ok( self.class.info['Name'] +
-                    " in: #{where} var #{var}:\t" + url )
+                print_ok( "In #{where} var #{var} ( #{url} )" )
                 
                 # give the user some more info if he wants 
                 print_verbose( "Injected str:\t" + injection_str )    

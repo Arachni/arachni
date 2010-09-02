@@ -30,7 +30,6 @@ module Audit
 class XSSURI < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
@@ -119,9 +118,6 @@ class XSSURI < Arachni::Module::Base
         if ( id && res.body.scan( regexp )[0] == id ) ||
            ( !id && res.body.scan( regexp )[0].size > 0 )
            
-            puts id        
-            puts Regexp.escape( id ).to_s
-        
             # append the result to the results hash
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
@@ -139,8 +135,7 @@ class XSSURI < Arachni::Module::Base
             }.merge( self.class.info ) )
                     
             # inform the user that we have a match
-            print_ok( self.class.info['Name'] +
-                " in #{@page.url} :\t" + url )
+            print_ok( "In #{@page.url} at " + url )
                 
         end
     end

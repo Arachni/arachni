@@ -30,7 +30,6 @@ module Audit
 class XSSPath < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
@@ -116,8 +115,7 @@ class XSSPath < Arachni::Module::Base
             }.merge( self.class.info ) )
                     
             # inform the user that we have a match
-            print_ok( self.class.info['Name'] +
-                " named #{filename} at\t" + url )
+            print_ok( "Found #{filename} at " + url )
                 
         end
     end

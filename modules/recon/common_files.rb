@@ -31,9 +31,6 @@ class CommonFiles < Arachni::Module::Base
     # register us with the system
     include Arachni::Module::Registrar
     
-    # get output interface
-    include Arachni::UI::Output
-
     def initialize( page )
         super( page )
 
@@ -48,7 +45,7 @@ class CommonFiles < Arachni::Module::Base
 
     def run( )
       
-        print_status( "#{self.class.info['Name']} is now scanning..." )
+        print_status( "Scanning..." )
 
         # ugly crap but it works, as far as I can tell...
         path = Module::Utilities.get_path( @page.url )
@@ -66,7 +63,7 @@ class CommonFiles < Arachni::Module::Base
             url  = path + file
 
             next if @@__audited.include?( url )
-            print_debug( "#{self.class.info['Name']}: Checking for #{url}" )
+            print_debug( "Checking for #{url}" )
 
             res  = @http.get( url )
             @@__audited << url
@@ -152,8 +149,7 @@ class CommonFiles < Arachni::Module::Base
         }.merge( self.class.info ) )
                 
         # inform the user that we have a match
-        print_ok( self.class.info['Name'] +
-            " named #{filename} at\t" + url )
+        print_ok( "Found #{filename} at\t" + url )
     end
 
 end

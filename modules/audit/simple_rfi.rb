@@ -62,14 +62,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # REQUIRED
     #
-    # Include the output class for the current user interface.
-    # if you ommit this you won't be able to talk to the user.
-    #
-    include Arachni::UI::Output
-
-    #
-    # REQUIRED
-    #
     # Initializes the module and the parent.
     #
     # @see Arachni::Module::Base
@@ -102,7 +94,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Debugging output will only appear if "--debug" is enabled.
         #
-        print_debug( 'In SimpleRFI.prepare()' )
+        print_debug( 'In prepare()' )
 
         #
         # you can setup your modules environment as you wish
@@ -145,7 +137,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # This is used to deliver the module's payload whatever it may be.
     #
     def run( )
-        print_debug(  'In SimpleRFI.run()' )
+        print_debug(  'In run()' )
 
         __audit_links()
         __audit_forms( )
@@ -161,7 +153,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # May also be redundant but, once again, it's optional
     #
     def clean_up( )
-        print_debug( 'In SimpleRFI.clean_up()' )
+        print_debug( 'In clean_up()' )
 
         #
         # REQUIRED

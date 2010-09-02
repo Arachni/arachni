@@ -10,6 +10,7 @@
 
 =end
 
+require Arachni::Options.instance.dir['lib'] + 'module/output'
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/trainer'
 require Arachni::Options.instance.dir['lib'] + 'module/auditor'
@@ -31,6 +32,9 @@ module Module
 # @abstract
 #
 class Base
+
+    # get output module
+    include Output
 
     include Auditor
     include Trainer

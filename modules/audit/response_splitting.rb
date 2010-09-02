@@ -34,8 +34,6 @@ class ResponseSplitting < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
-    # get output interface
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
@@ -139,8 +137,7 @@ class ResponseSplitting < Arachni::Module::Base
                 }.merge( self.class.info )
             )
 
-            print_ok( self.class.info['Name'] + " in: #{where} var #{var}" +
-                        '::' + url )
+            print_ok( "In #{where} var #{var} ( #{url} )" )
         end
     end
 

@@ -31,7 +31,6 @@ module Audit
 class SimpleCmdExec < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )

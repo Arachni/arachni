@@ -36,7 +36,6 @@ module Audit
 class AuditObjects < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
@@ -54,7 +53,7 @@ class AuditObjects < Arachni::Module::Base
         # or you can get the whole storage
 #        storage =  get_store( )
                 
-        print_ok( self.class.info['Name'] + ' found an object:')
+        print_ok( 'Found an object:')
         print_ok( objects.to_s )
         
     end
