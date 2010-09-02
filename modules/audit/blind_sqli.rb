@@ -38,6 +38,8 @@ class BlindSQLInjection < Arachni::Module::Base
     # get output module
     include Arachni::UI::Output
 
+    BASELINE_NUM  = 5
+    
     def initialize( page )
         super( page )
 
@@ -73,52 +75,51 @@ class BlindSQLInjection < Arachni::Module::Base
     
     def run( )
 
-        # temporarily out of commission
-        return
+        print_status( self.class.info['Name'] + 
+          " is establishing a timing attack baseline." )
 
-        delta = 0.0
+        deltas = 0.0
         # establish a baseline
-        5.times {
-            before =  Time.now
+        BASELINE_NUM.times {
+            |i|
             res    =  @http.get( @page.url )
-            delta  += ( Time.now - before )
+            deltas += res.time
+            
+            print_debug( self.class.info['Name'] +
+              " --> Request #{i+1}/#{BASELINE_NUM} took #{res.time.to_s}s." )
         }
         
-        # get the baseline plus 2.5 seconds for the query execution.
+        # get the baseline plus 5 seconds for the query execution.
         # of course this is just a guestimate...
-        baseline = delta / 5 + 2.5
-              
+        baseline = deltas / BASELINE_NUM + 5.0
+        
+        print_status( self.class.info['Name'] +
+        " established a maximum baseline limit of #{baseline}s." )
+        
         # iterate through the regular expression strings
         @__injection_strs.each {
             |str|
             
-            before = Time.now
             audit_forms( str ) {
                 |url, res, var|
                 
-                delta = Time.now - before
-                
-                if( delta > baseline )
+                if( res.time > baseline )
                     __log_results( Vulnerability::Element::FORM, var, res, str, url )
                 end
             }
             
-            before = Time.now
             audit_links( str ) {
                 |url, res, var|
                 
-                delta = Time.now - before
-                if( delta > baseline )
+                if( res.time > baseline )
                     __log_results( Vulnerability::Element::LINK, var, res, str, url )
                 end
             }
 
-            before = Time.now
             audit_cookies( str ) {
                 |url, res, var|
 
-                delta = Time.now - before
-                if( delta > baseline )
+                if( res.time > baseline )
                     __log_results( Vulnerability::Element::COOKIE, var, res, str, url )
                 end
             }
