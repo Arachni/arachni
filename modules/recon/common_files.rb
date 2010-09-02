@@ -1,5 +1,5 @@
 =begin
-  $Id: backup_files.rb 385 2010-08-22 22:21:46Z zapotek $
+  $Id$
 
                   Arachni
   Copyright (c) 2010 Anastasios Laskos <tasos.laskos@gmail.com>
