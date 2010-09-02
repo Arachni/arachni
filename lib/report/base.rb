@@ -27,6 +27,9 @@ module Report
 #
 class Base
     
+    # get the output interface
+    include Arachni::UI::Output
+    
     #
     # REQUIRED
     #

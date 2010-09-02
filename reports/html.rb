@@ -32,9 +32,6 @@ class HTML < Arachni::Report::Base
     # register us with the system
     include Arachni::Report::Registrar
 
-    # get the output interface
-    include Arachni::UI::Output
-
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
