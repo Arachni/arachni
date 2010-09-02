@@ -400,9 +400,6 @@ class CLI
     -h
     --help                      output this
     
-    -r
-    --resume                    resume suspended session
-    
     -v                          be verbose
 
 USAGE
