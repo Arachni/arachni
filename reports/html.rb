@@ -101,6 +101,10 @@ class HTML < Arachni::Report::Base
             vuln.variations.each_with_index {
                 |variation, j|
                 
+                if( variation['regexp'] )
+                    variation['regexp'] = variation['regexp'].to_s
+                end
+                
                 if( variation['response'] )
                     @audit_store.vulns[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )

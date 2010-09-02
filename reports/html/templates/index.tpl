@@ -298,7 +298,7 @@
       <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}</a>:</h3>
       In <span class="note">{{vuln.elem}}</span> variable
       <span class="note">{{vuln.var | escape}}</span> 
-      at <span class="note">{{vuln.url}}</span>.
+      at <span class="note">{{vuln.url | escape}}</span>.
       {% endfor %}
       </p>
 
@@ -377,7 +377,7 @@
           </a>
         </h3>
         
-        <strong>Vulnerable URL</strong>: {{variation.url}}<br />
+        <strong>Vulnerable URL</strong>: {{variation.url | escape}}<br />
         
         <div class="variation" id="var_{{toploop_index}}_{{forloop.index}}">
         <strong>Injected value</strong>:
