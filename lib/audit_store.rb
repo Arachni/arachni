@@ -87,7 +87,7 @@ class AuditStore
     # @return    [AuditStore]
     #
     def AuditStore.load( file )
-         YAML::load( IO.read( file ) )
+         Marshal.load( IO.read( file ) )
     end
     
     #
@@ -97,7 +97,7 @@ class AuditStore
     #
     def save( file )
         f = File.open( file, 'w' )
-        YAML.dump( self, f )
+        Marshal.dump( self, f )
     end
     
     #
