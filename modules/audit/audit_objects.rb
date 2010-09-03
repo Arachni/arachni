@@ -29,7 +29,7 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-# @see ExtractObjects
+# @see Arachni::Modules::Recon::ExtractObjects
 #
 class AuditObjects < Arachni::Module::Base
 

@@ -31,7 +31,7 @@ module Recon
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-# @see AuditObjects
+# @see Arachni::Modules::Audit::AuditObjects
 #
 #
 class ExtractObjects < Arachni::Module::Base
