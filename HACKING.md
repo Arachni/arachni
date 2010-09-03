@@ -43,7 +43,7 @@ Take a look in the tutorial module to see what you get: {Arachni::Modules::Audit
 The base module will also give you some insights: {Arachni::Module::Base}
 
 If you absolutely have to bypass Arachni's facilities you must obey the
-run-time settings in "$runtime_args".
+run-time settings in {Arachni::Options}.
 
 
 Creating New Modules
