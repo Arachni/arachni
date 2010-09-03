@@ -30,7 +30,7 @@ class AuditStore
     attr_reader :version
     
     #
-    # @return    [String]    the SVN revision of the framework
+    # @return    [String]    the revision of the framework class
     #
     attr_reader :revision
     
