@@ -147,9 +147,6 @@ Usage
     -h
     --help                      output this
     
-    -r
-    --resume                    resume suspended session
-    
     -v                          be verbose
 
     --debug                     show debugging output
