@@ -222,11 +222,14 @@ class CLI
     # Outputs all available modules and their info.
     #
     def lsmod
+        
         i = 0
         print_info( 'Available modules:' )
         print_line
-
-        @arachni.lsmod().each {
+        
+        mods = @arachni.lsmod( )
+        
+        mods.each {
             |info|
             
             print_status( "#{info['mod_name']}:" )
@@ -263,7 +266,20 @@ class CLI
             print_line( "Path:\t"    + info['Path'] )
 
             i+=1
-
+            
+            # pause every 5 modules to give the user time to read
+            # ( cheers to aungkhant@yehg.net for suggesting it)
+            if( i % 5 == 0 && i != mods.size )
+                print_line
+                print_line( 'Hit <space> <enter> to continue, any other key to exit. ' )
+                
+                if gets[0] != " "
+                    print_line
+                    return
+                end
+                 
+            end 
+            
             print_line
         }
 
