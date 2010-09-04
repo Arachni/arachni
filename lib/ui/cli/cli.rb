@@ -25,7 +25,7 @@ module UI
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 # @see Arachni::Framework
 #
 class CLI
@@ -374,9 +374,11 @@ class CLI
 
         print_line 'Arachni v' + @arachni.version + ' [' +
             @arachni.revision + '] initiated.
-       Author: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
+       Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
-       Website: http://www.segfault.gr'
+                (With the support of the Arachni Team)
+                
+       Website: http://github.com/Zapotek/arachni'
         print_line
         print_line
 
