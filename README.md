@@ -226,7 +226,9 @@ Usage
     
 **Modules**
                                                                       
-    --lsmod                     list available modules
+    --lsmod=<regexp>            list available modules based on the provided regular expression
+                                  If no regexp is provided all modules will be listed.
+                                  (Can be used multiple times.)
   
       
     -m <modname,modname..>
