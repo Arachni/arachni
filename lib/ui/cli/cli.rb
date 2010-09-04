@@ -268,7 +268,7 @@ class CLI
             i+=1
             
             # pause every 5 modules to give the user time to read
-            # ( cheers to aungkhant@yehg.net for suggesting it)
+            # (cheers to aungkhant@yehg.net for suggesting it)
             if( i % 5 == 0 && i != mods.size )
                 print_line
                 print_line( 'Hit <space> <enter> to continue, any other key to exit. ' )
