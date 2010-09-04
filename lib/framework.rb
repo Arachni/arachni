@@ -411,13 +411,15 @@ class Framework
         i = 0
         mod_info = []
         
-        @modreg.ls_available().each_pair {
+        @modreg.ls_available( ).each_pair {
             |mod_name, path|
+    
+            next if !lsmod_match?( path['path'] )
     
             @modreg.mod_load( mod_name )
     
             info = @modreg.mod_info( i )
-    
+            
             info["mod_name"]    = mod_name
             info["Name"]        = info["Name"].strip
             info["Description"] = info["Description"].strip
@@ -833,6 +835,17 @@ class Framework
     #
     def deep_clone( obj )
         Marshal.load( Marshal.dump( obj ) )
+    end
+  
+    private
+    
+    def lsmod_match?( path )
+        cnt = 0
+        @opts.lsmod.each {
+            |filter|
+            cnt += 1 if path =~ filter
+        }
+        return true if cnt == @opts.lsmod.size 
     end
   
 end

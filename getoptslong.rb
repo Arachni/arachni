@@ -15,7 +15,7 @@ opts = GetoptLong.new(
     [ '--resume',            '-r', GetoptLong::NO_ARGUMENT ],
     [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
     [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
-    [ '--lsmod',                   GetoptLong::NO_ARGUMENT ],
+    [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--lsrep',                   GetoptLong::NO_ARGUMENT ],
     [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
@@ -100,7 +100,7 @@ opts.each {
             options.redirect_limit = arg.to_i
 
         when '--lsmod'
-            options.lsmod = true
+            options.lsmod << Regexp.new( arg.to_s )
     
         when '--lsrep'
             options.lsrep = true

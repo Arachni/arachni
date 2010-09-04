@@ -113,9 +113,9 @@ class Options
     attr_accessor :redirect_limit
     
     #
-    # List modules and exit?
+    # List modules, based on regexps, and exit?
     #
-    # @return    [Bool]
+    # @return    [Array<Regexp>]
     #
     attr_accessor :lsmod
     
@@ -332,6 +332,7 @@ class Options
         @include    = []
         @redundant  = []
         @reports    = []
+        @lsmod      = []
         @repopts    = Hash.new
         @dir        = Hash.new
         @exclude_cookies    = []
