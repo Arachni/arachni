@@ -92,7 +92,7 @@ class Registry
         (ls_recon | ls_audit).each {
             |class_path|
 
-            filename = class_path.gsub( Regexp.escape( @mod_lib ) , '' )
+            filename = class_path.gsub( Regexp.new( @mod_lib ) , '' )
             filename = filename.gsub( /(recon|audit)\// , '' )
             filename.gsub!( Regexp.new( '.rb' ) , '' )
 

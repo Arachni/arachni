@@ -19,7 +19,7 @@ module Report
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Registry
 
@@ -95,7 +95,7 @@ class Registry
         Dir.glob( @lib + '*.rb' ).each {
             |class_path|
 
-            filename = class_path.gsub( Regexp.escape( @lib ) , '' )
+            filename = class_path.gsub( Regexp.new( @lib ) , '' )
             filename.gsub!( Regexp.new( '.rb' ) , '' )
 
             @available[filename] = Hash.new
