@@ -69,7 +69,7 @@ class AuditStore
         # set instance variables from audit opts
         audit.each {
             |k, v|
-            self.instance_variable_set( '@' + k, v )
+            self.instance_variable_set( '@' + k.to_s, v )
         }
         
         @options         = prepare_options( @options )
