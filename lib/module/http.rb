@@ -24,7 +24,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class HTTP
 
@@ -82,6 +82,9 @@ class HTTP
         @init_headers = Hash.new
         @init_headers['user-agent'] = Options.instance.user_agent
         @init_headers['cookie']     = ''
+        
+        @__not_found  = nil
+
     end
 
     #
@@ -121,11 +124,11 @@ class HTTP
             end
             
             start  = Time.now
-            res = @session.get( full_url, @init_headers )
+            res = @session.get( full_url, @init_headers.clone )
             res.time = Time.now - start
             
             # handle redirections
-            if( ( redir = redirect?( res ) ).is_a?( String ) )
+            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
                 res = get( redir, nil, true )
                 train( res, redir )
             else
@@ -147,7 +150,7 @@ class HTTP
     #
     def post( url, form_vars )
 
-        req = Net::HTTP::Post.new( url, @init_headers )
+        req = Net::HTTP::Post.new( url, @init_headers.clone )
         req.set_form_data( form_vars )
 
         exception_jail {
@@ -215,7 +218,7 @@ class HTTP
             full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
                         
             start  = Time.now
-            res = @session.get( full_url, @init_headers )
+            res = @session.get( full_url, @init_headers.clone )
             res.time = Time.now - start
             
             @init_headers['cookie'] = orig_cookiejar.clone
@@ -253,7 +256,7 @@ class HTTP
             @init_headers = @init_headers.merge( headers )
             
             start  = Time.now
-            res = @session.get( full_url, @init_headers )
+            res = @session.get( full_url, @init_headers.clone )
             res.time = Time.now - start
             
             @init_headers = orig_headers.clone
@@ -329,6 +332,46 @@ class HTTP
     def parse_url( url )
         URI.parse( URI.encode( url ) )
     end
+
+    #
+    # Checks whether or not the provided HTML code is a custom 404 page
+    #
+    # @param  [String]  html  the HTML code to check
+    #
+    # @param  [Bool]
+    #
+    def custom_404?( html )
+      
+        if( !@__not_found )
+            
+            path = Module::Utilities.get_path( @url.to_s )
+            
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            @__not_found = get( force_404 ).body
+            
+            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            not_found2  = get( force_404 ).body
+            
+            @__404_words =  @__not_found.split( /\b/ )
+            words        =  not_found2.split( /\b/ )
+            
+            # mad skillz...
+            deltas = []
+            deltas << @__404_words - words
+            deltas << words - words
+            @__404 = ( @__404_words - deltas.flatten! ).join( '' )
+        end
+        
+        words = html.split( /\b/ )
+        
+        deltas = []
+        deltas << @__404_words - words
+        deltas << words - @__404_words
+        diffed = ( @__404_words - deltas.flatten! ).join( '' )
+        
+        return diffed == @__404
+    end
+
 
     #
     # Blocks passed to this method will be passed each HTTP response<br/>

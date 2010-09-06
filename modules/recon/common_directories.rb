@@ -8,6 +8,8 @@
 
 =end
 
+require 'digest/sha1'
+
 module Arachni
 
 module Modules
@@ -16,12 +18,12 @@ module Recon
 #
 # Common directories discovery module.
 #
-# Looks for common, possibly sensitive, directories on the server. 
+# Looks for common, possibly sensitive, directories on the server.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -34,8 +36,8 @@ class CommonDirectories < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @__common_directories = 'directories.txt' 
- 
+        @__common_directories = 'directories.txt'
+        
         # to keep track of the requests and not repeat them
         @@__audited ||= []
         @results   = []
@@ -45,9 +47,8 @@ class CommonDirectories < Arachni::Module::Base
 
         print_status( "Scanning..." )
 
-        # ugly crap but it works, as far as I can tell...
         path = Module::Utilities.get_path( @page.url )
-        
+
         get_data_file( @__common_directories ) {
             |dirname|
             
@@ -59,7 +60,9 @@ class CommonDirectories < Arachni::Module::Base
             res  = @http.get( url )
             @@__audited << url
 
-            __log_results( res, dirname, url ) if( res.code == "200" )
+            if( res.code == "200" && !@http.custom_404?( res.body ) )
+                __log_results( res, dirname, url )
+            end 
         }
 
         
@@ -67,14 +70,13 @@ class CommonDirectories < Arachni::Module::Base
         register_results( @results )
     end
 
-    
     def self.info
         {
             'Name'           => 'CommonDirectories',
             'Description'    => %q{Tries to find common directories on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 

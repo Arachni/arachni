@@ -21,7 +21,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 #
 class CommonFiles < Arachni::Module::Base
@@ -65,7 +65,9 @@ class CommonFiles < Arachni::Module::Base
             res  = @http.get( url )
             @@__audited << url
 
-            __log_results( res, file, url ) if( res.code == "200" )
+            if( res.code == "200" && !@http.custom_404?( res.body ) )
+                __log_results( res, file, url )
+            end
         }
 
         
@@ -80,7 +82,7 @@ class CommonFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find common sensitive files on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 

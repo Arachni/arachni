@@ -22,7 +22,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -73,13 +73,17 @@ class BackupFiles < Arachni::Module::Base
             url  = path + file
             next if !( res = __get_once( url ) )
 
-            __log_results( res, file, url ) if( res.code == "200" )
+            if( res.code == "200" && !@http.custom_404?( res.body ) )
+                __log_results( res, file, url )
+            end
             
             file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
             url  = path + file
             res = __get_once( url )
             
-            __log_results( res, file, url ) if( res.code == "200" )
+            if( res.code == "200" && !@http.custom_404?( res.body ) )
+                __log_results( res, file, url )
+            end
         }
 
         
@@ -94,7 +98,7 @@ class BackupFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find sensitive backup files.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 
