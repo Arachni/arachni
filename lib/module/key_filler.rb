@@ -21,7 +21,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class KeyFiller
   
@@ -64,7 +64,7 @@ class KeyFiller
             
             # moronic default value...
             # will figure  out ssomething better in the future...
-            hash[key] = '1' if( !hash[key] || hash[key].empty? )
+            # hash[key] = '1' if( !hash[key] || hash[key].empty? )
         }
         
         return hash
