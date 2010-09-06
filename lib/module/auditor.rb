@@ -22,7 +22,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 module Auditor
     
@@ -366,7 +366,7 @@ module Auditor
         # are valid and present us with new attack vectors
         as_is = Hash.new( )
         as_is['altered'] = '__orig'
-        chash = as_is['hash']    = hash.clone
+        duphash1 = duphash = chash = as_is['hash'] = hash.clone
             
         as_is['hash'].keys.each {
             |k|
@@ -374,8 +374,9 @@ module Auditor
         }
         var_combo << as_is
         
-        # these are audit inputs, if a value is empty or null
-        # we put a sample e-mail address in its place
+        #
+        # audit inputs appended to the default values
+        #
         hash.keys.each {
             |k|
             
@@ -398,6 +399,34 @@ module Auditor
             var_combo << { 
                 'altered' => k,
                 'hash'    => chash.merge( { k => chash[k] + to_inj + "\0" } )
+            }
+        }
+        
+        #
+        # audit inputs without the default values
+        #
+        duphash.keys.each {
+            |k|
+            
+            duphash = KeyFiller.fill( duphash )
+            
+            var_combo << { 
+                'altered' => k,
+                'hash'    => duphash.merge( { k => to_inj + "\0" } )
+            }
+        }
+        
+        #
+        # same as above but with null terminated injection strings
+        #
+        duphash1.keys.each {
+            |k|
+            
+            duphash1 = KeyFiller.fill( duphash1 )
+            
+            var_combo << { 
+                'altered' => k,
+                'hash'    => duphash1.merge( { k => to_inj } )
             }
         }
         
