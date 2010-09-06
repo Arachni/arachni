@@ -64,7 +64,7 @@ class KeyFiller
             
             # moronic default value...
             # will figure  out ssomething better in the future...
-            # hash[key] = '1' if( !hash[key] || hash[key].empty? )
+            hash[key] = '1' if( !hash[key] || hash[key].empty? )
         }
         
         return hash
