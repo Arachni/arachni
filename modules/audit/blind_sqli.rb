@@ -71,7 +71,10 @@ class BlindSQLInjection < Arachni::Module::Base
     end
     
     def run( )
-
+      
+        # off until I implement diff analysis also 
+        return
+        
         print_status( self.class.info['Name'] + 
           " is establishing a timing attack baseline." )
 
