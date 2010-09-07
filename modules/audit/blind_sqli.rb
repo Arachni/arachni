@@ -72,7 +72,7 @@ class BlindSQLInjection < Arachni::Module::Base
     
     def run( )
       
-        # off until I implement diff analysis also 
+        # disabled until I implement diff analysis also 
         return
         
         print_status( self.class.info['Name'] + 
