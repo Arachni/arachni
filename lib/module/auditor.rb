@@ -412,7 +412,7 @@ module Auditor
             
             var_combo << { 
                 'altered' => k,
-                'hash'    => duphash.merge( { k => to_inj + "\0" } )
+                'hash'    => duphash.merge( { k => to_inj } )
             }
         }
         
@@ -426,7 +426,7 @@ module Auditor
             
             var_combo << { 
                 'altered' => k,
-                'hash'    => duphash1.merge( { k => to_inj } )
+                'hash'    => duphash1.merge( { k => to_inj + "\0" } )
             }
         }
         
