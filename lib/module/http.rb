@@ -24,7 +24,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class HTTP
 
@@ -346,30 +346,31 @@ class HTTP
             
             path = Module::Utilities.get_path( @url.to_s )
             
+            # force a 404 and grab the html body
             force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
             @__not_found = get( force_404 ).body
             
+            # force another 404 and grab the html body
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
             not_found2  = get( force_404 ).body
             
-            @__404_words =  @__not_found.split( /\b/ )
-            words        =  not_found2.split( /\b/ )
-            
-            # mad skillz...
-            deltas = []
-            deltas << @__404_words - words
-            deltas << words - words
-            @__404 = ( @__404_words - deltas.flatten! ).join( '' )
+            #
+            # some websites may have dynamic 404 pages or simply include
+            # the query that caused the 404 in the 404 page causing the 404 pages to change.
+            #
+            # so get rid of the differences between the 2 404s (if there are any)
+            # and store what *doesn't* change into @__404
+            #
+            @__404 = Arachni::Module::Utilities.rdiff( @__not_found, not_found2 )
         end
         
-        words = html.split( /\b/ )
-        
-        deltas = []
-        deltas << @__404_words - words
-        deltas << words - @__404_words
-        diffed = ( @__404_words - deltas.flatten! ).join( '' )
-        
-        return diffed == @__404
+        #
+        # get the rdiff between 'html' and an actual 404
+        #
+        # if this rdiff matches the rdiff in @__404 then by extension
+        # the 'html' is a 404
+        # 
+        return Arachni::Module::Utilities.rdiff( @__not_found, html ) == @__404
     end
 
 
