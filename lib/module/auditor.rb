@@ -128,6 +128,13 @@ module Auditor
             # if we don't have any auditable elements just return
             if !link_vars then next end
 
+            if( URI( link['href'] ).query ) 
+                url = link['href'].gsub( Regexp.new( URI( link['href'] ).query ), '' )
+            else
+                url = link['href'].dup
+            end
+
+
             # iterate through all url vars and audit each one
             inject_each_var( link_vars, injection_str ).each {
                 |vars|
@@ -142,12 +149,6 @@ module Auditor
                 print_status( "Auditing link var '" +
                     vars['altered'] + "' of " + url )
                 
-                if( URI( link['href'] ).query ) 
-                    url = link['href'].gsub( Regexp.new( URI( link['href'] ).query ), '' )
-                else
-                    url = link['href'].dup
-                end
-
                 # audit the url vars
                 res = @http.get( url, vars['hash'] )
                 @@audited << audit_id
