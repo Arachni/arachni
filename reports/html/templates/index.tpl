@@ -162,7 +162,7 @@
 <body>
   <div id="main">
     <h1>Web Application Security Report -
-        <a target="_blank" href="http://sourceforge.net/apps/trac/arachni/">Arachni Framework</a>
+        <a target="_blank" href="http://github.com/Zapotek/arachni">Arachni Framework</a>
     </h1>
     <strong>Report generated on</strong>:
     <p class="note">{{date}}</p>
