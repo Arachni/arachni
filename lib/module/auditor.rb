@@ -22,7 +22,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 module Auditor
     
@@ -124,7 +124,7 @@ module Auditor
             
             url       = link['href']
             link_vars = link['vars']
-                
+            
             # if we don't have any auditable elements just return
             if !link_vars then next end
 
@@ -142,9 +142,17 @@ module Auditor
                 print_status( "Auditing link var '" +
                     vars['altered'] + "' of " + url )
                 
+                if( URI( link['href'] ).query ) 
+                    url = link['href'].gsub( Regexp.new( URI( link['href'] ).query ), '' )
+                else
+                    url = link['href'].dup
+                end
+
                 # audit the url vars
                 res = @http.get( url, vars['hash'] )
                 @@audited << audit_id
+                
+                url = link['href'].dup
                 
                 # something might have gone bad,
                 # make sure it doesn't ruin the rest of the show...
