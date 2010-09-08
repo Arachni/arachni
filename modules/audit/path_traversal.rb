@@ -19,7 +19,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -36,25 +36,63 @@ class PathTraversal < Arachni::Module::Base
     end
     
     def prepare( )
-        @__trv =  '../../../../../../../../../../../../etc/passwd'
-        @__regexp = /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/ix
+        @__trv =  '../../../../../../../../../../../../../../../..'
+        @__ext = [
+            "",
+            "\0.htm",
+            "\0.html",
+            "\0.asp",
+            "\0.aspx",
+            "\0.php",
+            "\0.txt",
+            "\0.gif",
+            "\0.jpg",
+            "\0.jpeg",
+            "\0.png",
+            "\0.css"
+        ]
+        
+        @__params = [
+            {
+                'value'  => '/etc/passwd',
+                'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/im
+            },
+            {
+                'value'  => 'boot.ini',
+                'regexp' => /\[boot loader\](.*)\[operating systems\]/im
+            }
+          
+        ]
     end
 
     def run( )
 
-        audit_forms( @__trv ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::FORM, var, res, url )
-        }
-        
-        audit_links( @__trv ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::LINK, var, res, url )
-        }
+        @__params.each {
+            |param|
+            
+            @__ext.each {
+                |ext|
                 
-        audit_cookies( @__trv ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::COOKIE, var, res, url )
+                injection_str = @__trv + param['value'] + ext
+                
+                audit_forms( injection_str ) {
+                    |url, res, var|
+                    __log_results( Vulnerability::Element::FORM, var,
+                      res, url, injection_str, param['regexp'] )
+                }
+                
+                audit_links( injection_str ) {
+                    |url, res, var|
+                    __log_results( Vulnerability::Element::LINK, var,
+                      res, url, injection_str, param['regexp'] )
+                }
+                        
+                audit_cookies( injection_str ) {
+                    |url, res, var|
+                    __log_results( Vulnerability::Element::COOKIE, var,
+                      res, url, injection_str, param['regexp'] )
+                }
+            }
         }
         
         # register our results with the system
@@ -72,7 +110,7 @@ class PathTraversal < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
@@ -92,18 +130,19 @@ class PathTraversal < Arachni::Module::Base
         }
     end
     
-    def __log_results( where, var, res, url )
+    def __log_results( where, var, res, url, injection_str, regexp )
 
-        if ( ( match = res.body.scan( @__regexp )[0] ) &&
-               match.size > 0 )
+        if ( ( match = res.body.scan( regexp )[0] ) && match.size > 0 )
+            
+            injection_str = URI.escape( injection_str ) 
             
             # append the result to the results hash
             @results << Vulnerability.new( {
                     'var'          => var,
                     'url'          => url,
-                    'injected'     => @__trv,
+                    'injected'     => injection_str,
                     'id'           => 'n/a',
-                    'regexp'       => @__regexp.to_s,
+                    'regexp'       => regexp.to_s,
                     'regexp_match' => match,
                     'elem'         => where,
                     'response'     => res.body,
@@ -119,8 +158,8 @@ class PathTraversal < Arachni::Module::Base
             print_ok( "In #{where} var '#{var}' ( #{url} )" )
             
             # give the user some more info if he wants 
-            print_verbose( "Injected str:\t" + @__trv )    
-            print_verbose( "Matched regex:\t" + @__regexp.to_s )
+            print_verbose( "Injected str:\t" + injection_str )    
+            print_verbose( "Matched regex:\t" + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
     
         end
