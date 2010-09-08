@@ -365,7 +365,7 @@ module Auditor
     #
     # @return    [Array]
     #
-    def inject_each_var( hash, to_inj )
+    def inject_each_var( hash, to_inj, extensive = true )
         
         var_combo = []
         if( !hash || hash.size == 0 ) then return [] end
@@ -375,12 +375,44 @@ module Auditor
         as_is = Hash.new( )
         as_is['altered'] = '__orig'
         duphash1 = duphash = chash = as_is['hash'] = hash.clone
+
+        #
+        # audit inputs without the default values
+        #
+        duphash.keys.each {
+            |k|
+            
+            duphash = KeyFiller.fill( duphash )
+            
+            var_combo << { 
+                'altered' => k,
+                'hash'    => duphash.merge( { k => to_inj } )
+            }
+        }
+        
+        return var_combo if !extensive
+        
+        #
+        # same as above but with null terminated injection strings
+        #
+        duphash1.keys.each {
+            |k|
+            
+            duphash1 = KeyFiller.fill( duphash1 )
+            
+            var_combo << { 
+                'altered' => k,
+                'hash'    => duphash1.merge( { k => to_inj + "\0" } )
+            }
+        }
+
             
         as_is['hash'].keys.each {
             |k|
             if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
         }
         var_combo << as_is
+
         
         #
         # audit inputs appended to the default values
@@ -407,34 +439,6 @@ module Auditor
             var_combo << { 
                 'altered' => k,
                 'hash'    => chash.merge( { k => chash[k] + to_inj + "\0" } )
-            }
-        }
-        
-        #
-        # audit inputs without the default values
-        #
-        duphash.keys.each {
-            |k|
-            
-            duphash = KeyFiller.fill( duphash )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => duphash.merge( { k => to_inj } )
-            }
-        }
-        
-        #
-        # same as above but with null terminated injection strings
-        #
-        duphash1.keys.each {
-            |k|
-            
-            duphash1 = KeyFiller.fill( duphash1 )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => duphash1.merge( { k => to_inj + "\0" } )
             }
         }
         
