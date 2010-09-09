@@ -8,6 +8,8 @@
 
 =end
 
+require 'typhoeus'
+
 module Arachni
 module Module
 
@@ -24,7 +26,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
 class HTTP
 
@@ -52,13 +54,6 @@ class HTTP
     #
     attr_reader :cookie_jar
     
-    #
-    # The HTTP session
-    #
-    # @return [Net::HTTP]
-    #
-    attr_reader :session
-
     #
     # Initializes the HTTP session given a start URL respecting
     # system wide settings for HTTP basic auth and proxy
@@ -91,16 +86,14 @@ class HTTP
     # Gets a URL passing the provided variables
     #
     # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
     #
     # @return [HTTP::Response]
     #
-    def get( url, url_vars = {}, redirect = false )
-        url = parse_url( url )
+    def get( url, params = {}, redirect = false )
+        # url = parse_url( url )
 
-        url_vars = {} if( !url_vars )
-        
-        url_vars = url_vars.merge( { '__arachni__' => '' } ) 
+        params = params.merge( { '__arachni__' => '' } ) 
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it
@@ -109,24 +102,12 @@ class HTTP
         #
         exception_jail {
 
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
-            
-            if( redirect )
-                full_url = url.path + query
-            else
-                full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
-            end
-            
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
-            
+            res = Typhoeus::Request.get( url,
+                :headers       => @init_headers,
+                :user_agent    => @init_headers['user-agent'],
+                :follow_location => false,
+                :params        => params )
+
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
                 res = get( redir, nil, true )
@@ -144,21 +125,19 @@ class HTTP
     # Posts a form to a URL with the provided variables
     #
     # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] form_vars array of name=>value pairs
+    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
     #
     # @return [HTTP::Response]
     #
-    def post( url, form_vars )
-
-        req = Net::HTTP::Post.new( url, @init_headers.clone )
-        req.set_form_data( form_vars )
+    def post( url, params = { } )
 
         exception_jail {
             
-            start  = Time.now
-            res = @session.request( req )
-            res.time = Time.now - start
-            
+            res = Typhoeus::Request.post( url,
+                :headers       => @init_headers,
+                :user_agent    => @init_headers['user-agent'],
+                :params        => params )
+
             # handle redirections
             if( ( redir = redirect?( res ) ).is_a?( String ) )
                 res =  get( redir, nil, true )
@@ -175,51 +154,41 @@ class HTTP
     # Gets a url with cookies and url variables
     #
     # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] cookie_vars array of name=>value pairs
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [Array<Hash<String, String>>] cookies array of name=>value pairs
+    # @param  [Array<Hash<String, String>>] params  array of name=>value pairs
     #
     # @return [HTTP::Response]
     #
-    def cookie( url, cookie_vars, url_vars = nil)
+    def cookie( url, cookies, params = nil)
 
         orig_cookiejar = @init_headers['cookie'].clone 
         
-        cookies = Hash.new
+        new_cookies = Hash.new
         jar = parse_cookie_str( orig_cookiejar )
         
-        cookie_vars.each_pair {
+        cookies.each_pair {
             |name, value|
 
             # don't audit cookies in the cookie jar                
 #            next if Options.instance.exclude_cookies.include?( name )
             
-            cookies[name] = value
+            new_cookies[name] = value
         }
         
-        cookies.reject {
+        new_cookies.reject {
             |cookie|
             Options.instance.exclude_cookies.include?( cookie['name'] )
         }
         
-        set_cookies( jar.merge( cookies ) )
+        set_cookies( jar.merge( new_cookies ) )
         
         # wrap the code in exception handling
         exception_jail {
-            url = parse_url( url )
+            res = Typhoeus::Request.get( url,
+                :headers       => @init_headers,
+                :user_agent    => @init_headers['user-agent'],
+                :params        => params )
             
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
-            
-            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
-                        
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
             
             @init_headers['cookie'] = orig_cookiejar.clone
             train( res )
@@ -232,32 +201,22 @@ class HTTP
     #
     # @param  [URI]  url  URL to get
     # @param  [Hash<String, String>] headers hash of name=>value pairs
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
     #
     # @return [HTTP::Response]
     #
-    def header( url, headers, url_vars = nil)
+    def header( url, headers, params = nil)
 
         # wrap the code in exception handling
         exception_jail {
-            url = parse_url( url )
-            
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
-            
-            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
             
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
+            res = Typhoeus::Request.get( url,
+                :headers       => @init_headers,
+                :user_agent    => @init_headers['user-agent'],
+                :params        => params )
             
             @init_headers = orig_headers.clone
             train( res )
@@ -435,16 +394,8 @@ class HTTP
         
         opts = Options.instance
 
-        session = Net::HTTP.new( @url.host, @url.port,
-            opts.proxy_addr, opts.proxy_port,
-            opts.proxy_user, opts.proxy_pass )
-
         if @url.scheme == 'https'
-            session.use_ssl = true
-            session.verify_mode = OpenSSL::SSL::VERIFY_NONE
         end
-
-        @session = session.start
 
     end
     

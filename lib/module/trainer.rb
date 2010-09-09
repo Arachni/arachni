@@ -23,7 +23,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 module Trainer
 
@@ -42,7 +42,7 @@ module Trainer
     #
     def train( res, url = nil )
 
-        opts = Options.instance
+        opts     = Options.instance
         analyzer = Analyzer.new( opts )
 
         analyzer.url = @page.url.clone
@@ -54,7 +54,7 @@ module Trainer
 
         links   = analyzer.get_links( res.body ).clone if opts.audit_links
         forms   = analyzer.get_forms( res.body ).clone if opts.audit_forms
-        cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).clone
+        cookies = analyzer.get_cookies( res.headers_hash['Set-Cookie'].to_s ).clone
 
         if( url && opts.audit_links )
             links.push( {

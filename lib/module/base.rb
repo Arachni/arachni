@@ -26,7 +26,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 # @abstract
 #
 class Base
@@ -328,15 +328,15 @@ class Base
     #
     def get_request_headers( merge = false )
         
-        if( merge == true && @page.request_headers )
-            begin
-            ( headers = ( @http.init_headers ).
-                merge( @page.request_headers ) ).delete( 'cookie' )
-            rescue
-                headers = {}
-            end
-            return headers 
-        end
+        # if( merge == true && @page.request_headers )
+        #     begin
+        #     ( headers = ( @http.init_headers ).
+        #         merge( @page.request_headers ) ).delete( 'cookie' )
+        #     rescue
+        #         headers = {}
+        #     end
+        #     return headers 
+        # end
         
        return @http.init_headers
     end
@@ -350,13 +350,13 @@ class Base
     #
     def get_response_headers( res )
         
-        header = Hash.new
-        res.each_capitalized {
-            |key|
-            header[key] = res.get_fields( key ).join( "\n" )
-        }
+        # header = Hash.new
+        # res.each_capitalized {
+        #     |key|
+        #     header[key] = res.get_fields( key ).join( "\n" )
+        # }
         
-        header
+        # ap res
     end
     
     #

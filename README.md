@@ -288,6 +288,8 @@ Requirements
     - sudo gem install nokogiri
   * Anemone
     - sudo gem install anemone
+  * Typhoeus
+    - sudo gem install typhoeus
   * Sockify
     - sudo gem install socksify
   * Awesome print
