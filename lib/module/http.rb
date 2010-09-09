@@ -91,8 +91,8 @@ class HTTP
     # @return [HTTP::Response]
     #
     def get( url, params = {}, redirect = false )
-        # url = parse_url( url )
 
+        params = { } if !params
         params = params.merge( { '__arachni__' => '' } ) 
         #
         # the exception jail function wraps the block passed to it
@@ -136,6 +136,7 @@ class HTTP
             res = Typhoeus::Request.post( url,
                 :headers       => @init_headers,
                 :user_agent    => @init_headers['user-agent'],
+                :follow_location => false,
                 :params        => params )
 
             # handle redirections
@@ -351,8 +352,8 @@ class HTTP
     end
     
     def redirect?( res )
-        if res.is_a?( Net::HTTPRedirection )
-            return res['location']
+        if loc = res.headers_hash['Location']
+            return loc
         end
         return res
     end
