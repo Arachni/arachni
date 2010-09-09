@@ -94,6 +94,8 @@ module Auditor
             results << result if result
             }
         }
+        
+        @http.run
 
         results
     end
@@ -269,6 +271,7 @@ module Auditor
                 }
             }
         }
+        @http.run
         results
     end
 
@@ -341,6 +344,8 @@ module Auditor
             }
         }
         }
+        
+        @http.run
 
         results
     end
