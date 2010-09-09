@@ -71,6 +71,7 @@ class HTTP
         
         req_limit = Options.instance.http_req_limit
         @hydra = Typhoeus::Hydra.new( :max_concurrency => req_limit )
+        @hydra.disable_memoization
         
         # create a new HTTP session
         refresh( )
@@ -173,39 +174,24 @@ class HTTP
     #
     def cookie( url, cookies, params = nil)
 
-        orig_cookiejar = @init_headers['cookie'].clone 
+        jar = parse_cookie_str( @init_headers['cookie'] )
         
-        new_cookies = Hash.new
-        jar = parse_cookie_str( orig_cookiejar )
-        
-        cookies.each_pair {
-            |name, value|
-
-            # don't audit cookies in the cookie jar                
-#            next if Options.instance.exclude_cookies.include?( name )
-            
-            new_cookies[name] = value
-        }
-        
-        new_cookies.reject {
+        cookies.reject! {
             |cookie|
             Options.instance.exclude_cookies.include?( cookie['name'] )
         }
         
-        set_cookies( jar.merge( new_cookies ) )
+        cookies = jar.merge( cookies )
         
         # wrap the code in exception handling
         exception_jail {
             req = Typhoeus::Request.new( url,
-                :headers       => @init_headers.dup,
+                :headers       => { 'cookie' => get_cookies_str( cookies ) },
                 :user_agent    => @init_headers['user-agent'],
                 :params        => params )
             
             
-            @init_headers['cookie'] = orig_cookiejar.clone
-            
             queue( req )
-            
             return req
         }
     end
@@ -255,6 +241,23 @@ class HTTP
             @init_headers['cookie'] += "#{name}=#{value};" 
         }
     end
+    
+    #
+    # Gets cookies as a string for the HTTP session
+    #
+    # @param    [Hash]  cookie_hash  name=>value pair cookies
+    #
+    # @return    [void]
+    #
+    def get_cookies_str( cookie_hash )
+        str = ''
+        cookie_hash.each_pair {
+            |name, value|
+            str += "#{name}=#{value};" 
+        }
+        return str
+    end
+
     
     def parse_cookie_str( str )
         cookie_jar = Hash.new

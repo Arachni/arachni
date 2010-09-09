@@ -337,7 +337,7 @@ module Auditor
             end
             
             if !res.body then next end
-                
+
             # get possible matches
             result = get_matches( Vulnerability::Element::COOKIE,
                 cookie['altered'], res, injection_str, id_regex, id )
