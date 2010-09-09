@@ -36,7 +36,7 @@ class PathTraversal < Arachni::Module::Base
     end
     
     def prepare( )
-        @__trv =  '../../../../../../../../../../../../../../../..'
+        @__trv =  '../../../../../../../../../../../../../../../../'
         @__ext = [
             "",
             "\0.htm",
@@ -54,7 +54,7 @@ class PathTraversal < Arachni::Module::Base
         
         @__params = [
             {
-                'value'  => '/etc/passwd',
+                'value'  => 'etc/passwd',
                 'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/im
             },
             {
