@@ -68,8 +68,11 @@ module Auditor
                 vars['altered'] + "' of " + @page.url )
             
             # audit the url vars
-            res = @http.header( @page.url, vars['hash'] )
+            req = @http.header( @page.url, vars['hash'] )
             @@audited << audit_id
+
+            req.on_complete {
+                |res |
 
             # something might have gone bad,
             # make sure it doesn't ruin the rest of the show...
@@ -89,6 +92,7 @@ module Auditor
             
             # and append them to the results array
             results << result if result
+            }
         }
 
         results
@@ -150,15 +154,18 @@ module Auditor
                     vars['altered'] + "' of " + url )
                 
                 # audit the url vars
-                res = @http.get( url, vars['hash'] )
+                req = @http.get( url, vars['hash'] )
                 @@audited << audit_id
                 
                 url = link['href'].dup
                 
+                req.on_complete {
+                    |res |
+                
                 # something might have gone bad,
                 # make sure it doesn't ruin the rest of the show...
                 if !res then next end
-                
+
                 # call the passed block
                 if block_given?
                     block.call( url, res, vars['altered'] )
@@ -173,8 +180,11 @@ module Auditor
                 
                 # and append them to the results array
                 results << result if result
+                }
             }
-        }    
+        }
+        
+        @http.run
 
         results
     end
@@ -229,13 +239,16 @@ module Auditor
                     input['altered'] + "' with action " + url )
 
                 if( method != 'get' )
-                    res = @http.post( url, input['hash'] )
+                    req = @http.post( url, input['hash'] )
                 else
-                    res = @http.get( url, input['hash'] )
+                    req = @http.get( url, input['hash'] )
                 end
                 
                 @@audited << audit_id
                 
+                req.on_complete {
+                    |res |
+
                 # make sure that we have a response before continuing
                 if !res then next end
                 
@@ -253,6 +266,7 @@ module Auditor
                 
                 # and append them to the results array
                 results << result if result
+                }
             }
         }
         results
@@ -302,9 +316,12 @@ module Auditor
                 cookie['altered'] + "' of " + @page.url )
 
             # make a get request with our cookies
-            res = @http.cookie( @page.url, cookie['hash'], nil )
+            req = @http.cookie( @page.url, cookie['hash'], nil )
                 
             @@audited << audit_id
+
+            req.on_complete {
+                |res |
 
             # check for a response
             if !res then next end
@@ -321,6 +338,7 @@ module Auditor
                 cookie['altered'], res, injection_str, id_regex, id )
             # and append them
             results << result if result
+            }
         }
         }
 

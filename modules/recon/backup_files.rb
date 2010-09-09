@@ -53,7 +53,7 @@ class BackupFiles < Arachni::Module::Base
         filename = @page.url.match( Regexp.new( regex ) )
         filename = filename[1].gsub( /\?(.*)/, '' ) 
         
-        if( filename.empty? )
+        if( !filename || filename.empty? )
             print_debug( 'Backing out. ' + 
               'Can\'t extract filename from url: ' + @page.url )
             return
@@ -71,21 +71,25 @@ class BackupFiles < Arachni::Module::Base
             
             file = ext % filename # Example: index.php.bak
             url  = path + file
-            next if !( res = __get_once( url ) )
+            next if !( req1 = __request_once( url ) )
 
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
+            
+            req1.on_complete {
+                |res|
                 __log_results( res, file )
-            end
+            }
             
             file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
             url  = path + file
-            res = __get_once( url )
+            req2 = __request_once( url )
             
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
+            req2.on_complete {
+                |res|
                 __log_results( res, file )
-            end
+            }
         }
 
+        @http.run
         
         # register our results with the system
         register_results( @results )
@@ -124,6 +128,8 @@ class BackupFiles < Arachni::Module::Base
     #
     def __log_results( res, filename )
         
+        return if( res.code != 200 || @http.custom_404?( res.body ) )
+          
         url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
@@ -154,16 +160,16 @@ class BackupFiles < Arachni::Module::Base
     #                                          previously requested,<br/>
     #                                          the HTTPResponse otherwise
     #
-    def __get_once( url )
+    def __request_once( url )
       
         return false if @@__audited.include?( url )
         
         print_debug( "Checking for #{url}" )
         
-        res  = @http.get( url )
+        req  = @http.get( url )
         @@__audited << url
         
-        return res
+        return req
     end
 
 end

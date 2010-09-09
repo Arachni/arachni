@@ -49,12 +49,15 @@ class XSSURI < Arachni::Module::Base
             |str|
             
             url  = @page.url + str
-            res  = @http.get( url )
-
-            __log_results( res, str )
+            req  = @http.get( url )
+            
+            req.on_complete {
+                |res|
+                __log_results( res, str )
+            }
         }
 
-        
+        @http.run
         # register our results with the system
         register_results( @results )
     end

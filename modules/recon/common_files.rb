@@ -62,14 +62,17 @@ class CommonFiles < Arachni::Module::Base
             next if @@__audited.include?( url )
             print_debug( "Checking for #{url}" )
 
-            res  = @http.get( url )
+            req  = @http.get( url )
             @@__audited << url
 
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, file, url )
-            end
+            req.on_complete {
+                |res|
+                print_debug( "Analyzing #{res.effective_url}" )
+                __log_results( res, file )
+            }
         }
 
+        @http.run
         
         # register our results with the system
         register_results( @results )
@@ -107,7 +110,9 @@ class CommonFiles < Arachni::Module::Base
     # @param  [String]  filename   the discovered filename 
     # @param  [String]  url   the url of the discovered file
     #
-    def __log_results( res, filename, url )
+    def __log_results( res, filename )
+        
+        return if( res.code != 200 || @http.custom_404?( res.body ) )
         
         url = res.effective_url
         # append the result to the results array

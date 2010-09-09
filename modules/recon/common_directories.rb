@@ -57,14 +57,17 @@ class CommonDirectories < Arachni::Module::Base
             next if @@__audited.include?( url )
             print_debug( "Checking for #{url}" )
             
-            res  = @http.get( url )
+            req  = @http.get( url )
             @@__audited << url
 
-            if( res.code == 200 && !@http.custom_404?( res.body ) )
+            req.on_complete {
+                |res|
+                print_debug( "Analyzing #{res.effective_url}" )
                 __log_results( res, dirname )
-            end 
+            }
         }
 
+        @http.run
         
         # register our results with the system
         register_results( @results )
@@ -102,6 +105,8 @@ class CommonDirectories < Arachni::Module::Base
     # @param  [String]  url   the url of the discovered file
     #
     def __log_results( res, dirname )
+        
+        return if( res.code != 200 || @http.custom_404?( res.body ) )
         
         url = res.effective_url
         # append the result to the results array

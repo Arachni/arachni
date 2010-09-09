@@ -81,12 +81,12 @@ class PathTraversal < Arachni::Module::Base
                 #
                 # so let's multitask ;)
                 #
-                ext_threads << Thread.new {
+                # ext_threads << Thread.new {
                     __audit( injection_str, param['regexp'] )
-                }
+                # }
             }
             # run the threads
-            ext_threads.each{ |t| t.join }
+            # ext_threads.each{ |t| t.join }
         }
         
         # register our results with the system
