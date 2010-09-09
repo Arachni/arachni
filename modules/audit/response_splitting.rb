@@ -59,21 +59,21 @@ class ResponseSplitting < Arachni::Module::Base
         # and pass a block that will check for a positive result
         audit_forms( @__header ) {
             |url, res, var|
-            __log_results( Vulnerability::Element::FORM, var, res, url )
+            __log_results( Vulnerability::Element::FORM, var, res )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
         audit_links( @__header ) {
             |url, res, var|
-            __log_results( Vulnerability::Element::LINK, var, res, url )
+            __log_results( Vulnerability::Element::LINK, var, res )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
         audit_cookies( @__header ) {
             |url, res, var|
-            __log_results( Vulnerability::Element::COOKIE, var, res, url )
+            __log_results( Vulnerability::Element::COOKIE, var, res )
         }
         
         # register our results with the system
@@ -117,9 +117,10 @@ class ResponseSplitting < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, url )
-        if res.get_fields( 'X-CRLF-Safe' )
-        
+    def __log_results( where, var, res )
+        if res.headers['X-CRLF-Safe']
+          
+            url = res.effective_url
             @results << Vulnerability.new( {
                     'var'          => var,
                     'url'          => url,
@@ -130,8 +131,8 @@ class ResponseSplitting < Arachni::Module::Base
                     'elem'         => where,
                     'response'     => res.body,
                     'headers'      => {
-                        'request'    => get_request_headers( ),
-                        'response'   => get_response_headers( res ),    
+                        'request'    => res.request.headers,
+                        'response'   => res.headers,    
                     }
                 }.merge( self.class.info )
             )

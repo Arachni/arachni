@@ -140,7 +140,7 @@ class HTTP
                 :params        => params )
 
             # handle redirections
-            if( ( redir = redirect?( res ) ).is_a?( String ) )
+            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
                 res =  get( redir, nil, true )
                 train( res, redir )
             else

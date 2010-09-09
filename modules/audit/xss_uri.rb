@@ -51,7 +51,7 @@ class XSSURI < Arachni::Module::Base
             url  = @page.url + str
             res  = @http.get( url )
 
-            __log_results( res, str, url )
+            __log_results( res, str )
         }
 
         
@@ -87,13 +87,14 @@ class XSSURI < Arachni::Module::Base
         }
     end
     
-    def __log_results( res, id, url )
+    def __log_results( res, id )
 
         regexp = Regexp.new( Regexp.escape( id ) )
         
         if ( id && res.body.scan( regexp )[0] == id ) ||
            ( !id && res.body.scan( regexp )[0].size > 0 )
            
+            url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
@@ -105,8 +106,8 @@ class XSSURI < Arachni::Module::Base
                 'elem'         => Vulnerability::Element::LINK,
                 'response'     => res.body,
                 'headers'      => {
-                    'request'    => 'n/a',
-                    'response'   => 'n/a',    
+                    'request'    => res.request.headers,
+                    'response'   => res.headers,    
                 }
             }.merge( self.class.info ) )
                     

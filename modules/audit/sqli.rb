@@ -81,21 +81,21 @@ class SQLInjection < Arachni::Module::Base
             # and pass a block that will check for a positive result
             audit_forms( str ) {
                 |url, res, var|
-                __log_results( Vulnerability::Element::FORM, var, res, str, url )
+                __log_results( Vulnerability::Element::FORM, var, res, str )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
             audit_links( str ) {
                 |url, res, var|
-                __log_results( Vulnerability::Element::LINK, var, res, str, url )
+                __log_results( Vulnerability::Element::LINK, var, res, str )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
             audit_cookies( str ) {
                 |url, res, var|
-                __log_results( Vulnerability::Element::COOKIE, var, res, str, url )
+                __log_results( Vulnerability::Element::COOKIE, var, res, str )
             }
         }
         
@@ -138,8 +138,9 @@ class SQLInjection < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, injection_str, url )
+    def __log_results( where, var, res, injection_str )
         
+        url = res.effective_url
         # iterate through the regular expressions in @__regexp_ids_file
         # and try to match them with the body of the HTTP response
         get_data_file( @__regexp_ids_file ) {
@@ -170,8 +171,8 @@ class SQLInjection < Arachni::Module::Base
                         'elem'         => where,
                         'response'     => res.body,
                         'headers'      => {
-                            'request'    => get_request_headers( ),
-                            'response'   => get_response_headers( res ),    
+                            'request'    => res.request.headers,
+                            'response'   => res.headers,    
                         }
 
                     }.merge( self.class.info )

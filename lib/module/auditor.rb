@@ -85,7 +85,7 @@ module Auditor
             
             # get matches
             result = get_matches( Vulnerability::Element::HEADER,
-                vars['altered'], res, injection_str, id_regex, id, @page.url )
+                vars['altered'], res, injection_str, id_regex, id )
             
             # and append them to the results array
             results << result if result
@@ -169,7 +169,7 @@ module Auditor
                 
                 # get matches
                 result = get_matches( Vulnerability::Element::LINK,
-                    vars['altered'], res, injection_str, id_regex, id, url )
+                    vars['altered'], res, injection_str, id_regex, id )
                 
                 # and append them to the results array
                 results << result if result
@@ -249,7 +249,7 @@ module Auditor
             
                 # get matches
                 result = get_matches( Vulnerability::Element::FORM,
-                    input['altered'], res, injection_str, id_regex, id, url )
+                    input['altered'], res, injection_str, id_regex, id )
                 
                 # and append them to the results array
                 results << result if result
@@ -318,7 +318,7 @@ module Auditor
                 
             # get possible matches
             result = get_matches( Vulnerability::Element::COOKIE,
-                cookie['altered'], res, injection_str, id_regex, id, @page.url )
+                cookie['altered'], res, injection_str, id_regex, id )
             # and append them
             results << result if result
         }
@@ -327,12 +327,13 @@ module Auditor
         results
     end
 
-    def get_matches( where, var, res, injection_str, id_regex, id, url )
+    def get_matches( where, var, res, injection_str, id_regex, id )
         
         # fairly obscure condition...pardon me...
         if ( id && res.body.scan( id_regex )[0] == id ) ||
            ( !id && res.body.scan( id_regex )[0].size > 0 )
         
+            url = res.effective_url
             print_ok( "In #{where} var '#{var}' " + ' ( ' + url + ' )' )
             
             print_verbose( "Injected str:\t" + injection_str )    
@@ -350,8 +351,8 @@ module Auditor
                 'response'     => res.body,
                 'elem'         => where,
                 'headers'      => {
-                    'request'    => get_request_headers( ),
-                    'response'   => get_response_headers( res ),    
+                    'request'    => res.request.headers,
+                    'response'   => res.headers,    
                 }
             }
         end

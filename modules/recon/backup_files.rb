@@ -74,7 +74,7 @@ class BackupFiles < Arachni::Module::Base
             next if !( res = __get_once( url ) )
 
             if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, file, url )
+                __log_results( res, file )
             end
             
             file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
@@ -82,7 +82,7 @@ class BackupFiles < Arachni::Module::Base
             res = __get_once( url )
             
             if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, file, url )
+                __log_results( res, file )
             end
         }
 
@@ -121,10 +121,10 @@ class BackupFiles < Arachni::Module::Base
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
     # @param  [String]  filename   the discovered filename 
-    # @param  [String]  url   the url of the discovered file
     #
-    def __log_results( res, filename, url )
+    def __log_results( res, filename )
         
+        url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
@@ -136,8 +136,8 @@ class BackupFiles < Arachni::Module::Base
             'elem'         => Vulnerability::Element::LINK,
             'response'     => res.body,
             'headers'      => {
-                'request'    => 'n/a',
-                'response'   => 'n/a',    
+                'request'    => res.request.headers,
+                'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
                 

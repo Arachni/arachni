@@ -53,7 +53,7 @@ class XSSPath < Arachni::Module::Base
             url  = path + str
             res  = @http.get( url )
 
-            __log_results( res, str, url )
+            __log_results( res, str )
         }
 
         
@@ -68,7 +68,7 @@ class XSSPath < Arachni::Module::Base
             'Description'    => %q{Cross-Site Scripting module for path injection},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -89,12 +89,12 @@ class XSSPath < Arachni::Module::Base
         }
     end
     
-    def __log_results( res, id, url )
+    def __log_results( res, id )
         
         if ( id && res.body.scan( Regexp.escape( id ) )[0] == id ) ||
            ( !id && res.body.scan( Regexp.escape( id ) )[0].size > 0 )
 
-        
+            url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
@@ -106,8 +106,8 @@ class XSSPath < Arachni::Module::Base
                 'elem'         => Vulnerability::Element::LINK,
                 'response'     => res.body,
                 'headers'      => {
-                    'request'    => 'n/a',
-                    'response'   => 'n/a',    
+                    'request'    => res.request.headers,
+                    'response'   => res.headers,    
                 }
             }.merge( self.class.info ) )
                     

@@ -84,19 +84,19 @@ class PathTraversal < Arachni::Module::Base
                 __audit_forms( injection_str ) {
                     |url, res, var|
                     __log_results( Vulnerability::Element::FORM, var,
-                      res, url, injection_str, param['regexp'] )
+                      res, injection_str, param['regexp'] )
                 }
                 
                 __audit_links( injection_str ) {
                     |url, res, var|
                     __log_results( Vulnerability::Element::LINK, var,
-                      res, url, injection_str, param['regexp'] )
+                      res, injection_str, param['regexp'] )
                 }
                         
                 __audit_cookies( injection_str ) {
                     |url, res, var|
                     __log_results( Vulnerability::Element::COOKIE, var,
-                      res, url, injection_str, param['regexp'] )
+                      res, injection_str, param['regexp'] )
                 }
             }
         }
@@ -277,12 +277,13 @@ class PathTraversal < Arachni::Module::Base
         }
     end
     
-    def __log_results( where, var, res, url, injection_str, regexp )
+    def __log_results( where, var, res, injection_str, regexp )
 
         if ( ( match = res.body.scan( regexp )[0] ) && match.size > 0 )
             
             injection_str = URI.escape( injection_str ) 
             
+            url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
                     'var'          => var,
@@ -294,8 +295,8 @@ class PathTraversal < Arachni::Module::Base
                     'elem'         => where,
                     'response'     => res.body,
                     'headers'      => {
-                        'request'    => get_request_headers( ),
-                        'response'   => get_response_headers( res ),    
+                        'request'    => res.request.headers,
+                        'response'   => res.headers,    
                    }
 
                 }.merge( self.class.info )

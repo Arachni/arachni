@@ -109,6 +109,7 @@ class CommonFiles < Arachni::Module::Base
     #
     def __log_results( res, filename, url )
         
+        url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
@@ -120,8 +121,8 @@ class CommonFiles < Arachni::Module::Base
             'elem'         => Vulnerability::Element::LINK,
             'response'     => res.body,
             'headers'      => {
-                'request'    => 'n/a',
-                'response'   => 'n/a',    
+                'request'    => res.request.headers,
+                'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
                 
