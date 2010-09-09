@@ -108,6 +108,12 @@ class HTTP
                 :follow_location => false,
                 :params        => params )
 
+            if( !res )
+                puts url
+                ap params
+            end
+
+
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
                 res = get( redir, nil, true )
