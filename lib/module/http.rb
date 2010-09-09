@@ -18,6 +18,9 @@ module Module
 #
 # Provides a simple HTTP interface for modules.
 #
+# All requests are run Async (compliements of Typhoeus)
+# providing great speed and performance.
+#
 # === Exceptions
 # Any exceptions or session corruption is handled by the class.<br/>
 # Some are ignored, on others the HTTP session is refreshed.<br/>
@@ -58,38 +61,39 @@ class HTTP
     # Initializes the HTTP session given a start URL respecting
     # system wide settings for HTTP basic auth and proxy
     #
-    # @param [String] url start URL
+    # @param  [String]  url  start URL
     #
-    # @return [Net::HTTP]
-    #
-    def initialize( url, opts = {} )
+    def initialize( url )
+      
         @url = parse_url( url )
-
-        @opts = Hash.new
-
-        @opts = @opts.merge( opts )
         
         req_limit = Options.instance.http_req_limit
         @hydra = Typhoeus::Hydra.new( :max_concurrency => req_limit )
         @hydra.disable_memoization
         
-        # create a new HTTP session
-        refresh( )
-        
         @trainers = []
         
         @init_headers = Hash.new
-        @init_headers['user-agent'] = Options.instance.user_agent
+        @init_headers['User-Agent'] = Options.instance.user_agent
         @init_headers['cookie']     = ''
         
         @__not_found  = nil
 
     end
     
+    #
+    # Runs Hydra (all the queued HTTP requests)
+    #
     def run
       @hydra.run
     end
     
+    #
+    # Queues a Tyhpoeus::Request and applies an 'on_complete' callback 
+    # on behal of the trainer.
+    #
+    # @param  [Tyhpoeus::Request]  req  the request to queue
+    #
     def queue( req )
         @hydra.queue( req )
             
@@ -107,12 +111,12 @@ class HTTP
     end
 
     #
-    # Gets a URL passing the provided variables
+    # Gets a URL passing the provided query parameters
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
+    # @param  [URI]  url     URL to GET
+    # @param  [Hash] params  hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
     def get( url, params = {}, redirect = false )
 
@@ -128,7 +132,7 @@ class HTTP
 
             req = Typhoeus::Request.new( url,
                 :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['user-agent'],
+                :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 :params        => params )
             
@@ -140,12 +144,12 @@ class HTTP
     end
 
     #
-    # Posts a form to a URL with the provided variables
+    # Posts a form to a URL with the provided query parameters
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
+    # @param  [URI]   url     URL to POST
+    # @param  [Hash]  params  hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
     def post( url, params = { } )
 
@@ -154,7 +158,7 @@ class HTTP
             req = Typhoeus::Request.new( url,
                 :method        => :post,
                 :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['user-agent'],
+                :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 :params        => params )
 
@@ -166,11 +170,11 @@ class HTTP
     #
     # Gets a url with cookies and url variables
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] cookies array of name=>value pairs
-    # @param  [Array<Hash<String, String>>] params  array of name=>value pairs
+    # @param  [URI]   url      URL to GET
+    # @param  [Hash]  cookies  hash with name=>value pairs
+    # @param  [Hash]  params   hash with GET name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
     def cookie( url, cookies, params = nil)
 
@@ -187,10 +191,9 @@ class HTTP
         exception_jail {
             req = Typhoeus::Request.new( url,
                 :headers       => { 'cookie' => get_cookies_str( cookies ) },
-                :user_agent    => @init_headers['user-agent'],
+                :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 :params        => params )
-            
             
             queue( req )
             return req
@@ -200,11 +203,11 @@ class HTTP
     #
     # Gets a url with optional url variables and modified headers
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Hash<String, String>] headers hash of name=>value pairs
-    # @param  [Array<Hash<String, String>>] params array of name=>value pairs
+    # @param  [URI]  url      URL to GET
+    # @param  [Hash] headers  hash with name=>value pairs
+    # @param  [Hash] params   hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
     def header( url, headers, params = nil )
 
@@ -216,7 +219,7 @@ class HTTP
             
             req = Typhoeus::Request.new( url,
                 :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['user-agent'],
+                :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 :params        => params )
             
@@ -232,35 +235,41 @@ class HTTP
     #
     # Sets cookies for the HTTP session
     #
-    # @param    [Hash]  cookie_hash  name=>value pair cookies
+    # @param    [Hash]  cookies  name=>value pairs
     #
-    # @return    [void]
+    # @return   [void]
     #
-    def set_cookies( cookie_hash )
+    def set_cookies( cookies )
         @init_headers['cookie'] = ''
-        @cookie_jar = cookie_hash.each_pair {
+        @cookie_jar = cookies.each_pair {
             |name, value|
             @init_headers['cookie'] += "#{name}=#{value};" 
         }
     end
     
     #
-    # Gets cookies as a string for the HTTP session
+    # Gets a hash of cookies as a string
     #
-    # @param    [Hash]  cookie_hash  name=>value pair cookies
+    # @param    [Hash]  cookies  name=>value pairs
     #
-    # @return    [void]
+    # @return   [string]
     #
-    def get_cookies_str( cookie_hash )
+    def get_cookies_str( cookies )
         str = ''
-        cookie_hash.each_pair {
+        cookies.each_pair {
             |name, value|
             str += "#{name}=#{value};" 
         }
         return str
     end
 
-    
+    #
+    # Converts HTTP cookies from string to Hash
+    #
+    # @param  [String]  str
+    #
+    # @return  [Hash]
+    #
     def parse_cookie_str( str )
         cookie_jar = Hash.new
         str.split( ';' ).each {
@@ -273,11 +282,11 @@ class HTTP
     #
     # Class method
     #
-    # Parses netscape HTTP cookie file
+    # Parses netscape HTTP cookie files
     #
     # @param    [String]  cookie_jar  the location of the cookie file
     #
-    # @return    [Hash]     cookies in name=>value pairs
+    # @return   [Hash]    cookies     in name=>value pairs
     #    
     def HTTP.parse_cookiejar( cookie_jar )
         
@@ -378,48 +387,6 @@ class HTTP
     end
 
     #
-    # Converts an Array of Hash<String, String> objects
-    # to a query URL String with variables
-    #
-    # @param    [Array<Hash>]  arr    
-    # @param    [Bool]    append    create a new url query string or
-    #                                   a string to be appended to the existing url?
-    #
-    # @return [String]
-    #
-    def a_to_s( arr, append = false )
-        if !arr || arr.length == 0 then return '' end
-
-        if( append == true )
-            str = '&'
-        else
-            str = '?'
-        end
-        
-        arr.each {
-            |pair|
-            str += pair[0].to_s +  '=' + URI.escape( pair[1].to_s ) + '&'
-        }
-        
-        # URI.escape() doesn't escape spaces..don't ask me why...
-        str.gsub( / /, '+' )
-    end
-    
-    #
-    # Creates a new HTTP session<br/>
-    # Actually...since keep-alive is on it will either create a new connection
-    # or refresh an existing one.
-    #
-    def refresh( )
-        
-        opts = Options.instance
-
-        if @url.scheme == 'https'
-        end
-
-    end
-    
-    #
     # Wraps the "block" in exception handling code and runs it.
     #
     # @param    [Block]
@@ -471,7 +438,7 @@ class HTTP
         print_debug_backtrace( e )
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
         print_debug( 'HTTP session:' )
-        print_debug_pp( @session )
+        print_debug_pp( @hydra )
 #        print_debug( YAML::dump( @session ) )
         print_error( 'Proceeding anyway... ' )
     end
