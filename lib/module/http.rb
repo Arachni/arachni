@@ -8,9 +8,9 @@
 
 =end
 
-require 'typhoeus'
-
 module Arachni
+require Options.instance.dir['pwd'] + '../typhoeus/lib/typhoeus'
+
 module Module
 
 #
@@ -97,8 +97,8 @@ class HTTP
                 
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                res = get( redir, nil, true )
-                train( res, redir )
+                res2 = Typhoeus::Request.get( redir )
+                train( res2, redir )
             else
                 train( res )
             end
@@ -126,7 +126,7 @@ class HTTP
         exception_jail {
 
             req = Typhoeus::Request.new( url,
-                :headers       => @init_headers,
+                :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['user-agent'],
                 :follow_location => false,
                 :params        => params )
@@ -152,7 +152,7 @@ class HTTP
             
             req = Typhoeus::Request.new( url,
                 :method        => :post,
-                :headers       => @init_headers,
+                :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['user-agent'],
                 :follow_location => false,
                 :params        => params )
@@ -197,7 +197,7 @@ class HTTP
         # wrap the code in exception handling
         exception_jail {
             req = Typhoeus::Request.new( url,
-                :headers       => @init_headers,
+                :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['user-agent'],
                 :params        => params )
             
@@ -228,7 +228,7 @@ class HTTP
             @init_headers = @init_headers.merge( headers )
             
             req = Typhoeus::Request.new( url,
-                :headers       => @init_headers,
+                :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['user-agent'],
                 :params        => params )
             
@@ -241,7 +241,6 @@ class HTTP
 
     end
 
-    
     #
     # Sets cookies for the HTTP session
     #
