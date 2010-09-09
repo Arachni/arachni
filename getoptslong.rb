@@ -45,6 +45,7 @@ opts = GetoptLong.new(
     [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
     [ '--mods-run-last',     '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ]
@@ -107,6 +108,9 @@ opts.each {
                 
         when '--threads'
             options.threads = arg.to_i
+            
+        when '--http-req-limit'
+          options.http_req_limit = arg.to_i
 
         when '--audit-links'
             options.audit_links = true

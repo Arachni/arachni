@@ -21,7 +21,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 #
 class CommonFiles < Arachni::Module::Base
@@ -85,7 +85,7 @@ class CommonFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find common sensitive files on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
+            'Version'        => '0.1.2',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 

@@ -21,7 +21,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Options
 
@@ -132,6 +132,13 @@ class Options
     # @return    [Integer]
     #
     attr_accessor :threads
+    
+    #
+    # How many concurrent HTTP requests?
+    #
+    # @return    [Integer]
+    #
+    attr_accessor :http_req_limit
     
     #
     # Should Arachni audit links?

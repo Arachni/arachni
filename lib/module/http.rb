@@ -69,7 +69,8 @@ class HTTP
 
         @opts = @opts.merge( opts )
         
-        @hydra = Typhoeus::Hydra.new
+        req_limit = Options.instance.http_req_limit
+        @hydra = Typhoeus::Hydra.new( :max_concurrency => req_limit )
         
         # create a new HTTP session
         refresh( )

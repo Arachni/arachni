@@ -25,7 +25,7 @@ module UI
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 # @see Arachni::Framework
 #
 class CLI
@@ -433,6 +433,10 @@ USAGE
     --threads=<number>          how many threads to instantiate
                                   If no thread limit has been specified
                                     each module will run in its own thread.
+
+    --http-req-limit            concurent HTTP requests limit (per thread)
+                                  Be carefull not to kill your server.
+                                  (Default: 200)                                    
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  

@@ -23,7 +23,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -79,7 +79,7 @@ class CommonDirectories < Arachni::Module::Base
             'Description'    => %q{Tries to find common directories on the server.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1.2',
+            'Version'        => '0.1.3',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 
