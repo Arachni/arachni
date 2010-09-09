@@ -68,7 +68,9 @@ class HTTP
         @opts = Hash.new
 
         @opts = @opts.merge( opts )
-
+        
+        @hydra = Typhoeus::Hydra.new
+        
         # create a new HTTP session
         refresh( )
         
@@ -80,6 +82,26 @@ class HTTP
         
         @__not_found  = nil
 
+    end
+    
+    def run
+      @hydra.run
+    end
+    
+    def queue( req )
+        @hydra.queue( req )
+            
+        req.on_complete {
+            |res|
+                
+            # handle redirections
+            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
+                res = get( redir, nil, true )
+                train( res, redir )
+            else
+                train( res )
+            end
+        }
     end
 
     #
@@ -102,27 +124,15 @@ class HTTP
         #
         exception_jail {
 
-            res = Typhoeus::Request.get( url,
+            req = Typhoeus::Request.new( url,
                 :headers       => @init_headers,
                 :user_agent    => @init_headers['user-agent'],
                 :follow_location => false,
                 :params        => params )
-
-            if( !res )
-                puts url
-                ap params
-            end
-
-
-            # handle redirections
-            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                res = get( redir, nil, true )
-                train( res, redir )
-            else
-                train( res )
-            end
             
-            return res
+            queue( req )
+            
+            return req
         }
         
     end
@@ -139,21 +149,15 @@ class HTTP
 
         exception_jail {
             
-            res = Typhoeus::Request.post( url,
+            req = Typhoeus::Request.new( url,
+                :method        => :post,
                 :headers       => @init_headers,
                 :user_agent    => @init_headers['user-agent'],
                 :follow_location => false,
                 :params        => params )
 
-            # handle redirections
-            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                res =  get( redir, nil, true )
-                train( res, redir )
-            else
-                train( res )
-            end
-
-            return res
+            queue( req )
+            return req
         }
     end
 
@@ -191,15 +195,17 @@ class HTTP
         
         # wrap the code in exception handling
         exception_jail {
-            res = Typhoeus::Request.get( url,
+            req = Typhoeus::Request.new( url,
                 :headers       => @init_headers,
                 :user_agent    => @init_headers['user-agent'],
                 :params        => params )
             
             
             @init_headers['cookie'] = orig_cookiejar.clone
-            train( res )
-            return res
+            
+            queue( req )
+            
+            return req
         }
     end
 
@@ -212,7 +218,7 @@ class HTTP
     #
     # @return [HTTP::Response]
     #
-    def header( url, headers, params = nil)
+    def header( url, headers, params = nil )
 
         # wrap the code in exception handling
         exception_jail {
@@ -220,14 +226,16 @@ class HTTP
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
             
-            res = Typhoeus::Request.get( url,
+            req = Typhoeus::Request.new( url,
                 :headers       => @init_headers,
                 :user_agent    => @init_headers['user-agent'],
                 :params        => params )
             
             @init_headers = orig_headers.clone
-            train( res )
-            return res
+            
+            queue( req )
+            
+            return req
         }
 
     end
@@ -307,18 +315,18 @@ class HTTP
     # @param  [Bool]
     #
     def custom_404?( html )
-      
+        
         if( !@__not_found )
             
             path = Module::Utilities.get_path( @url.to_s )
             
             # force a 404 and grab the html body
             force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            @__not_found = get( force_404 ).body
+            @__not_found = Typhoeus::Request.get( force_404 ).body
             
             # force another 404 and grab the html body
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            not_found2  = get( force_404 ).body
+            not_found2  = Typhoeus::Request.get( force_404 ).body
             
             #
             # some websites may have dynamic 404 pages or simply include
