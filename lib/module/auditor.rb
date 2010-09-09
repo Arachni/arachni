@@ -50,8 +50,10 @@ module Auditor
     #                                                has been given
     #
     def audit_headers( injection_str, id_regex = nil, id = nil, &block )
-
+        
         results = []
+        
+        return results if !Options.instance.audit_headers
         
         # iterate through header fields and audit each one
         inject_each_var( get_request_headers( true ), injection_str ).each {
