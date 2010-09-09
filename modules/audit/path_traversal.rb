@@ -36,7 +36,7 @@ class PathTraversal < Arachni::Module::Base
     end
     
     def prepare( )
-        @__trv =  '../../../../../../../../../../../../../../../..'
+        @__trv =  '../../../../../../../../../../../../../../../../'
         @__ext = [
             "",
             "\0.htm",
@@ -54,7 +54,7 @@ class PathTraversal < Arachni::Module::Base
         
         @__params = [
             {
-                'value'  => '/etc/passwd',
+                'value'  => 'etc/passwd',
                 'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/im
             },
             {
@@ -70,183 +70,50 @@ class PathTraversal < Arachni::Module::Base
         @__params.each {
             |param|
             
+            ext_threads = []
             @__ext.each {
                 |ext|
                 
                 injection_str = @__trv + param['value'] + ext
                 
+                # we have A LOT of ground to cover considering the
+                # variations that the framework will impose
                 #
-                # This module needs some optimizations
-                # so we'll bypass the standard framework audit methods
-                # and work on our own
+                # so let's multitask ;)
                 #
-                
-                __audit_forms( injection_str ) {
-                    |url, res, var|
-                    __log_results( Vulnerability::Element::FORM, var,
-                      res, injection_str, param['regexp'] )
-                }
-                
-                __audit_links( injection_str ) {
-                    |url, res, var|
-                    __log_results( Vulnerability::Element::LINK, var,
-                      res, injection_str, param['regexp'] )
-                }
-                        
-                __audit_cookies( injection_str ) {
-                    |url, res, var|
-                    __log_results( Vulnerability::Element::COOKIE, var,
-                      res, injection_str, param['regexp'] )
+                ext_threads << Thread.new {
+                    __audit( injection_str, param['regexp'] )
                 }
             }
+            # run the threads
+            ext_threads.each{ |t| t.join }
         }
         
         # register our results with the system
         register_results( @results )
     end
 
-    def __audit_links( injection_str, &block )
-
-        results = []
-        
-        work_on_links {
-            |link|
-            
-            url       = link['href']
-            link_vars = link['vars']
-            
-            # if we don't have any auditable elements just return
-            if !link_vars then next end
-
-            # iterate through all url vars and audit each one
-            inject_each_var( link_vars, injection_str, false ).each {
-                |vars|
-    
-                audit_id = "#{self.class.info['Name']}:" +
-                    "#{url}:#{Vulnerability::Element::LINK}:" +
-                    "#{vars['altered'].to_s}=#{vars['hash'].to_s}"
+    def __audit( injection_str, regexp )
+        audit_forms( injection_str ) {
+            |url, res, var|
+            __log_results( Vulnerability::Element::FORM, var,
+                res, injection_str, regexp )
+        }
                 
-                next if @@audited.include?( audit_id )
-
-                # tell the user what we're doing
-                print_status( "Auditing link var '" +
-                    vars['altered'] + "' of " + url )
-                
-                if( URI( link['href'] ).query ) 
-                    url = link['href'].gsub( Regexp.new( URI( link['href'] ).query ), '' )
-                else
-                    url = link['href'].dup
-                end
-
-                # audit the url vars
-                res = @http.get( url, vars['hash'] )
-                @@audited << audit_id
-                
-                url = link['href'].dup
-                
-                # something might have gone bad,
-                # make sure it doesn't ruin the rest of the show...
-                if !res then next end
-                
-                # call the passed block
-                if block_given?
-                    block.call( url, res, vars['altered'] )
-                    next
-                end
-                
-            }
-        }    
+        audit_links( injection_str ) {
+            |url, res, var|
+            __log_results( Vulnerability::Element::LINK, var,
+                res, injection_str, regexp )
+        }
+                        
+        audit_cookies( injection_str ) {
+            |url, res, var|
+            __log_results( Vulnerability::Element::COOKIE, var,
+                res, injection_str, regexp )
+        }
+      
     end
 
-    def __audit_forms( injection_str, &block )
-        
-        results = []
-        
-        work_on_forms {
-            |orig_form|
-            form = get_form_simple( orig_form )
-
-            next if !form
-            
-            url    = form['attrs']['action']
-            method = form['attrs']['method']
-                
-            # iterate through each auditable element
-            inject_each_var( form['auditable'], injection_str, false ).each {
-                |input|
-
-                audit_id = "#{self.class.info['Name']}:" +
-                    "#{url}:" +
-                    "#{Vulnerability::Element::FORM}:" + 
-                    "#{input['altered'].to_s}=#{input['hash'].to_s}"
-                
-                next if @@audited.include?( audit_id )
-                
-                # inform the user what we're auditing
-                print_status( "Auditing form input '" +
-                    input['altered'] + "' with action " + url )
-
-                if( method != 'get' )
-                    res = @http.post( url, input['hash'] )
-                else
-                    res = @http.get( url, input['hash'] )
-                end
-                
-                @@audited << audit_id
-                
-                # make sure that we have a response before continuing
-                if !res then next end
-                
-                # call the block, if there's one
-                if block_given?
-                    block.call( url, res, input['altered'] )
-                    next
-                end
-
-            }
-        }
-    end
-
-    def __audit_cookies( injection_str, &block )
-        
-        results = []
-        
-        # iterate through each cookie
-        work_on_cookies {
-            |orig_cookie|
-        inject_each_var( get_cookie_simple( orig_cookie ), injection_str, false ).each {
-            |cookie|
-
-            next if Options.instance.exclude_cookies.include?( cookie['altered'] )
-            
-            audit_id = "#{self.class.info['Name']}:" +
-                "#{@page.url}:#{Vulnerability::Element::COOKIE}:" +
-                "#{cookie['altered'].to_s}=#{cookie['hash'].to_s}"
-            
-            next if @@audited.include?( audit_id )
-
-            # tell the user what we're auditing
-            print_status( "Auditing cookie '" +
-                cookie['altered'] + "' of " + @page.url )
-
-            # make a get request with our cookies
-            res = @http.cookie( @page.url, cookie['hash'], nil )
-                
-            @@audited << audit_id
-
-            # check for a response
-            if !res then next end
-            
-            if block_given?
-                block.call( @page.url, res, cookie['altered'] )
-                next
-            end
-            
-        }
-        }
-    end
-
-    
     def self.info
         {
             'Name'           => 'PathTraversal',
