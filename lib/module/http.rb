@@ -188,6 +188,7 @@ class HTTP
             req = Typhoeus::Request.new( url,
                 :headers       => { 'cookie' => get_cookies_str( cookies ) },
                 :user_agent    => @init_headers['user-agent'],
+                :follow_location => false,
                 :params        => params )
             
             
@@ -216,6 +217,7 @@ class HTTP
             req = Typhoeus::Request.new( url,
                 :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['user-agent'],
+                :follow_location => false,
                 :params        => params )
             
             @init_headers = orig_headers.clone
