@@ -103,6 +103,9 @@ class Framework
         # deep copy the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = deep_clone( @opts.redundant )
+        
+        # used to synchronize the HTTP request queue 
+        @@magic_lock = Mutex.new
     end
 
     #
@@ -571,7 +574,7 @@ class Framework
     # @param    [Page]    page
     #
     def run_mods( page )
-
+        
         # if there's no thread count specified run each module
         # in it's own thread.
         if( !@opts.threads )
@@ -625,7 +628,7 @@ class Framework
         
         # wait for threads to finish
         @threads.each { |t| t.join }
-            
+        Arachni::Module::HTTP.run
     end
     
     #
@@ -848,6 +851,9 @@ class Framework
         return true if cnt == @opts.lsmod.size 
     end
   
+    def Framework.magic_lock
+        @@magic_lock
+    end
 end
 
 end

@@ -199,7 +199,8 @@ module Auditor
             # audit the url vars
             req = @http.header( @page.url, vars['hash'] )
 
-            on_complete( req, injection_str, vars, opts, &block )
+            injected = vars['hash'][vars['altered']]
+            on_complete( req, injected, vars, opts, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -207,8 +208,6 @@ module Auditor
         }
         audited( audit_id )
         
-        @http.run
-
         results
     end
         
@@ -255,8 +254,9 @@ module Auditor
                 
                 # audit the url vars
                 req = @http.get( url, vars['hash'] )
-
-                on_complete( req, injection_str, vars, opts, &block )
+                
+                injected = vars['hash'][vars['altered']]
+                on_complete( req, injected, vars, opts, &block )
                 req.after_complete {
                     |result|
                     results << result.flatten[1] if result.flatten[1]
@@ -266,8 +266,6 @@ module Auditor
             audited( audit_id )
         }
         
-        @http.run
-
         results
     end
 
@@ -325,17 +323,18 @@ module Auditor
                     req = @http.get( url, input['hash'] )
                 end
                 
-                on_complete( req, injection_str, input, opts, &block )
+                injected = input['hash'][input['altered']].to_s
+                
+                on_complete( req, injected, input, opts, &block )
                 req.after_complete {
                     |result|
+                    # ap result
                     results << result.flatten[1] if result.flatten[1]
                 }
                 
             }
             audited( audit_id )
         }
-        
-        @http.run
         
         return results
     end
@@ -378,7 +377,9 @@ module Auditor
                 print_status( get_status_str( url, cookie, opts ) )
 
                 req = @http.cookie( @page.url, cookie['hash'], nil )
-                on_complete( req, injection_str, cookie, opts, &block )
+                
+                injected = cookie['hash'][cookie['altered']]
+                on_complete( req, injected, cookie, opts, &block )
                 req.after_complete {
                     |result|
                     results << result.flatten[1] if result.flatten[1]
@@ -388,7 +389,7 @@ module Auditor
             audited( audit_id )
         }
         
-        @http.run
+        # @http.run
 
         results
     end
@@ -413,10 +414,11 @@ module Auditor
     def on_complete( req, injected_str, input, opts, &block )
         req.on_complete {
             |res |
-
+            
             # make sure that we have a response before continuing
             if !res then next end
-                
+            
+            opts[:injected] = injected_str.to_s
             # call the block, if there's one
             if block_given?
                 block.call( res, input['altered'], opts )
@@ -466,7 +468,7 @@ module Auditor
             print_verbose( "Matched regular expression: " + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
     
-            return {
+            res = {
                 'var'          => var,
                 'url'          => url,
                 'injected'     => injected_str,
@@ -480,6 +482,9 @@ module Auditor
                     'response'   => res.headers,    
                 }
             }
+            
+            @results << Vulnerability.new( res.merge( self.class.info ) )
+            register_results( @results.uniq )
         end
     end
     
@@ -554,7 +559,7 @@ module Auditor
             # are valid and present us with new attack vectors
             as_is = Hash.new( )
             as_is['altered'] = '__orig'
-            chash = as_is['hash'] = hash.dup
+            as_is['hash'] = hash.dup
     
             as_is['hash'].keys.each {
                 |k|
@@ -563,19 +568,23 @@ module Auditor
             var_combo << as_is
         end
 
+        chash = hash.dup
         hash.keys.each {
             |k|
+
+            hash = KeyFiller.fill( hash )            
             opts[:format].each {
                 |format|
                 
-                hash = KeyFiller.fill( hash )
                 str  = format_str( injection_str, hash[k], format )
                 
                 var_combo << { 
                     'altered' => k,
                     'hash'    => hash.merge( { k => str } )
                 }
+                
             }
+            
         }
         
         return var_combo

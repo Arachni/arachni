@@ -68,10 +68,10 @@ class HTTP
         @url = parse_url( url )
         
         req_limit = Options.instance.http_req_limit
-        @hydra = Typhoeus::Hydra.new( :max_concurrency => req_limit )
-        @hydra.disable_memoization
+        @@hydra ||= Typhoeus::Hydra.new( :max_concurrency => req_limit )
+        @@hydra.disable_memoization
         
-        @lock = Mutex.new
+        @@lock ||= Framework.magic_lock
         
         @trainers = []
         
@@ -86,10 +86,11 @@ class HTTP
     #
     # Runs Hydra (all the queued HTTP requests)
     #
-    def run
-      @lock.synchronize {
-          @hydra.run
-      }
+    # Should only be called by the framework
+    # after all module threads have beed joined!
+    #
+    def HTTP.run
+        @@hydra.run
     end
     
     #
@@ -99,13 +100,20 @@ class HTTP
     # @param  [Tyhpoeus::Request]  req  the request to queue
     #
     def queue( req )
-        @lock.synchronize {
-            @hydra.queue( req )
+        @@lock.synchronize {
+            @@hydra.queue( req )
         }
           
         req.on_complete {
             |res|
-                
+            
+            print_debug( 'Got response:' )
+            print_debug( 'URL: ' + res.effective_url )
+            print_debug( 'Method: ' + res.request.method  )
+            print_debug( 'Params: ' + res.request.params.to_s  )
+            print_debug( 'Headers: ' + res.request.headers.to_s  )
+            print_debug( '------------' )
+            
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
                 res2 = Typhoeus::Request.get( redir )
