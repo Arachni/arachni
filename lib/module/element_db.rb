@@ -202,6 +202,7 @@ module ElementDB
           links.each {
               |link|
               
+              next if !link
               next if !link['href']
               next if link['href'].include?( '__arachni__' )
                 
