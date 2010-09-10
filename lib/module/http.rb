@@ -73,7 +73,7 @@ class HTTP
         
         @trainers = []
         
-        @init_headers = Hash.new
+        @init_headers               = Hash.new
         @init_headers['User-Agent'] = Options.instance.user_agent
         @init_headers['cookie']     = ''
         
@@ -137,7 +137,6 @@ class HTTP
                 :params        => params )
             
             queue( req )
-            
             return req
         }
         
@@ -176,7 +175,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def cookie( url, cookies, params = nil)
+    def cookie( url, cookies, params = nil )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
         
@@ -226,7 +225,6 @@ class HTTP
             @init_headers = orig_headers.clone
             
             queue( req )
-            
             return req
         }
 
