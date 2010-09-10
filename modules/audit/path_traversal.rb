@@ -65,9 +65,8 @@ class PathTraversal < Arachni::Module::Base
         ]
         
         @__opts = {
+            # we don't want the Auditor to interfere with our injecion strings
             :format => [ Format::STRAIGHT ],
-            :elements => [ Element::LINK, Element::FORM,
-                           Element::COOKIE, Element::HEADER ]
         }
 
     end
@@ -87,6 +86,7 @@ class PathTraversal < Arachni::Module::Base
                   |res|
                   @results << Vulnerability.new( res.merge( self.class.info ) )
                 }
+                
             }
         }
         

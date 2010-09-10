@@ -45,13 +45,7 @@ class XSS < Arachni::Module::Base
 
     def run( )
 
-        opts = {
-            :format => [ Format::STRAIGHT, Format::APPEND,
-                         Format::NULL, Format::APPEND | Format::NULL ],
-            :elements => [ Element::LINK, Element::FORM,
-                           Element::COOKIE, Element::HEADER ]
-        }
-
+        opts = { }
         #
         # it's better to save big arrays to a file
         # a big array is ugly, messy and can't be updated as easily

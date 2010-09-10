@@ -55,25 +55,11 @@ class ResponseSplitting < Arachni::Module::Base
     
     def run( )
         
-        # try to inject the header via the forms of the page
+        # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit_forms( @__header ) {
-            |res, var|
-            __log_results( Vulnerability::Element::FORM, var, res )
-        }
-        
-        # try to inject the header via the link variables
-        # and pass a block that will check for a positive result        
-        audit_links( @__header ) {
-            |res, var|
-            __log_results( Vulnerability::Element::LINK, var, res )
-        }
-        
-        # try to inject the header via cookies
-        # and pass a block that will check for a positive result
-        audit_cookies( @__header ) {
-            |res, var|
-            __log_results( Vulnerability::Element::COOKIE, var, res )
+        audit( @__header ) {
+            |res, var, opts|
+            __log_results( opts, var, res )
         }
         
         # register our results with the system
@@ -117,7 +103,7 @@ class ResponseSplitting < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res )
+    def __log_results( opts, var, res )
         if res.headers['X-CRLF-Safe']
           
             url = res.effective_url
@@ -128,7 +114,7 @@ class ResponseSplitting < Arachni::Module::Base
                     'id'           => 'x-crlf-safe',
                     'regexp'       => 'n/a',
                     'regexp_match' => 'n/a',
-                    'elem'         => where,
+                    'elem'         => opts[:element],
                     'response'     => res.body,
                     'headers'      => {
                         'request'    => res.request.headers,
@@ -137,7 +123,7 @@ class ResponseSplitting < Arachni::Module::Base
                 }.merge( self.class.info )
             )
 
-            print_ok( "In #{where} var '#{var}' ( #{url} )" )
+            print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
         end
     end
 

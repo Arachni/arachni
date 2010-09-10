@@ -43,21 +43,11 @@ class SimpleCmdExec < Arachni::Module::Base
 
     def run( )
         
-        audit_links( @__injection_str, @__opts ).each {
+        audit( @__injection_str, @__opts ).each {
             |res|
             @results << Vulnerability.new( res.merge( self.class.info ) )
         }
 
-        audit_forms( @__injection_str, @__opts ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-
-        audit_cookies( @__injection_str, @__opts ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-        
         register_results( @results )
     end
 

@@ -51,17 +51,18 @@ class Eval < Arachni::Module::Base
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
         
-        @__opts = {}
-        
-        # the sum of the 2 numbers as a string
-        @__opts[:match]   =  (287630581954 + 4196403186331128).to_s
-        @__opts[:regexp]  = Regexp.new( @__opts[:match] )
-        
         # our results array
         @results = []
     end
 
     def prepare( )
+        
+        @__opts = {}
+        
+        # the sum of the 2 numbers as a string
+        @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
+        @__opts[:regexp]  = Regexp.new( @__opts[:match] )
+
         
         # code to be injected to the webapp
         @__injection_strs = [
@@ -78,6 +79,7 @@ class Eval < Arachni::Module::Base
             tmp << '; ' + str
         }
         @__injection_strs |= tmp
+        
     end
     
     def run( )
@@ -86,20 +88,7 @@ class Eval < Arachni::Module::Base
         @__injection_strs.each {
             |str|
             
-            # audit forms and add the results to the results array
-            audit_forms( str, @__opts ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
-            # audit links and add the results to the results array    
-            audit_links( str, @__opts ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
-            # audit cookies and add the results to the results array
-            audit_cookies( str, @__opts ).each {
+            audit( str, @__opts ).each {
                 |res|
                 @results << Vulnerability.new( res.merge( self.class.info ) )
             }
