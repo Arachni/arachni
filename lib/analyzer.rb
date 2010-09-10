@@ -629,6 +629,8 @@ class Analyzer
             |pattern|
             return true if url =~ pattern
         }
+        
+        return false
     end
     
     def include?( url )
