@@ -273,10 +273,11 @@ class Analyzer
     # @return [Array<Hash <String, String> >] of links
     #
     def get_links( html )
+
         links = []
         get_elements_by_name( 'a', html ).each_with_index {
             |link, i|
-
+            
             link['href'] = to_absolute( link['href'] )
             
             if !link['href'] then next end
@@ -287,6 +288,8 @@ class Analyzer
             links[i] = link
             links[i]['vars'] = get_link_vars( link['href'] )
         }
+        
+        return links
     end
 
     #
