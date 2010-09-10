@@ -46,12 +46,8 @@ class BackupFiles < Arachni::Module::Base
 
         print_status( "Scanning..." )
 
-        # ugly crap but it works, as far as I can tell...
+        filename = File.basename( URI( @page.url ).path )
         path     = Module::Utilities.get_path( @page.url )
-        regex    = path + '(.*)'
-        
-        filename = @page.url.match( Regexp.new( regex ) )
-        filename = filename[1].gsub( /\?(.*)/, '' ) 
         
         if( filename.empty? )
             print_debug( 'Backing out. ' + 
