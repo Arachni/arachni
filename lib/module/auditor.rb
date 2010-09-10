@@ -132,24 +132,24 @@ module Auditor
             case elem
               
                 when  Element::LINK
-                  threads << Thread.new {
+                  # threads << Thread.new {
                       results << audit_links( injection_str, opts, &block )
-                  }
+                  # }
                   
                 when  Element::FORM
-                  threads << Thread.new {  
+                  # threads << Thread.new {  
                       results << audit_forms( injection_str, opts, &block )
-                  }
+                  # }
                   
                 when  Element::COOKIE
-                  threads << Thread.new {
+                  # threads << Thread.new {
                       results << audit_cookies( injection_str, opts, &block )
-                  }
+                  # }
                   
                 when  Element::HEADER
-                  threads << Thread.new {
+                  # threads << Thread.new {
                       results << audit_headers( injection_str, opts, &block )
-                  }
+                  # }
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
               
@@ -157,7 +157,7 @@ module Auditor
           
         }
         
-        threads.each{ |t| t.join }
+        # threads.each{ |t| t.join }
         
         return results.flatten
     end
@@ -184,28 +184,28 @@ module Auditor
         opts            = OPTIONS.merge( opts )
         opts[:element]  = Element::HEADER
         url             = @page.url
-                
+        
+        audit_id = audit_id( url, get_headers( ), opts, injection_str )
+        return if audited?( audit_id )
+
         results = []
         # iterate through header fields and audit each one
         injection_sets( get_headers( ), injection_str, opts ).each {
             |vars|
 
-            audit_id = audit_id( url, vars, opts )
-            next if audited?( audit_id )
-                
             # inform the user what we're auditing
             print_status( get_status_str( url, vars, opts ) )
             
             # audit the url vars
             req = @http.header( @page.url, vars['hash'] )
-            audited( audit_id )
-                
+
             on_complete( req, injection_str, vars, opts, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
             }
         }
+        audited( audit_id )
         
         @http.run
 
@@ -236,27 +236,26 @@ module Auditor
         work_on_links {
             |link|
             
-            url = link['href']
+            url = Utilities::get_path( link['href'] )
             link_vars = link['vars']
             
             # if we don't have any auditable elements just return
             if !link_vars then next end
+            if link_vars.empty? then next end
+              
+            audit_id = audit_id( url, link_vars, opts, injection_str )
+            next if audited?( audit_id )
 
             # iterate through all url vars and audit each one
             injection_sets( link_vars, injection_str, opts ).each {
                 |vars|
     
-                audit_id = audit_id( url, vars, opts )
-                next if audited?( audit_id )
-                
                 # inform the user what we're auditing
                 print_status( get_status_str( url, vars, opts ) )
                 
                 # audit the url vars
                 req = @http.get( url, vars['hash'] )
 
-                audited( audit_id )
-                
                 on_complete( req, injection_str, vars, opts, &block )
                 req.after_complete {
                     |result|
@@ -264,6 +263,7 @@ module Auditor
                 }
                 
             }
+            audited( audit_id )
         }
         
         @http.run
@@ -301,13 +301,20 @@ module Auditor
             
             url    = form['attrs']['action']
             method = form['attrs']['method']
-                
+            fields = form['auditable']
+            
+            audit_id = audit_id( url, fields, opts, injection_str )
+            next if audited?( audit_id )
+
             # iterate through each auditable element
-            injection_sets( form['auditable'], injection_str, opts ).each {
+            injection_sets( fields, injection_str, opts ).each {
                 |input|
 
-                audit_id = audit_id( url, input, opts )
-                next if audited?( audit_id )
+                if( input['altered'] == '__orig' )
+                    orig_id = audit_id( url, input, opts, '' )
+                    next if audited?( orig_id )
+                    audited( orig_id )
+                end
                 
                 # inform the user what we're auditing
                 print_status( get_status_str( url, input, opts ) )
@@ -318,8 +325,6 @@ module Auditor
                     req = @http.get( url, input['hash'] )
                 end
                 
-                audited( audit_id )
-                
                 on_complete( req, injection_str, input, opts, &block )
                 req.after_complete {
                     |result|
@@ -327,6 +332,7 @@ module Auditor
                 }
                 
             }
+            audited( audit_id )
         }
         
         @http.run
@@ -360,19 +366,18 @@ module Auditor
             |orig_cookie|
             
             cookie = get_cookie_simple( orig_cookie )
+  
+            audit_id = audit_id( url, cookie, opts, injection_str )
+            next if audited?( audit_id )
+
             injection_sets( cookie, injection_str, opts ).each {
                 |cookie|
 
                 next if Options.instance.exclude_cookies.include?( cookie['altered'] )
             
-                audit_id = audit_id( url, cookie, opts )
-                next if audited?( audit_id )
-                
                 print_status( get_status_str( url, cookie, opts ) )
 
                 req = @http.cookie( @page.url, cookie['hash'], nil )
-                audited( audit_id )
-                
                 on_complete( req, injection_str, cookie, opts, &block )
                 req.after_complete {
                     |result|
@@ -380,6 +385,7 @@ module Auditor
                 }
                 
             }
+            audited( audit_id )
         }
         
         @http.run
@@ -503,10 +509,12 @@ module Auditor
     #
     # @return  [String]
     #
-    def audit_id( url, input, opts )
+    def audit_id( url, input, opts, injection_str )
+        
+        vars = input.keys.sort.to_s
         return "#{self.class.info['Name']}:" +
           "#{url}:" + "#{opts[:element]}:" + 
-          "#{input['altered'].to_s}=#{input['hash'].to_s}"
+          "#{vars}=#{injection_str}"
     end
     
     #
@@ -541,17 +549,19 @@ module Auditor
         var_combo = []
         if( !hash || hash.size == 0 ) then return [] end
         
-        # this is the original hash, in case the default values
-        # are valid and present us with new attack vectors
-        as_is = Hash.new( )
-        as_is['altered'] = '__orig'
-        chash = as_is['hash'] = hash.dup
-
-        as_is['hash'].keys.each {
-            |k|
-            if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
-        }
-        var_combo << as_is
+        if( opts[:element] == Element::FORM )
+            # this is the original hash, in case the default values
+            # are valid and present us with new attack vectors
+            as_is = Hash.new( )
+            as_is['altered'] = '__orig'
+            chash = as_is['hash'] = hash.dup
+    
+            as_is['hash'].keys.each {
+                |k|
+                if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
+            }
+            var_combo << as_is
+        end
 
         hash.keys.each {
             |k|
