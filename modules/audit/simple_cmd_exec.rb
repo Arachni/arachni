@@ -42,13 +42,7 @@ class SimpleCmdExec < Arachni::Module::Base
     end
 
     def run( )
-        
-        audit( @__injection_str, @__opts ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-
-        register_results( @results )
+        audit( @__injection_str, @__opts )
     end
 
     

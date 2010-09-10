@@ -87,16 +87,9 @@ class Eval < Arachni::Module::Base
         # iterate through the injection codes
         @__injection_strs.each {
             |str|
-            
-            audit( str, @__opts ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
+            audit( str, @__opts )            
         }
         
-        # register our results with the system
-        register_results( @results )
     end
 
     

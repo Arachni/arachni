@@ -81,17 +81,9 @@ class PathTraversal < Arachni::Module::Base
                 |ext|
                 
                 injection_str = @__trv + param['value'] + ext
-                
-                audit( injection_str, @__opts ).each {
-                  |res|
-                  @results << Vulnerability.new( res.merge( self.class.info ) )
-                }
-                
+                audit( injection_str, @__opts )
             }
         }
-        
-        # register our results with the system
-        register_results( @results )
     end
 
 

@@ -69,6 +69,10 @@ class SQLInjection < Arachni::Module::Base
             '`'
         ]
         
+        @__opts = {
+            :format => [ Format::APPEND ]
+        }
+        
     end
     
     def run( )
@@ -79,28 +83,25 @@ class SQLInjection < Arachni::Module::Base
             
             # send the bad characters in @__injection_strs via the page forms
             # and pass a block that will check for a positive result
-            audit_forms( str ) {
-                |res, var|
-                __log_results( Vulnerability::Element::FORM, var, res, str )
+            audit_forms( str, @__opts ) {
+                |res, var, opts|
+                __log_results( opts, var, res )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
-            audit_links( str ) {
-                |res, var|
-                __log_results( Vulnerability::Element::LINK, var, res, str )
+            audit_links( str, @__opts ) {
+                |res, var, opts|
+                __log_results( opts, var, res )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
-            audit_cookies( str ) {
-                |res, var|
-                __log_results( Vulnerability::Element::COOKIE, var, res, str )
+            audit_cookies( str,@__opts ) {
+                |res, var, opts|
+                __log_results( opts, var, res )
             }
         }
-        
-        # register our results with the framework
-        register_results( @results )
     end
 
     
@@ -138,9 +139,11 @@ class SQLInjection < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, injection_str )
+    def __log_results( opts, var, res )
         
-        url = res.effective_url
+        elem     = opts[:element]
+        injected = opts[:injected]
+        url      = res.effective_url
         # iterate through the regular expressions in @__regexp_ids_file
         # and try to match them with the body of the HTTP response
         get_data_file( @__regexp_ids_file ) {
@@ -164,11 +167,11 @@ class SQLInjection < Arachni::Module::Base
                 @results << Vulnerability.new( {
                         'var'          => var,
                         'url'          => url,
-                        'injected'     => injection_str,
+                        'injected'     => injected,
                         'id'           => id,
                         'regexp'       => id_regex.to_s,
                         'regexp_match' => match,
-                        'elem'         => where,
+                        'elem'         => elem,
                         'response'     => res.body,
                         'headers'      => {
                             'request'    => res.request.headers,
@@ -179,10 +182,10 @@ class SQLInjection < Arachni::Module::Base
                 )
                 
                 # inform the user that we have a match
-                print_ok( "In #{where} var #{var} ( #{url} )" )
+                print_ok( "In #{elem} var #{var} ( #{url} )" )
                 
                 # give the user some more info if he wants 
-                print_verbose( "Injected str:\t" + injection_str )    
+                print_verbose( "Injected str:\t" + injected )    
                 print_verbose( "ID str:\t\t" + id )
                 print_verbose( "Matched regex:\t" + id_regex.to_s )
                 print_verbose( '---------' ) if only_positives?
@@ -193,7 +196,8 @@ class SQLInjection < Arachni::Module::Base
             end
             
         }
-        
+        # register our results with the framework
+        register_results( @results )        
     end
 
 end

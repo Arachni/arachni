@@ -61,9 +61,6 @@ class ResponseSplitting < Arachni::Module::Base
             |res, var, opts|
             __log_results( opts, var, res )
         }
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     
@@ -124,6 +121,9 @@ class ResponseSplitting < Arachni::Module::Base
             )
 
             print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
+            
+            # register our results with the system
+            register_results( @results )
         end
     end
 

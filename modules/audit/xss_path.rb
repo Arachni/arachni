@@ -56,13 +56,12 @@ class XSSPath < Arachni::Module::Base
             req.on_complete {
                 |res|
                 __log_results( res, str )
+                # register our results with the system
+                register_results( @results )
+
             }
         }
         
-        @http.run
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     

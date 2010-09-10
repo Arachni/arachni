@@ -63,14 +63,8 @@ class XSS < Arachni::Module::Base
             opts[:match]  =  str
             opts[:regexp] = Regexp.new( str )
             
-            audit( str, opts ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
+            audit( str, opts )
         }
-        
-        register_results( @results )
     end
 
     

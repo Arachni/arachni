@@ -69,13 +69,12 @@ class CommonFiles < Arachni::Module::Base
                 |res|
                 print_debug( "Analyzing #{res.effective_url}" )
                 __log_results( res, file )
+                # register our results with the system
+                register_results( @results )
+
             }
         }
 
-        @http.run
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     

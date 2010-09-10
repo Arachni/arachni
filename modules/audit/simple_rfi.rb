@@ -153,16 +153,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def clean_up( )
         print_debug( 'In clean_up()' )
-
-        #
-        # REQUIRED
-        #
-        # Register our results with the ModuleRegistry
-        # via the ModuleRegistrar.
-        #
-        # Doesn't *have* to be in clean_up().
-        #
-        register_results( @results )
     end
 
     #
@@ -248,20 +238,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_links for documentation.
         #
-        audit_links( @__injection_url, @__opts ).each {
-            |res|
-
-            #
-            # create a vulnerability and add it to the results array
-            #
-            # the return hash of audit methods conviniently
-            # holds part of the hash that is expected by Vulnerability.new()
-            #
-            # to complete the hash we merge it with the module's
-            # class method info()
-            #
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
+        audit_links( @__injection_url, @__opts )
     end
 
     def __audit_forms(  )
@@ -272,10 +249,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_forms for documentation.
         #        
-         audit_forms( @__injection_url, @__opts ).each {
-             |res|
-             @results << Vulnerability.new( res.merge( self.class.info ) )
-         }
+         audit_forms( @__injection_url, @__opts )
     end
 
     def __audit_cookies( )
@@ -286,10 +260,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_cookies for documentation.
         #
-        audit_cookies( @__injection_url, @__opts ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
+        audit_cookies( @__injection_url, @__opts )
     end
 
 end

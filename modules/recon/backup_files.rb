@@ -82,13 +82,11 @@ class BackupFiles < Arachni::Module::Base
             req2.on_complete {
                 |res|
                 __log_results( res, file )
+                 # register our results with the system
+                register_results( @results )
             }
         }
 
-        @http.run
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     
