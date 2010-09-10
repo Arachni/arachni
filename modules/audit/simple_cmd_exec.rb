@@ -21,7 +21,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection    
@@ -33,26 +33,27 @@ class SimpleCmdExec < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @__cmd_id_regex   = /100434/ixm
-        @__cmd_id         = '100434'
-        @__injection_str  = '; expr 978 + 99456'
+        @__opts = {}
+        @__opts[:regexp]   = /100434/ixm
+        @__opts[:match]    = '100434'
+        @__injection_str   = '; expr 978 + 99456'
         
         @results = []
     end
 
     def run( )
         
-        audit_links( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+        audit_links( @__injection_str, @__opts ).each {
             |res|
             @results << Vulnerability.new( res.merge( self.class.info ) )
         }
 
-        audit_forms( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+        audit_forms( @__injection_str, @__opts ).each {
             |res|
             @results << Vulnerability.new( res.merge( self.class.info ) )
         }
 
-        audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
+        audit_cookies( @__injection_str, @__opts ).each {
             |res|
             @results << Vulnerability.new( res.merge( self.class.info ) )
         }
@@ -71,7 +72,7 @@ class SimpleCmdExec < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },

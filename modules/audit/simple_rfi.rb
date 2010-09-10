@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html    
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -101,19 +101,18 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         # but it's good practice to prefix your attributes and methods
         # with 2 underscores ( @__foo_attr, __foo_meth() )
         #
-
+        @__opts = {}
+        @__opts[:regexp] = /<title>Google<\/title>/ixm
+        
         # this is our RFI id signature, we'll look for it
         # in the HTTP response body
         #
-            @__rfi_id_regex = /<title>Google<\/title>/ixm
-            @__rfi_id = '<title>Google</title>'
-#        @__rfi_id_regex = /d3612e6ae8c17e46fa8592c8bdb8f2f3/ixm
-#        @__rfi_id = 'd3612e6ae8c17e46fa8592c8bdb8f2f3'
+        @__opts[:match]  = '<title>Google</title>'
 
         # inject this url to asses RFI
-            @__injection_url = 'hTtP://google.com'
-#        @__injection_url = 'http://localhost/zapotek/fis/file.txt'
+        @__injection_url = 'hTtP://google.com'
 
+        
         #
         # the module can be made to detect XSS and many other kinds 
         # of attack just as easily if you adjust the above attributes
@@ -189,7 +188,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
@@ -249,7 +248,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_links for documentation.
         #
-        audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+        audit_links( @__injection_url, @__opts ).each {
             |res|
 
             #
@@ -273,7 +272,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_forms for documentation.
         #        
-         audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+         audit_forms( @__injection_url, @__opts ).each {
              |res|
              @results << Vulnerability.new( res.merge( self.class.info ) )
          }
@@ -287,7 +286,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_cookies for documentation.
         #
-        audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
+        audit_cookies( @__injection_url, @__opts ).each {
             |res|
             @results << Vulnerability.new( res.merge( self.class.info ) )
         }

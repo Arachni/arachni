@@ -22,11 +22,97 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.2
 #
 module Auditor
     
     @@audited ||= []
+        
+    module Format
+      
+      #
+      # Leaves the injection string as is.
+      #
+      STRAIGHT = 1 << 0
+      
+      #
+      # Apends the injection string to the default value of the input vector.<br/>.
+      # (If no default value exists Arachni will choose one.)
+      #
+      APPEND   = 1 << 1
+      
+      #
+      # Terminates the injection string with a null character.
+      #
+      NULL     = 1 << 2
+    end
+    
+    module Element
+        LINK    = Vulnerability::Element::LINK
+        FORM    = Vulnerability::Element::FORM
+        COOKIE  = Vulnerability::Element::COOKIE
+        HEADER  = Vulnerability::Element::HEADER
+    end
+    
+    #
+    # Default audit options.
+    #
+    OPTIONS = {
+        
+        #
+        # Elements to audit
+        #
+        :elements => [ Element::LINK, Element::FORM,
+                       Element::COOKIE, Element::HEADER ],
+        
+        #
+        # The regular expression to match against the response body.
+        #
+        :regexp   => nil,
+        
+        #
+        # Verify the matched string with this value.
+        #
+        :match    => nil,
+        
+        #
+        # Formatting of the injection string.
+        #
+        :format   => [ Format::STRAIGHT, Format::APPEND,
+                       Format::NULL, Format::APPEND | Format::NULL ]
+    }
+    
+    def audit( injection_str, opts = { } )
+        
+        opts    = OPTIONS.merge( opts )
+        
+        results = []
+        opts[:elements].each {
+            |elem|
+            
+            case elem
+              
+                when  Element::LINK
+                    results << audit_links( injection_str, opts )
+                  
+                when  Element::FORM
+                    results << audit_forms( injection_str, opts )
+                    
+                when  Element::COOKIE
+                    results << audit_cookies( injection_str, opts )
+                    
+                when  Element::HEADER
+                    results << audit_headers( injection_str, opts )
+                    
+                else
+                    raise( 'Unknown element to audit:  ' + elem.to_s )
+              
+            end
+          
+        }
+        
+        return results.flatten
+    end
     
     #
     # Audits HTTP request headers injecting the injection_str as values
@@ -35,65 +121,45 @@ module Auditor
     # If the id argument has been provided the matched data of the
     # id_regex will be =='ed against it.
     #
-    # @param    [String]     injection_str
-    # @param    [String]     id_regex     regular expression string
-    # @param    [String]     id  string to double check the id_regex
-    #                            matched data
+    # @param    [String]  injection_str
+    # @param    [Hash]    opts
     #
-    # @param    [Block]     block to be executed right after the
-    #                            request has been made.
-    #                            It will be passed the currently audited
-    #                            variable, the response and the url.
+    # @param    [Block]   block to be executed right after the
+    #                      request has been made.
+    #                      It will be passed the currently audited
+    #                      variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
     #                                                has been given
     #
-    def audit_headers( injection_str, id_regex = nil, id = nil, &block )
+    def audit_headers( injection_str, opts = { }, &block )
         
+        return [] if !Options.instance.audit_headers
+        
+        opts            = OPTIONS.merge( opts )
+        opts[:element]  = Element::HEADER
+        url             = @page.url
+                
         results = []
-        
-        return results if !Options.instance.audit_headers
-        
         # iterate through header fields and audit each one
-        inject_each_var( get_request_headers( true ), injection_str ).each {
+        inject_each_var( get_headers( ), injection_str, opts ).each {
             |vars|
 
-            audit_id = "#{self.class.info['Name']}:" +
-                "#{@page.url}:#{Vulnerability::Element::HEADER}:" +
-                "#{vars['altered'].to_s}=#{vars['hash'].to_s}"
-            
-            next if @@audited.include?( audit_id )
-
-            # tell the user what we're doing
-            print_status( "Auditing header field '" +
-                vars['altered'] + "' of " + @page.url )
+            audit_id = audit_id( url, vars, opts )
+            next if audited?( audit_id )
+                
+            # inform the user what we're auditing
+            print_status( get_status_str( url, vars, opts ) )
             
             # audit the url vars
             req = @http.header( @page.url, vars['hash'] )
-            @@audited << audit_id
-
-            req.on_complete {
-                |res |
-
-            # something might have gone bad,
-            # make sure it doesn't ruin the rest of the show...
-            if !res then next end
-            
-            # call the passed block
-            if block_given?
-                block.call( res, vars['altered'] )
-                next
-            end
-            
-            if !res.body then next end
-            
-            # get matches
-            result = get_matches( Vulnerability::Element::HEADER,
-                vars['altered'], res, injection_str, id_regex, id )
-            
-            # and append them to the results array
-            results << result if result
+            audited( audit_id )
+                
+            on_complete( req, injection_str, vars, opts, &block )
+            req.after_complete {
+                |result|
+                results << result.flatten[1] if result.flatten[1]
             }
         }
         
@@ -123,60 +189,42 @@ module Auditor
     #                                                the audit, if no block
     #                                                has been given
     #
-    def audit_links( injection_str, id_regex = nil, id = nil, &block )
+    def audit_links( injection_str, opts = { }, &block )
+
+        opts            = OPTIONS.merge( opts )
+        opts[:element]  = Element::LINK
 
         results = []
-        
         work_on_links {
             |link|
             
-            
-            url = Utilities.get_path( link['href'] )
+            url = link['href']
             link_vars = link['vars']
             
             # if we don't have any auditable elements just return
             if !link_vars then next end
 
             # iterate through all url vars and audit each one
-            inject_each_var( link_vars, injection_str ).each {
+            inject_each_var( link_vars, injection_str, opts ).each {
                 |vars|
     
-                audit_id = "#{self.class.info['Name']}:" +
-                    "#{url}:#{Vulnerability::Element::LINK}:" +
-                    "#{vars['altered'].to_s}=#{injection_str}"
+                audit_id = audit_id( url, vars, opts )
+                next if audited?( audit_id )
                 
-                next if @@audited.include?( audit_id )
-
-                # tell the user what we're doing
-                print_status( "Auditing link var '" +
-                    vars['altered'] + "' of " + url )
+                # inform the user what we're auditing
+                print_status( get_status_str( url, vars, opts ) )
                 
                 # audit the url vars
                 req = @http.get( url, vars['hash'] )
-                @@audited << audit_id
-                
-                req.on_complete {
-                    |res |
-                
-                # something might have gone bad,
-                # make sure it doesn't ruin the rest of the show...
-                if !res then next end
 
-                # call the passed block
-                if block_given?
-                    block.call( res, vars['altered'] )
-                    next
-                end
+                audited( audit_id )
                 
-                if !res.body then next end
-                
-                # get matches
-                result = get_matches( Vulnerability::Element::LINK,
-                    vars['altered'], res, injection_str, id_regex, id )
-                
-                # and append them to the results array
-                results << result if result
+                on_complete( req, injection_str, vars, opts, &block )
+                req.after_complete {
+                    |result|
+                    results << result.flatten[1] if result.flatten[1]
                 }
+                
             }
         }
         
@@ -192,26 +240,27 @@ module Auditor
     # If the id argument has been provided the matched data of the
     # id_regex will be =='ed against it.
     #
-    # @param    [String]     injection_str
-    # @param    [String]     id_regex     regular expression string
-    # @param    [String]     id  string to double check the id_regex
-    #                                matched data
+    # @param    [String]  injection_str
+    # @param    [String]  params
     #
-    # @param    [Block]     block to be executed right after the
-    #                            request has been made.
-    #                            It will be passed the currently audited
-    #                            variable, the response and the url.
+    # @param    [Block]   block to be executed right after the
+    #                       request has been made.
+    #                       It will be passed the currently audited
+    #                       variable, the response and the url.
     #
     # @param    [Array<Hash<String, String>>]    the positive results of
     #                                                the audit, if no block
     #                                                has been given
     #
-    def audit_forms( injection_str, id_regex = nil, id = nil, &block )
+    def audit_forms( injection_str, opts = { }, &block )
+
+        opts            = OPTIONS.merge( opts )
+        opts[:element]  = Element::FORM
         
         results = []
-        
         work_on_forms {
             |orig_form|
+            
             form = get_form_simple( orig_form )
 
             next if !form
@@ -220,19 +269,14 @@ module Auditor
             method = form['attrs']['method']
                 
             # iterate through each auditable element
-            inject_each_var( form['auditable'], injection_str ).each {
+            inject_each_var( form['auditable'], injection_str, opts ).each {
                 |input|
 
-                audit_id = "#{self.class.info['Name']}:" +
-                    "#{url}:" +
-                    "#{Vulnerability::Element::FORM}:" + 
-                    "#{input['altered'].to_s}=#{input['hash'].to_s}"
-                
-                next if @@audited.include?( audit_id )
+                audit_id = audit_id( url, input, opts )
+                next if audited?( audit_id )
                 
                 # inform the user what we're auditing
-                print_status( "Auditing form input '" +
-                    input['altered'] + "' with action " + url )
+                print_status( get_status_str( url, input, opts ) )
 
                 if( method != 'get' )
                     req = @http.post( url, input['hash'] )
@@ -240,33 +284,20 @@ module Auditor
                     req = @http.get( url, input['hash'] )
                 end
                 
-                @@audited << audit_id
+                audited( audit_id )
                 
-                req.on_complete {
-                    |res |
-
-                # make sure that we have a response before continuing
-                if !res then next end
-                
-                # call the block, if there's one
-                if block_given?
-                    block.call( res, input['altered'] )
-                    next
-                end
-
-                if !res.body then next end
-            
-                # get matches
-                result = get_matches( Vulnerability::Element::FORM,
-                    input['altered'], res, injection_str, id_regex, id )
-                
-                # and append them to the results array
-                results << result if result
+                on_complete( req, injection_str, input, opts, &block )
+                req.after_complete {
+                    |result|
+                    results << result.flatten[1] if result.flatten[1]
                 }
+                
             }
         }
+        
         @http.run
-        results
+        
+        return results
     end
 
     #
@@ -290,53 +321,37 @@ module Auditor
     #                                                the audit, if no block
     #                                                has been given
     #
-    def audit_cookies( injection_str, id_regex = nil, id = nil, &block )
+    def audit_cookies( injection_str, opts = { }, &block  )
         
+        opts            = OPTIONS.merge( opts )
+        opts[:element]  = Element::COOKIE
+        url             = @page.url
+
         results = []
-        
-        # iterate through each cookie
         work_on_cookies {
             |orig_cookie|
-        inject_each_var( get_cookie_simple( orig_cookie ), injection_str ).each {
-            |cookie|
-
-            next if Options.instance.exclude_cookies.include?( cookie['altered'] )
             
-            audit_id = "#{self.class.info['Name']}:" +
-                "#{@page.url}:#{Vulnerability::Element::COOKIE}:" +
-                "#{cookie['altered'].to_s}=#{cookie['hash'].to_s}"
+            cookie = get_cookie_simple( orig_cookie )
+            inject_each_var( cookie, injection_str, opts ).each {
+                |cookie|
+
+                next if Options.instance.exclude_cookies.include?( cookie['altered'] )
             
-            next if @@audited.include?( audit_id )
-
-            # tell the user what we're auditing
-            print_status( "Auditing cookie '" +
-                cookie['altered'] + "' of " + @page.url )
-
-            # make a get request with our cookies
-            req = @http.cookie( @page.url, cookie['hash'], nil )
+                audit_id = audit_id( url, cookie, opts )
+                next if audited?( audit_id )
                 
-            @@audited << audit_id
+                print_status( get_status_str( url, cookie, opts ) )
 
-            req.on_complete {
-                |res |
-
-            # check for a response
-            if !res then next end
-            
-            if block_given?
-                block.call( res, cookie['altered'] )
-                next
-            end
-            
-            if !res.body then next end
-
-            # get possible matches
-            result = get_matches( Vulnerability::Element::COOKIE,
-                cookie['altered'], res, injection_str, id_regex, id )
-            # and append them
-            results << result if result
+                req = @http.cookie( @page.url, cookie['hash'], nil )
+                audited( audit_id )
+                
+                on_complete( req, injection_str, cookie, opts, &block )
+                req.after_complete {
+                    |result|
+                    results << result.flatten[1] if result.flatten[1]
+                }
+                
             }
-        }
         }
         
         @http.run
@@ -344,35 +359,79 @@ module Auditor
         results
     end
 
-    def get_matches( where, var, res, injection_str, id_regex, id )
+    def get_matches( var, res, injection_str, opts )
+        
+        elem       = opts[:element]
+        match      = opts[:match]
+        regexp     = opts[:regexp]
+        match_data = res.body.scan( regexp )[0]
         
         # fairly obscure condition...pardon me...
-        if ( id && res.body.scan( id_regex )[0] == id ) ||
-           ( !id && res.body.scan( id_regex )[0].size > 0 )
+        if ( match && match_data == match ) ||
+           ( !match && match_data && match_data.size > 0 )
         
             url = res.effective_url
-            print_ok( "In #{where} var '#{var}' " + ' ( ' + url + ' )' )
+            print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
             
-            print_verbose( "Injected str:\t" + injection_str )    
-            print_verbose( "ID str:\t" + id )
-            print_verbose( "Matched regex: " + id_regex.to_s )
+            print_verbose( "Injected string:\t" + injection_str )    
+            print_verbose( "Verified string:\t" + match_data )
+            print_verbose( "Matched regular expression: " + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
     
             return {
                 'var'          => var,
                 'url'          => url,
                 'injected'     => injection_str,
-                'id'           => id,
-                'regexp'       => id_regex.to_s,
-                'regexp_match' => res.body.scan( id_regex ),
+                'id'           => match.to_s,
+                'regexp'       => regexp.to_s,
+                'regexp_match' => match_data,
                 'response'     => res.body,
-                'elem'         => where,
+                'elem'         => elem,
                 'headers'      => {
                     'request'    => res.request.headers,
                     'response'   => res.headers,    
                 }
             }
         end
+    end
+
+    def on_complete( req, injection_str, input, opts, &block )
+        req.on_complete {
+            |res |
+
+            # make sure that we have a response before continuing
+            if !res then next end
+                
+            # call the block, if there's one
+            if block_given?
+                block.call( res, input['altered'], opts )
+                next
+            end
+
+            if !res.body then next end
+            
+            # get matches
+            get_matches( input['altered'], res, injection_str, opts )
+        }
+    end
+
+    def get_status_str( url, input, opts )
+        return "Auditing #{opts[:element]} variable '" +
+          input['altered'] + "' of " + url 
+    end
+      
+    def audit_id( url, input, opts )
+        return "#{self.class.info['Name']}:" +
+          "#{url}:" + "#{opts[:element]}:" + 
+          "#{input['altered'].to_s}=#{input['hash'].to_s}"
+    end
+    
+    def audited?( audit_id )
+      return @@audited.include?( audit_id )
+    end
+    
+    def audited( audit_id )
+        @@audited << audit_id
     end
     
     #
@@ -384,7 +443,7 @@ module Auditor
     #
     # @return    [Array]
     #
-    def inject_each_var( hash, to_inj, extensive = true )
+    def inject_each_var( hash, injection_str, opts = { } )
         
         var_combo = []
         if( !hash || hash.size == 0 ) then return [] end
@@ -393,77 +452,43 @@ module Auditor
         # are valid and present us with new attack vectors
         as_is = Hash.new( )
         as_is['altered'] = '__orig'
-        duphash1 = duphash = chash = as_is['hash'] = hash.clone
+        chash = as_is['hash'] = hash.dup
 
-        #
-        # audit inputs without the default values
-        #
-        duphash.keys.each {
-            |k|
-            
-            duphash = KeyFiller.fill( duphash )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => duphash.merge( { k => to_inj } )
-            }
-        }
-        
-        return var_combo if !extensive
-        
-        #
-        # same as above but with null terminated injection strings
-        #
-        duphash1.keys.each {
-            |k|
-            
-            duphash1 = KeyFiller.fill( duphash1 )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => duphash1.merge( { k => to_inj + "\0" } )
-            }
-        }
-
-            
         as_is['hash'].keys.each {
             |k|
             if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
         }
         var_combo << as_is
 
-        
-        #
-        # audit inputs appended to the default values
-        #
         hash.keys.each {
             |k|
-            
-            hash = KeyFiller.fill( hash )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => hash.merge( { k => hash[k] + to_inj } )
-            }
-        }
-
-        #
-        # same as above but with null terminated injection strings
-        #
-        chash.keys.each {
-            |k|
-            
-            chash = KeyFiller.fill( chash )
-            
-            var_combo << { 
-                'altered' => k,
-                'hash'    => chash.merge( { k => chash[k] + to_inj + "\0" } )
+            opts[:format].each {
+                |format|
+                
+                hash = KeyFiller.fill( hash )
+                str  = prep_injection_str( injection_str, hash[k], format )
+                
+                var_combo << { 
+                    'altered' => k,
+                    'hash'    => hash.merge( { k => str } )
+                }
             }
         }
         
         return var_combo
     end
+    
+    def prep_injection_str( injection_str, default_str, format  )
+      
+        null = append = ''
 
+        null   = "\0"        if ( format & Format::NULL )     != 0
+        append = default_str if ( format & Format::APPEND )   != 0
+        append = null = ''   if ( format & Format::STRAIGHT ) != 0
+                
+        return append + injection_str + null
+    end
+    
 end
 
 end

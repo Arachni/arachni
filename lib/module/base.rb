@@ -315,48 +315,14 @@ class Base
 
     
     #
-    # Returns a hash of request headers.
-    #
-    # If 'merge' is set to 'true' cookies will be skipped.<br/>
-    # If you need to audit cookies use {#get_cookies} or {#audit_cookies}.
+    # Returns a hash of auditable request headers.
     #
     # @see Page#request_headers
     #
-    # @param    [Bool]    merge   merge with auditable ({Page#request_headers}) headers?
-    #
     # @return    [Hash]
     #
-    def get_request_headers( merge = false )
-        
-        # if( merge == true && @page.request_headers )
-        #     begin
-        #     ( headers = ( @http.init_headers ).
-        #         merge( @page.request_headers ) ).delete( 'cookie' )
-        #     rescue
-        #         headers = {}
-        #     end
-        #     return headers 
-        # end
-        
-       return @http.init_headers
-    end
-    
-    #
-    # Returns the headers from a Net::HTTP response as a hash
-    #
-    # @param  [Net::HTTPResponse]  res
-    #
-    # @return    [Hash] 
-    #
-    def get_response_headers( res )
-        
-        # header = Hash.new
-        # res.each_capitalized {
-        #     |key|
-        #     header[key] = res.get_fields( key ).join( "\n" )
-        # }
-        
-        # ap res
+    def get_headers( )
+       return @page.request_headers 
     end
     
     #

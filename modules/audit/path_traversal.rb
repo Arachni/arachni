@@ -19,7 +19,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -55,14 +55,21 @@ class PathTraversal < Arachni::Module::Base
         @__params = [
             {
                 'value'  => 'etc/passwd',
-                'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/im
+                'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/i
             },
             {
                 'value'  => 'boot.ini',
-                'regexp' => /\[boot loader\](.*)\[operating systems\]/im
+                'regexp' => /\[boot loader\](.*)\[operating systems\]/i
             }
           
         ]
+        
+        @__opts = {
+            :format => [ Format::STRAIGHT ],
+            :elements => [ Element::LINK, Element::FORM,
+                           Element::COOKIE, Element::HEADER ]
+        }
+
     end
 
     def run( )
@@ -70,49 +77,23 @@ class PathTraversal < Arachni::Module::Base
         @__params.each {
             |param|
             
-            ext_threads = []
+            @__opts[:regexp] = param['regexp']
             @__ext.each {
                 |ext|
                 
                 injection_str = @__trv + param['value'] + ext
                 
-                # we have A LOT of ground to cover considering the
-                # variations that the framework will impose
-                #
-                # so let's multitask ;)
-                #
-                # ext_threads << Thread.new {
-                    __audit( injection_str, param['regexp'] )
-                # }
+                audit( injection_str, @__opts ).each {
+                  |res|
+                  @results << Vulnerability.new( res.merge( self.class.info ) )
+                }
             }
-            # run the threads
-            # ext_threads.each{ |t| t.join }
         }
         
         # register our results with the system
         register_results( @results )
     end
 
-    def __audit( injection_str, regexp )
-        audit_forms( injection_str ) {
-            |res, var|
-            __log_results( Vulnerability::Element::FORM, var,
-                res, injection_str, regexp )
-        }
-                
-        audit_links( injection_str ) {
-            |res, var|
-            __log_results( Vulnerability::Element::LINK, var,
-                res, injection_str, regexp )
-        }
-                        
-        audit_cookies( injection_str ) {
-            |res, var|
-            __log_results( Vulnerability::Element::COOKIE, var,
-                res, injection_str, regexp )
-        }
-      
-    end
 
     def self.info
         {
@@ -124,7 +105,7 @@ class PathTraversal < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1.3',
+            'Version'        => '0.2',
             'References'     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

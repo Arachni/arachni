@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -51,8 +51,11 @@ class Eval < Arachni::Module::Base
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
         
+        @__opts = {}
+        
         # the sum of the 2 numbers as a string
-        @__rand  =  (287630581954 + 4196403186331128).to_s
+        @__opts[:match]   =  (287630581954 + 4196403186331128).to_s
+        @__opts[:regexp]  = Regexp.new( @__opts[:match] )
         
         # our results array
         @results = []
@@ -68,6 +71,13 @@ class Eval < Arachni::Module::Base
             "Response.Write\x28" +  @__rand1  + '+' + @__rand2 + "\x29", # ASP
             "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
+        
+        tmp = []
+        @__injection_strs.each {
+            |str|
+            tmp << '; ' + str
+        }
+        @__injection_strs |= tmp
     end
     
     def run( )
@@ -77,19 +87,19 @@ class Eval < Arachni::Module::Base
             |str|
             
             # audit forms and add the results to the results array
-            audit_forms( str, Regexp.new( @__rand ), @__rand ).each {
+            audit_forms( str, @__opts ).each {
                 |res|
                 @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             # audit links and add the results to the results array    
-            audit_links( str, Regexp.new( @__rand ), @__rand ).each {
+            audit_links( str, @__opts ).each {
                 |res|
                 @results << Vulnerability.new( res.merge( self.class.info ) )
             }
             
             # audit cookies and add the results to the results array
-            audit_cookies( str, Regexp.new( @__rand ), @__rand ).each {
+            audit_cookies( str, @__opts ).each {
                 |res|
                 @results << Vulnerability.new( res.merge( self.class.info ) )
             }
@@ -112,7 +122,7 @@ class Eval < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.1',
             'References'     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',

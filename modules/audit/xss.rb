@@ -45,6 +45,13 @@ class XSS < Arachni::Module::Base
 
     def run( )
 
+        opts = {
+            :format => [ Format::STRAIGHT, Format::APPEND,
+                         Format::NULL, Format::APPEND | Format::NULL ],
+            :elements => [ Element::LINK, Element::FORM,
+                           Element::COOKIE, Element::HEADER ]
+        }
+
         #
         # it's better to save big arrays to a file
         # a big array is ugly, messy and can't be updated as easily
@@ -56,23 +63,11 @@ class XSS < Arachni::Module::Base
         #
         get_data_file( @__injection_strs_file ) {
             |str|
-
-            audit_headers( str, Regexp.new( str ), str ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
             
-            audit_forms( str, Regexp.new( str ), str ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
+            opts[:match]  =  str
+            opts[:regexp] = Regexp.new( str )
             
-            audit_links( str, Regexp.new( str ), str ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
-            audit_cookies( str, Regexp.new( str ), str ).each {
+            audit( str, opts ).each {
                 |res|
                 @results << Vulnerability.new( res.merge( self.class.info ) )
             }
