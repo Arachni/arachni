@@ -104,8 +104,6 @@ class Framework
         # for the reports
         @orig_redundant = deep_clone( @opts.redundant )
         
-        # used to synchronize the HTTP request queue 
-        @@magic_lock = Mutex.new
     end
 
     #
@@ -851,9 +849,6 @@ class Framework
         return true if cnt == @opts.lsmod.size 
     end
   
-    def Framework.magic_lock
-        @@magic_lock
-    end
 end
 
 end

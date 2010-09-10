@@ -71,7 +71,7 @@ class HTTP
         @@hydra ||= Typhoeus::Hydra.new( :max_concurrency => req_limit )
         @@hydra.disable_memoization
         
-        @@lock ||= Framework.magic_lock
+        @@lock ||= Mutex.new
         
         @trainers = []
         

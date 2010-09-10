@@ -96,7 +96,7 @@ class Base
         #
         # It's used to train Arachni.
         #
-        @http.add_trainer{ |res, url| train( res, url ) }
+        # @http.add_trainer{ |res, url| train( res, url ) }
         
     end
 
