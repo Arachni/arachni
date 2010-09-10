@@ -434,7 +434,7 @@ USAGE
                                   If no thread limit has been specified
                                     each module will run in its own thread.
 
-    --http-req-limit            concurent HTTP requests limit (per thread)
+    --http-req-limit            concurent HTTP requests limit
                                   Be carefull not to kill your server.
                                   (Default: 200)                                    
                                   
