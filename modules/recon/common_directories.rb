@@ -46,8 +46,9 @@ class CommonDirectories < Arachni::Module::Base
     def run( )
 
         print_status( "Scanning..." )
-
+        
         path = Module::Utilities.get_path( @page.url )
+
 
         get_data_file( @__common_directories ) {
             |dirname|

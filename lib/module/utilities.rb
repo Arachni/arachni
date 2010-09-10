@@ -31,25 +31,9 @@ module Utilities
     # @return  [String]   path
     #
     def Utilities.get_path( url )
-      
-        splits = []
-        tmp = ''
-        
-        url.each_char {
-            |c|
-            if( c != '/' )
-                tmp += c
-            else
-                splits << tmp
-                tmp = ''
-            end
-        }
-        
-        if( !tmp =~ /\./ )
-          splits << tmp
-        end
-        
-        return splits.join( "/" ) + '/'
+        filename = File.basename( URI( url ).path )
+        regexp = filename + '(.*)'
+        return  url.gsub( Regexp.new( regexp ), '' )
     end
     
     #

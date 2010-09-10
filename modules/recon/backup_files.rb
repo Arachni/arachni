@@ -22,7 +22,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -46,14 +46,10 @@ class BackupFiles < Arachni::Module::Base
 
         print_status( "Scanning..." )
 
-        # ugly crap but it works, as far as I can tell...
+        filename = File.basename( URI( @page.url ).path )
         path     = Module::Utilities.get_path( @page.url )
-        regex    = path + '(.*)'
         
-        filename = @page.url.match( Regexp.new( regex ) )
-        filename = filename[1].gsub( /\?(.*)/, '' ) 
-        
-        if( !filename || filename.empty? )
+        if( !filename  )
             print_debug( 'Backing out. ' + 
               'Can\'t extract filename from url: ' + @page.url )
             return
@@ -81,7 +77,7 @@ class BackupFiles < Arachni::Module::Base
             
             file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
             url  = path + file
-            req2 = __request_once( url )
+            next if !( req2 = __request_once( url ) )
             
             req2.on_complete {
                 |res|
@@ -102,7 +98,7 @@ class BackupFiles < Arachni::Module::Base
             'Description'    => %q{Tries to find sensitive backup files.},
             'Elements'       => [ ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
+            'Version'        => '0.1.3',
             'References'     => {},
             'Targets'        => { 'Generic' => 'all' },
                 
