@@ -22,7 +22,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 module Auditor
     
@@ -82,7 +82,7 @@ module Auditor
             
             # call the passed block
             if block_given?
-                block.call( @page.url, res, vars['altered'] )
+                block.call( res, vars['altered'] )
                 next
             end
             
@@ -130,18 +130,12 @@ module Auditor
         work_on_links {
             |link|
             
-            url       = link['href']
+            
+            url = Utilities.get_path( link['href'] )
             link_vars = link['vars']
             
             # if we don't have any auditable elements just return
             if !link_vars then next end
-
-            if( URI( link['href'] ).query ) 
-                url = link['href'].gsub( Regexp.new( URI( link['href'] ).query ), '' )
-            else
-                url = link['href'].dup
-            end
-
 
             # iterate through all url vars and audit each one
             inject_each_var( link_vars, injection_str ).each {
@@ -149,7 +143,7 @@ module Auditor
     
                 audit_id = "#{self.class.info['Name']}:" +
                     "#{url}:#{Vulnerability::Element::LINK}:" +
-                    "#{vars['altered'].to_s}=#{vars['hash'].to_s}"
+                    "#{vars['altered'].to_s}=#{injection_str}"
                 
                 next if @@audited.include?( audit_id )
 
@@ -161,8 +155,6 @@ module Auditor
                 req = @http.get( url, vars['hash'] )
                 @@audited << audit_id
                 
-                url = link['href'].dup
-                
                 req.on_complete {
                     |res |
                 
@@ -172,7 +164,7 @@ module Auditor
 
                 # call the passed block
                 if block_given?
-                    block.call( url, res, vars['altered'] )
+                    block.call( res, vars['altered'] )
                     next
                 end
                 
@@ -258,7 +250,7 @@ module Auditor
                 
                 # call the block, if there's one
                 if block_given?
-                    block.call( url, res, input['altered'] )
+                    block.call( res, input['altered'] )
                     next
                 end
 
@@ -332,7 +324,7 @@ module Auditor
             if !res then next end
             
             if block_given?
-                block.call( @page.url, res, cookie['altered'] )
+                block.call( res, cookie['altered'] )
                 next
             end
             
