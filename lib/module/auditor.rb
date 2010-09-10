@@ -82,7 +82,7 @@ module Auditor
                        Format::NULL, Format::APPEND | Format::NULL ]
     }
     
-    def audit( injection_str, opts = { } )
+    def audit( injection_str, opts = { }, &block )
         
         opts    = OPTIONS.merge( opts )
         
@@ -93,16 +93,16 @@ module Auditor
             case elem
               
                 when  Element::LINK
-                    results << audit_links( injection_str, opts )
+                    results << audit_links( injection_str, opts, &block )
                   
                 when  Element::FORM
-                    results << audit_forms( injection_str, opts )
+                    results << audit_forms( injection_str, opts, &block )
                     
                 when  Element::COOKIE
-                    results << audit_cookies( injection_str, opts )
+                    results << audit_cookies( injection_str, opts, &block )
                     
                 when  Element::HEADER
-                    results << audit_headers( injection_str, opts )
+                    results << audit_headers( injection_str, opts, &block )
                     
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
