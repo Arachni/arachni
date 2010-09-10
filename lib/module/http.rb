@@ -16,7 +16,7 @@ module Module
 #
 # Arachni::Module::HTTP class
 #
-# Provides a simple HTTP interface for modules.
+# Provides a simple, high-performance and thread-safe HTTP interface to modules.
 #
 # All requests are run Async (compliements of Typhoeus)
 # providing great speed and performance.
@@ -71,6 +71,8 @@ class HTTP
         @hydra = Typhoeus::Hydra.new( :max_concurrency => req_limit )
         @hydra.disable_memoization
         
+        @lock = Mutex.new
+        
         @trainers = []
         
         @init_headers               = Hash.new
@@ -85,7 +87,9 @@ class HTTP
     # Runs Hydra (all the queued HTTP requests)
     #
     def run
-      @hydra.run
+      @lock.synchronize {
+          @hydra.run
+      }
     end
     
     #
@@ -95,8 +99,10 @@ class HTTP
     # @param  [Tyhpoeus::Request]  req  the request to queue
     #
     def queue( req )
-        @hydra.queue( req )
-            
+        @lock.synchronize {
+            @hydra.queue( req )
+        }
+          
         req.on_complete {
             |res|
                 
@@ -436,7 +442,7 @@ class HTTP
         print_debug_backtrace( e )
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
         print_debug( 'HTTP session:' )
-        print_debug_pp( @hydra )
+        # print_debug_pp( @hydra )
 #        print_debug( YAML::dump( @session ) )
         print_error( 'Proceeding anyway... ' )
     end
