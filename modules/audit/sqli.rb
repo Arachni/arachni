@@ -23,7 +23,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html    
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -80,21 +80,21 @@ class SQLInjection < Arachni::Module::Base
             # send the bad characters in @__injection_strs via the page forms
             # and pass a block that will check for a positive result
             audit_forms( str ) {
-                |url, res, var|
+                |res, var|
                 __log_results( Vulnerability::Element::FORM, var, res, str )
             }
             
             # send the bad characters in @__injection_strs via link vars
             # and pass a block that will check for a positive result        
             audit_links( str ) {
-                |url, res, var|
+                |res, var|
                 __log_results( Vulnerability::Element::LINK, var, res, str )
             }
                     
             # send the bad characters in @__injection_strs via cookies
             # and pass a block that will check for a positive result
             audit_cookies( str ) {
-                |url, res, var|
+                |res, var|
                 __log_results( Vulnerability::Element::COOKIE, var, res, str )
             }
         }
@@ -114,7 +114,7 @@ class SQLInjection < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.3',
             'References'     => {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',

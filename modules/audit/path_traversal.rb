@@ -19,7 +19,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -95,19 +95,19 @@ class PathTraversal < Arachni::Module::Base
 
     def __audit( injection_str, regexp )
         audit_forms( injection_str ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::FORM, var,
                 res, injection_str, regexp )
         }
                 
         audit_links( injection_str ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::LINK, var,
                 res, injection_str, regexp )
         }
                         
         audit_cookies( injection_str ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::COOKIE, var,
                 res, injection_str, regexp )
         }
@@ -124,7 +124,7 @@ class PathTraversal < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
+            'Version'        => '0.1.3',
             'References'     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

@@ -22,7 +22,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/20.html    
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -58,21 +58,21 @@ class ResponseSplitting < Arachni::Module::Base
         # try to inject the header via the forms of the page
         # and pass a block that will check for a positive result
         audit_forms( @__header ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::FORM, var, res )
         }
         
         # try to inject the header via the link variables
         # and pass a block that will check for a positive result        
         audit_links( @__header ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::LINK, var, res )
         }
         
         # try to inject the header via cookies
         # and pass a block that will check for a positive result
         audit_cookies( @__header ) {
-            |url, res, var|
+            |res, var|
             __log_results( Vulnerability::Element::COOKIE, var, res )
         }
         
@@ -94,7 +94,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            'Version'        => '0.1.2',
             'References'     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
