@@ -10,6 +10,7 @@
 
 module Arachni
 require Options.instance.dir['pwd'] + '../typhoeus/lib/typhoeus'
+require Options.instance.dir['lib'] + 'module/trainer'
 
 module Module
 
@@ -34,13 +35,12 @@ module Module
 class HTTP
 
     include Arachni::UI::Output
+    include Singleton
     
-    #
-    # The url of the session
     #
     # @return [URI]
     #
-    attr_reader :url
+    attr_reader :last_url
     
     #
     # The headers with which the HTTP client is initialized<br/>
@@ -63,10 +63,8 @@ class HTTP
     #
     # @param  [String]  url  start URL
     #
-    def initialize( url )
+    def initialize( )
       
-        @url = parse_url( url )
-        
         req_limit = Options.instance.http_req_limit
         @@hydra ||= Typhoeus::Hydra.new( :max_concurrency => req_limit )
         @@hydra.disable_memoization
@@ -74,6 +72,8 @@ class HTTP
         @@lock ||= Mutex.new
         
         @trainers = []
+        @@trainer = Arachni::Module::Trainer.instance
+        @@trainer.http = self
         
         @init_headers               = Hash.new
         @init_headers['User-Agent'] = Options.instance.user_agent
@@ -91,6 +91,7 @@ class HTTP
     #
     def HTTP.run
         @@hydra.run
+        return @@trainer.analyze
     end
     
     #
@@ -101,25 +102,31 @@ class HTTP
     #
     def queue( req )
         @@lock.synchronize {
+            @last_url = req.url
             @@hydra.queue( req )
         }
           
-        req.on_complete {
+        req.on_complete( true ) {
             |res|
             
-            print_debug( 'Got response:' )
-            print_debug( 'URL: ' + res.effective_url )
-            print_debug( 'Method: ' + res.request.method  )
-            print_debug( 'Params: ' + res.request.params.to_s  )
-            print_debug( 'Headers: ' + res.request.headers.to_s  )
-            print_debug( '------------' )
+            name = 'HTTP: '
+            print_debug( name + '------------' )
+            print_debug( name + 'Got response:' )
+            print_debug( name + 'URL: ' + res.effective_url )
+            print_debug( name + 'Method: ' + res.request.method  )
+            print_debug( name + 'Params: ' + res.request.params.to_s  )
+            print_debug( name + 'Headers: ' + res.request.headers.to_s  )
+            print_debug( name + '------------' )
             
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                res2 = Typhoeus::Request.get( redir )
-                train( res2, redir )
+                req2 = get( redir, nil, true )
+                req2.on_complete {
+                    |res2|
+                    @@trainer.add_response( res2, true )
+                }
             else
-                train( res )
+                @@trainer.add_response( res )
             end
         }
     end
@@ -132,10 +139,10 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def get( url, params = {}, redirect = false )
-
+    def get( url, params = {}, remove_id = false )
         params = { } if !params
-        params = params.merge( { '__arachni__' => '' } ) 
+        
+        params = params.merge( { '__arachni__' => '' } ) if !remove_id 
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it
@@ -344,7 +351,7 @@ class HTTP
         
         if( !@__not_found )
             
-            path = Module::Utilities.get_path( @url.to_s )
+            path = Module::Utilities.get_path( @last_url.to_s )
             
             # force a 404 and grab the html body
             force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'

@@ -11,17 +11,17 @@ module Arachni
 module Module
 
 #
-# Holds a database of all auditable elements in the current page,<br/>
+# Holds a database of all auditable elements of the current page,<br/>
 # including elements that have appeared dynamically during the audit.
 #
 # The database is updated by the {Trainer}.
 #
-# For each page that is audited the database is reset by the {Base} module.
+# For each page that is audited the database is reset.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 module ElementDB
   
@@ -82,78 +82,6 @@ module ElementDB
     end
     
     #
-    # This method passes the block with each form in the page.
-    #
-    # Unlike {Base#get_forms} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new form <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_forms( &block )
-        return if !Options.instance.audit_forms
-        # @@forms.each { |form| block.call( form ) }
-        
-        t = Thread.new do
-            sz = @@forms.size
-            while( form = @@forms[sz-1] )
-                block.call( form )
-                sz -= 1
-            end
-        end
-        
-        t.join
-    end
-
-    #
-    # This method passes the block with each link in the page.
-    #
-    # Unlike {Base#get_links} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new link <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_links( &block )
-        return if !Options.instance.audit_links
-        # @@links.each { |link| block.call( link ) }
-        
-        t = Thread.new do
-            sz = @@links.size
-            while( link = @@links[sz-1] )
-                block.call( link )
-                sz -= 1
-            end
-        end
-        
-        t.join
-    end
-    
-    #
-    # This method passes the block with each cookie in the page.
-    #
-    # Unlike {Base#get_cookies} this method is "trainer-aware",<br/>
-    # meaning that should the page dynamically change and a new cookie <br/>
-    # presents itself during the audit Arachni will see it and pass it.
-    #
-    # @param    [Proc]    block
-    #
-    def work_on_cookies( &block )
-        return if !Options.instance.audit_cookies
-        # @@cookies.each { |cookie| block.call( cookie ) }
-        
-        t = Thread.new do
-            sz = @@cookies.size
-            while( cookie = @@cookies[sz-1] )
-                block.call( cookie )
-                sz -= 1
-            end
-        end
-        
-        t.join
-    end
-      
-    #
     # Updates @@forms wth new forms that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
@@ -164,28 +92,22 @@ module ElementDB
         return if forms.size == 0
         
         new_forms = []
-        @@form_mutex.synchronize {
+        # @@form_mutex.synchronize {
           
-            if( @@forms.empty? )
-                @@forms = forms
-                return 
-            end
-            
             forms.each {
                 |form|
                 
                 next if form['attrs']['action'].include?( '__arachni__' )
                 next if form['auditable'].size == 0
             
-                if ! (index = forms_include?( form ) )
-                    @@forms << form 
-                else
-                    @@forms[index] = form
+                if !(index = forms_include?( form ) )
+                    @@forms << form
+                    new_forms << form 
                 end
             
             }
-        }
-        
+        # }
+        return new_forms
         
     end
 
@@ -198,7 +120,8 @@ module ElementDB
     def update_links( links )
       return if links.size == 0
       
-      @@link_mutex.synchronize {
+      new_links = []
+      # @@link_mutex.synchronize {
           links.each {
               |link|
               
@@ -206,9 +129,14 @@ module ElementDB
               next if !link['href']
               next if link['href'].include?( '__arachni__' )
                 
-              @@links |= [link]
+              if( !@@links.include?( link ) )
+                  @@links << link
+                  new_links << link
+              end
           }
-      }
+          
+          return new_links
+      # }
     end
 
     #
@@ -222,7 +150,7 @@ module ElementDB
             
         new_cookies = []
         
-        @@cookie_mutex.synchronize {
+        # @@cookie_mutex.synchronize {
             cookies.each_with_index {
                 |cookie|
                 
@@ -237,18 +165,22 @@ module ElementDB
                 }
     
             }
-    
+            
+            @@cookies.flatten!
+            
             @@cookies |= new_cookies
     
-            if( @@cookies.length == 0 )
-                @@cookies = new_cookies = cookies
-            end
+            # if( @@cookies.length == 0 )
+            #     @@cookies = new_cookies = cookies
+            # end
     
             cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
             cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
             
             @http.set_cookies( cookie_jar )
-        }
+        # }
+        
+        return [ @@cookies, new_cookies.size ]
     end
 
     private
@@ -256,7 +188,6 @@ module ElementDB
     def forms_include?( form )
         @@forms.each_with_index {
             |page_form, i|
-                  
             return i if( form_id( form ) == form_id( page_form ) )
                     
         }
@@ -282,6 +213,26 @@ module ElementDB
         }
         return id
     end
+
+    #
+    # Returns cookies as a name=>value hash
+    #
+    # @return    [Hash]    the cookie attributes, values, etc
+    #
+    def get_cookies_simple( incookies = nil )
+        cookies = Hash.new( )
+        
+        incookies = get_cookies( ) if !incookies
+        
+        incookies.each {
+            |cookie|
+            cookies[cookie['name']] = cookie['value']
+        }
+        
+        return cookies if !@page.cookiejar
+        @page.cookiejar.merge( cookies )
+    end
+
 
 end
 

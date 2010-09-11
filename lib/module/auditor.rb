@@ -30,7 +30,7 @@ module Auditor
     # holds audit identifiers
     #
     @@audited ||= []
-    
+
     #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings. 
@@ -232,10 +232,10 @@ module Auditor
         opts[:element]  = Element::LINK
 
         results = []
-        work_on_links {
+        get_links.each {
             |link|
             
-            url = Utilities::get_path( link['href'] )
+            url = URI( @page.url ).merge( URI( link['href'] ).path ).to_s
             link_vars = link['vars']
             
             # if we don't have any auditable elements just return
@@ -290,7 +290,7 @@ module Auditor
         opts[:element]  = Element::FORM
         
         results = []
-        work_on_forms {
+        get_forms.each {
             |orig_form|
             
             form = get_form_simple( orig_form )
@@ -361,7 +361,7 @@ module Auditor
         url             = @page.url
 
         results = []
-        work_on_cookies {
+        get_cookies.each {
             |orig_cookie|
             
             cookie = get_cookie_simple( orig_cookie )
@@ -414,24 +414,27 @@ module Auditor
     def on_complete( req, injected_str, input, opts, &block )
         req.on_complete {
             |res |
-            
+            print_status( 'Analyzing response...' )
+            print_debug( '-----------' )
+            print_debug( 'Thread: ' + Thread.current.to_s )
+            print_debug( '-----------' )
+                
             # make sure that we have a response before continuing
             if !res then next end
-            
+                
             opts[:injected] = injected_str.to_s
             # call the block, if there's one
             if block_given?
                 block.call( res, input['altered'], opts )
                 next
             end
-
+    
             if !res.body then next end
-            
+                
             # get matches
             get_matches( input['altered'], res.dup, injected_str, opts )
         }
     end
-
 
     #
     # Tries to identify a vulnerability through regexp pattern matching.

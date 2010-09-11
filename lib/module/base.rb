@@ -35,7 +35,6 @@ class Base
     include Output
 
     include Auditor
-    include Trainer
     
     #
     # Arachni::HTTP instance for the modules
@@ -62,7 +61,7 @@ class Base
     def initialize( page )
         
         @page  = page
-        @http  = Arachni::Module::HTTP.new( @page.url )
+        @http  = Arachni::Module::HTTP.instance
         
         # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )
@@ -82,21 +81,13 @@ class Base
         #
         @@last_url ||= ''
         if( @@last_url != @page.url )
-            init_forms( get_forms )
-            init_links( get_links )
-            init_cookies( get_cookies )
+            Trainer.instance.page = @page.dup
+            Trainer.instance.init_forms( get_forms )
+            Trainer.instance.init_links( get_links )
+            Trainer.instance.init_cookies( get_cookies )
             
             @@last_url = @page.url
         end
-        
-        #
-        # This is a callback.
-        # The block will be called for every HTTP response
-        # we get during the audit.
-        #
-        # It's used to train Arachni.
-        #
-        # @http.add_trainer{ |res, url| train( res, url ) }
         
     end
 
@@ -234,7 +225,8 @@ class Base
     #
     def get_form_simple( form )
         
-        return if !form['auditable']
+        
+        return if !form || !form['auditable']
         
         new_form = Hash.new
         new_form['attrs'] = form['attrs']

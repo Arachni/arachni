@@ -573,6 +573,8 @@ class Framework
     #
     def run_mods( page )
         
+        return if !page
+        
         # if there's no thread count specified run each module
         # in it's own thread.
         if( !@opts.threads )
@@ -626,7 +628,8 @@ class Framework
         
         # wait for threads to finish
         @threads.each { |t| t.join }
-        Arachni::Module::HTTP.run
+        
+       run_mods( Arachni::Module::HTTP.run )
     end
     
     #
