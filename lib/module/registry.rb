@@ -250,7 +250,7 @@ class Registry
     # @param    [Array]
     #
     def Registry.register_results( results )
-        @@module_results += results
+        @@module_results |= results
     end
 
     #
