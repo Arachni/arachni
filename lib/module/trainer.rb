@@ -50,6 +50,8 @@ class Trainer
         forms = []
         links = []
         cookies = []
+        cnt_new_cookies = 0
+        total_new_cookies = 0
         @@response_q << nil
         while( res = @@response_q.pop )
              form = train_forms( res[0] )
@@ -59,7 +61,10 @@ class Trainer
             links << link if link
             
             cookie, cnt_new_cookies = train_cookies( res[0] )
-            cookies << cookie if cnt_new_cookies
+            if cnt_new_cookies
+                cookies << cookie
+                total_new_cookies += cnt_new_cookies
+            end
         end
         
         updated = false
@@ -81,7 +86,7 @@ class Trainer
         end
         
         cookies.flatten!
-        if ( cnt_new_cookies && cnt_new_cookies > 0 )
+        if ( total_new_cookies > 0 )
             @page.elements['cookies'] = cookies
             updated = true
             

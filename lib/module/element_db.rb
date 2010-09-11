@@ -169,7 +169,7 @@ module ElementDB
             @@cookies.flatten!
             
             @@cookies |= new_cookies
-    
+            
             # if( @@cookies.length == 0 )
             #     @@cookies = new_cookies = cookies
             # end
@@ -179,7 +179,6 @@ module ElementDB
             
             @http.set_cookies( cookie_jar )
         # }
-        
         return [ @@cookies, new_cookies.size ]
     end
 

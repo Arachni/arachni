@@ -76,9 +76,13 @@ class HTTP
         @@trainer.http = self
         
         @init_headers               = Hash.new
-        @init_headers['User-Agent'] = Options.instance.user_agent
         @init_headers['cookie']     = ''
         
+        @opts = {
+            :user_agent      => Options.instance.user_agent,
+            :follow_location => false
+        }
+
         @__not_found  = nil
 
     end
@@ -150,12 +154,14 @@ class HTTP
         # how cool is Ruby? Seriously....
         #
         exception_jail {
-
-            req = Typhoeus::Request.new( url,
+            
+            opts = {
                 :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['User-Agent'],
-                :follow_location => false,
-                :params        => params )
+                :params        => params,
+                :follow_location => false
+            }.merge( @opts )
+            
+            req = Typhoeus::Request.new( url, opts )
             
             queue( req )
             return req
@@ -175,12 +181,14 @@ class HTTP
 
         exception_jail {
             
-            req = Typhoeus::Request.new( url,
+            opts = {
                 :method        => :post,
                 :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['User-Agent'],
-                :follow_location => false,
-                :params        => params )
+                :params        => params,
+                :follow_location => false
+            }.merge( @opts )
+
+            req = Typhoeus::Request.new( url, opts )
 
             queue( req )
             return req
@@ -209,11 +217,14 @@ class HTTP
         
         # wrap the code in exception handling
         exception_jail {
-            req = Typhoeus::Request.new( url,
+
+            opts = {
                 :headers       => { 'cookie' => get_cookies_str( cookies ) },
-                :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
-                :params        => params )
+                :params        => params
+            }.merge( @opts )
+
+            req = Typhoeus::Request.new( url, opts )
             
             queue( req )
             return req
