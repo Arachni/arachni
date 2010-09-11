@@ -56,9 +56,6 @@ class XSSPath < Arachni::Module::Base
             req.on_complete {
                 |res|
                 __log_results( res, str )
-                # register our results with the system
-                register_results( @results )
-
             }
         }
         
@@ -118,6 +115,8 @@ class XSSPath < Arachni::Module::Base
             print_ok( "Match at #{url}" )
             print_verbose( "Inected string: #{id}" )
                 
+            # register our results with the system
+            register_results( @results )
         end
     end
 

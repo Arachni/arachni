@@ -69,9 +69,6 @@ class CommonFiles < Arachni::Module::Base
                 |res|
                 print_debug( "Analyzing #{res.effective_url}" )
                 __log_results( res, file )
-                # register our results with the system
-                register_results( @results )
-
             }
         }
 
@@ -129,6 +126,9 @@ class CommonFiles < Arachni::Module::Base
                 'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
+
+        # register our results with the system
+        register_results( @results )
                 
         # inform the user that we have a match
         print_ok( "Found #{filename} at " + url )

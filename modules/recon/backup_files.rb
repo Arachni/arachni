@@ -82,8 +82,6 @@ class BackupFiles < Arachni::Module::Base
             req2.on_complete {
                 |res|
                 __log_results( res, file )
-                 # register our results with the system
-                register_results( @results )
             }
         }
 
@@ -140,6 +138,9 @@ class BackupFiles < Arachni::Module::Base
                 'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
+
+        # register our results with the system
+        register_results( @results )
                 
         # inform the user that we have a match
         print_ok( "Found #{filename} at " + url )

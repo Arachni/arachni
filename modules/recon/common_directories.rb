@@ -65,8 +65,6 @@ class CommonDirectories < Arachni::Module::Base
                 |res|
                 print_debug( "Analyzing #{res.effective_url}" )
                 __log_results( res, dirname )
-                # register our results with the system
-                register_results( @results )
             }
         }
 
@@ -126,6 +124,10 @@ class CommonDirectories < Arachni::Module::Base
                 
         # inform the user that we have a match
         print_ok( "Found #{dirname} at " + url )
+        
+        # register our results with the system
+        register_results( @results )
+
     end
 
 end

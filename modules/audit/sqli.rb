@@ -83,21 +83,7 @@ class SQLInjection < Arachni::Module::Base
             
             # send the bad characters in @__injection_strs via the page forms
             # and pass a block that will check for a positive result
-            audit_forms( str, @__opts ) {
-                |res, var, opts|
-                __log_results( opts, var, res )
-            }
-            
-            # send the bad characters in @__injection_strs via link vars
-            # and pass a block that will check for a positive result        
-            audit_links( str, @__opts ) {
-                |res, var, opts|
-                __log_results( opts, var, res )
-            }
-                    
-            # send the bad characters in @__injection_strs via cookies
-            # and pass a block that will check for a positive result
-            audit_cookies( str,@__opts ) {
+            audit( str, @__opts ) {
                 |res, var, opts|
                 __log_results( opts, var, res )
             }
@@ -190,14 +176,15 @@ class SQLInjection < Arachni::Module::Base
                 print_verbose( "Matched regex:\t" + id_regex.to_s )
                 print_verbose( '---------' ) if only_positives?
         
+                # register our results with the framework
+                register_results( @results )
+            
                 # since a regexp tested positive for SQL injection
                 # we don't need to test for the rest
                 return true
             end
             
         }
-        # register our results with the framework
-        register_results( @results )        
     end
 
 end

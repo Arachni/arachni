@@ -55,9 +55,6 @@ class XSSURI < Arachni::Module::Base
                 |res|
                 
                 __log_results( res, str )
-                # register our results with the system
-                register_results( @results )
-
             }
         }
 
@@ -117,6 +114,9 @@ class XSSURI < Arachni::Module::Base
                     
             # inform the user that we have a match
             print_ok( "In #{@page.url} at " + url )
+            
+            # register our results with the system
+            register_results( @results )
                 
         end
     end
