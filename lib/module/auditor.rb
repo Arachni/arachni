@@ -417,9 +417,6 @@ module Auditor
         req.on_complete {
             |res |
             print_status( 'Analyzing response...' )
-            print_debug( '-----------' )
-            print_debug( 'Thread: ' + Thread.current.to_s )
-            print_debug( '-----------' )
                 
             # make sure that we have a response before continuing
             if !res then next end
