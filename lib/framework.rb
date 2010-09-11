@@ -43,12 +43,12 @@ module Arachni
 #
 # It's the brains of the operation, it bosses the rest of the classes around.<br/>
 # It runs the audit, loads modules and reports and runs them according to
-# the supplied options.
+# user options.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 class Framework
 
@@ -63,7 +63,7 @@ class Framework
     VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.3'
+    REVISION     = '0.1.4'
     
     # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
@@ -76,7 +76,7 @@ class Framework
     attr_reader :opts
 
     #
-    # Initializes all the system components.
+    # Initializes system components.
     #
     # @param    [Options]    opts
     #
@@ -157,7 +157,7 @@ class Framework
     #
     # Audits the site.
     #
-    # Runs the spider, analyzes each page and runs the loaded modules.
+    # Runs the spider, analyzes each page and runs the loaded modules via (#run_mods}.
     #
     def audit
         pages = []
@@ -182,7 +182,7 @@ class Framework
         }
 
         # if the user opted to run the modules after the crawl/analysis
-        # do it now.
+        # run the modules last.
         pages.each { |page| run_mods( page ) } if( @opts.mods_run_last )
             
     end
@@ -364,7 +364,7 @@ class Framework
     # Converts a saved AuditStore to a report.
     #
     # It basically loads a serialized AuditStore,<br/>
-    # passes it to a the loaded Reports and runs the reports.
+    # passes it to a the loaded Reports and runs the reports via {#run_reps}.
     #
     # @param [String]  file  location of the saved AuditStore
     #
@@ -374,7 +374,7 @@ class Framework
     end
 
     #
-    # Saves an AuditStore instance in file
+    # Saves an AuditStore instance in 'file'
     #
     # @param    [String]    file
     #
@@ -438,7 +438,7 @@ class Framework
             mod_info << info
         }
         
-        # clean the registry inloading all modules
+        # clean the registry unloading all modules
         Arachni::Module::Registry.clean( )
         
         return mod_info
@@ -483,7 +483,7 @@ class Framework
     end
 
     #
-    # Returns the SVN revision of the framework
+    # Returns the revision of the {Framework} (this) class
     #
     # @return    [String]
     #
@@ -538,12 +538,13 @@ class Framework
     end
     
     #
-    # It handles Ctrl+C interrupts
+    # Handles Ctrl+C interrupts
     #
     # Once an interrupt has been trapped the system pauses and waits
     # for user input. <br/>
     # The user can either continue or exit.
     #
+    # The interrupt will be handled after a module has finished.
     #
     def handle_interrupt( )
         
@@ -565,75 +566,45 @@ class Framework
     end
     
     #
-    # Takes care of module execution and threading
+    # Takes care of module execution
     #
     # @see Page
     #
     # @param    [Page]    page
     #
     def run_mods( page )
-        
         return if !page
         
-        # if there's no thread count specified run each module
-        # in it's own thread.
-        if( !@opts.threads )
-            @opts.threads = ls_loaded_mods.size
-        end
-        
-        # create a queue that'll hold the modules to run
-        mod_queue = Queue.new
-        # start a new thread for every module in the queue
-        # while obeying the thread-count limit. 
-        @threads = ( 1..@opts.threads ).map {
-            |i|
-            
-            # create a new thread...
-            Thread.new( mod_queue ) {
-                |q|
-                # get a module from the queue until all queue items have been
-                # consumed
-                until( q == ( curr_mod = q.deq ) )
-                    
-                    # save some time by deciding if the module is worth running
-                    if( !run_module?( curr_mod , page ) )
-                        print_verbose( 'Skipping ' + curr_mod.to_s +
-                            ', nothing to audit.' )
-                        next
-                    end
-
-                    print_debug( )
-                    print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
-                    print_debug( )
-                    
-                    # tell the user which module is about to be run...
-                    print_status( curr_mod.to_s )
-                    # ... and run it.
-                    
-                    run_mod( curr_mod, deep_clone( page ) )
-                    while( handle_interrupt(  ) )
-                    end
-                     
-                end
-            }
-        }
-        
-        # enque the loaded mods
         for mod in ls_loaded_mods
-            mod_queue.enq mod
+                    
+            # save some time by deciding if the module is worth running
+            if( !run_module?( mod , page ) )
+                print_verbose( 'Skipping ' + mod.to_s +
+                    ', nothing to audit.' )
+                next
+            end
+    
+            # tell the user which module is about to be run...
+            print_status( mod.to_s )
+            # ... and run it.
+            run_mod( mod, deep_clone( page ) )
+            
+            # handle trapped interrupts
+            while( handle_interrupt(  ) )
+            end
+                         
         end
-        
-        # send terminators down the queue
-        @threads.size.times { mod_queue.enq mod_queue }
-        
-        # wait for threads to finish
-        @threads.each { |t| t.join }
-        
-       run_mods( Arachni::Module::HTTP.run )
+       
+       # run all the queued HTTP requests
+       Arachni::Module::HTTP.run
+       
+       # get an updated page from the {Trainer}
+       # and audit it recursively until no new elements appear
+       run_mods( Arachni::Module::Trainer.instance.page )
     end
     
     #
-    # Runs a module and passes it the page_data and structure.<br/>
+    # Passes a page to the module and runs it.<br/>
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
@@ -643,10 +614,11 @@ class Framework
     #
     def run_mod( mod, page )
         begin
+          
             # instantiate the module
             mod_new = mod.new( page )
             
-            # run the methods specified in the module API
+            # run the methods specified by the module API
             
             # optional
             mod_new.prepare   if mod.method_defined?( 'prepare' )
@@ -656,6 +628,7 @@ class Framework
             
             # optional
             mod_new.clean_up  if mod.method_defined?( 'clean_up' )
+            
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
@@ -715,7 +688,8 @@ class Framework
         ls_loaded_reps.each_with_index {
             |report, i|
 
-            # choose a default report name
+            # if the user hasn't selected a filename for the report
+            # choose one for him
             if( !@opts.repsave || @opts.repsave.size == 0 )
                 @opts.repsave =
                     URI.parse( audit_store.options['url'] ).host +
@@ -753,9 +727,6 @@ class Framework
                     @opts.cookies =
                         Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
 
-#                when 'delay'
-#                    @opts[:delay] = Float.new( @opts[:delay] ) 
-
             end
         end
 
@@ -792,9 +763,7 @@ class Framework
         end
 
         #
-        # Try and parse URL.
-        # If it fails inform the user of that fact and
-        # give him some approriate examples.
+        # Try and parse the URL.
         #
         begin
             require 'uri'
@@ -821,7 +790,7 @@ class Framework
 #            @opts[:proxy_port] = nil
 #        end
 
-        # make sure the provided cookie-jar file exists
+        # make sure that the provided cookie-jar file exists
         if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar +

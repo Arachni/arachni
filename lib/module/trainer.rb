@@ -30,79 +30,87 @@ class Trainer
     include ElementDB
     include Singleton
 
-    attr_accessor :page
+    attr_writer   :page
     attr_accessor :http
 
     def initialize
-      @opts          = Options.instance
-      @analyzer      = Analyzer.new( @opts )
-      @@response_q ||= Queue.new
+      @opts     = Options.instance
+      @analyzer = Analyzer.new( @opts )
     end
 
+    #
+    # Passes the reponse to {#analyze} for analysis
+    #
+    # @param  [Typhoeus::Response]  res
+    # @param  [Bool]  redir  was the response forcing a redirection?
+    #
     def add_response( res, redir = false )
-        @@response_q << [res, redir]
+        analyze( [ res, redir ] )
     end
     
-    def analyze
+    #
+    # Returns an updated {Page} object or nil if there waere no updates
+    #
+    # @return  [Page]
+    #
+    def page
+        if( @updated )
+              @updated = false
+              return  @page.dup
+          else
+              return nil
+        end
+    end
+
+    
+    private
+    
+    #
+    # Analyzes a response looking for new links, forms and cookies.
+    #
+    # @param   [Array]  res   {Typhoeus::Response}, Bool
+    #
+    def analyze( res )
         
-        print_status( 'Started...' )
+        # print_status( 'Started...' )
         
         forms = []
         links = []
         cookies = []
         cnt_new_cookies = 0
         total_new_cookies = 0
-        @@response_q << nil
-        while( res = @@response_q.pop )
-             form = train_forms( res[0] )
-             forms << form if form
-             
-            link = train_links( res[0], res[1] )
-            links << link if link
+        
+        forms = train_forms( res[0] )
+        links = train_links( res[0], res[1] )
+        
+        cookies, cnt_new_cookies = train_cookies( res[0] )
+        total_new_cookies += cnt_new_cookies
+        
+        @updated = false
+        
+        if ( forms && !forms.empty? )
+            @page.elements['forms'] = forms.flatten
+            @updated = true
             
-            cookie, cnt_new_cookies = train_cookies( res[0] )
-            if cnt_new_cookies
-                cookies << cookie
-                total_new_cookies += cnt_new_cookies
-            end
+            # print_status( 'Found ' + forms.size.to_s + ' new forms.' )
         end
         
-        updated = false
-        
-        forms.flatten!
-        if ( !forms.empty? )
-            @page.elements['forms'] = forms
-            updated = true
+        if ( links && !links.empty? )
+            @page.elements['links'] = links.flatten
+            @updated = true
             
-            print_status( 'Found ' + forms.size.to_s + ' new forms.' )
+            # print_status( 'Found ' + links.size.to_s + ' new links.' )
         end
         
-        links.flatten!
-        if ( !links.empty? )
-            @page.elements['links'] = links
-            updated = true
-            
-            print_status( 'Found ' + links.size.to_s + ' new links.' )
-        end
-        
-        cookies.flatten!
         if ( total_new_cookies > 0 )
-            @page.elements['cookies'] = cookies
-            updated = true
+            @page.elements['cookies'] = cookies.flatten
+            @updated = true
             
-            print_status( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
+            # print_status( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
         end
 
           
-        if( updated )
-            ret =  @page.dup
-        else
-            ret =  nil
-            print_status( 'No new elements found.' )
-        end
-        
-        print_status( 'Training complete.' )
-        return ret
+        # print_status( 'Training complete.' )
     end
     
     def train_forms( res )
@@ -133,6 +141,7 @@ class Trainer
             } )
 
         end
+        
         return update_links( links )
         
     end

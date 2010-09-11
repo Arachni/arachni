@@ -95,7 +95,6 @@ class HTTP
     #
     def HTTP.run
         @@hydra.run
-        return @@trainer.analyze
     end
     
     #

@@ -89,9 +89,9 @@ module ElementDB
     #
     def update_forms( forms )
         
-        return if forms.size == 0
+        return [] if forms.size == 0
         
-        new_forms = []
+        @new_forms ||= []
         # @@form_mutex.synchronize {
           
             forms.each {
@@ -102,12 +102,12 @@ module ElementDB
             
                 if !(index = forms_include?( form ) )
                     @@forms << form
-                    new_forms << form 
+                    @new_forms << form 
                 end
             
             }
         # }
-        return new_forms
+        return @new_forms
         
     end
 
@@ -118,9 +118,9 @@ module ElementDB
     # @param    [Array<Hash>]    links  the return object of {Analyzer#get_links}
     #
     def update_links( links )
-      return if links.size == 0
+      return [] if links.size == 0
       
-      new_links = []
+      @new_links ||= []
       # @@link_mutex.synchronize {
           links.each {
               |link|
@@ -131,11 +131,11 @@ module ElementDB
                 
               if( !@@links.include?( link ) )
                   @@links << link
-                  new_links << link
+                  @new_links << link
               end
           }
           
-          return new_links
+          return @new_links
       # }
     end
 
@@ -146,9 +146,9 @@ module ElementDB
     # @param    [Array<Hash>]   cookies   the return object of {Analyzer#get_cookies}
     #
     def update_cookies( cookies )
-        return if cookies.size == 0
+        return [],0 if cookies.size == 0
             
-        new_cookies = []
+        @new_cookies ||= []
         
         # @@cookie_mutex.synchronize {
             cookies.each_with_index {
@@ -160,7 +160,7 @@ module ElementDB
                     if( page_cookie['name'] == cookie['name'] )
                         @@cookies[i] = cookie
                     else
-                        new_cookies << cookie
+                        @new_cookies << cookie
                     end
                 }
     
@@ -168,7 +168,7 @@ module ElementDB
             
             @@cookies.flatten!
             
-            @@cookies |= new_cookies
+            @@cookies |= @new_cookies
             
             # if( @@cookies.length == 0 )
             #     @@cookies = new_cookies = cookies
@@ -179,7 +179,7 @@ module ElementDB
             
             @http.set_cookies( cookie_jar )
         # }
-        return [ @@cookies, new_cookies.size ]
+        return [ @@cookies, @new_cookies.size ]
     end
 
     private
