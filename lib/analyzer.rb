@@ -229,8 +229,9 @@ class Analyzer
             else
                 action = elements[i]['attrs']['action']
             end
+            action = URI.escape( action ).to_s
                 
-            elements[i]['attrs']['action'] = to_absolute( action )
+            elements[i]['attrs']['action'] = to_absolute( action.clone ).to_s
 
             if( !elements[i]['attrs']['method'] )
                 elements[i]['attrs']['method'] = 'post'
@@ -238,13 +239,12 @@ class Analyzer
                 elements[i]['attrs']['method'] =
                     elements[i]['attrs']['method'].downcase
             end
-                
-            elements[i]['attrs']['action'] = to_absolute( action )
-                
-            if !in_domain?( URI.parse( elements[i]['attrs']['action'] ) )
+            
+            url = URI.parse( URI.escape( elements[i]['attrs']['action'] ) )
+            if !in_domain?( url )
                 next
             end
-            
+
             elements[i]['textarea'] = get_form_textareas( form )
             elements[i]['select']   = get_form_selects( form )
             elements[i]['input']    = get_form_inputs( form )
@@ -599,11 +599,12 @@ class Analyzer
     # +false+ otherwise
     #
     def in_domain?( uri )
+        
         if( @opts.follow_subdomains )
-            return extract_domain( uri ) ==  extract_domain( @url )
+            return extract_domain( uri ) ==  extract_domain( URI( @url ) )
         end
     
-        uri.host == URI.parse( @url ).host
+        uri.host == URI.parse( URI.escape( @url ) ).host
     end
     
     #
