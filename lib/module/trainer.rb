@@ -90,7 +90,7 @@ class Trainer
             @page.elements['cookies'] = cookies
             updated = true
             
-            print_status( 'Found ' + cnt_new_cookies.to_s + ' new cookies.' )
+            print_status( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
         end
 
           
