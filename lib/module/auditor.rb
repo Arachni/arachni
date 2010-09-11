@@ -235,6 +235,8 @@ module Auditor
         get_links.each {
             |link|
             
+            next if !link
+            
             url = URI( @page.url ).merge( URI( link['href'] ).path ).to_s
             link_vars = link['vars']
             
