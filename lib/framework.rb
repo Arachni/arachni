@@ -566,7 +566,14 @@ class Framework
     end
     
     #
-    # Takes care of module execution
+    # Takes care of page audit and module execution
+    #
+    # It will audit one page at a time as discovered by the spider <br/>
+    # and recursively check for new elements that may have <br/>
+    # appeared during the audit.
+    #
+    # When no new elements appear the recursion will stop and a new page<br/>
+    # will be accepted.
     #
     # @see Page
     #
