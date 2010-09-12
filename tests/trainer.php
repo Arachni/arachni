@@ -26,7 +26,7 @@ if( !$_SESSION['curveball'] ) {
 
 if( $_POST['form3_input'] == "form three input" ) {
   session_destroy();
-  header( 'Location: ?msg=Congrats!+You+made+it!' );
+  header( 'Location: ' . $_SERVER['PHP_SELF'] . '?msg=Congrats!+You+made+it!' );
 
 }
 
