@@ -596,7 +596,7 @@ class Framework
         end
        
        # run all the queued HTTP requests
-       Arachni::Module::HTTP.run
+       Arachni::Module::HTTP.instance.run
        
        # get an updated page from the {Trainer}
        # and audit it recursively until no new elements appear

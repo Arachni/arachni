@@ -93,7 +93,7 @@ class HTTP
     # Should only be called by the framework
     # after all module threads have beed joined!
     #
-    def HTTP.run
+    def run
         @@hydra.run
     end
     
