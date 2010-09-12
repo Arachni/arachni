@@ -89,8 +89,9 @@ module ElementDB
     #
     def update_forms( forms )
         
-        return [] if forms.size == 0
+        return [], 0 if forms.size == 0
         
+        form_cnt = 0
         @new_forms ||= []
         # @@form_mutex.synchronize {
           
@@ -102,12 +103,13 @@ module ElementDB
             
                 if !(index = forms_include?( form ) )
                     @@forms << form
-                    @new_forms << form 
+                    @new_forms << form
+                    form_cnt += 1 
                 end
             
             }
         # }
-        return @new_forms
+        return @new_forms, form_cnt
         
     end
 
@@ -118,8 +120,9 @@ module ElementDB
     # @param    [Array<Hash>]    links  the return object of {Analyzer#get_links}
     #
     def update_links( links )
-      return [] if links.size == 0
+      return [], 0 if links.size == 0
       
+      link_cnt = 0
       @new_links ||= []
       # @@link_mutex.synchronize {
           links.each {
@@ -132,10 +135,11 @@ module ElementDB
               if( !@@links.include?( link ) )
                   @@links << link
                   @new_links << link
+                  link_cnt += 1
               end
           }
           
-          return @new_links
+          return @new_links, link_cnt
       # }
     end
 
@@ -146,8 +150,9 @@ module ElementDB
     # @param    [Array<Hash>]   cookies   the return object of {Analyzer#get_cookies}
     #
     def update_cookies( cookies )
-        return [],0 if cookies.size == 0
+        return [], 0 if cookies.size == 0
             
+        cookie_cnt = 0
         @new_cookies ||= []
         
         # @@cookie_mutex.synchronize {
@@ -161,6 +166,7 @@ module ElementDB
                         @@cookies[i] = cookie
                     else
                         @new_cookies << cookie
+                        cookie_cnt += 1
                     end
                 }
     
@@ -179,7 +185,7 @@ module ElementDB
             
             @http.set_cookies( cookie_jar )
         # }
-        return [ @@cookies, @new_cookies.size ]
+        return [ @@cookies, cookie_cnt ]
     end
 
     private

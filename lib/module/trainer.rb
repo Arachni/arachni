@@ -36,6 +36,7 @@ class Trainer
     def initialize
       @opts     = Options.instance
       @analyzer = Analyzer.new( @opts )
+      @updated = false
     end
 
     #
@@ -74,39 +75,30 @@ class Trainer
         
         print_debug( 'Started...' )
         
-        forms = []
-        links = []
-        cookies = []
-        cnt_new_cookies = 0
-        total_new_cookies = 0
+        forms, form_cnt = train_forms( res[0] )
+        links, link_cnt = train_links( res[0], res[1] )
         
-        forms = train_forms( res[0] )
-        links = train_links( res[0], res[1] )
+        cookies, cookie_cnt = train_cookies( res[0] )
         
-        cookies, cnt_new_cookies = train_cookies( res[0] )
-        total_new_cookies += cnt_new_cookies
-        
-        @updated = false
-        
-        if ( forms && !forms.empty? )
+        if ( form_cnt > 0 )
             @page.elements['forms'] = forms.flatten
             @updated = true
             
-            print_debug( 'Found ' + forms.size.to_s + ' new forms.' )
+            print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
         end
         
-        if ( links && !links.empty? )
+        if ( link_cnt > 0 )
             @page.elements['links'] = links.flatten
             @updated = true
             
-            print_debug( 'Found ' + links.size.to_s + ' new links.' )
+            print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
         end
         
-        if ( total_new_cookies > 0 )
+        if ( cookie_cnt > 0 )
             @page.elements['cookies'] = cookies.flatten
             @updated = true
             
-            print_debug( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
+            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
         end
 
           
