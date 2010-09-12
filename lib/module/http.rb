@@ -8,8 +8,11 @@
 
 =end
 
+require 'typhoeus'
+
 module Arachni
-require Options.instance.dir['pwd'] + '../typhoeus/lib/typhoeus'
+  
+require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'module/trainer'
 
 module Module
