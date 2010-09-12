@@ -72,7 +72,9 @@ module Auditor
         #
         # Elements to audit.
         #
-        # Only required when calling {#audit}.
+        # Only required when calling {#audit}.<br/>
+        # If no elements have been passed to audit it will
+        # use the elements in {#self.info}.
         #
         :elements => [ Element::LINK, Element::FORM,
                        Element::COOKIE, Element::HEADER ],
@@ -105,8 +107,11 @@ module Auditor
     #
     # Provides easy access to all audit methods.
     #
-    # It will also provide a performance boost due to the fact that it
-    # audits all elements concurently.
+    # If no elements have been specified in 'opts' it will
+    # use the elements in {#self.info}. <br/>
+    # If no elements have been specified in 'opts' or {#self.info} it will
+    # use the elements in {#OPTIONS}. <br/>
+    #
     #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {#OPTIONS}
@@ -122,9 +127,16 @@ module Auditor
     #
     def audit( injection_str, opts = { }, &block )
         
-        opts    = OPTIONS.merge( opts )
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = self.class.info['Elements']
+        end
         
-        threads = []
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = OPTIONS[:elements]
+        end
+
+        opts  = OPTIONS.merge( opts )
+        
         results = []
         opts[:elements].each {
             |elem|
@@ -132,32 +144,22 @@ module Auditor
             case elem
               
                 when  Element::LINK
-                  # threads << Thread.new {
-                      results << audit_links( injection_str, opts, &block )
-                  # }
+                    results << audit_links( injection_str, opts, &block )
                   
                 when  Element::FORM
-                  # threads << Thread.new {  
-                      results << audit_forms( injection_str, opts, &block )
-                  # }
+                    results << audit_forms( injection_str, opts, &block )
                   
                 when  Element::COOKIE
-                  # threads << Thread.new {
-                      results << audit_cookies( injection_str, opts, &block )
-                  # }
+                    results << audit_cookies( injection_str, opts, &block )
                   
                 when  Element::HEADER
-                  # threads << Thread.new {
-                      results << audit_headers( injection_str, opts, &block )
-                  # }
+                    results << audit_headers( injection_str, opts, &block )
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
               
             end
           
         }
-        
-        # threads.each{ |t| t.join }
         
         return results.flatten
     end
