@@ -401,23 +401,7 @@ class HTTP
         return Arachni::Module::Utilities.rdiff( @__not_found, html ) == @__404
     end
 
-
-    #
-    # Blocks passed to this method will be passed each HTTP response<br/>
-    # and in cases of redirection the new location as well.
-    #
-    def add_trainer( &block )
-        @trainers << block
-    end
-    
     private
-    
-    #
-    #
-    #
-    def train( res, url = nil )
-        @trainers.each{ |trainer| trainer.call( res, url ) }
-    end
     
     def redirect?( res )
         if loc = res.headers_hash['Location']
