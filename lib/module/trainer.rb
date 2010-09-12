@@ -72,7 +72,7 @@ class Trainer
     #
     def analyze( res )
         
-        # print_status( 'Started...' )
+        print_debug( 'Started...' )
         
         forms = []
         links = []
@@ -92,25 +92,25 @@ class Trainer
             @page.elements['forms'] = forms.flatten
             @updated = true
             
-            # print_status( 'Found ' + forms.size.to_s + ' new forms.' )
+            print_debug( 'Found ' + forms.size.to_s + ' new forms.' )
         end
         
         if ( links && !links.empty? )
             @page.elements['links'] = links.flatten
             @updated = true
             
-            # print_status( 'Found ' + links.size.to_s + ' new links.' )
+            print_debug( 'Found ' + links.size.to_s + ' new links.' )
         end
         
         if ( total_new_cookies > 0 )
             @page.elements['cookies'] = cookies.flatten
             @updated = true
             
-            # print_status( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
+            print_debug( 'Found ' + total_new_cookies.to_s + ' new cookies.' )
         end
 
           
-        # print_status( 'Training complete.' )
+        print_debug( 'Training complete.' )
     end
     
     def train_forms( res )

@@ -311,7 +311,8 @@ module Auditor
                 |input|
 
                 if( input['altered'] == '__orig' )
-                    orig_id = audit_id( url, input, opts, '' )
+                    orig_id = audit_id( url, input['hash'], opts,
+                      input['hash'].values | ['{__default_values__}'] )
                     next if audited?( orig_id )
                     audited( orig_id )
                 end
@@ -417,7 +418,7 @@ module Auditor
         req.on_complete {
             |res |
             print_status( 'Analyzing response...' )
-                
+            
             # make sure that we have a response before continuing
             if !res then next end
                 
@@ -521,7 +522,7 @@ module Auditor
         vars = input.keys.sort.to_s
         return "#{self.class.info['Name']}:" +
           "#{url}:" + "#{opts[:element]}:" + 
-          "#{vars}=#{injection_str}"
+          "#{vars}=#{injection_str.to_s}"
     end
     
     #
@@ -530,7 +531,13 @@ module Auditor
     # @param  [String]  audit_id  a string returned by {#audit_id}
     #
     def audited?( audit_id )
-      return @@audited.include?( audit_id )
+      ret =  @@audited.include?( audit_id )
+      
+      msg = 'Current audit ID: ' if !ret
+      msg = 'Skipping, already audited: ' if ret
+      print_debug( msg + audit_id )
+      
+      return ret
     end
     
     #
@@ -589,6 +596,8 @@ module Auditor
             
         }
         
+        print_debug_injection_set( var_combo, opts )
+        
         return var_combo
     end
     
@@ -614,6 +623,70 @@ module Auditor
         append = null = ''   if ( format & Format::STRAIGHT ) != 0
                 
         return append + injection_str + null
+    end
+    
+    def print_debug_injection_set( var_combo, opts )
+        return if !debug?
+        
+        print_debug_formatting( opts )
+        print_debug_combos( var_combo )
+    end
+    
+    def print_debug_formatting( opts )
+        print_debug( '------------' )
+        
+        print_debug( 'Injection string format combinations set to:' )
+        print_debug( '|')
+        msg = []
+        opts[:format].each {
+            |format|
+            
+            if( format & Format::NULL ) != 0
+                msg << 'null character termination (Format::NULL)'
+            end
+                
+            if( format & Format::APPEND ) != 0
+                msg << 'append to default value (Format::APPEND)'
+            end
+                
+            if( format & Format::STRAIGHT ) != 0
+                msg << 'straight, leave as is (Format::STRAIGHT)'
+            end
+            
+            prep = msg.join( ' and ' ).capitalize + ". [Combo mask: #{format}]"
+            prep.gsub!( 'format::null', "Format::NULL [#{Format::NULL}]" )
+            prep.gsub!( 'format::append', "Format::APPEND [#{Format::APPEND}]" )
+            prep.gsub!( 'format::straight', "Format::STRAIGHT [#{Format::STRAIGHT}]" )
+            print_debug( "|----> " + prep )
+            
+            msg.clear
+        }
+
+    end
+    
+    def print_debug_combos( combos )
+        print_debug( )
+        print_debug( 'Prepared combinations:' )
+        print_debug('|' )
+        
+        combos.each{
+          |set|
+          
+          print_debug( '|' )
+          print_debug( "|--> Auditing: " + set['altered'] )
+          print_debug( "|--> Combo: " )
+          
+          set['hash'].each{
+              |combo|
+              print_debug( "|------> " + combo.to_s )
+          }
+          
+        }
+        
+        print_debug( )
+        print_debug( '------------' )
+        print_debug( )
+
     end
     
 end

@@ -34,7 +34,7 @@ module Module
 #
 class HTTP
 
-    include Arachni::UI::Output
+    include Output
     include Singleton
     
     #
@@ -107,19 +107,27 @@ class HTTP
         @@lock.synchronize {
             @last_url = req.url
             @@hydra.queue( req )
+
+            print_debug( '------------' )
+            print_debug( 'Queued request.' )
+            print_debug( 'URL: ' + req.url )
+            print_debug( 'Method: ' + req.method  )
+            print_debug( 'Params: ' + req.params.to_s  )
+            print_debug( 'Headers: ' + req.headers.to_s  )
+            print_debug(  '------------' )
+
         }
           
         req.on_complete( true ) {
             |res|
             
-            name = 'HTTP: '
-            print_debug( name + '------------' )
-            print_debug( name + 'Got response:' )
-            print_debug( name + 'URL: ' + res.effective_url )
-            print_debug( name + 'Method: ' + res.request.method  )
-            print_debug( name + 'Params: ' + res.request.params.to_s  )
-            print_debug( name + 'Headers: ' + res.request.headers.to_s  )
-            print_debug( name + '------------' )
+            print_debug( '------------' )
+            print_debug( 'Got response.' )
+            print_debug( 'URL: ' + res.effective_url )
+            print_debug( 'Method: ' + res.request.method  )
+            print_debug( 'Params: ' + res.request.params.to_s  )
+            print_debug( 'Headers: ' + res.request.headers.to_s  )
+            print_debug( '------------' )
             
             # handle redirections
             if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
@@ -461,7 +469,7 @@ class HTTP
     # @param    [Exception]     e
     #
     def handle_exception( e )
-        print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+        print_error( 'Error: ' + e.to_s + " in URL " + @last_url.to_s )
         print_debug( 'Exception: ' +  e.inspect )
         print_debug( 'Backtrace: ' )
         print_debug_backtrace( e )
@@ -470,6 +478,10 @@ class HTTP
         # print_debug_pp( @hydra )
 #        print_debug( YAML::dump( @session ) )
         print_error( 'Proceeding anyway... ' )
+    end
+    
+    def self.info
+      { 'Name' => 'HTTP' }
     end
        
 end
