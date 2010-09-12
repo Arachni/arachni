@@ -59,21 +59,20 @@ class ExtractObjects < Arachni::Module::Base
         # you can use whatever key you want when saving data
         # but it's best to use the class name...keeps things tidy
         #
-        add_storage( self.class.info['Name'], @__objects )
+        add_storage( self.class.info[:name], @__objects )
     end
 
     
     def self.info
         {
-            'Name'           => 'ExtractObjects',
-            'Description'    => %q{Extracts all 'object' elements from a webpage.},
-            'Elements'       => [],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
-                
+            :name           => 'ExtractObjects',
+            :description    => %q{Extracts all 'object' elements from a webpage.},
+            :elements       => [],
+            :author         => 'zapotek',
+            :version        => '0.1',
+            :references     => {
             },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
         }
     end
     

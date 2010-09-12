@@ -72,22 +72,21 @@ class CommonDirectories < Arachni::Module::Base
 
     def self.info
         {
-            'Name'           => 'CommonDirectories',
-            'Description'    => %q{Tries to find common directories on the server.},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.3',
-            'References'     => {},
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{A common directory exists on the server.},
-                'Description' => %q{},
-                'CWE'         => '538',
-                'Severity'    => Vulnerability::Severity::MEDIUM,
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :name           => 'CommonDirectories',
+            :description    => %q{Tries to find common directories on the server.},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {},
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{A common directory exists on the server.},
+                :description => %q{},
+                :cwe         => '538',
+                :severity    => Vulnerability::Severity::MEDIUM,
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

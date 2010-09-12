@@ -70,31 +70,30 @@ class XSS < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'XSS',
-            'Description'    => %q{Cross-Site Scripting recon module},
-            'Elements'       => [
+            :name           => 'XSS',
+            :description    => %q{Cross-Site Scripting recon module},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE,
                 Vulnerability::Element::HEADER
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1',
+            :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{Cross-Site Scripting (XSS)},
-                'Description' => %q{Client-side code, like JavaScript, can
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{Cross-Site Scripting (XSS)},
+                :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
-                'CWE'         => '79',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '79',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

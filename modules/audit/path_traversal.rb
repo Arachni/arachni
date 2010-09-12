@@ -89,29 +89,29 @@ class PathTraversal < Arachni::Module::Base
 
     def self.info
         {
-            'Name'           => 'PathTraversal',
-            'Description'    => %q{Path Traversal module.},
-            'Elements'       => [ 
+            :name           => 'PathTraversal',
+            :description    => %q{Path Traversal module.},
+            :elements       => [ 
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.2',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.2',
+            :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
             },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Path Traversal},
-                'Description' => %q{Improper limitation of a pathname to a restricted directory.},
-                'CWE'         => '22',
-                'Severity'    => Vulnerability::Severity::MEDIUM,
-                'CVSSV2'       => '4.3',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :vulnerability   => {
+                :name        => %q{Path Traversal},
+                :description => %q{Improper limitation of a pathname to a restricted directory.},
+                :cwe         => '22',
+                :severity    => Vulnerability::Severity::MEDIUM,
+                :cvssv2       => '4.3',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

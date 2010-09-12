@@ -133,10 +133,10 @@ class Stdout < Arachni::Report::Base
     #
     def self.info
         {
-            'Name'           => 'Stdout',
-            'Description'    => %q{Prints the results to standard output.},
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            :name           => 'Stdout',
+            :description    => %q{Prints the results to standard output.},
+            :author         => 'zapotek',
+            :version        => '0.1',
         }
     end
     

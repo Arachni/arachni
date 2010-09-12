@@ -145,7 +145,7 @@ class Trainer
 
     
     def self.info
-      { 'Name' => 'Trainer' }
+      { :name  => 'Trainer' }
     end
     
 end

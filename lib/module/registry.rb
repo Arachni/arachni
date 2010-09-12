@@ -131,7 +131,7 @@ class Registry
                 info =  mod.info
                 
                 if( mod.methods.index( :deps ) ) 
-                    info = info.merge( { 'Dependencies' => mod.deps } )
+                    info = info.merge( { :dependencies => mod.deps } )
                 end
                 
                 return info

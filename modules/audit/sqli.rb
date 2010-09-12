@@ -93,31 +93,30 @@ class SQLInjection < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'SQLInjection',
-            'Description'    => %q{SQL injection recon module},
-            'Elements'       => [
+            :name           => 'SQLInjection',
+            :description    => %q{SQL injection recon module},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.4',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.4',
+            :references     => {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{SQL Injection},
-                'Description' => %q{SQL code can be injected into the web application.},
-                'CWE'         => '89',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{SQL Injection},
+                :description => %q{SQL code can be injected into the web application.},
+                :cwe         => '89',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

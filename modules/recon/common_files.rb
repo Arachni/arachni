@@ -77,22 +77,21 @@ class CommonFiles < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'CommonFiles',
-            'Description'    => %q{Tries to find common sensitive files on the server.},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.2',
-            'References'     => {},
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{A common sensitive file exists on the server.},
-                'Description' => %q{},
-                'CWE'         => '530',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :name           => 'CommonFiles',
+            :description    => %q{Tries to find common sensitive files on the server.},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.2',
+            :references     => {},
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{A common sensitive file exists on the server.},
+                :description => %q{},
+                :cwe         => '530',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

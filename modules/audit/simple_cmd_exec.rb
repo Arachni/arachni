@@ -48,30 +48,28 @@ class SimpleCmdExec < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'SimpleCmdExec',
-            'Description'    => %q{Simple shell command execution recon module},
-            'Elements'       => [
+            :name           => 'SimpleCmdExec',
+            :description    => %q{Simple shell command execution recon module},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-
-            'Targets'        => { 'PHP' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{OS command injection},
-                'Description' => %q{The web application allows an attacker to
+            :targets        => { 'PHP' => 'all' },
+            :vulnerability   => {
+                :name        => %q{OS command injection},
+                :description => %q{The web application allows an attacker to
                     execute OS commands.},
-                'CWE'         => '78',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '78',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

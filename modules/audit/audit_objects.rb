@@ -63,26 +63,15 @@ class AuditObjects < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'AuditObjects',
-            'Description'    => %q{Audits all object elements discovered by
+            :name           => 'AuditObjects',
+            :description    => %q{Audits all object elements discovered by
                 the ExtractObjects module.},
-            'Elements'       => [],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
-                
+            :elements       => [],
+            :author         => 'zapotek',
+            :version        => '0.1',
+            :references     => {
             },
-            'Targets'        => { 'Generic' => 'all' },
-                
-#            'Vulnerability'   => {
-#                'Description' => %q{.},
-#                'CWE'         => '',
-#                'Severity'    => '',
-#                'CVSSV2'       => '',
-#                'Remedy_Guidance'    => '',
-#                'Remedy_Code' => '',
-#            }
-
+            :targets        => { 'Generic' => 'all' },
         }
     end
     

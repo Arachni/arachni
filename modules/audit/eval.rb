@@ -95,33 +95,33 @@ class Eval < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'Eval',
-            'Description'    => %q{eval() recon module. Tries to inject code
+            :name           => 'Eval',
+            :description    => %q{eval() recon module. Tries to inject code
                 into the web application.},
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
                 'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
              },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Code injection},
-                'Description' => %q{Code can be injected into the web application.},
-                'CWE'         => '94',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '7.5',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :vulnerability   => {
+                :name        => %q{Code injection},
+                :description => %q{Code can be injected into the web application.},
+                :cwe         => '94',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '7.5',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

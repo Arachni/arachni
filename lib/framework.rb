@@ -421,18 +421,18 @@ class Framework
             @modreg.mod_load( mod_name )
     
             info = @modreg.mod_info( i )
+
+            info[:mod_name]    = mod_name
+            info[:name]        = info[:name].strip
+            info[:description] = info[:description].strip
             
-            info["mod_name"]    = mod_name
-            info["Name"]        = info["Name"].strip
-            info["Description"] = info["Description"].strip
-            
-            if( !info["Dependencies"] )
-                info["Dependencies"] = []
+            if( !info[:dependencies] )
+                info[:dependencies] = []
             end
             
-            info["Author"]    = info["Author"].strip
-            info["Version"]   = info["Version"].strip 
-            info["Path"]      = path['path'].strip
+            info[:author]    = info[:author].strip
+            info[:version]   = info[:version].strip 
+            info[:path]      = path['path'].strip
             
             i+=1
             
@@ -464,8 +464,8 @@ class Framework
 
             info = @repreg.info( i )
 
-            info["rep_name"]    = rep_name
-            info["Path"]        = path['path'].strip
+            info[:rep_name]    = rep_name
+            info[:path]        = path['path'].strip
             
             i+=1
             

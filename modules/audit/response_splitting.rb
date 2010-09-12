@@ -66,33 +66,33 @@ class ResponseSplitting < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'ResponseSplitting',
-            'Description'    => %q{Response Splitting recon module.
+            :name           => 'ResponseSplitting',
+            :description    => %q{Response Splitting recon module.
                 Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header. 
             },
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.3',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Response splitting},
-                'Description' => %q{The web application includes user input
+            :vulnerability   => {
+                :name        => %q{Response splitting},
+                :description => %q{The web application includes user input
                      in the response HTTP header.},
-                'CWE'         => '20',
-                'Severity'    => Vulnerability::Severity::MEDIUM,
-                'CVSSV2'       => '5.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '20',
+                :severity    => Vulnerability::Severity::MEDIUM,
+                :cvssv2       => '5.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

@@ -131,29 +131,29 @@ class BlindSQLInjection < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'BlindSQLInjection',
-            'Description'    => %q{Blind SQL injection audit module},
-            'Elements'       => [
+            :name           => 'BlindSQLInjection',
+            :description    => %q{Blind SQL injection audit module},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author          => 'zapotek',
+            :version         => '0.1',
+            :references      => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
             },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Blind SQL Injection},
-                'Description' => %q{SQL code can be injected into the web application.},
-                'CWE'         => '89',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :vulnerabiltiy   => {
+                :name        => %q{Blind SQL Injection},
+                :description => %q{SQL code can be injected into the web application.},
+                :cwe         => '89',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

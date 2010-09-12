@@ -481,7 +481,7 @@ class HTTP
     end
     
     def self.info
-      { 'Name' => 'HTTP' }
+      { :name => 'HTTP' }
     end
        
 end

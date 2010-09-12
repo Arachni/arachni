@@ -162,8 +162,8 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def self.info
         {
-            'Name'           => 'SimpleRFI',
-            'Description'    => %q{Simple Remote File Inclusion recon module},
+            :name           => 'SimpleRFI',
+            :description    => %q{Simple Remote File Inclusion recon module},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it. If a page doesn't have any of those elements
@@ -172,23 +172,23 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             # If you want the module to run no-matter what leave the array
             # empty or don't define it at all.
             # 
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
-            'Targets'        => { 'PHP' => 'all' },
+            :targets        => { 'PHP' => 'all' },
             
-            'Vulnerability'   => {
-                'Name'        => %q{Remote file inclusion},
-                'Description' => %q{A remote file inclusion vulnerability exists.},
-                'CWE'         => '94',
+            :vulnerability   => {
+                :name        => %q{Remote file inclusion},
+                :description => %q{A remote file inclusion vulnerability exists.},
+                :cwe         => '94',
                 #
                 # Severity can be:
                 #
@@ -197,10 +197,10 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 # Vulnerability::Severity::LOW
                 # Vulnerability::Severity::INFORMATIONAL
                 #
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '7.5',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2      => '7.5',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
             
         }

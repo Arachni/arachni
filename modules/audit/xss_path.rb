@@ -64,26 +64,25 @@ class XSSPath < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'XSSPath',
-            'Description'    => %q{Cross-Site Scripting module for path injection},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {
+            :name           => 'XSSPath',
+            :description    => %q{Cross-Site Scripting module for path injection},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{Cross-Site Scripting (XSS) in path},
-                'Description' => %q{Client-side code, like JavaScript, can
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{Cross-Site Scripting (XSS) in path},
+                :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
-                'CWE'         => '79',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '79',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

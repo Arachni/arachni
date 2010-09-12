@@ -90,22 +90,21 @@ class BackupFiles < Arachni::Module::Base
     
     def self.info
         {
-            'Name'           => 'BackupFiles',
-            'Description'    => %q{Tries to find sensitive backup files.},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.3',
-            'References'     => {},
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{A backup file exists on the server.},
-                'Description' => %q{},
-                'CWE'         => '530',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :name           => 'BackupFiles',
+            :description    => %q{Tries to find sensitive backup files.},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {},
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{A backup file exists on the server.},
+                :description => %q{},
+                :cew         => '530',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

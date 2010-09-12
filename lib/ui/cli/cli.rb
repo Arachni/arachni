@@ -232,38 +232,38 @@ class CLI
         mods.each {
             |info|
             
-            print_status( "#{info['mod_name']}:" )
+            print_status( "#{info[:mod_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info["Name"] )
-            print_line( "Description:\t"  + info["Description"] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
             
-            if( info["Elements"] && info["Elements"].size > 0 )
-            print_line( "HTML Elements:\t" +
-                info["Elements"].join( ', ' ).downcase )
+            if( info[:elements] && info[:elements].size > 0 )
+                print_line( "HTML Elements:\t" +
+                    info[:elements].join( ', ' ).downcase )
             end
             
-            if( info["Dependencies"] )
+            if( info[:dependencies] )
                 print_line( "Dependencies:\t" +
-                    info["Dependencies"].join( ', ' ).downcase )
+                    info[:dependencies].join( ', ' ).downcase )
             end
             
-            print_line( "Author:\t\t"     + info["Author"] )
-            print_line( "Version:\t"      + info["Version"] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
                 
             print_line( "References:" )
-            info["References"].keys.each {
+            info[:references].keys.each {
                 |key|
-                print_info( key + "\t\t" + info["References"][key] )
+                print_info( key + "\t\t" + info[:references][key] )
             }
             
             print_line( "Targets:" )
-            info["Targets"].keys.each {
+            info[:targets].keys.each {
                 |key|
-                print_info( key + "\t\t" + info["Targets"][key] )
+                print_info( key + "\t\t" + info[:targets][key] )
             }
             
-            print_line( "Path:\t"    + info['Path'] )
+            print_line( "Path:\t"    + info[:path] )
 
             i+=1
             
@@ -296,16 +296,16 @@ class CLI
         @arachni.lsrep().each {
             |info|
             
-            print_status( "#{info['rep_name']}:" )
+            print_status( "#{info[:rep_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info["Name"] )
-            print_line( "Description:\t"  + info["Description"] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
                 
-            if( info["Options"] && info["Options"].size > 0 )
+            if( info[:options] && info[:options].size > 0 )
                 print_line( "Options:\t" )
                 
-                info["Options"].each_pair {
+                info[:options].each_pair {
                     |option, info|
                     print_info( "\t#{option} - #{info[1]}" )
                     print_info( "\tValues: #{info[0]}" )
@@ -314,9 +314,9 @@ class CLI
                 }    
             end
             
-            print_line( "Author:\t\t"     + info["Author"] )
-            print_line( "Version:\t"      + info["Version"] )
-            print_line( "Path:\t"         + info['Path'] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
+            print_line( "Path:\t"         + info[:path] )
 
             i+=1
 
