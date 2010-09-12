@@ -157,7 +157,8 @@ class Framework
     #
     # Audits the site.
     #
-    # Runs the spider, analyzes each page and runs the loaded modules via (#run_mods}.
+    # Runs the spider, analyzes each page as it appears and passes it
+    # to (#run_mods} to be audited.
     #
     def audit
         pages = []
