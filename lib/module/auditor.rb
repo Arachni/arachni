@@ -314,10 +314,18 @@ module Auditor
 
                 if( input['altered'] == '__orig' )
                     orig_id = audit_id( url, input['hash'], opts,
-                      input['hash'].values | ['{__default_values__}'] )
+                      input['hash'].values | ['{__original_values__}'] )
                     next if audited?( orig_id )
                     audited( orig_id )
                 end
+
+                if( input['altered'] == '__arachni_defaults' )
+                    orig_id = audit_id( url, input['hash'], opts,
+                      input['hash'].values | ['{__sample_values__}'] )
+                    next if audited?( orig_id )
+                    audited( orig_id )
+                end
+
                 
                 # inform the user what we're auditing
                 print_status( get_status_str( url, input, opts ) )
@@ -569,7 +577,7 @@ module Auditor
             # this is the original hash, in case the default values
             # are valid and present us with new attack vectors
             as_is = Hash.new( )
-            as_is['altered'] = '__orig'
+            as_is['altered'] = '__original_values__'
             as_is['hash'] = hash.dup
     
             as_is['hash'].keys.each {
@@ -577,13 +585,21 @@ module Auditor
                 if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
             }
             var_combo << as_is
+            
+            duphash = hash.dup
+            arachni_defaults = Hash.new
+            arachni_defaults['hash'] = hash.dup
+            arachni_defaults['altered'] = '__sample_values__'
+            arachni_defaults['hash'] = KeyFiller.fill( duphash )
+            var_combo << arachni_defaults
+            
         end
 
         chash = hash.dup
         hash.keys.each {
             |k|
 
-            hash = KeyFiller.fill( hash )            
+            hash = KeyFiller.fill( hash )
             opts[:format].each {
                 |format|
                 
