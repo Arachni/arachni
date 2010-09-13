@@ -213,7 +213,7 @@ module Auditor
             print_status( get_status_str( url, vars, opts ) )
             
             # audit the url vars
-            req = @http.header( @page.url, vars['hash'] )
+            req = @http.header( @page.url, vars['hash'], opts[:train] )
 
             injected = vars['hash'][vars['altered']]
             on_complete( req, injected, vars, opts, &block )
@@ -271,7 +271,7 @@ module Auditor
                 print_status( get_status_str( url, vars, opts ) )
                 
                 # audit the url vars
-                req = @http.get( url, vars['hash'], opts[:train] )
+                req = @http.get( url, vars['hash'], nil, opts[:train] )
                 
                 injected = vars['hash'][vars['altered']]
                 on_complete( req, injected, vars, opts, &block )
@@ -414,7 +414,7 @@ module Auditor
             
                 print_status( get_status_str( url, cookie, opts ) )
 
-                req = @http.cookie( @page.url, cookie['hash'], nil )
+                req = @http.cookie( @page.url, cookie['hash'], nil, opts[:train] )
                 
                 injected = cookie['hash'][cookie['altered']]
                 on_complete( req, injected, cookie, opts, &block )
