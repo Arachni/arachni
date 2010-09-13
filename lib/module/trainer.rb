@@ -55,9 +55,11 @@ class Trainer
     # @return  [Page]
     #
     def page
-        if( @updated )
+        if( @updated  )
               @updated = false
-              return  @page.dup
+              # page = @page.dup
+              # @page = nil
+              return  @page
           else
               return nil
         end
@@ -101,7 +103,6 @@ class Trainer
             print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
         end
 
-          
         print_debug( 'Training complete.' )
     end
     

@@ -62,6 +62,7 @@ class Base
         
         @page  = page
         @http  = Arachni::Module::HTTP.instance
+        Arachni::Module::Trainer.instance.page = @page.dup
         
         # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )

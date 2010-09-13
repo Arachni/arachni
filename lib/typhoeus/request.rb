@@ -16,6 +16,7 @@ module Typhoeus
           @on_complete      = []
           @handled_response = []
           @multiple_callbacks = false
+          @train              = false
         end
     
         def on_complete(multi = false, &block)
@@ -49,6 +50,14 @@ module Typhoeus
           end
           
           call_after_complete
+        end
+        
+        def train?
+          @train
+        end
+        
+        def train!
+          @train = true
         end
         
     end

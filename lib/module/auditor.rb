@@ -31,6 +31,10 @@ module Auditor
     #
     @@audited ||= []
 
+    FORM_VALUES_ORIGINAL  = '__original_values__'
+    FORM_VALUES_SAMPLE    = '__sample_values__'
+    
+
     #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings. 
@@ -101,7 +105,17 @@ module Auditor
         # @see  Auditor::Format
         #
         :format   => [ Format::STRAIGHT, Format::APPEND,
-                       Format::NULL, Format::APPEND | Format::NULL ]
+                       Format::NULL, Format::APPEND | Format::NULL ],
+        
+        #
+        # If 'train' is set to true the HTTP response will be
+        # analyzed for new elements. <br/>
+        # Be carefull when enabling it, there'll be a performance penalty.
+        #
+        # When the Auditor submits a form with original or sample values
+        # this option will be overriden to true.
+        #
+        :train    => false
     }
     
     #
@@ -257,7 +271,7 @@ module Auditor
                 print_status( get_status_str( url, vars, opts ) )
                 
                 # audit the url vars
-                req = @http.get( url, vars['hash'] )
+                req = @http.get( url, vars['hash'], opts[:train] )
                 
                 injected = vars['hash'][vars['altered']]
                 on_complete( req, injected, vars, opts, &block )
@@ -311,31 +325,42 @@ module Auditor
             # iterate through each auditable element
             injection_sets( fields, injection_str, opts ).each {
                 |input|
-
-                if( input['altered'] == '__orig' )
-                    orig_id = audit_id( url, input['hash'], opts,
-                      input['hash'].values | ['{__original_values__}'] )
-                    next if audited?( orig_id )
-                    audited( orig_id )
-                end
-
-                if( input['altered'] == '__arachni_defaults' )
-                    orig_id = audit_id( url, input['hash'], opts,
-                      input['hash'].values | ['{__sample_values__}'] )
-                    next if audited?( orig_id )
-                    audited( orig_id )
-                end
-
                 
+                curr_opts = opts.dup
+                if( input['altered'] == FORM_VALUES_ORIGINAL )
+                    orig_id = audit_id( url, input['hash'], opts,
+                      input['hash'].values | ["{#{FORM_VALUES_ORIGINAL}}"] )
+                    next if audited?( orig_id )
+                    audited( orig_id )
+                    
+                    print_debug( 'Submitting form with original values;' +
+                        ' overriding trainer option.' )
+                    opts[:train] = true
+                    print_debug_trainer( opts )
+                end
+
+                if( input['altered'] == FORM_VALUES_SAMPLE )
+                    sample_id = audit_id( url, input['hash'], opts,
+                      input['hash'].values | ["{#{FORM_VALUES_SAMPLE}}"] )
+                    next if audited?( sample_id )
+                    audited( sample_id )
+                    
+                    print_debug( 'Submitting form with sample values;' +
+                        ' overriding trainer option.' )
+                    opts[:train] = true
+                    print_debug_trainer( opts )
+                end
+
+
                 # inform the user what we're auditing
                 print_status( get_status_str( url, input, opts ) )
 
                 if( method != 'get' )
-                    req = @http.post( url, input['hash'] )
+                    req = @http.post( url, input['hash'], opts[:train] )
                 else
-                    req = @http.get( url, input['hash'] )
+                    req = @http.get( url, input['hash'], opts[:train] )
                 end
-                
+                opts = curr_opts.dup
                 injected = input['hash'][input['altered']].to_s
                 
                 on_complete( req, injected, input, opts, &block )
@@ -577,7 +602,7 @@ module Auditor
             # this is the original hash, in case the default values
             # are valid and present us with new attack vectors
             as_is = Hash.new( )
-            as_is['altered'] = '__original_values__'
+            as_is['altered'] = FORM_VALUES_ORIGINAL
             as_is['hash'] = hash.dup
     
             as_is['hash'].keys.each {
@@ -589,7 +614,7 @@ module Auditor
             duphash = hash.dup
             arachni_defaults = Hash.new
             arachni_defaults['hash'] = hash.dup
-            arachni_defaults['altered'] = '__sample_values__'
+            arachni_defaults['altered'] = FORM_VALUES_SAMPLE
             arachni_defaults['hash'] = KeyFiller.fill( duphash )
             var_combo << arachni_defaults
             
@@ -646,6 +671,8 @@ module Auditor
     def print_debug_injection_set( var_combo, opts )
         return if !debug?
         
+        print_debug( )
+        print_debug_trainer( opts )
         print_debug_formatting( opts )
         print_debug_combos( var_combo )
     end
@@ -705,6 +732,10 @@ module Auditor
         print_debug( '------------' )
         print_debug( )
 
+    end
+    
+    def print_debug_trainer( opts )
+        print_debug( 'Trainer set to: ' + ( opts[:train] ? 'ON' : 'OFF' ) )
     end
     
 end

@@ -117,6 +117,7 @@ class HTTP
             print_debug( 'Method: ' + req.method  )
             print_debug( 'Params: ' + req.params.to_s  )
             print_debug( 'Headers: ' + req.headers.to_s  )
+            print_debug( 'Train?: ' + req.train?.to_s  )
             print_debug(  '------------' )
 
         }
@@ -130,17 +131,20 @@ class HTTP
             print_debug( 'Method: ' + res.request.method  )
             print_debug( 'Params: ' + res.request.params.to_s  )
             print_debug( 'Headers: ' + res.request.headers.to_s  )
+            print_debug( 'Train?: ' + res.request.train?.to_s  )
             print_debug( '------------' )
             
-            # handle redirections
-            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                req2 = get( redir, nil, true )
-                req2.on_complete {
-                    |res2|
-                    @@trainer.add_response( res2, true )
-                }
-            else
-                @@trainer.add_response( res )
+            if( req.train? )
+                # handle redirections
+                if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
+                    req2 = get( redir, nil, true )
+                    req2.on_complete {
+                        |res2|
+                        @@trainer.add_response( res2, true )
+                    }
+                else
+                    @@trainer.add_response( res )
+                end
             end
         }
     end
@@ -153,7 +157,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def get( url, params = {}, remove_id = false )
+    def get( url, params = {}, remove_id = false, train = false )
         params = { } if !params
         
         params = params.merge( { '__arachni__' => '' } ) if !remove_id 
@@ -172,6 +176,7 @@ class HTTP
             }.merge( @opts )
             
             req = Typhoeus::Request.new( url, opts )
+            req.train! if train
             
             queue( req )
             return req
@@ -187,7 +192,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def post( url, params = { } )
+    def post( url, params = { }, train = false )
 
         exception_jail {
             
@@ -199,7 +204,8 @@ class HTTP
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
-
+            req.train! if train
+            
             queue( req )
             return req
         }
@@ -214,7 +220,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def cookie( url, cookies, params = nil )
+    def cookie( url, cookies, params = nil, train = false )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
         
@@ -235,6 +241,7 @@ class HTTP
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
+            req.train! if train
             
             queue( req )
             return req
@@ -250,7 +257,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def header( url, headers, params = nil )
+    def header( url, headers, params = nil, train = false )
 
         # wrap the code in exception handling
         exception_jail {
@@ -263,6 +270,7 @@ class HTTP
                 :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 :params        => params )
+            req.train! if train
             
             @init_headers = orig_headers.clone
             
