@@ -168,24 +168,14 @@ class Framework
             | url, html, headers |
 
             page = analyze( url, html, headers )
-            
-            # if the user wants to run the modules against each page
-            # the crawler finds do it now...
-            if( !@opts.mods_run_last )
-                run_mods( page )
-            else
-                # ..else handle any interrupts that may occur... 
-                handle_interrupt( )
-                # ... and save the page data for later.
-                pages << page
-            end
-
+            run_mods( page )
+            handle_interrupt( )
         }
 
-        # if the user opted to run the modules after the crawl/analysis
-        # run the modules last.
-        pages.each { |page| run_mods( page ) } if( @opts.mods_run_last )
-            
+        if( @opts.http_harvest_last )
+            harvest_http_responses( )
+        end
+
     end
 
     #
@@ -603,16 +593,35 @@ class Framework
                          
         end
        
+        if( !@opts.http_harvest_last )
+            harvest_http_responses( )
+        end
+       
+    end
+    
+    def harvest_http_responses
        print_status( 'Harvesting HTTP responses...' )
        print_info( 'Depending on server responsiveness and network' + 
         ' conditions this may take a while.' )
        
-       # run all the queued HTTP requests
        Arachni::Module::HTTP.instance.run
        
-       # get an updated page from the {Trainer}
-       # and audit it recursively until no new elements appear
-       run_mods( Arachni::Module::Trainer.instance.page )
+       @page_queue ||= Queue.new
+       page = Arachni::Module::Trainer.instance.page
+       @page_queue << page if page
+           
+       while( !@page_queue.empty? && page = @page_queue.pop )
+           # get an updated page from the {Trainer}
+           # and audit it recursively until no new elements appear
+           run_mods( page )
+           # run all the queued HTTP requests
+           Arachni::Module::HTTP.instance.run
+       
+           page = Arachni::Module::Trainer.instance.page
+           @page_queue << page if page
+       
+       end
+
     end
     
     #

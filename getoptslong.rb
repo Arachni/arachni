@@ -47,7 +47,7 @@ opts = GetoptLong.new(
     [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
-    [ '--mods-run-last',     '-s', GetoptLong::NO_ARGUMENT ],
+    [ '--http-harvest-last',  '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -185,8 +185,8 @@ opts.each {
         when '--follow-subdomains'
             options.follow_subdomains = true
 
-        when '--mods-run-last'
-            options.mods_run_last = true
+        when '--http-harvest-last'
+            options.http_harvest_last = true
 
     end
 }

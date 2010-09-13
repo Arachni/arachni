@@ -422,21 +422,26 @@ class CLI
     -v                          be verbose
 
 USAGE
-#    --delay                     how long to wait between HTTP requests
-#                                  Time is set in seconds, you can use floating point.
 
         print_line <<USAGE 
-    --debug                     show debugging output
-    
+    --debug                     show what is happening internally
+                                  (you should give it a shot sometime ;) )
+                            
     --only-positives            echo positive results *only*
   
     --threads=<number>          how many threads to instantiate
                                   If no thread limit has been specified
                                     each module will run in its own thread.
-
+USAGE
+        print_line <<USAGE
     --http-req-limit            concurent HTTP requests limit
                                   Be carefull not to kill your server.
                                   (Default: 200)                                    
+
+    --http-harvest-last         build up the HTTP request queue for the whole site
+                                 and harvest the HTTP responses at the end.
+                                 (default: responses will be harvested for each page)
+
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
@@ -447,10 +452,10 @@ USAGE
                                   It'll make it easier on the sys-admins.
                                   (Will be appended to the user-agent string.)
     
-    --save-profile=<file>       saves the current run profile/options to <file>
+    --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: #{PROFILE_EXT})
                                   
-    --load-profile=<file>       loads a run profile from <file>
+    --load-profile=<file>       load a run profile from <file>
                                   (You can complement it with more options, except for:
                                       * --mods
                                       * --redundant)
@@ -513,19 +518,14 @@ USAGE
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (use '*' to deploy all modules)
     
-    --mods-run-last             run modules after the website has been analyzed
-                                  (default: modules are run on every page
-                                    encountered to minimize network latency.) 
-
-
     Reports ------------------------
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves the audit results in <file>
+    --repsave=<file>              save the audit results in <file>
                                     (The file will be saved with an extention of: #{@arachni.report_ext})               
     
-    --repload=<file>              loads audit results from <file>
+    --repload=<file>              load audit results from <file>
                                   and lets you create a new report
     
     --repopts=<option1>:<value>,<option2>:<value>,...
