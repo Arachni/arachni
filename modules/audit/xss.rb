@@ -14,7 +14,7 @@ module Modules
 module Audit
 
 #
-# XSS recon module.<br/>
+# XSS audit module.<br/>
 # It audits links, forms and cookies.
 #
 #
