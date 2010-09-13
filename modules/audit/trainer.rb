@@ -14,9 +14,11 @@ module Modules
 module Audit
 
 #
-# XSS recon module.<br/>
-# It audits links, forms and cookies.
 #
+# Pokes and probes all inputs of a given page in order to uncover
+# new input vectors.
+#
+# It also forces Arachni to train itself by analyzing the server responses.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -67,8 +69,8 @@ class Trainer < Arachni::Module::Base
     def self.info
         {
             :name           => 'Trainer',
-            :description    => %q{Pokes all inputs of a given page in order to
-                  uncover new input vectors.},
+            :description    => %q{Pokes and probes all inputs of a given page in order to uncover new input vectors.
+                It also forces Arachni to train itself by analyzing the server responses.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
