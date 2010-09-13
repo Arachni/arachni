@@ -50,7 +50,7 @@ class BackupFiles < Arachni::Module::Base
         path     = Module::Utilities.get_path( @page.url )
         
         if( !filename  )
-            print_debug( 'Backing out. ' + 
+            print_info( 'Backing out. ' + 
               'Can\'t extract filename from url: ' + @page.url )
             return
         end
@@ -158,7 +158,7 @@ class BackupFiles < Arachni::Module::Base
       
         return false if @@__audited.include?( url )
         
-        print_debug( "Checking for #{url}" )
+        print_status( "Checking for #{url}" )
         
         req  = @http.get( url )
         @@__audited << url

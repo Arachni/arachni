@@ -60,14 +60,14 @@ class CommonFiles < Arachni::Module::Base
             url  = path + file
 
             next if @@__audited.include?( url )
-            print_debug( "Checking for #{url}" )
+            print_status( "Checking for #{url}" )
 
             req  = @http.get( url )
             @@__audited << url
 
             req.on_complete {
                 |res|
-                print_debug( "Analyzing #{res.effective_url}" )
+                print_status( "Analyzing #{res.effective_url}" )
                 __log_results( res, file )
             }
         }

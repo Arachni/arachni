@@ -49,21 +49,20 @@ class CommonDirectories < Arachni::Module::Base
         
         path = Module::Utilities.get_path( @page.url )
 
-
         get_data_file( @__common_directories ) {
             |dirname|
             
             url  = path + dirname + '/'
             
             next if @@__audited.include?( url )
-            print_debug( "Checking for #{url}" )
+            print_status( "Checking for #{url}" )
             
             req  = @http.get( url )
             @@__audited << url
 
             req.on_complete {
                 |res|
-                print_debug( "Analyzing #{res.effective_url}" )
+                print_status( "Analyzing #{res.effective_url}" )
                 __log_results( res, dirname )
             }
         }
