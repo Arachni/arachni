@@ -36,27 +36,18 @@ class XSSURI < Arachni::Module::Base
     end
     
     def prepare( )
-        @__injection_strs = [
-            '/>\'><ScRiPt>a=/RANDOMIZE/</ScRiPt>',
-            '/>"><ScRiPt>a=/RANDOMIZE/</ScRiPt>',
-            '/>><ScRiPt>a=/RANDOMIZE/</ScRiPt>'
-        ]
+        @str = '/<arachni_xss_uri_' + Arachni::Module::Utilities.seed
     end
 
     def run( )
 
-        @__injection_strs.each {
-            |str|
+    url  = @page.url + @str
+    req  = @http.get( url )
             
-            url  = @page.url + str
-            req  = @http.get( url )
-            
-            req.on_complete {
-                |res|
-                
-                __log_results( res, str )
-            }
-        }
+    req.on_complete {
+        |res|
+        __log_results( res )
+    }
 
     end
 
@@ -87,22 +78,21 @@ class XSSURI < Arachni::Module::Base
         }
     end
     
-    def __log_results( res, id )
+    def __log_results( res )
 
-        regexp = Regexp.new( Regexp.escape( id ) )
+        regexp = Regexp.new( Regexp.escape( @str ) )
         
-        if ( id && res.body.scan( regexp )[0] == id ) ||
-           ( !id && res.body.scan( regexp )[0].size > 0 )
+        if ( res.body.scan( regexp )[0] == @str )
            
             url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
                 'url'          => url,
-                'injected'     => id,
-                'id'           => id,
+                'injected'     => @str,
+                'id'           => @str,
                 'regexp'       => regexp,
-                'regexp_match' => id,
+                'regexp_match' => @str,
                 'elem'         => Vulnerability::Element::LINK,
                 'response'     => res.body,
                 'headers'      => {

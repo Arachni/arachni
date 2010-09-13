@@ -36,10 +36,11 @@ class XSSPath < Arachni::Module::Base
     end
     
     def prepare( )
+        @str = '/<arachni_xss_path_' + Arachni::Module::Utilities.seed
         @__injection_strs = [
-            '<ScRIPT>a=/RANDOMIZE/<ScRipT>',
-            '?>"\'><ScRIPT>a=/RANDOMIZE/<ScRipT>',
-            '?=>"\'><ScRIPT>a=/RANDOMIZE/<ScRipT>'
+            @str,
+            '?>"\'>' + @str,
+            '?=>"\'>' + @str
         ]
     end
 
@@ -68,7 +69,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

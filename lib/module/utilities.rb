@@ -11,6 +11,7 @@
 module Arachni
 module Module
 
+
 #
 # Utilities class
 #
@@ -84,6 +85,10 @@ module Utilities
         # get what hasn't changed (the rdiff, so to speak) as a string
         return ( words1 - changes ).join( '' ) 
     
+    end
+  
+    def Utilities.seed
+        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
   
 end  
