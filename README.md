@@ -1,4 +1,4 @@
-Arachni - Web Application Vulnerability Scanning Framework
+Arachni - Web Application Security Scanner Framework
 ====================================
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
@@ -14,7 +14,7 @@ Synopsis
 {Arachni} is a feature-full and modular Ruby framework that allows
 penetration testers and administrators to evaluate the security of web applications.
  
-{Arachni} is smart, it trains itself with every HTTP response it receives
+{Arachni} is smart, it trains itself with by learning from the HTTP responses it receives
 during the audit process.<br/>
 Unlike other scanners, Arachni takes into account the dynamic
 nature of web applications and can detect changes caused while travelling<br/>
@@ -22,12 +22,7 @@ through the paths of a web application's cyclomatic complexity.<br/>
 This way attack/input vectors that would otherwise be undetectable by non-humans
 are seamlessly handled by Arachni.
 
-Moreover, Arachni yields great performance due to a combination of multi-threading <br/>
-and concurent asynchronous HTTP requests (courtesy of Typhoeus).
-
-*As an example:*
-Over the Internet (using a 6Mbit connection) Arachni can reach up to 900 requests per second. 
-
+Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).
 
 The project aims to:
 

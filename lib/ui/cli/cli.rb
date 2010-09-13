@@ -389,13 +389,14 @@ class CLI
     #
     def banner
 
-        print_line 'Arachni Web Application Security Scanner v' + @arachni.version + ' [' +
+        print_line 'Arachni - Web Application Security Scanner Framework v' + @arachni.version + ' [' +
             @arachni.revision + '] initiated.
        Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
-                (With the support of the Arachni Team)
+                With the support of the community and the Arachni Team
                 
-       Website: http://github.com/Zapotek/arachni'
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki'
         print_line
         print_line
 
