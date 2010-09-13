@@ -603,6 +603,10 @@ class Framework
                          
         end
        
+       print_status( 'Harvesting HTTP responses...' )
+       print_info( 'Depending on server responsiveness and network' + 
+        ' conditions this may take a while.' )
+       
        # run all the queued HTTP requests
        Arachni::Module::HTTP.instance.run
        
