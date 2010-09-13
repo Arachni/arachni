@@ -77,6 +77,11 @@ class Trainer
         
         print_debug( 'Started...' )
         
+        if( res[0].body == @page.html )
+            print_debug( 'Page body hasn\'t changed, skipping...' )
+            return
+        end
+        
         forms, form_cnt = train_forms( res[0] )
         links, link_cnt = train_links( res[0], res[1] )
         
@@ -101,6 +106,19 @@ class Trainer
             @updated = true
             
             print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        end
+        
+        if( @updated )
+          
+            @page.html = res[0].body.dup
+           
+            @page.url  = URI.parse( URI.encode( @page.url ) ).
+                merge( URI.parse( res[0].effective_url ) ).to_s
+            
+            @page.request_headers = res[0].request.headers
+
+            @page.query_vars = @analyzer.get_link_vars( @page.url ).dup
+
         end
 
         print_debug( 'Training complete.' )
@@ -132,7 +150,7 @@ class Trainer
                 'href' => @analyzer.url,
                 'vars' => @analyzer.get_link_vars( @analyzer.url )
             } )
-
+            
         end
         
         return update_links( links )
