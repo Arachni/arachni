@@ -600,24 +600,34 @@ class Framework
     end
     
     def harvest_http_responses
+      
        print_status( 'Harvesting HTTP responses...' )
        print_info( 'Depending on server responsiveness and network' + 
         ' conditions this may take a while.' )
        
+       # run all the queued HTTP requests and harvest the responses
        Arachni::Module::HTTP.instance.run
        
        @page_queue ||= Queue.new
-       page = Arachni::Module::Trainer.instance.page
-       @page_queue << page if page
-           
-       while( !@page_queue.empty? && page = @page_queue.pop )
-           # get an updated page from the {Trainer}
-           # and audit it recursively until no new elements appear
-           run_mods( page )
-           # run all the queued HTTP requests
-           Arachni::Module::HTTP.instance.run
        
+       # try to get an updated page from the Trainer
+       page = Arachni::Module::Trainer.instance.page
+       
+       # if there was an updated page push it in the queue
+       @page_queue << page if page
+       
+       # this will run until no new elements appear for the given page
+       while( !@page_queue.empty? && page = @page_queue.pop )
+          
+           # audit the page
+           run_mods( page )
+         
+           # run all the queued HTTP requests and harvest the responses
+           Arachni::Module::HTTP.instance.run
+           
+           # check to see if the page was updated
            page = Arachni::Module::Trainer.instance.page
+           # and push it in the queue to be audited as well
            @page_queue << page if page
        
        end
