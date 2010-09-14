@@ -426,7 +426,7 @@ USAGE
 
         print_line <<USAGE 
     --debug                     show what is happening internally
-                                  (you should give it a shot sometime ;) )
+                                  (You should give it a shot sometime ;) )
                             
     --only-positives            echo positive results *only*
 
@@ -437,18 +437,20 @@ USAGE
     #                                 each module will run in its own thread.
         print_line <<USAGE
     --http-req-limit            concurent HTTP requests limit
-                                  Be carefull not to kill your server.
+                                  (Be carefull not to kill your server.)
                                   (Default: 200)
                                   (NOTE: If your scan seems unresponsive try lowering the limit.)
 
-    --http-harvest-last         build up the HTTP request queue for the whole site
-                                 and harvest the HTTP responses at the end.
-                                 (default: responses will be harvested for each page)
+    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
+                                 and harvest the HTTP responses at the end of the crawl.
+                                 (Default: responses will be harvested for each page)
                                  (NOTE: If you are scanning a high-end server and
                                    you are using a powerful machine with enough bandwidth
                                    *and* you feel dangerous you can use
                                    this flag with an increased '--http-req-limit'
                                    to get maximum performance out of your scan.)
+                                 (WARNING: When scanning large websites with hundreads
+                                  of pages this could eat up all your memory pretty quickly.)
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
@@ -456,7 +458,7 @@ USAGE
     --user-agent=<user agent>   specify user agent
     
     --authed-by=<who>           who authorized the scan, include name and e-mail address
-                                  It'll make it easier on the sys-admins.
+                                  (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
     
     --save-profile=<file>       save the current run profile/options to <file>
@@ -488,7 +490,7 @@ USAGE
     --obey-robots-txt           obey robots.txt file (default: off)
     
     --depth=<number>            depth limit (default: inf)
-                                  How deep Arachni should go into the site structure.
+                                  (How deep Arachni should go into the site structure.)
                                   
     --link-count=<number>       how many links to follow (default: inf)                              
     
@@ -508,7 +510,7 @@ USAGE
     --audit-cookies             audit cookies (COOKIE)
   
     --exclude-cookie=<name>     cookies not to audit
-                                  You should exclude session cookies.
+                                  (You should exclude session cookies.)
                                   (Can be used multiple times.)
     
     --audit-headers             audit HTTP headers
@@ -517,7 +519,7 @@ USAGE
     Modules ------------------------
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
-                                  If no regexp is provided all modules will be listed.
+                                  (If no regexp is provided all modules will be listed.)
                                   (Can be used multiple times.)
   
       
@@ -533,14 +535,14 @@ USAGE
                                     (The file will be saved with an extention of: #{@arachni.report_ext})               
     
     --repload=<file>              load audit results from <file>
-                                  and lets you create a new report
+                                  (Allows you to create a new reports from old/finished scans.)
     
     --repopts=<option1>:<value>,<option2>:<value>,...
                                   Set options for the selected reports.
                                   (One invocation only, options will be applied to all loaded reports.)
                                   
     --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
-                                  (default: stdout)
+                                  (Default: stdout)
                                   (Can be used multiple times.)
                                   
                                   
@@ -551,7 +553,7 @@ USAGE
     --proxy-auth=<user:passwd>  specify proxy auth credentials
     
     --proxy-type=<type>         proxy type can be either socks or http
-                                  (default: http)
+                                  (Default: http)
     
   
 USAGE

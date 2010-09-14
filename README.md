@@ -13,7 +13,7 @@ Synopsis
 --------
 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
-penetration testers and administrators to evaluate the security of web applications.
+penetration testers and administrators evaluate the security of web applications.
  
 {Arachni} is smart, it trains itself with by learning from the HTTP responses it receives
 during the audit process.<br/>
@@ -52,7 +52,7 @@ That's pretty much all you are expected and need to do...
 A glance at an existing report or module will be all you need to get you going.
 
 Users just need to take a look at the help output.<br/>
-However, extensive documentation exists as well for those who want to be aware of all the details.
+However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists as well for those who want to be aware of all the details.
 
 Feature List
 ------------
