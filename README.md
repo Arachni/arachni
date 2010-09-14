@@ -23,12 +23,12 @@ through the paths of a web application's cyclomatic complexity.<br/>
 This way attack/input vectors that would otherwise be undetectable by non-humans
 are seamlessly handled by Arachni.
 
-Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).
+Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).<br/>
 Thus, you'll only be limited by the responsivenes of the server under audit and your available bandwidth.
 
-The project offers:
+{Arachni} offers:
 
-**1 A stable and efficient framework**<br/>
+**1 A stable, efficient, high-performance framework**<br/>
 
 Module and report writers are allowed to easily and quickly create and deploy modules
 with the minimum amount of restrictions imposed upon them, while provided
@@ -51,7 +51,8 @@ There are only a couple of rules a developer needs to follow:
 That's pretty much all you are expected and need to do...
 A glance at an existing report or module will be all you need to get you going.
 
-Users just need to take a look at the help output and they are good to go!
+Users just need to take a look at the help output.<br/>
+However, extensive documentation exists as well for those who want to be aware of all the details.
 
 Feature List
 ------------
@@ -75,7 +76,7 @@ Feature List
  
 ** Website Crawler ** ({Arachni::Spider})
 
-The crawler is provided by [Anemone](http://anemone.rubyforge.org/) with some slight modifications to accommodate extra features.
+The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some slight modifications to accommodate extra features.
 
  - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
  - URL exclusion filter based on regular expressions.
@@ -130,6 +131,17 @@ You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
 And a more complex HTML report here: {Arachni::Reports::HTML} 
 
+**  Trainer subsystem ** ({Arachni::Module::Trainer})
+
+The Trainer is what enables Arachni to learn from the scan it performs,<br/>
+and incorporate that knowledge on the fly for the duration of the audit.
+
+Modules have the ability to individually force the Framework to learn from the HTTP responses they are
+going to induce.
+However, this usually not required since Arachni is aware of which requests are more likely<br/>
+to uncover new elements or attack vectors and adapts itself accordingly.
+
+Still, this can be an invaluable asset to Fuzzer modules.
 
 Usage
 -----
@@ -143,12 +155,12 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
        Documentation: http://github.com/Zapotek/arachni/wiki
 
 
-  Usage:  arachni [options] url
+Usage:  arachni [options] url
   
-  Supported options:
+Supported options:
     
   
-    **General**
+**General**
   
     -h
     --help                      output this
@@ -192,7 +204,7 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
                                       * --redundant)
                                   
     
-    **Crawler**
+**Crawler**
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
@@ -238,7 +250,7 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
     --audit-headers             audit HTTP headers
                                   
                                   
-    **Modules**
+**Modules**
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
                                   If no regexp is provided all modules will be listed.
@@ -249,7 +261,7 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (use '*' to deploy all modules)
     
-    **Reports**
+**Reports**
     
     --lsrep                       list available reports
     
@@ -268,7 +280,7 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
                                   (Can be used multiple times.)
                                   
                                   
-    **Proxy**
+**Proxy**
     
     --proxy=<server:port>       specify proxy
     
@@ -310,7 +322,7 @@ Requirements
   * Yardoc (if you want to generate the documentation)
     - sudo gem install yard
 
-sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+  sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
 Supported platforms
 ----
