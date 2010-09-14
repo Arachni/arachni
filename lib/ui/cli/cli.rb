@@ -25,7 +25,7 @@ module UI
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 # @see Arachni::Framework
 #
 class CLI
@@ -429,20 +429,26 @@ USAGE
                                   (you should give it a shot sometime ;) )
                             
     --only-positives            echo positive results *only*
-  
-    --threads=<number>          how many threads to instantiate
-                                  If no thread limit has been specified
-                                    each module will run in its own thread.
+
 USAGE
+
+    # --threads=<number>          how many threads to instantiate
+    #                               If no thread limit has been specified
+    #                                 each module will run in its own thread.
         print_line <<USAGE
     --http-req-limit            concurent HTTP requests limit
                                   Be carefull not to kill your server.
-                                  (Default: 200)                                    
+                                  (Default: 200)
+                                  (NOTE: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue for the whole site
                                  and harvest the HTTP responses at the end.
                                  (default: responses will be harvested for each page)
-
+                                 (NOTE: If you are scanning a high-end server and
+                                   you are using a powerful machine with enough bandwidth
+                                   *and* you feel dangerous you can use
+                                   this flag with an increased '--http-req-limit'
+                                   to get maximum performance out of your scan.)
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
