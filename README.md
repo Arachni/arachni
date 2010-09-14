@@ -26,6 +26,10 @@ are seamlessly handled by Arachni.
 Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).<br/>
 Thus, you'll only be limited by the responsivenes of the server under audit and your available bandwidth.
 
+Note: Despite the fact that Arachni is mostly targeted towards web application security,
+it can easily be used for general purpose scaping, data-mining, etc with the addition of custom modules.
+
+
 {Arachni} offers:
 
 **1 A stable, efficient, high-performance framework**<br/>
@@ -54,9 +58,6 @@ A glance at an existing report or module will be all you need to get you going.
 Users just need to take a look at the help output.<br/>
 However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists as well for those who want to be aware of all the details.
 
-Finally, despite the fact that Arachni is targeted towards web application security,
-it can easily be used for general purpose scaping, data-mining, etc with the addition of custom modules.
- 
 
 Feature List
 ------------
