@@ -133,20 +133,20 @@ And a more complex HTML report here: {Arachni::Reports::HTML}
 
 **  Trainer subsystem ** ({Arachni::Module::Trainer})
 
-The Trainer is what enables Arachni to learn from the scan it performs,<br/>
-and incorporate that knowledge on the fly for the duration of the audit.
+The Trainer is what enables Arachni to learn from the scan it performs
+and incorporate that knowledge, on the fly, for the duration of the audit.
 
 Modules have the ability to individually force the Framework to learn from the HTTP responses they are
-going to induce.
-However, this usually not required since Arachni is aware of which requests are more likely<br/>
-to uncover new elements or attack vectors and adapts itself accordingly.
+going to induce.<br/>
+However, this usually not required since Arachni is aware of which requests are more likely
+to uncover new elements or attack vectors and will adapt itself accordingly.
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
 Usage
 -----
 
-Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
+       Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
        Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
                 With the support of the community and the Arachni Team
@@ -155,9 +155,9 @@ Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
        Documentation: http://github.com/Zapotek/arachni/wiki
 
 
-Usage:  arachni [options] url
-  
-Supported options:
+      Usage:  arachni [options] url
+      
+      Supported options:
     
   
 **General**
@@ -168,23 +168,25 @@ Supported options:
     -v                          be verbose
 
     --debug                     show what is happening internally
-                                  (you should give it a shot sometime ;) )
+                                  (You should give it a shot sometime ;) )
                             
     --only-positives            echo positive results *only*
 
     --http-req-limit            concurent HTTP requests limit
-                                  Be carefull not to kill your server.
+                                  (Be carefull not to kill your server.)
                                   (Default: 200)
                                   (NOTE: If your scan seems unresponsive try lowering the limit.)
 
-    --http-harvest-last         build up the HTTP request queue for the whole site
-                                 and harvest the HTTP responses at the end.
-                                 (default: responses will be harvested for each page)
+    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
+                                 and harvest the HTTP responses at the end of the crawl.
+                                 (Default: responses will be harvested for each page)
                                  (NOTE: If you are scanning a high-end server and
                                    you are using a powerful machine with enough bandwidth
                                    *and* you feel dangerous you can use
                                    this flag with an increased '--http-req-limit'
                                    to get maximum performance out of your scan.)
+                                 (WARNING: When scanning large websites with hundreads
+                                  of pages this could eat up all your memory pretty quickly.)
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
@@ -192,7 +194,7 @@ Supported options:
     --user-agent=<user agent>   specify user agent
     
     --authed-by=<who>           who authorized the scan, include name and e-mail address
-                                  It'll make it easier on the sys-admins.
+                                  (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
     
     --save-profile=<file>       save the current run profile/options to <file>
@@ -224,14 +226,14 @@ Supported options:
     --obey-robots-txt           obey robots.txt file (default: off)
     
     --depth=<number>            depth limit (default: inf)
-                                  How deep Arachni should go into the site structure.
+                                  (How deep Arachni should go into the site structure.)
                                   
     --link-count=<number>       how many links to follow (default: inf)                              
     
     --redirect-limit=<number>   how many redirects to follow (default: inf)
   
     
-    **Auditor**
+**Auditor**                                
                                   
     -g
     --audit-links               audit link variables (GET)
@@ -244,7 +246,7 @@ Supported options:
     --audit-cookies             audit cookies (COOKIE)
   
     --exclude-cookie=<name>     cookies not to audit
-                                  You should exclude session cookies.
+                                  (You should exclude session cookies.)
                                   (Can be used multiple times.)
     
     --audit-headers             audit HTTP headers
@@ -253,7 +255,7 @@ Supported options:
 **Modules**
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
-                                  If no regexp is provided all modules will be listed.
+                                  (If no regexp is provided all modules will be listed.)
                                   (Can be used multiple times.)
   
       
@@ -269,14 +271,14 @@ Supported options:
                                     (The file will be saved with an extention of: .afr)               
     
     --repload=<file>              load audit results from <file>
-                                  and lets you create a new report
+                                  (Allows you to create a new reports from old/finished scans.)
     
     --repopts=<option1>:<value>,<option2>:<value>,...
                                   Set options for the selected reports.
                                   (One invocation only, options will be applied to all loaded reports.)
                                   
     --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
-                                  (default: stdout)
+                                  (Default: stdout)
                                   (Can be used multiple times.)
                                   
                                   
@@ -287,7 +289,7 @@ Supported options:
     --proxy-auth=<user:passwd>  specify proxy auth credentials
     
     --proxy-type=<type>         proxy type can be either socks or http
-                                  (default: http)
+                                  (Default: http)
                                   
     
 **Example**
@@ -308,21 +310,22 @@ Requirements
     
   * ruby1.9.1 or later
   * Nokogiri
-    - sudo gem install nokogiri
+    - gem install nokogiri
   * Anemone
-    - sudo gem install anemone
+    - gem install anemone
   * Typhoeus
-    - sudo gem install typhoeus
+    - gem install typhoeus
   * Sockify
-    - sudo gem install socksify
+    - gem install socksify
   * Awesome print
-    - sudo gem install awesome_print
+    - gem install awesome_print
   * Liquid (For {Arachni::Reports::HTML} reporting)
-    - sudo gem install liquid
+    - gem install liquid
   * Yardoc (if you want to generate the documentation)
-    - sudo gem install yard
+    - gem install yard
 
-  sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+Run the following to install all dependencies:
+  gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
 Supported platforms
 ----
