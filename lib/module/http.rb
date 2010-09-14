@@ -67,9 +67,16 @@ class HTTP
     # @param  [String]  url  start URL
     #
     def initialize( )
-      
-        req_limit = Options.instance.http_req_limit
-        @@hydra ||= Typhoeus::Hydra.new( :max_concurrency => req_limit )
+        opts = Options.instance
+        req_limit = opts.http_req_limit
+        @@hydra ||= Typhoeus::Hydra.new(
+            :max_concurrency               => req_limit,
+            :disable_ssl_peer_verification => true,
+            :username                      => opts.url.user,
+            :password                      => opts.url.password,
+            :method                        => :auto
+        )
+          
         @@hydra.disable_memoization
         
         @@lock ||= Mutex.new
