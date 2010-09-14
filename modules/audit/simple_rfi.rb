@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html    
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -136,8 +136,21 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # This is used to deliver the module's payload whatever it may be.
     #
     def run( )
+      
         print_debug(  'In run()' )
-
+        
+        #
+        # You don't actually need to audit links,forms and cookies
+        # individually and you don't need any of the user defined methods.
+        #
+        # You can simply do:
+        #   audit( @__injection_url, @__opts )
+        #
+        # and be done with it.
+        # 
+        # All the stuff is here only to give you a feel for module writting.
+        #
+        
         __audit_links()
         __audit_forms( )
         __audit_cookies()
@@ -178,12 +191,12 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
-            :targets        => { 'PHP' => 'all' },
+            :targets        => { 'Generic' => 'all' },
             
             :vulnerability   => {
                 :name        => %q{Remote file inclusion},
