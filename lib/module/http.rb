@@ -257,8 +257,9 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def header( url, headers, params = nil, train = false )
-
+    def header( url, headers, params = { }, train = false )
+        
+        params = {} if !params
         # wrap the code in exception handling
         exception_jail {
             

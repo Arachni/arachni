@@ -213,7 +213,7 @@ module Auditor
             print_status( get_status_str( url, vars, opts ) )
             
             # audit the url vars
-            req = @http.header( @page.url, vars['hash'], opts[:train] )
+            req = @http.header( @page.url, vars['hash'], nil, opts[:train] )
 
             injected = vars['hash'][vars['altered']]
             on_complete( req, injected, vars, opts, &block )
