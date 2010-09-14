@@ -1,5 +1,6 @@
 Arachni - Web Application Security Scanner Framework
 ====================================
+**Version**:     0.2<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
@@ -11,7 +12,7 @@ Arachni - Web Application Security Scanner Framework
 Synopsis
 --------
 
-{Arachni} is a feature-full and modular Ruby framework that allows
+{Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators to evaluate the security of web applications.
  
 {Arachni} is smart, it trains itself with by learning from the HTTP responses it receives
@@ -23,34 +24,34 @@ This way attack/input vectors that would otherwise be undetectable by non-humans
 are seamlessly handled by Arachni.
 
 Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).
+Thus, you'll only be limited by the responsivenes of the server under audit and your available bandwidth.
 
-The project aims to:
+The project offers:
 
-**1 Provide a stable and efficient framework**<br/>
-Developers should be allowed to easily and quickly create and deploy modules
+**1 A stable and efficient framework**<br/>
+
+Module and report writers are allowed to easily and quickly create and deploy modules
 with the minimum amount of restrictions imposed upon them, while provided
 with the necessary infrastructure to accomplish their goals.<br/>
-Module writers should be able to take full advantage of the Ruby language
+Furthermore, they are encouraged to take full advantage of the Ruby language
 under a unified framework that will increase their productivity
 without stifling them or complicating their tasks.<br/>
-Basically, give them the right tools for the job and get the hell out of their way.
+Basically, Arachni gives you the right tools for the job and gets the hell out of your way.
  
-**2 Be simple**<br/>
-Well, not simple in general...some parts of the framework are fairly complex.<br/>
-However, the module and report APIs are very similar and very simple.<br/>
-There are only a couple of rules you should follow:
+**2 Simplicity**<br/>
+Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
+From a user's or a module developer's point of view everything appears simple and straight-forward
+all the while retaining and providing power, performance and flexibility.
+
+There are only a couple of rules a developer needs to follow:
 
 - Implement an abstract class
-- Do your thing
+- Do his thing
 
-That's pretty much all...
+That's pretty much all you are expected and need to do...
+A glance at an existing report or module will be all you need to get you going.
 
-**3 Be developer and user friendly**<br/>
-Users should be able to make the most out of Arachni without being confused or
-overwhelmed.<br/>
-Developers unfamiliar with the framework should be able to write working modules
-and reports immediately after a small glance at an existing one.
-
+Users just need to take a look at the help output and they are good to go!
 
 Feature List
 ------------
@@ -64,17 +65,12 @@ Feature List
     - SOCKS support is kindly provided by [socksify](http://socksify.rubyforge.org/).
  - Proxy authentication.
  - Site authentication.
- - Local DNS cache limits name resolution queries.
- - Custom output lib.
-    - The system uses its own print wrappers to output messages.<br/>
-    Will make it easier to implement other UIs in the future.
- - Highlighted command line output, Metasploit style.
- - Run mods last option.
-    - Allows to run the modules after site analysis has concluded.
+ - Highlighted command line output.
+ - Total control over the scanning process.
  - UI abstraction.
-    - Only {Arachni::UI::CLI} for the time being but WebUI & GUI are relatively easy to implement now.
- - Traps Ctrl-C interrupt.
+ - Pause/resume functionality.
     - Interrupts pause the system, the user then has the option to either resume or exit.
+ - High performance asynchronous HTTP requests.
   
  
 ** Website Crawler ** ({Arachni::Spider})
@@ -120,10 +116,9 @@ This way the system can be extended to be able to handle virtually anything.
     - For forms, links and cookies.
     - Writing RFI, SQL injection, XSS etc mods is a matter of minutes if not seconds.
  - Helper {Arachni::Module::HTTP} interface
-    - A pretty and easy to use Net::HTTP wrapper.
- - Multi-threaded module execution with adjustable thread count.
+    - A high-performance, simple and easy to use Typhoeus wrapper.
 
-You can find an tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
+You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 
 **  Report Management ** ({Arachni::Report})
 
@@ -139,25 +134,45 @@ And a more complex HTML report here: {Arachni::Reports::HTML}
 Usage
 -----
 
+Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
+       Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
+                                           <tasos.laskos@gmail.com>
+                With the support of the community and the Arachni Team
+                
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki
+
+
   Usage:  arachni [options] url
   
   Supported options:
     
   
-**General**
+    **General**
   
     -h
     --help                      output this
     
     -v                          be verbose
 
-    --debug                     show debugging output
-    
+    --debug                     show what is happening internally
+                                  (you should give it a shot sometime ;) )
+                            
     --only-positives            echo positive results *only*
-  
-    --threads=<number>          how many threads to instantiate
-                                  If no thread limit has been specified
-                                    each module will run in its own thread.
+
+    --http-req-limit            concurent HTTP requests limit
+                                  Be carefull not to kill your server.
+                                  (Default: 200)
+                                  (NOTE: If your scan seems unresponsive try lowering the limit.)
+
+    --http-harvest-last         build up the HTTP request queue for the whole site
+                                 and harvest the HTTP responses at the end.
+                                 (default: responses will be harvested for each page)
+                                 (NOTE: If you are scanning a high-end server and
+                                   you are using a powerful machine with enough bandwidth
+                                   *and* you feel dangerous you can use
+                                   this flag with an increased '--http-req-limit'
+                                   to get maximum performance out of your scan.)
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
@@ -168,16 +183,16 @@ Usage
                                   It'll make it easier on the sys-admins.
                                   (Will be appended to the user-agent string.)
     
-    --save-profile=<file>       saves the current run profile/options to <file>
+    --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: .afp)
                                   
-    --load-profile=<file>       loads a run profile from <file>
+    --load-profile=<file>       load a run profile from <file>
                                   (You can complement it with more options, except for:
                                       * --mods
                                       * --redundant)
                                   
     
-**Crawler**
+    **Crawler**
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
@@ -204,7 +219,7 @@ Usage
     --redirect-limit=<number>   how many redirects to follow (default: inf)
   
     
-**Auditor**
+    **Auditor**
                                   
     -g
     --audit-links               audit link variables (GET)
@@ -221,9 +236,9 @@ Usage
                                   (Can be used multiple times.)
     
     --audit-headers             audit HTTP headers
-  
-    
-**Modules**
+                                  
+                                  
+    **Modules**
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
                                   If no regexp is provided all modules will be listed.
@@ -234,19 +249,14 @@ Usage
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (use '*' to deploy all modules)
     
-    --mods-run-last             run modules after the website has been analyzed
-                                  (default: modules are run on every page
-                                    encountered to minimize network latency.) 
-
-
-**Reports**
+    **Reports**
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves the audit results in <file>
+    --repsave=<file>              save the audit results in <file>
                                     (The file will be saved with an extention of: .afr)               
     
-    --repload=<file>              loads audit results from <file>
+    --repload=<file>              load audit results from <file>
                                   and lets you create a new report
     
     --repopts=<option1>:<value>,<option2>:<value>,...
@@ -258,7 +268,7 @@ Usage
                                   (Can be used multiple times.)
                                   
                                   
-**Proxy**
+    **Proxy**
     
     --proxy=<server:port>       specify proxy
     
@@ -296,9 +306,11 @@ Requirements
   * Awesome print
     - sudo gem install awesome_print
   * Liquid (For {Arachni::Reports::HTML} reporting)
-    - sudo gem install liquid  
+    - sudo gem install liquid
   * Yardoc (if you want to generate the documentation)
+    - sudo gem install yard
 
+sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
 Supported platforms
 ----
