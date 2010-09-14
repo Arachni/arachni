@@ -54,6 +54,10 @@ A glance at an existing report or module will be all you need to get you going.
 Users just need to take a look at the help output.<br/>
 However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists as well for those who want to be aware of all the details.
 
+Finally, despite the fact that Arachni is targeted towards web application security,
+it can easily be used for general purpose scaping, data-mining, etc with the addition of custom modules.
+ 
+
 Feature List
 ------------
 
