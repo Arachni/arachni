@@ -204,9 +204,21 @@ module Auditor
         audit_id = audit_id( url, get_headers( ), opts, injection_str )
         return if audited?( audit_id )
 
+        headers = {
+            'accept'          => 'text/html,application/xhtml+xml,application' +
+                '/xml;q=0.9,*/*;q=0.8',
+            'accept-charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+            'accept-language' => 'en-gb,en;q=0.5',
+            'accept-encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'from'       => Options.instance.authed_by,
+            'user-agent' => Options.instance.user_agent,
+            'referer'    => @page.url,
+            'pragma'     => 'no-cache'
+        }
+
         results = []
         # iterate through header fields and audit each one
-        injection_sets( get_headers( ), injection_str, opts ).each {
+        injection_sets( headers, injection_str, opts ).each {
             |vars|
 
             # inform the user what we're auditing

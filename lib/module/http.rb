@@ -85,11 +85,14 @@ class HTTP
         @trainer = Arachni::Module::Trainer.instance
         @trainer.http = self
         
-        @init_headers               = Hash.new
-        @init_headers['cookie']     = ''
+        @init_headers = {
+          'cookie'      => '',
+          'from'       => opts.authed_by
+        }
+
         
         @opts = {
-            :user_agent      => Options.instance.user_agent,
+            :user_agent      => opts.user_agent,
             :follow_location => false
         }
 
