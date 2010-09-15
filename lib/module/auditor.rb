@@ -452,10 +452,14 @@ module Auditor
     def on_complete( req, injected_str, input, opts, &block )
         req.on_complete {
             |res |
-            print_status( 'Analyzing response...' )
             
             # make sure that we have a response before continuing
-            if !res then next end
+            if !res
+                print_error( 'Failed to get responses, backing out... ' )
+                next
+            else
+                print_status( 'Analyzing response #' + res.request.id.to_s + '...' )
+            end
                 
             opts[:injected] = injected_str.to_s
             # call the block, if there's one
@@ -555,7 +559,7 @@ module Auditor
     def audit_id( url, input, opts, injection_str )
         
         vars = input.keys.sort.to_s
-        return "#{self.class.info['Name']}:" +
+        return "#{self.class.info[:name]}:" +
           "#{url}:" + "#{opts[:element]}:" + 
           "#{vars}=#{injection_str.to_s}"
     end

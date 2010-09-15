@@ -75,17 +75,27 @@ class Trainer
     #
     def analyze( res )
         
-        print_debug( 'Started...' )
+        print_debug( 'Started for response with request ID: #' + 
+          res[0].request.id.to_s )
         
-        if( res[0].body == @page.html )
-            print_debug( 'Page body hasn\'t changed, skipping...' )
+
+        cookies, cookie_cnt = train_cookies( res[0] )
+        if ( cookie_cnt > 0 )
+            @page.elements['cookies'] = cookies.flatten
+            @updated = true
+            
+            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        end
+        
+        # if the response body is the same as the page body and
+        # no new cookies have appeared there's no reason to analyze the page
+        if( res[0].body == @page.html && !@updated )
+            print_debug( 'Page hasn\'t changed, skipping...' )
             return
         end
         
         forms, form_cnt = train_forms( res[0] )
         links, link_cnt = train_links( res[0], res[1] )
-        
-        cookies, cookie_cnt = train_cookies( res[0] )
         
         if ( form_cnt > 0 )
             @page.elements['forms'] = forms.flatten
@@ -99,13 +109,6 @@ class Trainer
             @updated = true
             
             print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
-        end
-        
-        if ( cookie_cnt > 0 )
-            @page.elements['cookies'] = cookies.flatten
-            @updated = true
-            
-            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
         end
         
         if( @updated )

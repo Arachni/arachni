@@ -128,10 +128,20 @@ class Framework
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
         
+        audit_store = audit_store_get( )
+        
+        req_cnt = Arachni::Module::HTTP.instance.request_count
+        msg = 'Sent and analyzed ' + req_cnt.to_s + ' requests ' +
+          'in ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).'
+        
+        avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
+        print_info( msg )
+        print_info( avg )
+        
         # run reports
         if( @opts.reports )
             begin
-                run_reps( audit_store_get( ).clone )
+                run_reps( audit_store.clone )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )

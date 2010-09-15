@@ -443,6 +443,7 @@ USAGE
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
                                  and harvest the HTTP responses at the end of the crawl.
+                                 (In some test cases this option has split the scan time in half.)
                                  (Default: responses will be harvested for each page)
                                  (NOTE: If you are scanning a high-end server and
                                    you are using a powerful machine with enough bandwidth

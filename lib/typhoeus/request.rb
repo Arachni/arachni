@@ -3,10 +3,15 @@
 # Override the on_complete methods of Typhoeus adding support
 # for multiple on_complete blocks.
 #
+# Also added support for on demand training of the response and
+# incremental request id numbers.
+#
 module Typhoeus
   
     class Request
     
+        attr_accessor :id
+        
         alias :old_initialize :initialize
     
         def initialize( url, options = {} )

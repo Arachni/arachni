@@ -60,6 +60,8 @@ class HTTP
     #
     attr_reader :cookie_jar
     
+    attr_reader :request_count
+    
     #
     # Initializes the HTTP session given a start URL respecting
     # system wide settings for HTTP basic auth and proxy
@@ -69,7 +71,7 @@ class HTTP
     def initialize( )
         opts = Options.instance
         req_limit = opts.http_req_limit
-        @@hydra ||= Typhoeus::Hydra.new(
+        @hydra ||= Typhoeus::Hydra.new(
             :max_concurrency               => req_limit,
             :disable_ssl_peer_verification => true,
             :username                      => opts.url.user,
@@ -77,13 +79,11 @@ class HTTP
             :method                        => :auto
         )
           
-        @@hydra.disable_memoization
-        
-        @@lock ||= Mutex.new
+        @hydra.disable_memoization
         
         @trainers = []
-        @@trainer = Arachni::Module::Trainer.instance
-        @@trainer.http = self
+        @trainer = Arachni::Module::Trainer.instance
+        @trainer.http = self
         
         @init_headers               = Hash.new
         @init_headers['cookie']     = ''
@@ -94,7 +94,8 @@ class HTTP
         }
 
         @__not_found  = nil
-
+        
+        @request_count = 0
     end
     
     #
@@ -104,7 +105,7 @@ class HTTP
     # after all module threads have beed joined!
     #
     def run
-        @@hydra.run
+        @hydra.run
     end
     
     #
@@ -114,26 +115,30 @@ class HTTP
     # @param  [Tyhpoeus::Request]  req  the request to queue
     #
     def queue( req )
-        @@lock.synchronize {
-            @last_url = req.url
-            @@hydra.queue( req )
+        
+        req.id = @request_count
+        @last_url = req.url
+        
+        @hydra.queue( req )
 
-            print_debug( '------------' )
-            print_debug( 'Queued request.' )
-            print_debug( 'URL: ' + req.url )
-            print_debug( 'Method: ' + req.method.to_s  )
-            print_debug( 'Params: ' + req.params.to_s  )
-            print_debug( 'Headers: ' + req.headers.to_s  )
-            print_debug( 'Train?: ' + req.train?.to_s  )
-            print_debug(  '------------' )
+        @request_count += 1
 
-        }
-          
+        print_debug( '------------' )
+        print_debug( 'Queued request.' )
+        print_debug( 'ID#: ' + req.id.to_s )
+        print_debug( 'URL: ' + req.url )
+        print_debug( 'Method: ' + req.method.to_s  )
+        print_debug( 'Params: ' + req.params.to_s  )
+        print_debug( 'Headers: ' + req.headers.to_s  )
+        print_debug( 'Train?: ' + req.train?.to_s  )
+        print_debug(  '------------' )
+
         req.on_complete( true ) {
             |res|
             
             print_debug( '------------' )
             print_debug( 'Got response.' )
+            print_debug( 'Request ID#: ' + res.request.id.to_s )
             print_debug( 'URL: ' + res.effective_url )
             print_debug( 'Method: ' + res.request.method.to_s  )
             print_debug( 'Params: ' + res.request.params.to_s  )
@@ -147,10 +152,10 @@ class HTTP
                     req2 = get( redir, nil, true )
                     req2.on_complete {
                         |res2|
-                        @@trainer.add_response( res2, true )
+                        @trainer.add_response( res2, true )
                     }
                 else
-                    @@trainer.add_response( res )
+                    @trainer.add_response( res )
                 end
             end
         }
@@ -477,9 +482,8 @@ class HTTP
         print_debug( 'Backtrace: ' )
         print_debug_backtrace( e )
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-        print_debug( 'HTTP session:' )
-        # print_debug_pp( @hydra )
-#        print_debug( YAML::dump( @session ) )
+        print_debug( 'Hydra session:' )
+        print_debug_pp( @hydra )
         print_error( 'Proceeding anyway... ' )
     end
     
