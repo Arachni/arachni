@@ -37,7 +37,6 @@ module Recon
 class ExtractObjects < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         # in this case we don't need to call the parent

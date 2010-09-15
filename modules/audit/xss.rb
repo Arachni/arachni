@@ -30,7 +30,6 @@ module Audit
 class XSS < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )

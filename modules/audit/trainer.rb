@@ -29,7 +29,6 @@ module Audit
 class Trainer < Arachni::Module::Base
 
     include Arachni::Module::Registrar
-    include Arachni::UI::Output
 
     def initialize( page )
         super( page )
