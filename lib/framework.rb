@@ -135,8 +135,10 @@ class Framework
           'in ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).'
         
         avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
+        print_line
         print_info( msg )
         print_info( avg )
+        print_line
         
         # run reports
         if( @opts.reports )
@@ -162,6 +164,10 @@ class Framework
             end
         end
         
+        print_line
+        print_info( msg )
+        print_info( avg )
+        print_line
     end
     
     #
