@@ -122,13 +122,13 @@ module Auditor
     # Provides easy access to all audit methods.
     #
     # If no elements have been specified in 'opts' it will
-    # use the elements in {#self.info}. <br/>
-    # If no elements have been specified in 'opts' or {#self.info} it will
-    # use the elements in {#OPTIONS}. <br/>
+    # use the elements from the module's "self.info()" hash. <br/>
+    # If no elements have been specified in 'opts' or "self.info()" it will
+    # use the elements in {OPTIONS}. <br/>
     #
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {#OPTIONS}
+    # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                    o HTTP response
     #                                    o name of the input vector
@@ -182,7 +182,7 @@ module Auditor
     # Audits HTTP header fields.
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {#OPTIONS}
+    # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                    o HTTP response
     #                                    o name of the input vector
@@ -243,7 +243,7 @@ module Auditor
     # Audits all the links found in the page.
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {#OPTIONS}
+    # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                    o HTTP response
     #                                    o name of the input vector
@@ -303,7 +303,7 @@ module Auditor
     # Audits all the forms found in the page.
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {#OPTIONS}
+    # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                    o HTTP response
     #                                    o name of the input vector
@@ -393,7 +393,7 @@ module Auditor
     # Audits page cookies.
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {#OPTIONS}
+    # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                    o HTTP response
     #                                    o name of the input vector
