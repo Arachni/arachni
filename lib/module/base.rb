@@ -39,7 +39,7 @@ class Base
     #
     # Arachni::HTTP instance for the modules
     #
-    # @return [Arachni::HTTP]
+    # @return [Arachni::Module::HTTP]
     #
     attr_reader :http
 
