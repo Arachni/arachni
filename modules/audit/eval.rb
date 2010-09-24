@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -51,14 +51,18 @@ class Eval < Arachni::Module::Base
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
         
-        # the sum of the 2 numbers as a string
-        @__rand  =  (287630581954 + 4196403186331128).to_s
-        
         # our results array
         @results = []
     end
 
     def prepare( )
+        
+        @__opts = {}
+        
+        # the sum of the 2 numbers as a string
+        @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
+        @__opts[:regexp]  = Regexp.new( @__opts[:match] )
+
         
         # code to be injected to the webapp
         @__injection_strs = [
@@ -68,6 +72,14 @@ class Eval < Arachni::Module::Base
             "Response.Write\x28" +  @__rand1  + '+' + @__rand2 + "\x29", # ASP
             "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
+        
+        tmp = []
+        @__injection_strs.each {
+            |str|
+            tmp << '; ' + str
+        }
+        @__injection_strs |= tmp
+        
     end
     
     def run( )
@@ -75,61 +87,41 @@ class Eval < Arachni::Module::Base
         # iterate through the injection codes
         @__injection_strs.each {
             |str|
-            
-            # audit forms and add the results to the results array
-            audit_forms( str, Regexp.new( @__rand ), @__rand ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
-            # audit links and add the results to the results array    
-            audit_links( str, Regexp.new( @__rand ), @__rand ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
-            # audit cookies and add the results to the results array
-            audit_cookies( str, Regexp.new( @__rand ), @__rand ).each {
-                |res|
-                @results << Vulnerability.new( res.merge( self.class.info ) )
-            }
-            
+            audit( str, @__opts )            
         }
         
-        # register our results with the system
-        register_results( @results )
     end
 
     
     def self.info
         {
-            'Name'           => 'Eval',
-            'Description'    => %q{eval() recon module. Tries to inject code
+            :name           => 'Eval',
+            :description    => %q{eval() recon module. Tries to inject code
                 into the web application.},
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
                 'Python' => 'http://docs.python.org/py3k/library/functions.html#eval',
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
              },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Code injection},
-                'Description' => %q{Code can be injected into the web application.},
-                'CWE'         => '94',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '7.5',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :vulnerability   => {
+                :name        => %q{Code injection},
+                :description => %q{Code can be injected into the web application.},
+                :cwe         => '94',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '7.5',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

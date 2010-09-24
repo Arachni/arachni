@@ -25,7 +25,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html    
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -101,19 +101,18 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         # but it's good practice to prefix your attributes and methods
         # with 2 underscores ( @__foo_attr, __foo_meth() )
         #
-
+        @__opts = {}
+        @__opts[:regexp] = /<title>Google<\/title>/ixm
+        
         # this is our RFI id signature, we'll look for it
         # in the HTTP response body
         #
-            @__rfi_id_regex = /<title>Google<\/title>/ixm
-            @__rfi_id = '<title>Google</title>'
-#        @__rfi_id_regex = /d3612e6ae8c17e46fa8592c8bdb8f2f3/ixm
-#        @__rfi_id = 'd3612e6ae8c17e46fa8592c8bdb8f2f3'
+        @__opts[:match]  = '<title>Google</title>'
 
         # inject this url to asses RFI
-            @__injection_url = 'hTtP://google.com'
-#        @__injection_url = 'http://localhost/zapotek/fis/file.txt'
+        @__injection_url = 'hTtP://google.com'
 
+        
         #
         # the module can be made to detect XSS and many other kinds 
         # of attack just as easily if you adjust the above attributes
@@ -137,8 +136,21 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # This is used to deliver the module's payload whatever it may be.
     #
     def run( )
+      
         print_debug(  'In run()' )
-
+        
+        #
+        # You don't actually need to audit links,forms and cookies
+        # individually and you don't need any of the user defined methods.
+        #
+        # You can simply do:
+        #   audit( @__injection_url, @__opts )
+        #
+        # and be done with it.
+        # 
+        # All the stuff is here only to give you a feel for module writting.
+        #
+        
         __audit_links()
         __audit_forms( )
         __audit_cookies()
@@ -154,16 +166,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def clean_up( )
         print_debug( 'In clean_up()' )
-
-        #
-        # REQUIRED
-        #
-        # Register our results with the ModuleRegistry
-        # via the ModuleRegistrar.
-        #
-        # Doesn't *have* to be in clean_up().
-        #
-        register_results( @results )
     end
 
     #
@@ -173,8 +175,8 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def self.info
         {
-            'Name'           => 'SimpleRFI',
-            'Description'    => %q{Simple Remote File Inclusion recon module},
+            :name           => 'SimpleRFI',
+            :description    => %q{Simple Remote File Inclusion recon module},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it. If a page doesn't have any of those elements
@@ -183,23 +185,23 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             # If you want the module to run no-matter what leave the array
             # empty or don't define it at all.
             # 
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.2',
+            :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
             },
-            'Targets'        => { 'PHP' => 'all' },
+            :targets        => { 'Generic' => 'all' },
             
-            'Vulnerability'   => {
-                'Name'        => %q{Remote file inclusion},
-                'Description' => %q{A remote file inclusion vulnerability exists.},
-                'CWE'         => '94',
+            :vulnerability   => {
+                :name        => %q{Remote file inclusion},
+                :description => %q{A remote file inclusion vulnerability exists.},
+                :cwe         => '94',
                 #
                 # Severity can be:
                 #
@@ -208,10 +210,10 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 # Vulnerability::Severity::LOW
                 # Vulnerability::Severity::INFORMATIONAL
                 #
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '7.5',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2      => '7.5',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
             
         }
@@ -249,20 +251,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_links for documentation.
         #
-        audit_links( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
-            |res|
-
-            #
-            # create a vulnerability and add it to the results array
-            #
-            # the return hash of audit methods conviniently
-            # holds part of the hash that is expected by Vulnerability.new()
-            #
-            # to complete the hash we merge it with the module's
-            # class method info()
-            #
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
+        audit_links( @__injection_url, @__opts )
     end
 
     def __audit_forms(  )
@@ -273,10 +262,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_forms for documentation.
         #        
-         audit_forms( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
-             |res|
-             @results << Vulnerability.new( res.merge( self.class.info ) )
-         }
+         audit_forms( @__injection_url, @__opts )
     end
 
     def __audit_cookies( )
@@ -287,10 +273,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         # Look in Arachni::Module::Base#audit_cookies for documentation.
         #
-        audit_cookies( @__injection_url, @__rfi_id_regex, @__rfi_id ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
+        audit_cookies( @__injection_url, @__opts )
     end
 
 end

@@ -23,7 +23,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -46,7 +46,7 @@ class CommonDirectories < Arachni::Module::Base
     def run( )
 
         print_status( "Scanning..." )
-
+        
         path = Module::Utilities.get_path( @page.url )
 
         get_data_file( @__common_directories ) {
@@ -55,39 +55,37 @@ class CommonDirectories < Arachni::Module::Base
             url  = path + dirname + '/'
             
             next if @@__audited.include?( url )
-            print_debug( "Checking for #{url}" )
+            print_status( "Checking for #{url}" )
             
-            res  = @http.get( url )
+            req  = @http.get( url )
             @@__audited << url
 
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, dirname, url )
-            end 
+            req.on_complete {
+                |res|
+                print_status( "Analyzing #{res.effective_url}" )
+                __log_results( res, dirname )
+            }
         }
 
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     def self.info
         {
-            'Name'           => 'CommonDirectories',
-            'Description'    => %q{Tries to find common directories on the server.},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {},
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{A common directory exists on the server.},
-                'Description' => %q{},
-                'CWE'         => '538',
-                'Severity'    => Vulnerability::Severity::MEDIUM,
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :name           => 'CommonDirectories',
+            :description    => %q{Tries to find common directories on the server.},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {},
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{A common directory exists on the server.},
+                :description => %q{},
+                :cwe         => '538',
+                :severity    => Vulnerability::Severity::MEDIUM,
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }
@@ -101,8 +99,11 @@ class CommonDirectories < Arachni::Module::Base
     # @param  [String]  dirname   the discovered dirname 
     # @param  [String]  url   the url of the discovered file
     #
-    def __log_results( res, dirname, url )
+    def __log_results( res, dirname )
         
+        return if( res.code != 200 || @http.custom_404?( res.body ) )
+        
+        url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
@@ -114,13 +115,17 @@ class CommonDirectories < Arachni::Module::Base
             'elem'         => Vulnerability::Element::LINK,
             'response'     => res.body,
             'headers'      => {
-                'request'    => 'n/a',
-                'response'   => 'n/a',    
+                'request'    => res.request.headers,
+                'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
                 
         # inform the user that we have a match
         print_ok( "Found #{dirname} at " + url )
+        
+        # register our results with the system
+        register_results( @results )
+
     end
 
 end

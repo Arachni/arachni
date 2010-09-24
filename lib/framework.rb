@@ -43,12 +43,12 @@ module Arachni
 #
 # It's the brains of the operation, it bosses the rest of the classes around.<br/>
 # It runs the audit, loads modules and reports and runs them according to
-# the supplied options.
+# user options.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.4
 #
 class Framework
 
@@ -60,10 +60,10 @@ class Framework
     include Arachni::UI::Output
     
     # the universal system version
-    VERSION      = '0.1.1'
+    VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.2'
+    REVISION     = '0.1.4'
     
     # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
@@ -76,7 +76,7 @@ class Framework
     attr_reader :opts
 
     #
-    # Initializes all the system components.
+    # Initializes system components.
     #
     # @param    [Options]    opts
     #
@@ -103,6 +103,7 @@ class Framework
         # deep copy the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = deep_clone( @opts.redundant )
+        
     end
 
     #
@@ -127,10 +128,22 @@ class Framework
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
         
+        audit_store = audit_store_get( )
+        
+        req_cnt = Arachni::Module::HTTP.instance.request_count
+        msg = 'Sent and analyzed ' + req_cnt.to_s + ' requests ' +
+          'in ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).'
+        
+        avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
+        print_line
+        print_info( msg )
+        print_info( avg )
+        print_line
+        
         # run reports
         if( @opts.reports )
             begin
-                run_reps( audit_store_get( ).clone )
+                run_reps( audit_store.clone )
             rescue Exception => e
                 print_error( e.to_s )
                 print_debug_backtrace( e )
@@ -151,12 +164,17 @@ class Framework
             end
         end
         
+        print_line
+        print_info( msg )
+        print_info( avg )
+        print_line
     end
     
     #
     # Audits the site.
     #
-    # Runs the spider, analyzes each page and runs the loaded modules.
+    # Runs the spider, analyzes each page as it appears and passes it
+    # to (#run_mods} to be audited.
     #
     def audit
         pages = []
@@ -166,24 +184,14 @@ class Framework
             | url, html, headers |
 
             page = analyze( url, html, headers )
-            
-            # if the user wants to run the modules against each page
-            # the crawler finds do it now...
-            if( !@opts.mods_run_last )
-                run_mods( page )
-            else
-                # ..else handle any interrupts that may occur... 
-                handle_interrupt( )
-                # ... and save the page data for later.
-                pages << page
-            end
-
+            run_mods( page )
+            handle_interrupt( )
         }
 
-        # if the user opted to run the modules after the crawl/analysis
-        # do it now.
-        pages.each { |page| run_mods( page ) } if( @opts.mods_run_last )
-            
+        if( @opts.http_harvest_last )
+            harvest_http_responses( )
+        end
+
     end
 
     #
@@ -363,7 +371,7 @@ class Framework
     # Converts a saved AuditStore to a report.
     #
     # It basically loads a serialized AuditStore,<br/>
-    # passes it to a the loaded Reports and runs the reports.
+    # passes it to a the loaded Reports and runs the reports via {#run_reps}.
     #
     # @param [String]  file  location of the saved AuditStore
     #
@@ -373,7 +381,7 @@ class Framework
     end
 
     #
-    # Saves an AuditStore instance in file
+    # Saves an AuditStore instance in 'file'
     #
     # @param    [String]    file
     #
@@ -419,25 +427,25 @@ class Framework
             @modreg.mod_load( mod_name )
     
             info = @modreg.mod_info( i )
+
+            info[:mod_name]    = mod_name
+            info[:name]        = info[:name].strip
+            info[:description] = info[:description].strip
             
-            info["mod_name"]    = mod_name
-            info["Name"]        = info["Name"].strip
-            info["Description"] = info["Description"].strip
-            
-            if( !info["Dependencies"] )
-                info["Dependencies"] = []
+            if( !info[:dependencies] )
+                info[:dependencies] = []
             end
             
-            info["Author"]    = info["Author"].strip
-            info["Version"]   = info["Version"].strip 
-            info["Path"]      = path['path'].strip
+            info[:author]    = info[:author].strip
+            info[:version]   = info[:version].strip 
+            info[:path]      = path['path'].strip
             
             i+=1
             
             mod_info << info
         }
         
-        # clean the registry inloading all modules
+        # clean the registry unloading all modules
         Arachni::Module::Registry.clean( )
         
         return mod_info
@@ -462,8 +470,8 @@ class Framework
 
             info = @repreg.info( i )
 
-            info["rep_name"]    = rep_name
-            info["Path"]        = path['path'].strip
+            info[:rep_name]    = rep_name
+            info[:path]        = path['path'].strip
             
             i+=1
             
@@ -482,7 +490,7 @@ class Framework
     end
 
     #
-    # Returns the SVN revision of the framework
+    # Returns the revision of the {Framework} (this) class
     #
     # @return    [String]
     #
@@ -537,12 +545,13 @@ class Framework
     end
     
     #
-    # It handles Ctrl+C interrupts
+    # Handles Ctrl+C interrupts
     #
     # Once an interrupt has been trapped the system pauses and waits
     # for user input. <br/>
     # The user can either continue or exit.
     #
+    # The interrupt will be handled after a module has finished.
     #
     def handle_interrupt( )
         
@@ -564,72 +573,85 @@ class Framework
     end
     
     #
-    # Takes care of module execution and threading
+    # Takes care of page audit and module execution
+    #
+    # It will audit one page at a time as discovered by the spider <br/>
+    # and recursively check for new elements that may have <br/>
+    # appeared during the audit.
+    #
+    # When no new elements appear the recursion will stop and a new page<br/>
+    # will be accepted.
     #
     # @see Page
     #
     # @param    [Page]    page
     #
     def run_mods( page )
-
-        # if there's no thread count specified run each module
-        # in it's own thread.
-        if( !@opts.threads )
-            @opts.threads = ls_loaded_mods.size
-        end
+        return if !page
         
-        # create a queue that'll hold the modules to run
-        mod_queue = Queue.new
-        # start a new thread for every module in the queue
-        # while obeying the thread-count limit. 
-        @threads = ( 1..@opts.threads ).map {
-            |i|
-            
-            # create a new thread...
-            Thread.new( mod_queue ) {
-                |q|
-                # get a module from the queue until all queue items have been
-                # consumed
-                until( q == ( curr_mod = q.deq ) )
-                    
-                    # save some time by deciding if the module is worth running
-                    if( !run_module?( curr_mod , page ) )
-                        print_verbose( 'Skipping ' + curr_mod.to_s +
-                            ', nothing to audit.' )
-                        next
-                    end
-
-                    print_debug( )
-                    print_debug( 'Thread-' + i.to_s + " " + curr_mod.inspect )
-                    print_debug( )
-                    
-                    # tell the user which module is about to be run...
-                    print_status( curr_mod.to_s )
-                    # ... and run it.
-                    
-                    run_mod( curr_mod, deep_clone( page ) )
-                    while( handle_interrupt(  ) )
-                    end
-                     
-                end
-            }
-        }
-        
-        # enque the loaded mods
         for mod in ls_loaded_mods
-            mod_queue.enq mod
-        end
-        
-        # send terminators down the queue
-        @threads.size.times { mod_queue.enq mod_queue }
-        
-        # wait for threads to finish
-        @threads.each { |t| t.join }
+                    
+            # save some time by deciding if the module is worth running
+            if( !run_module?( mod , page ) )
+                print_verbose( 'Skipping ' + mod.to_s +
+                    ', nothing to audit.' )
+                next
+            end
+    
+            # tell the user which module is about to be run...
+            print_status( mod.to_s )
+            # ... and run it.
+            run_mod( mod, deep_clone( page ) )
             
+            # handle trapped interrupts
+            while( handle_interrupt(  ) )
+            end
+                         
+        end
+       
+        if( !@opts.http_harvest_last )
+            harvest_http_responses( )
+        end
+       
+    end
+    
+    def harvest_http_responses
+      
+       print_status( 'Harvesting HTTP responses...' )
+       print_info( 'Depending on server responsiveness and network' + 
+        ' conditions this may take a while.' )
+       
+       # run all the queued HTTP requests and harvest the responses
+       Arachni::Module::HTTP.instance.run
+       
+       @page_queue ||= Queue.new
+       
+       # try to get an updated page from the Trainer
+       page = Arachni::Module::Trainer.instance.page
+       
+       # if there was an updated page push it in the queue
+       @page_queue << page if page
+       
+       # this will run until no new elements appear for the given page
+       while( !@page_queue.empty? && page = @page_queue.pop )
+          
+           # audit the page
+           run_mods( page )
+         
+           # run all the queued HTTP requests and harvest the responses
+           Arachni::Module::HTTP.instance.run
+           
+           # check to see if the page was updated
+           page = Arachni::Module::Trainer.instance.page
+           # and push it in the queue to be audited as well
+           @page_queue << page if page
+       
+       end
+
     end
     
     #
-    # Runs a module and passes it the page_data and structure.<br/>
+    # Passes a page to the module and runs it.<br/>
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
@@ -639,10 +661,11 @@ class Framework
     #
     def run_mod( mod, page )
         begin
+          
             # instantiate the module
             mod_new = mod.new( page )
             
-            # run the methods specified in the module API
+            # run the methods specified by the module API
             
             # optional
             mod_new.prepare   if mod.method_defined?( 'prepare' )
@@ -652,6 +675,7 @@ class Framework
             
             # optional
             mod_new.clean_up  if mod.method_defined?( 'clean_up' )
+            
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
@@ -711,7 +735,8 @@ class Framework
         ls_loaded_reps.each_with_index {
             |report, i|
 
-            # choose a default report name
+            # if the user hasn't selected a filename for the report
+            # choose one for him
             if( !@opts.repsave || @opts.repsave.size == 0 )
                 @opts.repsave =
                     URI.parse( audit_store.options['url'] ).host +
@@ -749,9 +774,6 @@ class Framework
                     @opts.cookies =
                         Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
 
-#                when 'delay'
-#                    @opts[:delay] = Float.new( @opts[:delay] ) 
-
             end
         end
 
@@ -788,9 +810,7 @@ class Framework
         end
 
         #
-        # Try and parse URL.
-        # If it fails inform the user of that fact and
-        # give him some approriate examples.
+        # Try and parse the URL.
         #
         begin
             require 'uri'
@@ -817,7 +837,7 @@ class Framework
 #            @opts[:proxy_port] = nil
 #        end
 
-        # make sure the provided cookie-jar file exists
+        # make sure that the provided cookie-jar file exists
         if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar +

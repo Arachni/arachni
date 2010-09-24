@@ -11,6 +11,7 @@
 module Arachni
 module Module
 
+
 #
 # Utilities class
 #
@@ -33,7 +34,12 @@ module Utilities
     def Utilities.get_path( url )
         filename = File.basename( URI( url ).path )
         regexp = filename + '(.*)'
-        return  url.gsub( Regexp.new( regexp ), '' )
+        path = url.gsub( Regexp.new( regexp ), '' )
+        if( path == 'http:' || path == 'https:' )
+            return url
+        else
+            return path
+        end
     end
     
     #
@@ -79,6 +85,10 @@ module Utilities
         # get what hasn't changed (the rdiff, so to speak) as a string
         return ( words1 - changes ).join( '' ) 
     
+    end
+  
+    def Utilities.seed
+        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
   
 end  

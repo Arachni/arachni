@@ -21,7 +21,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Options
 
@@ -132,6 +132,13 @@ class Options
     # @return    [Integer]
     #
     attr_accessor :threads
+    
+    #
+    # How many concurrent HTTP requests?
+    #
+    # @return    [Integer]
+    #
+    attr_accessor :http_req_limit
     
     #
     # Should Arachni audit links?
@@ -307,11 +314,12 @@ class Options
     attr_accessor :follow_subdomains
     
     #
-    # Run the modules after the crawl/analysis?
+    # Harvest the HTTP responses for the whole site at the end or
+    # for each page?
     #
     # @return    [Bool]
     #
-    attr_accessor :mods_run_last
+    attr_accessor :http_harvest_last
     
     # to be populated by the framework
     attr_accessor :start_datetime

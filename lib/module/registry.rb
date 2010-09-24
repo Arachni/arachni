@@ -131,7 +131,7 @@ class Registry
                 info =  mod.info
                 
                 if( mod.methods.index( :deps ) ) 
-                    info = info.merge( { 'Dependencies' => mod.deps } )
+                    info = info.merge( { :dependencies => mod.deps } )
                 end
                 
                 return info
@@ -250,7 +250,7 @@ class Registry
     # @param    [Array]
     #
     def Registry.register_results( results )
-        @@module_results += results
+        @@module_results |= results
     end
 
     #

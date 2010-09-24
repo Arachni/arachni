@@ -22,7 +22,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/20.html    
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -55,61 +55,44 @@ class ResponseSplitting < Arachni::Module::Base
     
     def run( )
         
-        # try to inject the header via the forms of the page
+        # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit_forms( @__header ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::FORM, var, res, url )
+        audit( @__header ) {
+            |res, var, opts|
+            __log_results( opts, var, res )
         }
-        
-        # try to inject the header via the link variables
-        # and pass a block that will check for a positive result        
-        audit_links( @__header ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::LINK, var, res, url )
-        }
-        
-        # try to inject the header via cookies
-        # and pass a block that will check for a positive result
-        audit_cookies( @__header ) {
-            |url, res, var|
-            __log_results( Vulnerability::Element::COOKIE, var, res, url )
-        }
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     
     def self.info
         {
-            'Name'           => 'ResponseSplitting',
-            'Description'    => %q{Response Splitting recon module.
+            :name           => 'ResponseSplitting',
+            :description    => %q{Response Splitting recon module.
                 Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header. 
             },
-            'Elements'       => [
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
-            'Targets'        => { 'Generic' => 'all' },
+            :targets        => { 'Generic' => 'all' },
                 
-            'Vulnerability'   => {
-                'Name'        => %q{Response splitting},
-                'Description' => %q{The web application includes user input
+            :vulnerability   => {
+                :name        => %q{Response splitting},
+                :description => %q{The web application includes user input
                      in the response HTTP header.},
-                'CWE'         => '20',
-                'Severity'    => Vulnerability::Severity::MEDIUM,
-                'CVSSV2'       => '5.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '20',
+                :severity    => Vulnerability::Severity::MEDIUM,
+                :cvssv2       => '5.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }
@@ -117,9 +100,10 @@ class ResponseSplitting < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, url )
-        if res.get_fields( 'X-CRLF-Safe' )
-        
+    def __log_results( opts, var, res )
+        if res.headers['X-CRLF-Safe']
+          
+            url = res.effective_url
             @results << Vulnerability.new( {
                     'var'          => var,
                     'url'          => url,
@@ -127,16 +111,19 @@ class ResponseSplitting < Arachni::Module::Base
                     'id'           => 'x-crlf-safe',
                     'regexp'       => 'n/a',
                     'regexp_match' => 'n/a',
-                    'elem'         => where,
+                    'elem'         => opts[:element],
                     'response'     => res.body,
                     'headers'      => {
-                        'request'    => get_request_headers( ),
-                        'response'   => get_response_headers( res ),    
+                        'request'    => res.request.headers,
+                        'response'   => res.headers,    
                     }
                 }.merge( self.class.info )
             )
 
-            print_ok( "In #{where} var '#{var}' ( #{url} )" )
+            print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
+            
+            # register our results with the system
+            register_results( @results )
         end
     end
 

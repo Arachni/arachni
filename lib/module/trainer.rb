@@ -9,66 +9,167 @@
 =end
 
 require Arachni::Options.instance.dir['lib'] + 'module/element_db'
+require Arachni::Options.instance.dir['lib'] + 'module/output'
 
 module Arachni
 module Module
 
 #
-# Trainer module
+# Trainer class
 #
-# Included by {Module::Base}.<br/>
-# Includes trainer methods used to updated the HTML elements in case any<br/>
-# new elements appear dynamically during the audit.
+# Analyzes all HTTP responses looking for new auditable elements.
 #
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
-module Trainer
-
+class Trainer
+    
+    include Output
     include ElementDB
+    include Singleton
 
-    #
-    # This is used to train Arachni.
-    #
-    # It will be called to analyze every HTTP response during the audit,<br/>
-    # detect any changes our input may have caused to the web app<br/>
-    # and make the module aware of new attack vectors that may present themselves.
-    #
-    # @param    [Net::HTTPResponse]  res    the HTTP response
-    # @param    [String]    url     provide a new url in case our request
-    #                                 caused a redirection
-    #
-    def train( res, url = nil )
+    attr_writer   :page
+    attr_accessor :http
 
-        opts = Options.instance
-        analyzer = Analyzer.new( opts )
-
-        analyzer.url = @page.url.clone
-
-        if( url )
-            analyzer.url = URI( @page.url ).
-            merge( URI( URI.escape( url ) ) ).to_s
-        end
-
-        links   = analyzer.get_links( res.body ).clone if opts.audit_links
-        forms   = analyzer.get_forms( res.body ).clone if opts.audit_forms
-        cookies = analyzer.get_cookies( res.to_hash['set-cookie'].to_s ).clone
-
-        if( url && opts.audit_links )
-            links.push( {
-                'href' => analyzer.url,
-                'vars' => analyzer.get_link_vars( analyzer.url )
-            } )
-        end
-
-        update_forms( forms ) if opts.audit_forms
-        update_links( links ) if opts.audit_links
-        update_cookies( cookies )
-
+    def initialize
+      @opts     = Options.instance
+      @analyzer = Analyzer.new( @opts )
+      @updated = false
     end
 
+    #
+    # Passes the reponse to {#analyze} for analysis
+    #
+    # @param  [Typhoeus::Response]  res
+    # @param  [Bool]  redir  was the response forcing a redirection?
+    #
+    def add_response( res, redir = false )
+        analyze( [ res, redir ] )
+    end
+    
+    #
+    # Returns an updated {Page} object or nil if there waere no updates
+    #
+    # @return  [Page]
+    #
+    def page
+        if( @updated  )
+              @updated = false
+              # page = @page.dup
+              # @page = nil
+              return  @page
+          else
+              return nil
+        end
+    end
+
+    
+    private
+    
+    #
+    # Analyzes a response looking for new links, forms and cookies.
+    #
+    # @param   [Array]  res   {Typhoeus::Response}, Bool
+    #
+    def analyze( res )
+        
+        print_debug( 'Started for response with request ID: #' + 
+          res[0].request.id.to_s )
+        
+
+        cookies, cookie_cnt = train_cookies( res[0] )
+        if ( cookie_cnt > 0 )
+            @page.elements['cookies'] = cookies.flatten
+            @updated = true
+            
+            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        end
+        
+        # if the response body is the same as the page body and
+        # no new cookies have appeared there's no reason to analyze the page
+        if( res[0].body == @page.html && !@updated )
+            print_debug( 'Page hasn\'t changed, skipping...' )
+            return
+        end
+        
+        forms, form_cnt = train_forms( res[0] )
+        links, link_cnt = train_links( res[0], res[1] )
+        
+        if ( form_cnt > 0 )
+            @page.elements['forms'] = forms.flatten
+            @updated = true
+            
+            print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
+        end
+        
+        if ( link_cnt > 0 )
+            @page.elements['links'] = links.flatten
+            @updated = true
+            
+            print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
+        end
+        
+        if( @updated )
+          
+            @page.html = res[0].body.dup
+           
+            @page.url  = URI.parse( URI.encode( @page.url ) ).
+                merge( URI.parse( res[0].effective_url ) ).to_s
+            
+            @page.request_headers = res[0].request.headers
+
+            @page.query_vars = @analyzer.get_link_vars( @page.url ).dup
+
+        end
+
+        print_debug( 'Training complete.' )
+    end
+    
+    def train_forms( res )
+        return if !@opts.audit_forms
+        
+        @analyzer.url = res.effective_url.clone
+        forms = @analyzer.get_forms( res.body ).clone
+        
+        return update_forms( forms )
+    end
+    
+    def train_links( res, redir = false )
+        return if !@opts.audit_links
+        
+        @analyzer.url = res.effective_url.clone
+
+        if( redir )
+            @analyzer.url = URI( @page.url ).
+              merge( URI( URI.escape( res.request.url ) ) ).to_s
+        end
+
+        links   = @analyzer.get_links( res.body ).clone
+        
+        if( redir )
+            links.push( {
+                'href' => @analyzer.url,
+                'vars' => @analyzer.get_link_vars( @analyzer.url )
+            } )
+            
+        end
+        
+        return update_links( links )
+        
+    end
+    
+    def train_cookies( res )
+        cookies = @analyzer.get_cookies( res.headers_hash['Set-Cookie'].to_s ).clone        
+        return update_cookies( cookies )
+    end
+
+    
+    def self.info
+      { :name  => 'Trainer' }
+    end
+    
 end
 end
 end

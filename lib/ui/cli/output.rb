@@ -49,7 +49,7 @@ module Output
     # @return    [void]
     #
     def print_error( str = '' )
-        print_color( '[-]', 31, str )
+        print_color( '[-]', 31, str, $stderr )
     end
     
     # Prints a status message
@@ -106,7 +106,7 @@ module Output
     #
     def print_debug( str = '' )
         if !@@debug then return end
-        print_color( '[!]', 36, str )
+        print_color( '[!]', 36, str, $stderr )
     end
 
     # Pretty prints an object, used for debugging,
@@ -242,8 +242,8 @@ module Output
     #
     # @return    [void]
     #
-    def print_color( sign, color, string )
-        print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+    def print_color( sign, color, string, out = $stdout )
+        out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
         
 end

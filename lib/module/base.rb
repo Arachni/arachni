@@ -26,7 +26,7 @@ module Module
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 # @abstract
 #
 class Base
@@ -35,7 +35,6 @@ class Base
     include Output
 
     include Auditor
-    include Trainer
     
     #
     # Arachni::HTTP instance for the modules
@@ -62,7 +61,8 @@ class Base
     def initialize( page )
         
         @page  = page
-        @http  = Arachni::Module::HTTP.new( @page.url )
+        @http  = Arachni::Module::HTTP.instance
+        Arachni::Module::Trainer.instance.page = @page.dup
         
         # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )
@@ -82,21 +82,13 @@ class Base
         #
         @@last_url ||= ''
         if( @@last_url != @page.url )
-            init_forms( get_forms )
-            init_links( get_links )
-            init_cookies( get_cookies )
+            Trainer.instance.page = @page.dup
+            Trainer.instance.init_forms( get_forms )
+            Trainer.instance.init_links( get_links )
+            Trainer.instance.init_cookies( get_cookies )
             
             @@last_url = @page.url
         end
-        
-        #
-        # This is a callback.
-        # The block will be called for every HTTP response
-        # we get during the audit.
-        #
-        # It's used to train Arachni.
-        #
-        @http.add_trainer{ |res, url| train( res, url ) }
         
     end
 
@@ -234,7 +226,8 @@ class Base
     #
     def get_form_simple( form )
         
-        return if !form['auditable']
+        
+        return if !form || !form['auditable']
         
         new_form = Hash.new
         new_form['attrs'] = form['attrs']
@@ -315,48 +308,14 @@ class Base
 
     
     #
-    # Returns a hash of request headers.
-    #
-    # If 'merge' is set to 'true' cookies will be skipped.<br/>
-    # If you need to audit cookies use {#get_cookies} or {#audit_cookies}.
+    # Returns a hash of auditable request headers.
     #
     # @see Page#request_headers
     #
-    # @param    [Bool]    merge   merge with auditable ({Page#request_headers}) headers?
-    #
     # @return    [Hash]
     #
-    def get_request_headers( merge = false )
-        
-        if( merge == true && @page.request_headers )
-            begin
-            ( headers = ( @http.init_headers ).
-                merge( @page.request_headers ) ).delete( 'cookie' )
-            rescue
-                headers = {}
-            end
-            return headers 
-        end
-        
-       return @http.init_headers
-    end
-    
-    #
-    # Returns the headers from a Net::HTTP response as a hash
-    #
-    # @param  [Net::HTTPResponse]  res
-    #
-    # @return    [Hash] 
-    #
-    def get_response_headers( res )
-        
-        header = Hash.new
-        res.each_capitalized {
-            |key|
-            header[key] = res.get_fields( key ).join( "\n" )
-        }
-        
-        header
+    def get_headers( )
+       return @page.request_headers 
     end
     
     #

@@ -21,7 +21,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection    
@@ -33,60 +33,43 @@ class SimpleCmdExec < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @__cmd_id_regex   = /100434/ixm
-        @__cmd_id         = '100434'
-        @__injection_str  = '; expr 978 + 99456'
+        @__opts = {}
+        @__opts[:regexp]   = /100434/ixm
+        @__opts[:match]    = '100434'
+        @__injection_str   = '; expr 978 + 99456'
         
         @results = []
     end
 
     def run( )
-        
-        audit_links( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-
-        audit_forms( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-
-        audit_cookies( @__injection_str, @__cmd_id_regex, @__cmd_id ).each {
-            |res|
-            @results << Vulnerability.new( res.merge( self.class.info ) )
-        }
-        
-        register_results( @results )
+        audit( @__injection_str, @__opts )
     end
 
     
     def self.info
         {
-            'Name'           => 'SimpleCmdExec',
-            'Description'    => %q{Simple shell command execution recon module},
-            'Elements'       => [
+            :name           => 'SimpleCmdExec',
+            :description    => %q{Simple shell command execution recon module},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
             ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :author         => 'zapotek',
+            :version        => '0.1.1',
+            :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-
-            'Targets'        => { 'PHP' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{OS command injection},
-                'Description' => %q{The web application allows an attacker to
+            :targets        => { 'PHP' => 'all' },
+            :vulnerability   => {
+                :name        => %q{OS command injection},
+                :description => %q{The web application allows an attacker to
                     execute OS commands.},
-                'CWE'         => '78',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '78',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }

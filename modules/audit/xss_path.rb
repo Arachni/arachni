@@ -19,7 +19,7 @@ module Audit
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/79.html    
 # @see http://ha.ckers.org/xss.html
@@ -36,10 +36,11 @@ class XSSPath < Arachni::Module::Base
     end
     
     def prepare( )
+        @str = '/<arachni_xss_path_' + Arachni::Module::Utilities.seed
         @__injection_strs = [
-            '<ScRIPT>a=/RANDOMIZE/<ScRipT>',
-            '?>"\'><ScRIPT>a=/RANDOMIZE/<ScRipT>',
-            '?=>"\'><ScRIPT>a=/RANDOMIZE/<ScRipT>'
+            @str,
+            '?>"\'>' + @str,
+            '?=>"\'>' + @str
         ]
     end
 
@@ -51,50 +52,49 @@ class XSSPath < Arachni::Module::Base
             |str|
             
             url  = path + str
-            res  = @http.get( url )
-
-            __log_results( res, str, url )
+            req  = @http.get( url )
+            
+            req.on_complete {
+                |res|
+                __log_results( res, str )
+            }
         }
-
         
-        # register our results with the system
-        register_results( @results )
     end
 
     
     def self.info
         {
-            'Name'           => 'XSSPath',
-            'Description'    => %q{Cross-Site Scripting module for path injection},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :name           => 'XSSPath',
+            :description    => %q{Cross-Site Scripting module for path injection},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.2',
+            :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{Cross-Site Scripting (XSS) in path},
-                'Description' => %q{Client-side code, like JavaScript, can
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{Cross-Site Scripting (XSS) in path},
+                :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
-                'CWE'         => '79',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '9.0',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :cwe         => '79',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '9.0',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }
     end
     
-    def __log_results( res, id, url )
+    def __log_results( res, id )
         
         if ( id && res.body.scan( Regexp.escape( id ) )[0] == id ) ||
            ( !id && res.body.scan( Regexp.escape( id ) )[0].size > 0 )
 
-        
+            url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
                 'var'          => 'n/a',
@@ -106,8 +106,8 @@ class XSSPath < Arachni::Module::Base
                 'elem'         => Vulnerability::Element::LINK,
                 'response'     => res.body,
                 'headers'      => {
-                    'request'    => 'n/a',
-                    'response'   => 'n/a',    
+                    'request'    => res.request.headers,
+                    'response'   => res.headers,    
                 }
             }.merge( self.class.info ) )
                     
@@ -115,6 +115,8 @@ class XSSPath < Arachni::Module::Base
             print_ok( "Match at #{url}" )
             print_verbose( "Inected string: #{id}" )
                 
+            # register our results with the system
+            register_results( @results )
         end
     end
 

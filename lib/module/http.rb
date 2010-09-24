@@ -8,13 +8,22 @@
 
 =end
 
+require 'typhoeus'
+
 module Arachni
+  
+require Options.instance.dir['lib'] + 'typhoeus/request'
+require Options.instance.dir['lib'] + 'module/trainer'
+
 module Module
 
 #
 # Arachni::Module::HTTP class
 #
-# Provides a simple HTTP interface for modules.
+# Provides a simple, high-performance and thread-safe HTTP interface to modules.
+#
+# All requests are run Async (compliements of Typhoeus)
+# providing great speed and performance.
 #
 # === Exceptions
 # Any exceptions or session corruption is handled by the class.<br/>
@@ -24,18 +33,17 @@ module Module
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
 class HTTP
 
-    include Arachni::UI::Output
+    include Output
+    include Singleton
     
-    #
-    # The url of the session
     #
     # @return [URI]
     #
-    attr_reader :url
+    attr_reader :last_url
     
     #
     # The headers with which the HTTP client is initialized<br/>
@@ -52,55 +60,122 @@ class HTTP
     #
     attr_reader :cookie_jar
     
-    #
-    # The HTTP session
-    #
-    # @return [Net::HTTP]
-    #
-    attr_reader :session
-
+    attr_reader :request_count
+    
     #
     # Initializes the HTTP session given a start URL respecting
     # system wide settings for HTTP basic auth and proxy
     #
-    # @param [String] url start URL
+    # @param  [String]  url  start URL
     #
-    # @return [Net::HTTP]
-    #
-    def initialize( url, opts = {} )
-        @url = parse_url( url )
-
-        @opts = Hash.new
-
-        @opts = @opts.merge( opts )
-
-        # create a new HTTP session
-        refresh( )
+    def initialize( )
+        opts = Options.instance
+        req_limit = opts.http_req_limit
+        @hydra ||= Typhoeus::Hydra.new(
+            :max_concurrency               => req_limit,
+            :disable_ssl_peer_verification => true,
+            :username                      => opts.url.user,
+            :password                      => opts.url.password,
+            :method                        => :auto
+        )
+          
+        @hydra.disable_memoization
         
         @trainers = []
+        @trainer = Arachni::Module::Trainer.instance
+        @trainer.http = self
         
-        @init_headers = Hash.new
-        @init_headers['user-agent'] = Options.instance.user_agent
-        @init_headers['cookie']     = ''
-        
-        @__not_found  = nil
+        @init_headers = {
+          'cookie'      => '',
+          'from'       => opts.authed_by
+        }
 
+        
+        @opts = {
+            :user_agent      => opts.user_agent,
+            :follow_location => false
+        }
+
+        @__not_found  = nil
+        
+        @request_count = 0
+    end
+    
+    #
+    # Runs Hydra (all the queued HTTP requests)
+    #
+    # Should only be called by the framework
+    # after all module threads have beed joined!
+    #
+    def run
+        @hydra.run
+    end
+    
+    #
+    # Queues a Tyhpoeus::Request and applies an 'on_complete' callback 
+    # on behal of the trainer.
+    #
+    # @param  [Tyhpoeus::Request]  req  the request to queue
+    #
+    def queue( req )
+        
+        req.id = @request_count
+        @last_url = req.url
+        
+        @hydra.queue( req )
+
+        @request_count += 1
+
+        print_debug( '------------' )
+        print_debug( 'Queued request.' )
+        print_debug( 'ID#: ' + req.id.to_s )
+        print_debug( 'URL: ' + req.url )
+        print_debug( 'Method: ' + req.method.to_s  )
+        print_debug( 'Params: ' + req.params.to_s  )
+        print_debug( 'Headers: ' + req.headers.to_s  )
+        print_debug( 'Train?: ' + req.train?.to_s  )
+        print_debug(  '------------' )
+
+        req.on_complete( true ) {
+            |res|
+            
+            print_debug( '------------' )
+            print_debug( 'Got response.' )
+            print_debug( 'Request ID#: ' + res.request.id.to_s )
+            print_debug( 'URL: ' + res.effective_url )
+            print_debug( 'Method: ' + res.request.method.to_s  )
+            print_debug( 'Params: ' + res.request.params.to_s  )
+            print_debug( 'Headers: ' + res.request.headers.to_s  )
+            print_debug( 'Train?: ' + res.request.train?.to_s  )
+            print_debug( '------------' )
+            
+            if( req.train? )
+                # handle redirections
+                if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
+                    req2 = get( redir, nil, true )
+                    req2.on_complete {
+                        |res2|
+                        @trainer.add_response( res2, true )
+                    }
+                else
+                    @trainer.add_response( res )
+                end
+            end
+        }
     end
 
     #
-    # Gets a URL passing the provided variables
+    # Gets a URL passing the provided query parameters
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [URI]  url     URL to GET
+    # @param  [Hash] params  hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
-    def get( url, url_vars = {}, redirect = false )
-        url = parse_url( url )
-
-        url_vars = {} if( !url_vars )
+    def get( url, params = {}, remove_id = false, train = false )
+        params = { } if !params
         
-        url_vars = url_vars.merge( { '__arachni__' => '' } ) 
+        params = params.merge( { '__arachni__' => '' } ) if !remove_id 
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it
@@ -108,180 +183,157 @@ class HTTP
         # how cool is Ruby? Seriously....
         #
         exception_jail {
-
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
             
-            if( redirect )
-                full_url = url.path + query
-            else
-                full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
-            end
+            opts = {
+                :headers       => @init_headers.dup,
+                :params        => params,
+                :follow_location => false
+            }.merge( @opts )
             
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
+            req = Typhoeus::Request.new( url, opts )
+            req.train! if train
             
-            # handle redirections
-            if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                res = get( redir, nil, true )
-                train( res, redir )
-            else
-                train( res )
-            end
-            
-            return res
+            queue( req )
+            return req
         }
         
     end
 
     #
-    # Posts a form to a URL with the provided variables
+    # Posts a form to a URL with the provided query parameters
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] form_vars array of name=>value pairs
+    # @param  [URI]   url     URL to POST
+    # @param  [Hash]  params  hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
-    def post( url, form_vars )
-
-        req = Net::HTTP::Post.new( url, @init_headers.clone )
-        req.set_form_data( form_vars )
+    def post( url, params = { }, train = false )
 
         exception_jail {
             
-            start  = Time.now
-            res = @session.request( req )
-            res.time = Time.now - start
-            
-            # handle redirections
-            if( ( redir = redirect?( res ) ).is_a?( String ) )
-                res =  get( redir, nil, true )
-                train( res, redir )
-            else
-                train( res )
-            end
+            opts = {
+                :method        => :post,
+                :headers       => @init_headers.dup,
+                :params        => params,
+                :follow_location => false
+            }.merge( @opts )
 
-            return res
+            req = Typhoeus::Request.new( url, opts )
+            req.train! if train
+            
+            queue( req )
+            return req
         }
     end
 
     #
     # Gets a url with cookies and url variables
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Array<Hash<String, String>>] cookie_vars array of name=>value pairs
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [URI]   url      URL to GET
+    # @param  [Hash]  cookies  hash with name=>value pairs
+    # @param  [Hash]  params   hash with GET name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
-    def cookie( url, cookie_vars, url_vars = nil)
+    def cookie( url, cookies, params = nil, train = false )
 
-        orig_cookiejar = @init_headers['cookie'].clone 
+        jar = parse_cookie_str( @init_headers['cookie'] )
         
-        cookies = Hash.new
-        jar = parse_cookie_str( orig_cookiejar )
-        
-        cookie_vars.each_pair {
-            |name, value|
-
-            # don't audit cookies in the cookie jar                
-#            next if Options.instance.exclude_cookies.include?( name )
-            
-            cookies[name] = value
-        }
-        
-        cookies.reject {
+        cookies.reject! {
             |cookie|
             Options.instance.exclude_cookies.include?( cookie['name'] )
         }
         
-        set_cookies( jar.merge( cookies ) )
+        cookies = jar.merge( cookies )
         
         # wrap the code in exception handling
         exception_jail {
-            url = parse_url( url )
+
+            opts = {
+                :headers       => { 'cookie' => get_cookies_str( cookies ) },
+                :follow_location => false,
+                :params        => params
+            }.merge( @opts )
+
+            req = Typhoeus::Request.new( url, opts )
+            req.train! if train
             
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
-            
-            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
-                        
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
-            
-            @init_headers['cookie'] = orig_cookiejar.clone
-            train( res )
-            return res
+            queue( req )
+            return req
         }
     end
 
     #
     # Gets a url with optional url variables and modified headers
     #
-    # @param  [URI]  url  URL to get
-    # @param  [Hash<String, String>] headers hash of name=>value pairs
-    # @param  [Array<Hash<String, String>>] url_vars array of name=>value pairs
+    # @param  [URI]  url      URL to GET
+    # @param  [Hash] headers  hash with name=>value pairs
+    # @param  [Hash] params   hash with name=>value pairs
     #
-    # @return [HTTP::Response]
+    # @return [Typhoeus::Request]
     #
-    def header( url, headers, url_vars = nil)
-
+    def header( url, headers, params = { }, train = false )
+        
+        params = {} if !params
         # wrap the code in exception handling
         exception_jail {
-            url = parse_url( url )
-            
-            if( url.query && url.query.size > 0 )
-                query = '?' + url.query
-                append = true
-            else
-                query = ''
-                append = false
-            end
-            
-            full_url = url.path + URI.encode( query ) + a_to_s( url_vars, append )
             
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
             
-            start  = Time.now
-            res = @session.get( full_url, @init_headers.clone )
-            res.time = Time.now - start
+            req = Typhoeus::Request.new( url,
+                :headers       => @init_headers.dup,
+                :user_agent    => @init_headers['User-Agent'],
+                :follow_location => false,
+                :params        => params )
+            req.train! if train
             
             @init_headers = orig_headers.clone
-            train( res )
-            return res
+            
+            queue( req )
+            return req
         }
 
     end
 
-    
     #
     # Sets cookies for the HTTP session
     #
-    # @param    [Hash]  cookie_hash  name=>value pair cookies
+    # @param    [Hash]  cookies  name=>value pairs
     #
-    # @return    [void]
+    # @return   [void]
     #
-    def set_cookies( cookie_hash )
+    def set_cookies( cookies )
         @init_headers['cookie'] = ''
-        @cookie_jar = cookie_hash.each_pair {
+        @cookie_jar = cookies.each_pair {
             |name, value|
             @init_headers['cookie'] += "#{name}=#{value};" 
         }
     end
     
+    #
+    # Gets a hash of cookies as a string
+    #
+    # @param    [Hash]  cookies  name=>value pairs
+    #
+    # @return   [string]
+    #
+    def get_cookies_str( cookies )
+        str = ''
+        cookies.each_pair {
+            |name, value|
+            str += "#{name}=#{value};" 
+        }
+        return str
+    end
+
+    #
+    # Converts HTTP cookies from string to Hash
+    #
+    # @param  [String]  str
+    #
+    # @return  [Hash]
+    #
     def parse_cookie_str( str )
         cookie_jar = Hash.new
         str.split( ';' ).each {
@@ -294,11 +346,11 @@ class HTTP
     #
     # Class method
     #
-    # Parses netscape HTTP cookie file
+    # Parses netscape HTTP cookie files
     #
     # @param    [String]  cookie_jar  the location of the cookie file
     #
-    # @return    [Hash]     cookies in name=>value pairs
+    # @return   [Hash]    cookies     in name=>value pairs
     #    
     def HTTP.parse_cookiejar( cookie_jar )
         
@@ -341,18 +393,18 @@ class HTTP
     # @param  [Bool]
     #
     def custom_404?( html )
-      
+        
         if( !@__not_found )
             
-            path = Module::Utilities.get_path( @url.to_s )
+            path = Module::Utilities.get_path( @last_url.to_s )
             
             # force a 404 and grab the html body
             force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            @__not_found = get( force_404 ).body
+            @__not_found = Typhoeus::Request.get( force_404 ).body
             
             # force another 404 and grab the html body
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            not_found2  = get( force_404 ).body
+            not_found2  = Typhoeus::Request.get( force_404 ).body
             
             #
             # some websites may have dynamic 404 pages or simply include
@@ -373,81 +425,15 @@ class HTTP
         return Arachni::Module::Utilities.rdiff( @__not_found, html ) == @__404
     end
 
-
-    #
-    # Blocks passed to this method will be passed each HTTP response<br/>
-    # and in cases of redirection the new location as well.
-    #
-    def add_trainer( &block )
-        @trainers << block
-    end
-    
     private
     
-    #
-    #
-    #
-    def train( res, url = nil )
-        @trainers.each{ |trainer| trainer.call( res, url ) }
-    end
-    
     def redirect?( res )
-        if res.is_a?( Net::HTTPRedirection )
-            return res['location']
+        if loc = res.headers_hash['Location']
+            return loc
         end
         return res
     end
 
-    #
-    # Converts an Array of Hash<String, String> objects
-    # to a query URL String with variables
-    #
-    # @param    [Array<Hash>]  arr    
-    # @param    [Bool]    append    create a new url query string or
-    #                                   a string to be appended to the existing url?
-    #
-    # @return [String]
-    #
-    def a_to_s( arr, append = false )
-        if !arr || arr.length == 0 then return '' end
-
-        if( append == true )
-            str = '&'
-        else
-            str = '?'
-        end
-        
-        arr.each {
-            |pair|
-            str += pair[0].to_s +  '=' + URI.escape( pair[1].to_s ) + '&'
-        }
-        
-        # URI.escape() doesn't escape spaces..don't ask me why...
-        str.gsub( / /, '+' )
-    end
-    
-    #
-    # Creates a new HTTP session<br/>
-    # Actually...since keep-alive is on it will either create a new connection
-    # or refresh an existing one.
-    #
-    def refresh( )
-        
-        opts = Options.instance
-
-        session = Net::HTTP.new( @url.host, @url.port,
-            opts.proxy_addr, opts.proxy_port,
-            opts.proxy_user, opts.proxy_pass )
-
-        if @url.scheme == 'https'
-            session.use_ssl = true
-            session.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-
-        @session = session.start
-
-    end
-    
     #
     # Wraps the "block" in exception handling code and runs it.
     #
@@ -494,15 +480,18 @@ class HTTP
     # @param    [Exception]     e
     #
     def handle_exception( e )
-        print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
+        print_error( 'Error: ' + e.to_s + " in URL " + @last_url.to_s )
         print_debug( 'Exception: ' +  e.inspect )
         print_debug( 'Backtrace: ' )
         print_debug_backtrace( e )
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-        print_debug( 'HTTP session:' )
-        print_debug_pp( @session )
-#        print_debug( YAML::dump( @session ) )
+        print_debug( 'Hydra session:' )
+        print_debug_pp( @hydra )
         print_error( 'Proceeding anyway... ' )
+    end
+    
+    def self.info
+      { :name => 'HTTP' }
     end
        
 end

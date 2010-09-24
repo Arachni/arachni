@@ -25,7 +25,7 @@ module UI
 # @author: Anastasios "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.4
 # @see Arachni::Framework
 #
 class CLI
@@ -232,38 +232,38 @@ class CLI
         mods.each {
             |info|
             
-            print_status( "#{info['mod_name']}:" )
+            print_status( "#{info[:mod_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info["Name"] )
-            print_line( "Description:\t"  + info["Description"] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
             
-            if( info["Elements"] && info["Elements"].size > 0 )
-            print_line( "HTML Elements:\t" +
-                info["Elements"].join( ', ' ).downcase )
+            if( info[:elements] && info[:elements].size > 0 )
+                print_line( "HTML Elements:\t" +
+                    info[:elements].join( ', ' ).downcase )
             end
             
-            if( info["Dependencies"] )
+            if( info[:dependencies] )
                 print_line( "Dependencies:\t" +
-                    info["Dependencies"].join( ', ' ).downcase )
+                    info[:dependencies].join( ', ' ).downcase )
             end
             
-            print_line( "Author:\t\t"     + info["Author"] )
-            print_line( "Version:\t"      + info["Version"] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
                 
             print_line( "References:" )
-            info["References"].keys.each {
+            info[:references].keys.each {
                 |key|
-                print_info( key + "\t\t" + info["References"][key] )
+                print_info( key + "\t\t" + info[:references][key] )
             }
             
             print_line( "Targets:" )
-            info["Targets"].keys.each {
+            info[:targets].keys.each {
                 |key|
-                print_info( key + "\t\t" + info["Targets"][key] )
+                print_info( key + "\t\t" + info[:targets][key] )
             }
             
-            print_line( "Path:\t"    + info['Path'] )
+            print_line( "Path:\t"    + info[:path] )
 
             i+=1
             
@@ -296,16 +296,16 @@ class CLI
         @arachni.lsrep().each {
             |info|
             
-            print_status( "#{info['rep_name']}:" )
+            print_status( "#{info[:rep_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info["Name"] )
-            print_line( "Description:\t"  + info["Description"] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
                 
-            if( info["Options"] && info["Options"].size > 0 )
+            if( info[:options] && info[:options].size > 0 )
                 print_line( "Options:\t" )
                 
-                info["Options"].each_pair {
+                info[:options].each_pair {
                     |option, info|
                     print_info( "\t#{option} - #{info[1]}" )
                     print_info( "\tValues: #{info[0]}" )
@@ -314,9 +314,9 @@ class CLI
                 }    
             end
             
-            print_line( "Author:\t\t"     + info["Author"] )
-            print_line( "Version:\t"      + info["Version"] )
-            print_line( "Path:\t"         + info['Path'] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
+            print_line( "Path:\t"         + info[:path] )
 
             i+=1
 
@@ -389,13 +389,14 @@ class CLI
     #
     def banner
 
-        print_line 'Arachni Web Application Security Scanner v' + @arachni.version + ' [' +
-            @arachni.revision + '] initiated.
+        print_line 'Arachni - Web Application Security Scanner Framework v' +
+            @arachni.version + ' [' + @arachni.revision + '] initiated.
        Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
-                (With the support of the Arachni Team)
+                With the support of the community and the Arachni Team
                 
-       Website: http://github.com/Zapotek/arachni'
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki'
         print_line
         print_line
 
@@ -422,17 +423,35 @@ class CLI
     -v                          be verbose
 
 USAGE
-#    --delay                     how long to wait between HTTP requests
-#                                  Time is set in seconds, you can use floating point.
 
         print_line <<USAGE 
-    --debug                     show debugging output
-    
+    --debug                     show what is happening internally
+                                  (You should give it a shot sometime ;) )
+                            
     --only-positives            echo positive results *only*
-  
-    --threads=<number>          how many threads to instantiate
-                                  If no thread limit has been specified
-                                    each module will run in its own thread.
+
+USAGE
+
+    # --threads=<number>          how many threads to instantiate
+    #                               If no thread limit has been specified
+    #                                 each module will run in its own thread.
+        print_line <<USAGE
+    --http-req-limit            concurent HTTP requests limit
+                                  (Be carefull not to kill your server.)
+                                  (Default: 200)
+                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
+
+    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
+                                 and harvest the HTTP responses at the end of the crawl.
+                                 (In some test cases this option has split the scan time in half.)
+                                 (Default: responses will be harvested for each page)
+                                 (*NOTE*: If you are scanning a high-end server and
+                                   you are using a powerful machine with enough bandwidth
+                                   *and* you feel dangerous you can use
+                                   this flag with an increased '--http-req-limit'
+                                   to get maximum performance out of your scan.)
+                                 (*WARNING*: When scanning large websites with hundreads
+                                  of pages this could eat up all your memory pretty quickly.)
                                   
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
                                                                  
@@ -440,13 +459,13 @@ USAGE
     --user-agent=<user agent>   specify user agent
     
     --authed-by=<who>           who authorized the scan, include name and e-mail address
-                                  It'll make it easier on the sys-admins.
+                                  (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
     
-    --save-profile=<file>       saves the current run profile/options to <file>
+    --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: #{PROFILE_EXT})
                                   
-    --load-profile=<file>       loads a run profile from <file>
+    --load-profile=<file>       load a run profile from <file>
                                   (You can complement it with more options, except for:
                                       * --mods
                                       * --redundant)
@@ -472,7 +491,7 @@ USAGE
     --obey-robots-txt           obey robots.txt file (default: off)
     
     --depth=<number>            depth limit (default: inf)
-                                  How deep Arachni should go into the site structure.
+                                  (How deep Arachni should go into the site structure.)
                                   
     --link-count=<number>       how many links to follow (default: inf)                              
     
@@ -492,16 +511,21 @@ USAGE
     --audit-cookies             audit cookies (COOKIE)
   
     --exclude-cookie=<name>     cookies not to audit
-                                  You should exclude session cookies.
+                                  (You should exclude session cookies.)
                                   (Can be used multiple times.)
     
     --audit-headers             audit HTTP headers
+                                  (*NOTE*: Header audits use brute force.
+                                   Almost all valid HTTP request headers will be audited
+                                   even if there's no indication that the web app uses them.)
+                                  (*WARNING*: Enabling this option will result in increased requests,
+                                   maybe by an order of magnitude.)
                                   
                                   
     Modules ------------------------
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
-                                  If no regexp is provided all modules will be listed.
+                                  (If no regexp is provided all modules will be listed.)
                                   (Can be used multiple times.)
   
       
@@ -509,27 +533,22 @@ USAGE
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (use '*' to deploy all modules)
     
-    --mods-run-last             run modules after the website has been analyzed
-                                  (default: modules are run on every page
-                                    encountered to minimize network latency.) 
-
-
     Reports ------------------------
     
     --lsrep                       list available reports
     
-    --repsave=<file>              saves the audit results in <file>
+    --repsave=<file>              save the audit results in <file>
                                     (The file will be saved with an extention of: #{@arachni.report_ext})               
     
-    --repload=<file>              loads audit results from <file>
-                                  and lets you create a new report
+    --repload=<file>              load audit results from <file>
+                                  (Allows you to create a new reports from old/finished scans.)
     
     --repopts=<option1>:<value>,<option2>:<value>,...
                                   Set options for the selected reports.
                                   (One invocation only, options will be applied to all loaded reports.)
                                   
     --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
-                                  (default: stdout)
+                                  (Default: stdout)
                                   (Can be used multiple times.)
                                   
                                   
@@ -540,7 +559,7 @@ USAGE
     --proxy-auth=<user:passwd>  specify proxy auth credentials
     
     --proxy-type=<type>         proxy type can be either socks or http
-                                  (default: http)
+                                  (Default: http)
     
   
 USAGE

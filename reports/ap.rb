@@ -55,10 +55,10 @@ class AP < Arachni::Report::Base
     #
     def self.info
         {
-            'Name'           => 'AP',
-            'Description'    => %q{Awesome prints an AuditStore hash.},
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
+            :name           => 'AP',
+            :description    => %q{Awesome prints an AuditStore hash.},
+            :author         => 'zapotek',
+            :version        => '0.1',
         }
     end
     

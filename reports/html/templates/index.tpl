@@ -377,7 +377,8 @@
           </a>
         </h3>
         
-        <strong>Vulnerable URL</strong>: {{variation.url | escape}}<br />
+        <strong>Vulnerable URL</strong>:
+        <p class="note"><a href="{{variation.url}}">{{variation.url}}</a></p>
         
         <div class="variation" id="var_{{toploop_index}}_{{forloop.index}}">
         <strong>Injected value</strong>:

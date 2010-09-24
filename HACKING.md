@@ -31,12 +31,8 @@ It is unlikely that you will need it, but if you do, use
 "select(nil, nil, nil, &lt;time&gt;)" instead to avoid multi-threading issues.
 
 
-**3. Avoid creating your own instance of Net::HTTP.**<br/>
-If you are writing a module you are provided with wrappers ({Arachni::Module::Base#http}) for Net:HTTP
-pre-configured with proxy, auth and ssl settings.
-
-You also have access to the instantiated Net:HTTP session ({Arachni::Module::HTTP#session}) so use that
-if you must.
+**3. Avoid creating your own instance of Net::HTTP or other lib.**<br/>
+You are provided with pre-configured wrapper ({Arachni::Module::Base#http}) of Typhoeus.
 
 Take a look in the tutorial module to see what you get: {Arachni::Modules::Audit::SimpleRFI}
     

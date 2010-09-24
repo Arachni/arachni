@@ -22,7 +22,7 @@ module Recon
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -49,8 +49,8 @@ class BackupFiles < Arachni::Module::Base
         filename = File.basename( URI( @page.url ).path )
         path     = Module::Utilities.get_path( @page.url )
         
-        if( filename.empty? )
-            print_debug( 'Backing out. ' + 
+        if( !filename  )
+            print_info( 'Backing out. ' + 
               'Can\'t extract filename from url: ' + @page.url )
             return
         end
@@ -67,45 +67,44 @@ class BackupFiles < Arachni::Module::Base
             
             file = ext % filename # Example: index.php.bak
             url  = path + file
-            next if !( res = __get_once( url ) )
+            next if !( req1 = __request_once( url ) )
 
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, file, url )
-            end
+            
+            req1.on_complete {
+                |res|
+                __log_results( res, file )
+            }
             
             file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
             url  = path + file
-            res = __get_once( url )
+            next if !( req2 = __request_once( url ) )
             
-            if( res.code == "200" && !@http.custom_404?( res.body ) )
-                __log_results( res, file, url )
-            end
+            req2.on_complete {
+                |res|
+                __log_results( res, file )
+            }
         }
 
-        
-        # register our results with the system
-        register_results( @results )
     end
 
     
     def self.info
         {
-            'Name'           => 'BackupFiles',
-            'Description'    => %q{Tries to find sensitive backup files.},
-            'Elements'       => [ ],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1.1',
-            'References'     => {},
-            'Targets'        => { 'Generic' => 'all' },
-                
-            'Vulnerability'   => {
-                'Name'        => %q{A backup file exists on the server.},
-                'Description' => %q{},
-                'CWE'         => '530',
-                'Severity'    => Vulnerability::Severity::HIGH,
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+            :name           => 'BackupFiles',
+            :description    => %q{Tries to find sensitive backup files.},
+            :elements       => [ ],
+            :author         => 'zapotek',
+            :version        => '0.1.3',
+            :references     => {},
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :name        => %q{A backup file exists on the server.},
+                :description => %q{},
+                :cew         => '530',
+                :severity    => Vulnerability::Severity::HIGH,
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
 
         }
@@ -117,10 +116,12 @@ class BackupFiles < Arachni::Module::Base
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
     # @param  [String]  filename   the discovered filename 
-    # @param  [String]  url   the url of the discovered file
     #
-    def __log_results( res, filename, url )
+    def __log_results( res, filename )
         
+        return if( res.code != 200 || @http.custom_404?( res.body ) )
+          
+        url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
             'var'          => 'n/a',
@@ -132,10 +133,13 @@ class BackupFiles < Arachni::Module::Base
             'elem'         => Vulnerability::Element::LINK,
             'response'     => res.body,
             'headers'      => {
-                'request'    => 'n/a',
-                'response'   => 'n/a',    
+                'request'    => res.request.headers,
+                'response'   => res.headers,    
             }
         }.merge( self.class.info ) )
+
+        # register our results with the system
+        register_results( @results )
                 
         # inform the user that we have a match
         print_ok( "Found #{filename} at " + url )
@@ -150,16 +154,16 @@ class BackupFiles < Arachni::Module::Base
     #                                          previously requested,<br/>
     #                                          the HTTPResponse otherwise
     #
-    def __get_once( url )
+    def __request_once( url )
       
         return false if @@__audited.include?( url )
         
-        print_debug( "Checking for #{url}" )
+        print_status( "Checking for #{url}" )
         
-        res  = @http.get( url )
+        req  = @http.get( url )
         @@__audited << url
         
-        return res
+        return req
     end
 
 end
