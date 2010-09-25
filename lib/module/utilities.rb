@@ -46,19 +46,19 @@ module Utilities
     # Gets the reverse diff (strings that have not changed) between 2 strings
     #
     #
-    # text1 = <<END
-    # This is the first test.
-    # Not really sure what else to put here...
-    # END
+    #  text1 = <<END
+    #  This is the first test.
+    #  Not really sure what else to put here...
+    #  END
     # 
-    # text2 = <<END
-    # This is the second test.
-    # Not really sure what else to put here...
-    # Boo-Yah!
-    # END
+    #  text2 = <<END
+    #  This is the second test.
+    #  Not really sure what else to put here...
+    #  Boo-Yah!
+    #  END
     # 
-    # Arachni::Modules::Utilities.rdiff( text1, text2 )
-    #  # => "This is the  test.\nNot really sure what else to put here...\n"
+    #  Arachni::Modules::Utilities.rdiff( text1, text2 )
+    #    # => "This is the  test.\nNot really sure what else to put here...\n"
     #
     #
     # @param  [String]  text1
