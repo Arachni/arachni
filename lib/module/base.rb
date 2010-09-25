@@ -124,8 +124,8 @@ class Base
     #
     def self.info
         {
-            'Name'           => 'Base module abstract class',
-            'Description'    => %q{Provides an abstract class the modules should implement.},
+            :name           => 'Base module abstract class',
+            :description    => %q{Provides an abstract class the modules should implement.},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it.
@@ -141,15 +141,15 @@ class Base
             #     Vulnerability::Element::COOKIE,
             #     Vulnerability::Element::HEADER
             # ],
-            'Elements'       => [],
-            'Author'         => 'zapotek',
-            'Version'        => '0.1',
-            'References'     => {
+            :elements       => [],
+            :author         => 'zapotek',
+            :version        => '0.1',
+            :references     => {
             },
-            'Targets'        => { 'Generic' => 'all' },
-            'Vulnerability'   => {
-                'Description' => %q{},
-                'CWE'         => '',
+            :targets        => { 'Generic' => 'all' },
+            :vulnerability   => {
+                :description => %q{},
+                :cwe         => '',
                 #
                 # Severity can be:
                 #
@@ -158,10 +158,10 @@ class Base
                 # Vulnerability::Severity::LOW
                 # Vulnerability::Severity::INFORMATIONAL
                 #
-                'Severity'    => '',
-                'CVSSV2'       => '',
-                'Remedy_Guidance'    => '',
-                'Remedy_Code' => '',
+                :severity    => '',
+                :cvssv2       => '',
+                :remedy_guidance    => '',
+                :remedy_code => '',
             }
         }
     end
