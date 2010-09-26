@@ -1,5 +1,4 @@
-Arachni - Web Application Security Scanner Framework
-====================================
+# Arachni - Web Application Security Scanner Framework
 **Version**:     0.2<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
@@ -7,10 +6,9 @@ Arachni - Web Application Security Scanner Framework
 **Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
 **Author**:       [Anastasios](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)  
 **Copyright**:    2010    
-**License**:      GNU General Public License v2    
+**License**:      [GNU General Public License v2](file.LICENSE.html)
 
-Synopsis
---------
+## Synopsis
 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators evaluate the security of web applications.
@@ -59,10 +57,9 @@ Users just need to take a look at the help output.<br/>
 However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists as well for those who want to be aware of all the details.
 
 
-Feature List
-------------
+## Feature List
 
-**General**
+### General
 
  - Cookie-jar support
  - SSL support.
@@ -79,7 +76,7 @@ Feature List
  - High performance asynchronous HTTP requests.
   
  
-** Website Crawler ** ({Arachni::Spider})
+### Website Crawler ({Arachni::Spider})
 
 The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some slight modifications to accommodate extra features.
 
@@ -95,7 +92,7 @@ The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some
  
  
  
-** HTML Analyzer ** ({Arachni::Analyzer})
+### HTML Analyzer ({Arachni::Analyzer})
 
 Can extract and analyze:
 
@@ -114,7 +111,7 @@ like:<br/>
 
 This way the system can be extended to be able to handle virtually anything.
 
-**  Module Management ** ({Arachni::Module})
+###  Module Management ({Arachni::Module})
 
  - Modular design
     - Very simple and easy to use module API providing access at multiple levels.
@@ -126,7 +123,7 @@ This way the system can be extended to be able to handle virtually anything.
 
 You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 
-**  Report Management ** ({Arachni::Report})
+### Report Management ({Arachni::Report})
 
  - Modular design
     - Very easy to add new reports.
@@ -136,7 +133,7 @@ You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
 And a more complex HTML report here: {Arachni::Reports::HTML} 
 
-**  Trainer subsystem ** ({Arachni::Module::Trainer})
+### Trainer subsystem ({Arachni::Module::Trainer})
 
 The Trainer is what enables Arachni to learn from the scan it performs
 and incorporate that knowledge, on the fly, for the duration of the audit.
@@ -148,8 +145,7 @@ to uncover new elements or attack vectors and will adapt itself accordingly.
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
-Usage
------
+## Usage
 
        Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
        Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
@@ -165,7 +161,7 @@ Usage
       Supported options:
     
   
-**General**
+### General
   
     -h
     --help                      output this
@@ -211,7 +207,7 @@ Usage
                                       * --redundant)
                                   
     
-**Crawler**
+### Crawler
     
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
@@ -238,7 +234,7 @@ Usage
     --redirect-limit=<number>   how many redirects to follow (default: inf)
   
     
-**Auditor**                                
+### Auditor
                                   
     -g
     --audit-links               audit link variables (GET)
@@ -261,7 +257,7 @@ Usage
                                   (*WARNING*: Enabling this option will result in increased requests,
                                    maybe by an order of magnitude.)
                                   
-**Modules**
+### Modules
                                                                       
     --lsmod=<regexp>            list available modules based on the provided regular expression
                                   (If no regexp is provided all modules will be listed.)
@@ -272,7 +268,7 @@ Usage
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (use '*' to deploy all modules)
     
-**Reports**
+### Reports
     
     --lsrep                       list available reports
     
@@ -291,7 +287,7 @@ Usage
                                   (Can be used multiple times.)
                                   
                                   
-**Proxy**
+### Proxy
     
     --proxy=<server:port>       specify proxy
     
@@ -301,7 +297,7 @@ Usage
                                   (Default: http)
                                   
     
-**Example**
+### Example
 
 In the following example all modules will be run against <i>http://test.com</i>
 , auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
@@ -314,49 +310,44 @@ The Arachni Framework Report (.afr) file can later be loaded by Arachni to creat
     $ ./arachni_cli.rb --repload=test.com.afr --report=txt --repsave=my_report.txt
 
 
-Requirements
------
+## Requirements
     
   * ruby1.9.1 or later
   * Nokogiri
-    - gem install nokogiri
+    - `gem install nokogiri`
   * Anemone
-    - gem install anemone
+    - `gem install anemone`
   * Typhoeus
-    - gem install typhoeus
+    - `gem install typhoeus`
   * Sockify
-    - gem install socksify
+    - `gem install socksify`
   * Awesome print
-    - gem install awesome_print
+    - `gem install awesome_print`
   * Liquid (For {Arachni::Reports::HTML} reporting)
-    - gem install liquid
+    - `gem install liquid`
   * Yardoc (if you want to generate the documentation)
-    - gem install yard
+    - `gem install yard`
 
 Run the following to install all dependencies:
-  gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+    gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
-Supported platforms
-----
+## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
 and the aforementioned requirements.
 
 Windows users should run Arachni in Cygwin.
 
-Bug reports/Feature requests
------
+## Bug reports/Feature requests
 Please send your feedback using Github's issue system at 
 [http://github.com/zapotek/arachni/issues](http://github.com/zapotek/arachni/issues).
 
 
-License
------
+## License
 Arachni is licensed under the GNU General Public License v2.<br/>
-See the "LICENSE" file for more information.
+See the [LICENSE](file.LICENSE.html) file for more information.
 
 
-Disclaimer
------
+## Disclaimer
 Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.

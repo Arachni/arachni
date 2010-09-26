@@ -1,4 +1,5 @@
-== Authors
+# Authors
+
 
 Anastasios "Zapotek" Laskos
         <zapotek@segfault.gr>
