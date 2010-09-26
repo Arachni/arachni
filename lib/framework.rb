@@ -553,21 +553,17 @@ class Framework
     #
     def handle_interrupt( )
         
-        # if( $_interrupted == false ) then return false end
-        
         print_line
-        print_error( 'Arachni was interrupted,' +
+        print_info( 'Arachni was interrupted,' +
             ' do you want to continue?' )
             
-        print_error( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
             
         if gets[0] == 'e'
-            print_error( 'Exiting...' )
+            print_info( 'Exiting...' )
             exit 0
         end
         
-        # $_interrupted = false
-
     end
     
     #
