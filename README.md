@@ -266,7 +266,10 @@ Still, this can be an invaluable asset to Fuzzer modules.
       
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (use '*' to deploy all modules)
+                                  (Use '*' to deploy all modules)
+                                  (You can exclude modules by prefixing their name with a dash:
+                                      --mods=*,-backup_files,-xss
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
     
 ### Reports
     
@@ -276,15 +279,15 @@ Still, this can be an invaluable asset to Fuzzer modules.
                                     (The file will be saved with an extention of: .afr)               
     
     --repload=<file>              load audit results from <file>
-                                  (Allows you to create a new reports from old/finished scans.)
+                                    (Allows you to create a new reports from old/finished scans.)
     
     --repopts=<option1>:<value>,<option2>:<value>,...
                                   Set options for the selected reports.
-                                  (One invocation only, options will be applied to all loaded reports.)
+                                    (One invocation only, options will be applied to all loaded reports.)
                                   
-    --report=<repname>          <repname>: the name of the report as displayed by '--lsrep'
-                                  (Default: stdout)
-                                  (Can be used multiple times.)
+    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+                                    (Default: stdout)
+                                    (Can be used multiple times.)
                                   
                                   
 ### Proxy
