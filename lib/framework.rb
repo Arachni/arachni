@@ -48,7 +48,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.1.5
 #
 class Framework
 
@@ -63,7 +63,7 @@ class Framework
     VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.4'
+    REVISION     = '0.1.5'
     
     # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
@@ -97,8 +97,7 @@ class Framework
         @analyzer = Arachni::Analyzer.new( @opts )
         
         # trap Ctrl+C interrupts
-        $_interrupted = false
-        trap( 'INT' ) { $_interrupted = true }
+        trap( 'INT' ) { handle_interrupt( ) }
         
         # deep copy the redundancy rules to preserve their counter
         # for the reports
@@ -185,7 +184,6 @@ class Framework
 
             page = analyze( url, html, headers )
             run_mods( page )
-            handle_interrupt( )
         }
 
         if( @opts.http_harvest_last )
@@ -555,7 +553,7 @@ class Framework
     #
     def handle_interrupt( )
         
-        if( $_interrupted == false ) then return false end
+        # if( $_interrupted == false ) then return false end
         
         print_line
         print_error( 'Arachni was interrupted,' +
@@ -568,7 +566,7 @@ class Framework
             exit 0
         end
         
-        $_interrupted = false
+        # $_interrupted = false
 
     end
     
@@ -603,10 +601,6 @@ class Framework
             # ... and run it.
             run_mod( mod, deep_clone( page ) )
             
-            # handle trapped interrupts
-            while( handle_interrupt(  ) )
-            end
-                         
         end
        
         if( !@opts.http_harvest_last )
