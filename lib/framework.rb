@@ -120,9 +120,15 @@ class Framework
         end
         
         @opts.start_datetime = Time.now
-            
-        # start the audit
-        audit( )
+        
+        # catch exceptions so that if something breaks down or the user opted to
+        # exit the reports will still run with whatever results
+        # Arachni managed to gather
+        begin
+            # start the audit
+            audit( )
+        rescue Exception
+        end
         
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
@@ -255,7 +261,7 @@ class Framework
             :version  => VERSION,
             :revision => REVISION,
             :options  => @opts.to_h,
-            :sitemap  => @sitemap.sort,
+            :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
             :vulns    => deep_clone( Arachni::Module::Registry.get_results( ) )
          } )
     end
