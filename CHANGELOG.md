@@ -26,4 +26,5 @@
   - Major API clean up.
   - With facilities providing more control and power over the audit process.
   - Significantly increased ease of development.
+- Improved interrupt handling, scans can be paused/resumed at any time.
 - Overall module improvements and optimizations.
