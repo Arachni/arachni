@@ -352,7 +352,91 @@ class Analyzer
         var_hash
     
     end
+
+    #
+    # Converts relative URL *link* into an absolute URL based on the
+    # location of the page
+    #
+    # @param [String] link
+    #
+    # @return [String]
+    #
+    def to_absolute( link )
+
+        begin
+            if URI.parse( link ).host
+                return link
+            end
+        rescue Exception => e
+            return nil if link.nil?
+            #      return link
+        end
+
+        # remove anchor
+        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/, '' ) )
+
+        begin
+            relative = URI(link)
+            url = URI.parse( @url )
+
+            absolute = url.merge(relative)
+
+            absolute.path = '/' if absolute.path.empty?
+        rescue Exception => e
+            return
+        end
+
+        return absolute.to_s
+    end
+
+    #
+    # Returns +true+ if *uri* is in the same domain as the page, returns
+    # +false+ otherwise
+    #
+    def in_domain?( uri )
+        
+        if( @opts.follow_subdomains )
+            return extract_domain( uri ) ==  extract_domain( URI( @url ) )
+        end
     
+        uri.host == URI.parse( URI.escape( @url ) ).host
+    end
+    
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+    
+        if !url.host then return false end
+            
+        splits = url.host.split( /\./ )
+
+        if splits.length == 1 then return true end
+
+        splits[-2] + "." + splits[-1]
+    end
+    
+    def exclude?( url )
+        @opts.exclude.each {
+            |pattern|
+            return true if url =~ pattern
+        }
+        
+        return false
+    end
+    
+    def include?( url )
+        @opts.include.each {
+            |pattern|
+            return true if url =~ pattern
+        }
+    end
+
+
     private
 
     #
@@ -558,89 +642,6 @@ class Analyzer
         return elements
     end
 
-    #
-    # Converts relative URL *link* into an absolute URL based on the
-    # location of the page
-    #
-    # @param [String] link
-    #
-    # @return [String]
-    #
-    def to_absolute( link )
-
-        begin
-            if URI.parse( link ).host
-                return link
-            end
-        rescue Exception => e
-            return nil if link.nil?
-            #      return link
-        end
-
-        # remove anchor
-        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/, '' ) )
-
-        begin
-            relative = URI(link)
-            url = URI.parse( @url )
-
-            absolute = url.merge(relative)
-
-            absolute.path = '/' if absolute.path.empty?
-        rescue Exception => e
-            return
-        end
-
-        return absolute.to_s
-    end
-
-    #
-    # Returns +true+ if *uri* is in the same domain as the page, returns
-    # +false+ otherwise
-    #
-    def in_domain?( uri )
-        
-        if( @opts.follow_subdomains )
-            return extract_domain( uri ) ==  extract_domain( URI( @url ) )
-        end
-    
-        uri.host == URI.parse( URI.escape( @url ) ).host
-    end
-    
-    #
-    # Extracts the domain from a URI object
-    #
-    # @param [URI] url
-    #
-    # @return [String]
-    #
-    def extract_domain( url )
-    
-        if !url.host then return false end
-            
-        splits = url.host.split( /\./ )
-
-        if splits.length == 1 then return true end
-
-        splits[-2] + "." + splits[-1]
-    end
-    
-    def exclude?( url )
-        @opts.exclude.each {
-            |pattern|
-            return true if url =~ pattern
-        }
-        
-        return false
-    end
-    
-    def include?( url )
-        @opts.include.each {
-            |pattern|
-            return true if url =~ pattern
-        }
-    end
-    
     def normalize_name( name )
         name.to_s.gsub( /@/, '' )
     end
