@@ -46,7 +46,17 @@ class Trainer
     # @param  [Bool]  redir  was the response forcing a redirection?
     #
     def add_response( res, redir = false )
+        # don't follow links to external sites and 
+        # respect follow-subdomains option
+        return if !follow?( res.effective_url ) || ( redir && !follow?( redir ) )
+        
         analyze( [ res, redir ] )
+    end
+    
+    def follow?( url )
+        return if( @analyzer.exclude?( url ) )
+        return if( !@analyzer.include?( url ) )    
+        return if !@analyzer.in_domain?( URI.parse( url ) )
     end
     
     #
@@ -116,7 +126,7 @@ class Trainer
             @page.html = res[0].body.dup
            
             @page.url  = URI.parse( URI.encode( @page.url ) ).
-                merge( URI.parse( res[0].effective_url ) ).to_s
+                merge( URI.parse( URI.escape( res[0].effective_url ) ) ).to_s
             
             @page.request_headers = res[0].request.headers
 
