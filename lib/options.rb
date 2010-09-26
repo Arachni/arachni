@@ -345,6 +345,10 @@ class Options
         @dir        = Hash.new
         @exclude_cookies    = []
         
+        # set some defaults
+        redirect_limit = 20
+
+        
     end
     
     #
