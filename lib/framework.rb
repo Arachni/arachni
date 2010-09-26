@@ -283,37 +283,12 @@ class Framework
     #
     # @param [Array]  mods  Array of modules to load
     #
-    def mod_load( mods = '*' )
+    def mod_load( mods = ['*'] )
 
-        if( mods[0] != "*" )
-
-            avail_mods  = @modreg.ls_available(  )
-            
-            mods.each {
-                |mod_name|
-                if( !avail_mods[mod_name] )
-                      raise( Arachni::Exceptions::ModNotFound,
-                          "Error: Module #{mod_name} wasn't found." )
-                end
-            }
-
-            
-            sorted_mods = []
-            
-            # discovery modules should be loaded before audit ones
-            # and ls_available() ownors that
-            avail_mods.map {
-                |mod|
-                sorted_mods << mod[0] if mods.include?( mod[0] )
-            }
-        else
-            sorted_mods = ["*"]
-        end
-        
         #
         # Check the validity of user provided module names
         #
-        sorted_mods.each {
+        parse_mods( mods ).each {
             |mod_name|
             
             # if the mod name is '*' load all modules
@@ -339,6 +314,47 @@ class Framework
                 raise e
             end
         }
+    end
+
+    def parse_mods( mods )
+        
+        unload = []
+        load   = []
+        
+        mods.each {
+            |mod|
+            if mod[0] == '-'
+                mod[0] = ''
+                unload << mod
+            end
+        }
+        
+        if( !mods.include?( "*" ) )
+
+            avail_mods  = @modreg.ls_available(  )
+            
+            mods.each {
+                |mod_name|
+                if( !avail_mods[mod_name] )
+                      raise( Arachni::Exceptions::ModNotFound,
+                          "Error: Module #{mod_name} wasn't found." )
+                end
+            }
+
+            # recon modules should be loaded before audit ones
+            # and ls_available() honors that
+            avail_mods.map {
+                |mod|
+                load << mod[0] if mods.include?( mod[0] )
+            }
+        else
+            @modreg.ls_available(  ).map {
+                |mod|
+                load << mod[0]
+            }
+        end
+        
+        return ( load - unload )
     end
 
     #
