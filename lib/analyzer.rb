@@ -394,12 +394,13 @@ class Analyzer
     # +false+ otherwise
     #
     def in_domain?( uri )
-        
+        uri = URI.parse( URI.escape( uri.to_s ) )
+      
         if( @opts.follow_subdomains )
             return extract_domain( uri ) ==  extract_domain( URI( @url ) )
         end
     
-        uri.host == URI.parse( URI.escape( @url ) ).host
+        return uri.host == URI.parse( URI.escape( @url.to_s ) ).host
     end
     
     #
@@ -423,7 +424,7 @@ class Analyzer
     def exclude?( url )
         @opts.exclude.each {
             |pattern|
-            return true if url =~ pattern
+            return true if url.to_s =~ pattern
         }
         
         return false
@@ -432,8 +433,9 @@ class Analyzer
     def include?( url )
         @opts.include.each {
             |pattern|
-            return true if url =~ pattern
+            return true if url.to_s =~ pattern
         }
+        return false
     end
 
 
