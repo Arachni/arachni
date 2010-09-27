@@ -135,15 +135,7 @@ class Framework
         
         audit_store = audit_store_get( )
         
-        req_cnt = Arachni::Module::HTTP.instance.request_count
-        msg = 'Sent and analyzed ' + req_cnt.to_s + ' requests ' +
-          'in ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).'
-        
-        avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
-        print_line
-        print_info( msg )
-        print_info( avg )
-        print_line
+        print_stats( audit_store )
         
         # run reports
         if( @opts.reports )
@@ -169,8 +161,20 @@ class Framework
             end
         end
         
-        print_line
-        print_info( msg )
+        print_stats( audit_store )
+    end
+
+    def print_stats( audit_store )
+
+        req_cnt = Arachni::Module::HTTP.instance.request_count
+        res_cnt = Arachni::Module::HTTP.instance.response_count
+
+        print_line        
+        print_info( "Sent #{req_cnt.to_s} requests." )
+        print_info( "Received and analyzed #{req_cnt.to_s} responses." )
+        print_info( 'In ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).' )
+        
+        avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
         print_info( avg )
         print_line
     end
