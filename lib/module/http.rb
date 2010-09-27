@@ -61,6 +61,7 @@ class HTTP
     attr_reader :cookie_jar
     
     attr_reader :request_count
+    attr_reader :response_count
     
     #
     # Initializes the HTTP session given a start URL respecting
@@ -98,7 +99,8 @@ class HTTP
 
         @__not_found  = nil
         
-        @request_count = 0
+        @request_count  = 0
+        @response_count = 0
     end
     
     #
@@ -139,6 +141,7 @@ class HTTP
         req.on_complete( true ) {
             |res|
             
+            @response_count += 1
             print_debug( '------------' )
             print_debug( 'Got response.' )
             print_debug( 'Request ID#: ' + res.request.id.to_s )
