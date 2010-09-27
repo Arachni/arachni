@@ -46,17 +46,25 @@ class Trainer
     # @param  [Bool]  redir  was the response forcing a redirection?
     #
     def add_response( res, redir = false )
+      
+        # prepare the page url
+        @analyzer.url = URI( @page.url ).
+          merge( URI( URI.escape( res.request.url ) ) ).to_s
+
         # don't follow links to external sites and 
         # respect follow-subdomains option
-        return if !follow?( res.effective_url ) || ( redir && !follow?( redir ) )
+
+        return if !follow?( @analyzer.url )
+        return if ( redir && !follow?( @analyzer.url ) )
         
         analyze( [ res, redir ] )
     end
     
     def follow?( url )
-        return if( @analyzer.exclude?( url ) )
-        return if( !@analyzer.include?( url ) )    
-        return if !@analyzer.in_domain?( URI.parse( url ) )
+        return false if !@analyzer.in_domain?( url )
+        return false if @analyzer.exclude?( url ) 
+        return false if !@analyzer.include?( url )
+        return true
     end
     
     #
@@ -150,11 +158,6 @@ class Trainer
         return if !@opts.audit_links
         
         @analyzer.url = res.effective_url.clone
-
-        if( redir )
-            @analyzer.url = URI( @page.url ).
-              merge( URI( URI.escape( res.request.url ) ) ).to_s
-        end
 
         links   = @analyzer.get_links( res.body ).clone
         
