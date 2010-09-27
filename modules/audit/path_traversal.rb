@@ -126,17 +126,17 @@ class PathTraversal < Arachni::Module::Base
             url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
-                    'var'          => var,
-                    'url'          => url,
-                    'injected'     => injection_str,
-                    'id'           => 'n/a',
-                    'regexp'       => regexp.to_s,
-                    'regexp_match' => match,
-                    'elem'         => where,
-                    'response'     => res.body,
-                    'headers'      => {
-                        'request'    => res.request.headers,
-                        'response'   => res.headers,    
+                    :var          => var,
+                    :url          => url,
+                    :injected     => injection_str,
+                    :id           => 'n/a',
+                    :regexp       => regexp.to_s,
+                    :regexp_match => match,
+                    :elem         => where,
+                    :response     => res.body,
+                    :headers      => {
+                        :request    => res.request.headers,
+                        :response   => res.headers,    
                    }
 
                 }.merge( self.class.info )

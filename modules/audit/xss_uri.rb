@@ -87,17 +87,17 @@ class XSSURI < Arachni::Module::Base
             url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
-                'var'          => 'n/a',
-                'url'          => url,
-                'injected'     => @str,
-                'id'           => @str,
-                'regexp'       => regexp,
-                'regexp_match' => @str,
-                'elem'         => Vulnerability::Element::LINK,
-                'response'     => res.body,
-                'headers'      => {
-                    'request'    => res.request.headers,
-                    'response'   => res.headers,    
+                :var          => 'n/a',
+                :url          => url,
+                :injected     => @str,
+                :id           => @str,
+                :regexp       => regexp,
+                :regexp_match => @str,
+                :elem         => Vulnerability::Element::LINK,
+                :response     => res.body,
+                :headers      => {
+                    :request    => res.request.headers,
+                    :response   => res.headers,    
                 }
             }.merge( self.class.info ) )
                     

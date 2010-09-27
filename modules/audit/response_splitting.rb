@@ -105,17 +105,17 @@ class ResponseSplitting < Arachni::Module::Base
           
             url = res.effective_url
             @results << Vulnerability.new( {
-                    'var'          => var,
-                    'url'          => url,
-                    'injected'     => URI.encode( @__header ),
-                    'id'           => 'x-crlf-safe',
-                    'regexp'       => 'n/a',
-                    'regexp_match' => 'n/a',
-                    'elem'         => opts[:element],
-                    'response'     => res.body,
-                    'headers'      => {
-                        'request'    => res.request.headers,
-                        'response'   => res.headers,    
+                    var          => var,
+                    :url          => url,
+                    :injected     => URI.encode( @__header ),
+                    :id           => 'x-crlf-safe',
+                    :regexp       => 'n/a',
+                    :regexp_match => 'n/a',
+                    :elem         => opts[:element],
+                    :response     => res.body,
+                    :headers      => {
+                        :request    => res.request.headers,
+                        :response   => res.headers,    
                     }
                 }.merge( self.class.info )
             )

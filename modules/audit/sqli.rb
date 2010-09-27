@@ -150,17 +150,17 @@ class SQLInjection < Arachni::Module::Base
                 
                 # append the result to the results array
                 @results << Vulnerability.new( {
-                        'var'          => var,
-                        'url'          => url,
-                        'injected'     => injected,
-                        'id'           => id,
-                        'regexp'       => id_regex.to_s,
-                        'regexp_match' => match,
-                        'elem'         => elem,
-                        'response'     => res.body,
-                        'headers'      => {
-                            'request'    => res.request.headers,
-                            'response'   => res.headers,    
+                        :var          => var,
+                        :url          => url,
+                        :injected     => injected,
+                        :id           => id,
+                        :regexp       => id_regex.to_s,
+                        :regexp_match => match,
+                        :elem         => elem,
+                        :response     => res.body,
+                        :headers      => {
+                            :request    => res.request.headers,
+                            :response   => res.headers,    
                         }
 
                     }.merge( self.class.info )

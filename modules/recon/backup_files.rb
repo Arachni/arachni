@@ -124,17 +124,17 @@ class BackupFiles < Arachni::Module::Base
         url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
-            'var'          => 'n/a',
-            'url'          => url,
-            'injected'     => filename,
-            'id'           => filename,
-            'regexp'       => 'n/a',
-            'regexp_match' => 'n/a',
-            'elem'         => Vulnerability::Element::LINK,
-            'response'     => res.body,
-            'headers'      => {
-                'request'    => res.request.headers,
-                'response'   => res.headers,    
+            :var          => 'n/a',
+            :url          => url,
+            :injected     => filename,
+            :id           => filename,
+            :regexp       => 'n/a',
+            :regexp_match => 'n/a',
+            :elem         => Vulnerability::Element::LINK,
+            :response     => res.body,
+            :headers      => {
+                :request    => res.request.headers,
+                :response   => res.headers,    
             }
         }.merge( self.class.info ) )
 

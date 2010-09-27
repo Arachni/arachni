@@ -523,17 +523,17 @@ module Auditor
             print_verbose( '---------' ) if only_positives?
     
             res = {
-                'var'          => var,
-                'url'          => url,
-                'injected'     => injected_str,
-                'id'           => match.to_s,
-                'regexp'       => regexp.to_s,
-                'regexp_match' => match_data,
-                'response'     => res.body,
-                'elem'         => elem,
-                'headers'      => {
-                    'request'    => res.request.headers,
-                    'response'   => res.headers,    
+                :var          => var,
+                :url          => url,
+                :injected     => injected_str,
+                :id           => match.to_s,
+                :regexp       => regexp.to_s,
+                :regexp_match => match_data,
+                :response     => res.body,
+                :elem         => elem,
+                :headers      => {
+                    :request    => res.request.headers,
+                    :response   => res.headers,    
                 }
             }
             

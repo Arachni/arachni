@@ -165,17 +165,17 @@ class BlindSQLInjection < Arachni::Module::Base
         
         # append the result to the results hash
         @results << Vulnerability.new( {
-                'var'          => var,
-                'url'          => url,
-                'injected'     => injection_str,
-                'id'           => 'n/a',
-                'regexp'       => 'n/a',
-                'regexp_match' => 'n/a',
-                'elem'         => where,
-                'response'     => res.body,
-                'headers'      => {
-                    'request'    => get_request_headers( ),
-                    'response'   => get_response_headers( res ),    
+                :var          => var,
+                :url          => url,
+                :injected     => injection_str,
+                :id           => 'n/a',
+                :regexp       => 'n/a',
+                :regexp_match => 'n/a',
+                :elem         => where,
+                :response     => res.body,
+                :headers      => {
+                    :request    => get_request_headers( ),
+                    :response   => get_response_headers( res ),    
                 }
             }.merge( self.class.info )
         )
