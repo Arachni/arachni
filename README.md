@@ -25,7 +25,7 @@ Finally, Arachni yields great performance due to its asynchronous HTTP  model (c
 Thus, you'll only be limited by the responsivenes of the server under audit and your available bandwidth.
 
 Note: Despite the fact that Arachni is mostly targeted towards web application security,
-it can easily be used for general purpose scaping, data-mining, etc with the addition of custom modules.
+it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
 
 
 {Arachni} offers:
@@ -43,7 +43,7 @@ Basically, Arachni gives you the right tools for the job and gets the hell out o
 **2 Simplicity**<br/>
 Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
 From a user's or a module developer's point of view everything appears simple and straight-forward
-all the while retaining and providing power, performance and flexibility.
+all the while providing power, performance and flexibility.
 
 There are only a couple of rules a developer needs to follow:
 
@@ -54,7 +54,7 @@ That's pretty much all you are expected and need to do...
 A glance at an existing report or module will be all you need to get you going.
 
 Users just need to take a look at the help output.<br/>
-However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists as well for those who want to be aware of all the details.
+However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists for those who want to be aware of all the details.
 
 
 ## Feature List
@@ -140,7 +140,7 @@ and incorporate that knowledge, on the fly, for the duration of the audit.
 
 Modules have the ability to individually force the Framework to learn from the HTTP responses they are
 going to induce.<br/>
-However, this usually not required since Arachni is aware of which requests are more likely
+However, this is usually not required since Arachni is aware of which requests are more likely
 to uncover new elements or attack vectors and will adapt itself accordingly.
 
 Still, this can be an invaluable asset to Fuzzer modules.
