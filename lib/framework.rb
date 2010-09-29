@@ -48,7 +48,7 @@ module Arachni
 # @author: Anastasios "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @version: 0.1.6
 #
 class Framework
 
@@ -364,7 +364,9 @@ class Framework
             }
         end
         
-        return ( load - unload )
+        @opts.mods = load - unload
+        
+        return @opts.mods
     end
 
     #

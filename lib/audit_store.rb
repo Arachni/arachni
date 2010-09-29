@@ -132,10 +132,13 @@ class AuditStore
         hash = Hash.new
         obj.instance_variables.each {
             |var|
-            hash[var.to_s.gsub( /@/, '' )] =
-                obj.instance_variable_get( var ) 
+            
+            key       = var.to_s.gsub( /@/, '' )
+            hash[key] = obj.instance_variable_get( var ) 
+                
         }
-        hash
+        
+        return hash
     end
     
     #
@@ -202,7 +205,7 @@ class AuditStore
             'regexp',
             'regexp_match',
             'headers',
-            'response'
+            'response',
         ]
 
         new_vulns = {}
@@ -222,6 +225,9 @@ class AuditStore
             if( !new_vulns[__id].variations )
                 new_vulns[__id].variations = []
             end
+            
+            vuln.headers['request']  = vuln.headers[:request].clone
+            vuln.headers['response'] = vuln.headers[:response].clone
             
             new_vulns[__id].variations << {
                 'url'           => orig_url.clone,
