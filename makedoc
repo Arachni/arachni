@@ -9,7 +9,7 @@ if [ `whoami` = 'zapotek' ]; then
 fi
 
 yardoc --verbose --protected --title \
-  "Arachni - Web Application Vulnerability Scanning Framework" reports/* modules/* lib/* \
+  "Arachni - Web Application Security Scanner Framework" reports/* modules/* lib/* \
   $outdir \
   - LICENSE.md AUTHORS.md ACKNOWLEDGMENTS.md DIAGRAMS.md HACKING.md CHANGELOG.md \
   CONTRIBUTORS.md
