@@ -8,7 +8,7 @@
 **Copyright**:    2010    
 **License**:      [GNU General Public License v2](file.LICENSE.html)
 
-![Arachni logo](logo.png)
+![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
 ## Synopsis
 
