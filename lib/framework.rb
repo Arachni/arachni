@@ -96,9 +96,6 @@ class Framework
         @spider   = Arachni::Spider.new( @opts )
         @analyzer = Arachni::Analyzer.new( @opts )
         
-        # trap Ctrl+C interrupts
-        trap( 'INT' ) { handle_interrupt( ) }
-        
         # deep copy the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = deep_clone( @opts.redundant )
@@ -568,30 +565,6 @@ class Framework
             @opts.user_agent += authed_by 
         end
 
-    end
-    
-    #
-    # Handles Ctrl+C interrupts
-    #
-    # Once an interrupt has been trapped the system pauses and waits
-    # for user input. <br/>
-    # The user can either continue or exit.
-    #
-    # The interrupt will be handled after a module has finished.
-    #
-    def handle_interrupt( )
-        
-        print_line
-        print_info( 'Arachni was interrupted,' +
-            ' do you want to continue?' )
-            
-        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
-            
-        if gets[0] == 'e'
-            print_info( 'Exiting...' )
-            exit 0
-        end
-        
     end
     
     #

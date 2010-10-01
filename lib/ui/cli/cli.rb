@@ -84,6 +84,10 @@ class CLI
         
         # work on the user supplied arguments
         parse_opts( )
+        
+        # trap Ctrl+C interrupts
+        trap( 'INT' ) { handle_interrupt( ) }
+        
     end
 
     #
@@ -122,6 +126,31 @@ class CLI
     end
 
     private
+
+    #
+    # Handles Ctrl+C interrupts
+    #
+    # Once an interrupt has been trapped the system pauses and waits
+    # for user input. <br/>
+    # The user can either continue or exit.
+    #
+    # The interrupt will be handled after a module has finished.
+    #
+    def handle_interrupt( )
+        
+        print_line
+        print_info( 'Arachni was interrupted,' +
+            ' do you want to continue?' )
+            
+        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+            
+        if gets[0] == 'e'
+            print_info( 'Exiting...' )
+            exit 0
+        end
+        
+    end
+
 
     #
     # Outputs a list of the loaded modules using print_debug()<br/>
