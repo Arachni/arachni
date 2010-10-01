@@ -310,7 +310,11 @@ The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni_cli.rb --repload=test.com.afr --report=txt --repsave=my_report.txt
+    $ ./arachni_cli.rb --report=html --repload=test.com.afr --repsave=my_report
+    
+or any other report type as shown by:
+
+    $ ./arachni_cli.rb --lsrep
 
 
 ## Requirements
