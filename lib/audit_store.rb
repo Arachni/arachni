@@ -75,7 +75,13 @@ class AuditStore
         @options         = prepare_options( @options )
         @vulns           = prepare_variations( @vulns )
         @start_datetime  = @options['start_datetime'].asctime
-        @finish_datetime = @options['finish_datetime'].asctime
+        
+        if @options['finish_datetime']
+            @finish_datetime = @options['finish_datetime'].asctime
+        else
+            @finish_datetime = Time.now.asctime
+        end
+        
         @delta_time      = secs_to_hms( @options['delta_time'] )
     end
     
