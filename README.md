@@ -8,6 +8,8 @@
 **Copyright**:    2010    
 **License**:      [GNU General Public License v2](file.LICENSE.html)
 
+![Arachni logo](logo.png)
+
 ## Synopsis
 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
