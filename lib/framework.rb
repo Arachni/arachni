@@ -200,6 +200,35 @@ class Framework
     end
 
     #
+    # Takes care of report execution
+    #
+    # @see AuditStore
+    #
+    # @param  [AuditStore]  audit_store
+    #
+    def run_reps( audit_store )
+    
+        ls_loaded_reps.each_with_index {
+            |report, i|
+
+            # if the user hasn't selected a filename for the report
+            # choose one for him
+            if( !@opts.repsave || @opts.repsave.size == 0 )
+                @opts.repsave =
+                    URI.parse( audit_store.options['url'] ).host +
+                        '-' + Time.now.to_s
+            end
+            
+            
+            new_rep = report.new( deep_clone( audit_store ), @opts.repopts,
+                            @opts.repsave + REPORT_EXT )
+            
+            new_rep.run( )
+        }
+    end
+
+
+    #
     # Analyzes the html code for elements and returns a page object
     #
     # @param  [String]    url
@@ -530,6 +559,17 @@ class Framework
         REPORT_EXT
     end
     
+    #
+    # Creates a deep clone of an object and returns that object.
+    #
+    # @param    [Object]    the object to clone
+    #
+    # @return   [Object]    a deep clone of the object
+    #
+    def deep_clone( obj )
+        Marshal.load( Marshal.dump( obj ) )
+    end
+    
     private
     
     #
@@ -715,35 +755,6 @@ class Framework
     end
     
     #
-    # Takes care of report execution
-    #
-    # @see AuditStore
-    #
-    # @param  [AuditStore]  audit_store
-    #
-    def run_reps( audit_store )
-    
-        ls_loaded_reps.each_with_index {
-            |report, i|
-
-            # if the user hasn't selected a filename for the report
-            # choose one for him
-            if( !@opts.repsave || @opts.repsave.size == 0 )
-                @opts.repsave =
-                    URI.parse( audit_store.options['url'] ).host +
-                        '-' + Time.now.to_s
-            end
-            
-            
-            new_rep = report.new( audit_store, @opts.repopts,
-                            @opts.repsave + REPORT_EXT )
-            
-            new_rep.run( )
-        }
-    end
-
-    
-    #
     # Takes care of some options that need slight processing
     #
     def parse_opts(  )
@@ -837,19 +848,6 @@ class Framework
         
     end
 
-    #
-    # Creates a deep clone of an object and returns that object.
-    #
-    # @param    [Object]    the object to clone
-    #
-    # @return   [Object]    a deep clone of the object
-    #
-    def deep_clone( obj )
-        Marshal.load( Marshal.dump( obj ) )
-    end
-  
-    private
-    
     def lsmod_match?( path )
         cnt = 0
         @opts.lsmod.each {
