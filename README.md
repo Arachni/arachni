@@ -11,7 +11,7 @@
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
 ## Synopsis
-
+ 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators evaluate the security of web applications.
  
