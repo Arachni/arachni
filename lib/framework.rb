@@ -63,7 +63,7 @@ class Framework
     VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.5'
+    REVISION     = '0.1.6'
     
     # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
