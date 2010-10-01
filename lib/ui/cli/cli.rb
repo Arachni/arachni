@@ -139,9 +139,22 @@ class CLI
     def handle_interrupt( )
         
         print_line
+        print_info( 'Results thus far:' )
+        
+        # runs the stdout report so that the user
+        # can see what has been discovered thus far
+        begin
+            run_stdout( @arachni.deep_clone( @arachni.audit_store_get( ) ) )
+        rescue Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+            print_line
+            exit 0
+        end
+
         print_info( 'Arachni was interrupted,' +
             ' do you want to continue?' )
-            
+        
         print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
             
         if gets[0] == 'e'
@@ -151,6 +164,13 @@ class CLI
         
     end
 
+    def run_stdout( audit_store )
+        
+        load( @opts.dir['reports'] + 'stdout.rb' )
+        
+        stdout = Arachni::Reports::Stdout.new( audit_store )
+        stdout.run( )
+    end
 
     #
     # Outputs a list of the loaded modules using print_debug()<br/>
