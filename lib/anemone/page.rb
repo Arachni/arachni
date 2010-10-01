@@ -13,7 +13,7 @@
 # o in_domain?( uri ): adding support for subdomain crawling<br/> 
 # o links(): adding support for frame and iframe src URLs<br/>
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

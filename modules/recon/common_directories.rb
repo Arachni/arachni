@@ -20,7 +20,7 @@ module Recon
 #
 # Looks for common, possibly sensitive, directories on the server.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3

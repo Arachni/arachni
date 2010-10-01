@@ -33,7 +33,7 @@ module Arachni
 # === Cookies
 # Cookies are extracted from the HTTP headers and parsed by WEBrick::Cookie
 #    
-# @author: Anastasios "Zapotek" Laskos 
+# @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

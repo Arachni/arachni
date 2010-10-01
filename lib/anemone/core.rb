@@ -18,7 +18,7 @@ module Anemone
 # <br/>
 # Messages were also added to inform the user in case of redundant URLs.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

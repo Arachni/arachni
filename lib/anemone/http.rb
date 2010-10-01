@@ -15,7 +15,7 @@ require 'anemone'
 #  o refresh_connection( ): added proxy support
 #  o get_response( ): upped the retry counter to 7 and generalized exception handling
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

@@ -19,7 +19,7 @@ module Module
 #    
 # It also provides methods for getting modules' info, listing available modules etc.
 #    
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

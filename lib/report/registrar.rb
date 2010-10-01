@@ -17,7 +17,7 @@ module Report
 # When included into reports it registers
 # them with Arachni::Report::Registry
 #
-# @author: Anastasios "Zapotek" Laskos 
+# @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

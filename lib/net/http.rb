@@ -13,7 +13,7 @@ require 'net/http'
 # Unfortunaetely Anemone doesn't support HTTP authentication<br/>
 # so we need to get to the core and override Net::HTTPHeader.initialize_http_header( )
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

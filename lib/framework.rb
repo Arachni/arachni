@@ -45,7 +45,7 @@ module Arachni
 # It runs the audit, loads modules and reports and runs them according to
 # user options.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.6

@@ -20,7 +20,7 @@ module Audit
 #
 # It also forces Arachni to train itself by analyzing the server responses.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

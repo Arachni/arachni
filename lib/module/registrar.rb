@@ -21,7 +21,7 @@ module Module
 # enabling them to register their results and access the datastore.    
 #
 #
-# @author: Anastasios "Zapotek" Laskos 
+# @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

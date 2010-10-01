@@ -14,7 +14,7 @@ module Reports
 #
 # Awesome prints an {AuditStore#to_h} hash.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

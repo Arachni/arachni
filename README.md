@@ -148,7 +148,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 ## Usage
 
        Arachni - Web Application Security Scanner Framework v0.2 [0.1.4] initiated.
-       Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
+       Authors: Tasos "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
                 With the support of the community and the Arachni Team
                 

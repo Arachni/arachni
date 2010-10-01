@@ -23,7 +23,7 @@ module Arachni
 #    
 # Crawls the URL in opts[:url] and grabs the HTML code and headers.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

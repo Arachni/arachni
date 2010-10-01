@@ -20,7 +20,7 @@ module Reports
 # Requires the Liquid (http://www.liquidmarkup.org/) gem:<br/>
 #   sudo gem install liquid
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

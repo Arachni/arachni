@@ -18,7 +18,7 @@ module Module
 # Tries to fill in webapp parameters with values of proper type
 # based on their name.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

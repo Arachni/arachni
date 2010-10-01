@@ -19,7 +19,7 @@ module Module
 #
 # Analyzes all HTTP responses looking for new auditable elements.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

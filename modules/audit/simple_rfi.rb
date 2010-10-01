@@ -22,7 +22,7 @@ module Audit
 # of how to write modules for Arachni.
 #
 #
-# @author: Anastasios "Zapotek" Laskos 
+# @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

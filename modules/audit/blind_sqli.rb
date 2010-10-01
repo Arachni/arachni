@@ -20,7 +20,7 @@ module Audit
 # This is going to be greatly improved in the future<br/>
 # to support other DBs as well. 
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

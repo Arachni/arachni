@@ -19,7 +19,7 @@ module Module
 # Included by {Module::Base}.<br/>
 # Includes audit methods.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

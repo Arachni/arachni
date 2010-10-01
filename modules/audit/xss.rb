@@ -18,7 +18,7 @@ module Audit
 # It audits links, forms and cookies.
 #
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

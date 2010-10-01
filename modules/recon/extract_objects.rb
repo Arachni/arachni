@@ -26,7 +26,7 @@ module Recon
 # and then pass their data to the system to be used by other modules.
 #
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

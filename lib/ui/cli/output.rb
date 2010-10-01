@@ -18,7 +18,7 @@ module UI
 # Provides a command line output interface to the framework.<br/>
 # All UIs should provide an Arachni::UI::Output module with these methods.
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

@@ -18,7 +18,7 @@ module Recon
 #
 # Looks for sensitive common files on the server. 
 #
-# @author: Anastasios "Zapotek" Laskos
+# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

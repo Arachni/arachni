@@ -22,7 +22,7 @@ module UI
 # Most of the logic is in the Framework class however profiles can only<br/>
 # be loaded and saved at this level.    
 #
-# @author: Anastasios "Zapotek" Laskos 
+# @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.4
@@ -440,7 +440,7 @@ class CLI
 
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @arachni.version + ' [' + @arachni.revision + '] initiated.
-       Authors: Anastasios "Zapotek" Laskos <zapotek@segfault.gr>
+       Authors: Tasos "Zapotek" Laskos <zapotek@segfault.gr>
                                            <tasos.laskos@gmail.com>
                 With the support of the community and the Arachni Team
                 
