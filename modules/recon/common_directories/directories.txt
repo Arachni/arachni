@@ -261,3 +261,5 @@ error_log
 ccbill 
 network 
 xamp
+xampp
+lamp
