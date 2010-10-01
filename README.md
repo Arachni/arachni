@@ -360,3 +360,5 @@ See the [LICENSE](file.LICENSE.html) file for more information.
 Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.
+
+![Arachni banner](http://zapotek.github.com/arachni/banner.png)
