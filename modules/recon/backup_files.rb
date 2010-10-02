@@ -119,6 +119,10 @@ class BackupFiles < Arachni::Module::Base
     #
     def __log_results( res, filename )
         
+        # some webapps disregard the extension and load the page anyway
+        # which will lead to false positives, take care of that.
+        return if res.body == @page.html
+        
         return if( res.code != 200 || @http.custom_404?( res.body ) )
           
         url = res.effective_url
