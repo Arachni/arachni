@@ -28,7 +28,7 @@
   - Significantly increased ease of development.
 - Improved interrupt handling
     - Scans can be paused/resumed at any time.
-    - Even in the event of a system exit or user cancellation reports will still be created
+    - In the event of a system exit or user cancellation reports will still be created
       using whatever data were gathered during runtime.
     - When the scan is paused the user will be presented with the results gathered thus far.
 - Improved configuration profile handling
