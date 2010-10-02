@@ -37,6 +37,7 @@ opts = GetoptLong.new(
     [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--load-profile',            GetoptLong::REQUIRED_ARGUMENT ],
     [ '--save-profile',            GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--show-profile',            GetoptLong::NO_ARGUMENT ],
     [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
@@ -151,7 +152,10 @@ opts.each {
             options.save_profile = arg
 
         when '--load-profile'
-            options.load_profile = arg
+            options.load_profile << arg
+
+        when '--show-profile'
+            options.show_profile = true
                         
         when '--authed-by'
             options.authed_by = arg

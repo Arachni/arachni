@@ -211,11 +211,14 @@ class Options
     attr_accessor :save_profile
     
     #
-    # Location of an Arachni Framework Profile (.afp) file to load
+    # Location of Arachni Framework Profile (.afp) files to load
     #
-    # @return    [String]
+    # @return    [Array]
     #
     attr_accessor :load_profile
+
+    
+    attr_accessor :show_profile
     
     #
     # The person that authorized the scan<br/>
@@ -344,9 +347,10 @@ class Options
         @repopts    = Hash.new
         @dir        = Hash.new
         @exclude_cookies    = []
+        @load_profile       = []
         
         # set some defaults
-        redirect_limit = 20
+        @redirect_limit = 20
 
         
     end
@@ -373,8 +377,99 @@ class Options
     def merge!( options )
         options.to_h.each_pair {
             |k, v|
+            
+            next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
             send( "#{k}=", v ) if v
         }
+    end
+    
+    def to_args
+        
+        cli_args = ''
+        
+        self.to_h.keys.each {
+            |key|
+            
+            arg = self.to_arg( key )
+            
+            cli_args += " #{arg.to_s}" if arg
+        }
+        
+        return cli_args += " #{self.url}"
+    end
+
+    def to_arg( key )
+        
+        var = self.instance_variable_get( "@#{key}" )
+        
+        return if !var
+        return if ( var.is_a?( Array ) || var.is_a?( Hash ) ) && var.empty?
+        return if key == 'show_profile'
+        return if key == 'url'
+        return if key == 'dir'
+        return if key == 'include' && var == [/.*/]
+        return if key == 'reports' && var == ['stdout']
+
+        key = 'exclude_cookie' if key == 'exclude_cookies'
+        key = 'report'         if key == 'reports'
+        
+        key = key.gsub( '_', '-' )
+        
+        arg = ''
+        
+        case key
+          
+            when 'mods'
+                var = var.join( ',' )
+            
+            when 'arachni-verbose'
+                key = 'verbosity'
+        
+            when 'redundant'
+                var.each {
+                    |rule|
+                    arg += " --#{key}=#{rule['regexp'].source}:#{rule['count']}"
+                }
+                return arg
+
+            when 'repopts'
+                arg = " --#{key}="
+                var.each {
+                    |opt, val|
+                    arg += "#{opt}:#{val},"
+                }
+                return arg
+
+            when 'proxy-port'
+                return
+
+            when 'proxy-addr'
+                return "--proxy=#{self.proxy_addr}:#{self.proxy_port}"
+              
+        
+        end
+            
+        if( var.is_a?( TrueClass ) )
+            arg = "--#{key}"
+        end
+            
+        if( var.is_a?( String ) || var.is_a?( Fixnum ) )
+            arg = "--#{key}=#{var.to_s}"
+        end
+            
+        if( var.is_a?( Array ) )
+            
+            var.each {
+                |i|
+                
+                i = i.source if i.is_a?( Regexp )
+                
+                arg += " --#{key}=#{i}"
+            }
+            
+        end
+        
+        return arg
     end
     
     private

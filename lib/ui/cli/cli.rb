@@ -61,7 +61,7 @@ class CLI
         if( @opts.load_profile )
             load_profile( @opts.load_profile )
         end
-                
+
         #
         # the stdout report is the default one for the CLI,
         # each UI should have it's own default
@@ -81,6 +81,12 @@ class CLI
         
         # echo the banner
         banner( )
+        
+        if( @opts.show_profile )
+            print_profile( )
+            exit 0
+        end
+
         
         # work on the user supplied arguments
         parse_opts( )
@@ -394,11 +400,13 @@ class CLI
     #
     # @param    [String]    filename    the file to load
     #
-    def load_profile( filename )
+    def load_profile( profiles )
         begin
-            
             @opts.load_profile = nil
-            @opts.merge!( YAML::load( IO.read( filename ) ) )
+            profiles.each {
+                |filename|
+                @opts.merge!( YAML::load( IO.read( filename ) ) )
+            }
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
@@ -423,6 +431,8 @@ class CLI
         
         begin
             f = File.open( filename + PROFILE_EXT, 'w' )
+            print_status( "Saving profile in '#{f.path}'." )
+            
             YAML.dump( profile, f )
         rescue Exception => e
             banner( )
@@ -432,6 +442,11 @@ class CLI
             exit 0
         end
 
+    end
+    
+    def print_profile( )
+        print_info( 'Running profile:' )
+        print_info( @opts.to_args ) 
     end
     
     def handle_exception( e )
@@ -525,14 +540,19 @@ USAGE
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
     
+    Profiles -----------------------
+
+    
     --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: #{PROFILE_EXT})
                                   
     --load-profile=<file>       load a run profile from <file>
+                                  (Can be used multiple times.)
                                   (You can complement it with more options, except for:
                                       * --mods
                                       * --redundant)
-                                  
+
+    --show-profile              will output the running profile as CLI arguments
     
     Crawler -----------------------
     
@@ -620,12 +640,12 @@ USAGE
                                   
     Proxy --------------------------
     
-    --proxy=<server:port>       specify proxy
+    --proxy=<server:port>         specify proxy
     
-    --proxy-auth=<user:passwd>  specify proxy auth credentials
+    --proxy-auth=<user:passwd>    specify proxy auth credentials
     
-    --proxy-type=<type>         proxy type can be either socks or http
-                                  (Default: http)
+    --proxy-type=<type>           proxy type can be either socks or http
+                                    (Default: http)
     
   
 USAGE
