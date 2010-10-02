@@ -32,14 +32,19 @@ module Utilities
     # @return  [String]   path
     #
     def Utilities.get_path( url )
+        
         filename = File.basename( URI( URI.escape( url ) ).path )
-        regexp = filename + '(.*)'
-        path = url.gsub( Regexp.new( regexp ), '' )
+        regexp   = filename + '(.*)'
+        path     = url.gsub( Regexp.new( regexp ), '' )
+        
         if( path == 'http:' || path == 'https:' )
-            return url
-        else
-            return path
+            path =  url
         end
+        
+        len = path.length - 1
+        path[len] = '' if path[len] == '?'
+        
+        return path
     end
     
     #
