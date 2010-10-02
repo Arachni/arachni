@@ -1,0 +1,18 @@
+Several preconfigured Arachni Framework Profile files.
+
+To see details about profiles run:
+    ./arachni_cli.rb --show-profile --load-profile=profiles/<filename>
+
+Examples
+--------
+Simple:
+    ./arachni_cli.rb --show-profile --load-profile=profiles/scan-comprehensive.afp
+
+You can also combine several profiles:
+    ./arachni_cli.rb --show-profile --load-profile=profiles/scan-comprehensive.afp --load-profile=profiles/http-high-bandwidth.afp
+        
+Example scan:
+    ./arachni_cli.rb --load-profile=profiles/mods-audit.afp --load-profile=profiles/http-low-bandwidth.afp -gpcv http://demo.testfire.net/
+    
+Creating your own profiles:
+    ./arachni_cli.rb --load-profile=profiles/mods-audit.afp --load-profile=profiles/http-low-bandwidth.afp -gpcv http://site.com/ --save-profile=profiles/my-profile
