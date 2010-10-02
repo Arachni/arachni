@@ -22,7 +22,7 @@ module Recon
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -94,7 +94,7 @@ class BackupFiles < Arachni::Module::Base
             :description    => %q{Tries to find sensitive backup files.},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
