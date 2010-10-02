@@ -144,7 +144,7 @@ class CLI
         # runs the stdout report so that the user
         # can see what has been discovered thus far
         begin
-            run_stdout( @arachni.deep_clone( @arachni.audit_store_get( ) ) )
+            print_vulns( @arachni.deep_clone( @arachni.audit_store_get( ) ) )
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
@@ -164,12 +164,26 @@ class CLI
         
     end
 
-    def run_stdout( audit_store )
+    def print_vulns( audit_store )
         
-        load( @opts.dir['reports'] + 'stdout.rb' )
+        print_line( )
+        print_info( audit_store.vulns.size.to_s +
+          ' vulnerabilities were detected.' )
         
-        stdout = Arachni::Reports::Stdout.new( audit_store )
-        stdout.run( )
+        print_line( )
+        audit_store.vulns.each {
+            |vuln|
+
+            print_ok( "#{vuln.name} (In #{vuln.elem} variable '#{vuln.var}'" + 
+              " - Severity: #{vuln.severity})" )
+            
+            print_info( vuln.variations[0]['url'] )
+            
+            print_line( )
+        }
+        
+        print_line( )
+        
     end
 
     #
