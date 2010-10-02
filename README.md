@@ -200,14 +200,18 @@ Still, this can be an invaluable asset to Fuzzer modules.
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
     
+### Profiles
+    
     --save-profile=<file>       save the current run profile/options to <file>
-                                  (The file will be saved with an extention of: .afp)
+                                  (The file will be saved with an extention of: #{PROFILE_EXT})
                                   
     --load-profile=<file>       load a run profile from <file>
+                                  (Can be used multiple times.)
                                   (You can complement it with more options, except for:
                                       * --mods
                                       * --redundant)
-                                  
+
+    --show-profile              will output the running profile as CLI arguments
     
 ### Crawler
     

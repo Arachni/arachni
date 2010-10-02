@@ -541,7 +541,6 @@ USAGE
                                   (Will be appended to the user-agent string.)
     
     Profiles -----------------------
-
     
     --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: #{PROFILE_EXT})
