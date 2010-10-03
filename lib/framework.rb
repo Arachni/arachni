@@ -48,7 +48,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.6
+# @version: 0.1.7
 #
 class Framework
 
@@ -63,7 +63,7 @@ class Framework
     VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.6'
+    REVISION     = '0.1.7'
     
     # the extension of the Arachni Framework Report files
     REPORT_EXT   = '.afr'
