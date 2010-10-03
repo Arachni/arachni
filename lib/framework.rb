@@ -71,7 +71,7 @@ class Framework
     #
     # Instance options
     #
-    # @return [Hash]
+    # @return [Options]
     #
     attr_reader :opts
 
