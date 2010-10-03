@@ -89,16 +89,18 @@ class Text < Arachni::Report::Base
             __buffer( "  Redundant:" )
             @audit_store.options['redundant'].each {
                 |red|
-                __buffer( "    " + red )
+                __buffer( "    " + red['regexp'] + ':' + red['count'].to_s )
             }
         end
 
         
         __buffer( 'Cookies: ' )
-        @audit_store.options['redundant'].each {
-            |cookie|
-            __buffer( "#{cookie.name} = #{cookie.value}" )
-        }
+        if( @audit_store.options['cookies'] )
+            @audit_store.options['cookies'].each {
+                |cookie|
+                __buffer( "#{cookie['name']} = #{cookie['value']}" )
+            }
+        end
         
         __buffer
         __buffer( '===========================' )
