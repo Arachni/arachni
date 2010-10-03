@@ -8,16 +8,12 @@
 
 =end
 
-require 'liquid'
 
 module Arachni
 module Reports    
     
 #
 # Creates a plain text report of the audit.
-#
-# Requires the Liquid (http://www.liquidmarkup.org/) gem:<br/>
-#   sudo gem install liquid
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
