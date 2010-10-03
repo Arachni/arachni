@@ -82,12 +82,6 @@ class CLI
         # echo the banner
         banner( )
         
-        if( @opts.show_profile )
-            print_profile( )
-            exit 0
-        end
-
-        
         # work on the user supplied arguments
         parse_opts( )
         
@@ -245,12 +239,17 @@ class CLI
                     lsrep
                     exit 0
 
+                when 'show_profile'
+                    print_profile( )
+                    exit 0
+
                 when 'save_profile'
                     begin
                         save_profile( arg )
                     rescue Exceptions => e
                         handle_exception( e )
-                    end                    
+                    end
+                    exit 0                    
                     
                 when 'mods'
                     begin
@@ -431,9 +430,9 @@ class CLI
         
         begin
             f = File.open( filename + PROFILE_EXT, 'w' )
-            print_status( "Saving profile in '#{f.path}'." )
-            
             YAML.dump( profile, f )
+            print_status( "Saved profile in '#{f.path}'." )
+            print_line( )
         rescue Exception => e
             banner( )
             print_error( e.to_s )
