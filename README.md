@@ -312,15 +312,15 @@ In the following example all modules will be run against <i>http://test.com</i>
 , auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.  
     
-    $ ./arachni_cli.rb -gpcfv --mods=* http://test.com --repsave=test.com
+    $ ./arachni.rb -gpcfv --mods=* http://test.com --repsave=test.com
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni_cli.rb --report=html --repload=test.com.afr --repsave=my_report
+    $ ./arachni.rb --report=html --repload=test.com.afr --repsave=my_report
     
 or any other report type as shown by:
 
-    $ ./arachni_cli.rb --lsrep
+    $ ./arachni.rb --lsrep
 
 
 ## Requirements
