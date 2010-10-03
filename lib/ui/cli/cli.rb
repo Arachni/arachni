@@ -25,7 +25,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.1.6
 # @see Arachni::Framework
 #
 class CLI
