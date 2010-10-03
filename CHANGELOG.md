@@ -36,3 +36,4 @@
     - Multiple profiles can be loaded at once
     - Ability to show running profiles as CLI arguments
 - Overall module improvements and optimizations.
+- Added plain text report
