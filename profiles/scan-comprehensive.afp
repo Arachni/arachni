@@ -2,6 +2,7 @@
 arachni_verbose: true
 audit_cookies: true
 audit_forms: true
+audit_headers: true
 audit_links: true
 authed_by: 
 dir: 
