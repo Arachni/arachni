@@ -60,6 +60,7 @@ class Text < Arachni::Report::Base
         __buffer
         __buffer( 'URL: ' + @audit_store.options['url'] )
         __buffer( 'User agent: ' + @audit_store.options['user_agent'] )
+        __buffer
         __buffer( 'Audited elements: ' )
         __buffer( '* Links' ) if @audit_store.options['audit_links']
         __buffer( '* Forms' ) if @audit_store.options['audit_forms']
@@ -67,6 +68,7 @@ class Text < Arachni::Report::Base
         __buffer( '* Headers' ) if @audit_store.options['audit_headers']
         __buffer
         __buffer( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
+        __buffer
         __buffer( 'Filters: ' )
         
         if @audit_store.options['exclude']
@@ -93,12 +95,12 @@ class Text < Arachni::Report::Base
             }
         end
 
-        
+        __buffer
         __buffer( 'Cookies: ' )
         if( @audit_store.options['cookies'] )
             @audit_store.options['cookies'].each {
                 |cookie|
-                __buffer( "#{cookie['name']} = #{cookie['value']}" )
+                __buffer( "  #{cookie[0]} = #{cookie[1]}" )
             }
         end
         
@@ -162,7 +164,7 @@ class Text < Arachni::Report::Base
             __buffer( 'URL: ' + var['url'] )
             __buffer( 'ID:  ' + var['id'] )
             __buffer( 'Injected value:     ' + var['injected'] )
-            __buffer( 'Regular expression: ' + var['regexp'] )
+            __buffer( 'Regular expression: ' + var['regexp'].to_s )
             __buffer( 'Matched string:     ' + var['regexp_match'] )
             
             __buffer
