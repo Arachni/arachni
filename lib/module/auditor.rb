@@ -115,7 +115,12 @@ module Auditor
         # When the Auditor submits a form with original or sample values
         # this option will be overriden to true.
         #
-        :train    => false
+        :train    => false,
+        
+        #
+        # Enable skipping of already audited inputs
+        #
+        :skip     => true
     }
     
     #
@@ -273,7 +278,7 @@ module Auditor
             if link_vars.empty? then next end
               
             audit_id = audit_id( url, link_vars, opts, injection_str )
-            next if audited?( audit_id )
+            next if audited?( audit_id ) && opts[:skip]
 
             # iterate through all url vars and audit each one
             injection_sets( link_vars, injection_str, opts ).each {
@@ -332,7 +337,7 @@ module Auditor
             fields = form['auditable']
             
             audit_id = audit_id( url, fields, opts, injection_str )
-            next if audited?( audit_id )
+            next if audited?( audit_id ) && opts[:skip]
 
             # iterate through each auditable element
             injection_sets( fields, injection_str, opts ).each {
@@ -417,7 +422,7 @@ module Auditor
             cookie = get_cookie_simple( orig_cookie )
   
             audit_id = audit_id( url, cookie, opts, injection_str )
-            next if audited?( audit_id )
+            next if audited?( audit_id ) && opts[:skip]
 
             injection_sets( cookie, injection_str, opts ).each {
                 |cookie|
