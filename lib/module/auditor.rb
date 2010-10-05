@@ -115,12 +115,17 @@ module Auditor
         # When the Auditor submits a form with original or sample values
         # this option will be overriden to true.
         #
-        :train    => false,
+        :train     => false,
         
         #
         # Enable skipping of already audited inputs
         #
-        :skip     => true
+        :redundant => false,
+        
+        #
+        # Make requests asynchronously
+        #
+        :async     => true
     }
     
     #
@@ -147,7 +152,7 @@ module Auditor
     def audit( injection_str, opts = { }, &block )
         
         if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
-            opts[:elements] = self.class.info['Elements']
+            opts[:elements] = self.class.info[:elements]
         end
         
         if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
@@ -230,7 +235,7 @@ module Auditor
             print_status( get_status_str( url, vars, opts ) )
             
             # audit the url vars
-            req = @http.header( @page.url, vars['hash'], nil, opts[:train] )
+            req = @http.header( @page.url, vars['hash'], nil, opts[:train], !opts[:async] )
 
             injected = vars['hash'][vars['altered']]
             on_complete( req, injected, vars, opts, &block )
@@ -278,7 +283,7 @@ module Auditor
             if link_vars.empty? then next end
               
             audit_id = audit_id( url, link_vars, opts, injection_str )
-            next if audited?( audit_id ) && opts[:skip]
+            next if !opts[:redundant] && audited?( audit_id ) 
 
             # iterate through all url vars and audit each one
             injection_sets( link_vars, injection_str, opts ).each {
@@ -288,7 +293,7 @@ module Auditor
                 print_status( get_status_str( url, vars, opts ) )
                 
                 # audit the url vars
-                req = @http.get( url, vars['hash'], nil, opts[:train] )
+                req = @http.get( url, vars['hash'], nil, opts[:train], !opts[:async] )
                 
                 injected = vars['hash'][vars['altered']]
                 on_complete( req, injected, vars, opts, &block )
@@ -347,7 +352,8 @@ module Auditor
                 if( input['altered'] == FORM_VALUES_ORIGINAL )
                     orig_id = audit_id( url, input['hash'], opts,
                       input['hash'].values | ["{#{FORM_VALUES_ORIGINAL}}"] )
-                    next if audited?( orig_id )
+                    
+                    next if !opts[:redundant] && audited?( audit_id )
                     audited( orig_id )
                     
                     print_debug( 'Submitting form with original values;' +
@@ -359,7 +365,8 @@ module Auditor
                 if( input['altered'] == FORM_VALUES_SAMPLE )
                     sample_id = audit_id( url, input['hash'], opts,
                       input['hash'].values | ["{#{FORM_VALUES_SAMPLE}}"] )
-                    next if audited?( sample_id )
+          
+                    next if !opts[:redundant] && audited?( audit_id )
                     audited( sample_id )
                     
                     print_debug( 'Submitting form with sample values;' +
@@ -373,9 +380,9 @@ module Auditor
                 print_status( get_status_str( url, input, opts ) )
 
                 if( method != 'get' )
-                    req = @http.post( url, input['hash'], opts[:train] )
+                    req = @http.post( url, input['hash'], opts[:train], !opts[:async] )
                 else
-                    req = @http.get( url, input['hash'], opts[:train] )
+                    req = @http.get( url, input['hash'], opts[:train], !opts[:async] )
                 end
                 opts = curr_opts.dup
                 injected = input['hash'][input['altered']].to_s
@@ -422,7 +429,7 @@ module Auditor
             cookie = get_cookie_simple( orig_cookie )
   
             audit_id = audit_id( url, cookie, opts, injection_str )
-            next if audited?( audit_id ) && opts[:skip]
+            next if !opts[:redundant] && audited?( audit_id )
 
             injection_sets( cookie, injection_str, opts ).each {
                 |cookie|
@@ -431,7 +438,7 @@ module Auditor
             
                 print_status( get_status_str( url, cookie, opts ) )
 
-                req = @http.cookie( @page.url, cookie['hash'], nil, opts[:train] )
+                req = @http.cookie( @page.url, cookie['hash'], nil, opts[:train], !opts[:async] )
                 
                 injected = cookie['hash'][cookie['altered']]
                 on_complete( req, injected, cookie, opts, &block )
@@ -467,6 +474,16 @@ module Auditor
     #                                    HTTP response is received.
     #
     def on_complete( req, injected_str, input, opts, &block )
+      
+        if( !opts[:async] )
+            
+            if( req && req.response )
+                block.call( req.response, input['altered'], opts )
+            end
+            
+            return
+        end
+      
         req.on_complete {
             |res |
             
@@ -479,6 +496,7 @@ module Auditor
             end
                 
             opts[:injected] = injected_str.to_s
+            opts[:combo]    = input
             # call the block, if there's one
             if block_given?
                 block.call( res, input['altered'], opts )

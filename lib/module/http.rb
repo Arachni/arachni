@@ -119,7 +119,7 @@ class HTTP
     #
     # @param  [Tyhpoeus::Request]  req  the request to queue
     #
-    def queue( req )
+    def queue( req, sync = false )
         
         req.id = @request_count
         @last_url = req.url
@@ -165,6 +165,8 @@ class HTTP
                 end
             end
         }
+        
+        run if sync
     end
 
     #
@@ -175,7 +177,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def get( url, params = {}, remove_id = false, train = false )
+    def get( url, params = {}, remove_id = false, train = false, sync = false )
         params = { } if !params
         
         params = params.merge( { '__arachni__' => '' } ) if !remove_id 
@@ -196,7 +198,7 @@ class HTTP
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req )
+            queue( req, sync )
             return req
         }
         
@@ -210,7 +212,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def post( url, params = { }, train = false )
+    def post( url, params = { }, train = false, sync = false )
 
         exception_jail {
             
@@ -224,7 +226,7 @@ class HTTP
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req )
+            queue( req, sync )
             return req
         }
     end
@@ -238,7 +240,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def cookie( url, cookies, params = nil, train = false )
+    def cookie( url, cookies, params = nil, train = false, sync = false )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
         
@@ -261,7 +263,7 @@ class HTTP
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req )
+            queue( req, sync )
             return req
         }
     end
@@ -275,7 +277,7 @@ class HTTP
     #
     # @return [Typhoeus::Request]
     #
-    def header( url, headers, params = { }, train = false )
+    def header( url, headers, params = { }, train = false, sync = false )
         
         params = {} if !params
         # wrap the code in exception handling
@@ -293,7 +295,7 @@ class HTTP
             
             @init_headers = orig_headers.clone
             
-            queue( req )
+            queue( req, sync )
             return req
         }
 
