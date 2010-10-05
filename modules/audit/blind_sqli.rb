@@ -98,7 +98,7 @@ class BlindSQLInjection < Arachni::Module::Base
         register_results( @results )
     end
     
-    # audits page with 'bad' SQL characters and gathers error pages
+    # Audits page with 'bad' SQL characters and gathers error pages
     def __prep_bad_response( )
         
         @__html_bad ||= {}
@@ -121,7 +121,7 @@ class BlindSQLInjection < Arachni::Module::Base
         return @__html_bad
     end
     
-    # injects SQL code that doesn't affect the flow of execution nor presentation
+    # Injects SQL code that doesn't affect the flow of execution nor presentation
     def __audit( )
         
         @__html_good ||= {}
@@ -150,7 +150,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
     end
     
-    # goes through the responses induced by {#__audit} and {__check}s their code
+    # Goes through the responses induced by {#__audit} and {#__check} their code
     def __analyze( )
         @__html_good.keys.each {
             |key|
@@ -161,7 +161,14 @@ class BlindSQLInjection < Arachni::Module::Base
         }
     end
     
-    # compares HTML responses in order to identify successful blind sql injections
+    #
+    # Compares HTML responses in order to identify successful blind sql injections
+    #
+    # @param  [String]  str  the string that unveiled the vulnerability
+    # @param  [Typhoeus::Response]
+    # @param  [String]  var   the vulnerable variable
+    # @param  [Hash]    opts  the options passed to the {#audit} block
+    #
     def __check( str, res, var, opts )
       
         # if one of the injections gives the same results as the
