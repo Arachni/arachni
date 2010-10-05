@@ -342,7 +342,7 @@ module Auditor
             fields = form['auditable']
             
             audit_id = audit_id( url, fields, opts, injection_str )
-            next if audited?( audit_id ) && opts[:skip]
+            next if !opts[:redundant] && audited?( audit_id )
 
             # iterate through each auditable element
             injection_sets( fields, injection_str, opts ).each {
