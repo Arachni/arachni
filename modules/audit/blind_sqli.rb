@@ -184,7 +184,8 @@ class BlindSQLInjection < Arachni::Module::Base
     def self.info
         {
             :name           => 'BlindSQLInjection',
-            :description    => %q{Blind SQL injection audit module},
+            :description    => %q{Blind SQL injection audit module.
+                (Will negate the '--http-harvest-last' option.)},
             :elements       => [
                 Vulnerability::Element::LINK
             ],
