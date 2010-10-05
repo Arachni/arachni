@@ -20,12 +20,13 @@
   - No redundant requests.
   - Better parameter handling.
   - Speed optimizations.
-  - Modules have total flexibility and control over input combinations,
-      injection values and their formating -- if they need to.
 - Refactored and improved module API.
   - Major API clean up.
   - With facilities providing more control and power over the audit process.
   - Significantly increased ease of development.
+  - Modules have total flexibility and control over input combinations,
+      injection values and their formating -- if they need to.
+  - Modules can opt for sync or async HTTP requests (Default: async)
 - Improved interrupt handling
     - Scans can be paused/resumed at any time.
     - In the event of a system exit or user cancellation reports will still be created
