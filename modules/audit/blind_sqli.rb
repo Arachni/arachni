@@ -36,7 +36,7 @@ class BlindSQLInjection < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        # initialize the results hash
+        # initialize the results array
         @results = []
     end
 
@@ -52,7 +52,9 @@ class BlindSQLInjection < Arachni::Module::Base
         # this will cause a silent error if there's a blind SQL injection
         @__bad_chars =[
            '\'"`',
-           '\'"`'
+           # we need 2 requests thus we change the second one a little bit to
+           # fool the Auditor's redundancy filter
+           '\'"``' 
          ]
 
         # %q% will be replaced by a character in @__quotes
@@ -60,10 +62,6 @@ class BlindSQLInjection < Arachni::Module::Base
         
         @__opts = {
             :format      => [ Format::APPEND ],
-            # we don't want the Auditor to make any redundancy checks
-            # since we depend on redundant requests to eliminate
-            # context irrelevant content
-            # :redundant   => true,
             # sadly, we need to disable asynchronous requests
             # otherwise the code would get *really* ugly
             :async       => false
@@ -170,10 +168,6 @@ class BlindSQLInjection < Arachni::Module::Base
         # original page then a blind SQL injection exists
         check = Module::Utilities.rdiff( res.body, @page.html )
 
-        # ap str
-        # ap var
-        # ap opts
-        
         if( check == @__content && @__html_bad[var] != check )
             __log_results( opts, var, res, str )
         end
