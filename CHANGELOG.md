@@ -17,7 +17,7 @@
   - Can be invoked by individual modules on-demand,
       forcing Arachni to learn from the HTTP responses they will cause -- a great asset to Fuzzers.
 - Refactored and improved Auditor.
-  - No redundant requests.
+  - No redundant requests, except when required by modules.
   - Better parameter handling.
   - Speed optimizations.
 - Refactored and improved module API.
