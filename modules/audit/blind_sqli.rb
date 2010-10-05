@@ -34,109 +34,151 @@ class BlindSQLInjection < Arachni::Module::Base
     # register us with the system
     include Arachni::Module::Registrar
 
-    # how many requests to send to establish a baseline
-    BASELINE_NUM  = 5
-    
     def initialize( page )
         super( page )
 
-        # initialize variables 
-        @__id = []
-        @__injection_strs = []
-        
         # initialize the results hash
         @results = []
     end
 
     def prepare( )
         
-        #
-        # we'll try some timing attacks on the remote DB
-        #
-        @__injection_strs = [
-            # MySQL
-            ' AND BENCHMARK(5000000,ENCODE(1,1)) --',
-            '\' AND BENCHMARK(5000000,ENCODE(1,1)) --',
-            '" AND BENCHMARK(5000000,ENCODE(1,1)) --',
-            # MSSQL
-            ';waitfor delay \'0:0:5\'--',
-            '\';waitfor delay \'0:0:5\'--',
-            '";waitfor delay \'0:0:5\'--',
-            # PostgreSQL
-            ';SELECT pg_sleep(5);--',
-            '\';SELECT pg_sleep(5);--',
-            '\";SELECT pg_sleep(5);--'
+        # possible quote characters used in SQL statements
+        @__quotes = [
+            '\'',
+            '"',
+            ''
         ]
+
+        # this will cause a silent error if there's a blind SQL injection
+        @__bad_chars =[
+           '\'"`',
+           '\'"`'
+         ]
+
+        
+        # %q% will be replaced by a character in @__quotes
+        @__injection = '%q% and %q%1'
+        
+        @__opts = {
+            :format      => [ Format::APPEND ],
+            # we don't want the Auditor to make any redundancy checks
+            # since we depend on redundant requests to eliminate
+            # context irrelevant content
+            # :redundant   => true,
+            # sadly, we need to disable asynchronous requests
+            # otherwise the code would get *really* ugly
+            :async       => false
+        }
         
     end
     
     def run( )
-      
-        # disabled until I implement diff analysis also 
-        return
         
-        print_status( self.class.info['Name'] + 
-          " is establishing a timing attack baseline." )
+        if( @page.query_vars.empty? )
+            print_status( 'Nothing to audit on current page, skipping...' )
+            return
+        end
+        
+        # let's get a fresh rendering of the page to assist us with
+        # irrelevant dynamic content elimination (banners, ads, etc...)
+        res  = @http.get( @page.url, @page.query_vars, nil, nil, true ).response
 
-        deltas = 0.0
-        # establish a baseline
-        BASELINE_NUM.times {
-            |i|
-            res    =  @http.get( @page.url )
-            deltas += res.time
-            
-            print_debug( self.class.info['Name'] +
-              " --> Request #{i+1}/#{BASELINE_NUM} took #{res.time.to_s}s." )
-        }
+        # eliminate dynamic content that's context irrelevant
+        # ie. changing with every refresh
+        @__content = Module::Utilities.rdiff( @page.html, res.body )
         
-        # get the baseline plus 5 seconds for the query execution.
-        # of course this is just a guestimation...
-        baseline = deltas / BASELINE_NUM + 5.0
+        # force the webapp to return an error page
+        __prep_bad_response( )
         
-        print_status( "Established a maximum baseline limit of #{baseline}s." )
+        # start injecting 'nice' SQL queries 
+        __audit( )
         
-        # iterate through the injection strings
-        @__injection_strs.each {
-            |str|
-            
-            audit_forms( str ) {
-                |url, res, var|
-                
-                if( res.time > baseline )
-                    __log_results( Vulnerability::Element::FORM, var, res, str, url )
-                end
-            }
-            
-            audit_links( str ) {
-                |url, res, var|
-                
-                if( res.time > baseline )
-                    __log_results( Vulnerability::Element::LINK, var, res, str, url )
-                end
-            }
-
-            audit_cookies( str ) {
-                |url, res, var|
-
-                if( res.time > baseline )
-                    __log_results( Vulnerability::Element::COOKIE, var, res, str, url )
-                end
-            }
-        }
+        # analyze the HTML code of the responses in order to determine
+        # which injections were succesfull
+        __analyze( )
         
         # register our results with the framework
         register_results( @results )
     end
+    
+    # audit with 'bad' injections and gather responses
+    def __prep_bad_response( )
+        
+        @__html_bad ||= {}
 
+        @__bad_chars.each {
+            |str|
+            
+            audit( str, @__opts ) {
+                |res, var, opts|
+                
+                next if !res || !res.body
+                @__html_bad[var] ||= res.body.clone
+                @__html_bad[var] = Module::Utilities.rdiff( @__html_bad[var], res.body.clone )
+            }
+        }
+        
+        return @__html_bad
+    end
+    
+    def __audit( )
+        
+        @__html_good ||= {}
+        
+        @__quotes.each {
+            |quote|
+            
+            str = @__injection.gsub( '%q%', quote )
+            
+            audit( str, @__opts ) {
+                |res, var, opts|
+
+                @__html_good[var] ||= []
+
+                @__html_good[var] << {
+                    'str'  => str,
+                    'res'  => res,
+                    'opts' => opts
+                }
+                
+            }
+        }
+
+    end
+    
+    def __analyze( )
+        @__html_good.keys.each {
+            |key|
+            @__html_good[key].each {
+                |res|
+                __check( res['str'], res['res'], key, res['opts'] )
+            }
+        }
+    end
+    
+    def __check( str, res, var, opts )
+      
+        # if one of the injections gives the same results as the
+        # original page then a blind SQL injection exists
+        check = Module::Utilities.rdiff( res.body, @page.html )
+
+        # ap str
+        # ap var
+        # ap opts
+        
+        if( check == @__content && @__html_bad[var] != check )
+            __log_results( opts, var, res, str )
+        end
+
+    end
     
     def self.info
         {
             :name           => 'BlindSQLInjection',
             :description    => %q{Blind SQL injection audit module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Vulnerability::Element::LINK
             ],
             :author          => 'zapotek',
             :version         => '0.1',
@@ -146,7 +188,7 @@ class BlindSQLInjection < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
                 
-            :vulnerabiltiy   => {
+            :vulnerability   => {
                 :name        => %q{Blind SQL Injection},
                 :description => %q{SQL code can be injected into the web application.},
                 :cwe         => '89',
@@ -161,32 +203,29 @@ class BlindSQLInjection < Arachni::Module::Base
     
     private
     
-    def __log_results( where, var, res, injection_str, url )
-        
-        # append the result to the results hash
+    def __log_results( opts, var, res, str )
+      
+        url = res.effective_url
         @results << Vulnerability.new( {
                 :var          => var,
                 :url          => url,
-                :injected     => injection_str,
-                :id           => 'n/a',
+                :injected     => str,
+                :id           => str,
                 :regexp       => 'n/a',
                 :regexp_match => 'n/a',
-                :elem         => where,
+                :elem         => opts[:element],
                 :response     => res.body,
                 :headers      => {
-                    :request    => get_request_headers( ),
-                    :response   => get_response_headers( res ),    
+                    :request    => res.request.headers,
+                    :response   => res.headers,    
                 }
             }.merge( self.class.info )
         )
+
+        print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
             
-        # inform the user that we have a match
-        print_ok( "In #{where} var '#{var}' ( #{url} )" )
-                
-        # give the user some more info if he wants 
-        print_verbose( "Injected str:\t" + injection_str )    
-        print_verbose( '---------' ) if only_positives?
-    
+        # register our results with the system
+        register_results( @results )
     end
 
 end
