@@ -15,10 +15,9 @@ module Audit
 
 #
 # Blind SQL injection audit module
-# 
-# It uses a SQL timing attacks.<br/>
-# This is going to be greatly improved in the future<br/>
-# to support other DBs as well. 
+#
+# It uses reverse-diff analysis of HTML code in order to determine successful
+# blind SQL injections.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
