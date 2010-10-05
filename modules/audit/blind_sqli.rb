@@ -23,7 +23,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -56,7 +56,6 @@ class BlindSQLInjection < Arachni::Module::Base
            '\'"`'
          ]
 
-        
         # %q% will be replaced by a character in @__quotes
         @__injection = '%q% and %q%1'
         
@@ -84,7 +83,7 @@ class BlindSQLInjection < Arachni::Module::Base
         # irrelevant dynamic content elimination (banners, ads, etc...)
         res  = @http.get( @page.url, @page.query_vars, nil, nil, true ).response
 
-        # eliminate dynamic content that's context irrelevant
+        # eliminate dynamic content that's context-irrelevant
         # ie. changing with every refresh
         @__content = Module::Utilities.rdiff( @page.html, res.body )
         
@@ -102,7 +101,7 @@ class BlindSQLInjection < Arachni::Module::Base
         register_results( @results )
     end
     
-    # audit with 'bad' injections and gather responses
+    # audits page with 'bad' SQL characters and gathers error pages
     def __prep_bad_response( )
         
         @__html_bad ||= {}
@@ -115,6 +114,9 @@ class BlindSQLInjection < Arachni::Module::Base
                 
                 next if !res || !res.body
                 @__html_bad[var] ||= res.body.clone
+                
+                # remove context-irrelevant dynamic content like banners and such
+                # from the error page
                 @__html_bad[var] = Module::Utilities.rdiff( @__html_bad[var], res.body.clone )
             }
         }
@@ -122,6 +124,7 @@ class BlindSQLInjection < Arachni::Module::Base
         return @__html_bad
     end
     
+    # injects SQL code that doesn't affect the flow of execution nor presentation
     def __audit( )
         
         @__html_good ||= {}
@@ -129,13 +132,16 @@ class BlindSQLInjection < Arachni::Module::Base
         @__quotes.each {
             |quote|
             
+            # prepare the statement with combinations of quote characters
             str = @__injection.gsub( '%q%', quote )
             
+            # inject the statement
             audit( str, @__opts ) {
                 |res, var, opts|
 
                 @__html_good[var] ||= []
 
+                # save the response for later analysis
                 @__html_good[var] << {
                     'str'  => str,
                     'res'  => res,
@@ -147,6 +153,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
     end
     
+    # goes through the responses induced by {#__audit} and {__check}s their code
     def __analyze( )
         @__html_good.keys.each {
             |key|
@@ -157,6 +164,7 @@ class BlindSQLInjection < Arachni::Module::Base
         }
     end
     
+    # compares HTML responses in order to identify successful blind sql injections
     def __check( str, res, var, opts )
       
         # if one of the injections gives the same results as the
@@ -181,7 +189,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 Vulnerability::Element::LINK
             ],
             :author          => 'zapotek',
-            :version         => '0.1',
+            :version         => '0.2',
             :references      => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
