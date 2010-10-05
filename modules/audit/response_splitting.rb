@@ -105,7 +105,7 @@ class ResponseSplitting < Arachni::Module::Base
           
             url = res.effective_url
             @results << Vulnerability.new( {
-                    var          => var,
+                    :var          => var,
                     :url          => url,
                     :injected     => URI.encode( @__header ),
                     :id           => 'x-crlf-safe',
