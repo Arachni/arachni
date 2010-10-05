@@ -72,6 +72,7 @@ class HTTP
     def initialize( )
         opts = Options.instance
         req_limit = opts.http_req_limit
+        
         @hydra ||= Typhoeus::Hydra.new(
             :max_concurrency               => req_limit,
             :disable_ssl_peer_verification => true,
@@ -79,8 +80,18 @@ class HTTP
             :password                      => opts.url.password,
             :method                        => :auto
         )
-          
+        
+        @hydra_sync ||= Typhoeus::Hydra.new(
+            :max_concurrency               => req_limit,
+            :disable_ssl_peer_verification => true,
+            :username                      => opts.url.user,
+            :password                      => opts.url.password,
+            :method                        => :auto
+        )
+
+        
         @hydra.disable_memoization
+        @hydra_sync.disable_memoization
         
         @trainers = []
         @trainer = Arachni::Module::Trainer.instance
@@ -124,7 +135,11 @@ class HTTP
         req.id = @request_count
         @last_url = req.url
         
-        @hydra.queue( req )
+        if( sync )
+            @hydra_sync.queue( req )
+        else  
+            @hydra.queue( req )
+        end
 
         @request_count += 1
 
@@ -166,7 +181,7 @@ class HTTP
             end
         }
         
-        run if sync
+        @hydra_sync.run if sync
     end
 
     #
