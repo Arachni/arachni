@@ -147,7 +147,7 @@ class Stdout < Arachni::Report::Base
             :name           => 'Stdout',
             :description    => %q{Prints the results to standard output.},
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.2',
         }
     end
     
