@@ -14,7 +14,7 @@ module Modules
 module Audit
 
 #
-# HTTP Response Splitting recon module.
+# HTTP Response Splitting audit module.
 #
 # It audits links, forms and cookies.
 #
