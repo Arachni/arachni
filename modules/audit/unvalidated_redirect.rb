@@ -61,8 +61,8 @@ class UnvalidatedRedirect < Arachni::Module::Base
     def self.info
         {
             :name           => 'UnvalidatedRedirect',
-            :description    => %q{ 
-            },
+            :description    => %q{Injects URLs and checks the Location header field
+                to determnine whether the attack was successful.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
