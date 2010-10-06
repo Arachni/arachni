@@ -21,7 +21,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.2
 #
 class Stdout < Arachni::Report::Base
     
@@ -44,86 +44,97 @@ class Stdout < Arachni::Report::Base
     #
     def run( )
         
-        print_line( )
-        print_ok( @audit_store.vulns.size.to_s + ' vulnerabilities were detected.' )
-        print_line( )
+        print_ok( 'Web Application Security Report - Arachni Framework' )
+        print_line
+        print_info( 'Report generated on: ' + Time.now.to_s )
+        print_line
+        print_info( 'Report false positives: ' + REPORT_FP )
+        print_line
+        print_ok( 'System settings:' )
+        print_info( '---------------' )
+        print_info( 'Version:  ' + @audit_store.version )
+        print_info( 'Revision: '+ @audit_store.revision )
+        print_info( 'Audit started on:  ' + @audit_store.start_datetime )
+        print_info( 'Audit finished on: ' + @audit_store.finish_datetime )
+        print_info( 'Runtime: ' + @audit_store.delta_time )
+        print_line
+        print_info( 'URL: ' + @audit_store.options['url'] )
+        print_info( 'User agent: ' + @audit_store.options['user_agent'] )
+        print_line
+        print_status( 'Audited elements: ' )
+        print_info( '* Links' ) if @audit_store.options['audit_links']
+        print_info( '* Forms' ) if @audit_store.options['audit_forms']
+        print_info( '* Cookies' ) if @audit_store.options['audit_cookies']
+        print_info( '* Headers' ) if @audit_store.options['audit_headers']
+        print_line
+        print_status( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
+        print_line
+        print_status( 'Filters: ' )
+        
+        if @audit_store.options['exclude']
+            print_info( "  Exclude:" )
+            @audit_store.options['exclude'].each {
+                |ex|
+                print_info( '    ' + ex )
+            }
+        end
+        
+        if @audit_store.options['include']
+            print_info( "  Include:" )
+            @audit_store.options['include'].each {
+                |inc|
+                print_info( "    " + inc )
+            }
+        end
+
+        if @audit_store.options['redundant']
+            print_info( "  Redundant:" )
+            @audit_store.options['redundant'].each {
+                |red|
+                print_info( "    " + red['regexp'] + ':' + red['count'].to_s )
+            }
+        end
+
+        print_line
+        print_status( 'Cookies: ' )
+        if( @audit_store.options['cookies'] )
+            @audit_store.options['cookies'].each {
+                |cookie|
+                print_info( "  #{cookie[0]} = #{cookie[1]}" )
+            }
+        end
+        
+        print_line
+        print_info( '===========================' )
+        print_line
+        print_ok( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
+        print_line
         
         @audit_store.vulns.each {
             |vuln|
             
             print_ok( vuln.name )
-            print_info( '**************' )
+            print_info( '~~~~~~~~~~~~~~~~~~~~' )
             
-            vuln.each_pair {
-                |key, val|
-                
-                case key
-                
-                when 'cwe_url', 'name'
-                    next
-                    
-                when 'mod_name'
-                    print_info( "Module name: #{val}" )
-                
-                when 'references'
-                    
-                    print_line( )
-                    key = key.gsub( /_/, ' ' ).capitalize
-                    print_info( "#{key}:" )
-
-                    val.each_pair {
-                        |ref, url|
-                        print_info( "\t#{ref}:\t\t#{url}" )
-                    }
-                    print_line( )
-
-
-                when 'remedy_guidance', 'remedy_code'
-                    if( val.size == 0 ) then next end
-                        
-                    print_line( )
-                    
-                    key = key.gsub( /_/, ' ' ).capitalize
-                    print_info( "#{key}:" )
-                    print_info( "-----------" )
-                    print_line( "#{val}" )
-                    print_line( )
-                
-                when 'cwe'
-                    print_info( key.upcase + ': ' + val + " <#{vuln.cwe_url}>" )
-                    
-                when 'variations'
-                    print_line( )
-                    print_info( 'Variations' )
-                    
-                    val.each_with_index {
-                        |variation, i|
-                        print_info( '#' + (i+1).to_s )
-                        variation.each_pair {
-                            |name, item|
-                            if( item.is_a?( String ) && name != 'response' )
-                                print_info( "\t#{name}" + ': ' + item )
-                            end
-                        }
-                        
-                        print_line( )
-                    }
-                    
-                else
-                    __print_generic( key, val )
-                end
-                
+            print_info( 'URL:      ' + vuln.url )
+            print_info( 'Elements: ' + vuln.elem )
+            print_info( 'Variable: ' + vuln.var )
+            print_info( 'Description: ' )
+            print_info( vuln.description )
+            print_line
+            print_info( 'References:' )
+            vuln.references.each{
+                |ref|
+                print_info( '  ' + ref[0] + ' - ' + ref[1] )
             }
             
-            print_line( )
-            print_line( '-----' )
-            print_line( 'Found a false positive?' )
-            print_line( 'Report it: ' + REPORT_FP )
-            print_line( '-----' )
+            print_info_variations( vuln )
             
-            print_line( )
-            print_line( )
+            print_line
         }
+        
+        print_line( "\n" )
+
     end
     
     #
@@ -140,29 +151,21 @@ class Stdout < Arachni::Report::Base
         }
     end
     
-    def __print_generic( key, val )
-        key = key.gsub( /_/, ' ' ).capitalize
-        
-        if( val.instance_of?( String ) )
-            print_info( key + ': ' + val )
-        elsif( val.instance_of?( Array ) )
-            print_line( )
-            print_info( key + ':' )
-            val.each {
-                |item|
-                print_info( "\t" + item.strip )
-            }
-            print_line( )
-        else
-            print_line( )
-            print_info( key + ':' )
-            val.each_pair {
-                |name, item|
-                print_info( "\t#{name}:\t" + item.strip )
-            }
-            print_line( )
-        end
-
+    def print_info_variations( vuln )
+        print_line
+        print_status( 'Variations' )
+        print_info( '----------' )
+        vuln.variations.each_with_index {
+            |var, i|
+            print_info( "Variation #{i+1}:" )
+            print_info( 'URL: ' + var['url'] )
+            print_info( 'ID:  ' + var['id'] )
+            print_info( 'Injected value:     ' + var['injected'] )
+            print_info( 'Regular expression: ' + var['regexp'].to_s )
+            print_info( 'Matched string:     ' + var['regexp_match'] )
+            
+            print_line
+        }
     end
     
 end
