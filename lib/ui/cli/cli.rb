@@ -175,7 +175,7 @@ class CLI
             |vuln|
 
             print_ok( "#{vuln.name} (In #{vuln.elem} variable '#{vuln.var}'" + 
-              " - Severity: #{vuln.severity})" )
+              " - Severity: #{vuln.severity} - Variations: #{vuln.variations.size.to_s})" )
             
             print_info( vuln.variations[0]['url'] )
             
