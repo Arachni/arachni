@@ -706,13 +706,11 @@ class Framework
             
             # optional
             mod_new.clean_up  if mod.method_defined?( 'clean_up' )
-        rescue Exception
+        rescue Exception => e
+            print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
+            print_debug_backtrace( e )
             raise
         end
-        # rescue Exception => e
-        #     print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
-        #     print_debug_backtrace( e )
-        # end
     end
     
     
