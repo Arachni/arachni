@@ -38,4 +38,10 @@
   - Multiple profiles can be loaded at once
   - Ability to show running profiles as CLI arguments
 - Overall module improvements and optimizations.
+- Module additions:
+  - Blind SQL Injection, using reverse-diff analysis.
+  - Trainer, probes all inputs of a given page, in order to uncover new input vectors, and forces Arachni to learn from the responses.
+  - Unvalidated redirects.
+  - Forms that transmit passwords in clear text.
+- Overall report improvements and optimizations.
 - Added plain text report
