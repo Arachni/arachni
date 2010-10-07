@@ -11,13 +11,19 @@ load_profile:
 lsmod: []
 
 mods: 
-- -backup_files
-- -common_files
-- -common_directories
-- -extract_objects
-- -audit_objects
-- -blind_sqli
-- "*"
+- xss_path
+- simple_cmd_exec
+- xss
+- path_traversal
+- unvalidated_redirect
+- trainer
+- eval
+- sqli
+- xss_uri
+- blind_sqli
+- simple_rfi
+- response_splitting
+redirect_limit: 20
 redundant: []
 
 repopts: {}
