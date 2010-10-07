@@ -20,6 +20,7 @@
   - No redundant requests, except when required by modules.
   - Better parameter handling.
   - Speed optimizations.
+  - Added differential analysis to determine whether a vulnerability needs manual verification.
 - Refactored and improved module API.
   - Major API clean up.
   - With facilities providing more control and power over the audit process.
