@@ -121,7 +121,9 @@ class HTTP
     # after all module threads have beed joined!
     #
     def run
-        @hydra.run
+      exception_jail {
+          @hydra.run
+      }
     end
     
     #
