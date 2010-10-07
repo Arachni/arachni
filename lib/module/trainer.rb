@@ -146,7 +146,7 @@ class Trainer
     end
     
     def train_forms( res )
-        return if !@opts.audit_forms
+        return [], 0 if !@opts.audit_forms
         
         @analyzer.url = res.effective_url.clone
         forms = @analyzer.get_forms( res.body ).clone
@@ -155,7 +155,7 @@ class Trainer
     end
     
     def train_links( res, redir = false )
-        return if !@opts.audit_links
+        return [], 0  if !@opts.audit_links
         
         @analyzer.url = res.effective_url.clone
 
@@ -170,7 +170,6 @@ class Trainer
         end
         
         return update_links( links )
-        
     end
     
     def train_cookies( res )
