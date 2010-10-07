@@ -1,5 +1,4 @@
-Diagrams
-----
+# Diagrams
 
 **RDoc**
 
