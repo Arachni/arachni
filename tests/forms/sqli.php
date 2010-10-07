@@ -36,6 +36,7 @@ SQL;
     }
 
     $SQL['error'] = mysql_error();
+    print_r( $SQL );
     echo "</pre>";
 }
 

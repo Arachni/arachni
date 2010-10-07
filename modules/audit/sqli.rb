@@ -148,6 +148,11 @@ class SQLInjection < Arachni::Module::Base
             if ( ( match = res.body.scan( id_regex )[0] ) &&
                  res.body.scan( id_regex )[0].size > 0 )
                 
+                verification = false
+                if( @page.html.scan( id_regex )[0] )
+                    verification = true
+                end
+                
                 # append the result to the results array
                 @results << Vulnerability.new( {
                         :var          => var,
@@ -158,6 +163,7 @@ class SQLInjection < Arachni::Module::Base
                         :regexp_match => match,
                         :elem         => elem,
                         :response     => res.body,
+                        :verification => verification,
                         :headers      => {
                             :request    => res.request.headers,
                             :response   => res.headers,    

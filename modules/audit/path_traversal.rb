@@ -19,7 +19,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/22.html    
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -36,6 +36,21 @@ class PathTraversal < Arachni::Module::Base
     end
     
     def prepare( )
+      
+        #
+        # the way this works is pretty cool since it will actually
+        # exploit the vulnerability in order to verify that it worked
+        # which also means that the results of the exploitation will
+        # appear in the report.
+        #
+        # *but* we may run into a web page that details the structure of
+        # the 'passwd' file and get a false positive; so we need to check
+        # the html code in @page.html before checking the responses of the audit
+        # and give accurate feedback about the context in which the vulnerability
+        # was flagged.
+        #
+        
+        
         @__trv =  '../../../../../../../../../../../../../../../../'
         @__ext = [
             "",
@@ -97,7 +112,7 @@ class PathTraversal < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
@@ -117,44 +132,6 @@ class PathTraversal < Arachni::Module::Base
         }
     end
     
-    def __log_results( where, var, res, injection_str, regexp )
-
-        if ( ( match = res.body.scan( regexp )[0] ) && match.size > 0 )
-            
-            injection_str = URI.escape( injection_str ) 
-            
-            url = res.effective_url
-            # append the result to the results hash
-            @results << Vulnerability.new( {
-                    :var          => var,
-                    :url          => url,
-                    :injected     => injection_str,
-                    :id           => 'n/a',
-                    :regexp       => regexp.to_s,
-                    :regexp_match => match,
-                    :elem         => where,
-                    :response     => res.body,
-                    :headers      => {
-                        :request    => res.request.headers,
-                        :response   => res.headers,    
-                   }
-
-                }.merge( self.class.info )
-            )
-                
-            # inform the user that we have a match
-            print_ok( "In #{where} var '#{var}' ( #{url} )" )
-            
-            # give the user some more info if he wants 
-            print_verbose( "Injected str:\t" + injection_str )    
-            print_verbose( "Matched regex:\t" + regexp.to_s )
-            print_verbose( '---------' ) if only_positives?
-    
-        end
-        
-    end
-
-
 end
 end
 end

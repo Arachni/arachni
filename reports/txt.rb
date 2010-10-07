@@ -122,6 +122,8 @@ class Text < Arachni::Report::Base
             __buffer( 'Description: ' )
             __buffer( vuln.description )
             __buffer
+            __buffer( 'Requires manual verification?: ' + vuln.verification.to_s )
+            __buffer
             __buffer( 'References:' )
             vuln.references.each{
                 |ref|

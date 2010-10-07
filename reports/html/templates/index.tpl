@@ -328,7 +328,10 @@
 
           <h3>Description</h3>
           <p class="note">{{vuln.description | escape}}</p>
-        
+          
+          <h3>Requires manual verification?</h3>
+          <p class="note">{{vuln.verification | escape}}</p>
+                  
           {% if vuln.remedy_guidance != "" %}
           <h3>Remedial guidance</h3>
           <p class="note">{{vuln.remedy_guidance | escape}}</p>

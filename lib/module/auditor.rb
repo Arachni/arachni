@@ -531,7 +531,12 @@ module Auditor
         regexp     = opts[:regexp]
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
-        
+
+        verification = false
+        if( @page.html.scan( regexp )[0] )
+            verification = true
+        end
+
         # fairly obscure condition...pardon me...
         if ( match && match_data == match ) ||
            ( !match && match_data && match_data.size > 0 )
@@ -554,6 +559,7 @@ module Auditor
                 :regexp_match => match_data,
                 :response     => res.body,
                 :elem         => elem,
+                :verification => verification,
                 :headers      => {
                     :request    => res.request.headers,
                     :response   => res.headers,    
