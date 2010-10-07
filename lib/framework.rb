@@ -168,7 +168,7 @@ class Framework
 
         print_line        
         print_info( "Sent #{req_cnt.to_s} requests." )
-        print_info( "Received and analyzed #{req_cnt.to_s} responses." )
+        print_info( "Received and analyzed #{res_cnt.to_s} responses." )
         print_info( 'In ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).' )
         
         avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
