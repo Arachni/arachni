@@ -462,6 +462,7 @@ class Analyzer
         i = new_arr.size
         selects.each {
             |select|
+            select['attrs']['value'] = select['options'][0]['value']
             new_arr << select['attrs']
         }
     
