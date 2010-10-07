@@ -424,7 +424,7 @@ module Auditor
 
         results = []
         
-        return results if( Options.instance.audit_cookies )
+        return results if( !Options.instance.audit_cookies )
         get_cookies.each {
             |orig_cookie|
             
