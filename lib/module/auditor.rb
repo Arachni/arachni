@@ -423,6 +423,8 @@ module Auditor
         url             = @page.url
 
         results = []
+        
+        return results if( Options.instance.audit_cookies )
         get_cookies.each {
             |orig_cookie|
             
@@ -485,7 +487,7 @@ module Auditor
         end
       
         req.on_complete {
-            |res |
+            |res|
             
             # make sure that we have a response before continuing
             if !res
