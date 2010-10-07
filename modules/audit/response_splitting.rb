@@ -101,7 +101,7 @@ class ResponseSplitting < Arachni::Module::Base
     private
     
     def __log_results( opts, var, res )
-        if res.headers['X-CRLF-Safe']
+        if res.headers_hash['X-CRLF-Safe']
           
             url = res.effective_url
             @results << Vulnerability.new( {
