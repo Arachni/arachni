@@ -19,7 +19,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/79.html    
 # @see http://ha.ckers.org/xss.html
@@ -40,8 +40,10 @@ class XSSURI < Arachni::Module::Base
     end
 
     def run( )
-
-    url  = @page.url + @str
+    
+    uri  = URI( @page.url )
+    url  = uri.scheme + '://' + uri.host + uri.path  + @str
+    
     req  = @http.get( url )
             
     req.on_complete {
@@ -58,7 +60,7 @@ class XSSURI < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
