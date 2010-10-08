@@ -633,8 +633,6 @@ class Framework
                 next
             end
     
-            # tell the user which module is about to be run...
-            print_status( mod.to_s )
             # ... and run it.
             run_mod( mod, deep_clone( page ) )
             
