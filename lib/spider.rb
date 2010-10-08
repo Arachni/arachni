@@ -134,7 +134,11 @@ class Spider
                 
                 # call the block...if we have one
                 if block
-                    block.call( url, page.body, page.headers )
+                    begin
+                        block.call( url, page.body, page.headers )
+                    rescue Exception
+                        raise
+                    end
                 end
 
                 # run blocks specified later 
