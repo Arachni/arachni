@@ -136,6 +136,8 @@ class Trainer
             @page.url  = URI.parse( URI.encode( @page.url ) ).
                 merge( URI.parse( URI.escape( res[0].effective_url ) ) ).to_s
             
+            @page.url.chomp!( '?' )
+            
             @page.request_headers = res[0].request.headers
 
             @page.query_vars = @analyzer.get_link_vars( @page.url ).dup

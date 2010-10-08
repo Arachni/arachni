@@ -41,10 +41,7 @@ module Utilities
             path =  url
         end
         
-        len = path.length - 1
-        path[len] = '' if path[len] == '?'
-        
-        return path
+        return path.chomp( '?' )
     end
     
     #
