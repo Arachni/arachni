@@ -98,10 +98,10 @@ class HTTP
         @trainer.http = self
         
         @init_headers = {
-          'cookie'      => '',
-          'from'       => opts.authed_by
+            'cookie' => '',
+            'from'   => opts.authed_by,
+            'accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         }
-
         
         @opts = {
             :user_agent      => opts.user_agent,
