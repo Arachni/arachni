@@ -112,6 +112,9 @@ class HTTP
         
         @request_count  = 0
         @response_count = 0
+        
+        # we'll use it to identify our requests
+        @rand_seed = Arachni::Module::Utilities.seed
     end
     
     #
@@ -197,7 +200,7 @@ class HTTP
     def get( url, params = {}, remove_id = false, train = false, sync = false )
         params = { } if !params
         
-        params = params.merge( { '__arachni__' => '' } ) if !remove_id 
+        params = params.merge( { @rand_seed => '' } ) if !remove_id 
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it

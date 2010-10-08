@@ -83,6 +83,7 @@ class Base
         @@last_url ||= ''
         if( @@last_url != @page.url )
             Trainer.instance.page = @page.dup
+            Trainer.instance.init_seed( Arachni::Module::Utilities.seed )
             Trainer.instance.init_forms( get_forms )
             Trainer.instance.init_links( get_links )
             Trainer.instance.init_cookies( get_cookies )

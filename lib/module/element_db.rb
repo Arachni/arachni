@@ -55,6 +55,10 @@ module ElementDB
     #
     @@cookie_mutex ||= Mutex.new
 
+    def init_seed( seed )
+        @@seed = seed
+    end
+    
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
@@ -98,7 +102,7 @@ module ElementDB
             forms.each {
                 |form|
                 
-                next if form['attrs']['action'].include?( '__arachni__' )
+                next if form['attrs']['action'].include?( @@seed )
                 next if form['auditable'].size == 0
             
                 if !(index = forms_include?( form ) )
@@ -130,8 +134,8 @@ module ElementDB
               
               next if !link
               next if !link['href']
-              next if link['href'].include?( '__arachni__' )
-                
+              next if link['href'].include?( @@seed )
+              
               if( !@@links.include?( link ) )
                   @@links << link
                   @new_links << link
