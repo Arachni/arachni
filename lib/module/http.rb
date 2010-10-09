@@ -333,7 +333,7 @@ class HTTP
     def header( url, opts = { } )
         
         headers   = opts[:headers] || {}
-        params    = opts[:params]  || {}
+        params    = opts[:params]
         train     = opts[:train]
         
         async     = opts[:async]
