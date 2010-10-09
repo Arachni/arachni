@@ -18,7 +18,7 @@ require 'anemone'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Anemone::HTTP
 
@@ -48,7 +48,8 @@ class Anemone::HTTP
         opts['User-Agent'] = user_agent if user_agent
         opts['Referer'] = referer.to_s if referer
         opts['Cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
-
+        opts['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        
         retries = 0
         begin
             start = Time.now()
