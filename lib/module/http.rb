@@ -383,7 +383,7 @@ class HTTP
     #
     # @return   [string]
     #
-    def get_cookies_str( cookies )
+    def get_cookies_str( cookies = { } )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
 
