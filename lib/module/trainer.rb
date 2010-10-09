@@ -32,11 +32,12 @@ class Trainer
 
     attr_writer   :page
     attr_accessor :http
+    attr_accessor :analyzer
 
     def initialize
       @opts     = Options.instance
       @analyzer = Analyzer.new( @opts )
-      @updated = false
+      @updated  = false
     end
 
     #
@@ -84,12 +85,10 @@ class Trainer
     end
 
     
-    private
-    
     #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Array]  res   {Typhoeus::Response}, Bool
+    # @param   [Typhoeus::Response, Bool]  res
     #
     def analyze( res )
         
@@ -145,6 +144,8 @@ class Trainer
 
         print_debug( 'Training complete.' )
     end
+    
+    private
     
     def train_forms( res )
         return [], 0 if !@opts.audit_forms
