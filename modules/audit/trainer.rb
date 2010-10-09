@@ -40,7 +40,6 @@ class Trainer < Arachni::Module::Base
         @str = '_arachni_trainer_' + Arachni::Module::Utilities.seed
         
         @opts = {
-            :format => [ Format::STRAIGHT ],
             #
             # tell the frameworm to learn from the
             # server responses that this module will cause.
