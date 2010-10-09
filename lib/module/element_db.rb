@@ -59,6 +59,10 @@ module ElementDB
         @@seed = seed
     end
     
+    def seed
+      return @@seed
+    end
+    
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
@@ -192,17 +196,6 @@ module ElementDB
         return [ @@cookies, cookie_cnt ]
     end
 
-    private
-
-    def forms_include?( form )
-        @@forms.each_with_index {
-            |page_form, i|
-            return i if( form_id( form ) == form_id( page_form ) )
-                    
-        }
-        return false
-    end
-    
     #
     # Returns a form ID string disregarding the values of their input fields.<br/>
     # Used to compare forms in {#update_forms}.
@@ -223,6 +216,18 @@ module ElementDB
         return id
     end
 
+
+    private
+
+    def forms_include?( form )
+        @@forms.each_with_index {
+            |page_form, i|
+            return i if( form_id( form ) == form_id( page_form ) )
+                    
+        }
+        return false
+    end
+    
     #
     # Returns cookies as a name=>value hash
     #
