@@ -22,7 +22,7 @@ module Module
 #
 # Provides a simple, high-performance and thread-safe HTTP interface to modules.
 #
-# All requests are run Async (compliements of Typhoeus)
+# All requests are run Async (compliments of Typhoeus)
 # providing great speed and performance.
 #
 # === Exceptions
@@ -33,7 +33,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos 
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class HTTP
 
@@ -63,12 +63,6 @@ class HTTP
     attr_reader :request_count
     attr_reader :response_count
     
-    #
-    # Initializes the HTTP session given a start URL respecting
-    # system wide settings for HTTP basic auth and proxy
-    #
-    # @param  [String]  url  start URL
-    #
     def initialize( )
         opts = Options.instance
         req_limit = opts.http_req_limit
@@ -88,7 +82,6 @@ class HTTP
             :password                      => opts.url.password,
             :method                        => :auto
         )
-
         
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
@@ -118,7 +111,7 @@ class HTTP
     end
     
     #
-    # Runs Hydra (all the queued HTTP requests)
+    # Runs Hydra (all the asynchronous queued HTTP requests)
     #
     # Should only be called by the framework
     # after all module threads have beed joined!
@@ -134,13 +127,14 @@ class HTTP
     # on behal of the trainer.
     #
     # @param  [Tyhpoeus::Request]  req  the request to queue
+    # @param  [Bool]  async  run request async?
     #
-    def queue( req, sync = false )
+    def queue( req, async = true )
         
         req.id = @request_count
         @last_url = req.url
         
-        if( sync )
+        if( !async )
             @hydra_sync.queue( req )
         else  
             @hydra.queue( req )
@@ -175,7 +169,7 @@ class HTTP
             if( req.train? )
                 # handle redirections
                 if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                    req2 = get( redir, nil, true )
+                    req2 = get( redir, :remove_id => true )
                     req2.on_complete {
                         |res2|
                         @trainer.add_response( res2, true )
@@ -186,19 +180,35 @@ class HTTP
             end
         }
         
-        @hydra_sync.run if sync
+        exception_jail {
+            @hydra_sync.run if !async
+        }
     end
 
     #
     # Gets a URL passing the provided query parameters
     #
     # @param  [URI]  url     URL to GET
-    # @param  [Hash] params  hash with name=>value pairs
+    # @param  [Hash] opts    request options
+    #                          :params  => request parameters || {}
+    #                          :train   => force Arachni to analyze the HTML code || false
+    #                          :async   => make the request async? || true
+    #                          :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
-    def get( url, params = {}, remove_id = false, train = false, sync = false )
-        params = { } if !params
+    def get( url, opts = { } )
+        
+        params    = opts[:params]    || {}
+        remove_id = opts[:remove_id]
+        train     = opts[:train]
+        
+        async     = opts[:async]
+        async     = true if async == nil
+        
+        headers   = opts[:headers]   || {}
+        headers   = @init_headers.dup.merge( headers )
+        
         
         params = params.merge( { @rand_seed => '' } ) if !remove_id 
         #
@@ -210,7 +220,7 @@ class HTTP
         exception_jail {
             
             opts = {
-                :headers       => @init_headers.dup,
+                :headers       => headers,
                 :params        => params,
                 :follow_location => false
             }.merge( @opts )
@@ -218,7 +228,7 @@ class HTTP
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req, sync )
+            queue( req, async )
             return req
         }
         
@@ -228,17 +238,30 @@ class HTTP
     # Posts a form to a URL with the provided query parameters
     #
     # @param  [URI]   url     URL to POST
-    # @param  [Hash]  params  hash with name=>value pairs
+    # @param  [Hash]  opts    request options
+    #                           :params  => request parameters || {}
+    #                           :train   => force Arachni to analyze the HTML code || false
+    #                           :async   => make the request async? || true
+    #                           :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
-    def post( url, params = { }, train = false, sync = false )
+    def post( url, opts = { } )
 
+        params    = opts[:params]
+        train     = opts[:train]
+        
+        async     = opts[:async]
+        async     = true if async == nil
+        
+        headers   = opts[:headers] || {}
+        headers   = @init_headers.dup.merge( headers )
+        
         exception_jail {
             
             opts = {
                 :method        => :post,
-                :headers       => @init_headers.dup,
+                :headers       => headers,
                 :params        => params,
                 :follow_location => false
             }.merge( @opts )
@@ -246,7 +269,7 @@ class HTTP
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req, sync )
+            queue( req, async )
             return req
         }
     end
@@ -255,50 +278,68 @@ class HTTP
     # Gets a url with cookies and url variables
     #
     # @param  [URI]   url      URL to GET
-    # @param  [Hash]  cookies  hash with name=>value pairs
-    # @param  [Hash]  params   hash with GET name=>value pairs
+    # @param  [Hash]  opts    request options
+    #                           :cookies => cookies to send || {}
+    #                           :params  => request parameters || {}
+    #                           :train   => force Arachni to analyze the HTML code || false
+    #                           :async   => make the request async? || true
+    #                           :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
-    def cookie( url, cookies, params = nil, train = false, sync = false )
+    def cookie( url, opts = { } )
 
-        jar = parse_cookie_str( @init_headers['cookie'] )
+        cookies   = opts[:cookies] || {}
+        params    = opts[:params]
+        train     = opts[:train]
         
-        cookies.reject! {
-            |cookie|
-            Options.instance.exclude_cookies.include?( cookie['name'] )
-        }
+        async     = opts[:async]
+        async     = true if async == nil
         
-        cookies = jar.merge( cookies )
+        headers   = opts[:headers] || {}
+        
+        headers = @init_headers.dup.
+          merge( { 'cookie' => get_cookies_str( cookies ) } ).merge( headers )
         
         # wrap the code in exception handling
         exception_jail {
 
             opts = {
-                :headers       => { 'cookie' => get_cookies_str( cookies ) },
+                :headers         => headers,
                 :follow_location => false,
-                :params        => params
+                :params          => params
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
             req.train! if train
             
-            queue( req, sync )
+            queue( req, async )
             return req
         }
     end
 
-    #
+    # 
     # Gets a url with optional url variables and modified headers
     #
-    # @param  [URI]  url      URL to GET
-    # @param  [Hash] headers  hash with name=>value pairs
-    # @param  [Hash] params   hash with name=>value pairs
+    # @param  [URI]   url      URL to GET
+    # @param  [Hash]  opts    request options
+    #                           :headers => headers to send || {}
+    #                           :params  => request parameters || {}
+    #                           :train   => force Arachni to analyze the HTML code || false
+    #                           :async   => make the request async? || true
     #
     # @return [Typhoeus::Request]
     #
-    def header( url, headers, params = nil, train = false, sync = false )
+    def header( url, opts = { } )
         
+        headers   = opts[:headers] || {}
+        params    = opts[:params]  || {}
+        train     = opts[:train]
+        
+        async     = opts[:async]
+        async     = true if async == nil
+        
+
         # wrap the code in exception handling
         exception_jail {
             
@@ -314,7 +355,7 @@ class HTTP
             
             @init_headers = orig_headers.clone
             
-            queue( req, sync )
+            queue( req, async )
             return req
         }
 
@@ -336,13 +377,23 @@ class HTTP
     end
     
     #
-    # Gets a hash of cookies as a string
+    # Returns a hash of cookies as a string (merged with the cookie-jar)
     #
     # @param    [Hash]  cookies  name=>value pairs
     #
     # @return   [string]
     #
     def get_cookies_str( cookies )
+
+        jar = parse_cookie_str( @init_headers['cookie'] )
+
+        cookies.reject! {
+            |cookie|
+            Options.instance.exclude_cookies.include?( cookie['name'] )
+        }
+        
+        cookies = jar.merge( cookies )
+
         str = ''
         cookies.each_pair {
             |name, value|

@@ -234,8 +234,10 @@ module Auditor
             # inform the user what we're auditing
             print_status( get_status_str( url, vars, opts ) )
             
+            opts[:headers] = vars['hash']
+            
             # audit the url vars
-            req = @http.header( @page.url, vars['hash'], nil, opts[:train], !opts[:async] )
+            req = @http.header( @page.url, opts )
 
             injected = vars['hash'][vars['altered']]
             on_complete( req, injected, vars, opts, &block )
@@ -292,8 +294,10 @@ module Auditor
                 # inform the user what we're auditing
                 print_status( get_status_str( url, vars, opts ) )
                 
+                opts[:params] = vars['hash']
+                
                 # audit the url vars
-                req = @http.get( url, vars['hash'], nil, opts[:train], !opts[:async] )
+                req = @http.get( url, opts )
                 
                 injected = vars['hash'][vars['altered']]
                 on_complete( req, injected, vars, opts, &block )
@@ -378,12 +382,15 @@ module Auditor
 
                 # inform the user what we're auditing
                 print_status( get_status_str( url, input, opts ) )
-
+                
+                opts[:params] = input['hash']
+                
                 if( method != 'get' )
-                    req = @http.post( url, input['hash'], opts[:train], !opts[:async] )
+                    req = @http.post( url, opts )
                 else
-                    req = @http.get( url, input['hash'], opts[:train], !opts[:async] )
+                    req = @http.get( url, opts )
                 end
+                
                 opts = curr_opts.dup
                 injected = input['hash'][input['altered']].to_s
                 
@@ -439,8 +446,9 @@ module Auditor
                 next if Options.instance.exclude_cookies.include?( cookie['altered'] )
             
                 print_status( get_status_str( url, cookie, opts ) )
-
-                req = @http.cookie( @page.url, cookie['hash'], nil, opts[:train], !opts[:async] )
+                
+                opts[:cookies] = cookie['hash']
+                req = @http.cookie( @page.url, opts )
                 
                 injected = cookie['hash'][cookie['altered']]
                 on_complete( req, injected, cookie, opts, &block )

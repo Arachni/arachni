@@ -78,7 +78,10 @@ class BlindSQLInjection < Arachni::Module::Base
         
         # let's get a fresh rendering of the page to assist us with
         # irrelevant dynamic content elimination (banners, ads, etc...)
-        res  = @http.get( @page.url, @page.query_vars, nil, nil, true ).response
+        opts = {}
+        opts[:params] = @page.query_vars
+        opts[:async]  = false
+        res  = @http.get( @page.url, opts ).response
 
         # eliminate dynamic content that's context-irrelevant
         # ie. changing with every refresh
