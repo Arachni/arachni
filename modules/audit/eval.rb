@@ -14,7 +14,7 @@ module Modules
 module Audit
 
 #
-# eval() recon module.
+# eval() audit module.
 #
 # It audits links, forms and cookies for code injection.
 #

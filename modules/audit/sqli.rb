@@ -16,7 +16,7 @@ module Modules
 module Audit
 
 #
-# SQL Injection recon module.<br/>
+# SQL Injection audit module.<br/>
 # It audits links, forms and cookies.
 #
 #
