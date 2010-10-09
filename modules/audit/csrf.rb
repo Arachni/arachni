@@ -317,9 +317,7 @@ class CSRF < Arachni::Module::Base
                 which forms affect business logic and audits them for CSRF.
                 It requires a logged-in user's cookie-jar.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Vulnerability::Element::FORM
             ],
             :author         => 'zapotek',
             :version        => '0.1',
