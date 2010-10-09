@@ -560,8 +560,8 @@ class HTTP
         print_debug( 'Backtrace: ' )
         print_debug_backtrace( e )
         print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-        print_debug( 'Hydra session:' )
-        print_debug_pp( @hydra )
+        # print_debug( 'Hydra session:' )
+        # print_debug_pp( @hydra )
         print_error( 'Proceeding anyway... ' )
         
         raise e
