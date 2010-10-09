@@ -63,6 +63,8 @@ options.dir['modules'] = options.dir['pwd'] + 'modules/'
 options.dir['reports'] = options.dir['pwd'] + 'reports/'
 options.dir['lib']     = options.dir['pwd'] + 'lib/'
 
+opts.quiet = true
+
 begin
     opts.each {
         |opt, arg|
@@ -196,6 +198,7 @@ begin
         end
     }
 rescue Exception => e
+    puts e.inspect
     exit
 end
 
