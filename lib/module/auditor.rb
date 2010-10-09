@@ -47,7 +47,7 @@ module Auditor
       STRAIGHT = 1 << 0
       
       #
-      # Apends the injection string to the default value of the input vector.<br/>.
+      # Apends the injection string to the default value of the input vector.<br/>
       # (If no default value exists Arachni will choose one.)
       #
       APPEND   = 1 << 1
@@ -140,10 +140,10 @@ module Auditor
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     # @return  [Array<Hash>]  if no block has been provided the method
@@ -194,10 +194,10 @@ module Auditor
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     # @return  [Array<Hash>]  if no block has been provided the method
@@ -257,10 +257,10 @@ module Auditor
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     # @return  [Array<Hash>]  if no block has been provided the method
@@ -319,10 +319,10 @@ module Auditor
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     # @return  [Array<Hash>]  if no block has been provided the method
@@ -414,10 +414,10 @@ module Auditor
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     # @return  [Array<Hash>]  if no block has been provided the method
@@ -477,10 +477,10 @@ module Auditor
     # @param  [Hash]  input  injection_sets() input set
     # @param  [Hash]  opts  an updated hash of options
     # @param  [Block]   &block         block to be passed the:
-    #                                    o HTTP response
-    #                                    o name of the input vector
-    #                                    o updated opts
-    #                                    The block will be called as soon as
+    #                                   * HTTP response
+    #                                   * name of the input vector
+    #                                   * updated opts
+    #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
     def on_complete( req, injected_str, input, opts, &block )
@@ -706,8 +706,7 @@ module Auditor
     # @see Format
     # @param  [String]  injection_str
     # @param  [String]  default_str  default value to be appended by the
-    #                                 injection strig {#Format::APPEND} is
-    #                                 set in 'format'
+    #                                 injection string if {Format::APPEND} is set in 'format'
     # @param  [Integer]  format     bitfield describing formating preferencies
     #
     # @return  [String]

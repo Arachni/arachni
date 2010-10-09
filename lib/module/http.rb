@@ -190,10 +190,10 @@ class HTTP
     #
     # @param  [URI]  url     URL to GET
     # @param  [Hash] opts    request options
-    #                          :params  => request parameters || {}
-    #                          :train   => force Arachni to analyze the HTML code || false
-    #                          :async   => make the request async? || true
-    #                          :headers => HTTP request headers  || {}
+    #                         * :params  => request parameters || {}
+    #                         * :train   => force Arachni to analyze the HTML code || false
+    #                         * :async   => make the request async? || true
+    #                         * :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
@@ -239,10 +239,10 @@ class HTTP
     #
     # @param  [URI]   url     URL to POST
     # @param  [Hash]  opts    request options
-    #                           :params  => request parameters || {}
-    #                           :train   => force Arachni to analyze the HTML code || false
-    #                           :async   => make the request async? || true
-    #                           :headers => HTTP request headers  || {}
+    #                          * :params  => request parameters || {}
+    #                          * :train   => force Arachni to analyze the HTML code || false
+    #                          * :async   => make the request async? || true
+    #                          * :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
@@ -279,11 +279,11 @@ class HTTP
     #
     # @param  [URI]   url      URL to GET
     # @param  [Hash]  opts    request options
-    #                           :cookies => cookies to send || {}
-    #                           :params  => request parameters || {}
-    #                           :train   => force Arachni to analyze the HTML code || false
-    #                           :async   => make the request async? || true
-    #                           :headers => HTTP request headers  || {}
+    #                          * :cookies => cookies to send || {}
+    #                          * :params  => request parameters || {}
+    #                          * :train   => force Arachni to analyze the HTML code || false
+    #                          * :async   => make the request async? || true
+    #                          * :headers => HTTP request headers  || {}
     #
     # @return [Typhoeus::Request]
     #
@@ -323,10 +323,10 @@ class HTTP
     #
     # @param  [URI]   url      URL to GET
     # @param  [Hash]  opts    request options
-    #                           :headers => headers to send || {}
-    #                           :params  => request parameters || {}
-    #                           :train   => force Arachni to analyze the HTML code || false
-    #                           :async   => make the request async? || true
+    #                          * :headers => headers to send || {}
+    #                          * :params  => request parameters || {}
+    #                          * :train   => force Arachni to analyze the HTML code || false
+    #                          * :async   => make the request async? || true
     #
     # @return [Typhoeus::Request]
     #
