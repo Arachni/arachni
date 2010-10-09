@@ -563,7 +563,8 @@ class HTTP
         print_debug( 'Hydra session:' )
         print_debug_pp( @hydra )
         print_error( 'Proceeding anyway... ' )
-        raise
+        
+        raise e
     end
     
     def self.info
