@@ -19,7 +19,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html    
 # @see http://ha.ckers.org/xss.html
@@ -33,6 +33,9 @@ class XSSURI < Arachni::Module::Base
         super( page )
 
         @results    = []
+        
+        # since we'll bypass the Auditor we need to keep track of our audits 
+        @@__audited  ||= []
     end
     
     def prepare( )
@@ -43,6 +46,13 @@ class XSSURI < Arachni::Module::Base
     
     uri  = URI( @page.url )
     url  = uri.scheme + '://' + uri.host + uri.path  + @str
+    
+    if @@__audited.include?( url )
+        print_info( 'Skipping already audited url: ' + url )
+        return
+    end
+    
+    @@__audited << url
     
     req  = @http.get( url )
             
@@ -60,7 +70,7 @@ class XSSURI < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

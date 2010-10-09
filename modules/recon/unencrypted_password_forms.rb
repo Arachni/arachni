@@ -35,7 +35,8 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         # in this case we don't need to call the parent
         @page = page
         
-        @results = []
+        @results    = []
+        @@__audited ||= []
     end
     
     def run( )
@@ -66,6 +67,14 @@ class UnencryptedPasswordForms < Arachni::Module::Base
     end
     
     def __log( url, input )
+        
+        if @@__audited.include?( input['name'] )
+            print_info( 'Skipping already audited field \'' +
+                input['name'] + '\' of url: ' + url )
+            return
+        end
+        
+        @@__audited << input['name']
       
         # append the result to the results array
         @results << Vulnerability.new( {
