@@ -43,6 +43,6 @@
   - Trainer, probes all inputs of a given page, in order to uncover new input vectors, and forces Arachni to learn from the responses.
   - Unvalidated redirects.
   - Forms that transmit passwords in clear text.
-  - CSRF, implementing 4-pass rDiff  detection to drastically reduce noise.
+  - CSRF, implementing 4-pass rDiff analysis to drastically reduce noise.
 - Overall report improvements and optimizations.
 - Added plain text report
