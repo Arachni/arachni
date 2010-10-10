@@ -178,7 +178,8 @@ class BlindSQLInjection < Arachni::Module::Base
         # original page then a blind SQL injection exists
         check = Module::Utilities.rdiff( res.body, @page.html )
 
-        if( check == @__content && @__html_bad[var] != check )
+        if( check == @__content && @__html_bad[var] != check &&
+            !@http.custom_404?( res.body ) )
             __log_results( opts, var, res, str )
         end
 
