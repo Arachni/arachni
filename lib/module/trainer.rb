@@ -48,10 +48,16 @@ class Trainer
     #
     def add_response( res, redir = false )
       
+        # ap @page.url
+        @page.url = URI.decode( @page.url ).to_s.unpack( 'A*' )[0]
+        effective_url = URI.decode( res.effective_url ).to_s.unpack( 'A*' )[0]
+        
         # prepare the page url
-        @analyzer.url = URI( @page.url ).
-          merge( URI( URI.escape( res.request.url ) ) ).to_s
+        @analyzer.url = URI.parse( @page.url ).
+          merge( effective_url ).to_s
 
+        # ap @analyzer.url
+ 
         # don't follow links to external sites and 
         # respect follow-subdomains option
 
@@ -132,8 +138,8 @@ class Trainer
           
             @page.html = res[0].body.dup
            
-            @page.url  = URI.parse( URI.encode( @page.url ) ).
-                merge( URI.parse( URI.escape( res[0].effective_url ) ) ).to_s
+            @page.url  = URI.parse( @page.url ).
+                merge( @analyzer.url ).to_s
             
             
             @page.request_headers = res[0].request.headers
