@@ -50,7 +50,7 @@ class Trainer
       
         # ap @page.url
         @page.url = URI.decode( @page.url ).to_s.unpack( 'A*' )[0]
-        effective_url = URI.decode( res.effective_url ).to_s.unpack( 'A*' )[0]
+        effective_url = URI.encode( URI.decode( res.effective_url ).to_s.unpack( 'A*' )[0] )
         
         # prepare the page url
         @analyzer.url = URI.parse( @page.url ).
