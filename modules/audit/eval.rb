@@ -42,10 +42,14 @@ class Eval < Arachni::Module::Base
     def initialize( page )
         super( page )
 
+        # code to inject
+        @__injection_strs = []
+        
         # digits from a sha1 hash
         # the codes in @__injection_strs will tell the web app
         # to sum them and echo the result
-        @__rand = '287630581954'
+        @__rand1 = '287630581954'
+        @__rand2 = '4196403186331128'
         
         # our results array
         @results = []
@@ -56,17 +60,17 @@ class Eval < Arachni::Module::Base
         @__opts = {}
         
         # the sum of the 2 numbers as a string
-        @__opts[:match]   = @__rand
+        @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
         @__opts[:regexp]  = Regexp.new( @__opts[:match] )
 
         
         # code to be injected to the webapp
         @__injection_strs = [
-            "echo " + @__rand + ";", # PHP
-            "print " + @__rand + ";", # Perl
-            "print " + @__rand, # Python
-            "Response.Write\x28" +  @__rand + "\x29", # ASP
-            "puts " + @__rand # Ruby
+            "echo " + @__rand1 + "+" + @__rand2 + ";", # PHP
+            "print " + @__rand1 + "+" + @__rand2 + ";", # Perl
+            "print " + @__rand1 + " + " + @__rand2, # Python
+            "Response.Write\x28" +  @__rand1  + '+' + @__rand2 + "\x29", # ASP
+            "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
         
         tmp = []
@@ -74,7 +78,7 @@ class Eval < Arachni::Module::Base
             |str|
             tmp << '; ' + str
         }
-        ap @__injection_strs |= tmp
+        @__injection_strs |= tmp
         
     end
     

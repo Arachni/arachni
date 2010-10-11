@@ -33,28 +33,16 @@ class SimpleCmdExec < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        rand_str = self.class.info[:name] + Arachni::Module::Utilities.seed.to_s
-
         @__opts = {}
-        @__opts[:regexp]   = Regexp.new( rand_str )
-        @__opts[:match]    = rand_str
-        
-        inj_str = 'echo ' + @__opts[:match]
-        
-        @__injection_strs = []
-        @__injection_strs << inj_str
-        @__injection_strs << '; ' + inj_str
-        @__injection_strs << inj_str + ';'
-        @__injection_strs << '; ' + inj_str + ';'
+        @__opts[:regexp]   = /100434/ixm
+        @__opts[:match]    = '100434'
+        @__injection_str   = 'expr 978 + 99456'
         
         @results = []
     end
 
     def run( )
-        @__injection_strs.each {
-            |str|
-            audit( str, @__opts )
-        }
+        audit( @__injection_str, @__opts )
     end
 
     
