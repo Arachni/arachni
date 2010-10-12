@@ -6,7 +6,7 @@
 
 echo <<<EOHTML
     <pre>
-This form is vulnerable to Cross-Site Scripting.
+This form is vulnerable to Blind SQL Injection.
     </pre>
 
 <a href="{$_SERVER['PHP_SELF']}?id=1">SQL injection</a>
@@ -40,5 +40,12 @@ SQL;
 /*    print_r( $SQL['error'] );*/
     echo "</pre>";
 }
+
+$log = '';
+$log .= print_r( $_GET, true );
+$log .= print_r( $_POST, true );
+$log .= print_r( getallheaders( ), true );
+
+file_put_contents( 'log.txt', $log );
 
 ?>
