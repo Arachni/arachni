@@ -515,7 +515,7 @@ USAGE
         print_line <<USAGE
     --http-req-limit            concurent HTTP requests limit
                                   (Be carefull not to kill your server.)
-                                  (Default: 200)
+                                  (Default: 60)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
