@@ -397,7 +397,7 @@ class HTTP
         str = ''
         cookies.each_pair {
             |name, value|
-            
+            value = '' if !value
             val = URI.escape( URI.escape( value ), '+;' )
             str += "#{name}=#{val};" 
         }
