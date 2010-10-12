@@ -48,15 +48,15 @@ class Trainer
     #
     def add_response( res, redir = false )
       
-        # ap @page.url
-        @page.url = URI.decode( @page.url ).to_s.unpack( 'A*' )[0]
         effective_url = URI.encode( URI.decode( res.effective_url ).to_s.unpack( 'A*' )[0] )
+        @page.url     = URI.encode( URI.decode( @page.url ).to_s.unpack( 'A*' )[0] )
         
-        # prepare the page url
-        @analyzer.url = URI.parse( @page.url ).
-          merge( effective_url ).to_s
-
-        # ap @analyzer.url
+        if( !URI( effective_url ).absolute? )
+            # prepare the page url
+            @analyzer.url = URI.parse( @page.url ).merge( effective_url ).to_s
+        else
+            @analyzer.url = effective_url
+        end
  
         # don't follow links to external sites and 
         # respect follow-subdomains option
