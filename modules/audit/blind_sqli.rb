@@ -140,8 +140,6 @@ class BlindSQLInjection < Arachni::Module::Base
             audit( str, @__opts ) {
                 |res, var, opts|
 
-                ap var
-
                 @__html_good[var] ||= []
 
                 # save the response for later analysis
