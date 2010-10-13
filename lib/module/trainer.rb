@@ -47,24 +47,24 @@ class Trainer
     # @param  [Bool]  redir  was the response forcing a redirection?
     #
     def add_response( res, redir = false )
-      
-        effective_url = URI.encode( URI.decode( res.effective_url ).to_s.unpack( 'A*' )[0] )
-        @page.url     = URI.encode( URI.decode( @page.url ).to_s.unpack( 'A*' )[0] )
-        
-        if( !URI( effective_url ).absolute? )
-            # prepare the page url
-            @analyzer.url = URI.parse( @page.url ).merge( effective_url ).to_s
-        else
-            @analyzer.url = effective_url
-        end
- 
-        # don't follow links to external sites and 
-        # respect follow-subdomains option
 
-        return if !follow?( @analyzer.url )
-        return if ( redir && !follow?( @analyzer.url ) )
-        
+        url = res.request.url
+        return if !follow?( url )
+        return if ( redir && !follow?( url ) )
+      
         analyze( [ res, redir ] )
+    end
+    
+    #
+    # Decodes URLs to reverse multiple encodes and removes NULL characters
+    #
+    def url_sanitize( url )
+        
+        while( url =~ /%/ )
+            url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
+        end 
+        
+        return URI.encode( url )
     end
     
     def follow?( url )
@@ -137,13 +137,20 @@ class Trainer
         if( @updated )
           
             @page.html = res[0].body.dup
-           
-            @page.url  = URI.parse( @page.url ).
-                merge( @analyzer.url ).to_s
-            
-            
-            @page.request_headers = res[0].request.headers
 
+            begin
+                url           = res[0].request.url
+                effective_url = url_sanitize( url )
+                @page.url     = url_sanitize( @page.url )
+    
+                # prepare the page url
+                @analyzer.url = (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup
+            rescue
+                print_error( "Invalid URL, probably broken redirection. Ignoring..." )
+                raise
+            end
+
+            @page.request_headers = res[0].request.headers
             @page.query_vars = @analyzer.get_link_vars( @page.url ).dup
 
         end

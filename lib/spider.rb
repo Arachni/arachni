@@ -117,7 +117,7 @@ class Spider
             anemone.on_pages_like( @opts.include ) {
                 |page|
 
-                url = page.url.to_s
+                url = url_sanitize( page.url.to_s )
                 
                 # something went kaboom, tell the user and skip the page
                 if page.error
@@ -163,6 +163,19 @@ class Spider
 
         return @sitemap.uniq
     end
+
+    #
+    # Decodes URLs to reverse multiple encodes and removes NULL characters
+    #
+    def url_sanitize( url )
+        
+        while( url =~ /%/ )
+            url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
+        end 
+        
+        return url
+    end
+
 
     #
     # Hook for further analysis of pages, statistics etc.
