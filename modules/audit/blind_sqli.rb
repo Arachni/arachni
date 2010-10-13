@@ -62,6 +62,7 @@ class BlindSQLInjection < Arachni::Module::Base
         
         @__opts = {
             :format      => [ Format::APPEND ],
+            :redundant   => true,
             # sadly, we need to disable asynchronous requests
             # otherwise the code would get *really* ugly
             :async       => false
@@ -138,6 +139,8 @@ class BlindSQLInjection < Arachni::Module::Base
             # inject the statement
             audit( str, @__opts ) {
                 |res, var, opts|
+
+                ap var
 
                 @__html_good[var] ||= []
 
