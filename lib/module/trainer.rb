@@ -48,9 +48,11 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        url = res.request.url
-        return if !follow?( url )
-        return if ( redir && !follow?( url ) )
+        url = res.effective_url
+        url = URI( to_absolute( url ) )
+        
+        return if !follow?(  url )
+        return if ( redir && !follow?(  url ) )
       
         analyze( [ res, redir ] )
     end
@@ -68,6 +70,8 @@ class Trainer
     end
     
     def follow?( url )
+        @analyzer.url = @page.url
+        
         return false if !@analyzer.in_domain?( url )
         return false if @analyzer.exclude?( url ) 
         return false if !@analyzer.include?( url )
@@ -140,11 +144,8 @@ class Trainer
 
             begin
                 url           = res[0].request.url
-                effective_url = url_sanitize( url )
-                @page.url     = url_sanitize( @page.url )
-    
                 # prepare the page url
-                @analyzer.url = (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup
+                @analyzer.url = to_absolute( url )
             rescue
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
                 raise
@@ -159,6 +160,14 @@ class Trainer
     end
     
     private
+    
+    def to_absolute( url )
+        effective_url = url_sanitize( url )
+        @page.url     = url_sanitize( @page.url )
+    
+        # prepare the page url
+        return (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup    
+    end
     
     def train_forms( res )
         return [], 0 if !@opts.audit_forms
