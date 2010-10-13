@@ -62,15 +62,21 @@ class BlindSQLInjection < Arachni::Module::Base
         
         @__opts = {
             :format      => [ Format::APPEND ],
+            # we need to do our own redundancy checks
             :redundant   => true,
             # sadly, we need to disable asynchronous requests
             # otherwise the code would get *really* ugly
             :async       => false
         }
         
+        # used for redundancy checks 
+        @@__audited ||= []
+        
     end
     
     def run( )
+        
+        return if( __audited? )
         
         if( @page.query_vars.empty? )
             print_status( 'Nothing to audit on current page, skipping...' )
@@ -100,6 +106,19 @@ class BlindSQLInjection < Arachni::Module::Base
         
         # register our results with the framework
         register_results( @results )
+    end
+    
+    def clean_up
+        @@__audited << __audit_id( )
+        @@__audited.uniq!
+    end
+    
+    def __audit_id
+        "#{URI( @page.url).path}::#{@page.query_vars.keys}"
+    end
+    
+    def __audited?
+        @@__audited.include?( __audit_id( ) )
     end
     
     # Audits page with 'bad' SQL characters and gathers error pages
