@@ -24,7 +24,7 @@ This way attack/input vectors that would otherwise be undetectable by non-humans
 are seamlessly handled by Arachni.
 
 Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).<br/>
-Thus, you'll only be limited by the responsivenes of the server under audit and your available bandwidth.
+Thus, you'll only be limited by the responsiveness of the server under audit and your available bandwidth.
 
 Note: Despite the fact that Arachni is mostly targeted towards web application security,
 it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
