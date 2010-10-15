@@ -327,22 +327,15 @@ or any other report type as shown by:
     
   * ruby1.9.1 or later
   * Nokogiri
-    - `gem install nokogiri`
   * Anemone
-    - `gem install anemone`
   * Typhoeus
-    - `gem install typhoeus`
   * Sockify
-    - `gem install socksify`
   * Awesome print
-    - `gem install awesome_print`
   * Liquid (For {Arachni::Reports::HTML} reporting)
-    - `gem install liquid`
   * Yardoc (if you want to generate the documentation)
-    - `gem install yard`
 
 Run the following to install all dependencies:
-    gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+    sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
