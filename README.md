@@ -334,7 +334,12 @@ or any other report type as shown by:
   * Liquid (For {Arachni::Reports::HTML} reporting)
   * Yardoc (if you want to generate the documentation)
 
-Run the following to install all dependencies:
+Run the following to install all required system libraries:
+    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
+
+(Adapt the above line to your Linux distro.)
+
+Run the following to install all gem dependencies:
     sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
 ## Supported platforms
