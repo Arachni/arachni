@@ -342,6 +342,8 @@ Run the following to install all required system libraries:
 Run the following to install all gem dependencies:
     sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
 
+(Make sure you install the gems with gem version 1.9.1 and run arachni with ruby version 1.9.1)
+
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
 and the aforementioned requirements.
