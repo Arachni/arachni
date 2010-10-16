@@ -48,13 +48,20 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        url = res.effective_url
-        url = URI( to_absolute( url ) )
-        
-        return if !follow?(  url )
-        return if ( redir && !follow?(  url ) )
-      
-        analyze( [ res, redir ] )
+        begin
+            url = res.effective_url
+            url = URI( to_absolute( url ) )
+            
+            return if !follow?(  url )
+            return if ( redir && !follow?(  url ) )
+          
+            analyze( [ res, redir ] )
+            
+        rescue
+            print_error( "Invalid URL, probably broken redirection. Ignoring..." )
+            # raise
+        end
+
     end
     
     #
@@ -148,7 +155,7 @@ class Trainer
                 @analyzer.url = to_absolute( url )
             rescue
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-                raise
+                # raise
             end
 
             @page.request_headers = res[0].request.headers
@@ -164,7 +171,7 @@ class Trainer
     def to_absolute( url )
         effective_url = url_sanitize( url )
         @page.url     = url_sanitize( @page.url )
-    
+        
         # prepare the page url
         return (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup    
     end
