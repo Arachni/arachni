@@ -50,17 +50,23 @@ class Metasploitable < Arachni::Report::Base
             vuln.variations.each {
                 |variation|
 
-                datastore = {}
-                                    
-                injected_orig = URI.encode( URI.encode( vuln.opts[:injected_orig] ), ':/' )
-                uri = variation['url'].gsub( injected_orig, 'XXinjectedXX' )
-                    
-                datastore['PHPURI']  = uri
-                datastore['RHOST']   = URI( variation['url'] ).host
-                datastore['RPORT']   = URI( variation['url'] ).port
+                # datastore = {}
+                # 
+                # injected_orig = URI.encode( URI.encode( vuln.opts[:injected_orig] ), ':/' )
+                # uri = variation['url'].gsub( injected_orig, 'XXinjectedXX' )
+                #     
+                # datastore['PHPURI']  = uri
+                # datastore['RHOST']   = URI( variation['url'] ).host
+                # datastore['RPORT']   = URI( variation['url'] ).port
+                # 
+                # datastore['exploit'] = vuln.metasploitable
                 
-                datastore['exploit'] = vuln.metasploitable
-                    
+                datastore = variation.dup
+                
+                datastore.delete( 'response' )
+                datastore.delete( 'headers' )
+                datastore['opts']   = vuln.opts
+                
                 msf << datastore
             }
             
