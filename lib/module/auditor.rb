@@ -211,6 +211,8 @@ module Auditor
         opts[:element]  = Element::HEADER
         url             = @page.url
         
+        opts[:injected_orig] = injection_str
+        
         audit_id = audit_id( url, get_headers( ), opts, injection_str )
         return if audited?( audit_id )
 
@@ -337,6 +339,8 @@ module Auditor
         opts            = OPTIONS.merge( opts )
         opts[:element]  = Element::FORM
         
+        opts[:injected_orig] = injection_str
+        
         results = []
         get_forms.each {
             |orig_form|
@@ -432,6 +436,8 @@ module Auditor
         opts            = OPTIONS.merge( opts )
         opts[:element]  = Element::COOKIE
         url             = @page.url
+        
+        opts[:injected_orig] = injection_str
 
         results = []
         
