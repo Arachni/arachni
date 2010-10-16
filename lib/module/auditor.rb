@@ -272,6 +272,8 @@ module Auditor
 
         opts            = OPTIONS.merge( opts )
         opts[:element]  = Element::LINK
+        
+        opts[:injected_orig] = injection_str
 
         results = []
         get_links.each {
@@ -463,8 +465,6 @@ module Auditor
             audited( audit_id )
         }
         
-        # @http.run
-
         results
     end
 
@@ -572,6 +572,7 @@ module Auditor
                 :response     => res.body,
                 :elem         => elem,
                 :verification => verification,
+                :opts         => opts.dup,
                 :headers      => {
                     :request    => res.request.headers,
                     :response   => res.headers,    
