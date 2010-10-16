@@ -567,7 +567,7 @@ class Framework
     # @return   [Object]    a deep clone of the object
     #
     def deep_clone( obj )
-        Marshal.load( Marshal.dump( obj ) )
+        YAML.load( YAML.dump( obj ) )
     end
     
     private
