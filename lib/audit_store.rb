@@ -212,6 +212,7 @@ class AuditStore
             'regexp_match',
             'headers',
             'response',
+            'opts'
         ]
 
         new_vulns = {}
@@ -242,7 +243,8 @@ class AuditStore
                 'regexp'        => vuln.regexp.clone,
                 'regexp_match'  => vuln.regexp_match.clone,
                 'headers'       => vuln.headers.clone,
-                'response'      => vuln.response.clone
+                'response'      => vuln.response.clone,
+                'opts'          => vuln.opts ? vuln.opts.clone : {}
             }
             
             variation_keys.each {

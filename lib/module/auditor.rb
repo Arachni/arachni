@@ -551,8 +551,15 @@ module Auditor
         match_data = match_data.to_s
 
         verification = false
-        if( @page.html.scan( regexp )[0] )
-            verification = true
+        
+        # an annoying encoding exception may be thrown by scan()
+        # the sob started occuring again....
+        begin
+            if( @page.html.scan( regexp )[0] )
+                verification = true
+            end
+        rescue
+            
         end
 
         # fairly obscure condition...pardon me...
@@ -567,7 +574,7 @@ module Auditor
             print_verbose( "Verified string:\t" + verified )
             print_verbose( "Matched regular expression: " + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
-    
+            
             res = {
                 :var          => var,
                 :url          => url,
@@ -577,6 +584,7 @@ module Auditor
                 :regexp_match => match_data,
                 :response     => res.body,
                 :elem         => elem,
+                :method       => res.request.method.to_s,
                 :verification => verification,
                 :opts         => opts.dup,
                 :headers      => {
