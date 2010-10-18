@@ -1,3 +1,7 @@
+# Experimental branch
+Intended for research and experimental development **only**.
+End-users should check out the links bellow.
+
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
