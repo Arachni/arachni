@@ -9,6 +9,9 @@
 =end
 
 module Arachni
+    
+require Options.instance.dir['reports'] + 'metasploitable/arachni_metareport.rb'
+    
 module Reports    
     
 #
@@ -50,28 +53,33 @@ class Metasploitable < Arachni::Report::Base
             vuln.variations.each {
                 |variation|
 
-                # datastore = {}
-                # 
-                # injected_orig = URI.encode( URI.encode( vuln.opts[:injected_orig] ), ':/' )
-                # uri = variation['url'].gsub( injected_orig, 'XXinjectedXX' )
-                #     
-                # datastore['PHPURI']  = uri
-                # datastore['RHOST']   = URI( variation['url'] ).host
-                # datastore['RPORT']   = URI( variation['url'] ).port
-                # 
-                # datastore['exploit'] = vuln.metasploitable
+                if( ( method = vuln.method.dup ) != 'post' )
+                    url = variation['url'].gsub( /\?.*/, '' )
+                else
+                    url = variation['url']
+                end
                 
-                datastore = variation.dup
+                if( vuln.elem == 'cookie' || vuln.elem == 'header' )
+                    method = vuln.elem
+                end
                 
-                datastore.delete( 'response' )
-                datastore.delete( 'headers' )
-                datastore['opts']   = vuln.opts
+                # pp vuln
                 
-                msf << datastore
+                params = variation['opts'][:combo]['hash']
+                params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
+                
+                msf << ArachniMetareport.new( {
+                    :url     => url,
+                    :var     => vuln.var,
+                    :params  => params,
+                    :method  => method,
+                    :headers => variation['headers']['request'],
+                    :exploit => vuln.metasploitable,
+                } )
             }
             
         }
-        
+
         outfile = File.new( @outfile, 'w')
         YAML.dump( msf, outfile )
 
