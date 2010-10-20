@@ -10,12 +10,12 @@
 
 module Arachni
     
-require Options.instance.dir['reports'] + 'metasploitable/arachni_metareport.rb'
+require Options.instance.dir['reports'] + 'metareport/arachni_metareport.rb'
     
 module Reports    
     
 #
-# Metasploitable
+# Metareport
 #
 # Creates a file to be used with the Arachni MSF plug-in.
 #
@@ -24,7 +24,7 @@ module Reports
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Metasploitable < Arachni::Report::Base
+class Metareport < Arachni::Report::Base
     
     # register us with the system
     include Arachni::Report::Registrar
@@ -69,16 +69,27 @@ class Metasploitable < Arachni::Report::Base
                 params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
                 
                 msf << ArachniMetareport.new( {
-                    :url     => url,
-                    :var     => vuln.var,
-                    :params  => params,
-                    :method  => method,
-                    :headers => variation['headers']['request'],
-                    :exploit => vuln.metasploitable,
+                    :host   => URI( url ).host,
+                    :port   => URI( url ).port,
+                    :vhost  => '',
+                    :ssl    => URI( url ).scheme == 'https',
+                    :path   => URI( url ).path,
+                    :query  => URI( url ).query,
+                    :method => method.upcase,
+                    :params => params,
+                    :pname  => vuln.var,
+                    :proof  => variation['regexp_match'],
+                    :risk   => '',
+                    :name   => vuln.name,
+                    :description    =>  vuln.description,
+                    :category   =>  'n/a',
+                    :exploit    => vuln.metasploitable
                 } )
             }
             
         }
+        
+        # pp msf
 
         outfile = File.new( @outfile, 'w')
         YAML.dump( msf, outfile )
@@ -93,7 +104,7 @@ class Metasploitable < Arachni::Report::Base
     #
     def self.info
         {
-            :name           => 'Metasploitable report',
+            :name           => 'Metareport',
             :description    => %q{Creates a file to be used with the Arachni MSF plug-in.},
             :author         => 'zapotek',
             :version        => '0.1',
