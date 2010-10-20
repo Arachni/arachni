@@ -70,7 +70,7 @@ class SimpleCmdExec < Arachni::Module::Base
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
-                :metasploitable => 'exploit/unix/webapp/generic_exec'
+                :metasploitable => 'unix/webapp/generic_exec'
             }
 
         }
