@@ -34,6 +34,7 @@ class ArachniMetareport
     attr_accessor :query
     attr_accessor :method
     attr_accessor :params
+    attr_accessor :headers
     attr_accessor :pname
     attr_accessor :proof
     attr_accessor :risk

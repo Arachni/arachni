@@ -68,6 +68,10 @@ class Metareport < Arachni::Report::Base
                 params = variation['opts'][:combo]['hash']
                 params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
                 
+                cookies = variation['headers']['request']['cookie']
+                cookies = cookies.gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
+                variation['headers']['request']['cookie'] = cookies
+                
                 msf << ArachniMetareport.new( {
                     :host   => URI( url ).host,
                     :port   => URI( url ).port,
@@ -77,6 +81,7 @@ class Metareport < Arachni::Report::Base
                     :query  => URI( url ).query,
                     :method => method.upcase,
                     :params => params,
+                    :headers=> variation['headers']['request'],
                     :pname  => vuln.var,
                     :proof  => variation['regexp_match'],
                     :risk   => '',
