@@ -122,7 +122,7 @@ class Eval < Arachni::Module::Base
                 :cvssv2       => '7.5',
                 :remedy_guidance    => '',
                 :remedy_code => '',
-                :metasploitable => 'unix/webapp/php_eval'
+                :metasploitable => 'unix/webapp/arachni_php_eval'
             }
 
         }

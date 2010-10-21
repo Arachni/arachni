@@ -214,7 +214,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 :cvssv2      => '7.5',
                 :remedy_guidance    => '',
                 :remedy_code => '',
-                :metasploitable	=> 'unix/webapp/php_include'
+                :metasploitable	=> 'unix/webapp/arachni_php_include'
             }
             
         }
