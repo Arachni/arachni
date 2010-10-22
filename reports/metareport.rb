@@ -68,9 +68,12 @@ class Metareport < Arachni::Report::Base
                 params = variation['opts'][:combo]['hash']
                 params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
                 
-                cookies = variation['headers']['request']['cookie']
-                cookies = cookies.gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
-                variation['headers']['request']['cookie'] = cookies
+                # params[vuln.var] = URI.encode( params[vuln.var], ';' )
+                
+                cookies = sub_cookie( variation['headers']['request']['cookie'], params )
+                variation['headers']['request']['cookie'] = cookies.dup
+                
+                # ap sub_cookie( variation['headers']['request']['cookie'], params )
                 
                 msf << ArachniMetareport.new( {
                     :host   => URI( url ).host,
@@ -81,7 +84,7 @@ class Metareport < Arachni::Report::Base
                     :query  => URI( url ).query,
                     :method => method.upcase,
                     :params => params,
-                    :headers=> variation['headers']['request'],
+                    :headers=> variation['headers']['request'].dup,
                     :pname  => vuln.var,
                     :proof  => variation['regexp_match'],
                     :risk   => '',
@@ -100,6 +103,17 @@ class Metareport < Arachni::Report::Base
         YAML.dump( msf, outfile )
 
         print_status( 'Saved in \'' + @outfile + '\'.' )
+    end
+    
+    def sub_cookie( str, params )
+        hash = {}
+        str.split( ';' ).each {
+            |cookie|
+            k,v = cookie.split( '=', 2 )
+            hash[k] = v
+        }
+        
+        return hash.merge( params ).map{ |k,v| "#{k}=#{v}" }.join( ';' )
     end
     
     #
