@@ -19,7 +19,7 @@ module Report
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Registry
 
@@ -40,8 +40,8 @@ class Registry
     #
     # @return [Arachni::Reports] the loaded reports
     #
-    def rep_load( name )
-        Registry.register( get_by_name( name ) )
+    def load( name )
+        Registry.register( by_name( name ) )
     end
     
     #
@@ -49,8 +49,8 @@ class Registry
     #
     # @return [Array<Arachni::Reports>]  contents of the @@module_registry
     #
-    def ls_loaded( )
-        Registry.get_registry( )
+    def loaded( )
+        Registry.registry( )
     end
     
     #
@@ -60,9 +60,9 @@ class Registry
     #
     # @return [Arachni::Reports]
     #
-    def get_by_name( name )
+    def by_name( name )
         begin
-            load( get_path_from_name( name ) )
+            ::Kernel::load( path_from_name( name ) )
         rescue Exception => e
             raise e
         end
@@ -75,9 +75,9 @@ class Registry
     #
     # @return [String]  the path of the report
     #
-    def get_path_from_name( name )
+    def path_from_name( name )
         begin
-            return ls_available( )[name]['path'].to_s
+            return available( )[name]['path'].to_s
         rescue Exception => e
             raise( Arachni::Exceptions::ReportNotFound,
                 'Uknown report \'' + name + '\'.' )
@@ -90,7 +90,7 @@ class Registry
     #
     # @return [Hash<Hash<String, String>>]
     #
-    def ls_available( )
+    def available( )
 
         Dir.glob( @lib + '*.rb' ).each {
             |class_path|
@@ -111,7 +111,7 @@ class Registry
     #
     # @return [Array<Arachni::Reports>]  the @@registry
     #
-    def Registry.get_registry( )
+    def Registry.registry( )
         @@registry.uniq
     end
     

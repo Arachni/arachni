@@ -33,7 +33,7 @@ class Registry
     #
     # @return [String]
     #
-    attr_reader :mod_lib
+    attr_reader :lib
 
     class << self
         
@@ -44,7 +44,7 @@ class Registry
         #
         # @return [Array<Module>]
         #
-        attr_reader :module_registry
+        attr_reader :registry
         
         #
         # Class variable
@@ -53,7 +53,7 @@ class Registry
         #
         # @return [Array<Vulnerability>]
         #
-        attr_reader :module_results
+        attr_reader :results
         
         #
         # Class variable
@@ -62,24 +62,24 @@ class Registry
         #
         # @return [Array<Hash>]
         #
-        attr_reader :module_storage
+        attr_reader :storage
         
     end
 
     #
     # Initializes Arachni::Module::Registry with the module library
     #
-    # @param [String] mod_lib path the the module directory
+    # @param [String] lib path the the module directory
     #
-    def initialize( mod_lib )
+    def initialize( lib )
         
-        @mod_lib = mod_lib
+        @lib = lib
         
-        @@module_registry = []
-        @@module_results  = []
-        @@module_storage  = Hash.new
+        @@registry = []
+        @@results  = []
+        @@storage  = Hash.new
             
-        @available_mods   = Hash.new
+        @available  = Hash.new
     end
 
     #
@@ -87,32 +87,32 @@ class Registry
     #
     # @return [Hash<Hash<String, String>>]
     #
-    def ls_available( )
+    def available( )
 
-        (ls_recon | ls_audit).each {
+        (recon | audit).each {
             |class_path|
 
-            filename = class_path.gsub( Regexp.new( @mod_lib ) , '' )
+            filename = class_path.gsub( Regexp.new( @lib ) , '' )
             filename = filename.gsub( /(recon|audit)\// , '' )
             filename.gsub!( Regexp.new( '.rb' ) , '' )
 
-            @available_mods[filename] = Hash.new
-            @available_mods[filename]['path'] = class_path
+            @available[filename] = Hash.new
+            @available[filename]['path'] = class_path
         }
         
-        @available_mods
+        return @available
     end
 
-    def ls_recon
-      ls( "recon" )
+    def recon
+      by_type( "recon" )
     end
     
-    def ls_audit
-      ls( "audit" )
+    def audit
+      by_type( "audit" )
     end
     
-    def ls( type )
-        Dir.glob( @mod_lib + "#{type}/" + '*.rb' )
+    def by_type( type )
+        Dir.glob( @lib + "#{type}/" + '*.rb' )
     end
 
     #
@@ -123,8 +123,8 @@ class Registry
     #
     # @return [Hash]  the info of the module
     #
-    def mod_info( reg_id )
-        @@module_registry.each_with_index {
+    def info( reg_id )
+        @@registry.each_with_index {
             |mod, i|
 
             if i == reg_id
@@ -144,8 +144,8 @@ class Registry
     #
     # @return [Array<Arachni::Module>]  contents of the @@module_registry
     #
-    def ls_loaded( )
-        get_registry
+    def loaded( )
+        return registry
     end
 
     #
@@ -156,12 +156,12 @@ class Registry
     #
     # @return [Arachni::Module] the loaded modules
     #
-    def mod_load( mod_name )
+    def load( mod_name )
         
-        Registry.register( get_module_by_name( mod_name ) )
+        Registry.register( by_name( mod_name ) )
         
         # grab the module we just registered
-        mod = @@module_registry[-1]
+        mod = @@registry[-1]
 
          # if it doesn't have any dependencies we're done
         if( !mod.methods.index( :deps ) ) then return end
@@ -173,7 +173,7 @@ class Registry
             if ( !dep_mod ) then next end
             
             begin
-                mod_load( dep_mod )
+                load( dep_mod )
             rescue Exception => e
                 raise( Arachni::Exceptions::DepModNotFound,
                     "In '#{mod_name}' dependencies: " + e.to_s )
@@ -190,9 +190,9 @@ class Registry
     #
     # @return [Arachni::Module]
     #
-    def get_module_by_name( name )
+    def by_name( name )
         begin
-            load( get_path_from_name( name ) )
+            ::Kernel::load( path_from_name( name ) )
         rescue Exception => e
             raise e
         end
@@ -205,9 +205,9 @@ class Registry
     #
     # @return [String]  the path of the module
     #
-    def get_path_from_name( name )
+    def path_from_name( name )
         begin
-            ls_available( )[name]['path'].to_s
+            available( )[name]['path'].to_s
         rescue Exception => e
             raise( Arachni::Exceptions::ModNotFound,
                 "Module '#{mod_name}' not found." )
@@ -220,7 +220,7 @@ class Registry
     # Used by the Registrar *only*
     #
     def Registry.register( mod )
-        @@module_registry << mod
+        @@registry << mod
         Registry.clean_up(  )
     end
 
@@ -238,8 +238,8 @@ class Registry
     #
     # @return [Array<Arachni::Module>]  the @@module_registry
     #
-    def Registry.get_registry( )
-        @@module_registry.uniq
+    def Registry.registry( )
+        @@registry.uniq
     end
 
     #
@@ -250,7 +250,7 @@ class Registry
     # @param    [Array]
     #
     def Registry.register_results( results )
-        @@module_results |= results
+        @@results |= results
     end
 
     #
@@ -260,17 +260,21 @@ class Registry
     #
     # @param    [Array]
     #
-    def Registry.get_results( )
-        @@module_results
+    def Registry.results( )
+        @@results
     end
 
+    def results
+        @@results
+    end
+    
     #
     # Lists the loaded modules
     #
     # @return [Array<Arachni::Module>]  the @@module_registry
     #
-    def get_registry( )
-        Registry.get_registry( )
+    def registry( )
+        Registry.registry( )
     end
 
     #
@@ -295,20 +299,13 @@ class Registry
     #
     # @return    [Object]    the data under key
     #
-    def Registry.get_storage( key )
-        @@module_storage.each {
+    def Registry.storage( key = nil )
+        return @@storage if !key
+         
+        @@storage.each {
             |item|
             if( item.keys[0] == key ) then return item[key] end
         }
-    end
-    
-    #
-    # Gets the entire storage array
-    #
-    # @return    [Array<Hash>]
-    #
-    def Registry.get_store( )
-        @@module_storage
     end
     
     #
@@ -322,7 +319,7 @@ class Registry
     def Registry.clean_up( )
 
         clean_reg = []
-        @@module_registry.each {
+        @@registry.each {
             |mod|
 
             begin
@@ -334,7 +331,7 @@ class Registry
 
         }
 
-        @@module_registry = clean_reg
+        @@registry = clean_reg
     end
 
 end

@@ -196,7 +196,7 @@ class CLI
         print_debug( 'ModuleRegistry reports the following modules as loaded:' )
         print_debug( '----------' )
 
-        @arachni.ls_loaded_mods( ).each {
+        @arachni.modules.each {
             |mod|
             print_debug( mod )
         }

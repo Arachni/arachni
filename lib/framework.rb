@@ -87,8 +87,8 @@ class Framework
         
         @opts = opts
             
-        @modreg = Arachni::Module::Registry.new( @opts.dir['modules'] )
-        @repreg = Arachni::Report::Registry.new( @opts.dir['reports'] )
+        @modules = Arachni::Module::Registry.new( @opts.dir['modules'] )
+        @reports = Arachni::Report::Registry.new( @opts.dir['reports'] )
         
         parse_opts( )
         prepare_user_agent( )
@@ -208,7 +208,7 @@ class Framework
     #
     def run_reps( audit_store )
     
-        ls_loaded_reps.each_with_index {
+        reports.each_with_index {
             |report, i|
 
             # if the user hasn't selected a filename for the report
@@ -292,7 +292,7 @@ class Framework
             :revision => REVISION,
             :options  => @opts.to_h,
             :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-            :vulns    => deep_clone( Arachni::Module::Registry.get_results( ) )
+            :vulns    => deep_clone( @modules.results( ) )
          } )
     end
     
@@ -301,8 +301,8 @@ class Framework
     #
     # @return    [Array<Class>]
     #
-    def ls_loaded_mods
-        @modreg.ls_loaded( )
+    def modules
+        @modules.loaded( )
     end
     
     #
@@ -310,8 +310,8 @@ class Framework
     #
     # @return    [Array<Class>]
     #
-    def ls_loaded_reps
-        @repreg.ls_loaded( )
+    def reports
+        @reports.loaded( )
     end
     
     #
@@ -333,10 +333,10 @@ class Framework
                 
                 @opts.mods = []
                 
-                @modreg.ls_available(  ).keys.each {
+                @modules.ls_available(  ).keys.each {
                     |mod|
                     @opts.mods << mod
-                    @modreg.mod_load( mod )
+                    @modules.mod_load( mod )
                 }
                 
                 # and we're done..
@@ -345,7 +345,7 @@ class Framework
             
             # ...and load the module passing all exceptions to the UI.
             begin
-                @modreg.mod_load( mod_name )
+                @modules.load( mod_name )
             rescue Exception => e
                 raise e
             end
@@ -367,7 +367,7 @@ class Framework
         
         if( !mods.include?( "*" ) )
 
-            avail_mods  = @modreg.ls_available(  )
+            avail_mods  = @modules.available(  )
             
             mods.each {
                 |mod_name|
@@ -384,7 +384,7 @@ class Framework
                 load << mod[0] if mods.include?( mod[0] )
             }
         else
-            @modreg.ls_available(  ).map {
+            @modules.ls_available(  ).map {
                 |mod|
                 load << mod[0]
             }
@@ -405,14 +405,14 @@ class Framework
         reports.each {
             |report|
             
-            if( !@repreg.ls_available(  )[report] )
+            if( !@reports.available(  )[report] )
                 raise( Arachni::Exceptions::ReportNotFound,
                     "Error: Report #{report} wasn't found." )
             end
     
             begin
                 # load the report
-                @repreg.rep_load( report )
+                @reports.load( report )
             rescue Exception => e
                 raise e
             end
@@ -471,14 +471,14 @@ class Framework
         i = 0
         mod_info = []
         
-        @modreg.ls_available( ).each_pair {
+        @modules.available( ).each_pair {
             |mod_name, path|
     
             next if !lsmod_match?( path['path'] )
     
-            @modreg.mod_load( mod_name )
+            @modules.load( mod_name )
     
-            info = @modreg.mod_info( i )
+            info = @modules.info( i )
 
             info[:mod_name]    = mod_name
             info[:name]        = info[:name].strip
@@ -515,12 +515,12 @@ class Framework
         i = 0
         rep_info = []
         
-        @repreg.ls_available( ).each_pair {
+        @reports.available( ).each_pair {
             |rep_name, path|
     
-            @repreg.rep_load( rep_name )
+            @reports.load( rep_name )
 
-            info = @repreg.info( i )
+            info = @reports.info( i )
 
             info[:rep_name]    = rep_name
             info[:path]        = path['path'].strip
@@ -624,7 +624,7 @@ class Framework
     def run_mods( page )
         return if !page
         
-        for mod in ls_loaded_mods
+        for mod in modules
                     
             # save some time by deciding if the module is worth running
             if( !run_module?( mod , page ) )
