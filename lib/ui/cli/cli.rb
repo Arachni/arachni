@@ -11,6 +11,7 @@
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
 
 module UI
