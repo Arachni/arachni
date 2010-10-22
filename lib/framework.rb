@@ -37,7 +37,7 @@ module Arachni
 
 #
 # Arachni::Framework class
-#    
+#
 # The Framework class ties together all the components.<br/>
 # It should be wrapped by a UI class.
 #
@@ -58,13 +58,13 @@ class Framework
     # the UI classes should take care of communicating with the user
     #
     include Arachni::UI::Output
-    
+
     # the universal system version
     VERSION      = '0.2'
-    
+
     # the version of *this* class
     REVISION     = '0.1.8'
-    
+
     #
     # Instance options
     #
@@ -80,25 +80,25 @@ class Framework
     # @param    [Options]    opts
     #
     def initialize( opts )
-        
+
         Encoding.default_external = "BINARY"
         Encoding.default_internal = "BINARY"
-        
+
         @opts = opts
-            
+
         @modules = Arachni::Module::Registry.new( @opts )
         @reports = Arachni::Report::Registry.new( @opts )
-        
+
         parse_opts( )
         prepare_user_agent( )
-        
+
         @spider   = Arachni::Spider.new( @opts )
         @analyzer = Arachni::Analyzer.new( @opts )
-        
+
         # deep copy the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = deep_clone( @opts.redundant )
-        
+
     end
 
     #
@@ -107,16 +107,16 @@ class Framework
     # It parses the instanse options and runs the audit
     #
     def run
-        
+
         # pass all exceptions to the UI
         begin
             validate_opts
         rescue
             raise
         end
-        
+
         @opts.start_datetime = Time.now
-        
+
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results
         # Arachni managed to gather
@@ -125,24 +125,24 @@ class Framework
             audit( )
         rescue Exception
         end
-        
+
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
-        
+
         audit_store = audit_store_get( )
-        
+
         # run reports
         if( @opts.reports )
-            exception_jail{ 
+            exception_jail{
                 @reports.run( audit_store )
             }
         end
-        
-        # save the AuditStore in a file 
+
+        # save the AuditStore in a file
         if( @opts.repsave && !@opts.repload )
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
-        
+
     end
 
     def exception_jail( &block )
@@ -157,7 +157,7 @@ class Framework
 
     def stats( )
         audit_store = audit_store_get
-        
+
         req_cnt = Arachni::Module::HTTP.instance.request_count
         res_cnt = Arachni::Module::HTTP.instance.response_count
 
@@ -168,7 +168,7 @@ class Framework
             :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s
         }
     end
-    
+
     #
     # Audits the site.
     #
@@ -177,7 +177,7 @@ class Framework
     #
     def audit
         pages = []
-            
+
         # initiates the crawl
         @sitemap = @spider.run {
             | url, html, headers |
@@ -202,18 +202,18 @@ class Framework
     # @return    [Page]
     #
     def analyze( url, html, headers )
-        
+
         elements = Hash.new
-        
+
         # analyze each page the crawler returns and save its elements
         elements = @analyzer.run( url, html, headers ).clone
-    
+
         elements['cookies'] =
             merge_with_cookiejar( elements['cookies'] )
-    
+
         # get the variables of the url query as an array of hashes
         query_vars = @analyzer.get_link_vars( url )
-        
+
         # if url query has variables in it append them to the page elements
         if( query_vars.size > 0 )
             elements['links'] << {
@@ -221,12 +221,12 @@ class Framework
                 'vars'  => query_vars
             }
         end
-        
+
         if( elements['headers'] )
             request_headers = elements['headers'].clone
 #            elements.delete( 'headers' )
         end
-        
+
         return Page.new( {
             :url         => url,
             :query_vars  => query_vars,
@@ -238,7 +238,7 @@ class Framework
         } )
 
     end
-    
+
     #
     # Returns the results of the audit as an {AuditStore} instance
     #
@@ -247,7 +247,7 @@ class Framework
     # @return    [AuditStore]
     #
     def audit_store_get
-        
+
         # restore the original redundacy rules and their counters
         @opts.redundant = @orig_redundant
 
@@ -259,7 +259,7 @@ class Framework
             :vulns    => deep_clone( @modules.results( ) )
          } )
     end
-    
+
     #
     # Loads modules
     #
@@ -272,23 +272,23 @@ class Framework
         #
         parse_mods( mods ).each {
             |mod_name|
-            
+
             # if the mod name is '*' load all modules
             # and replace it with the actual module names
             if( mod_name == '*' )
-                
+
                 @opts.mods = []
-                
+
                 @modules.available(  ).keys.each {
                     |mod|
                     @opts.mods << mod
                     @modules.load( mod )
                 }
-                
+
                 # and we're done..
                 break
             end
-            
+
             # ...and load the module passing all exceptions to the UI.
             begin
                 @modules.load( mod_name )
@@ -299,10 +299,10 @@ class Framework
     end
 
     def parse_mods( mods )
-        
+
         unload = []
         load   = []
-        
+
         mods.each {
             |mod|
             if mod[0] == '-'
@@ -310,11 +310,11 @@ class Framework
                 unload << mod
             end
         }
-        
+
         if( !mods.include?( "*" ) )
 
             avail_mods  = @modules.available(  )
-            
+
             mods.each {
                 |mod_name|
                 if( !avail_mods[mod_name] )
@@ -335,9 +335,9 @@ class Framework
                 load << mod[0]
             }
         end
-        
+
         @opts.mods = load - unload
-        
+
         return @opts.mods
     end
 
@@ -350,12 +350,12 @@ class Framework
 
         reports.each {
             |report|
-            
+
             if( !@reports.available(  )[report] )
                 raise( Arachni::Exceptions::ReportNotFound,
                     "Error: Report #{report} wasn't found." )
             end
-    
+
             begin
                 # load the report
                 @reports.load( report )
@@ -384,17 +384,17 @@ class Framework
     # @param    [String]    file
     #
     def audit_store_save( file )
-        
+
         file += @reports.extension
-        
+
         print_line( )
         print_status( 'Dumping audit results in \'' + file  + '\'.' )
-        
+
         audit_store_get( ).save( file )
-        
+
         print_status( 'Done!' )
     end
-            
+
     #
     # Loads an {AuditStore} object
     #
@@ -405,7 +405,7 @@ class Framework
     def audit_store_load( file )
         return AuditStore.load( file )
     end
-    
+
     #
     # Returns an array of hashes with information
     # about all available modules
@@ -413,43 +413,43 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsmod
-        
+
         i = 0
         mod_info = []
-        
+
         @modules.available( ).each_pair {
             |mod_name, path|
-    
+
             next if !lsmod_match?( path['path'] )
-    
+
             @modules.load( mod_name )
-    
+
             info = @modules.info( i )
 
             info[:mod_name]    = mod_name
             info[:name]        = info[:name].strip
             info[:description] = info[:description].strip
-            
+
             if( !info[:dependencies] )
                 info[:dependencies] = []
             end
-            
+
             info[:author]    = info[:author].strip
-            info[:version]   = info[:version].strip 
+            info[:version]   = info[:version].strip
             info[:path]      = path['path'].strip
-            
+
             i+=1
-            
+
             mod_info << info
         }
-        
+
         # unload all modules
         @modules.clear( )
-        
+
         return mod_info
-    
+
     end
-    
+
     #
     # Returns an array of hashes with information
     # about all available reports
@@ -457,27 +457,27 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsrep
-        
+
         i = 0
         rep_info = []
-        
+
         @reports.available( ).each_pair {
             |rep_name, path|
-    
+
             @reports.load( rep_name )
 
             info = @reports.info( i )
 
             info[:rep_name]    = rep_name
             info[:path]        = path['path'].strip
-            
+
             i+=1
-            
+
             rep_info << info
         }
         return rep_info
     end
-    
+
     #
     # Returns the version of the framework
     #
@@ -495,7 +495,7 @@ class Framework
     def revision
         REVISION
     end
-    
+
     #
     # Creates a deep clone of an object and returns that object.
     #
@@ -504,11 +504,11 @@ class Framework
     # @return   [Object]    a deep clone of the object
     #
     def deep_clone( obj )
-        YAML.load( YAML.dump( obj ) )
+        Marshal.load( Marshal.dump( obj ) )
     end
-    
+
     private
-    
+
     #
     # Merges 'cookies' with the cookiejar and returns it as an array
     #
@@ -518,7 +518,7 @@ class Framework
     #
     def merge_with_cookiejar( cookies )
         return cookies if !@opts.cookies
-        
+
         @opts.cookies.each_pair {
             |name, value|
             cookies << {
@@ -528,7 +528,7 @@ class Framework
         }
         return cookies
     end
-    
+
     #
     # Prepares the user agent to be used throughout the system.
     #
@@ -536,14 +536,14 @@ class Framework
         if( !@opts.user_agent )
             @opts.user_agent = 'Arachni/' + VERSION
         end
-        
+
         if( @opts.authed_by )
-            authed_by         = " (Scan authorized by: #{@opts.authed_by})" 
-            @opts.user_agent += authed_by 
+            authed_by         = " (Scan authorized by: #{@opts.authed_by})"
+            @opts.user_agent += authed_by
         end
 
     end
-    
+
     #
     # Takes care of page audit and module execution
     #
@@ -560,85 +560,85 @@ class Framework
     #
     def run_mods( page )
         return if !page
-        
+
         for mod in @modules.loaded( )
-                    
+
             # save some time by deciding if the module is worth running
             if( !run_module?( mod , page ) )
                 print_verbose( 'Skipping ' + mod.to_s +
                     ', nothing to audit.' )
                 next
             end
-    
+
             # ... and run it.
             run_mod( mod, deep_clone( page ) )
-            
+
         end
-       
+
         if( !@opts.http_harvest_last )
             harvest_http_responses( )
         end
-       
+
     end
-    
+
     def harvest_http_responses
-      
+
        print_status( 'Harvesting HTTP responses...' )
-       print_info( 'Depending on server responsiveness and network' + 
+       print_info( 'Depending on server responsiveness and network' +
         ' conditions this may take a while.' )
-       
+
        # run all the queued HTTP requests and harvest the responses
        Arachni::Module::HTTP.instance.run
-       
+
        @page_queue ||= Queue.new
-       
+
        # try to get an updated page from the Trainer
        page = Arachni::Module::Trainer.instance.page
-       
+
        # if there was an updated page push it in the queue
        @page_queue << page if page
-       
+
        # this will run until no new elements appear for the given page
        while( !@page_queue.empty? && page = @page_queue.pop )
-          
+
            # audit the page
            run_mods( page )
-         
+
            # run all the queued HTTP requests and harvest the responses
            Arachni::Module::HTTP.instance.run
-           
+
            # check to see if the page was updated
            page = Arachni::Module::Trainer.instance.page
            # and push it in the queue to be audited as well
            @page_queue << page if page
-       
+
        end
 
     end
-    
+
     #
     # Passes a page to the module and runs it.<br/>
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
     #
-    # @param    [Class]   mod      the module to run 
+    # @param    [Class]   mod      the module to run
     # @param    [Page]    page
     #
     def run_mod( mod, page )
         begin
-          
+
             # instantiate the module
             mod_new = mod.new( page )
-            
+
             # run the methods specified by the module API
-            
+
             # optional
             mod_new.prepare   if mod.method_defined?( 'prepare' )
-            
+
             # mandatory
             mod_new.run
-            
+
             # optional
             mod_new.clean_up  if mod.method_defined?( 'clean_up' )
         rescue Exception => e
@@ -647,11 +647,11 @@ class Framework
             raise
         end
     end
-    
-    
+
+
     #
     # Decides whether or not to run a given module based on the<br/>
-    # HTML elements it plans to audit and the existence of those elements<br/> 
+    # HTML elements it plans to audit and the existence of those elements<br/>
     # in the current page.
     #
     # @see Page
@@ -662,33 +662,33 @@ class Framework
     # @return    [Bool]
     #
     def run_module?( mod, page )
-        
+
         checkpoint = 0
         page.elements( ).each_pair {
             |name, value|
-            
+
             if( !mod.info || !mod.info['Elements'] ||
                 mod.info['Elements'].size == 0 )
                 return true
             end
-            
+
             if( mod.info['Elements'].include?( 'cookie' ) )
                 return true
             end
-        
+
             if( mod.info['Elements'].include?( 'header' ) )
                 return true
             end
-                    
+
             if( mod.info['Elements'].include?( name.tr( 's', '' ) ) &&
                 value.size != 0 )
                 return true
             end
         }
-        
+
         return false
     end
-    
+
     #
     # Takes care of some options that need slight processing
     #
@@ -724,7 +724,7 @@ class Framework
     def validate_opts
 
         if @opts.repload then return end
-            
+
         if( !@opts.audit_links &&
             !@opts.audit_forms &&
             !@opts.audit_cookies &&
@@ -756,7 +756,7 @@ class Framework
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
-        
+
 #        #
 #        # If proxy type is socks include socksify
 #        # and let it proxy all tcp connections for us.
@@ -780,7 +780,7 @@ class Framework
                 'Cookie-jar \'' + @opts.cookie_jar +
                         '\' doesn\'t exist.' )
         end
-        
+
     end
 
     def lsmod_match?( path )
@@ -789,9 +789,9 @@ class Framework
             |filter|
             cnt += 1 if path =~ filter
         }
-        return true if cnt == @opts.lsmod.size 
+        return true if cnt == @opts.lsmod.size
     end
-  
+
 end
 
 end
