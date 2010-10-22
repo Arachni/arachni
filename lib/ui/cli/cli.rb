@@ -42,7 +42,7 @@ class CLI
     #
     # @return    [String]
     #
-    PROFILE_EXT     = '.afp'
+    PROFILE_EXT = '.afp'
     
     # the output interface for CLI
     include Arachni::UI::Output
@@ -98,13 +98,8 @@ class CLI
         print_status( 'Initing...' )
                 
         begin
-            
-            # this will output only if debug mode is on
-            ls_loaded( )
-            
             # start the show!
             @arachni.run( )
-            
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
@@ -184,24 +179,6 @@ class CLI
         
         print_line( )
         
-    end
-
-    #
-    # Outputs a list of the loaded modules using print_debug()<br/>
-    # The list will only be echoed if debug mode is on. 
-    #
-    #
-    def ls_loaded
-        print_line
-        print_debug( 'ModuleRegistry reports the following modules as loaded:' )
-        print_debug( '----------' )
-
-        @arachni.modules.each {
-            |mod|
-            print_debug( mod )
-        }
-
-        print_line
     end
 
     #
@@ -627,7 +604,7 @@ USAGE
     --lsrep                       list available reports
     
     --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: #{@arachni.report_ext})               
+                                    (The file will be saved with an extention of: #{@arachni.reports.extension})               
     
     --repload=<file>              load audit results from <file>
                                     (Allows you to create a new reports from old/finished scans.)

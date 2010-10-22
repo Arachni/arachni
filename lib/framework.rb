@@ -48,7 +48,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.7
+# @version: 0.1.8
 #
 class Framework
 
@@ -63,17 +63,16 @@ class Framework
     VERSION      = '0.2'
     
     # the version of *this* class
-    REVISION     = '0.1.7'
+    REVISION     = '0.1.8'
     
-    # the extension of the Arachni Framework Report files
-    REPORT_EXT   = '.afr'
-
     #
     # Instance options
     #
     # @return [Options]
     #
     attr_reader :opts
+    attr_reader :reports
+    attr_reader :modules
 
     #
     # Initializes system components.
@@ -87,8 +86,8 @@ class Framework
         
         @opts = opts
             
-        @modules = Arachni::Module::Registry.new( @opts.dir['modules'] )
-        @reports = Arachni::Report::Registry.new( @opts.dir['reports'] )
+        @modules = Arachni::Module::Registry.new( @opts )
+        @reports = Arachni::Report::Registry.new( @opts )
         
         parse_opts( )
         prepare_user_agent( )
@@ -136,29 +135,27 @@ class Framework
         
         # run reports
         if( @opts.reports )
-            begin
-                run_reps( audit_store.clone )
-            rescue Exception => e
-                print_error( e.to_s )
-                print_debug_backtrace( e )
-                print_line
-                exit 0
-            end
+            exception_jail{ 
+                @reports.run( audit_store )
+            }
         end
         
         # save the AuditStore in a file 
         if( @opts.repsave && !@opts.repload )
-            begin
-                audit_store_save( @opts.repsave )
-            rescue Exception => e
-                print_error( e.to_s )
-                print_debug_backtrace( e )
-                print_line
-                exit 0
-            end
+            exception_jail{ audit_store_save( @opts.repsave ) }
         end
         
         print_stats( audit_store )
+    end
+
+    def exception_jail( &block )
+        begin
+            block.call
+        rescue Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+            print_line
+        end
     end
 
     def print_stats( audit_store )
@@ -198,35 +195,6 @@ class Framework
         end
 
     end
-
-    #
-    # Takes care of report execution
-    #
-    # @see AuditStore
-    #
-    # @param  [AuditStore]  audit_store
-    #
-    def run_reps( audit_store )
-    
-        reports.each_with_index {
-            |report, i|
-
-            # if the user hasn't selected a filename for the report
-            # choose one for him
-            if( !@opts.repsave || @opts.repsave.size == 0 )
-                @opts.repsave =
-                    URI.parse( audit_store.options['url'] ).host +
-                        '-' + Time.now.to_s
-            end
-            
-            
-            new_rep = report.new( deep_clone( audit_store ), @opts.repopts,
-                            @opts.repsave + REPORT_EXT )
-            
-            new_rep.run( )
-        }
-    end
-
 
     #
     # Analyzes the html code for elements and returns a page object
@@ -297,24 +265,6 @@ class Framework
     end
     
     #
-    # Returns an array of all loaded modules
-    #
-    # @return    [Array<Class>]
-    #
-    def modules
-        @modules.loaded( )
-    end
-    
-    #
-    # Returns an array of all loaded reports
-    #
-    # @return    [Array<Class>]
-    #
-    def reports
-        @reports.loaded( )
-    end
-    
-    #
     # Loads modules
     #
     # @param [Array]  mods  Array of modules to load
@@ -333,10 +283,10 @@ class Framework
                 
                 @opts.mods = []
                 
-                @modules.ls_available(  ).keys.each {
+                @modules.available(  ).keys.each {
                     |mod|
                     @opts.mods << mod
-                    @modules.mod_load( mod )
+                    @modules.load( mod )
                 }
                 
                 # and we're done..
@@ -384,7 +334,7 @@ class Framework
                 load << mod[0] if mods.include?( mod[0] )
             }
         else
-            @modules.ls_available(  ).map {
+            @modules.available(  ).map {
                 |mod|
                 load << mod[0]
             }
@@ -439,7 +389,7 @@ class Framework
     #
     def audit_store_save( file )
         
-        file += REPORT_EXT
+        file += @reports.extension
         
         print_line( )
         print_status( 'Dumping audit results in \'' + file  + '\'.' )
@@ -551,15 +501,6 @@ class Framework
     end
     
     #
-    # Returns the extension of the report files
-    #
-    # @return    [String]
-    #
-    def report_ext
-        REPORT_EXT
-    end
-    
-    #
     # Creates a deep clone of an object and returns that object.
     #
     # @param    [Object]    the object to clone
@@ -624,7 +565,7 @@ class Framework
     def run_mods( page )
         return if !page
         
-        for mod in modules
+        for mod in @modules.loaded( )
                     
             # save some time by deciding if the module is worth running
             if( !run_module?( mod , page ) )

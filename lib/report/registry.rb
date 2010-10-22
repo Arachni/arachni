@@ -19,19 +19,54 @@ module Report
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class Registry
 
     class << self
         attr_reader :registry
     end
-    
-    def initialize( lib )
-        @lib = lib
+
+    # the extension of the Arachni Framework Report files
+    REPORT_EXT   = '.afr'
+
+    def initialize( opts )
+        
+        @opts = opts
+        @lib  = @opts.dir['reports']
+        
         @@registry = []
         @available   = Hash.new
     end
+
+    #
+    # Takes care of report execution
+    #
+    # @see AuditStore
+    #
+    # @param  [AuditStore]  audit_store
+    #
+    def run( audit_store )
+        
+        loaded.each_with_index {
+            |report, i|
+
+            # if the user hasn't selected a filename for the report
+            # choose one for him
+            if( !@opts.repsave || @opts.repsave.size == 0 )
+                @opts.repsave =
+                    URI.parse( audit_store.options['url'] ).host +
+                        '-' + Time.now.to_s
+            end
+            
+            
+            new_rep = report.new( audit_store.clone, @opts.repopts,
+                            @opts.repsave + REPORT_EXT )
+            
+            new_rep.run( )
+        }
+    end
+
 
     #
     # Loads and registers a report by it's filename, without the extension
@@ -179,6 +214,10 @@ class Registry
         }
 
         @@registry = clean_reg.uniq.flatten
+    end
+
+    def extension
+        return REPORT_EXT
     end
 
 end

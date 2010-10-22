@@ -22,7 +22,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 class Registry
 
@@ -71,9 +71,9 @@ class Registry
     #
     # @param [String] lib path the the module directory
     #
-    def initialize( lib )
+    def initialize( opts )
         
-        @lib = lib
+        @lib = opts.dir['modules']
         
         @@registry = []
         @@results  = []
