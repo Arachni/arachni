@@ -447,8 +447,8 @@ class Framework
             mod_info << info
         }
         
-        # clean the registry unloading all modules
-        Arachni::Module::Registry.clean( )
+        # unload all modules
+        @modules.clear( )
         
         return mod_info
     

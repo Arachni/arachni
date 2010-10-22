@@ -225,13 +225,6 @@ class Registry
     end
 
     #
-    # Un-registers all modules
-    #
-    def Registry.clean( )
-        @@module_registry    = []
-    end
-    
-    #
     # Class method
     #
     # Lists the loaded modules
@@ -266,6 +259,10 @@ class Registry
 
     def results
         @@results
+    end
+    
+    def clear
+        @@registry.clear
     end
     
     #
