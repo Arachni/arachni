@@ -5,9 +5,9 @@ End-users should check out the links bellow.
 
 ## Current branch goals
  - Provide some integration with the Metasploit framework to assist with automated and manual exploitation through:
-  - ArachniMetareport
-  - Arachni plug-in for the Metasploit framework
-  - Advanced exploit modules for the Metasploit framework
+   - ArachniMetareport
+   - Arachni plug-in for the Metasploit framework
+   - Advanced exploit modules for the Metasploit framework
  - Refactor, re-organize and clean up the framework code and architecture
 
 
