@@ -70,15 +70,19 @@ class Plugin::Arachni < Msf::Plugin
                     data[k.to_sym] = vuln.ivars[k]
                 end
                 
-                # the MSF doesn't much like hostnames, resolve to an IP address
-                # there's probably a beter way to do it...
-                host = Rex::Socket.gethostbyname( data[:host] ).pop
-                data[:host] = Rex::Socket.addr_ntoa( host )
-                
-                @exploits << data[:exploit]
-                
-                @vulns << data
-                
+                begin
+                    # the MSF doesn't much like hostnames, resolve to an IP address
+                    # there's probably a beter way to do it...
+                    host = Rex::Socket.gethostbyname( data[:host] ).pop
+                    data[:host] = Rex::Socket.addr_ntoa( host )
+                    
+                    @exploits << data[:exploit]
+                    
+                    @vulns << data
+                rescue
+                    next
+                end
+                    
             end
             
             @vulns.uniq!
