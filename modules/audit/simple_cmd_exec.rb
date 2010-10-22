@@ -21,7 +21,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection    
@@ -36,6 +36,7 @@ class SimpleCmdExec < Arachni::Module::Base
         @__opts = {}
         @__opts[:regexp]   = /100434/ixm
         @__opts[:match]    = '100434'
+        @__opts[:format]   = OPTIONS[:format] << Format::SEMICOLON
         @__injection_str   = 'expr 978 + 99456'
         
         @results = []
@@ -56,7 +57,7 @@ class SimpleCmdExec < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },

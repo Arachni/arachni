@@ -22,7 +22,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 module Auditor
     
@@ -56,6 +56,11 @@ module Auditor
       # Terminates the injection string with a null character.
       #
       NULL     = 1 << 2
+      
+      #
+      # Prefix the string with a ';', useful for command injection modules
+      #
+      SEMICOLON = 1 << 3
     end
     
     #
@@ -730,13 +735,15 @@ module Auditor
     #
     def format_str( injection_str, default_str, format  )
       
-        null = append = ''
+        semicolon = null = append = ''
 
         null   = "\0"        if ( format & Format::NULL )     != 0
+        semicolon   = ';'    if ( format & Format::SEMICOLON )   != 0
         append = default_str if ( format & Format::APPEND )   != 0
-        append = null = ''   if ( format & Format::STRAIGHT ) != 0
+        semicolon = append = null = ''   if ( format & Format::STRAIGHT ) != 0
+        
                 
-        return append + injection_str + null
+        return semicolon + append + injection_str + null
     end
     
     def print_debug_injection_set( var_combo, opts )
