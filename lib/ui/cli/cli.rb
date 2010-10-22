@@ -256,7 +256,7 @@ class CLI
                         @arachni.mod_load( arg )
                     rescue Arachni::Exceptions::ModNotFound => e
                         print_error( e.to_s )
-                        print_info( "Run arachni with the '-l' parameter" +
+                        print_info( "Run arachni with the '--lsmod' parameter" +
                             " to see all available modules." )
                         print_line
                         exit 0
@@ -331,13 +331,18 @@ class CLI
                 print_info( key + "\t\t" + info[:targets][key] )
             }
             
+            if( info[:vulnerability] &&
+                ( sploit = info[:vulnerability][:metasploitable] ) )
+                print_line( "Metasploitable:\t" + sploit )
+            end
+            
             print_line( "Path:\t"    + info[:path] )
 
             i+=1
             
-            # pause every 5 modules to give the user time to read
+            # pause every 3 modules to give the user time to read
             # (cheers to aungkhant@yehg.net for suggesting it)
-            if( i % 5 == 0 && i != mods.size )
+            if( i % 3 == 0 && i != mods.size )
                 print_line
                 print_line( 'Hit <space> <enter> to continue, any other key to exit. ' )
                 
