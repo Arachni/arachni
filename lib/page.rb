@@ -12,9 +12,9 @@ module Arachni
 
 #
 # Arachni::Page class
-#    
+#
 # It holds page data like elements, cookies, headers, etc...
-#    
+#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -26,29 +26,29 @@ class Page
     # @return    [String]    url of the page
     #
     attr_accessor :url
-    
+
     #
     # @return    [Hash]    url variables
     #
     attr_accessor :query_vars
-    
+
     #
     # @return    [String]    the HTML response
     #
     attr_accessor :html
-    
+
     #
     # @return    [Hash]    response headers
     #
     attr_accessor :headers
-    
+
     #
     # @see Analyzer#get_headers
     #
     # @return    [Hash]    auditable HTTP request headers
     #
     attr_accessor :request_headers
-    
+
     #
     # @see Analyzer#run
     # @see Analyzer#get_links
@@ -58,14 +58,14 @@ class Page
     # @return    [Hash]    auditable HTML elements (links/forms/cookies)
     #
     attr_accessor :elements
-    
+
     #
     # Cookies extracted from the supplied cookiejar
     #
     # @return    [Hash]
     #
     attr_accessor :cookiejar
-    
+
     def initialize( opts = {} )
         opts.each {
             |k, v|
@@ -73,25 +73,25 @@ class Page
         }
 
     end
-    
+
     #
     # Returns the form elements in {Page#elements}
     #
-    def get_forms
+    def forms
         elements['forms']
     end
-    
+
     #
     # Returns the links elements in {Page#elements}
     #
-    def get_links
+    def links
         elements['links']
     end
-    
+
     #
     # Returns the cookies elements in {Page#elements}
     #
-    def get_cookies
+    def cookies
         elements['cookies']
     end
 

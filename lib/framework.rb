@@ -14,6 +14,7 @@ require 'rubygems'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
 opts = Arachni::Options.instance
 
+require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'ui/cli/output'
 require opts.dir['lib'] + 'spider'
@@ -95,9 +96,9 @@ class Framework
         @spider   = Arachni::Spider.new( @opts )
         @analyzer = Arachni::Analyzer.new( @opts )
 
-        # deep copy the redundancy rules to preserve their counter
+        # deep clone the redundancy rules to preserve their counter
         # for the reports
-        @orig_redundant = deep_clone( @opts.redundant )
+        @orig_redundant = @opts.redundant.deep_clone
 
     end
 
@@ -256,7 +257,7 @@ class Framework
             :revision => REVISION,
             :options  => @opts.to_h,
             :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-            :vulns    => deep_clone( @modules.results( ) )
+            :vulns    => @modules.results( ).deep_clone
          } )
     end
 
@@ -496,17 +497,6 @@ class Framework
         REVISION
     end
 
-    #
-    # Creates a deep clone of an object and returns that object.
-    #
-    # @param    [Object]    the object to clone
-    #
-    # @return   [Object]    a deep clone of the object
-    #
-    def deep_clone( obj )
-        Marshal.load( Marshal.dump( obj ) )
-    end
-
     private
 
     #
@@ -571,7 +561,7 @@ class Framework
             end
 
             # ... and run it.
-            run_mod( mod, deep_clone( page ) )
+            run_mod( mod, page.deep_clone )
 
         end
 

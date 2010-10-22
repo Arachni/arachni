@@ -41,7 +41,7 @@ class BlindSQLInjection < Arachni::Module::Base
     end
 
     def prepare( )
-        
+
         # possible quote characters used in SQL statements
         @__quotes = [
             '\'',
@@ -54,12 +54,12 @@ class BlindSQLInjection < Arachni::Module::Base
            '\'"`',
            # we need 2 requests thus we change the second one a little bit to
            # fool the Auditor's redundancy filter
-           '\'"``' 
+           '\'"``'
          ]
 
         # %q% will be replaced by a character in @__quotes
         @__injection = '%q% and %q%1'
-        
+
         @__opts = {
             :format      => [ Format::APPEND ],
             # we need to do our own redundancy checks
@@ -68,21 +68,21 @@ class BlindSQLInjection < Arachni::Module::Base
             # otherwise the code would get *really* ugly
             :async       => false
         }
-        
-        # used for redundancy checks 
+
+        # used for redundancy checks
         @@__audited ||= []
-        
+
     end
-    
+
     def run( )
-        
+
         return if( __audited? )
-        
+
         if( @page.query_vars.empty? )
             print_status( 'Nothing to audit on current page, skipping...' )
             return
         end
-        
+
         # let's get a fresh rendering of the page to assist us with
         # irrelevant dynamic content elimination (banners, ads, etc...)
         opts = {}
@@ -92,69 +92,69 @@ class BlindSQLInjection < Arachni::Module::Base
 
         # eliminate dynamic content that's context-irrelevant
         # ie. changing with every refresh
-        @__content = Module::Utilities.rdiff( @page.html, res.body )
-        
+        @__content = @page.html.rdiff( res.body )
+
         # force the webapp to return an error page
         __prep_bad_response( )
-        
-        # start injecting 'nice' SQL queries 
+
+        # start injecting 'nice' SQL queries
         __audit( )
-        
+
         # analyze the HTML code of the responses in order to determine
         # which injections were succesfull
         __analyze( )
-        
+
         # register our results with the framework
         register_results( @results )
     end
-    
+
     def clean_up
         @@__audited << __audit_id( )
         @@__audited.uniq!
     end
-    
+
     def __audit_id
         "#{URI( @page.url).path}::#{@page.query_vars.keys}"
     end
-    
+
     def __audited?
         @@__audited.include?( __audit_id( ) )
     end
-    
+
     # Audits page with 'bad' SQL characters and gathers error pages
     def __prep_bad_response( )
-        
+
         @__html_bad ||= {}
 
         @__bad_chars.each {
             |str|
-            
+
             audit( str, @__opts ) {
                 |res, var, opts|
-                
+
                 next if !res || !res.body
                 @__html_bad[var] ||= res.body.clone
-                
+
                 # remove context-irrelevant dynamic content like banners and such
                 # from the error page
-                @__html_bad[var] = Module::Utilities.rdiff( @__html_bad[var], res.body.clone )
+                @__html_bad[var] = @__html_bad[var].rdiff( res.body.clone )
             }
         }
-        
+
         return @__html_bad
     end
-    
+
     # Injects SQL code that doesn't affect the flow of execution nor presentation
     def __audit( )
-        
+
         @__html_good ||= {}
-        
+
         @__quotes.each {
             |quote|
-            
+
             # prepare the statement with combinations of quote characters
             str = @__injection.gsub( '%q%', quote )
-            
+
             # inject the statement
             audit( str, @__opts ) {
                 |res, var, opts|
@@ -167,12 +167,12 @@ class BlindSQLInjection < Arachni::Module::Base
                     'res'  => res,
                     'opts' => opts
                 }
-                
+
             }
         }
 
     end
-    
+
     # Goes through the responses induced by {#__audit} and {#__check} their code
     def __analyze( )
         @__html_good.keys.each {
@@ -183,7 +183,7 @@ class BlindSQLInjection < Arachni::Module::Base
             }
         }
     end
-    
+
     #
     # Compares HTML responses in order to identify successful blind sql injections
     #
@@ -193,10 +193,10 @@ class BlindSQLInjection < Arachni::Module::Base
     # @param  [Hash]    opts  the options passed to the {#audit} block
     #
     def __check( str, res, var, opts )
-      
+
         # if one of the injections gives the same results as the
         # original page then a blind SQL injection exists
-        check = Module::Utilities.rdiff( res.body, @page.html )
+        check = res.body.rdiff( @page.html )
 
         if( check == @__content && @__html_bad[var] != check &&
             !@http.custom_404?( res.body ) )
@@ -204,7 +204,7 @@ class BlindSQLInjection < Arachni::Module::Base
         end
 
     end
-    
+
     def self.info
         {
             :name           => 'BlindSQLInjection',
@@ -219,7 +219,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
             },
             :targets        => { 'Generic' => 'all' },
-                
+
             :vulnerability   => {
                 :name        => %q{Blind SQL Injection},
                 :description => %q{SQL code can be injected into the web application.},
@@ -232,11 +232,11 @@ class BlindSQLInjection < Arachni::Module::Base
 
         }
     end
-    
+
     private
-    
+
     def __log_results( opts, var, res, str )
-      
+
         url = res.effective_url
         @results << Vulnerability.new( {
                 :var          => var,
@@ -249,13 +249,13 @@ class BlindSQLInjection < Arachni::Module::Base
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
-                    :response   => res.headers,    
+                    :response   => res.headers,
                 }
             }.merge( self.class.info )
         )
 
         print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-            
+
         # register our results with the system
         register_results( @results )
     end

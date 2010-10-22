@@ -20,7 +20,7 @@ module Module
 #
 # Arachni's base module class<br/>
 # To be extended by Arachni::Modules.
-#    
+#
 # Defines basic structure and provides utilities to modules.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -35,7 +35,7 @@ class Base
     include Output
 
     include Auditor
-    
+
     #
     # Arachni::HTTP instance for the modules
     #
@@ -49,7 +49,7 @@ class Base
     # @return [Page]
     #
     attr_reader :page
-    
+
     #
     # Initializes the module attributes, HTTP client and {Trainer}
     #
@@ -59,16 +59,16 @@ class Base
     # @param  [Page]  page
     #
     def initialize( page )
-        
+
         @page  = page
         @http  = Arachni::Module::HTTP.instance
         Arachni::Module::Trainer.instance.page = @page.dup
-        
+
         # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )
             @http.set_cookies( @page.cookiejar )
         end
-        
+
         #
         # This is slightly tricky...
         #
@@ -77,20 +77,20 @@ class Base
         # via the ElementsDB.
         #
         # Since the ElementDB is dynamically updated by the Trainer
-        # during the audit, is should only be initialized *once* 
+        # during the audit, is should only be initialized *once*
         # for each page and not overwritten every single time a module is instantiated.
         #
         @@last_url ||= ''
         if( @@last_url != @page.url )
             Trainer.instance.page = @page.dup
             Trainer.instance.init_seed( Arachni::Module::Utilities.seed )
-            Trainer.instance.init_forms( get_forms )
-            Trainer.instance.init_links( get_links )
-            Trainer.instance.init_cookies( get_cookies )
-            
+            Trainer.instance.init_forms( @page.forms )
+            Trainer.instance.init_links( @page.links )
+            Trainer.instance.init_cookies( @page.cookies )
+
             @@last_url = @page.url
         end
-        
+
     end
 
     #
@@ -116,7 +116,7 @@ class Base
     #
     def clean_up( )
     end
-    
+
     #
     # ABSTRACT - REQUIRED
     #
@@ -166,13 +166,13 @@ class Base
             }
         }
     end
-    
+
     #
     # ABSTRACT - OPTIONAL
     #
     # In case you depend on other modules you can return an array
     # of their names (not their class names, the module names as they
-    # appear by the "-l" CLI argument) and they will be loaded for you.
+    # appear by the "--lsmod" CLI argument) and they will be loaded for you.
     #
     # This is also great for creating audit/discovery/whatever profiles.
     #
@@ -181,29 +181,6 @@ class Base
         # ['eval', 'sqli']
         []
     end
-    
-    #
-    # Returns extended form information from {Page#elements}
-    #
-    # @see Page#get_forms
-    #
-    # @return    [Aray]    forms with attributes, values, etc
-    #
-    def get_forms
-        @page.get_forms( )
-    end
-    
-    #
-    #
-    # Returns extended link information from {Page#elements}
-    #
-    # @see Page#get_links
-    #
-    # @return    [Aray]    link with attributes, variables, etc
-    #
-    def get_links
-        @page.get_links( )
-    end
 
     #
     # Returns an array of forms from {#get_forms} with its attributes and<br/>
@@ -211,9 +188,9 @@ class Base
     #
     # @return    [Array]
     #
-    def get_forms_simple( )
+    def forms_simple( )
         forms = []
-        get_forms( ).each_with_index {
+        @page.forms.each_with_index {
             |form|
             forms << get_form_simple( form )
         }
@@ -225,11 +202,11 @@ class Base
     #
     # @return    [Array]
     #
-    def get_form_simple( form )
-        
-        
+    def form_simple( form )
+
+
         return if !form || !form['auditable']
-        
+
         new_form = Hash.new
         new_form['attrs'] = form['attrs']
         new_form['auditable'] = {}
@@ -240,41 +217,30 @@ class Base
         }
         return new_form
     end
-    
+
     #
     # Returns links from {#get_links} as a name=>value hash with href as key
     #
     # @return    [Hash]
     #
-    def get_links_simple
+    def links_simple
         links = Hash.new
-        get_links( ).each_with_index {
+        @page.links.each_with_index {
             |link, i|
-            
+
             if( !link['vars'] || link['vars'].size == 0 ) then next end
-                
+
             links[link['href']] = Hash.new
             link['vars'].each_pair {
                 |name, value|
-                
+
                 if( !name || !link['href'] ) then next end
-                    
+
                 links[link['href']][name] = value
             }
-            
+
         }
         links
-    end
-    
-    #
-    # Returns extended cookie information from {Page#elements}
-    #
-    # @see Page#get_cookies
-    #
-    # @return    [Array]    the cookie attributes, values, etc
-    #
-    def get_cookies
-        @page.get_cookies( )
     end
 
     #
@@ -282,20 +248,20 @@ class Base
     #
     # @return    [Hash]    the cookie attributes, values, etc
     #
-    def get_cookies_simple( incookies = nil )
+    def cookies_simple( incookies = nil )
         cookies = Hash.new( )
-        
-        incookies = get_cookies( ) if !incookies
-        
+
+        incookies = @page.cookies if !incookies
+
         incookies.each {
             |cookie|
             cookies[cookie['name']] = cookie['value']
         }
-        
+
         return cookies if !@page.cookiejar
         @page.cookiejar.merge( cookies )
     end
-    
+
     #
     # Returns a cookie from {#get_cookies} as a name=>value hash
     #
@@ -303,11 +269,11 @@ class Base
     #
     # @return    [Hash]     simple cookie
     #
-    def get_cookie_simple( cookie )
+    def cookie_simple( cookie )
         return { cookie['name'] => cookie['value'] }
     end
 
-    
+
     #
     # Returns a hash of auditable request headers.
     #
@@ -315,37 +281,37 @@ class Base
     #
     # @return    [Hash]
     #
-    def get_headers( )
-       return @page.request_headers 
+    def headers( )
+       return @page.request_headers
     end
-    
+
     #
     # Gets module data files from 'modules/[modtype]/[modname]/[filename]'
     #
-    # @param    [String]    filename filename, without the path    
+    # @param    [String]    filename filename, without the path
     # @param    [Block]     the block to be passed each line as it's read
     #
     def get_data_file( filename, &block )
-        
+
         # the path of the module that called us
         mod_path = block.source_location[0]
-        
+
         # the name of the module that called us
         mod_name = File.basename( mod_path, ".rb")
-        
+
         # the path to the module's data file directory
         path    = File.expand_path( File.dirname( mod_path ) ) +
             '/' + mod_name + '/'
-                
+
         file = File.open( path + '/' + filename ).each {
             |line|
             yield line.strip
         }
-        
+
         file.close
-             
+
     end
-    
+
 end
 end
 end

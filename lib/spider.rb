@@ -12,7 +12,7 @@ opts = Arachni::Options.instance
 require opts.dir['lib'] + 'anemone/core.rb'
 require opts.dir['lib'] + 'anemone/http.rb'
 require opts.dir['lib'] + 'anemone/page.rb'
-require opts.dir['lib'] + 'net/http.rb'
+require opts.dir['lib'] + 'ruby/net/http.rb'
 require 'ap'
 require 'pp'
 
@@ -20,7 +20,7 @@ module Arachni
 
 #
 # Spider class
-#    
+#
 # Crawls the URL in opts[:url] and grabs the HTML code and headers.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -82,9 +82,9 @@ class Spider
             |k, v|
             @anemone_opts[k] = hash_opts[k.to_s] if hash_opts[k.to_s]
         }
-        
+
         @anemone_opts = @anemone_opts.merge( hash_opts )
-        
+
         @sitemap = []
         @on_every_page_blocks = []
 
@@ -108,17 +108,17 @@ class Spider
         # start the crawl
         Anemone.crawl( @opts.url, @anemone_opts ) {
             |anemone|
-            
+
             # apply 'exclude' patterns
             anemone.skip_links_like( @opts.exclude ) if @opts.exclude
-            
+
             # apply 'include' patterns and grab matching pages
             # as they are discovered
             anemone.on_pages_like( @opts.include ) {
                 |page|
 
                 url = url_sanitize( page.url.to_s )
-                
+
                 # something went kaboom, tell the user and skip the page
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
@@ -131,7 +131,7 @@ class Spider
 
                 print_line
                 print_status( "[HTTP: #{page.code}] " + url )
-                
+
                 # call the block...if we have one
                 if block
                     begin
@@ -141,7 +141,7 @@ class Spider
                     end
                 end
 
-                # run blocks specified later 
+                # run blocks specified later
                 @on_every_page_blocks.each {
                     |block|
                     block.call( page )
@@ -168,11 +168,11 @@ class Spider
     # Decodes URLs to reverse multiple encodes and removes NULL characters
     #
     def url_sanitize( url )
-        
+
         while( url =~ /%/ )
             url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
-        end 
-        
+        end
+
         return url
     end
 
