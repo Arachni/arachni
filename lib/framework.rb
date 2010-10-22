@@ -131,8 +131,6 @@ class Framework
         
         audit_store = audit_store_get( )
         
-        print_stats( audit_store )
-        
         # run reports
         if( @opts.reports )
             exception_jail{ 
@@ -145,7 +143,6 @@ class Framework
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
         
-        print_stats( audit_store )
     end
 
     def exception_jail( &block )
@@ -158,19 +155,18 @@ class Framework
         end
     end
 
-    def print_stats( audit_store )
-
+    def stats( )
+        audit_store = audit_store_get
+        
         req_cnt = Arachni::Module::HTTP.instance.request_count
         res_cnt = Arachni::Module::HTTP.instance.response_count
 
-        print_line        
-        print_info( "Sent #{req_cnt.to_s} requests." )
-        print_info( "Received and analyzed #{res_cnt.to_s} responses." )
-        print_info( 'In ' + audit_store.delta_time + ' ( ' + @opts.delta_time.to_s + ' seconds ).' )
-        
-        avg = 'Average: ' + (req_cnt/@opts.delta_time).to_i.to_s + ' requests/second.'
-        print_info( avg )
-        print_line
+        return {
+            :requests   => req_cnt,
+            :responses  => res_cnt,
+            :time       => audit_store.delta_time,
+            :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s
+        }
     end
     
     #

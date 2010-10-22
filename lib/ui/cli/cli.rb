@@ -100,6 +100,7 @@ class CLI
         begin
             # start the show!
             @arachni.run( )
+            print_stats
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
@@ -121,6 +122,22 @@ class CLI
     end
 
     private
+
+    def print_stats
+        stats   = @arachni.stats
+        
+        print_line
+        print_info( "Sent #{stats[:requests]} requests." )
+        print_info( "Received and analyzed #{stats[:responses]} responses." )
+        print_info( 'In ' + stats[:time] )
+        
+        avg = 'Average: ' + stats[:avg] + ' requests/second.'
+        print_info( avg )
+        
+        print_line
+
+    end
+        
 
     #
     # Handles Ctrl+C interrupts
