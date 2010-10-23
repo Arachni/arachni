@@ -47,6 +47,7 @@ class CLI
 
     # the output interface for CLI
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     #
     # Initializes the command line interface and the framework
@@ -114,10 +115,7 @@ class CLI
             print_line
             exit 0
         rescue Exception => e
-            print_error( e.inspect )
-            print_debug( 'Backtrace:' )
-            print_debug_backtrace( e )
-            print_line
+            exception_jail{ raise e }
             exit 0
         end
     end
@@ -159,9 +157,7 @@ class CLI
         begin
             print_vulns( @arachni.audit_store.deep_clone )
         rescue Exception => e
-            print_error( e.to_s )
-            print_debug_backtrace( e )
-            print_line
+            exception_jail{ raise e }
             exit 0
         end
 
@@ -239,11 +235,7 @@ class CLI
                     exit 0
 
                 when 'save_profile'
-                    begin
-                        save_profile( arg )
-                    rescue Exceptions => e
-                        handle_exception( e )
-                    end
+                    exception_jail{ save_profile( arg ) }
                     exit 0
 
                 when 'mods'
@@ -256,23 +248,15 @@ class CLI
                         print_line
                         exit 0
                     rescue Exception => e
-                        handle_exception( e )
+                        exception_jail{ raise e }
                     end
 
                 when 'reports'
-                    begin
-                        @arachni.reports.load( arg )
-                    rescue Exception => e
-                        handle_exception( e )
-                    end
+                    exception_jail{ @arachni.reports.load( arg ) }
 
                 when 'repload'
-                    begin
-                        @arachni.reports.run( AuditStore.load( arg ) )
-                        exit 0
-                    rescue Exception => e
-                        handle_exception( e )
-                    end
+                    exception_jail{ @arachni.reports.run( AuditStore.load( arg ) ) }
+                    exit 0
 
             end
         }
@@ -398,18 +382,13 @@ class CLI
     # @param    [String]    filename    the file to load
     #
     def load_profile( profiles )
-        begin
+        exception_jail{
             @opts.load_profile = nil
             profiles.each {
                 |filename|
                 @opts.merge!( YAML::load( IO.read( filename ) ) )
             }
-        rescue Exception => e
-            print_error( e.to_s )
-            print_debug_backtrace( e )
-            print_line( )
-            exit 0
-        end
+        }
     end
 
     #
@@ -433,9 +412,7 @@ class CLI
             print_line( )
         rescue Exception => e
             banner( )
-            print_error( e.to_s )
-            print_debug_backtrace( e )
-            print_line( )
+            exception_jail{ raise e }
             exit 0
         end
 
@@ -444,13 +421,6 @@ class CLI
     def print_profile( )
         print_info( 'Running profile:' )
         print_info( @opts.to_args )
-    end
-
-    def handle_exception( e )
-        print_error( e.to_s )
-        print_debug_backtrace( e )
-        print_line
-        exit 0
     end
 
     #
