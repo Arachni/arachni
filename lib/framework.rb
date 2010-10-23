@@ -52,6 +52,7 @@ class Framework
     # the UI classes should take care of communicating with the user
     #
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     # the universal system version
     VERSION      = '0.2'
@@ -137,16 +138,6 @@ class Framework
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
 
-    end
-
-    def exception_jail( &block )
-        begin
-            block.call
-        rescue Exception => e
-            print_error( e.to_s )
-            print_debug_backtrace( e )
-            print_line
-        end
     end
 
     def stats( )

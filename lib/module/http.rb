@@ -513,64 +513,6 @@ class HTTP
         return res
     end
 
-    #
-    # Wraps the "block" in exception handling code and runs it.
-    #
-    # @param    [Block]
-    #
-    def exception_jail( &block )
-
-        begin
-            block.call
-
-        # catch the time-out and refresh
-        rescue Timeout::Error => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # broken pipe probably
-        rescue Errno::EPIPE => e
-            # inform the user
-            print_error( 'Error: ' + e.to_s + " in URL " + url.to_s )
-            print_info( 'Refreshing connection...' )
-
-            # refresh the connection
-            refresh( )
-            # try one more time
-            retry
-
-        # some other exception
-        # just print what went wrong with some debugging info and move on
-        rescue Exception => e
-            handle_exception( e )
-        end
-    end
-
-    #
-    # Handles an exception outputting info about it and the environment<br/>
-    # when it occured, depending on the output settings.
-    #
-    # @param    [Exception]     e
-    #
-    def handle_exception( e )
-        print_error( 'Error: ' + e.to_s + " in URL " + @last_url.to_s )
-        print_debug( 'Exception: ' +  e.inspect )
-        print_debug( 'Backtrace: ' )
-        print_debug_backtrace( e )
-        print_debug( '@ ' +  __FILE__ + ':' + __LINE__.to_s )
-        # print_debug( 'Hydra session:' )
-        # print_debug_pp( @hydra )
-        print_error( 'Proceeding anyway... ' )
-
-        raise e
-    end
-
     def self.info
       { :name => 'HTTP' }
     end

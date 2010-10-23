@@ -75,6 +75,21 @@ module Utilities
 
     end
 
+    #
+    # Wraps the "block" in exception handling code and runs it.
+    #
+    # @param    [Block]
+    #
+    def exception_jail( &block )
+        begin
+            block.call
+        rescue Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+            print_line
+        end
+    end
+
 
 end
 
