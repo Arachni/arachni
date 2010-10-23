@@ -25,5 +25,4 @@
 %s.tmp
 %s.inc
 %s.copy
-%s1
 Copy%%20of%%20%s
