@@ -134,14 +134,10 @@ module ElementDB
           |link|
 
           next if !link
-          begin
-              next if link.action.include?( @@seed )
-          rescue
-              next
-          end
+          next if link.action.include?( @@seed )
 
-          if( !@@links.include?( link ) )
-              @@links << link
+          if !(index = links_include?( link ) )
+              @@links    << link
               @new_links << link
               link_cnt += 1
           end
@@ -198,6 +194,16 @@ module ElementDB
         }
         return false
     end
+
+    def links_include?( link )
+        @@links.each_with_index {
+            |page_link, i|
+            return i if( link.id == page_link.id )
+
+        }
+        return false
+    end
+
 
     #
     # Returns cookies as a name=>value hash
