@@ -35,7 +35,7 @@ class Registry
         @opts = opts
         @lib  = @opts.dir['reports']
 
-        @@registry = []
+        @@registry   = []
         @available   = Hash.new
     end
 
@@ -88,7 +88,7 @@ class Registry
 
             begin
                 # load the report
-                Registry.register( by_name( report ) )
+                ::Kernel::load( path_from_name( report ) )
             rescue Exception => e
                 raise e
             end
@@ -103,21 +103,6 @@ class Registry
     #
     def loaded( )
         Registry.registry( )
-    end
-
-    #
-    # Gets a report by its filename, without the extension
-    #
-    # @param  [String]  name  the name of the report
-    #
-    # @return [Arachni::Reports]
-    #
-    def by_name( name )
-        begin
-            ::Kernel::load( path_from_name( name ) )
-        rescue Exception => e
-            raise e
-        end
     end
 
     #
@@ -202,36 +187,8 @@ class Registry
     #
     def Registry.register( report )
         @@registry << report
-        Registry.clean_up(  )
     end
 
-
-    #
-    # Class method
-    #
-    # Cleans the registry from boolean values
-    # passed with the Arachni::Reports objects and updates it
-    #
-    # @return [Array<Arachni::Reports>]  the new @@registry
-    #
-    def Registry.clean_up( )
-
-        clean_reg = []
-        @@registry.each {
-            |report|
-
-
-            begin
-                if report < Arachni::Report::Base
-                    clean_reg << report
-                end
-            rescue Exception => e
-            end
-
-        }
-
-        @@registry = clean_reg.uniq.flatten
-    end
 
     def extension
         return REPORT_EXT

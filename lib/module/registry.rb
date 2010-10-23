@@ -189,7 +189,6 @@ class Registry
     #
     def Registry.register( mod )
         @@registry << mod
-        Registry.clean_up(  )
     end
 
     #
@@ -273,31 +272,6 @@ class Registry
         }
     end
 
-    #
-    # Class method
-    #
-    # Cleans the registry from boolean values
-    # passed with the Arachni::Module::Base objects and updates it
-    #
-    # @return [Array<Arachni::Module>]  the new @@module_registry
-    #
-    def Registry.clean_up( )
-
-        clean_reg = []
-        @@registry.each {
-            |mod|
-
-            begin
-                if mod < Arachni::Module::Base
-                    clean_reg << mod
-                end
-            rescue Exception => e
-            end
-
-        }
-
-        @@registry = clean_reg
-    end
 
     private
 
@@ -353,7 +327,7 @@ class Registry
     #
     def _load( mod_name )
 
-        Registry.register( by_name( mod_name ) )
+        ::Kernel::load( path_from_name( mod_name ) )
 
         # grab the module we just registered
         mod = @@registry[-1]
@@ -368,7 +342,7 @@ class Registry
             if ( !dep_mod ) then next end
 
             begin
-                load( dep_mod )
+                _load( dep_mod )
             rescue Exception => e
                 raise( Arachni::Exceptions::DepModNotFound,
                     "In '#{mod_name}' dependencies: " + e.to_s )
@@ -376,21 +350,6 @@ class Registry
 
         }
 
-    end
-
-    #
-    # Gets a module by its filename, without the extension
-    #
-    # @param  [String]  name  the name of the module
-    #
-    # @return [Arachni::Module]
-    #
-    def by_name( name )
-        begin
-            ::Kernel::load( path_from_name( name ) )
-        rescue Exception => e
-            raise e
-        end
     end
 
     #
