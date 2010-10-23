@@ -83,7 +83,6 @@ class Base
         @@last_url ||= ''
         if( @@last_url != @page.url )
             Trainer.instance.page = @page.dup
-            Trainer.instance.init_seed( Arachni::Module::Utilities.seed )
             Trainer.instance.init_forms( @page.forms )
             Trainer.instance.init_links( @page.links )
             Trainer.instance.init_cookies( @page.cookies )
@@ -180,34 +179,6 @@ class Base
         # example:
         # ['eval', 'sqli']
         []
-    end
-
-
-    #
-    # Gets module data files from 'modules/[modtype]/[modname]/[filename]'
-    #
-    # @param    [String]    filename filename, without the path
-    # @param    [Block]     the block to be passed each line as it's read
-    #
-    def get_data_file( filename, &block )
-
-        # the path of the module that called us
-        mod_path = block.source_location[0]
-
-        # the name of the module that called us
-        mod_name = File.basename( mod_path, ".rb")
-
-        # the path to the module's data file directory
-        path    = File.expand_path( File.dirname( mod_path ) ) +
-            '/' + mod_name + '/'
-
-        file = File.open( path + '/' + filename ).each {
-            |line|
-            yield line.strip
-        }
-
-        file.close
-
     end
 
 end

@@ -12,11 +12,11 @@ module Arachni
 
 module Modules
 module Recon
-  
+
 #
 # Backup file discovery module.
 #
-# Looks for sensitive common files on the server. 
+# Looks for sensitive common files on the server.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -28,35 +28,37 @@ class CommonFiles < Arachni::Module::Base
 
     # register us with the system
     include Arachni::Module::Registrar
-    
+
+    include Arachni::Module::Utilities
+
     def initialize( page )
         super( page )
 
         @__common_files = 'filenames.txt'
-        
+
         # to keep track of the requests and not repeat them
         @@__audited ||= []
-        
+
         # our results array
         @results = []
     end
 
     def run( )
-      
+
         print_status( "Scanning..." )
 
-        path = Module::Utilities.get_path( @page.url )
-        
-        get_data_file( @__common_files ) {
+        path = get_path( @page.url )
+
+        read_file( @__common_files ) {
             |file|
-            
+
             #
             # Test for the existance of the file
             #
             # We're not worrying about its contents, the Trainer will
             # analyze it and if it's HTML it'll extract any new attack vectors.
             #
-            
+
             url  = path + file
 
             next if @@__audited.include?( url )
@@ -74,7 +76,7 @@ class CommonFiles < Arachni::Module::Base
 
     end
 
-    
+
     def self.info
         {
             :name           => 'CommonFiles',
@@ -96,19 +98,19 @@ class CommonFiles < Arachni::Module::Base
 
         }
     end
-    
+
     #
     # Adds a vulnerability to the @results array<br/>
     # and outputs an "OK" message with the filename and its url.
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
-    # @param  [String]  filename   the discovered filename 
+    # @param  [String]  filename   the discovered filename
     # @param  [String]  url   the url of the discovered file
     #
     def __log_results( res, filename )
-        
+
         return if( res.code != 200 || @http.custom_404?( res.body ) )
-        
+
         url = res.effective_url
         # append the result to the results array
         @results << Vulnerability.new( {
@@ -122,13 +124,13 @@ class CommonFiles < Arachni::Module::Base
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
-                :response   => res.headers,    
+                :response   => res.headers,
             }
         }.merge( self.class.info ) )
 
         # register our results with the system
         register_results( @results )
-                
+
         # inform the user that we have a match
         print_ok( "Found #{filename} at " + url )
     end

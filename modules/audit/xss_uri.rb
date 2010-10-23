@@ -21,41 +21,42 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3
 #
-# @see http://cwe.mitre.org/data/definitions/79.html    
+# @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
 class XSSURI < Arachni::Module::Base
 
     include Arachni::Module::Registrar
+    include Arachni::Module::Utilities
 
     def initialize( page )
         super( page )
 
         @results    = []
-        
-        # since we'll bypass the Auditor we need to keep track of our audits 
+
+        # since we'll bypass the Auditor we need to keep track of our audits
         @@__audited  ||= []
     end
-    
+
     def prepare( )
-        @str = '/<arachni_xss_uri_' + Arachni::Module::Utilities.seed
+        @str = '/<arachni_xss_uri_' + seed
     end
 
     def run( )
-    
+
     uri  = URI( @page.url )
     url  = uri.scheme + '://' + uri.host + uri.path  + @str
-    
+
     if @@__audited.include?( url )
         print_info( 'Skipping already audited url: ' + url )
         return
     end
-    
+
     @@__audited << url
-    
+
     req  = @http.get( url )
-            
+
     req.on_complete {
         |res|
         __log_results( res )
@@ -63,7 +64,7 @@ class XSSURI < Arachni::Module::Base
 
     end
 
-    
+
     def self.info
         {
             :name           => 'XSSURI',
@@ -89,13 +90,13 @@ class XSSURI < Arachni::Module::Base
 
         }
     end
-    
+
     def __log_results( res )
 
         regexp = Regexp.new( Regexp.escape( @str ) )
-        
+
         if ( res.body.scan( regexp )[0] == @str )
-           
+
             url = res.effective_url
             # append the result to the results hash
             @results << Vulnerability.new( {
@@ -109,16 +110,16 @@ class XSSURI < Arachni::Module::Base
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
-                    :response   => res.headers,    
+                    :response   => res.headers,
                 }
             }.merge( self.class.info ) )
-                    
+
             # inform the user that we have a match
             print_ok( "In #{@page.url} at " + url )
-            
+
             # register our results with the system
             register_results( @results )
-                
+
         end
     end
 

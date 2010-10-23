@@ -13,6 +13,7 @@ require 'typhoeus'
 module Arachni
 
 require Options.instance.dir['lib'] + 'typhoeus/request'
+require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 
 module Module
@@ -39,6 +40,7 @@ class HTTP
 
     include Output
     include Singleton
+    include Arachni::Module::Utilities
 
     #
     # @return [URI]
@@ -107,7 +109,7 @@ class HTTP
         @response_count = 0
 
         # we'll use it to identify our requests
-        @rand_seed = Arachni::Module::Utilities.seed
+        @rand_seed = seed( )
     end
 
     #

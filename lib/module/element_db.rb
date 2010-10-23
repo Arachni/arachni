@@ -25,6 +25,8 @@ module Module
 #
 module ElementDB
 
+    include Arachni::Module::Utilities
+
     #
     # page forms
     #
@@ -54,14 +56,6 @@ module ElementDB
     # used to synchronize @@cookies updates
     #
     @@cookie_mutex ||= Mutex.new
-
-    def init_seed( seed )
-        @@seed = seed
-    end
-
-    def seed
-      return @@seed
-    end
 
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
@@ -105,7 +99,7 @@ module ElementDB
         forms.each {
             |form|
 
-            next if form.action.include?( @@seed )
+            next if form.action.include?( seed )
             next if form.auditable.size == 0
 
             if !(index = forms_include?( form ) )
@@ -134,7 +128,7 @@ module ElementDB
           |link|
 
           next if !link
-          next if link.action.include?( @@seed )
+          next if link.action.include?( seed )
 
           if !(index = links_include?( link ) )
               @@links    << link
