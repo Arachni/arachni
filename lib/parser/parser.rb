@@ -96,7 +96,7 @@ class Parser
 
             # if url query has variables in it append them to the page elements
             if( query_vars.size > 0 )
-                links << Arachni::Parser::Element::Link.new( url, {
+                links << Element::Link.new( url, {
                     'href' => url,
                     'vars' => query_vars
                 } )
@@ -137,11 +137,13 @@ class Parser
 
         @opts.cookies.each_pair {
             |name, value|
-            cookies << {
-                'name'    => name,
-                'value'   => value
-            }
+            cookies << Element::Cookie.new( @url,
+                {
+                    'name'    => name,
+                    'value'   => value
+                } )
         }
+
         return cookies
     end
 
