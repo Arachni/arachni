@@ -86,7 +86,7 @@ module Utilities
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
-            print_line
+            raise e
         end
     end
 

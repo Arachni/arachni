@@ -13,12 +13,12 @@ module Module
 
 #
 # Arachni::Module::Registry class
-#    
+#
 # Holds and manages the registry of the modules,
 # their results and their shared datastore.
-#    
+#
 # It also provides methods for getting modules' info, listing available modules etc.
-#    
+#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -27,7 +27,7 @@ module Module
 class Registry
 
     include Arachni::UI::Output
-    
+
     #
     # Path to the module directory
     #
@@ -36,7 +36,7 @@ class Registry
     attr_reader :lib
 
     class << self
-        
+
         #
         # Class variable
         #
@@ -45,7 +45,7 @@ class Registry
         # @return [Array<Module>]
         #
         attr_reader :registry
-        
+
         #
         # Class variable
         #
@@ -54,7 +54,7 @@ class Registry
         # @return [Array<Vulnerability>]
         #
         attr_reader :results
-        
+
         #
         # Class variable
         #
@@ -63,7 +63,7 @@ class Registry
         # @return [Array<Hash>]
         #
         attr_reader :storage
-        
+
     end
 
     #
@@ -72,13 +72,13 @@ class Registry
     # @param [String] lib path the the module directory
     #
     def initialize( opts )
-        
+
         @lib = opts.dir['modules']
-        
+
         @@registry = []
         @@results  = []
         @@storage  = Hash.new
-            
+
         @available  = Hash.new
     end
 
@@ -99,18 +99,18 @@ class Registry
             @available[filename] = Hash.new
             @available[filename]['path'] = class_path
         }
-        
+
         return @available
     end
 
     def recon
       by_type( "recon" )
     end
-    
+
     def audit
       by_type( "audit" )
     end
-    
+
     def by_type( type )
         Dir.glob( @lib + "#{type}/" + '*.rb' )
     end
@@ -129,11 +129,11 @@ class Registry
 
             if i == reg_id
                 info =  mod.info
-                
-                if( mod.methods.index( :deps ) ) 
+
+                if( mod.methods.index( :deps ) )
                     info = info.merge( { :dependencies => mod.deps } )
                 end
-                
+
                 return info
             end
         }
@@ -149,69 +149,37 @@ class Registry
     end
 
     #
-    # Loads and registers a module by it's filename, without the extension
-    # It also takes care of its dependencies.
+    # Loads modules
     #
-    # @param [String] mod_name  the module to load
+    # @param [Array]  mods  Array of modules to load
     #
-    # @return [Arachni::Module] the loaded modules
-    #
-    def load( mod_name )
-        
-        Registry.register( by_name( mod_name ) )
-        
-        # grab the module we just registered
-        mod = @@registry[-1]
+    def load( modules )
 
-         # if it doesn't have any dependencies we're done
-        if( !mod.methods.index( :deps ) ) then return end
-        
-        # go through its dependencies and load them recursively
-        mod.deps.each {
-            |dep_mod|
-                
-            if ( !dep_mod ) then next end
-            
-            begin
-                load( dep_mod )
-            rescue Exception => e
-                raise( Arachni::Exceptions::DepModNotFound,
-                    "In '#{mod_name}' dependencies: " + e.to_s )
+        final   = []
+        modules = [modules]
+        #
+        # Check the validity of user provided module names
+        #
+        parse_mods( modules.flatten ).each {
+            |mod_name|
+
+            # if the mod name is '*' load all modules
+            # and replace it with the actual module names
+            if( mod_name == '*' )
+
+                available(  ).keys.each {
+                    |mod|
+                    final << mod
+                    _load( mod )
+                }
+
             end
 
+            final << mod_name
+            _load( mod_name )
         }
-        
-    end
-    
-    #
-    # Gets a module by its filename, without the extension
-    #
-    # @param  [String]  name  the name of the module
-    #
-    # @return [Arachni::Module]
-    #
-    def by_name( name )
-        begin
-            ::Kernel::load( path_from_name( name ) )
-        rescue Exception => e
-            raise e
-        end
-    end
 
-    #
-    # Gets the path of the specified module
-    #
-    # @param  [String]  name  the name of the module
-    #
-    # @return [String]  the path of the module
-    #
-    def path_from_name( name )
-        begin
-            available( )[name]['path'].to_s
-        rescue Exception => e
-            raise( Arachni::Exceptions::ModNotFound,
-                "Module '#{mod_name}' not found." )
-        end
+        return final
     end
 
     #
@@ -260,11 +228,11 @@ class Registry
     def results
         @@results
     end
-    
+
     def clear
         @@registry.clear
     end
-    
+
     #
     # Lists the loaded modules
     #
@@ -285,7 +253,7 @@ class Registry
     def Registry.add_storage( obj )
         @@module_storage.merge( obj )
     end
-    
+
     #
     # Gets data from storage by key,
     # regulated by Registrar#get_storage
@@ -298,13 +266,13 @@ class Registry
     #
     def Registry.storage( key = nil )
         return @@storage if !key
-         
+
         @@storage.each {
             |item|
             if( item.keys[0] == key ) then return item[key] end
         }
     end
-    
+
     #
     # Class method
     #
@@ -330,6 +298,117 @@ class Registry
 
         @@registry = clean_reg
     end
+
+    private
+
+    def parse_mods( mods )
+
+        unload = []
+        load   = []
+
+        mods.each {
+            |mod|
+            if mod[0] == '-'
+                mod[0] = ''
+                unload << mod
+            end
+        }
+
+        if( !mods.include?( "*" ) )
+
+            avail_mods  = available(  )
+
+            mods.each {
+                |mod_name|
+                if( !avail_mods[mod_name] )
+                      raise( Arachni::Exceptions::ModNotFound,
+                          "Error: Module #{mod_name} wasn't found." )
+                end
+            }
+
+            # recon modules should be loaded before audit ones
+            # and ls_available() honors that
+            avail_mods.map {
+                |mod|
+                load << mod[0] if mods.include?( mod[0] )
+            }
+        else
+            available(  ).map {
+                |mod|
+                load << mod[0]
+            }
+        end
+
+        return load - unload
+    end
+
+
+    #
+    # Loads and registers a module by it's filename, without the extension
+    # It also takes care of its dependencies.
+    #
+    # @param [String] mod_name  the module to load
+    #
+    # @return [Arachni::Module] the loaded modules
+    #
+    def _load( mod_name )
+
+        Registry.register( by_name( mod_name ) )
+
+        # grab the module we just registered
+        mod = @@registry[-1]
+
+         # if it doesn't have any dependencies we're done
+        if( !mod.methods.index( :deps ) ) then return end
+
+        # go through its dependencies and load them recursively
+        mod.deps.each {
+            |dep_mod|
+
+            if ( !dep_mod ) then next end
+
+            begin
+                load( dep_mod )
+            rescue Exception => e
+                raise( Arachni::Exceptions::DepModNotFound,
+                    "In '#{mod_name}' dependencies: " + e.to_s )
+            end
+
+        }
+
+    end
+
+    #
+    # Gets a module by its filename, without the extension
+    #
+    # @param  [String]  name  the name of the module
+    #
+    # @return [Arachni::Module]
+    #
+    def by_name( name )
+        begin
+            ::Kernel::load( path_from_name( name ) )
+        rescue Exception => e
+            raise e
+        end
+    end
+
+    #
+    # Gets the path of the specified module
+    #
+    # @param  [String]  name  the name of the module
+    #
+    # @return [String]  the path of the module
+    #
+    def path_from_name( name )
+        begin
+            available( )[name]['path'].to_s
+        rescue Exception => e
+            raise( Arachni::Exceptions::ModNotFound,
+                "Module '#{mod_name}' not found." )
+        end
+    end
+
 
 end
 end

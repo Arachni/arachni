@@ -475,7 +475,7 @@ class HTTP
 
         if( !@__not_found )
 
-            path = Module::Utilities.get_path( @last_url.to_s )
+            path = get_path( @last_url.to_s )
 
             # force a 404 and grab the html body
             force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'

@@ -10,10 +10,10 @@
 
 module Arachni
 module Report
-    
+
 #
 # Arachni::Report::Registry class
-#    
+#
 # Holds and manages the registry of the reports.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -31,10 +31,10 @@ class Registry
     REPORT_EXT   = '.afr'
 
     def initialize( opts )
-        
+
         @opts = opts
         @lib  = @opts.dir['reports']
-        
+
         @@registry = []
         @available   = Hash.new
     end
@@ -47,7 +47,7 @@ class Registry
     # @param  [AuditStore]  audit_store
     #
     def run( audit_store )
-        
+
         loaded.each_with_index {
             |report, i|
 
@@ -58,27 +58,44 @@ class Registry
                     URI.parse( audit_store.options['url'] ).host +
                         '-' + Time.now.to_s
             end
-            
-            
+
+
             new_rep = report.new( audit_store.clone, @opts.repopts,
                             @opts.repsave + REPORT_EXT )
-            
+
             new_rep.run( )
         }
     end
 
-
     #
     # Loads and registers a report by it's filename, without the extension
     #
-    # @param [String] name  the report to load
+    # @param [String/Array] name  the report to load
     #
     # @return [Arachni::Reports] the loaded reports
     #
-    def load( name )
-        Registry.register( by_name( name ) )
+    def load( reports )
+
+        reports = [reports]
+
+        reports.flatten.each {
+            |report|
+
+            if( !available(  )[report] )
+                raise( Arachni::Exceptions::ReportNotFound,
+                    "Error: Report #{report} wasn't found." )
+            end
+
+            begin
+                # load the report
+                Registry.register( by_name( report ) )
+            rescue Exception => e
+                raise e
+            end
+        }
+
     end
-    
+
     #
     # Lists the loaded modules
     #
@@ -87,7 +104,7 @@ class Registry
     def loaded( )
         Registry.registry( )
     end
-    
+
     #
     # Gets a report by its filename, without the extension
     #
@@ -119,7 +136,7 @@ class Registry
         end
     end
 
-        
+
     #
     # Lists all available reports and puts them in a Hash
     #
@@ -138,7 +155,7 @@ class Registry
         }
         @available
     end
-    
+
     #
     # Class method
     #
@@ -149,7 +166,7 @@ class Registry
     def Registry.registry( )
         @@registry.uniq
     end
-    
+
     #
     # Class method
     #
@@ -160,7 +177,7 @@ class Registry
     def Registry.clean( )
         @@registry = []
     end
-    
+
     #
     # Grabs the information of a report based on its ID
     # in the @@registry
@@ -187,8 +204,8 @@ class Registry
         @@registry << report
         Registry.clean_up(  )
     end
-    
-    
+
+
     #
     # Class method
     #
@@ -203,7 +220,7 @@ class Registry
         @@registry.each {
             |report|
 
-            
+
             begin
                 if report < Arachni::Report::Base
                     clean_reg << report

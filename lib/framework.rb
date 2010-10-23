@@ -119,18 +119,15 @@ class Framework
             # start the audit
             audit( )
         rescue Exception
+
         end
 
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
-        audit_store = audit_store_get( )
-
         # run reports
         if( @opts.reports )
-            exception_jail{
-                @reports.run( audit_store )
-            }
+            exception_jail{ @reports.run( audit_store ) }
         end
 
         # save the AuditStore in a file
@@ -141,8 +138,6 @@ class Framework
     end
 
     def stats( )
-        audit_store = audit_store_get
-
         req_cnt = Arachni::Module::HTTP.instance.request_count
         res_cnt = Arachni::Module::HTTP.instance.response_count
 
@@ -178,6 +173,7 @@ class Framework
 
     end
 
+
     #
     # Returns the results of the audit as an {AuditStore} instance
     #
@@ -185,7 +181,7 @@ class Framework
     #
     # @return    [AuditStore]
     #
-    def audit_store_get
+    def audit_store
 
         # restore the original redundacy rules and their counters
         @opts.redundant = @orig_redundant
@@ -199,123 +195,6 @@ class Framework
          } )
     end
 
-    #
-    # Loads modules
-    #
-    # @param [Array]  mods  Array of modules to load
-    #
-    def mod_load( mods = ['*'] )
-
-        #
-        # Check the validity of user provided module names
-        #
-        parse_mods( mods ).each {
-            |mod_name|
-
-            # if the mod name is '*' load all modules
-            # and replace it with the actual module names
-            if( mod_name == '*' )
-
-                @opts.mods = []
-
-                @modules.available(  ).keys.each {
-                    |mod|
-                    @opts.mods << mod
-                    @modules.load( mod )
-                }
-
-                # and we're done..
-                break
-            end
-
-            # ...and load the module passing all exceptions to the UI.
-            begin
-                @modules.load( mod_name )
-            rescue Exception => e
-                raise e
-            end
-        }
-    end
-
-    def parse_mods( mods )
-
-        unload = []
-        load   = []
-
-        mods.each {
-            |mod|
-            if mod[0] == '-'
-                mod[0] = ''
-                unload << mod
-            end
-        }
-
-        if( !mods.include?( "*" ) )
-
-            avail_mods  = @modules.available(  )
-
-            mods.each {
-                |mod_name|
-                if( !avail_mods[mod_name] )
-                      raise( Arachni::Exceptions::ModNotFound,
-                          "Error: Module #{mod_name} wasn't found." )
-                end
-            }
-
-            # recon modules should be loaded before audit ones
-            # and ls_available() honors that
-            avail_mods.map {
-                |mod|
-                load << mod[0] if mods.include?( mod[0] )
-            }
-        else
-            @modules.available(  ).map {
-                |mod|
-                load << mod[0]
-            }
-        end
-
-        @opts.mods = load - unload
-
-        return @opts.mods
-    end
-
-    #
-    # Loads reports
-    #
-    # @param [Array]  reports  Array of reports to load
-    #
-    def rep_load( reports = ['stdout'] )
-
-        reports.each {
-            |report|
-
-            if( !@reports.available(  )[report] )
-                raise( Arachni::Exceptions::ReportNotFound,
-                    "Error: Report #{report} wasn't found." )
-            end
-
-            begin
-                # load the report
-                @reports.load( report )
-            rescue Exception => e
-                raise e
-            end
-        }
-    end
-
-    #
-    # Converts a saved AuditStore to a report.
-    #
-    # It basically loads a serialized AuditStore,<br/>
-    # passes it to a the loaded Reports and runs the reports via {#run_reps}.
-    #
-    # @param [String]  file  location of the saved AuditStore
-    #
-    def rep_convert( file )
-        run_reps( audit_store_load( file ) )
-        exit 0
-    end
 
     #
     # Saves an AuditStore instance in 'file'
@@ -329,20 +208,9 @@ class Framework
         print_line( )
         print_status( 'Dumping audit results in \'' + file  + '\'.' )
 
-        audit_store_get( ).save( file )
+        audit_store.save( file )
 
         print_status( 'Done!' )
-    end
-
-    #
-    # Loads an {AuditStore} object
-    #
-    # @see AuditStore
-    #
-    # @param [String]  file  location of the dump file
-    #
-    def audit_store_load( file )
-        return AuditStore.load( file )
     end
 
     #

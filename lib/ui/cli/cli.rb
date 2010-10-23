@@ -157,7 +157,7 @@ class CLI
         # runs the stdout report so that the user
         # can see what has been discovered thus far
         begin
-            print_vulns( @arachni.audit_store_get( ).deep_clone )
+            print_vulns( @arachni.audit_store.deep_clone )
         rescue Exception => e
             print_error( e.to_s )
             print_debug_backtrace( e )
@@ -248,7 +248,7 @@ class CLI
 
                 when 'mods'
                     begin
-                        @arachni.mod_load( arg )
+                        @opts.mods = @arachni.modules.load( arg )
                     rescue Arachni::Exceptions::ModNotFound => e
                         print_error( e.to_s )
                         print_info( "Run arachni with the '--lsmod' parameter" +
@@ -261,20 +261,18 @@ class CLI
 
                 when 'reports'
                     begin
-                        @arachni.rep_load( arg )
+                        @arachni.reports.load( arg )
                     rescue Exception => e
                         handle_exception( e )
                     end
 
                 when 'repload'
                     begin
-                        @arachni.rep_convert( arg )
+                        @arachni.reports.run( AuditStore.load( arg ) )
+                        exit 0
                     rescue Exception => e
                         handle_exception( e )
                     end
-
-#                when 'delay'
-#                    @opts.delay = Float.new( arg )
 
             end
         }
