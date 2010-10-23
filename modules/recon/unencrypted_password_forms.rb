@@ -23,7 +23,7 @@ module Recon
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
@@ -52,16 +52,16 @@ class UnencryptedPasswordForms < Arachni::Module::Base
 
     def __check( form )
 
-        scheme = URI( form['attrs']['action'] ).scheme
+        scheme = URI( form.action ).scheme
         return if( scheme.downcase == 'https' )
 
-        form['auditable'].each {
+        form.raw['auditable'].each {
             |input|
 
             next if !input['type']
 
             if( input['type'].downcase == 'password' )
-                __log( form['attrs']['action'], input )
+                __log( form.url, input )
             end
         }
     end

@@ -10,6 +10,7 @@
 
 module Arachni
 
+class Parser
 #
 # Arachni::Page class
 #
@@ -18,7 +19,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class Page
 
@@ -43,21 +44,25 @@ class Page
     attr_accessor :headers
 
     #
-    # @see Analyzer#get_headers
+    # @see Parser#links
     #
-    # @return    [Hash]    auditable HTTP request headers
+    # @return    [Array]
     #
-    attr_accessor :request_headers
+    attr_accessor :links
 
     #
-    # @see Analyzer#run
-    # @see Analyzer#get_links
-    # @see Analyzer#get_forms
-    # @see Analyzer#get_cookies
+    # @see Parser#forms
     #
-    # @return    [Hash]    auditable HTML elements (links/forms/cookies)
+    # @return    [Array]
     #
-    attr_accessor :elements
+    attr_accessor :forms
+
+    #
+    # @see Parser#cookies
+    #
+    # @return    [Array]
+    #
+    attr_accessor :cookies
 
     #
     # Cookies extracted from the supplied cookiejar
@@ -75,26 +80,49 @@ class Page
     end
 
     #
-    # Returns the form elements in {Page#elements}
+    # Returns an array of forms from {#forms} with its attributes and<br/>
+    # its auditable inputs as a name=>value hash
     #
-    def forms
-        elements['forms']
+    # @return    [Array]
+    #
+    def forms_simple( )
+        forms = []
+        @forms.each {
+            |form|
+            forms << form.simple
+        }
+        return forms
     end
 
     #
-    # Returns the links elements in {Page#elements}
+    # Returns links from {#links} as a name=>value hash with href as key
     #
-    def links
-        elements['links']
+    # @return    [Hash]
+    #
+    def links_simple
+        links = []
+        @links.each {
+            |link|
+            links << link.simple
+        }
+        return links
     end
 
     #
-    # Returns the cookies elements in {Page#elements}
+    # Returns cookies from {#cookies} as a name=>value hash
     #
-    def cookies
-        elements['cookies']
+    # @return    [Hash]    the cookie attributes, values, etc
+    #
+    def cookies_simple
+        cookies = { }
+
+        @cookies.each {
+            |cookie|
+            cookies.merge!( cookie.simple )
+        }
+        return cookies
     end
 
 end
-
+end
 end

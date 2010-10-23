@@ -26,7 +26,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.2
 # @abstract
 #
 class Base
@@ -182,108 +182,6 @@ class Base
         []
     end
 
-    #
-    # Returns an array of forms from {#get_forms} with its attributes and<br/>
-    # its auditable inputs as a name=>value hash
-    #
-    # @return    [Array]
-    #
-    def forms_simple( )
-        forms = []
-        @page.forms.each_with_index {
-            |form|
-            forms << get_form_simple( form )
-        }
-        forms
-    end
-
-    #
-    # Returns the form with its attributes and auditable inputs as a name=>value hash
-    #
-    # @return    [Array]
-    #
-    def form_simple( form )
-
-
-        return if !form || !form['auditable']
-
-        new_form = Hash.new
-        new_form['attrs'] = form['attrs']
-        new_form['auditable'] = {}
-        form['auditable'].each {
-            |item|
-            if( !item['name'] ) then next end
-            new_form['auditable'][item['name']] = item['value']
-        }
-        return new_form
-    end
-
-    #
-    # Returns links from {#get_links} as a name=>value hash with href as key
-    #
-    # @return    [Hash]
-    #
-    def links_simple
-        links = Hash.new
-        @page.links.each_with_index {
-            |link, i|
-
-            if( !link['vars'] || link['vars'].size == 0 ) then next end
-
-            links[link['href']] = Hash.new
-            link['vars'].each_pair {
-                |name, value|
-
-                if( !name || !link['href'] ) then next end
-
-                links[link['href']][name] = value
-            }
-
-        }
-        links
-    end
-
-    #
-    # Returns cookies from {#get_cookies} as a name=>value hash
-    #
-    # @return    [Hash]    the cookie attributes, values, etc
-    #
-    def cookies_simple( incookies = nil )
-        cookies = Hash.new( )
-
-        incookies = @page.cookies if !incookies
-
-        incookies.each {
-            |cookie|
-            cookies[cookie['name']] = cookie['value']
-        }
-
-        return cookies if !@page.cookiejar
-        @page.cookiejar.merge( cookies )
-    end
-
-    #
-    # Returns a cookie from {#get_cookies} as a name=>value hash
-    #
-    # @param    [Hash]     cookie
-    #
-    # @return    [Hash]     simple cookie
-    #
-    def cookie_simple( cookie )
-        return { cookie['name'] => cookie['value'] }
-    end
-
-
-    #
-    # Returns a hash of auditable request headers.
-    #
-    # @see Page#request_headers
-    #
-    # @return    [Hash]
-    #
-    def headers( )
-       return @page.request_headers
-    end
 
     #
     # Gets module data files from 'modules/[modtype]/[modname]/[filename]'

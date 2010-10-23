@@ -40,7 +40,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -67,7 +67,7 @@ class CSRF < Arachni::Module::Base
             :async       => false
         }
 
-        # the Trainer can provide modules access to the HTML Analyzer
+        # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
         @__trainer = Arachni::Module::Trainer.instance
 
@@ -111,20 +111,20 @@ class CSRF < Arachni::Module::Base
         # nobody says that tokens must be in a 'value' attribute,
         # they can just as well be in 'name'.
         # so we check them both...
-        form_simple( form )['auditable'].to_a.flatten.each_with_index {
+        form.simple['auditable'].to_a.flatten.each_with_index {
             |str, i|
             next if !str
-            next if !form['auditable'][i]
-            next if !form['auditable'][i]['type']
-            next if form['auditable'][i]['type'].downcase != 'hidden'
+            next if !form.raw['auditable'][i]
+            next if !form.raw['auditable'][i]['type']
+            next if form.raw['auditable'][i]['type'].downcase != 'hidden'
 
             found_token = true if( __csrf_token?( str ) )
         }
 
-        if( query = URI( form['attrs']['action'] ).query )
+        if( query = URI( form.action ).query )
             # and we also need to check for a token in the form action
-            action_splits = URI( form['attrs']['action'] ).query.split( '=' )
-            form_simple( form )['auditable'].to_a.flatten.each {
+            action_splits = URI( form.action ).query.split( '=' )
+            form.simple['auditable'].to_a.flatten.each {
                 |str|
                 next if !str
                 found_token = true  if( __csrf_token?( str ) )
@@ -229,12 +229,12 @@ class CSRF < Arachni::Module::Base
         # request page without cookies, simulating a logged-out user
         res  = @http.get( @page.url, opts ).response
 
-        # set-up the Analyzer with the proper url so that it
+        # set-up the parser with the proper url so that it
         # can fix broken 'action' attrs
-        @__trainer.analyzer.url = res.effective_url.clone
+        @__trainer.parser.url = res.effective_url.clone
 
         # extract forms from the body of the response
-        return @__trainer.analyzer.get_forms( res.body ).clone
+        return @__trainer.parser.forms( res.body ).clone
     end
 
     #
@@ -253,7 +253,7 @@ class CSRF < Arachni::Module::Base
         __forms_logged_in.each {
             |form|
 
-            next if form['auditable'].size == 0
+            next if form.auditable.size == 0
 
             if !( __forms_include?( forms_logged_out, form ) )
                 csrf_forms << form
@@ -269,7 +269,7 @@ class CSRF < Arachni::Module::Base
         forms.each {
             |i_form|
 
-            if( @__trainer.form_id( form ) == @__trainer.form_id( i_form ) )
+            if( form.id == i_form.id )
                 return true
             end
 
@@ -280,8 +280,8 @@ class CSRF < Arachni::Module::Base
 
     def __log( form )
 
-        url  = form['attrs']['action']
-        name = form['attrs']['name'] || 'n/a'
+        url  = form.action
+        name = form.raw['attrs']['name'] || 'n/a'
 
         if @@__audited.include?( "#{url}::#{name}" )
             print_info( 'Skipping already audited form with name \'' +

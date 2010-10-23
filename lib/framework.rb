@@ -17,8 +17,7 @@ opts = Arachni::Options.instance
 require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'
-require opts.dir['lib'] + 'analyzer'
-require opts.dir['lib'] + 'page'
+require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'audit_store'
 require opts.dir['lib'] + 'vulnerability'
 require opts.dir['lib'] + 'module'
@@ -43,7 +42,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.8
+# @version: 0.1.9
 #
 class Framework
 
@@ -88,7 +87,7 @@ class Framework
         prepare_user_agent( )
 
         @spider   = Arachni::Spider.new( @opts )
-        @analyzer = Arachni::Analyzer.new( @opts )
+        @parser   = Arachni::Parser.new( @opts )
 
         # deep clone the redundancy rules to preserve their counter
         # for the reports
@@ -177,60 +176,14 @@ class Framework
         @sitemap = @spider.run {
             | url, html, headers |
 
-            page = analyze( url, html, headers )
-            run_mods( page )
+            exception_jail{
+                run_mods( @parser.run( url, html, headers ).clone )
+            }
         }
 
         if( @opts.http_harvest_last )
             harvest_http_responses( )
         end
-
-    end
-
-    #
-    # Analyzes the html code for elements and returns a page object
-    #
-    # @param  [String]    url
-    # @param  [String]    html
-    # @param  [Array]     headers
-    #
-    # @return    [Page]
-    #
-    def analyze( url, html, headers )
-
-        elements = Hash.new
-
-        # analyze each page the crawler returns and save its elements
-        elements = @analyzer.run( url, html, headers ).clone
-
-        elements['cookies'] =
-            merge_with_cookiejar( elements['cookies'] )
-
-        # get the variables of the url query as an array of hashes
-        query_vars = @analyzer.get_link_vars( url )
-
-        # if url query has variables in it append them to the page elements
-        if( query_vars.size > 0 )
-            elements['links'] << {
-                'href'  => url,
-                'vars'  => query_vars
-            }
-        end
-
-        if( elements['headers'] )
-            request_headers = elements['headers'].clone
-#            elements.delete( 'headers' )
-        end
-
-        return Page.new( {
-            :url         => url,
-            :query_vars  => query_vars,
-            :html        => html,
-            :headers     => headers,
-            :request_headers => request_headers,
-            :elements    => elements,
-            :cookiejar   => @opts.cookies
-        } )
 
     end
 
@@ -494,26 +447,6 @@ class Framework
     private
 
     #
-    # Merges 'cookies' with the cookiejar and returns it as an array
-    #
-    # @param    [Array<Hash>]  cookies
-    #
-    # @return   [Array<Hash>]  the merged cookies
-    #
-    def merge_with_cookiejar( cookies )
-        return cookies if !@opts.cookies
-
-        @opts.cookies.each_pair {
-            |name, value|
-            cookies << {
-                'name'    => name,
-                'value'   => value
-            }
-        }
-        return cookies
-    end
-
-    #
     # Prepares the user agent to be used throughout the system.
     #
     def prepare_user_agent
@@ -546,17 +479,7 @@ class Framework
         return if !page
 
         for mod in @modules.loaded( )
-
-            # save some time by deciding if the module is worth running
-            if( !run_module?( mod , page ) )
-                print_verbose( 'Skipping ' + mod.to_s +
-                    ', nothing to audit.' )
-                next
-            end
-
-            # ... and run it.
             run_mod( mod, page.deep_clone )
-
         end
 
         if( !@opts.http_harvest_last )
@@ -630,47 +553,6 @@ class Framework
             print_debug_backtrace( e )
             raise
         end
-    end
-
-
-    #
-    # Decides whether or not to run a given module based on the<br/>
-    # HTML elements it plans to audit and the existence of those elements<br/>
-    # in the current page.
-    #
-    # @see Page
-    #
-    # @param    [Class]   mod   the module to run
-    # @param    [Page]    page
-    #
-    # @return    [Bool]
-    #
-    def run_module?( mod, page )
-
-        checkpoint = 0
-        page.elements( ).each_pair {
-            |name, value|
-
-            if( !mod.info || !mod.info['Elements'] ||
-                mod.info['Elements'].size == 0 )
-                return true
-            end
-
-            if( mod.info['Elements'].include?( 'cookie' ) )
-                return true
-            end
-
-            if( mod.info['Elements'].include?( 'header' ) )
-                return true
-            end
-
-            if( mod.info['Elements'].include?( name.tr( 's', '' ) ) &&
-                value.size != 0 )
-                return true
-            end
-        }
-
-        return false
     end
 
     #

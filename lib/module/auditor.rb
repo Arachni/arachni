@@ -22,7 +22,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 module Auditor
 
@@ -218,26 +218,12 @@ module Auditor
 
         opts[:injected_orig] = injection_str
 
-        audit_id = audit_id( url, headers( ), opts, injection_str )
+        audit_id = audit_id( url, @page.headers[:request], opts, injection_str )
         return if audited?( audit_id )
-
-        # we just use brute force on the headers since we have no idea of knowing
-        # which are used, if any...
-        headers = {
-            'Accept'          => 'text/html,application/xhtml+xml,application' +
-                '/xml;q=0.9,*/*;q=0.8',
-            'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-            'Accept-Language' => 'en-gb,en;q=0.5',
-            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'From'       => Options.instance.authed_by,
-            'User-Agent' => Options.instance.user_agent,
-            'Referer'    => @page.url,
-            'Pragma'     => 'no-cache'
-        }
 
         results = []
         # iterate through header fields and audit each one
-        injection_sets( headers, injection_str, opts ).each {
+        injection_sets( @page.headers[:request], injection_str, opts ).each {
             |vars|
 
             # inform the user what we're auditing
@@ -283,13 +269,14 @@ module Auditor
         opts[:injected_orig] = injection_str
 
         results = []
+
         @page.links.each {
             |link|
 
-            next if !link
+            # pp links
 
-            url = URI( @page.url ).merge( URI( link['href'] ).path ).to_s
-            link_vars = link['vars']
+            url = URI( @page.url ).merge( URI( link.action ).path ).to_s
+            link_vars = link.auditable
 
             # if we don't have any auditable elements just return
             if !link_vars then next end
@@ -348,15 +335,11 @@ module Auditor
 
         results = []
         @page.forms.each {
-            |orig_form|
+            |form|
 
-            form = form_simple( orig_form )
-
-            next if !form
-
-            url    = form['attrs']['action']
-            method = form['attrs']['method']
-            fields = form['auditable']
+            url    = form.action
+            method = form.method
+            fields = form.auditable
 
             audit_id = audit_id( url, fields, opts, injection_str )
             next if !opts[:redundant] && audited?( audit_id )
@@ -447,34 +430,29 @@ module Auditor
         results = []
 
         return results if( !Options.instance.audit_cookies )
-        @page.cookies.each {
-            |orig_cookie|
 
-            cookie = cookie_simple( orig_cookie )
+        cookies = @page.cookies_simple
+        audit_id = audit_id( url, cookies, opts, injection_str )
+        return results if !opts[:redundant] && audited?( audit_id )
 
-            audit_id = audit_id( url, cookie, opts, injection_str )
-            next if !opts[:redundant] && audited?( audit_id )
+        injection_sets( cookies, injection_str, opts ).each {
+            |cookie|
 
-            injection_sets( cookie, injection_str, opts ).each {
-                |cookie|
+            next if Options.instance.exclude_cookies.include?( cookie['altered'] )
 
-                next if Options.instance.exclude_cookies.include?( cookie['altered'] )
+            print_status( get_status_str( url, cookie, opts ) )
 
-                print_status( get_status_str( url, cookie, opts ) )
+            opts[:cookies] = cookie['hash']
+            req = @http.cookie( @page.url, opts )
 
-                opts[:cookies] = cookie['hash']
-                req = @http.cookie( @page.url, opts )
-
-                injected = cookie['hash'][cookie['altered']]
-                on_complete( req, injected, cookie, opts, &block )
-                req.after_complete {
-                    |result|
-                    results << result.flatten[1] if result.flatten[1]
-                }
-
+            injected = cookie['hash'][cookie['altered']]
+            on_complete( req, injected, cookie, opts, &block )
+            req.after_complete {
+                |result|
+                results << result.flatten[1] if result.flatten[1]
             }
-            audited( audit_id )
         }
+        audited( audit_id )
 
         results
     end
