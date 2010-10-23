@@ -43,21 +43,6 @@ module ElementDB
     @@cookies  ||= []
 
     #
-    # used to synchronize @@forms updates
-    #
-    @@form_mutex   ||= Mutex.new
-
-    #
-    # used to synchronize @@links updates
-    #
-    @@link_mutex   ||= Mutex.new
-
-    #
-    # used to synchronize @@cookies updates
-    #
-    @@cookie_mutex ||= Mutex.new
-
-    #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
     def init_forms( forms )
@@ -87,7 +72,7 @@ module ElementDB
     # Updates @@forms wth new forms that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Hash>] forms    the return object of {Analyzer#get_forms}
+    # @param    [Array<Element::Form>] forms    the return object of {Analyzer#get_forms}
     #
     def update_forms( forms )
 
@@ -117,7 +102,7 @@ module ElementDB
     # Updates @@links wth new links that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Hash>]    links  the return object of {Analyzer#get_links}
+    # @param    [Array<Element::Link>]    links  the return object of {Analyzer#get_links}
     #
     def update_links( links )
       return [], 0 if links.size == 0
@@ -144,7 +129,7 @@ module ElementDB
     # Updates @@cookies wth new cookies that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Hash>]   cookies   the return object of {Analyzer#get_cookies}
+    # @param    [Array<Element::Cookie>]   cookies   the return object of {Analyzer#get_cookies}
     #
     def update_cookies( cookies )
         return [], 0 if cookies.size == 0

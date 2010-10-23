@@ -72,9 +72,9 @@ class Parser
     #
     # @param [String] url the url of the HTML code, mainly used for debugging
     # @param [String] html HTML code  to be analyzed
-    # @param [Hash] headers HTTP headers
+    # @param [Hash]   headers HTTP headers
     #
-    # @return [Hash<String, Hash<Array, Hash>>] HTML elements
+    # @return [Page]
     #
     def run( url, html, headers )
 
@@ -130,7 +130,7 @@ class Parser
     #
     # @param    [Array<Hash>]  cookies
     #
-    # @return   [Array<Hash>]  the merged cookies
+    # @return   [Array<Element::Cookie>]  the merged cookies
     #
     def merge_with_cookiejar( cookies )
         return cookies if !@opts.cookies
@@ -183,7 +183,7 @@ class Parser
     #
     # @param  [String] html
     #
-    # @return [Array<Hash <String, String> >] array of forms
+    # @return [Array<Element::Form>] array of forms
     #
     def forms( html )
 
@@ -268,7 +268,7 @@ class Parser
     #
     # @param  [String] html
     #
-    # @return [Array<Hash <String, String> >] of links
+    # @return [Array<Element::Link>] of links
     #
     def links( html )
 
@@ -298,7 +298,7 @@ class Parser
     #
     # @param  [String] headers HTTP headers
     #
-    # @return [Array<Hash <String, String> >] of cookies
+    # @return [Array<Element::Cookie>] of cookies
     #
     def cookies( headers )
         cookies = WEBrick::Cookie.parse_set_cookies( headers )

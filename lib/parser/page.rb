@@ -46,21 +46,21 @@ class Page
     #
     # @see Parser#links
     #
-    # @return    [Array]
+    # @return    [Array<Arachni::Parser::Element::Link>]
     #
     attr_accessor :links
 
     #
     # @see Parser#forms
     #
-    # @return    [Array]
+    # @return    [Array<Arachni::Parser::Element::Form>]
     #
     attr_accessor :forms
 
     #
     # @see Parser#cookies
     #
-    # @return    [Array]
+    # @return    [Array<Arachni::Parser::Element::Cookie>]
     #
     attr_accessor :cookies
 
