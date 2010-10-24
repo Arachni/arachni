@@ -203,7 +203,7 @@ class CSRF < Arachni::Module::Base
     # Returns forms that appear when the user is logged in.
     #
     # The crawling process took place with logged-in cookies
-    # so {#get_forms} will do just fine.
+    # so {Arachni::Parser::Page#forms} will do just fine.
     #
     # @return   [Array]  forms
     #

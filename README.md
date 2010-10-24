@@ -107,7 +107,7 @@ The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some
 
 
 
-### HTML Analyzer ({Arachni::Analyzer})
+### HTML Parser ({Arachni::Parser})
 
 Can extract and analyze:
 

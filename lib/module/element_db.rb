@@ -72,7 +72,7 @@ module ElementDB
     # Updates @@forms wth new forms that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Element::Form>] forms    the return object of {Analyzer#get_forms}
+    # @param    [Array<Element::Form>] forms
     #
     def update_forms( forms )
 
@@ -102,7 +102,7 @@ module ElementDB
     # Updates @@links wth new links that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Element::Link>]    links  the return object of {Analyzer#get_links}
+    # @param    [Array<Element::Link>]    links
     #
     def update_links( links )
       return [], 0 if links.size == 0
@@ -129,7 +129,7 @@ module ElementDB
     # Updates @@cookies wth new cookies that may have dynamically appeared<br/>
     # after analyzing the HTTP responses during the audit.
     #
-    # @param    [Array<Element::Cookie>]   cookies   the return object of {Analyzer#get_cookies}
+    # @param    [Array<Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         return [], 0 if cookies.size == 0

@@ -86,7 +86,7 @@ class Trainer
     end
 
     #
-    # Returns an updated {Page} object or nil if there waere no updates
+    # Returns an updated {Arachni::Parser::Page} object or nil if there waere no updates
     #
     # @return  [Page]
     #
