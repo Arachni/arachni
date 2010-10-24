@@ -109,7 +109,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         #
         @__opts[:match]  = '<title>Google</title>'
 
-        # inject this url to asses RFI
+        # inject this url to assess RFI
         @__injection_url = 'hTtP://google.com'
 
         
