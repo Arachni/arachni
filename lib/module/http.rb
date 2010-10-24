@@ -281,8 +281,7 @@ class HTTP
     #
     # @param  [URI]   url      URL to GET
     # @param  [Hash]  opts    request options
-    #                          * :cookies => cookies to send || {}
-    #                          * :params  => request parameters || {}
+    #                          * :params  => cookies || {}
     #                          * :train   => force Arachni to analyze the HTML code || false
     #                          * :async   => make the request async? || true
     #                          * :headers => HTTP request headers  || {}
@@ -291,8 +290,8 @@ class HTTP
     #
     def cookie( url, opts = { } )
 
-        cookies   = opts[:cookies] || {}
-        params    = opts[:params]
+        cookies   = opts[:params] || {}
+        # params    = opts[:params]
         train     = opts[:train]
 
         async     = opts[:async]
@@ -309,7 +308,7 @@ class HTTP
             opts = {
                 :headers         => headers,
                 :follow_location => false,
-                :params          => params
+                # :params          => params
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )

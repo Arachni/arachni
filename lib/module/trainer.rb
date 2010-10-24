@@ -57,8 +57,9 @@ class Trainer
 
             analyze( [ res, redir ] )
 
-        rescue
+        rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
+            raise e
         end
 
     end
@@ -192,8 +193,8 @@ class Trainer
         links   = @parser.links( res.body ).clone
 
         if( redir )
-            links << Arachni::Parser::Element::Link.new( @parser.url, {
-                'href' => @parser.url,
+            links << Arachni::Parser::Element::Link.new( @page.url, {
+                'href' => @page.url,
                 'vars' => @parser.link_vars( @parser.url )
             } )
         end
