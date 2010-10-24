@@ -94,8 +94,9 @@ class HTTP
 
         @init_headers = {
             'cookie' => '',
-            'from'   => opts.authed_by,
-            'accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            'From'   => opts.authed_by,
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent'    => opts.user_agent
         }
 
         @opts = {
@@ -324,8 +325,7 @@ class HTTP
     #
     # @param  [URI]   url      URL to GET
     # @param  [Hash]  opts    request options
-    #                          * :headers => headers to send || {}
-    #                          * :params  => request parameters || {}
+    #                          * :params  => headers || {}
     #                          * :train   => force Arachni to analyze the HTML code || false
     #                          * :async   => make the request async? || true
     #
@@ -333,8 +333,8 @@ class HTTP
     #
     def header( url, opts = { } )
 
-        headers   = opts[:headers] || {}
-        params    = opts[:params]
+        headers   = opts[:params] || {}
+        # params    = opts[:params]
         train     = opts[:train]
 
         async     = opts[:async]
@@ -351,7 +351,8 @@ class HTTP
                 :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
-                :params        => params )
+                # :params        => params
+            )
             req.train! if train
 
             @init_headers = orig_headers.clone

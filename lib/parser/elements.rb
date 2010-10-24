@@ -229,7 +229,6 @@ class Header < Base
         return @auditor.http.header( url, opts )
     end
 
-
     def auditable
         return @raw
     end

@@ -173,7 +173,7 @@ module Auditor
                     results << audit_cookies( injection_str, opts, &block )
 
                 when  Element::HEADER
-                    # results << audit_headers( injection_str, opts, &block )
+                    results << audit_headers( injection_str, opts, &block )
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
 
@@ -209,30 +209,13 @@ module Auditor
 
         opts[:injected_orig] = injection_str
 
-        audit_id = audit_id( url, @page.headers[:request], opts, injection_str )
-        return if audited?( audit_id )
-
         results = []
-        # iterate through header fields and audit each one
-        injection_sets( @page.headers[:request], injection_str, opts ).each {
-            |vars|
 
-            # inform the user what we're auditing
-            print_status( get_status_str( url, vars, opts ) )
-
-            opts[:headers] = vars['hash']
-
-            # audit the url vars
-            req = @http.header( @page.url, opts )
-
-            injected = vars['hash'][vars['altered']]
-            on_complete( req, injected, vars, opts, &block )
-            req.after_complete {
-                |result|
-                results << result.flatten[1] if result.flatten[1]
-            }
+        @page.headers.each{
+            |headers|
+            headers.auditor( self )
+            headers.audit( injection_str, opts, &block )
         }
-        audited( audit_id )
 
         results
     end

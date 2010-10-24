@@ -39,7 +39,7 @@ class Page
     attr_accessor :html
 
     #
-    # @return    [Hash]    response headers
+    # @return    [Array<Arachni::Parser::Element::Header]
     #
     attr_accessor :headers
 

@@ -113,10 +113,7 @@ class Parser
             :url         => url,
             :query_vars  => query_vars,
             :html        => html,
-            :headers     => {
-                :request    => headers_stub,
-                :response   => headers,
-            },
+            :headers     => headers(),
             :forms       => forms,
             :links       => links,
             :cookies     => merge_with_cookiejar( cookies_arr ),
@@ -157,7 +154,8 @@ class Parser
     #
     # @return    [Hash]    HTTP header fields
     #
-    def headers_stub( )
+    def headers( )
+        headers_arr  = []
         {
             'accept'          => 'text/html,application/xhtml+xml,application' +
                 '/xml;q=0.9,*/*;q=0.8',
@@ -168,7 +166,12 @@ class Parser
             'user-agent' => @opts.user_agent || '',
             'referer'    => @url,
             'pragma'     => 'no-cache'
+        }.each {
+            |k,v|
+            headers_arr << Element::Header.new( @url, { k => v } )
         }
+
+        return headers_arr
     end
 
     # TODO: Add support for radio buttons.
