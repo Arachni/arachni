@@ -9,8 +9,8 @@
 =end
 
 module Arachni
-module Reports    
-    
+module Reports
+
 #
 # Default report.
 #
@@ -24,10 +24,10 @@ module Reports
 # @version: 0.2
 #
 class Stdout < Arachni::Report::Base
-    
+
     # register us with the system
     include Arachni::Report::Registrar
-    
+
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
@@ -36,18 +36,20 @@ class Stdout < Arachni::Report::Base
     def initialize( audit_store, options = nil, outfile = nil )
         @audit_store = audit_store
     end
-    
+
     #
     # REQUIRED
     #
     # Use it to run your report.
     #
     def run( )
-        
+
+        print_line( "\n" )
+        print_line( "=" * 80 )
+        print_line( "\n" )
         print_ok( 'Web Application Security Report - Arachni Framework' )
         print_line
         print_info( 'Report generated on: ' + Time.now.to_s )
-        print_line
         print_info( 'Report false positives: ' + REPORT_FP )
         print_line
         print_ok( 'System settings:' )
@@ -70,7 +72,7 @@ class Stdout < Arachni::Report::Base
         print_status( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
         print_line
         print_status( 'Filters: ' )
-        
+
         if @audit_store.options['exclude']
             print_info( "  Exclude:" )
             @audit_store.options['exclude'].each {
@@ -78,7 +80,7 @@ class Stdout < Arachni::Report::Base
                 print_info( '    ' + ex )
             }
         end
-        
+
         if @audit_store.options['include']
             print_info( "  Include:" )
             @audit_store.options['include'].each {
@@ -103,19 +105,19 @@ class Stdout < Arachni::Report::Base
                 print_info( "  #{cookie[0]} = #{cookie[1]}" )
             }
         end
-        
+
         print_line
         print_info( '===========================' )
         print_line
         print_ok( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
         print_line
-        
+
         @audit_store.vulns.each {
             |vuln|
-            
+
             print_ok( vuln.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
-            
+
             print_info( 'URL:      ' + vuln.url )
             print_info( 'Elements: ' + vuln.elem )
             print_info( 'Variable: ' + vuln.var )
@@ -129,16 +131,16 @@ class Stdout < Arachni::Report::Base
                 |ref|
                 print_info( '  ' + ref[0] + ' - ' + ref[1] )
             }
-            
+
             print_info_variations( vuln )
-            
+
             print_line
         }
-        
+
         print_line( "\n" )
 
     end
-    
+
     #
     # REQUIRED
     #
@@ -152,7 +154,7 @@ class Stdout < Arachni::Report::Base
             :version        => '0.2',
         }
     end
-    
+
     def print_info_variations( vuln )
         print_line
         print_status( 'Variations' )
@@ -165,11 +167,11 @@ class Stdout < Arachni::Report::Base
             print_info( 'Injected value:     ' + var['injected'] )
             print_info( 'Regular expression: ' + var['regexp'].to_s )
             print_info( 'Matched string:     ' + var['regexp_match'] )
-            
+
             print_line
         }
     end
-    
+
 end
 
 end
