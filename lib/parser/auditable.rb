@@ -1,6 +1,7 @@
 module Arachni
 
 require Arachni::Options.instance.dir['lib'] + 'module/output'
+require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
 
 module Element
 

@@ -8,8 +8,6 @@
 
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
-
 module Arachni
 module Module
 
