@@ -12,7 +12,7 @@ End-users should check out the links bellow.
 
 
 # Arachni - Web Application Security Scanner Framework
-**Version**:     0.2<br/>
+**Version**:     0.2.1<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
