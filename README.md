@@ -17,8 +17,8 @@ End-users should check out the links bellow.
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
 **Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
-**Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)
-**Copyright**:    2010
+**Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)<br/>
+**Copyright**:    2010<br/>
 **License**:      [GNU General Public License v2](file.LICENSE.html)
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
