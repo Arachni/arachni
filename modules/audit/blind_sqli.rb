@@ -78,7 +78,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
         return if( __audited? )
 
-        if( @page.query_vars.empty? )
+        if( !@page.query_vars || @page.query_vars.empty? )
             print_status( 'Nothing to audit on current page, skipping...' )
             return
         end
