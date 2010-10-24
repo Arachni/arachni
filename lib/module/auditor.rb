@@ -27,11 +27,6 @@ module Module
 module Auditor
 
     #
-    # holds audit identifiers
-    #
-    @@audited ||= []
-
-    #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
     #
