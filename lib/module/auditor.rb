@@ -211,7 +211,7 @@ module Auditor
     #
     # Audits Auditalble HTML/HTTP elements
     #
-    # @param  [Arachni::Element::Auditable]  elements    auditable elements to audit
+    # @param  [Array<Arachni::Element::Auditable>]  elements    auditable elements to audit
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
