@@ -90,7 +90,7 @@ class Auditable
     # Audits all the selfs found in the page.
     #
     # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
+    # @param  [Hash]    opts           options as described in {Arachni::Module::Auditor#OPTIONS}
     # @param  [Block]   &block         block to be passed the:
     #                                   * HTTP response
     #                                   * name of the input vector
