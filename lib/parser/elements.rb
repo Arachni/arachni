@@ -12,6 +12,14 @@ module Arachni
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/auditable'
 
+class Parser
+
+module Element
+
+#
+# Base element class.
+#
+# Should be extended/implemented by all HTML/HTTP modules.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -20,36 +28,84 @@ require opts.dir['lib'] + 'parser/auditable'
 #
 # @abstract
 #
-class Parser
-
-module Element
-
 class Base < Arachni::Element::Auditable
 
+    #
+    # The URL of the page that owns the element.
+    #
+    # @return  [String]
+    #
     attr_reader :url
+
+    #
+    # The url to which the element points and should be audited against.
+    #
+    # Ex. 'href' for links, 'action' for forms, etc.
+    #
+    # @return  [String]
+    #
     attr_reader :action
 
+    #
+    # Relatively 'raw' hash holding the element's attributes, values, etc.
+    #
+    # @return  [Hash]
+    #
     attr_reader :raw
 
+    #
+    # Method of the element.
+    #
+    # Should represent a method in {Arachni::Module::HTTP}.
+    #
+    # Ex. get, post, cookie, header
+    #
+    # @see Arachni::Module::HTTP
+    #
+    # @return [String]
+    #
     attr_reader :method
 
+    #
+    # Initialize the element.
+    #
+    # @param    [String]  url     {#url}
+    # @param    [Hash]    raw     {#raw}
+    #
     def initialize( url, raw = {} )
         @raw   = raw.dup
         @url   = url.dup
     end
 
+    #
+    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
+    # the object via {Arachni::Module::HTTP}.
+    #
+    # @param    [String]    url
+    # @param    [Hash]      opts
+    #
     def http( url, opts )
     end
 
-
+    #
+    # Must provide a string uniquely identifying self.
+    #
+    # @return  [String]
+    #
     def id
         return @raw.to_s
     end
 
+    #
+    # Must provide a simple hash representation of self
+    #
     def simple
 
     end
 
+    #
+    # Must provide the element type, one of {Arachni::Module::Auditor::Element}.
+    #
     def type
 
     end

@@ -8,8 +8,19 @@
 
 =end
 
+#
+# Overloads the {Object} class providing a deep_clone() method
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+#
 class Object
 
+    #
+    # Deep-clones self using a Marshal dump-load.
+    #
     def deep_clone
         return Marshal.load( Marshal.dump( self  ) )
     end

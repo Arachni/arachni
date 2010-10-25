@@ -8,8 +8,39 @@
 
 =end
 
+#
+# Overloads the {String} class.
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+#
 class String
 
+    #
+    # Gets the reverse diff between self and str on a word level.
+    #
+    #
+    #   self = <<END
+    #   This is the first test.
+    #   Not really sure what else to put here...
+    #   END
+    #
+    #   str = <<END
+    #   This is the second test.
+    #   Not really sure what else to put here...
+    #   Boo-Yah!
+    #   END
+    #
+    #   self.rdiff( str )
+    #   # => "This is the test.\nNot really sure what else to put here...\n"
+    #
+    #
+    # @param [String] str
+    #
+    # @return [String]
+    #
     def rdiff( str )
 
         return self if self == str

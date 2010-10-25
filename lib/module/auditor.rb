@@ -140,9 +140,6 @@ module Auditor
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
     def audit( injection_str, opts = { }, &block )
 
         if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
@@ -155,31 +152,28 @@ module Auditor
 
         opts  = OPTIONS.merge( opts )
 
-        results = []
         opts[:elements].each {
             |elem|
 
             case elem
 
                 when  Element::LINK
-                    results << audit_links( injection_str, opts, &block )
+                    audit_links( injection_str, opts, &block )
 
                 when  Element::FORM
-                    results << audit_forms( injection_str, opts, &block )
+                    audit_forms( injection_str, opts, &block )
 
                 when  Element::COOKIE
-                    results << audit_cookies( injection_str, opts, &block )
+                    audit_cookies( injection_str, opts, &block )
 
                 when  Element::HEADER
-                    results << audit_headers( injection_str, opts, &block )
+                    audit_headers( injection_str, opts, &block )
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
 
             end
 
         }
-
-        return results.flatten
     end
 
     #
@@ -221,9 +215,6 @@ module Auditor
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
     # @see #method_missing
     #
     def audit_elems( elements, injection_str, opts = { }, &block )
@@ -234,17 +225,12 @@ module Auditor
 
         opts[:injected_orig] = injection_str
 
-        results = []
-
         elements.each{
             |elem|
             elem.auditor( self )
             elem.audit( injection_str, opts, &block )
         }
-
-        results
     end
-
 
 end
 

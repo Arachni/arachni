@@ -87,7 +87,7 @@ class Auditable
     end
 
     #
-    # Audits all the selfs found in the page.
+    # Audits self
     #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {Arachni::Module::Auditor#OPTIONS}
@@ -98,9 +98,6 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
     def audit( injection_str, opts = { }, &block )
 
         @@audited ||= []
@@ -109,8 +106,6 @@ class Auditable
         opts[:element]  = self.type
 
         opts[:injected_orig] = injection_str
-
-        results = []
 
         # if we don't have any auditable elements just return
         return if auditable.empty?
@@ -142,10 +137,9 @@ class Auditable
 
         audited( audit_id )
 
-        results
     end
 
-    # impersonate the auditor
+    # impersonate the auditor to the output methods
     def info
         @auditor ? @auditor.class.info : { :name => '' }
     end
