@@ -210,9 +210,9 @@ module Auditor
         results = []
 
         @page.headers.each{
-            |headers|
-            headers.auditor( self )
-            headers.audit( injection_str, opts, &block )
+            |header|
+            header.auditor( self )
+            header.audit( injection_str, opts, &block )
         }
 
         results
