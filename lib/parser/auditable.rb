@@ -113,6 +113,7 @@ class Auditable
         audit_id = audit_id( injection_str )
         return if !opts[:redundant] && audited?( audit_id )
 
+        results = []
         # iterate through all url vars and audit each one
         injection_sets( auditable, injection_str, opts ).each {
             |vars|

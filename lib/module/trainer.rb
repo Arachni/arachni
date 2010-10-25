@@ -153,12 +153,14 @@ class Trainer
                 url           = res[0].request.url
                 # prepare the page url
                 @parser.url = to_absolute( url )
-            rescue
+            rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-                # raise
+                # raise e
             end
 
-            @page.headers[:request] = res[0].request.headers
+            # ap  res[0].request.headers
+
+            # @page.headers    = res[0].request.headers
             @page.query_vars = @parser.link_vars( @page.url ).dup
 
         end
