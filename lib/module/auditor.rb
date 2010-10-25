@@ -123,7 +123,7 @@ module Auditor
     }
 
     #
-    # Provides easy access to all audit methods.
+    # Provides easy access to element auditing.
     #
     # If no elements have been specified in 'opts' it will
     # use the elements from the module's "self.info()" hash. <br/>
@@ -183,8 +183,35 @@ module Auditor
     end
 
     #
-    # Audits HTTP header fields.
+    # Provides the following methods:
+    # * audit_links()
+    # * audit_forms()
+    # * audit_cookies()
+    # * audit_headers()
     #
+    # Metaprogrammed to avoid redundant code while maintaining compatibility
+    # and method shortcuts.
+    #
+    # @see #audit_elems
+    #
+    def method_missing( sym, *args, &block )
+
+        elem = sym.to_s.gsub!( 'audit_', '@' )
+        elems = @page.instance_variable_get( elem )
+
+        if( elems )
+            raise ArgumentError.new( "Missing required argument 'injection_str'" +
+                " for audit_#{elem.gsub( '@', '' )}()." ) if( !args[0] )
+            audit_elems( elems, args[0], args[1] ? args[1]: {}, &block )
+        else
+            raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args )
+        end
+    end
+
+    #
+    # Audits Auditalble HTML/HTTP elements
+    #
+    # @param  [Arachni::Element::Auditable]  elements    auditable elements to audit
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   &block         block to be passed the:
@@ -197,9 +224,9 @@ module Auditor
     # @return  [Array<Hash>]  if no block has been provided the method
     #                           will return the positive results of the audit
     #
-    def audit_headers( injection_str, opts = { }, &block )
-
-        return [] if !Options.instance.audit_headers
+    # @see #method_missing
+    #
+    def audit_elems( elements, injection_str, opts = { }, &block )
 
         opts            = OPTIONS.merge( opts )
         opts[:element]  = Element::HEADER
@@ -209,115 +236,15 @@ module Auditor
 
         results = []
 
-        @page.headers.each{
-            |header|
-            header.auditor( self )
-            header.audit( injection_str, opts, &block )
+        elements.each{
+            |elem|
+            elem.auditor( self )
+            elem.audit( injection_str, opts, &block )
         }
 
         results
     end
 
-    #
-    # Audits all the links found in the page.
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
-    #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
-    def audit_links( injection_str, opts = { }, &block )
-
-        opts            = OPTIONS.merge( opts )
-        opts[:element]  = Element::LINK
-
-        opts[:injected_orig] = injection_str
-
-        results = []
-
-        @page.links.each{
-            |link|
-            link.auditor( self )
-            link.audit( injection_str, opts, &block )
-        }
-
-        results
-    end
-
-    #
-    # Audits all the forms found in the page.
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
-    #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
-    def audit_forms( injection_str, opts = { }, &block )
-
-        opts            = OPTIONS.merge( opts )
-        opts[:element]  = Element::FORM
-
-        opts[:injected_orig] = injection_str
-
-        results = []
-
-        @page.forms.each {
-            |form|
-            form.auditor( self )
-            form.audit( injection_str, opts, &block )
-
-        }
-
-        return results
-    end
-
-    #
-    # Audits page cookies.
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
-    #
-    # @return  [Array<Hash>]  if no block has been provided the method
-    #                           will return the positive results of the audit
-    #
-    def audit_cookies( injection_str, opts = { }, &block  )
-
-        opts            = OPTIONS.merge( opts )
-        opts[:element]  = Element::COOKIE
-        url             = @page.url
-
-        opts[:injected_orig] = injection_str
-
-        results = []
-
-        @page.cookies.each {
-            |cookie|
-            cookie.auditor( self )
-            cookie.audit( injection_str, opts, &block )
-        }
-
-        results
-    end
 
 end
 
