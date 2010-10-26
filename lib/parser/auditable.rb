@@ -100,6 +100,10 @@ class Auditable
     #
     def audit( injection_str, opts = { }, &block )
 
+        # respect user audit options
+        audit_opt = "@audit_#{self.type}s"
+        return if !Arachni::Options.instance.instance_variable_get( audit_opt )
+
         @@audited ||= []
 
         opts            = Arachni::Module::Auditor::OPTIONS.merge( opts )
