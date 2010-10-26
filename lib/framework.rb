@@ -392,6 +392,8 @@ class Framework
     # @param    [Page]    page
     #
     def run_mod( mod, page )
+        return if !run_mod?( mod, page )
+
         begin
 
             # instantiate the module
@@ -411,6 +413,34 @@ class Framework
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
         end
+    end
+
+    #
+    # Determines whether or not to run the module against the given page
+    # depending on which elements exist in the page, which elements the module
+    # is configured to audit and user options.
+    #
+    # @param    [Class]   mod      the module to run
+    # @param    [Page]    page
+    #
+    # @return   [Bool]
+    #
+    def run_mod?( mod, page )
+        return true if( !mod.info[:elements] || mod.info[:elements].empty? )
+
+        elems = {
+            Vulnerability::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
+            Vulnerability::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
+            Vulnerability::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
+            Vulnerability::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
+        }
+
+        elems.each_pair {
+            |elem, expr|
+            return true if mod.info[:elements].include?( elem ) && expr
+        }
+
+        return false
     end
 
     #
