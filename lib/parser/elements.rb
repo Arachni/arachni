@@ -35,7 +35,7 @@ class Base < Arachni::Element::Auditable
     #
     # @return  [String]
     #
-    attr_reader :url
+    attr_accessor :url
 
     #
     # The url to which the element points and should be audited against.
@@ -44,14 +44,16 @@ class Base < Arachni::Element::Auditable
     #
     # @return  [String]
     #
-    attr_reader :action
+    attr_accessor :action
+
+    attr_accessor :auditable
 
     #
     # Relatively 'raw' hash holding the element's attributes, values, etc.
     #
     # @return  [Hash]
     #
-    attr_reader :raw
+    attr_accessor :raw
 
     #
     # Method of the element.
@@ -64,7 +66,7 @@ class Base < Arachni::Element::Auditable
     #
     # @return [String]
     #
-    attr_reader :method
+    attr_accessor :method
 
     #
     # Initialize the element.
@@ -109,18 +111,16 @@ class Link < Base
 
         @action = @raw['href']
         @method = 'get'
+
+        @auditable = @raw['vars']
     end
 
     def http_request( url, opts )
         return @auditor.http.get( url, opts )
     end
 
-    def auditable
-        return @raw['vars']
-    end
-
     def simple
-        return { @action => auditable }
+        return { @action => @auditable }
     end
 
     def type
@@ -150,6 +150,8 @@ class Form < Base
 
         @action = @raw['attrs']['action']
         @method = @raw['attrs']['method']
+
+        @auditable = simple['auditable'] || {}
     end
 
     def http_request( url, opts )
@@ -189,10 +191,6 @@ class Form < Base
         else
             return @auditor.http.get( url, opts )
         end
-    end
-
-    def auditable
-        return simple['auditable'] || {}
     end
 
     def id
@@ -241,18 +239,16 @@ class Cookie < Base
 
         @action = @url
         @method = 'cookie'
+
+        @auditable = { @raw['name'] => @raw['value'] }
     end
 
     def http_request( url, opts )
         return @auditor.http.cookie( url, opts )
     end
 
-    def auditable
-        return { @raw['name'] => @raw['value'] }
-    end
-
     def simple
-        return auditable.dup
+        return @auditable.dup
     end
 
     def type
@@ -269,18 +265,16 @@ class Header < Base
 
         @action = @url
         @method = 'header'
+
+        @auditable = @raw
     end
 
     def http_request( url, opts )
         return @auditor.http.header( url, opts )
     end
 
-    def auditable
-        return @raw
-    end
-
     def simple
-        return auditable.dup
+        return @auditable.dup
     end
 
     def type
