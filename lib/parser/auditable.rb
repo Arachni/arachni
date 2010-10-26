@@ -182,6 +182,7 @@ class Auditable
     #
     def injection_sets( injection_str, opts = { } )
 
+        opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
         hash = auditable( )
 
         var_combo = []
@@ -225,6 +226,22 @@ class Auditable
     # impersonate the auditor to the output methods
     def info
         @auditor ? @auditor.class.info : { :name => '' }
+    end
+
+    #
+    # Returns a status string that explaining what's happening.
+    #
+    # The string contains the name of the input that is being audited
+    # the url and the type of the input (form, link, cookie...)
+    #
+    # @param  [String]  url  the url under audit
+    # @param  [Hash]  input
+    # @param  [Hash]  opts
+    #
+    # @return  [String]
+    #
+    def get_status_str( altered )
+        return "Auditing #{self.type} variable '" + altered + "' of " + @action
     end
 
 
@@ -397,22 +414,6 @@ class Auditable
     #
     def audited( audit_id )
         @@audited << audit_id
-    end
-
-    #
-    # Returns a status string that explaining what's happening.
-    #
-    # The string contains the name of the input that is being audited
-    # the url and the type of the input (form, link, cookie...)
-    #
-    # @param  [String]  url  the url under audit
-    # @param  [Hash]  input
-    # @param  [Hash]  opts
-    #
-    # @return  [String]
-    #
-    def get_status_str( altered )
-        return "Auditing #{self.type} variable '" + altered + "' of " + @action
     end
 
     #
