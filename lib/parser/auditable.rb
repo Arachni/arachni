@@ -190,10 +190,10 @@ class Auditable
         if( self.is_a? Arachni::Parser::Element::Form )
             # this is the original hash, in case the default values
             # are valid and present us with new attack vectors
-            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.deep_clone }
+            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.clone }
 
             duphash = hash.dup
-            elem = self.deep_clone
+            elem = self.clone
             elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
             var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
 
@@ -209,7 +209,7 @@ class Auditable
 
                 str  = format_str( injection_str, hash[k], format )
 
-                elem = self.deep_clone
+                elem = self.clone
                 elem.auditable = hash.merge( { k => str } )
                 var_combo << { k => elem }
             }
