@@ -87,12 +87,29 @@ class Auditable
     # @param    [String]    url
     # @param    [Hash]      opts
     #
+    # @see #submit
+    #
     def http_request( url, opts )
 
     end
 
     def auditable
 
+    end
+
+    #
+    # Submits self using {#http_request}.
+    #
+    # @param  [Hash]  opts
+    #
+    # @see #http_request
+    #
+    def submit( opts = {} )
+
+        opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
+        opts[:params]  = auditable( )
+
+        return http_request( @action, opts )
     end
 
     #
@@ -127,22 +144,24 @@ class Auditable
         return if !opts[:redundant] && audited?( audit_id )
 
         results = []
-        # iterate through all url vars and audit each one
-        injection_sets( auditable, injection_str, opts ).each {
-            |vars|
+        # iterate through all variation and audit each one
+        injection_sets( injection_str, opts ).each {
+            |variation|
 
-            # inform the user what we're auditing
-            print_status( get_status_str( vars, opts ) )
+            altered = variation.keys[0]
+            elem    = variation.values[0]
 
-            opts[:altered] = vars['altered']
-            opts[:params]  = vars['hash']
+            # inform the user about what we're auditing
+            print_status( get_status_str( altered ) )
 
-            # audit the url vars
-            req = http_request( @action, opts )
+            opts[:altered] = altered
+
+            # submit the element with the injection values
+            req = elem.submit( opts )
             return if !req
 
-            injected = vars['hash'][vars['altered']]
-            on_complete( req, injected, vars, opts, &block )
+            injected = elem.auditable[altered]
+            on_complete( req, injection_str, variation, opts, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -150,8 +169,58 @@ class Auditable
         }
 
         audited( audit_id )
-
     end
+
+    #
+    # Injectes the injecton_str in self's values according to formatting options
+    # and returns an array of hashes in the form of:
+    #  <altered_variable>   => <new element>
+    #
+    # @param    [String]  injection_str  the string to inject
+    #
+    # @return    [Array]
+    #
+    def injection_sets( injection_str, opts = { } )
+
+        hash = auditable( )
+
+        var_combo = []
+        if( !hash || hash.size == 0 ) then return [] end
+
+        if( self.is_a? Arachni::Parser::Element::Form )
+            # this is the original hash, in case the default values
+            # are valid and present us with new attack vectors
+            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.deep_clone }
+
+            duphash = hash.dup
+            elem = self.deep_clone
+            elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
+            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
+
+        end
+
+        chash = hash.dup
+        hash.keys.each {
+            |k|
+
+            hash = Arachni::Module::KeyFiller.fill( hash )
+            opts[:format].each {
+                |format|
+
+                str  = format_str( injection_str, hash[k], format )
+
+                elem = self.deep_clone
+                elem.auditable = hash.merge( { k => str } )
+                var_combo << { k => elem }
+            }
+
+        }
+
+        print_debug_injection_set( var_combo, opts )
+
+        return var_combo
+    end
+
 
     # impersonate the auditor to the output methods
     def info
@@ -169,8 +238,8 @@ class Auditable
     #
     # @param  [Typhoeus::Request]  req
     # @param  [String]  injected_str
-    # @param  [Hash]  input  injection_sets() input set
-    # @param  [Hash]  opts  an updated hash of options
+    # @param  [Hash]    variation
+    # @param  [Hash]    opts           an updated hash of options
     # @param  [Block]   &block         block to be passed the:
     #                                   * HTTP response
     #                                   * name of the input vector
@@ -178,12 +247,15 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    def on_complete( req, injected_str, input, opts, &block )
+    def on_complete( req, injected_str, variation, opts, &block )
+
+        altered = variation.keys[0]
+        combo   = variation.values[0].auditable
 
         if( !opts[:async] )
 
             if( req && req.response )
-                block.call( req.response, input['altered'], opts )
+                block.call( req.response, altered, opts )
             end
 
             return
@@ -201,17 +273,18 @@ class Auditable
             end
 
             opts[:injected] = injected_str.to_s
-            opts[:combo]    = input
+            opts[:combo]    = combo
+
             # call the block, if there's one
             if block_given?
-                block.call( res, input['altered'], opts )
+                block.call( res, altered, opts )
                 next
             end
 
             next if !res.body
 
             # get matches
-            get_matches( input['altered'], res.dup, injected_str, opts )
+            get_matches( altered, res.dup, injected_str, opts )
         }
     end
 
@@ -338,69 +411,8 @@ class Auditable
     #
     # @return  [String]
     #
-    def get_status_str( input, opts )
-        return "Auditing #{self.type} variable '" +
-          input['altered'] + "' of " + @action
-    end
-
-    #
-    # Iterates through a hash setting each value to to_inj
-    # and returns an array of new hashes
-    #
-    # @param    [Hash]    hash    name=>value pairs
-    # @param    [String]    to_inj    the string to inject
-    #
-    # @return    [Array]
-    #
-    def injection_sets( hash, injection_str, opts = { } )
-
-        var_combo = []
-        if( !hash || hash.size == 0 ) then return [] end
-
-        if( self.is_a? Arachni::Parser::Element::Form )
-            # this is the original hash, in case the default values
-            # are valid and present us with new attack vectors
-            as_is = Hash.new( )
-            as_is['altered'] = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
-            as_is['hash'] = hash.dup
-
-            as_is['hash'].keys.each {
-                |k|
-                if( !as_is['hash'][k] ) then as_is['hash'][k] = '' end
-            }
-            var_combo << as_is
-
-            duphash = hash.dup
-            arachni_defaults = Hash.new
-            arachni_defaults['hash'] = hash.dup
-            arachni_defaults['altered'] = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
-            arachni_defaults['hash'] = Arachni::Module::KeyFiller.fill( duphash )
-            var_combo << arachni_defaults
-
-        end
-
-        chash = hash.dup
-        hash.keys.each {
-            |k|
-
-            hash = Arachni::Module::KeyFiller.fill( hash )
-            opts[:format].each {
-                |format|
-
-                str  = format_str( injection_str, hash[k], format )
-
-                var_combo << {
-                    'altered' => k,
-                    'hash'    => hash.merge( { k => str } )
-                }
-
-            }
-
-        }
-
-        print_debug_injection_set( var_combo, opts )
-
-        return var_combo
+    def get_status_str( altered )
+        return "Auditing #{self.type} variable '" + altered + "' of " + @action
     end
 
     #
@@ -470,6 +482,7 @@ class Auditable
     end
 
     def print_debug_combos( combos )
+
         print_debug( )
         print_debug( 'Prepared combinations:' )
         print_debug('|' )
@@ -477,11 +490,15 @@ class Auditable
         combos.each{
           |set|
 
+          altered = set.keys[0]
+          combo   = set.values[0].auditable
+
+
           print_debug( '|' )
-          print_debug( "|--> Auditing: " + set['altered'] )
+          print_debug( "|--> Auditing: " + altered )
           print_debug( "|--> Combo: " )
 
-          set['hash'].each{
+          combo.each {
               |combo|
               print_debug( "|------> " + combo.to_s )
           }
