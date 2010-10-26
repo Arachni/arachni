@@ -1,6 +1,15 @@
 
 # ChangeLog
 
+## Version 0.2.1
+- Major performance improvements (approx. 4 times faster than v0.2)(YMMV)
+- Major system refactoring and code clean-up
+- Major module API refactoring providing even more flexibility regarding element auditing and manipulation
+- Integration with the Metasploit Framework via:
+   - ArachniMetareport, an Arachni report specifically designed to provide WebApp context to the [Metasploit](http://www.metasploit.com/) framework.
+   - Arachni plug-in for the [Metasploit](http://www.metasploit.com/) framework, used to load the ArachniMetareport in order to provide advanced automated and manual exploitation of WebApp vulnerabilities.
+   - Advanced generic WebApp exploit modules for the [Metasploit](http://www.metasploit.com/) framework, utilized either manually or automatically by the Arachni MSF plug-in.
+
 ## Version 0.2
 
 - Improved output.

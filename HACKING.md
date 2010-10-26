@@ -1,6 +1,6 @@
 # Hacking the Framework
 
-This file contains some brief instructions on contributing to Arachni.    
+This file contains some brief instructions on contributing to Arachni.
 
 ## Code Style
 In order to maintain consistency and keep the code pretty you should
@@ -35,7 +35,7 @@ It is unlikely that you will need it, but if you do, use
 You are provided with pre-configured wrapper ({Arachni::Module::Base#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
 
 Take a look in the tutorial module to see what you get: {Arachni::Modules::Audit::SimpleRFI}
-    
+
 The base module will also give you some insights: {Arachni::Module::Base}
 
 If you absolutely have to bypass Arachni's facilities you must obey the
@@ -46,14 +46,14 @@ run-time settings in {Arachni::Options}.
 Arachni provides you with examples for the usual types of modules.
 
 This is your main guide: {Arachni::Modules::Audit::SimpleRFI}
-    
+
 This covers most of the usual tasks when writing a module.
 It lets Arachni do all the work.
 
 For something more elaborate look in:<br/>
 - {Arachni::Modules::Audit::ResponseSplitting}<br/>
 - {Arachni::Modules::Audit::SQLInjection}
-    
+
 These modules do their own vulnerability checking and logging.
 
 If you want to create coupled modules take a look in:<br/>
@@ -72,10 +72,10 @@ One last note.
 You're probably going to be working with large arrays of strings,
 either regular expressions or strings to inject to the webapp,
 so it's better to keep them in an external file under:
-    modules/<modname>/
+    modules/<modtype>/<modname>/
 
-Use "{Arachni::Module::Base#get_data_file}`( filename ){ |line| }`" to get the file line by line.<br/>
-You just pass the filename (no path), `get_data_file()` will take care of the rest. 
+Use "{Arachni::Module::Utilities#read_file}`( filename ){ |line| }`" to get the file line by line.<br/>
+You just pass the filename (no path), `read_file()` will take care of the rest.
 
 This will make the strings easier to update and keep your modules smaller.
 
@@ -97,7 +97,7 @@ you will have to take care of that yourself.
 However, do provide an appropriate default `outfile` value in `initialize()`.
 
 Other than that you can do whatever you want, you have all of Ruby's
-power to work with. 
+power to work with.
 
 
 ## Licensing
