@@ -22,7 +22,7 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -83,6 +83,13 @@ class BlindSQLInjection < Arachni::Module::Base
             return
         end
 
+        # get the link object that fits the URL of the page
+        # this will be the one to audit
+        @page.links.each {
+            |link|
+            @__candidate = link if link.action == @page.url
+        }
+
         # let's get a fresh rendering of the page to assist us with
         # irrelevant dynamic content elimination (banners, ads, etc...)
         opts = {}
@@ -129,15 +136,29 @@ class BlindSQLInjection < Arachni::Module::Base
         @__bad_chars.each {
             |str|
 
-            audit( str, @__opts ) {
-                |res, var, opts|
+            # get injection variations that will hopefully cause an internal/silent
+            # SQL error
+            @__candidate.injection_sets( str, @__opts ).each {
+                |variation|
 
-                next if !res || !res.body
-                @__html_bad[var] ||= res.body.clone
+                # the altered link variable
+                altered = variation.keys[0]
+                # auditable link object
+                link    = variation.values[0]
+
+                print_status( @__candidate.get_status_str( altered ) )
+
+                # register us as the auditor
+                link.auditor( self )
+                # submit the link and get the response
+                res = link.submit( @__opts ).response
+
+                @__html_bad[altered] ||= res.body.clone
 
                 # remove context-irrelevant dynamic content like banners and such
                 # from the error page
-                @__html_bad[var] = @__html_bad[var].rdiff( res.body.clone )
+                @__html_bad[altered] = @__html_bad[altered].rdiff( res.body.clone )
+
             }
         }
 
@@ -155,17 +176,27 @@ class BlindSQLInjection < Arachni::Module::Base
             # prepare the statement with combinations of quote characters
             str = @__injection.gsub( '%q%', quote )
 
-            # inject the statement
-            audit( str, @__opts ) {
-                |res, var, opts|
+            # get injection variations that will hopefully not break anything
+            @__candidate.injection_sets( str, @__opts ).each {
+                |variation|
 
-                @__html_good[var] ||= []
+                # the altered link variable
+                altered = variation.keys[0]
+                # auditable link object
+                link    = variation.values[0]
+
+                # register us as the auditor
+                link.auditor( self )
+
+                # submit the link and get the response
+                res = link.submit( @__opts ).response
+
+                @__html_good[altered] ||= []
 
                 # save the response for later analysis
-                @__html_good[var] << {
+                @__html_good[altered] << {
                     'str'  => str,
-                    'res'  => res,
-                    'opts' => opts
+                    'res'  => res
                 }
 
             }
@@ -179,7 +210,7 @@ class BlindSQLInjection < Arachni::Module::Base
             |key|
             @__html_good[key].each {
                 |res|
-                __check( res['str'], res['res'], key, res['opts'] )
+                __check( res['str'], res['res'], key )
             }
         }
     end
@@ -190,9 +221,8 @@ class BlindSQLInjection < Arachni::Module::Base
     # @param  [String]  str  the string that unveiled the vulnerability
     # @param  [Typhoeus::Response]
     # @param  [String]  var   the vulnerable variable
-    # @param  [Hash]    opts  the options passed to the {#audit} block
     #
-    def __check( str, res, var, opts )
+    def __check( str, res, var )
 
         # if one of the injections gives the same results as the
         # original page then a blind SQL injection exists
@@ -200,7 +230,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
         if( check == @__content && @__html_bad[var] != check &&
             !@http.custom_404?( res.body ) )
-            __log_results( opts, var, res, str )
+            __log_results( var, res, str )
         end
 
     end
@@ -235,7 +265,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
     private
 
-    def __log_results( opts, var, res, str )
+    def __log_results( var, res, str )
 
         url = res.effective_url
         @results << Vulnerability.new( {
@@ -245,7 +275,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 :id           => str,
                 :regexp       => 'n/a',
                 :regexp_match => 'n/a',
-                :elem         => opts[:element],
+                :elem         => Vulnerability::Element::LINK,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
@@ -254,7 +284,7 @@ class BlindSQLInjection < Arachni::Module::Base
             }.merge( self.class.info )
         )
 
-        print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
+        print_ok( "In #{Vulnerability::Element::LINK} var '#{var}' ( #{url} )" )
 
         # register our results with the system
         register_results( @results )
