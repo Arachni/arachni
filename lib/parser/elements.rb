@@ -157,33 +157,33 @@ class Form < Base
     def http_request( url, opts )
 
 
-        # params   = opts[:params]
-        # altered  = opts[:altered]
-        #
-        # curr_opts = opts.dup
-        # if( altered == FORM_VALUES_ORIGINAL )
-        #     ap orig_id = audit_id( FORM_VALUES_ORIGINAL )
-        #
-        #     return if !opts[:redundant] && audited?( orig_id )
-        #     audited( orig_id )
-        #
-        #     print_debug( 'Submitting form with original values;' +
-        #         ' overriding trainer option.' )
-        #     opts[:train] = true
-        #     print_debug_trainer( opts )
-        # end
-        #
-        # if( altered == FORM_VALUES_SAMPLE )
-        #     sample_id = audit_id( FORM_VALUES_SAMPLE )
-        #
-        #     return if !opts[:redundant] && audited?( sample_id )
-        #     audited( sample_id )
-        #
-        #     print_debug( 'Submitting form with sample values;' +
-        #         ' overriding trainer option.' )
-        #     opts[:train] = true
-        #     print_debug_trainer( opts )
-        # end
+        params   = opts[:params]
+        altered  = opts[:altered]
+
+        curr_opts = opts.dup
+        if( altered == FORM_VALUES_ORIGINAL )
+            orig_id = audit_id( FORM_VALUES_ORIGINAL )
+
+            return if !opts[:redundant] && audited?( orig_id )
+            audited( orig_id )
+
+            print_debug( 'Submitting form with original values;' +
+                ' overriding trainer option.' )
+            opts[:train] = true
+            print_debug_trainer( opts )
+        end
+
+        if( altered == FORM_VALUES_SAMPLE )
+            sample_id = audit_id( FORM_VALUES_SAMPLE )
+
+            return if !opts[:redundant] && audited?( sample_id )
+            audited( sample_id )
+
+            print_debug( 'Submitting form with sample values;' +
+                ' overriding trainer option.' )
+            opts[:train] = true
+            print_debug_trainer( opts )
+        end
 
 
         if( @method.downcase != 'get' )
