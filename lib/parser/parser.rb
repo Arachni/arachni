@@ -104,10 +104,8 @@ class Parser
 
         end
 
-        if @opts.audit_cookies
-            cookies_arr << cookies( headers['set-cookie'].to_s )
-            cookies_arr.flatten!.uniq!
-        end
+        cookies_arr << cookies( headers['set-cookie'].to_s )
+        cookies_arr.flatten!.uniq!
 
         return Page.new( {
             :url         => url,
