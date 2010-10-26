@@ -78,6 +78,15 @@ class Auditable
         @auditor = auditor
     end
 
+    #
+    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
+    # the object via {Arachni::Module::HTTP}.
+    #
+    # Must be implemented by the extending class.
+    #
+    # @param    [String]    url
+    # @param    [Hash]      opts
+    #
     def http_request( url, opts )
 
     end
@@ -333,7 +342,6 @@ class Auditable
         return "Auditing #{self.type} variable '" +
           input['altered'] + "' of " + @action
     end
-
 
     #
     # Iterates through a hash setting each value to to_inj

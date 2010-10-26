@@ -78,16 +78,6 @@ class Base < Arachni::Element::Auditable
     end
 
     #
-    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
-    # the object via {Arachni::Module::HTTP}.
-    #
-    # @param    [String]    url
-    # @param    [Hash]      opts
-    #
-    def http( url, opts )
-    end
-
-    #
     # Must provide a string uniquely identifying self.
     #
     # @return  [String]
