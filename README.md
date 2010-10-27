@@ -319,10 +319,15 @@ Still, this can be an invaluable asset to Fuzzer modules.
                                   (Default: http)
 
 
-### Example
+### Examples
 
-In the following example all modules will be run against <i>http://test.com</i>
-, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
+As of v0.2.1 you can simply run Arachni like so:
+
+    $ ./arachni.rb http://test.com
+
+which will load all modules and audit all forms, links and cookies.
+
+In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
     $ ./arachni.rb -gpcfv --mods=* http://test.com --repsave=test.com
@@ -335,6 +340,7 @@ or any other report type as shown by:
 
     $ ./arachni.rb --lsrep
 
+For a full explenation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
 ## Requirements
 
