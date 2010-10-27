@@ -81,11 +81,14 @@ class CLI
         # instantiate the big-boy!
         @arachni = Arachni::Framework.new( @opts  )
 
+
         # echo the banner
         banner( )
 
-        # work on the user supplied arguments
-        parse_opts( )
+        exception_jail {
+            # work on the user supplied arguments
+            parse_opts( )
+        }
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
@@ -202,6 +205,46 @@ class CLI
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     #
     def parse_opts(  )
+
+        if !@opts.repload
+
+            if( !@opts.mods || @opts.mods.empty? )
+                print_info( "No modules were specified." )
+                print_info( " -> Will run all mods." )
+
+                @opts.mods = ['*']
+            end
+
+            if( !@opts.audit_links &&
+                !@opts.audit_forms &&
+                !@opts.audit_cookies &&
+                !@opts.audit_headers
+              )
+                print_info( "No audit options were specified." )
+                print_info( " -> Will audit links, forms and cookies." )
+
+                @opts.audit_links   = true
+                @opts.audit_forms   = true
+                @opts.audit_cookies = true
+            end
+
+            # Check for missing url
+            if( !@opts.url )
+                print_error( "Missing url argument." )
+                exit 0
+            end
+
+            #
+            # Try and parse the URL.
+            #
+            begin
+                require 'uri'
+                @opts.url = URI.parse( URI.encode( @opts.url ) )
+            rescue
+                raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
+            end
+
+        end
 
         @opts.to_h.each {
             |opt, arg|

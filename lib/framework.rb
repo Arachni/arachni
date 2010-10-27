@@ -103,13 +103,6 @@ class Framework
     #
     def run
 
-        # pass all exceptions to the UI
-        begin
-            validate_opts
-        rescue
-            raise
-        end
-
         @opts.start_datetime = Time.now
 
         # catch exceptions so that if something breaks down or the user opted to
@@ -448,6 +441,14 @@ class Framework
     #
     def parse_opts(  )
 
+        # make sure that the provided cookie-jar file exists
+        if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
+            raise( Arachni::Exceptions::NoCookieJar,
+                'Cookie-jar \'' + @opts.cookie_jar +
+                        '\' doesn\'t exist.' )
+        end
+
+
         @opts.to_h.each do |opt, arg|
 
             case opt.to_s
@@ -466,73 +467,6 @@ class Framework
                         Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
 
             end
-        end
-
-    end
-
-    #
-    # Validates options
-    #
-    # If something is out of order an exception will be raised.
-    #
-    def validate_opts
-
-        if @opts.repload then return end
-
-        if( !@opts.audit_links &&
-            !@opts.audit_forms &&
-            !@opts.audit_cookies &&
-            !@opts.audit_headers
-          )
-            raise( Arachni::Exceptions::NoAuditOpts,
-                "No audit options were specified." )
-        end
-
-        #
-        # Ensure that the user selected some modules
-        #
-        if( !@opts.mods )
-            raise( Arachni::Exceptions::NoMods, "No modules were specified." )
-        end
-
-        # Check for missing url
-        if( @opts.url == nil )
-            raise( Arachni::Exceptions::NoURL, "Missing url argument." )
-        end
-
-        #
-        # Try and parse the URL.
-        #
-        begin
-            require 'uri'
-            @opts.url = URI.parse( URI.encode( @opts.url ) )
-        rescue
-            raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
-        end
-
-
-#        #
-#        # If proxy type is socks include socksify
-#        # and let it proxy all tcp connections for us.
-#        #
-#        # Then nil out the proxy opts or else they're going to be
-#        # passed as an http proxy to Anemone::HTTP.refresh_connection()
-#        #
-#        if @opts[:proxy_type] == 'socks'
-#            require 'socksify'
-#
-#            TCPSocket.socks_server = @opts[:proxy_addr]
-#            TCPSocket.socks_port = @opts[:proxy_port]
-#
-#            @opts[:proxy_addr] = nil
-#            @opts[:proxy_port] = nil
-#        end
-
-        # make sure that the provided cookie-jar file exists
-        if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
-            raise( Arachni::Exceptions::NoCookieJar,
-                'Cookie-jar \'' + @opts.cookie_jar +
-                        '\' doesn\'t exist.' )
         end
 
     end
