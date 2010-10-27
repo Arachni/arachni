@@ -118,6 +118,9 @@ class Framework
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
+        # make sure this is disabled or it'll break report output
+        @@only_positives = false
+
         # run reports
         if( @opts.reports )
             exception_jail{ @reports.run( audit_store ) }
