@@ -84,7 +84,7 @@ class Framework
         @modules = Arachni::Module::Registry.new( @opts )
         @reports = Arachni::Report::Registry.new( @opts )
 
-        parse_opts( )
+        prepare_cookie_jar( )
         prepare_user_agent( )
 
         @spider   = Arachni::Spider.new( @opts )
@@ -313,6 +313,20 @@ class Framework
 
     end
 
+    def prepare_cookie_jar(  )
+        return if !@opts.cookie_jar
+
+        # make sure that the provided cookie-jar file exists
+        if !File.exist?( @opts.cookie_jar )
+            raise( Arachni::Exceptions::NoCookieJar,
+                'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
+        else
+            @opts.cookies = Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
+        end
+
+    end
+
+
     #
     # Takes care of page audit and module execution
     #
@@ -434,41 +448,6 @@ class Framework
         }
 
         return false
-    end
-
-    #
-    # Takes care of some options that need slight processing
-    #
-    def parse_opts(  )
-
-        # make sure that the provided cookie-jar file exists
-        if @opts.cookie_jar && !File.exist?( @opts.cookie_jar )
-            raise( Arachni::Exceptions::NoCookieJar,
-                'Cookie-jar \'' + @opts.cookie_jar +
-                        '\' doesn\'t exist.' )
-        end
-
-
-        @opts.to_h.each do |opt, arg|
-
-            case opt.to_s
-
-                when 'arachni_verbose'
-                    verbose!
-
-                when 'debug'
-                    debug!
-
-                when 'only_positives'
-                    only_positives!
-
-                when 'cookie_jar'
-                    @opts.cookies =
-                        Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
-
-            end
-        end
-
     end
 
     def lsmod_match?( path )
