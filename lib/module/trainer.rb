@@ -59,7 +59,7 @@ class Trainer
 
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-            raise e
+            # raise e
         end
 
     end
