@@ -9,11 +9,11 @@
 =end
 
 module Arachni
-    
+
 require Options.instance.dir['reports'] + 'metareport/arachni_metareport.rb'
-    
-module Reports    
-    
+
+module Reports
+
 #
 # Metareport
 #
@@ -25,10 +25,10 @@ module Reports
 # @version: 0.1
 #
 class Metareport < Arachni::Report::Base
-    
+
     # register us with the system
     include Arachni::Report::Registrar
-    
+
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]        options    options passed to the report
@@ -38,9 +38,9 @@ class Metareport < Arachni::Report::Base
         @audit_store = audit_store
         @outfile     = outfile + '.msf'
     end
-    
+
     def run( )
-        
+
         print_line( )
         print_status( 'Creating file for the Metasploit framework...' )
 
@@ -58,23 +58,24 @@ class Metareport < Arachni::Report::Base
                 else
                     url = variation['url']
                 end
-                
+
                 if( vuln.elem == 'cookie' || vuln.elem == 'header' )
                     method = vuln.elem
                 end
-                
+
                 # pp vuln
-                
-                params = variation['opts'][:combo]['hash']
+                # pp variation['opts']
+
+                params = variation['opts'][:combo]
                 params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
-                
+
                 params[vuln.var] = URI.encode( params[vuln.var], ';' )
-                
+
                 cookies = sub_cookie( variation['headers']['request']['cookie'], params )
                 variation['headers']['request']['cookie'] = cookies.dup
-                
+
                 # ap sub_cookie( variation['headers']['request']['cookie'], params )
-                
+
                 msf << ArachniMetareport.new( {
                     :host   => URI( url ).host,
                     :port   => URI( url ).port,
@@ -94,9 +95,9 @@ class Metareport < Arachni::Report::Base
                     :exploit    => vuln.metasploitable
                 } )
             }
-            
+
         }
-        
+
         # pp msf
 
         outfile = File.new( @outfile, 'w')
@@ -104,7 +105,7 @@ class Metareport < Arachni::Report::Base
 
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
-    
+
     def sub_cookie( str, params )
         hash = {}
         str.split( ';' ).each {
@@ -112,10 +113,10 @@ class Metareport < Arachni::Report::Base
             k,v = cookie.split( '=', 2 )
             hash[k] = v
         }
-        
+
         return hash.merge( params ).map{ |k,v| "#{k}=#{v}" }.join( ';' )
     end
-    
+
     #
     # REQUIRED
     #
@@ -129,7 +130,7 @@ class Metareport < Arachni::Report::Base
             :version        => '0.1',
         }
     end
-    
+
 end
 
 end
