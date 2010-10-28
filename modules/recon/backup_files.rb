@@ -63,9 +63,6 @@ class BackupFiles < Arachni::Module::Base
             #
             # Test for the existance of the file + extension.
             #
-            # We're not worrying about its contents, the Trainer will
-            # analyze it and if it's HTML it'll extract any new attack vectors.
-            #
 
             file = ext % filename # Example: index.php.bak
             url  = path + file
@@ -166,7 +163,8 @@ class BackupFiles < Arachni::Module::Base
 
         print_status( "Checking for #{url}" )
 
-        req  = @http.get( url )
+        # force the Trainer to analyze it and if it's HTML it'll extract any new attack vectors.
+        req  = @http.get( url, :train => true )
         @@__audited << url
 
         return req

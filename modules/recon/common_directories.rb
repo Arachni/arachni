@@ -59,7 +59,7 @@ class CommonDirectories < Arachni::Module::Base
             next if @@__audited.include?( url )
             print_status( "Checking for #{url}" )
 
-            req  = @http.get( url )
+            req  = @http.get( url, :train => true )
             @@__audited << url
 
             req.on_complete {
