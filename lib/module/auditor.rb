@@ -191,9 +191,11 @@ module Auditor
     def method_missing( sym, *args, &block )
 
         elem = sym.to_s.gsub!( 'audit_', '@' )
+        raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args ) if !elem
+
         elems = @page.instance_variable_get( elem )
 
-        if( elems )
+        if( elems && elem )
             raise ArgumentError.new( "Missing required argument 'injection_str'" +
                 " for audit_#{elem.gsub( '@', '' )}()." ) if( !args[0] )
             audit_elems( elems, args[0], args[1] ? args[1]: {}, &block )
