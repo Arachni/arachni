@@ -301,7 +301,7 @@ class Auditable
             next if !res.body
 
             # get matches
-            get_matches( altered, res.dup, injected_str, opts )
+            get_matches( altered, res.dup, opts )
         }
     end
 
@@ -319,7 +319,7 @@ class Auditable
     #
     # @return  [Hash]
     #
-    def get_matches( var, res, injected_str, opts )
+    def get_matches( var, res, opts )
 
         elem       = opts[:element]
         match      = opts[:match]
@@ -347,7 +347,7 @@ class Auditable
             print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
 
             verified = match ? match : match_data
-            print_verbose( "Injected string:\t" + injected_str )
+            print_verbose( "Injected string:\t" + opts[:combo][var] )
             print_verbose( "Verified string:\t" + verified )
             print_verbose( "Matched regular expression: " + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
@@ -355,7 +355,7 @@ class Auditable
             res = {
                 :var          => var,
                 :url          => url,
-                :injected     => injected_str,
+                :injected     => opts[:combo][var],
                 :id           => match.to_s,
                 :regexp       => regexp.to_s,
                 :regexp_match => match_data,
