@@ -48,6 +48,8 @@ class Trainer
     #
     def add_response( res, redir = false )
 
+        return if res.code != 200
+
         begin
             url = res.effective_url
             url = URI( to_absolute( url ) )
