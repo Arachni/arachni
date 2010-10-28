@@ -44,26 +44,26 @@ class Eval < Arachni::Module::Base
 
         # code to inject
         @__injection_strs = []
-        
+
         # digits from a sha1 hash
         # the codes in @__injection_strs will tell the web app
         # to sum them and echo the result
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
-        
+
         # our results array
         @results = []
     end
 
     def prepare( )
-        
+
         @__opts = {}
-        
+
         # the sum of the 2 numbers as a string
         @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
         @__opts[:regexp]  = Regexp.new( @__opts[:match] )
-        @__opts[:format]  = OPTIONS[:format] << Format::SEMICOLON
-        
+        @__opts[:format]  = OPTIONS[:format] | [ Format::SEMICOLON ]
+
         # code to be injected to the webapp
         @__injection_strs = [
             "echo " + @__rand1 + "+" + @__rand2 + ";", # PHP
@@ -72,20 +72,20 @@ class Eval < Arachni::Module::Base
             "Response.Write\x28" +  @__rand1  + '+' + @__rand2 + "\x29", # ASP
             "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
-        
+
     end
-    
+
     def run( )
-        
+
         # iterate through the injection codes
         @__injection_strs.each {
             |str|
-            audit( str, @__opts )            
+            audit( str, @__opts )
         }
-        
+
     end
 
-    
+
     def self.info
         {
             :name           => 'Eval',
@@ -106,7 +106,7 @@ class Eval < Arachni::Module::Base
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
              },
             :targets        => { 'Generic' => 'all' },
-                
+
             :vulnerability   => {
                 :name        => %q{Code injection},
                 :description => %q{Code can be injected into the web application.},
