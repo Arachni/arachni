@@ -69,10 +69,11 @@ class Metareport < Arachni::Report::Base
                 params = variation['opts'][:combo]
                 params[vuln.var] = params[vuln.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
 
-                params[vuln.var] = URI.encode( params[vuln.var], ';' )
-
-                cookies = sub_cookie( variation['headers']['request']['cookie'], params )
-                variation['headers']['request']['cookie'] = cookies.dup
+                if method == 'cookie'
+                    params[vuln.var] = URI.encode( params[vuln.var], ';' )
+                    cookies = sub_cookie( variation['headers']['request']['cookie'], params )
+                    variation['headers']['request']['cookie'] = cookies.dup
+                end
 
                 # ap sub_cookie( variation['headers']['request']['cookie'], params )
 
