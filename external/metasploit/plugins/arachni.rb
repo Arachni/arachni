@@ -254,19 +254,19 @@ class Plugin::Arachni < Msf::Plugin
 			@vulns.uniq!
 
 			vuln_table = Rex::Ui::Text::Table.new(
-			   'Header'  => "Vulnerabilities",
-			   'Indent'  => 4,
-			   'Columns' => [
-				   "ID",
-				   "Host",
-				   "Path",
-				   "Name",
-				   "Description",
-				   "Method",
-				   "Params",
-				   "Exploit"
+			'Header'  => "Vulnerabilities",
+			'Indent'  => 4,
+			'Columns' => [
+				"ID",
+				"Host",
+				"Path",
+				"Name",
+				"Description",
+				"Method",
+				"Params",
+				"Exploit"
 				]
-		   )
+			)
 
 			indent = ""
 			@vulns.each_with_index do |vuln, idx|
@@ -308,7 +308,7 @@ class Plugin::Arachni < Msf::Plugin
 
 			if !vuln
 				print_error( "Invalid index: #{idx}" )
-				cmd_arachni_vulns
+				cmd_arachni_list_vulns
 				return
 			end
 
@@ -321,15 +321,18 @@ class Plugin::Arachni < Msf::Plugin
 				driver.run_single( "set #{k} #{v}" )
 			end
 
+			sploit = framework.modules.create( vuln[:exploit] )
+			driver.run_single( "set PAYLOAD #{payload( sploit, vuln )}" )
+
 			print_status( "Done!" )
 
 			payload_table = Rex::Ui::Text::Table.new(
-			   'Header'  => "Compatible payloads",
-			   'Indent'  => 4,
-			   'Columns' => [ "Name", "Description" ]
+			'Header'  => "Compatible payloads",
+			'Indent'  => 4,
+			'Columns' => [ "Name", "Description" ]
 			)
 
-			framework.modules.create( vuln[:exploit] ).compatible_payloads.each do |payload|
+			sploit.compatible_payloads.each do |payload|
 				payload_table << [ payload[0], payload[1].new.description ]
 			end
 
@@ -355,10 +358,10 @@ class Plugin::Arachni < Msf::Plugin
 			@exploits.uniq!
 
 			exploit_table = Rex::Ui::Text::Table.new(
-			   'Header'  => "Unique exploits",
-			   'Indent'  => 4,
-			   'Columns' => [
-				   "ID", "Exploit", "Description"
+			'Header'  => "Unique exploits",
+			'Indent'  => 4,
+			'Columns' => [
+				"ID", "Exploit", "Description"
 				]
 			)
 
@@ -396,10 +399,10 @@ class Plugin::Arachni < Msf::Plugin
 			sploit.datastore.merge!( prep_datastore( vuln ) )
 
 			sploit.exploit_simple(
-			   'Payload'        => payload( sploit, opts ),
-			   'LocalInput'     => opts[:quiet] ? nil : driver.input,
-			   'LocalOutput'    => opts[:quiet] ? nil : driver.output,
-			   'RunAsJob'       => false
+			'Payload'        => payload( sploit, opts ),
+			'LocalInput'     => opts[:quiet] ? nil : driver.input,
+			'LocalOutput'    => opts[:quiet] ? nil : driver.output,
+			'RunAsJob'       => false
 			)
 
 		end
@@ -472,9 +475,11 @@ class Plugin::Arachni < Msf::Plugin
 			datastore["RPORT"]   = cvuln[:port]
 			datastore["LHOST"]   = "127.0.0.1"
 			datastore["LPORT"]   = ( rand( 9999 ) + 5000 ).to_s
-			datastore["GET"]     = cvuln[:query]
 
-			if( cvuln[:method] == 'POST' )
+			case cvuln[:method]
+			when 'GET'
+				datastore["GET"]  = hash_to_query( cvuln[:params] )
+			when 'POST'
 				datastore["POST"] = hash_to_query( cvuln[:params] )
 			end
 
@@ -485,7 +490,7 @@ class Plugin::Arachni < Msf::Plugin
 			datastore["HEADERS"] = hash_to_query( headers, '::' )
 			datastore["PATH"]    = cvuln[:path]
 
-			return datastore
+			return datastore.dup
 		end
 
 		#
@@ -494,7 +499,7 @@ class Plugin::Arachni < Msf::Plugin
 		def hash_to_query( hash, glue = '&' )
 			return hash.to_a.map do |item|
 				next if !item[1]
-				"#{item[0]}=#{URI.encode(item[1])}"
+				"#{item[0]}=#{item[1]}"
 			end.reject do |i| !i end.join( glue )
 		end
 
@@ -516,8 +521,8 @@ class Plugin::Arachni < Msf::Plugin
 
 	def desc
 		%q{Provides an exploitation platform for web app vulnerabilities
-		 discovered by the Arachni WebApp Security Scaner Framework
-		 (http://github.com/Zapotek/arachni)}
+		discovered by the Arachni WebApp Security Scaner Framework
+		(http://github.com/Zapotek/arachni)}
 	end
 
 end
