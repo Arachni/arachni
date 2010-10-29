@@ -261,7 +261,6 @@ class Plugin::Arachni < Msf::Plugin
 				"Host",
 				"Path",
 				"Name",
-				"Description",
 				"Method",
 				"Params",
 				"Exploit"
@@ -272,8 +271,7 @@ class Plugin::Arachni < Msf::Plugin
 			@vulns.each_with_index do |vuln, idx|
 
 				vuln_table << [ idx + 1, vuln[:host], vuln[:path], vuln[:name],
-					vuln[:description], vuln[:method], vuln[:params].to_s,
-					vuln[:exploit] ]
+					vuln[:method], vuln[:params].to_s, vuln[:exploit] ]
 
 			end
 
