@@ -287,25 +287,25 @@ To convert a standard Arachni Framework Report (.afr) file to a Metareport (.afr
     Vulnerabilities
     ===============
 
-        ID  Host       Path                                    Name                   Description                                                       Method  Params                               Exploit
-        --  ----       ----                                    ----                   -----------                                                       ------  ------                               -------
-        1   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  A remote file inclusion vulnerability exists.                     COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        2   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  A remote file inclusion vulnerability exists.                     COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        3   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         Code can be injected into the web application.                    POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        4   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   The web application allows an attacker to execute OS commands.    POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        5   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   The web application allows an attacker to execute OS commands.    POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        6   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  A remote file inclusion vulnerability exists.                     POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        7   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  A remote file inclusion vulnerability exists.                     POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        8   127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         Code can be injected into the web application.                    GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
-        9   127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   The web application allows an attacker to execute OS commands.    GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        10  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   The web application allows an attacker to execute OS commands.    GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        11  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  A remote file inclusion vulnerability exists.                     GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        12  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  A remote file inclusion vulnerability exists.                     GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
-        13  127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         Code can be injected into the web application.                    COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
-        14  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   The web application allows an attacker to execute OS commands.    COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
-        15  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   The web application allows an attacker to execute OS commands.    COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
-        16  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  A remote file inclusion vulnerability exists.                     COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
-        17  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  A remote file inclusion vulnerability exists.                     COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        ID  Host       Path                                    Name                   Method  Params                               Exploit
+        --  ----       ----                                    ----                   ------  ------                               -------
+        1   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        2   127.0.0.1  /~zapotek/tests/trainer.php             Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        3   127.0.0.1  /~zapotek/tests/forms/eval.php          Code injection         POST    {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        4   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        5   127.0.0.1  /~zapotek/tests/forms/os_command.php    OS command injection   POST    {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        6   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        7   127.0.0.1  /~zapotek/tests/forms/rfi.php           Remote file inclusion  POST    {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        8   127.0.0.1  /~zapotek/tests/links/eval.php          Code injection         GET     {"eval"=>";XXinjectionXX"}           unix/webapp/arachni_php_eval
+        9   127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        10  127.0.0.1  /~zapotek/tests/links/os_command.php    OS command injection   GET     {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        11  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        12  127.0.0.1  /~zapotek/tests/links/rfi.php           Remote file inclusion  GET     {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
+        13  127.0.0.1  /~zapotek/tests/cookies/eval.php        Code injection         COOKIE  {"eval"=>"%3BXXinjectionXX"}         unix/webapp/arachni_php_eval
+        14  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX\x00"}  unix/webapp/arachni_exec
+        15  127.0.0.1  /~zapotek/tests/cookies/os_command.php  OS command injection   COOKIE  {"os_command"=>"XXinjectionXX"}      unix/webapp/arachni_exec
+        16  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX\x00"}         unix/webapp/arachni_php_include
+        17  127.0.0.1  /~zapotek/tests/cookies/rfi.php         Remote file inclusion  COOKIE  {"rfi"=>"XXinjectionXX"}             unix/webapp/arachni_php_include
 
     [*] Done!
     msf > arachni_manual 3
