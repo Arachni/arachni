@@ -319,23 +319,27 @@ class Plugin::Arachni < Msf::Plugin
 				driver.run_single( "set #{k} #{v}" )
 			end
 
-			sploit = framework.modules.create( vuln[:exploit] )
-			driver.run_single( "set PAYLOAD #{payload( sploit, vuln )}" )
-
 			print_status( "Done!" )
 
-			payload_table = Rex::Ui::Text::Table.new(
-			'Header'  => "Compatible payloads",
-			'Indent'  => 4,
-			'Columns' => [ "Name", "Description" ]
-			)
+			begin
 
-			sploit.compatible_payloads.each do |payload|
-				payload_table << [ payload[0], payload[1].new.description ]
+				sploit = framework.modules.create( vuln[:exploit] )
+				driver.run_single( "set PAYLOAD #{payload( sploit, vuln )}" )
+
+
+				payload_table = Rex::Ui::Text::Table.new(
+					'Header'  => "Compatible payloads",
+					'Indent'  => 4,
+					'Columns' => [ "Name", "Description" ]
+				)
+
+				sploit.compatible_payloads.each do |payload|
+					payload_table << [ payload[0], payload[1].new.description ]
+				end
+			rescue
+				print_line( "\n#{payload_table.to_s}\n" )
+				print_line( "Use: set PAYLOAD <name>" )
 			end
-
-			print_line( "\n#{payload_table.to_s}\n" )
-			print_line( "Use: set PAYLOAD <name>" )
 
 		end
 
@@ -474,12 +478,16 @@ class Plugin::Arachni < Msf::Plugin
 			datastore["LHOST"]   = "127.0.0.1"
 			datastore["LPORT"]   = ( rand( 9999 ) + 5000 ).to_s
 
+			datastore["SSL"]     = cvuln[:ssl]
+
 			case cvuln[:method]
 			when 'GET'
 				datastore["GET"]  = hash_to_query( cvuln[:params] )
 			when 'POST'
 				datastore["POST"] = hash_to_query( cvuln[:params] )
 			end
+
+			datastore["METHOD"]   = cvuln[:method]
 
 			datastore["COOKIES"]  = cvuln[:headers]['cookie']
 			headers = cvuln[:headers]
