@@ -119,6 +119,7 @@ class SQLInjection < Arachni::Module::Base
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
+                :metasploitable => 'unix/webapp/arachni_sqlmap'
             }
 
         }
@@ -159,6 +160,8 @@ class SQLInjection < Arachni::Module::Base
                 @results << Vulnerability.new( {
                         :var          => var,
                         :url          => url,
+                        :method       => res.request.method.to_s,
+                        :opts         => opts,
                         :injected     => injected,
                         :id           => id,
                         :regexp       => id_regex.to_s,

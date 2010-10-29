@@ -258,6 +258,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
+                :metasploitable => 'unix/webapp/arachni_sqlmap'
             }
 
         }
@@ -268,9 +269,21 @@ class BlindSQLInjection < Arachni::Module::Base
     def __log_results( var, res, str )
 
         url = res.effective_url
+
+        # since we bypassed the auditor completely we need to create
+        # our own opts hash and pass it to the Vulnerability class.
+        #
+        # this is only required for Metasploitable vulnerabilities
+        opts = {
+            :injected_orig => URI( @page.url ).query,
+            :combo         => @__candidate.auditable
+        }
+
         @results << Vulnerability.new( {
                 :var          => var,
                 :url          => url,
+                :method       => res.request.method.to_s,
+                :opts         => opts,
                 :injected     => str,
                 :id           => str,
                 :regexp       => 'n/a',
