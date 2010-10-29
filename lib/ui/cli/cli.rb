@@ -158,7 +158,7 @@ class CLI
         # runs the stdout report so that the user
         # can see what has been discovered thus far
         begin
-            print_vulns( @arachni.audit_store.deep_clone )
+            print_vulns( @arachni.audit_store( true ) )
         rescue Exception => e
             exception_jail{ raise e }
             exit 0

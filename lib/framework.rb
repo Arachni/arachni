@@ -121,9 +121,11 @@ class Framework
         # make sure this is disabled or it'll break report output
         @@only_positives = false
 
+        # refresh the audit store
+        audit_store( true )
         # run reports
         if( @opts.reports )
-            exception_jail{ @reports.run( audit_store ) }
+            exception_jail{ @reports.run( audit_store( ) ) }
         end
 
         # save the AuditStore in a file
@@ -177,18 +179,22 @@ class Framework
     #
     # @return    [AuditStore]
     #
-    def audit_store
+    def audit_store( fresh = false )
 
         # restore the original redundacy rules and their counters
         @opts.redundant = @orig_redundant
 
-        return AuditStore.new( {
-            :version  => VERSION,
-            :revision => REVISION,
-            :options  => @opts.to_h,
-            :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-            :vulns    => @modules.results( ).deep_clone
-         } )
+        if( !fresh && @store )
+            return @store
+        else
+            return @store = AuditStore.new( {
+                :version  => VERSION,
+                :revision => REVISION,
+                :options  => @opts.to_h,
+                :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
+                :vulns    => @modules.results( ).deep_clone
+            } )
+         end
     end
 
 
