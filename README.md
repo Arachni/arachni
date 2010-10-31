@@ -4,17 +4,19 @@
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
 **Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
-**Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)  
-**Copyright**:    2010    
-**License**:      [GNU General Public License v2](file.LICENSE.html)
+**Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)<br/>
+**Copyright**:    2010<br/>
+**License**:      [GNU General Public License v2](file.LICENSE.html)<br/>
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
+
+Kindly sponsored by: [![NopSec](http://zapotek.github.com/arachni/nopsec_logo.png)](http://www.nopsec.com)
 
 ## Synopsis
 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators evaluate the security of web applications.
- 
+
 {Arachni} is smart, it trains itself by learning from the HTTP responses it receives
 during the audit process.<br/>
 Unlike other scanners, Arachni takes into account the dynamic
@@ -41,7 +43,7 @@ Furthermore, they are encouraged to take full advantage of the Ruby language
 under a unified framework that will increase their productivity
 without stifling them or complicating their tasks.<br/>
 Basically, Arachni gives you the right tools for the job and gets the hell out of your way.
- 
+
 **2 Simplicity**<br/>
 Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
 From a user's or a module developer's point of view everything appears simple and straight-forward
@@ -76,8 +78,8 @@ However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exist
  - Pause/resume functionality.
     - Interrupts pause the system, the user then has the option to either resume or exit.
  - High performance asynchronous HTTP requests.
-  
- 
+
+
 ### Website Crawler ({Arachni::Spider})
 
 The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some slight modifications to accommodate extra features.
@@ -91,9 +93,9 @@ The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some
  - Adjustable depth limit.
  - Adjustable  link count limit.
  - Adjustable redirect limit.
- 
- 
- 
+
+
+
 ### HTML Analyzer ({Arachni::Analyzer})
 
 Can extract and analyze:
@@ -133,7 +135,7 @@ You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 
 
 You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
-And a more complex HTML report here: {Arachni::Reports::HTML} 
+And a more complex HTML report here: {Arachni::Reports::HTML}
 
 ### Trainer subsystem ({Arachni::Module::Trainer})
 
@@ -153,26 +155,26 @@ Still, this can be an invaluable asset to Fuzzer modules.
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
-                
+
        Website:       http://github.com/Zapotek/arachni
        Documentation: http://github.com/Zapotek/arachni/wiki
 
 
       Usage:  arachni [options] url
-      
+
       Supported options:
-    
-  
+
+
 ### General
-  
+
     -h
     --help                      output this
-    
+
     -v                          be verbose
 
     --debug                     show what is happening internally
                                   (You should give it a shot sometime ;) )
-                            
+
     --only-positives            echo positive results *only*
 
     --http-req-limit            concurent HTTP requests limit
@@ -190,21 +192,21 @@ Still, this can be an invaluable asset to Fuzzer modules.
                                    to get maximum performance out of your scan.)
                                  (*WARNING*: When scanning large websites with hundreads
                                   of pages this could eat up all your memory pretty quickly.)
-                                  
+
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
-                                                                 
-    
+
+
     --user-agent=<user agent>   specify user agent
-    
+
     --authed-by=<who>           who authorized the scan, include name and e-mail address
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
-    
+
 ### Profiles
-    
+
     --save-profile=<file>       save the current run profile/options to <file>
                                   (The file will be saved with an extention of: .afp)
-                                  
+
     --load-profile=<file>       load a run profile from <file>
                                   (Can be used multiple times.)
                                   (You can complement it with more options, except for:
@@ -212,13 +214,13 @@ Still, this can be an invaluable asset to Fuzzer modules.
                                       * --redundant)
 
     --show-profile              will output the running profile as CLI arguments
-    
+
 ### Crawler
-    
+
     -e <regex>
     --exclude=<regex>           exclude urls matching regex
                                   (Can be used multiple times.)
-    
+
     -i <regex>
     --include=<regex>           include urls matching this regex only
                                   (Can be used multiple times.)
@@ -226,105 +228,105 @@ Still, this can be an invaluable asset to Fuzzer modules.
     --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
                                   (URLs matching <regex> will be crawled <count> links deep.)
                                   (Can be used multiple times.)
-    
+
     -f
     --follow-subdomains         follow links to subdomains (default: off)
-    
+
     --obey-robots-txt           obey robots.txt file (default: off)
-    
+
     --depth=<number>            depth limit (default: inf)
                                   (How deep Arachni should go into the site structure.)
-                                  
-    --link-count=<number>       how many links to follow (default: inf)                              
-    
+
+    --link-count=<number>       how many links to follow (default: inf)
+
     --redirect-limit=<number>   how many redirects to follow (default: inf)
-  
-    
+
+
 ### Auditor
-                                  
+
     -g
     --audit-links               audit link variables (GET)
-    
+
     -p
     --audit-forms               audit form variables
                                   (usually POST, can also be GET)
-    
+
     -c
     --audit-cookies             audit cookies (COOKIE)
-  
+
     --exclude-cookie=<name>     cookies not to audit
                                   (You should exclude session cookies.)
                                   (Can be used multiple times.)
-    
+
     --audit-headers             audit HTTP headers
                                   (*NOTE*: Header audits use brute force.
                                    Almost all valid HTTP request headers will be audited
                                    even if there's no indication that the web app uses them.)
                                   (*WARNING*: Enabling this option will result in increased requests,
                                    maybe by an order of magnitude.)
-                                  
+
 ### Modules
-                                                                      
+
     --lsmod=<regexp>            list available modules based on the provided regular expression
                                   (If no regexp is provided all modules will be listed.)
                                   (Can be used multiple times.)
-  
-      
+
+
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
                                   (Use '*' to deploy all modules)
                                   (You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
                                    The above will load all modules except for the 'backup_files' and 'xss' modules. )
-    
+
 ### Reports
-    
+
     --lsrep                       list available reports
-    
+
     --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: .afr)               
-    
+                                    (The file will be saved with an extention of: .afr)
+
     --repload=<file>              load audit results from <file>
                                     (Allows you to create a new reports from old/finished scans.)
-    
+
     --repopts=<option1>:<value>,<option2>:<value>,...
                                   Set options for the selected reports.
                                     (One invocation only, options will be applied to all loaded reports.)
-                                  
+
     --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
-                                  
-                                  
+
+
 ### Proxy
-    
+
     --proxy=<server:port>       specify proxy
-    
+
     --proxy-auth=<user:passwd>  specify proxy auth credentials
-    
+
     --proxy-type=<type>         proxy type can be either socks or http
                                   (Default: http)
-                                  
-    
+
+
 ### Example
 
 In the following example all modules will be run against <i>http://test.com</i>
 , auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
-The results of the audit will be saved in the the file <i>test.com.afr</i>.  
-    
+The results of the audit will be saved in the the file <i>test.com.afr</i>.
+
     $ ./arachni.rb -gpcfv --mods=* http://test.com --repsave=test.com
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
     $ ./arachni.rb --report=html --repload=test.com.afr --repsave=my_report
-    
+
 or any other report type as shown by:
 
     $ ./arachni.rb --lsrep
 
 
 ## Requirements
-    
+
   * ruby1.9.1 or later
   * Nokogiri
   * Anemone
@@ -351,7 +353,7 @@ and the aforementioned requirements.
 Windows users should run Arachni in Cygwin.
 
 ## Bug reports/Feature requests
-Please send your feedback using Github's issue system at 
+Please send your feedback using Github's issue system at
 [http://github.com/zapotek/arachni/issues](http://github.com/zapotek/arachni/issues).
 
 
