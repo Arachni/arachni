@@ -23,6 +23,8 @@ End-users should check out the links bellow.
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
+Kindly sponsored by: [![NopSec](http://zapotek.github.com/arachni/nopsec_logo.png)](http://www.nopsec.com)
+
 ## Synopsis
 
 {Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
