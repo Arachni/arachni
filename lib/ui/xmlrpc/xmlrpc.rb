@@ -9,6 +9,19 @@
 =end
 
 require 'xmlrpc/server'
+
+module XMLRPC
+
+
+class BasicServer
+
+    def clear_handlers
+        @handler.clear
+    end
+
+end
+end
+
 module Arachni
 
 require Options.instance.dir['lib'] + 'ui/xmlrpc/output'
@@ -37,6 +50,7 @@ class XMLRPC
 
     # the output interface for CLI
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     #
     # Initializes the command line interface and the framework
@@ -46,18 +60,33 @@ class XMLRPC
     def initialize( opts )
 
         @server = ::XMLRPC::Server.new( 8585 )
-
         @framework = Arachni::UI::RPC::Framework.new( opts  )
 
         # ap @framework.methods
+        set_handlers
 
+        # ap @framework.lsmod
+        # Arachni.reset
+        # @framework.modules.load( '*' )
+
+        @server.add_introspection
+    end
+
+    def reset
+        Arachni.reset
+        @framework = nil
+        @framework = Arachni::UI::RPC::Framework.new( Options.instance  )
+        set_handlers
+        return true
+    end
+
+    def set_handlers
+        @server.clear_handlers
         @server.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
         @server.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
         @server.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
         @server.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
         @server.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
-
-        @server.add_introspection
     end
 
     def output
