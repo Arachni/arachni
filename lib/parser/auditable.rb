@@ -160,8 +160,6 @@ class Auditable
 
             opts[:altered] = altered
 
-            ap 'AUDITOR: ' + elem.action + ' + ' + elem.url
-
             # submit the element with the injection values
             req = elem.submit( opts )
             return if !req
