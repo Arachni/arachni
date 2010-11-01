@@ -29,6 +29,12 @@ require 'pp'
 
 module Arachni
 
+    def self.reset
+        Element::Auditable.reset
+        Module::Registry.reset
+        Arachni::Module::HTTP.instance.reset
+    end
+
 #
 # Arachni::Framework class
 #
@@ -373,10 +379,10 @@ class Framework
        # run all the queued HTTP requests and harvest the responses
        Arachni::Module::HTTP.instance.run
 
-       @page_queue ||= Queue.new
+       @page_queue = Queue.new
 
        # try to get an updated page from the Trainer
-       page = Arachni::Module::Trainer.instance.page
+       page = Arachni::Module::HTTP.instance.trainer.page
 
        # if there was an updated page push it in the queue
        @page_queue << page if page
@@ -391,7 +397,7 @@ class Framework
            Arachni::Module::HTTP.instance.run
 
            # check to see if the page was updated
-           page = Arachni::Module::Trainer.instance.page
+           page = Arachni::Module::HTTP.instance.trainer.page
            # and push it in the queue to be audited as well
            @page_queue << page if page
 
