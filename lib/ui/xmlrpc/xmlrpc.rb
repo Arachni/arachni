@@ -10,18 +10,6 @@
 
 require 'xmlrpc/server'
 
-module XMLRPC
-
-
-class BasicServer
-
-    def clear_handlers
-        @handler.clear
-    end
-
-end
-end
-
 module Arachni
 
 require Options.instance.dir['lib'] + 'ui/xmlrpc/output'
