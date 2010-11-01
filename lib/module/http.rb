@@ -94,7 +94,7 @@ class HTTP
 
         @init_headers = {
             'cookie' => '',
-            'From'   => opts.authed_by,
+            'From'   => opts.authed_by || '',
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
         }
