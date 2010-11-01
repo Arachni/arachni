@@ -29,10 +29,12 @@ class Framework < Arachni::Framework
     end
 
     def busy?
-        @job.alive?
+        return false if !@job
+        return @job.alive?
     end
 
     def report
+        return false if !@job
         return audit_store( true ).to_h.dup
     end
 
