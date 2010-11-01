@@ -237,12 +237,12 @@ class CLI
             #
             # Try and parse the URL.
             #
-            begin
-                require 'uri'
-                @opts.url = URI.parse( URI.encode( @opts.url ) )
-            rescue
-                raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
-            end
+            # begin
+            #     require 'uri'
+            #     @opts.url = URI.parse( URI.encode( @opts.url ) )
+            # rescue
+            #     raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
+            # end
 
         end
 
