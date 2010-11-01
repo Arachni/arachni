@@ -72,8 +72,8 @@ class Registry
     # @param [String] lib path the the module directory
     #
     def initialize( opts )
-
-        @lib = opts.dir['modules']
+        @opts = opts
+        @lib  = opts.dir['modules']
 
         @@registry = []
         @@results  = []
@@ -179,7 +179,7 @@ class Registry
             _load( mod_name )
         }
 
-        return final
+        return @opts.mods = final
     end
 
     #
