@@ -133,6 +133,7 @@ class Framework
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
 
+        return true
     end
 
     def stats( )
