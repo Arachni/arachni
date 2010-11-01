@@ -228,6 +228,12 @@ class Registry
         @@results
     end
 
+    def self.reset
+        @@results.clear
+        @@registry.clear
+    end
+
+
     def clear
         @@registry.clear
     end

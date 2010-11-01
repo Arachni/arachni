@@ -45,6 +45,10 @@ class Auditable
         o_print_line( info[:name] + ": " + str )
     end
 
+    def self.reset
+        @@audited = []
+    end
+
 
     #
     # Holds constant bitfields that describe the preferred formatting
@@ -155,6 +159,8 @@ class Auditable
             print_status( get_status_str( altered ) )
 
             opts[:altered] = altered
+
+            ap 'AUDITOR: ' + elem.action + ' + ' + elem.url
 
             # submit the element with the injection values
             req = elem.submit( opts )
