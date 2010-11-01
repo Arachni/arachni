@@ -65,11 +65,25 @@ class HTTP
     attr_reader :request_count
     attr_reader :response_count
 
+    attr_reader :trainer
+
     def initialize( )
+
+        reset
+        @__not_found  = nil
+
+        @request_count  = 0
+        @response_count = 0
+
+        # we'll use it to identify our requests
+        @rand_seed = seed( )
+    end
+
+    def reset
         opts = Options.instance
         req_limit = opts.http_req_limit
 
-        @hydra ||= Typhoeus::Hydra.new(
+        @hydra = Typhoeus::Hydra.new(
             :max_concurrency               => req_limit,
             :disable_ssl_peer_verification => true,
             :username                      => opts.url.user,
@@ -77,7 +91,7 @@ class HTTP
             :method                        => :auto
         )
 
-        @hydra_sync ||= Typhoeus::Hydra.new(
+        @hydra_sync = Typhoeus::Hydra.new(
             :max_concurrency               => req_limit,
             :disable_ssl_peer_verification => true,
             :username                      => opts.url.user,
@@ -88,8 +102,7 @@ class HTTP
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
 
-        @trainers = []
-        @trainer = Arachni::Module::Trainer.instance
+        @trainer = Arachni::Module::Trainer.new
         @trainer.http = self
 
         @init_headers = {
@@ -103,14 +116,6 @@ class HTTP
             :user_agent      => opts.user_agent,
             :follow_location => false
         }
-
-        @__not_found  = nil
-
-        @request_count  = 0
-        @response_count = 0
-
-        # we'll use it to identify our requests
-        @rand_seed = seed( )
     end
 
     #

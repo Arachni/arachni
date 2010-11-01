@@ -62,7 +62,7 @@ class Base
 
         @page  = page
         @http  = Arachni::Module::HTTP.instance
-        Arachni::Module::Trainer.instance.page = @page.dup
+        @http.trainer.page = @page.dup
 
         # initialize the HTTP cookiejar with the user supplied one
         if( @page.cookiejar )
@@ -82,11 +82,10 @@ class Base
         #
         @@last_url ||= ''
         if( @@last_url != @page.url )
-            Trainer.instance.page = @page.dup
-            Trainer.instance.init_forms( @page.forms )
-            Trainer.instance.init_links( @page.links )
-            Trainer.instance.init_cookies( @page.cookies )
-
+            @http.trainer.page = @page.dup
+            @http.trainer.init_forms( @page.forms )
+            @http.trainer.init_links( @page.links )
+            @http.trainer.init_cookies( @page.cookies )
             @@last_url = @page.url
         end
 

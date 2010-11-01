@@ -69,7 +69,7 @@ class CSRF < Arachni::Module::Base
 
         # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
-        @__trainer = Arachni::Module::Trainer.instance
+        @__trainer = @http.trainer
 
         # since we bypass the Auditor we must also do our own audit tracking
         @@__audited ||= []

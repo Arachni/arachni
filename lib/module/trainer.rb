@@ -28,7 +28,6 @@ class Trainer
 
     include Output
     include ElementDB
-    include Singleton
 
     attr_writer   :page
     attr_accessor :http
@@ -148,7 +147,6 @@ class Trainer
         end
 
         if( @updated )
-
             @page.html = res[0].body.dup
 
             begin
