@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+=begin
+                  Arachni
+  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
+require 'pp'
+require 'ap'
+
+$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
+
+require 'lib/options'
+options = Arachni::Options.instance
+
+options.dir            = Hash.new
+options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['modules'] = options.dir['pwd'] + 'modules/'
+options.dir['reports'] = options.dir['pwd'] + 'reports/'
+options.dir['lib']     = options.dir['pwd'] + 'lib/'
+
+require options.dir['lib'] + 'ui/xmlrpc/xmlrpc'
+
+server = Arachni::UI::XMLRPC.new( Arachni::Options.instance )
+server.run
