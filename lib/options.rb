@@ -363,7 +363,6 @@ class Options
         # on low bandwidth conections
         @http_req_limit = 60
 
-
     end
 
     def url=( str )
@@ -378,42 +377,6 @@ class Options
         end
 
         return str
-    end
-
-    def exclude=( arg )
-        arg = [arg]
-        arg.flatten!
-        arg.each {
-            |regexp|
-            @exclude << Regexp.new( regexp )
-        }
-        @exclude.uniq!
-        @exclude.flatten!
-        return true
-    end
-
-    def include=( arg )
-        arg = [arg]
-        arg.flatten!
-        arg.each {
-            |regexp|
-            @include << Regexp.new( regexp )
-        }
-        @include.uniq!
-        @include.flatten!
-        return true
-    end
-
-    def lsmod=( str )
-        arg = [arg]
-        arg.flatten!
-        arg.each {
-            |regexp|
-            @lsmod << Regexp.new( regexp )
-        }
-        @lsmod.uniq!
-        @lsmod.flatten!
-        return true
     end
 
     #
