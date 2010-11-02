@@ -386,6 +386,18 @@ class Options
         return true
     end
 
+    def include=( str )
+        @include << Regexp.new( str )
+        @include.flatten!
+        return true
+    end
+
+    def lsmod=( str )
+        @lsmod << Regexp.new( str )
+        @lsmod.flatten!
+        return true
+    end
+
     #
     # Converts the Options object to hash
     #
