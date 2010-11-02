@@ -17,6 +17,7 @@ module Arachni
 
 require Options.instance.dir['lib'] + 'ui/xmlrpc/output'
 require Options.instance.dir['lib'] + 'ui/xmlrpc/rpc/framework'
+require Options.instance.dir['lib'] + 'ui/xmlrpc/rpc/options'
 
 module UI
 
@@ -50,8 +51,7 @@ class XMLRPC
     #
     def initialize( opts )
 
-        @framework = Arachni::UI::RPC::Framework.new( opts  )
-
+        prep_framework
         banner
 
         if opts.help
@@ -72,7 +72,7 @@ class XMLRPC
             :SSLCACertificateFile => opts.ssl_ca
         )
 
-        debug!
+        #debug!
 
         set_handlers
 
@@ -89,8 +89,8 @@ class XMLRPC
     def reset
         exception_jail{
             Arachni.reset
-            @framework = nil
-            @framework = Arachni::UI::RPC::Framework.new( Options.instance  )
+            Arachni::Options.instance.reset
+            prep_framework
             set_handlers
         }
         return true
@@ -118,6 +118,11 @@ class XMLRPC
     end
 
     private
+
+    def prep_framework
+        @framework = nil
+        @framework = Arachni::UI::RPC::Framework.new( Options.instance )
+    end
 
     #
     # Outputs Arachni banner.<br/>
