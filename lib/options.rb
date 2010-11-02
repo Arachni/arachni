@@ -380,20 +380,38 @@ class Options
         return str
     end
 
-    def exclude=( str )
-        @exclude << Regexp.new( str )
+    def exclude=( arg )
+        arg = [arg]
+        arg.flatten!
+        arg.each {
+            |regexp|
+            @exclude << Regexp.new( regexp )
+        }
+        @exclude.uniq!
         @exclude.flatten!
         return true
     end
 
-    def include=( str )
-        @include << Regexp.new( str )
+    def include=( arg )
+        arg = [arg]
+        arg.flatten!
+        arg.each {
+            |regexp|
+            @include << Regexp.new( regexp )
+        }
+        @include.uniq!
         @include.flatten!
         return true
     end
 
     def lsmod=( str )
-        @lsmod << Regexp.new( str )
+        arg = [arg]
+        arg.flatten!
+        arg.each {
+            |regexp|
+            @lsmod << Regexp.new( regexp )
+        }
+        @lsmod.uniq!
         @lsmod.flatten!
         return true
     end
