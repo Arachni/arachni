@@ -167,7 +167,6 @@ USAGE
         @service.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
         @service.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
         @service.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
-        @service.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
         @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
     end
 
