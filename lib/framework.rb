@@ -93,9 +93,6 @@ class Framework
         prepare_cookie_jar( )
         prepare_user_agent( )
 
-        @spider   = Arachni::Spider.new( @opts )
-        @parser   = Arachni::Parser.new( @opts )
-
         # deep clone the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = @opts.redundant.deep_clone
@@ -108,6 +105,9 @@ class Framework
     # It parses the instanse options and runs the audit
     #
     def run
+
+        @spider   = Arachni::Spider.new( @opts )
+        @parser   = Arachni::Parser.new( @opts )
 
         @opts.start_datetime = Time.now
 
