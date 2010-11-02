@@ -90,7 +90,7 @@ class Spider
 
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
-        @opts.include = Regexp.new( '.*' ) if @opts.include.empty?
+        @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
     end
 
     #
