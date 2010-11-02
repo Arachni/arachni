@@ -8,7 +8,10 @@
 
 =end
 
+require 'webrick'
+require 'webrick/https'
 require 'xmlrpc/server'
+require 'openssl'
 
 module Arachni
 
@@ -47,17 +50,38 @@ class XMLRPC
     #
     def initialize( opts )
 
-        @server = ::XMLRPC::Server.new( 8585 )
         @framework = Arachni::UI::RPC::Framework.new( opts  )
 
-        # ap @framework.methods
+        banner
+
+        if opts.help
+            print_help
+            exit 0
+        end
+
+        pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
+        cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
+
+        @server = ::WEBrick::HTTPServer.new(
+            :Port            => opts.rpc_port || 1337,
+            :SSLEnable       => opts.ssl      || false,
+            :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
+            :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
+            :SSLCertificate  => cert,
+            :SSLPrivateKey   => pkey,
+            :SSLCACertificateFile => opts.ssl_ca
+        )
+
         set_handlers
+
+        trap( 'HUP' ) { @server.shutdown }
+        trap( 'INT' ) { @server.shutdown }
+        # ap @framework.methods
+
 
         # ap @framework.lsmod
         # Arachni.reset
         # @framework.modules.load( '*' )
-
-        @server.add_introspection
     end
 
     def reset
@@ -83,12 +107,7 @@ class XMLRPC
 
         begin
             # start the show!
-            @server.serve
-        rescue Arachni::Exceptions => e
-            print_error( e.to_s )
-            print_info( "Run arachni with the '-h' parameter for help." )
-            print_line
-            exit 0
+            @server.start
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
@@ -97,13 +116,59 @@ class XMLRPC
 
     private
 
+    #
+    # Outputs Arachni banner.<br/>
+    # Displays version number, revision number, author details etc.
+    #
+    # @see VERSION
+    # @see REVISION
+    #
+    # @return [void]
+    #
+    def banner
+
+        puts 'Arachni - Web Application Security Scanner Framework v' +
+            @framework.version + ' [' + @framework.revision + ']
+       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+                                      <zapotek@segfault.gr>
+               (With the support of the community and the Arachni Team.)
+
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki'
+        puts
+        puts
+
+    end
+
+    def print_help
+        puts <<USAGE
+  Usage:  arachni_xmlrpc.rb \[options\]
+
+  Supported options:
+
+    -h
+    --help                      output this
+
+    --port                      specify port to listen to
+
+    --ssl                       use SSL?
+    --ssl_pkey   <file>         location of the SSL private key (.key)
+    --ssl_cert   <file>         location of the SSL certificate (.cert)
+    --ssl_ca     <file>         location of the CA file (.cert)
+
+USAGE
+    end
+
     def set_handlers
-        @server.clear_handlers
-        @server.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
-        @server.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
-        @server.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
-        @server.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
-        @server.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
+        @service = ::XMLRPC::WEBrickServlet.new
+        @service.add_introspection
+        @server.mount( "/RPC2", @service )
+        @service.clear_handlers
+        @service.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
+        @service.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
+        @service.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
+        @service.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
+        @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
     end
 
 end

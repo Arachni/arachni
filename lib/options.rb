@@ -331,6 +331,13 @@ class Options
     # to be populated by the framework
     attr_accessor :delta_time
 
+
+    attr_accessor :rpc_port
+    attr_accessor :ssl
+    attr_accessor :ssl_pkey
+    attr_accessor :ssl_cert
+    attr_accessor :ssl_ca
+
     def initialize( )
 
         # nil everything out
