@@ -68,15 +68,6 @@ class XMLRPC
         return true
     end
 
-    def set_handlers
-        @server.clear_handlers
-        @server.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
-        @server.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
-        @server.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
-        @server.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
-        @server.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
-    end
-
     def output
         flush_buffer( )
     end
@@ -102,6 +93,17 @@ class XMLRPC
             exception_jail{ raise e }
             exit 0
         end
+    end
+
+    private
+
+    def set_handlers
+        @server.clear_handlers
+        @server.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
+        @server.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
+        @server.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
+        @server.add_handler( ::XMLRPC::iPIMethods( "reports" ), @framework.reports )
+        @server.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
     end
 
 end
