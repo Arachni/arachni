@@ -382,7 +382,7 @@ class Options
 
     def exclude=( str )
         @exclude << Regexp.new( str )
-        pp @exclude.flatten!
+        @exclude.flatten!
         return true
     end
 
