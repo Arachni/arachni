@@ -380,6 +380,12 @@ class Options
         return str
     end
 
+    def exclude=( str )
+        @exclude << Regexp.new( str )
+        pp @exclude.flatten!
+        return true
+    end
+
     #
     # Converts the Options object to hash
     #
