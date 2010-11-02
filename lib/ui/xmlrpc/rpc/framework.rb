@@ -13,7 +13,9 @@ class Framework < Arachni::Framework
     end
 
     def run
-        @job = Thread.new { old_run }
+        @job = Thread.new {
+            exception_jail { old_run }
+        }
         return true
     end
 
