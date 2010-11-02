@@ -13,10 +13,12 @@ module Arachni
 module UI
 
 #
-# CLI Output module
+# XML-RPC Output module
 #
-# Provides a command line output interface to the framework.<br/>
-# All UIs should provide an Arachni::UI::Output module with these methods.
+# Provides a command line output interface to the framework.
+#
+# It basically classifies and buffers all system messages until it's time to
+# flush the buffer and send them over the wire.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -42,6 +44,13 @@ module Output
 
     @@buffer ||= []
 
+    #
+    # Empties the output buffer and returns all messages.
+    #
+    # Messages are classified by their type.
+    #
+    # @return   [Array<Hash>]
+    #
     def flush_buffer
         buf = @@buffer.dup
         @@buffer.clear

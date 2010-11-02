@@ -11,7 +11,9 @@
 module Arachni
 
 #
-# Options class.
+# Overloads the Options class adding support for direct parsing.
+#
+# Not much to look at but it streamlines XML-RPC option handling.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

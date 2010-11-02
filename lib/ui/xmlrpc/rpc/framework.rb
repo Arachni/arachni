@@ -5,6 +5,24 @@ require Options.instance.dir['lib'] + 'framework'
 module UI
 module RPC
 
+=begin
+                  Arachni
+  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
+#
+# Extends the Framework adding XML-RPC specific functionality
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+#
 class Framework < Arachni::Framework
     alias :old_run :run
 

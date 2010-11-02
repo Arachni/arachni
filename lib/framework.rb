@@ -29,6 +29,11 @@ require 'pp'
 
 module Arachni
 
+    #
+    # Resets the Framework providing a clean slate.
+    #
+    # This is useful to user interfaces that require the framework to be reused.
+    #
     def self.reset
         Element::Auditable.reset
         Module::Registry.reset
@@ -48,7 +53,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.9
+# @version: 0.2
 #
 class Framework
 

@@ -24,12 +24,12 @@ module UI
 #
 # Arachni::UI:XMLRPC class
 #
+# Provides an XML-RPC server to assist with general integration and UI development.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
-# @see Arachni::Framework
 #
 class XMLRPC
 
@@ -40,12 +40,12 @@ class XMLRPC
     #
     attr_reader :opts
 
-    # the output interface for CLI
+    # the output interface for XML-RPC
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
     #
-    # Initializes the command line interface and the framework
+    # Initializes the XML-RPC interface, the HTTP(S) server and the framework.
     #
     # @param    [Options]    opts
     #
@@ -76,16 +76,18 @@ class XMLRPC
 
         set_handlers
 
+        # trap interupts and exit cleanly when required
         trap( 'HUP' ) { @server.shutdown }
         trap( 'INT' ) { @server.shutdown }
-        # ap @framework.methods
 
-
-        # ap @framework.lsmod
-        # Arachni.reset
-        # @framework.modules.load( '*' )
     end
 
+    #
+    # Resets the framework leaving it lemon fresh for the next scan.
+    #
+    # If you reuse without reseting, Arachni will eat your kitten!<br/>
+    # (And I don't mean sexually...)
+    #
     def reset
         exception_jail{
             Arachni.reset
@@ -96,16 +98,26 @@ class XMLRPC
         return true
     end
 
+    #
+    # Flushes the output buffer and returns all pending system messages.
+    #
+    # All messages are classified based on their type.
+    #
+    # @return   [Array<Hash>]
+    #
     def output
         flush_buffer( )
     end
 
+    #
+    # Makes the HTTP(S) server go bye-bye...Lights out!
+    #
     def shutdown
         @server.shutdown
     end
 
     #
-    # Runs Arachni
+    # Starts the HTTP(S) server and the XML-RPC service.
     #
     def run( )
         begin
@@ -119,19 +131,17 @@ class XMLRPC
 
     private
 
+    #
+    # Initialises the RPC framework.
+    #
     def prep_framework
         @framework = nil
         @framework = Arachni::UI::RPC::Framework.new( Options.instance )
     end
 
     #
-    # Outputs Arachni banner.<br/>
+    # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
-    #
-    # @see VERSION
-    # @see REVISION
-    #
-    # @return [void]
     #
     def banner
 
@@ -167,6 +177,10 @@ class XMLRPC
 USAGE
     end
 
+    #
+    # Starts the XML-RPC service and attaches it to the HTTP(S) server.<br/>
+    # It also prepares all the RPC handlers.
+    #
     def set_handlers
         @service = ::XMLRPC::WEBrickServlet.new(  )
         @service.add_introspection
