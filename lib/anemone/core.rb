@@ -78,7 +78,7 @@ class Core
             end
         end
     end
-    
+
     #
     # Decides whether or not a url matches any of the regular expressions
     # in "patterns".
@@ -89,12 +89,12 @@ class Core
     # @return    [Bool]
     #
     def matches_pattern?( url, patterns )
-        
+
         patterns.each {
             |pattern|
             return true if url =~ pattern
         }
-        
+
         return false
     end
 
