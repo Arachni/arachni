@@ -72,6 +72,8 @@ class XMLRPC
             :SSLCACertificateFile => opts.ssl_ca
         )
 
+        debug!
+
         set_handlers
 
         trap( 'HUP' ) { @server.shutdown }
@@ -85,10 +87,12 @@ class XMLRPC
     end
 
     def reset
-        Arachni.reset
-        @framework = nil
-        @framework = Arachni::UI::RPC::Framework.new( Options.instance  )
-        set_handlers
+        exception_jail{
+            Arachni.reset
+            @framework = nil
+            @framework = Arachni::UI::RPC::Framework.new( Options.instance  )
+            set_handlers
+        }
         return true
     end
 
@@ -104,7 +108,6 @@ class XMLRPC
     # Runs Arachni
     #
     def run( )
-
         begin
             # start the show!
             @server.start
@@ -160,7 +163,7 @@ USAGE
     end
 
     def set_handlers
-        @service = ::XMLRPC::WEBrickServlet.new
+        @service = ::XMLRPC::WEBrickServlet.new(  )
         @service.add_introspection
         @server.mount( "/RPC2", @service )
         @service.clear_handlers
