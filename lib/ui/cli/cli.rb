@@ -228,22 +228,6 @@ class CLI
                 @opts.audit_cookies = true
             end
 
-            # Check for missing url
-            if( !@opts.url )
-                print_error( "Missing url argument." )
-                exit 0
-            end
-
-            #
-            # Try and parse the URL.
-            #
-            # begin
-            #     require 'uri'
-            #     @opts.url = URI.parse( URI.encode( @opts.url ) )
-            # rescue
-            #     raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
-            # end
-
         end
 
         @opts.to_h.each {
@@ -303,6 +287,12 @@ class CLI
 
             end
         }
+
+        # Check for missing url
+        if( !@opts.url &&  !@opts.repload )
+            print_error( "Missing url argument." )
+            exit 0
+        end
 
     end
 
