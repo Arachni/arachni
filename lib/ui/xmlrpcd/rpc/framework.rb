@@ -24,10 +24,20 @@ module RPCD
 # @version: 0.1
 #
 class Framework < Arachni::Framework
+
+    #
+    # Our run() method needs to run the parent's run() method in
+    # a separate thread.
+    #
     alias :old_run :run
-    alias :old_pause :pause
-    alias :old_paused? :paused?
-    alias :old_resume :resume
+
+    private :old_run
+
+    #
+    # for some reason XMLRPC's add_handler() doesn't see these methods
+    # even though they were public in the parent, so we need to re-declare them ;)
+    #
+    public :pause, :paused?, :resume, :lsmod
 
     def initialize( opts )
         super( opts )
@@ -43,30 +53,6 @@ class Framework < Arachni::Framework
             exception_jail { old_run }
         }
         return true
-    end
-
-    #
-    # Pauses the audit process.
-    #
-    # The audit process will be paused once the current running
-    # module finishes executing.
-    #
-    def pause
-        old_pause
-    end
-
-    #
-    # Resumes the audit process.
-    #
-    def resume
-        old_resume
-    end
-
-    #
-    # Checks to see if the audit process has been paused.
-    #
-    def paused?
-        old_paused?
     end
 
     #
@@ -117,6 +103,7 @@ class Framework < Arachni::Framework
     def debug?
         @@debug
     end
+
 end
 
 end
