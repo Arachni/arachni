@@ -68,15 +68,7 @@ class HTTP
     attr_reader :trainer
 
     def initialize( )
-
         reset
-        @__not_found  = nil
-
-        @request_count  = 0
-        @response_count = 0
-
-        # we'll use it to identify our requests
-        @rand_seed = seed( )
     end
 
     def reset
@@ -116,6 +108,16 @@ class HTTP
             :user_agent      => opts.user_agent,
             :follow_location => false
         }
+
+        @__not_found  = nil
+
+        @request_count  = 0
+        @response_count = 0
+
+        # we'll use it to identify our requests
+        @rand_seed = seed( )
+
+
     end
 
     #
