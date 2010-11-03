@@ -124,8 +124,6 @@ module Output
     #
     def print_debug( str = '' )
         if !@@debug then return end
-        @@buffer << { :debug => str }
-
         print_color( '[!]', 36, str, $stderr )
     end
 
