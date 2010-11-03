@@ -9,6 +9,23 @@
 =end
 
 module Arachni
+
+#
+# The namespace under which all modules exist
+#
+module Modules
+
+    #
+    # Resets the namespace unloading all module classes
+    #
+    def self.reset
+        constants.each {
+            |const|
+            remove_const( const )
+        }
+    end
+end
+
 module Module
 
 #
@@ -231,6 +248,7 @@ class Registry
     def self.reset
         @@results.clear
         @@registry.clear
+        Arachni::Modules.reset
     end
 
 
