@@ -33,13 +33,6 @@ module UI
 #
 class XMLRPC
 
-    #
-    # Instance options
-    #
-    # @return    [Options]
-    #
-    attr_reader :opts
-
     # the output interface for XML-RPC
     include Arachni::UI::Output
     include Arachni::Module::Utilities
@@ -120,6 +113,7 @@ class XMLRPC
     # Starts the HTTP(S) server and the XML-RPC service.
     #
     def run( )
+
         begin
             # start the show!
             @server.start
