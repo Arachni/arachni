@@ -30,6 +30,7 @@ class Framework < Arachni::Framework
     # a separate thread.
     #
     alias :old_run :run
+    alias :old_stats :stats
 
     private :old_run
 
@@ -41,6 +42,10 @@ class Framework < Arachni::Framework
 
     def initialize( opts )
         super( opts )
+    end
+
+    def stats
+        old_stats
     end
 
     #
