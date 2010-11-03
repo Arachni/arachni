@@ -147,18 +147,6 @@ class Framework
         return true
     end
 
-    def resume
-        @pause = true
-    end
-
-    def pause
-        @pause = true
-    end
-
-    def paused?
-        @pause
-    end
-
     def stats( )
         req_cnt = Arachni::Module::HTTP.instance.request_count
         res_cnt = Arachni::Module::HTTP.instance.response_count
@@ -393,7 +381,7 @@ class Framework
     end
 
     def paused?
-        @paused
+        @paused || false
     end
 
     def pause
