@@ -97,6 +97,26 @@ class Framework < Arachni::Framework
         return audit_store( true ).to_h.dup
     end
 
+    #
+    # Enables debugging output
+    #
+    def debug_on
+        @@debug = true
+    end
+
+    #
+    # Disables debugging output
+    #
+    def debug_off
+        @@debug = false
+    end
+
+    #
+    # Checks whether the framework is in debug mode
+    #
+    def debug?
+        @@debug
+    end
 end
 
 end
