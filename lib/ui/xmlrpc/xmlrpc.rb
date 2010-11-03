@@ -27,6 +27,13 @@ class XMLRPC
 
         @opts = opts
 
+        banner
+
+        if opts.help
+            usage
+            exit 0
+        end
+
         @server = ::XMLRPC::Client.new2( @opts.server )
         @server.timeout = 9999999
 
@@ -147,6 +154,152 @@ class XMLRPC
     def report
         print_status "Grabbing scan report..."
         ap @server.call( "framework.report" )
+    end
+
+    #
+    # Outputs Arachni banner.<br/>
+    # Displays version number, revision number, author details etc.
+    #
+    # @see VERSION
+    # @see REVISION
+    #
+    # @return [void]
+    #
+    def banner
+        require @opts.dir['lib'] + 'framework'
+        framework = Arachni::Framework.new( @opts )
+
+        print_line 'Arachni - Web Application Security Scanner Framework v' +
+            framework.version + ' [' + framework.revision + ']
+       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+                                      <zapotek@segfault.gr>
+               (With the support of the community and the Arachni Team.)
+
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki'
+        framework = nil
+        print_line
+        print_line
+
+    end
+
+    #
+    # Outputs help/usage information.<br/>
+    # Displays supported options and parameters.
+    #
+    # @return [void]
+    #
+    def usage
+        print_line <<USAGE
+  Usage:  arachni --server http[s]://host:port/ \[options\] url
+
+  Supported options:
+
+
+    General ----------------------
+
+    -h
+    --help                      output this
+
+    -v                          be verbose
+
+    --debug                     show what is happening internally
+                                  (You should give it a shot sometime ;) )
+
+    --only-positives            echo positive results *only*
+
+    --http-req-limit            concurent HTTP requests limit
+                                  (Be carefull not to kill your server.)
+                                  (Default: 60)
+                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
+
+    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
+                                 and harvest the HTTP responses at the end of the crawl.
+                                 (In some test cases this option has split the scan time in half.)
+                                 (Default: responses will be harvested for each page)
+                                 (*NOTE*: If you are scanning a high-end server and
+                                   you are using a powerful machine with enough bandwidth
+                                   *and* you feel dangerous you can use
+                                   this flag with an increased '--http-req-limit'
+                                   to get maximum performance out of your scan.)
+                                 (*WARNING*: When scanning large websites with hundreads
+                                  of pages this could eat up all your memory pretty quickly.)
+
+    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
+
+
+    --user-agent=<user agent>   specify user agent
+
+    --authed-by=<who>           who authorized the scan, include name and e-mail address
+                                  (It'll make it easier on the sys-admins during log reviews.)
+                                  (Will be appended to the user-agent string.)
+
+    Crawler -----------------------
+
+    -e <regex>
+    --exclude=<regex>           exclude urls matching regex
+                                  (Can be used multiple times.)
+
+    -i <regex>
+    --include=<regex>           include urls matching this regex only
+                                  (Can be used multiple times.)
+
+    --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
+                                  (URLs matching <regex> will be crawled <count> links deep.)
+                                  (Can be used multiple times.)
+
+    -f
+    --follow-subdomains         follow links to subdomains (default: off)
+
+    --obey-robots-txt           obey robots.txt file (default: off)
+
+    --depth=<number>            depth limit (default: inf)
+                                  (How deep Arachni should go into the site structure.)
+
+    --link-count=<number>       how many links to follow (default: inf)
+
+    --redirect-limit=<number>   how many redirects to follow (default: inf)
+
+
+    Auditor ------------------------
+
+    -g
+    --audit-links               audit link variables (GET)
+
+    -p
+    --audit-forms               audit form variables
+                                  (usually POST, can also be GET)
+
+    -c
+    --audit-cookies             audit cookies (COOKIE)
+
+    --exclude-cookie=<name>     cookies not to audit
+                                  (You should exclude session cookies.)
+                                  (Can be used multiple times.)
+
+    --audit-headers             audit HTTP headers
+                                  (*NOTE*: Header audits use brute force.
+                                   Almost all valid HTTP request headers will be audited
+                                   even if there's no indication that the web app uses them.)
+                                  (*WARNING*: Enabling this option will result in increased requests,
+                                   maybe by an order of magnitude.)
+
+
+    Modules ------------------------
+
+    --lsmod=<regexp>            list available modules based on the provided regular expression
+                                  (If no regexp is provided all modules will be listed.)
+                                  (Can be used multiple times.)
+
+
+    -m <modname,modname..>
+    --mods=<modname,modname..>  comma separated list of modules to deploy
+                                  (Use '*' to deploy all modules)
+                                  (You can exclude modules by prefixing their name with a dash:
+                                      --mods=*,-backup_files,-xss
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
+
+USAGE
     end
 
 end
