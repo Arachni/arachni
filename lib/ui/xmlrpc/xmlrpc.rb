@@ -3,6 +3,7 @@ require 'openssl'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 
 module UI
@@ -20,6 +21,7 @@ module UI
 class XMLRPC
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     def initialize( opts )
 
@@ -40,7 +42,7 @@ class XMLRPC
     end
 
     def run
-        begin
+        exception_jail {
             print_status 'Running framework:'
             ap @server.call( "framework.run" )
 
@@ -52,8 +54,7 @@ class XMLRPC
 
             puts
             report
-        rescue
-        end
+        }
 
         # ensure that the framework will be reset
         reset
@@ -80,6 +81,17 @@ class XMLRPC
             next if !arg
 
             case opt
+            when "audit_forms", "audit_links", "audit_cookies", "audit_headers",
+                    "http_harvest_last"
+
+                print_status "Enabling #{opt}:"
+                ap @server.call( "opts.#{opt}=", true )
+
+            when "debug"
+                print_status "Enabling #{opt}:"
+                ap @server.call( "framework.debug_on" )
+                debug!
+
             when 'redundant'
                 print_status 'Setting redundancy rules:'
 
@@ -94,12 +106,6 @@ class XMLRPC
             when 'exclude', 'include'
                 print_status "Setting #{opt} rules:"
                 ap @server.call( "opts.#{opt}=", arg.map{ |rule| rule.to_s } )
-
-            when "audit_forms", "audit_links", "audit_cookies", "audit_headers",
-                    "http_harvest_last"
-
-                print_status "Enabling #{opt}:"
-                ap @server.call( "opts.#{opt}=", true )
 
             when 'url'
                 print_status 'Setting url:'
