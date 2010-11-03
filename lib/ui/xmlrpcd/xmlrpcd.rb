@@ -87,6 +87,7 @@ class XMLRPCD
             Arachni::Options.instance.reset
             prep_framework
             set_handlers
+            output
         }
         return true
     end
