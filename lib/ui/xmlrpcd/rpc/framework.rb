@@ -104,6 +104,28 @@ class Framework < Arachni::Framework
         @@debug
     end
 
+    #
+    # Enables debugging output
+    #
+    def verbose_on
+        @@verbose = true
+    end
+
+    #
+    # Disables debugging output
+    #
+    def verbose_off
+        @@verbose = false
+    end
+
+    #
+    # Checks whether the framework is in debug mode
+    #
+    def verbose?
+        @@verbose
+    end
+
+
 end
 
 end
