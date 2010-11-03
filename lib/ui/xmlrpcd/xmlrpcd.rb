@@ -15,14 +15,14 @@ require 'openssl'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'ui/xmlrpc/output'
-require Options.instance.dir['lib'] + 'ui/xmlrpc/rpc/framework'
-require Options.instance.dir['lib'] + 'ui/xmlrpc/rpc/options'
+require Options.instance.dir['lib'] + 'ui/xmlrpcd/output'
+require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/framework'
+require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/options'
 
 module UI
 
 #
-# Arachni::UI:XMLRPC class
+# Arachni::UI:XMLRPCD class
 #
 # Provides an XML-RPC server to assist with general integration and UI development.
 #
@@ -31,7 +31,7 @@ module UI
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class XMLRPC
+class XMLRPCD
 
     # the output interface for XML-RPC
     include Arachni::UI::Output
@@ -130,7 +130,7 @@ class XMLRPC
     #
     def prep_framework
         @framework = nil
-        @framework = Arachni::UI::RPC::Framework.new( Options.instance )
+        @framework = Arachni::UI::RPCD::Framework.new( Options.instance )
     end
 
     #

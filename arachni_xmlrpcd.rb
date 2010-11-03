@@ -62,7 +62,7 @@ begin
     }
 end
 
-require options.dir['lib'] + 'ui/xmlrpc/xmlrpc'
+require options.dir['lib'] + 'ui/xmlrpcd/xmlrpcd'
 
-server = Arachni::UI::XMLRPC.new( Arachni::Options.instance )
+server = Arachni::UI::XMLRPCD.new( Arachni::Options.instance )
 server.run

@@ -13,7 +13,7 @@ module Arachni
 require Options.instance.dir['lib'] + 'framework'
 
 module UI
-module RPC
+module RPCD
 
 #
 # Extends the Framework adding XML-RPC specific functionality

@@ -13,7 +13,7 @@ module Arachni
 module UI
 
 #
-# XML-RPC Output module
+# XML-RPC deamon Output module
 #
 # Provides a command line output interface to the framework.
 #
