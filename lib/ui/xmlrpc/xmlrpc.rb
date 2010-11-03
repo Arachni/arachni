@@ -28,10 +28,8 @@ class XMLRPC
         @server = ::XMLRPC::Client.new2( @opts.server )
         @server.timeout = 9999999
 
-        if( @opts.ssl )
-            @server.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-        end
+        @server.instance_variable_get( :@http ).
+            instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
         begin
             parse_opts
