@@ -40,12 +40,14 @@ class XMLRPC
         @server.instance_variable_get( :@http ).
             instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
-        begin
+        #begin
             parse_opts
-        rescue
-            reset
-            exit
-        end
+        #rescue Exception => e
+        #    print_error e.inspect
+        #    print_debug_backtrace( e )
+        #    reset
+        #    exit
+        #end
     end
 
     def run
@@ -82,17 +84,27 @@ class XMLRPC
 
     def parse_opts
 
+        # do not send these options over the wire
+        illegal =[
+            'dir',
+            'server',
+            'reports',
+            'repopts',
+            'load_profile'
+        ]
+
         @opts.to_h.each {
             |opt, arg|
 
             next if !arg
+            next if illegal.include? opt
 
             case opt
-            when "audit_forms", "audit_links", "audit_cookies", "audit_headers",
-                    "http_harvest_last"
 
-                print_status "Enabling #{opt}:"
-                ap @server.call( "opts.#{opt}=", true )
+            when "lsmod"
+                print_status 'lsmod:'
+                ap @server.call( "framework.lsmod" )
+                exit
 
             when "debug"
                 print_status "Enabling #{opt}:"
@@ -136,6 +148,11 @@ class XMLRPC
             when "http_req_limit"
                 print_status 'Setting HTTP request limit:'
                 ap @server.call( "opts.http_req_limit=", arg )
+
+            else
+                print_status "Enabling #{opt}:"
+                ap @server.call( "opts.#{opt}=", arg )
+
             end
         }
 
