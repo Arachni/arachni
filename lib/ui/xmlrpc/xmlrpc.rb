@@ -51,6 +51,7 @@ class XMLRPC
     end
 
     def run
+
         exception_jail {
             print_status 'Running framework:'
             ap @server.call( "framework.run" )
@@ -178,6 +179,9 @@ class XMLRPC
     def report
         print_status "Grabbing scan report..."
         ap @server.call( "framework.report" )
+
+        print_status "Grabbing stats..."
+        ap @server.call( "framework.stats" )
     end
 
     #
