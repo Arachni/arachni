@@ -338,6 +338,8 @@ class Options
     attr_accessor :ssl_cert
     attr_accessor :ssl_ca
 
+    attr_accessor :server
+
     def initialize( )
 
         # nil everything out

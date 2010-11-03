@@ -49,7 +49,9 @@ opts = GetoptLong.new(
     [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
     [ '--http-harvest-last',  '-s', GetoptLong::NO_ARGUMENT ],
-    [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ]
+    [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
+    [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
+    [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ]
 )
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
@@ -194,6 +196,12 @@ begin
 
             when '--http-harvest-last'
                 options.http_harvest_last = true
+
+            when '--ssl'
+                options.ssl = true
+
+            when '--server'
+                options.server = arg.to_s
 
         end
     }
