@@ -11,7 +11,7 @@
 module Arachni
 
 #
-# Overloads the Options class adding support for direct parsing.
+# Overloads the Options class adding support for direct options parsing.
 #
 # Not much to look at but it streamlines XML-RPC option handling.
 #
@@ -22,6 +22,10 @@ module Arachni
 #
 class Options
 
+    #
+    # Resets all important options that can affect the scan
+    # during framework reuse.
+    #
     def reset
         @exclude    = []
         @include    = []
@@ -29,16 +33,47 @@ class Options
         @exclude_cookies    = []
     end
 
+    #
+    # Sets the URL include filter.
+    #
+    # Only URLs matching any of these rules will be crawled.
+    #
+    # @param    [Array<Regexp>]     arr
+    #
     def include=( arr )
         @include = arr.map{ |rule| Regexp.new( rule ) }
         return true
     end
 
+    #
+    # Sets the URL exclude filter.
+    #
+    # URLs matching any of these rules will not be crawled.
+    #
+    # @param    [Array<Regexp>]     arr
+    #
     def exclude=( arr )
         @exclude = arr.map{ |rule| Regexp.new( rule ) }
         return true
     end
 
+    #
+    # Sets the redundancy filters.
+    #
+    # Filter example:
+    #     [
+    #        {
+    #            'regexp'    => 'calendar.php', # URL to apply the filter to
+    #            'count'     => 5   # how many times to crawl the url
+    #        },
+    #        {
+    #            'regexp'    => 'gallery.php',
+    #            'count'     => 3
+    #        }
+    #    ]
+    #
+    # @param     [Array<Hash>]  arr
+    #
     def redundant=( arr )
         ruleset = []
         arr.each {
