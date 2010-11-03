@@ -69,7 +69,7 @@ class Framework
     VERSION      = '0.2.1'
 
     # the version of *this* class
-    REVISION     = '0.1.9'
+    REVISION     = '0.2'
 
     #
     # Instance options
@@ -145,6 +145,18 @@ class Framework
         end
 
         return true
+    end
+
+    def resume
+        @pause = true
+    end
+
+    def pause
+        @pause = true
+    end
+
+    def paused?
+        @pause
     end
 
     def stats( )
@@ -366,6 +378,11 @@ class Framework
         return if !page
 
         for mod in @modules.loaded( )
+
+            while( paused? )
+                ::IO::select( nil, nil, nil, 1 )
+            end
+
             run_mod( mod, page.deep_clone )
         end
 
@@ -373,6 +390,18 @@ class Framework
             harvest_http_responses( )
         end
 
+    end
+
+    def paused?
+        @paused
+    end
+
+    def pause
+        @paused = true
+    end
+
+    def resume
+        @paused = false
     end
 
     def harvest_http_responses

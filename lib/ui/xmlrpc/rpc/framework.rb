@@ -25,6 +25,9 @@ module RPC
 #
 class Framework < Arachni::Framework
     alias :old_run :run
+    alias :old_pause :pause
+    alias :old_paused? :paused?
+    alias :old_resume :resume
 
     def initialize( opts )
         super( opts )
@@ -43,15 +46,27 @@ class Framework < Arachni::Framework
     end
 
     #
-    # To be implemented...
+    # Pauses the audit process.
+    #
+    # The audit process will be paused once the current running
+    # module finishes executing.
     #
     def pause
+        old_pause
     end
 
     #
-    # To be implemented...
+    # Resumes the audit process.
     #
     def resume
+        old_resume
+    end
+
+    #
+    # Checks to see if the audit process has been paused.
+    #
+    def paused?
+        old_paused?
     end
 
     #
