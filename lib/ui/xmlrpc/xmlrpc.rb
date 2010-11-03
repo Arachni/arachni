@@ -102,14 +102,21 @@ class XMLRPC
             case opt
 
             when "lsmod"
+                next if !arg || arg.empty?
                 print_status 'lsmod:'
                 ap @server.call( "framework.lsmod" )
+                reset
                 exit
 
             when "debug"
                 print_status "Enabling #{opt}:"
                 ap @server.call( "framework.debug_on" )
                 debug!
+
+            when "arachni_verbose"
+                print_status "Enabling #{opt}:"
+                ap @server.call( "framework.verbose_on" )
+                verbose!
 
             when 'redundant'
                 print_status 'Setting redundancy rules:'
