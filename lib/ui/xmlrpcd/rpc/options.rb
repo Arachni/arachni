@@ -27,10 +27,31 @@ class Options
     # during framework reuse.
     #
     def reset
+        # nil everything out
+        self.instance_variables.each {
+            |var|
+
+            # do *NOT* nil out @dir, we'll loose our paths!
+            next if var.to_s == '@dir'
+
+            begin
+                send( "#{var}=", nil )
+            rescue
+            end
+        }
+
         @exclude    = []
         @include    = []
         @redundant  = []
+        @lsmod      = []
         @exclude_cookies    = []
+
+        # set some defaults
+        @redirect_limit = 20
+
+        # relatively low but will give good performance without bottleneck
+        # on low bandwidth conections
+        @http_req_limit = 60
     end
 
     #
