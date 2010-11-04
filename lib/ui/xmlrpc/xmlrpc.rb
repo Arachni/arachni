@@ -133,9 +133,7 @@ class XMLRPC
 
             when "lsmod"
                 next if !arg || arg.empty?
-                print_status 'lsmod:'
-                ap @server.call( "framework.lsmod" )
-                reset
+                lsmod( @server.call( "framework.lsmod" ) )
                 exit
 
             when "debug"
@@ -243,6 +241,76 @@ class XMLRPC
         print_info( avg )
 
         print_line
+
+    end
+
+    #
+    # Outputs all available modules and their info.
+    #
+    def lsmod( mods )
+
+        i = 0
+        print_info( 'Available modules:' )
+        print_line
+
+        mods.each {
+            |info|
+
+            print_status( "#{info['mod_name']}:" )
+            print_line( "--------------------" )
+
+            print_line( "Name:\t\t"       + info['name'] )
+            print_line( "Description:\t"  + info['description'] )
+
+            if( info['elements'] && info['elements'].size > 0 )
+                print_line( "HTML Elements:\t" +
+                    info['elements'].join( ', ' ).downcase )
+            end
+
+            if( info['dependencies'] )
+                print_line( "Dependencies:\t" +
+                    info['dependencies'].join( ', ' ).downcase )
+            end
+
+            print_line( "Author:\t\t"     + info['author'] )
+            print_line( "Version:\t"      + info['version'] )
+
+            print_line( "References:" )
+            info['references'].keys.each {
+                |key|
+                print_info( key + "\t\t" + info['references'][key] )
+            }
+
+            print_line( "Targets:" )
+            info['targets'].keys.each {
+                |key|
+                print_info( key + "\t\t" + info['targets'][key] )
+            }
+
+            if( info['vulnerability'] &&
+                ( sploit = info['vulnerability']['metasploitable'] ) )
+                print_line( "Metasploitable:\t" + sploit )
+            end
+
+            print_line( "Path:\t"    + info['path'] )
+
+            i+=1
+
+            # pause every 3 modules to give the user time to read
+            # (cheers to aungkhant@yehg.net for suggesting it)
+            if( i % 3 == 0 && i != mods.size )
+                print_line
+                print_line( 'Hit <space> <enter> to continue, any other key to exit. ' )
+
+                if gets[0] != " "
+                    print_line
+                    return
+                end
+
+            end
+
+            print_line
+        }
 
     end
 
