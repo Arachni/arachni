@@ -90,7 +90,7 @@ class Framework < Arachni::Framework
 
     def auditstore
         return false if !@job
-        return YAML.dump( audit_store( true ) )
+        return YAML.dump( audit_store( true ).deep_clone )
     end
 
     #
