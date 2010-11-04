@@ -31,17 +31,33 @@ class Framework < Arachni::Framework
     #
     alias :old_run :run
     alias :old_stats :stats
+    alias :old_pause :pause
+    alias :old_paused? :paused?
+    alias :old_resume :resume
+    alias :old_lsmod :lsmod
 
-    private :old_run
+    private :old_run, :old_stats, :old_pause, :old_paused?, :old_resume, :lsmod
 
     #
     # for some reason XMLRPC's add_handler() doesn't see these methods
     # even though they were public in the parent, so we need to re-declare them ;)
     #
-    public :pause, :paused?, :resume, :lsmod
+    public :pause, :paused?, :resume, :lsmod, :lsrep
 
     def initialize( opts )
         super( opts )
+    end
+
+    def pause
+        old_pause
+    end
+
+    def paused?
+        old_paused?
+    end
+
+    def resume
+        old_resume
     end
 
     def stats
