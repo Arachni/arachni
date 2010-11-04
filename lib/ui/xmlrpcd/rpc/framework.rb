@@ -88,6 +88,11 @@ class Framework < Arachni::Framework
         return audit_store( true ).to_h.dup
     end
 
+    def auditstore
+        return false if !@job
+        return YAML.dump( audit_store( true ) )
+    end
+
     #
     # Enables debugging output
     #
