@@ -183,12 +183,12 @@ class Registry
     #
     # @return [Array<Arachni::Reports>]  the @@registry
     #
-    def Registry.clean( )
+    def Registry.clear( )
         @@registry = []
     end
 
-    def clean
-        Registry.clean
+    def clear
+        Registry.clear
     end
 
     def self.reset
