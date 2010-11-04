@@ -5,7 +5,7 @@ module Arachni
 
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
-
+require Options.instance.dir['lib'] + 'framework'
 module UI
 
 #
@@ -26,6 +26,9 @@ class XMLRPC
     def initialize( opts )
 
         @opts = opts
+
+        # we don't need the framework for much, in this case only for report generation
+        @framework = Arachni::Framework.new( @opts )
 
         banner
 
@@ -85,13 +88,32 @@ class XMLRPC
 
     def parse_opts
 
+        if( !@opts.mods || @opts.mods.empty? )
+            print_info( "No modules were specified." )
+            print_info( " -> Will run all mods." )
+
+            @opts.mods = ['*']
+        end
+
+        if( !@opts.audit_links &&
+            !@opts.audit_forms &&
+            !@opts.audit_cookies &&
+            !@opts.audit_headers
+            )
+            print_info( "No audit options were specified." )
+            print_info( " -> Will audit links, forms and cookies." )
+
+            @opts.audit_links   = true
+            @opts.audit_forms   = true
+            @opts.audit_cookies = true
+        end
+
         # do not send these options over the wire
         illegal =[
             'dir',
             'server',
-            'reports',
-            'repopts',
-            'load_profile'
+            'load_profile',
+            'repopts'
         ]
 
         @opts.to_h.each {
@@ -157,6 +179,10 @@ class XMLRPC
                 print_status 'Setting HTTP request limit:'
                 ap @server.call( "opts.http_req_limit=", arg )
 
+            when 'reports'
+                arg << 'stdout'
+                exception_jail{ @framework.reports.load( arg ) }
+
             else
                 print_status "Enabling #{opt}:"
                 ap @server.call( "opts.#{opt}=", arg )
@@ -178,10 +204,29 @@ class XMLRPC
 
     def report
         print_status "Grabbing scan report..."
-        ap @server.call( "framework.report" )
+        # ap @server.call( "framework.report" )
+        audit_store = YAML.load( @server.call( "framework.auditstore" ) )
+
+        filename = @framework.reports.run( audit_store ) + @framework.reports.extension
+
+        print_status( 'Dumping audit results in \'' + filename  + '\'.' )
+        audit_store.save( filename  )
+
+        print_status( 'Done!' )
 
         print_status "Grabbing stats..."
-        ap @server.call( "framework.stats" )
+
+        stats = @server.call( "framework.stats" )
+        print_line
+        print_info( "Sent #{stats['requests']} requests." )
+        print_info( "Received and analyzed #{stats['responses']} responses." )
+        print_info( 'In ' + stats['time'] )
+
+        avg = 'Average: ' + stats['avg'] + ' requests/second.'
+        print_info( avg )
+
+        print_line
+
     end
 
     #
@@ -194,18 +239,14 @@ class XMLRPC
     # @return [void]
     #
     def banner
-        require @opts.dir['lib'] + 'framework'
-        framework = Arachni::Framework.new( @opts )
-
         print_line 'Arachni - Web Application Security Scanner Framework v' +
-            framework.version + ' [' + framework.revision + ']
+            @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
 
        Website:       http://github.com/Zapotek/arachni
        Documentation: http://github.com/Zapotek/arachni/wiki'
-        framework = nil
         print_line
         print_line
 
