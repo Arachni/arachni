@@ -46,7 +46,7 @@ class Auditable
     end
 
     def self.reset
-        @@audited.clear
+        @@audited = []
     end
 
 
