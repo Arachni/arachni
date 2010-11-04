@@ -48,23 +48,23 @@ class Registry
     #
     def run( audit_store )
 
+        # if the user hasn't selected a filename for the report
+        # choose one for him
+        if( !@opts.repsave || @opts.repsave.size == 0 )
+            @opts.repsave = URI.parse( audit_store.options['url'] ).host +
+                '-' + Time.now.to_s
+        end
+
         loaded.each_with_index {
             |report, i|
 
-            # if the user hasn't selected a filename for the report
-            # choose one for him
-            if( !@opts.repsave || @opts.repsave.size == 0 )
-                @opts.repsave =
-                    URI.parse( audit_store.options['url'] ).host +
-                        '-' + Time.now.to_s
-            end
-
-
-            new_rep = report.new( audit_store.clone, @opts.repopts,
+            new_rep = report.new( audit_store.deep_clone, @opts.repopts,
                             @opts.repsave + REPORT_EXT )
 
             new_rep.run( )
         }
+
+        return @opts.repsave
     end
 
     #
