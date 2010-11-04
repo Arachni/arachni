@@ -37,6 +37,7 @@ module Arachni
     def self.reset
         Element::Auditable.reset
         Module::Registry.reset
+        Report::Registry.reset
         Arachni::Module::HTTP.instance.reset
     end
 
@@ -296,6 +297,9 @@ class Framework
 
             rep_info << info
         }
+
+        @reports.clear( )
+
         return rep_info
     end
 

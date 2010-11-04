@@ -9,6 +9,23 @@
 =end
 
 module Arachni
+
+#
+# The namespace under which all modules exist
+#
+module Reports
+
+    #
+    # Resets the namespace unloading all module classes
+    #
+    def self.reset
+        constants.each {
+            |const|
+            remove_const( const )
+        }
+    end
+end
+
 module Report
 
 #
@@ -48,15 +65,22 @@ class Registry
     #
     def run( audit_store )
 
-        # if the user hasn't selected a filename for the report
-        # choose one for him
-        if( !@opts.repsave || @opts.repsave.size == 0 )
-            @opts.repsave = URI.parse( audit_store.options['url'] ).host +
-                '-' + Time.now.to_s
-        end
-
         loaded.each_with_index {
             |report, i|
+
+            #
+            # if the user hasn't selected a filename for the report
+            # choose one for him
+            #
+            # You might think that it's stupid putting this inside the loop
+            # but it isn't.
+            # If 2 reports use the same extension they will overwrite each other's files.
+            #
+            if( !@opts.repsave || @opts.repsave.size == 0 )
+                @opts.repsave = URI.parse( audit_store.options['url'] ).host +
+                    '-' + Time.now.to_s
+            end
+
 
             new_rep = report.new( audit_store.deep_clone, @opts.repopts,
                             @opts.repsave + REPORT_EXT )
@@ -162,6 +186,16 @@ class Registry
     def Registry.clean( )
         @@registry = []
     end
+
+    def clean
+        Registry.clean
+    end
+
+    def self.reset
+        @@registry.clear
+        Arachni::Reports.reset
+    end
+
 
     #
     # Grabs the information of a report based on its ID
