@@ -37,6 +37,12 @@ class XMLRPC
             exit 0
         end
 
+        if opts.lsrep
+            lsrep
+            exit
+        end
+
+
         @server = ::XMLRPC::Client.new2( @opts.server )
         @server.timeout = 9999999
 
@@ -56,8 +62,8 @@ class XMLRPC
     def run
 
         exception_jail {
-            print_status 'Running framework:'
-            ap @server.call( "framework.run" )
+            print_status 'Running framework...'
+            @server.call( "framework.run" )
 
             print_line
             while( @server.call( "framework.busy?" ) )
@@ -113,7 +119,8 @@ class XMLRPC
             'dir',
             'server',
             'load_profile',
-            'repopts'
+            'repopts',
+            'repsave'
         ]
 
         @opts.to_h.each {
@@ -132,17 +139,17 @@ class XMLRPC
                 exit
 
             when "debug"
-                print_status "Enabling #{opt}:"
-                ap @server.call( "framework.debug_on" )
+                print_status "Enabling debugging mode."
+                @server.call( "framework.debug_on" )
                 debug!
 
             when "arachni_verbose"
-                print_status "Enabling #{opt}:"
-                ap @server.call( "framework.verbose_on" )
+                print_status "Enabling verbosity."
+                @server.call( "framework.verbose_on" )
                 verbose!
 
             when 'redundant'
-                print_status 'Setting redundancy rules:'
+                print_status 'Setting redundancy rules.'
 
                 redundant = []
                 arg.each {
@@ -153,12 +160,11 @@ class XMLRPC
                 @server.call( "opts.redundant=", redundant )
 
             when 'exclude', 'include'
-                print_status "Setting #{opt} rules:"
-                ap @server.call( "opts.#{opt}=", arg.map{ |rule| rule.to_s } )
+                print_status "Setting #{opt} rules."
+                @server.call( "opts.#{opt}=", arg.map{ |rule| rule.to_s } )
 
             when 'url'
-                print_status 'Setting url:'
-                ap @server.call( "opts.url=", arg.to_s )
+                print_status 'Setting url: ' + @server.call( "opts.url=", arg.to_s )
 
             when 'cookies'
                 print_status 'Setting cookies:'
@@ -169,23 +175,26 @@ class XMLRPC
                     cookies[k.strip] = v.strip
                 }
 
-                ap @server.call( "opts.cookies=", cookies )
+                @server.call( "opts.cookies=", cookies )
 
             when 'mods'
                 print_status 'Loading modules:'
-                ap @server.call( "modules.load", arg )
+                @server.call( "modules.load", arg ).each {
+                    |mod|
+                    print_info ' * ' + mod
+                }
 
             when "http_req_limit"
-                print_status 'Setting HTTP request limit:'
-                ap @server.call( "opts.http_req_limit=", arg )
+                print_status 'Setting HTTP request limit: ' +
+                    @server.call( "opts.http_req_limit=", arg ).to_s
 
             when 'reports'
                 arg << 'stdout'
                 exception_jail{ @framework.reports.load( arg ) }
 
             else
-                print_status "Enabling #{opt}:"
-                ap @server.call( "opts.#{opt}=", arg )
+                print_status "Setting #{opt}."
+                @server.call( "opts.#{opt}=", arg )
 
             end
         }
@@ -193,21 +202,29 @@ class XMLRPC
     end
 
     def shutdown
-        print_status "Shutting down..."
-        ap @server.call( "service.shutdown" )
+        print_status "Shutting down the server..."
+        @server.call( "service.shutdown" )
     end
 
     def reset
-        print_status "Resetting..."
+        print_status "Resetting the server..."
         @server.call( "service.reset" )
     end
 
     def report
         print_status "Grabbing scan report..."
         # ap @server.call( "framework.report" )
+
         audit_store = YAML.load( @server.call( "framework.auditstore" ) )
 
-        filename = @framework.reports.run( audit_store ) + @framework.reports.extension
+        filename = @framework.reports.run( audit_store )
+
+        if !filename
+            filename = URI.parse( audit_store.options['url'] ).host +
+                        '-' + Time.now.to_s
+        end
+
+        filename += @framework.reports.extension
 
         print_status( 'Dumping audit results in \'' + filename  + '\'.' )
         audit_store.save( filename  )
@@ -226,6 +243,46 @@ class XMLRPC
         print_info( avg )
 
         print_line
+
+    end
+
+    #
+    # Outputs all available reports and their info.
+    #
+    def lsrep
+        i = 0
+        print_info( 'Available reports:' )
+        print_line
+
+        @framework.lsrep().each {
+            |info|
+
+            print_status( "#{info[:rep_name]}:" )
+            print_line( "--------------------" )
+
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
+
+            if( info[:options] && info[:options].size > 0 )
+                print_line( "Options:\t" )
+
+                info[:options].each_pair {
+                    |option, info|
+                    print_info( "\t#{option} - #{info[1]}" )
+                    print_info( "\tValues: #{info[0]}" )
+
+                    print_line( )
+                }
+            end
+
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
+            print_line( "Path:\t"         + info[:path] )
+
+            i+=1
+
+            print_line
+        }
 
     end
 
@@ -367,6 +424,21 @@ class XMLRPC
                                   (You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
                                    The above will load all modules except for the 'backup_files' and 'xss' modules. )
+
+    Reports ------------------------
+
+    --lsrep                       list available reports
+
+    --repsave=<file>              save the audit results in <file>
+                                    (The file will be saved with an extention of: #{@framework.reports.extension})
+
+    --repopts=<option1>:<value>,<option2>:<value>,...
+                                  Set options for the selected reports.
+                                    (One invocation only, options will be applied to all loaded reports.)
+
+    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+                                    (Default: stdout)
+                                    (Can be used multiple times.)
 
 USAGE
     end
