@@ -72,6 +72,9 @@ class HTTP
     end
 
     def reset
+        # someone wants to reset us although nothing has been *set* in the first place
+        return if !@hydra || !@hydra_sync
+
         opts = Options.instance
         req_limit = opts.http_req_limit
 
