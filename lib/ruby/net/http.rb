@@ -29,8 +29,10 @@ def initialize_http_header( initheader )
     begin
         url = Arachni::Options.instance.url
 
-        # this is our little modification
-        basic_auth( url.user, url.password )
+        if( url )
+            # this is our little modification
+            basic_auth( url.user, url.password )
+        end
     end
 end
 
