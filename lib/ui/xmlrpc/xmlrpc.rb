@@ -58,12 +58,13 @@ class XMLRPC
         # if user wants to se the available modules
         # grab them from the server, output them, exit and reset the server.
         # not 100% sure that we need to reset but better to be safe than sorry.
-        if opts.lsmod
+        if !opts.lsmod.empty?
             lsmod( @server.call( "framework.lsmod" ) )
             reset
             exit
         end
 
+        trap( 'INT' ){ pause }
 
         #begin
             parse_opts
@@ -96,6 +97,13 @@ class XMLRPC
 
         # ensure that the framework will be reset
         reset
+    end
+
+    def pause
+        @server.call( "framework.pause" )
+        print_status( 'Paused...' )
+        gets
+        @server.call( "framework.resume" )
     end
 
     def output
