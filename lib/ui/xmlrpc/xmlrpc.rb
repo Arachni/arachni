@@ -99,12 +99,69 @@ class XMLRPC
         reset
     end
 
-    def pause
-        @server.call( "framework.pause" )
+    #
+    # Handles Ctrl+C interrupts
+    #
+    # Once an interrupt has been trapped the system pauses and waits
+    # for user input. <br/>
+    # The user can either continue or exit.
+    #
+    # The interrupt will be handled after a module has finished.
+    #
+    def pause( )
+
         print_status( 'Paused...' )
-        gets
+        @server.call( "framework.pause" )
+
+        print_line
+        print_info( 'Results thus far:' )
+
+        begin
+            print_vulns( @server.call( "framework.report" ) )
+        rescue Exception => e
+            exception_jail{ raise e }
+            exit 0
+        end
+
+        print_info( 'Arachni was interrupted,' +
+            ' do you want to continue?' )
+
+        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+
+        if gets[0] == 'e'
+            print_status( 'Aborting scan...' )
+            @server.call( "framework.abort" )
+            reset
+            print_info( 'Exiting...' )
+            exit 0
+        end
+
         @server.call( "framework.resume" )
+
     end
+
+    def print_vulns( audit_store )
+
+        print_line( )
+        print_info( audit_store['vulns'].size.to_s +
+          ' vulnerabilities were detected.' )
+
+        print_line( )
+        audit_store['vulns'].each {
+            |vuln|
+
+            print_ok( "#{vuln['name']} (In #{vuln['elem']} variable '#{vuln['var']}'" +
+              " - Severity: #{vuln['severity']} - Variations: #{vuln['variations'].size.to_s})" )
+
+            print_info( vuln['variations'][0]['url'] )
+
+            print_line( )
+        }
+
+        print_line( )
+
+    end
+
 
     def output
         @server.call( "service.output" ).each {
