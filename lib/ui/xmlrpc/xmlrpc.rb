@@ -30,24 +30,34 @@ class XMLRPC
         # we don't need the framework for much, in this case only for report generation
         @framework = Arachni::Framework.new( @opts )
 
+        # print bannger message
         banner
 
+        # if user needs help output it and exit
         if opts.help
             usage
             exit 0
         end
 
+        # if user wants to se the available reports output them and exit
         if opts.lsrep
             lsrep
             exit
         end
 
         @server = ::XMLRPC::Client.new2( @opts.server )
+
+        # there'll we a HELL of lot of output so things might get..laggy.
+        # a big timeout is required to avoid Timeout exceptions...
         @server.timeout = 9999999
 
+        # a little black magic to disable cert verification
         @server.instance_variable_get( :@http ).
             instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
+        # if user wantes to se the available modules
+        # grab them from the server, output them, exit and reset the server.
+        # not 100% sure that we need to reset but better to be safe than sorry.
         if opts.lsmod
             lsmod( @server.call( "framework.lsmod" ) )
             reset
@@ -72,9 +82,12 @@ class XMLRPC
             @server.call( "framework.run" )
 
             print_line
+
             while( @server.call( "framework.busy?" ) )
                 output
-                sleep( 1 )
+
+                # things will get crazy if we don't block for a second or so...
+                ::IO::select( nil, nil, nil, 1 )
             end
 
             puts
@@ -212,8 +225,11 @@ class XMLRPC
 
     def report
         print_status "Grabbing scan report..."
+
+        # this will return the AuditStore as a hash
         # ap @server.call( "framework.report" )
 
+        # this will return the AuditStore as a string in YAML format
         audit_store = YAML.load( @server.call( "framework.auditstore" ) )
 
         filename = @framework.reports.run( audit_store )
