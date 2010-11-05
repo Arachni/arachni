@@ -72,10 +72,14 @@ class HTTP
     end
 
     def reset
-        # someone wants to reset us although nothing has been *set* in the first place
-        return if !@hydra || !@hydra_sync
 
         opts = Options.instance
+
+        # someone wants to reset us although nothing has been *set* in the first place
+        # otherwise we'd have a url in opts
+        return if !opts.url
+
+
         req_limit = opts.http_req_limit
 
         @hydra = Typhoeus::Hydra.new(
