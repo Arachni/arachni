@@ -155,8 +155,6 @@ class CLI
         print_line
         print_info( 'Results thus far:' )
 
-        # runs the stdout report so that the user
-        # can see what has been discovered thus far
         begin
             print_vulns( @arachni.audit_store( true ) )
         rescue Exception => e
