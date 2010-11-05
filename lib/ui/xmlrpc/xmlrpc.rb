@@ -50,6 +50,7 @@ class XMLRPC
 
         if opts.lsmod
             lsmod( @server.call( "framework.lsmod" ) )
+            reset
             exit
         end
 
