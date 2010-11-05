@@ -55,7 +55,7 @@ class XMLRPC
         @server.instance_variable_get( :@http ).
             instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
-        # if user wantes to se the available modules
+        # if user wants to se the available modules
         # grab them from the server, output them, exit and reset the server.
         # not 100% sure that we need to reset but better to be safe than sorry.
         if opts.lsmod
