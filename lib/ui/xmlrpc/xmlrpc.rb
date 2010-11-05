@@ -42,12 +42,17 @@ class XMLRPC
             exit
         end
 
-
         @server = ::XMLRPC::Client.new2( @opts.server )
         @server.timeout = 9999999
 
         @server.instance_variable_get( :@http ).
             instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+
+        if opts.lsmod
+            lsmod( @server.call( "framework.lsmod" ) )
+            exit
+        end
+
 
         #begin
             parse_opts
@@ -130,11 +135,6 @@ class XMLRPC
             next if illegal.include? opt
 
             case opt
-
-            when "lsmod"
-                next if !arg || arg.empty?
-                lsmod( @server.call( "framework.lsmod" ) )
-                exit
 
             when "debug"
                 print_status "Enabling debugging mode."
