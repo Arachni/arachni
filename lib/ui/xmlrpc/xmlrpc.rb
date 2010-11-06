@@ -47,7 +47,7 @@ class XMLRPC
 
         @server = ::XMLRPC::Client.new2( @opts.server )
 
-        # there'll we a HELL of lot of output so things might get..laggy.
+        # there'll be a HELL of lot of output so things might get..laggy.
         # a big timeout is required to avoid Timeout exceptions...
         @server.timeout = 9999999
 
