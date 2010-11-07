@@ -64,7 +64,12 @@ class XMLRPC
             exit
         end
 
-        trap( 'INT' ){ pause }
+        #
+        # we could just execute pause() upon an interrupt but XMLRPC I/O
+        # needs to be synchronized otherwise we'll get an HTTP exception
+        #
+        @pause = false
+        trap( 'INT' ){ @pause = true }
 
         #begin
             parse_opts
@@ -87,8 +92,10 @@ class XMLRPC
             while( @server.call( "framework.busy?" ) )
                 output
 
+                pause if @pause
+
                 # things will get crazy if we don't block for a second or so...
-                ::IO::select( nil, nil, nil, 1 )
+                ::IO::select( nil, nil, nil, 0.3 )
             end
 
             puts
@@ -97,6 +104,19 @@ class XMLRPC
 
         # ensure that the framework will be reset
         reset
+    end
+
+    def output
+        @server.call( "service.output" ).each {
+            |out|
+            type = out.keys[0]
+            msg  = out.values[0]
+            begin
+                self.send( "print_#{type}", msg )
+            rescue
+                print_line( msg )
+            end
+        }
     end
 
     #
@@ -136,6 +156,7 @@ class XMLRPC
             exit 0
         end
 
+        @pause = false
         @server.call( "framework.resume" )
 
     end
@@ -162,19 +183,6 @@ class XMLRPC
 
     end
 
-
-    def output
-        @server.call( "service.output" ).each {
-            |out|
-            type = out.keys[0]
-            msg  = out.values[0]
-            begin
-                self.send( "print_#{type}", msg )
-            rescue
-                print_line( msg )
-            end
-        }
-    end
 
     def parse_opts
 
