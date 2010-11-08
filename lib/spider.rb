@@ -102,8 +102,6 @@ class Spider
         Anemone.crawl( @opts.url, @anemone_opts ) {
             |anemone|
 
-            pp anemone
-
             # apply 'exclude' patterns
             anemone.skip_links_like( @opts.exclude ) if @opts.exclude
 
