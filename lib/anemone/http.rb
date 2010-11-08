@@ -133,55 +133,23 @@ class HTTP
         opts['Cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
         opts['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 
-        # retries = 0
-        # begin
-            # start = Time.now()
-            # response = connection(url).get(full_path, opts)
 
-            response = Typhoeus::Request.get( url.to_s, :headers => opts )
+        response = Typhoeus::Request.get( url.to_s,
+            :headers         => opts,
+            :disable_ssl_peer_verification => true,
+            :username        => Arachni::Options.instance.url.user,
+            :password        => Arachni::Options.instance.url.password,
+            :user_agent      => Arachni::Options.instance.user_agent,
+            :follow_location => true,
+            :method          => :auto
+        )
 
-            # pp response
-            # finish = Time.now()
-            # response_time = ((finish - start) * 1000).round
+        # pp response
 
-            @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
-            return response
-        # rescue Exception => e
-        #     retries += 1
-        #
-        #     print_error( e.to_s )
-        #     print_info( ( 7 - retries ).to_s +
-        #         ' retries remaining for url: ' + url.to_s )
-        #
-        #     print_debug_backtrace( e )
-        #     refresh_connection(url)
-        #     retry unless retries > 7
-        # end
+        @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
+        return response
     end
 
-    def connection(url)
-      @connections[url.host] ||= {}
-
-      if conn = @connections[url.host][url.port]
-        return conn
-      end
-
-      refresh_connection url
-    end
-
-    def refresh_connection( url )
-
-        http = Net::HTTP.new( url.host, url.port,
-        @opts['proxy_addr'], @opts['proxy_port'],
-        @opts['proxy_user'], @opts['proxy_pass'] )
-
-        if url.scheme == 'https'
-            http.use_ssl = true
-            http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        end
-
-        @connections[url.host][url.port] = http.start
-    end
 
     def verbose?
       @opts[:verbose]
