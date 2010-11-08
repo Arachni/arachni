@@ -34,6 +34,12 @@ class XMLRPC
         # print banner message
         banner
 
+        # Check for missing url
+        if( !@opts.url )
+            print_error( "Missing url argument." )
+            exit 0
+        end
+
         # if the user needs help, output it and exit
         if opts.help
             usage
