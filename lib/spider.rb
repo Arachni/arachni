@@ -8,13 +8,7 @@
 
 =end
 
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'anemone/core.rb'
-require opts.dir['lib'] + 'anemone/http.rb'
-require opts.dir['lib'] + 'anemone/page.rb'
-require opts.dir['lib'] + 'ruby/net/http.rb'
-require 'ap'
-require 'pp'
+require Arachni::Options.instance.dir['lib'] + 'anemone'
 
 module Arachni
 
@@ -107,6 +101,8 @@ class Spider
         # start the crawl
         Anemone.crawl( @opts.url, @anemone_opts ) {
             |anemone|
+
+            pp anemone
 
             # apply 'exclude' patterns
             anemone.skip_links_like( @opts.exclude ) if @opts.exclude
