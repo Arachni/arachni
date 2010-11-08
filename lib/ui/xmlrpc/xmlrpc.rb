@@ -214,7 +214,8 @@ class XMLRPC
             'server',
             'load_profile',
             'repopts',
-            'repsave'
+            'repsave',
+            'cookies'
         ]
 
         @opts.to_h.each {
@@ -253,16 +254,12 @@ class XMLRPC
             when 'url'
                 print_status 'Setting url: ' + @server.call( "opts.url=", arg.to_s )
 
-            when 'cookies'
+            when 'cookie_jar'
                 print_status 'Setting cookies:'
-                cookies = {}
-                arg.split( ';' ).each {
-                    |cookie|
-                    k,v = cookie.split( '=', 2 )
-                    cookies[k.strip] = v.strip
+                @server.call( "opts.cookies=", parse_cookie_jar( arg ) ).each_pair {
+                    |k, v|
+                    print_info ' * ' + k + ' => ' + v
                 }
-
-                @server.call( "opts.cookies=", cookies )
 
             when 'mods'
                 print_status 'Loading modules:'
@@ -334,6 +331,16 @@ class XMLRPC
 
         print_line
 
+    end
+
+    def parse_cookie_jar( jar )
+        # make sure that the provided cookie-jar file exists
+        if !File.exist?( jar )
+            raise( Arachni::Exceptions::NoCookieJar,
+                'Cookie-jar \'' + jar + '\' doesn\'t exist.' )
+        end
+
+        return Arachni::Module::HTTP.parse_cookiejar( jar )
     end
 
     #
