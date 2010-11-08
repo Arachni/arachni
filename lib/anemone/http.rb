@@ -60,7 +60,7 @@ class HTTP
         get(url, referer) do |response, code, location, redirect_to, response_time|
           pages << Page.new(location, :body => response.body.dup,
                                       :code => code,
-                                      :headers => response.to_hash,
+                                      :headers => response.headers_hash,
                                       :referer => referer,
                                       :depth => depth,
                                       :redirect_to => redirect_to,
@@ -114,10 +114,9 @@ class HTTP
           # request url
           loc = url.merge(loc) if loc.relative?
 
-          response, response_time = get_response(loc, referer)
-          code = Integer(response.code)
+          response = get_response(loc, referer)
           redirect_to = response.is_a?(Net::HTTPRedirection) ?  URI(response['location']).normalize : nil
-          yield response, code, loc, redirect_to, response_time
+          yield response, response.code, loc, redirect_to, response.time
           limit -= 1
       end while (loc = redirect_to) && allowed?(redirect_to, url) && limit > 0
     end
@@ -134,25 +133,30 @@ class HTTP
         opts['Cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
         opts['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 
-        retries = 0
-        begin
-            start = Time.now()
-            response = connection(url).get(full_path, opts)
-            finish = Time.now()
-            response_time = ((finish - start) * 1000).round
-            @cookie_store.merge!(response['Set-Cookie']) if accept_cookies?
-            return response, response_time
-        rescue Exception => e
-            retries += 1
+        # retries = 0
+        # begin
+            # start = Time.now()
+            # response = connection(url).get(full_path, opts)
 
-            print_error( e.to_s )
-            print_info( ( 7 - retries ).to_s +
-                ' retries remaining for url: ' + url.to_s )
+            response = Typhoeus::Request.get( url.to_s, :headers => opts )
 
-            print_debug_backtrace( e )
-            refresh_connection(url)
-            retry unless retries > 7
-        end
+            # pp response
+            # finish = Time.now()
+            # response_time = ((finish - start) * 1000).round
+
+            @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
+            return response
+        # rescue Exception => e
+        #     retries += 1
+        #
+        #     print_error( e.to_s )
+        #     print_info( ( 7 - retries ).to_s +
+        #         ' retries remaining for url: ' + url.to_s )
+        #
+        #     print_debug_backtrace( e )
+        #     refresh_connection(url)
+        #     retry unless retries > 7
+        # end
     end
 
     def connection(url)
