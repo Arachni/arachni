@@ -25,7 +25,14 @@ require 'webrick/cookie'
 #
 module Anemone
 
+class Parser
+
+
+end
+
 class Page
+
+    include Arachni::UI::Output
 
     # The URL of the page
     attr_reader :url
@@ -71,6 +78,43 @@ class Page
       @error = params[:error]
 
       @fetched = !params[:code].nil?
+      @@modules ||= []
+    end
+
+    def load_modules( )
+        return @@modules if !@@modules.empty?
+
+        lib = Arachni::Options.instance.dir['modules'] + 'spider/'
+        modules = Dir.new( lib ).entries.grep( /\.rb$/ ).sort
+
+        modules.each {
+            |n|
+
+            f = File.join( lib, n )
+            m = ::Module.new
+
+            begin
+                m.module_eval( File.read( f, File.size( f ) ) )
+                m.constants.each {
+                    |mod|
+
+                    print_status( "Loaded Spider module \"#{mod}\"..." )
+
+                    klass = m.const_get( mod )
+                    @@modules << klass.new
+
+                }
+            rescue ::Exception => e
+                print_error( "Spider module #{n} failed to load: #{e.class} #{e}" )
+                print_debug_backtrace( e )
+            end
+        }
+
+        return @@modules
+    end
+
+    def run_modules
+        return load_modules.map { |mod| mod.parse( doc ) }.flatten.uniq
     end
 
     #
@@ -81,22 +125,16 @@ class Page
       @links = []
       return @links if !doc
 
-      doc.search("//a[@href]").each do |a|
-        u = a['href']
-        next if u.nil? or u.empty?
-        abs = to_absolute(URI(u)) rescue next
-        @links << abs if in_domain?(abs)
-      end
+      run_modules( ).each {
+          |path|
+          next if path.nil? or path.empty?
+          abs = to_absolute( URI( path ) ) rescue next
 
-        doc.css('frame', 'iframe').each do |a|
-            u = a.attributes['src'].content rescue nil
-            next if u.nil? or u.empty?
-            abs = to_absolute(URI(u)) rescue next
-            @links << abs if in_domain?(abs)
-        end
+          @links << abs if in_domain?( abs )
+      }
 
-        @links.uniq!
-        return @links
+      @links.uniq!
+      return @links
     end
 
     #
@@ -104,7 +142,6 @@ class Page
     #
     def doc
       return @doc if @doc
-#      @doc = Nokogiri::HTML( @body ) if @body && html? rescue nil
       @doc = Nokogiri::HTML( @body ) if @body rescue nil
     end
 
