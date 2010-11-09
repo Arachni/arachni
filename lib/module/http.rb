@@ -211,6 +211,7 @@ class HTTP
     #                         * :train   => force Arachni to analyze the HTML code || false
     #                         * :async   => make the request async? || true
     #                         * :headers => HTTP request headers  || {}
+    #                         * :follow_location => follow redirects || false
     #
     # @return [Typhoeus::Request]
     #
@@ -219,6 +220,8 @@ class HTTP
         params    = opts[:params]    || {}
         remove_id = opts[:remove_id]
         train     = opts[:train]
+
+        follow_location    = opts[:follow_location]    || false
 
         async     = opts[:async]
         async     = true if async == nil
@@ -239,7 +242,7 @@ class HTTP
             opts = {
                 :headers       => headers,
                 :params        => params,
-                :follow_location => false
+                :follow_location => follow_location
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
