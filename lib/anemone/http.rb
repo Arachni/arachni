@@ -107,26 +107,14 @@ class HTTP
     # for each response.
     #
     def get(url, referer = nil)
-      limit = redirect_limit
-      loc = url
-      begin
-          # if redirected to a relative url, merge it with the host of the original
-          # request url
-          loc = url.merge(loc) if loc.relative?
-
-          response = get_response(loc, referer)
-          redirect_to = response.is_a?(Net::HTTPRedirection) ?  URI(response['location']).normalize : nil
-          yield response, response.code, loc, redirect_to, response.time
-          limit -= 1
-      end while (loc = redirect_to) && allowed?(redirect_to, url) && limit > 0
+        response = get_response(url, referer)
+        yield response, response.code, url, '', response.time
     end
 
     #
     # Get an HTTPResponse for *url*, sending the appropriate User-Agent string
     #
     def get_response(url, referer = nil)
-        full_path = url.query.nil? ? url.path : "#{url.path}?#{url.query}"
-
         opts = {}
         opts['User-Agent'] = user_agent if user_agent
         opts['Referer'] = referer.to_s if referer
