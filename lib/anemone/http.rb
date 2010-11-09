@@ -116,23 +116,18 @@ class HTTP
     #
     def get_response(url, referer = nil)
         opts = {}
-        opts['User-Agent'] = user_agent if user_agent
         opts['Referer'] = referer.to_s if referer
-        opts['Cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
-        opts['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        opts['cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
 
-
-        response = Typhoeus::Request.get( url.to_s,
+        response = Arachni::Module::HTTP.instance.get( url.to_s,
             :headers         => opts,
-            :disable_ssl_peer_verification => true,
-            :username        => Arachni::Options.instance.url.user,
-            :password        => Arachni::Options.instance.url.password,
-            :user_agent      => Arachni::Options.instance.user_agent,
             :follow_location => true,
-            :method          => :auto
-        )
+            :async           => false,
+            :remove_id       => true
+        ).response
 
-        # pp response
+        # pp response.headers_hash['Set-Cookie']
+        # pp @cookie_store
 
         @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
         return response
