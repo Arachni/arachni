@@ -81,6 +81,11 @@ class Page
       @@modules ||= []
     end
 
+    #
+    # Loads and returns all Spider (path extraction) modules
+    #
+    # @return   [Array]     module instances
+    #
     def load_modules( )
         return @@modules if !@@modules.empty?
 
@@ -88,24 +93,24 @@ class Page
         modules = Dir.new( lib ).entries.grep( /\.rb$/ ).sort
 
         modules.each {
-            |n|
+            |mod_path|
 
-            f = File.join( lib, n )
-            m = ::Module.new
+            file      = File.join( lib, mod_path )
+            namespace = ::Module.new
 
             begin
-                m.module_eval( File.read( f, File.size( f ) ) )
-                m.constants.each {
+                namespace.module_eval( File.read( file, File.size( file ) ) )
+                namespace.constants.each {
                     |mod|
 
-                    print_status( "Loaded Spider module \"#{mod}\"..." )
-
-                    klass = m.const_get( mod )
+                    klass = namespace.const_get( mod )
                     @@modules << klass.new
+
+                    print_status( "Loaded Spider module \"#{mod}\"." )
 
                 }
             rescue ::Exception => e
-                print_error( "Spider module #{n} failed to load: #{e.class} #{e}" )
+                print_error( "Spider module #{mod_path} failed to load: #{e.class} #{e}" )
                 print_debug_backtrace( e )
             end
         }
@@ -113,12 +118,19 @@ class Page
         return @@modules
     end
 
+    #
+    # Runs all Spider (path extraction) modules and returns an array of paths
+    #
+    # @return   [Array]   paths
+    #
     def run_modules
         return load_modules.map { |mod| mod.parse( doc ) }.flatten.uniq
     end
 
     #
-    # Array of distinct A tag HREFs from the page
+    # Array of distinct links to follow
+    #
+    # @return   [Array<URI>]
     #
     def links
       return @links unless @links.nil?
