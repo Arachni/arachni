@@ -11,8 +11,6 @@
 #
 # Extracts paths from "link" HTML elements.
 #
-# To be implemented...
-#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -28,6 +26,7 @@ class Links < Anemone::Parser
     # @return   [Array<String>]  paths
     #
     def parse( doc )
+        doc.search( "//link[@href]" ).map { |a| pp a['href'] }
     end
 
 end

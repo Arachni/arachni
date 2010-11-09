@@ -11,8 +11,6 @@
 #
 # Extracts paths from "script" HTML elements.
 #
-# To be implemented...
-#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -28,6 +26,7 @@ class Scripts < Anemone::Parser
     # @return   [Array<String>]  paths
     #
     def parse( doc )
+        doc.search( "//script[@src]" ).map { |a| a['src'] }
     end
 
 end

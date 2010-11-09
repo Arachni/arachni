@@ -11,8 +11,6 @@
 #
 # Extracts paths from "form" HTML elements.
 #
-# To be implemented...
-#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -28,6 +26,7 @@ class Forms < Anemone::Parser
     # @return   [Array<String>]  paths
     #
     def parse( doc )
+        doc.search( "//form[@action]" ).map { |a| a['action'] }
     end
 
 end
