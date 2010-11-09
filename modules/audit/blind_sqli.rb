@@ -90,6 +90,8 @@ class BlindSQLInjection < Arachni::Module::Base
             @__candidate = link if link.action == @page.url
         }
 
+        return if !@__candidate
+
         # let's get a fresh rendering of the page to assist us with
         # irrelevant dynamic content elimination (banners, ads, etc...)
         opts = {}
