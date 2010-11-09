@@ -119,14 +119,22 @@ class HTTP
         opts['Referer'] = referer.to_s if referer
         opts['cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
 
-        response = Arachni::Module::HTTP.instance.get( url.to_s,
-            :headers         => opts,
-            :follow_location => true,
-            :async           => false,
-            :remove_id       => true
-        ).response
+        # response = Arachni::Module::HTTP.instance.get( url.to_s,
+        #     :headers         => opts,
+        #     :follow_location => true,
+        #     :async           => false,
+        #     :remove_id       => true
+        # ).response
 
-        # response = Typhoeus::Request.get( url.to_s )
+        response = Typhoeus::Request.get( url.to_s,
+            :headers                       => opts,
+            :disable_ssl_peer_verification => true,
+            :username                      => Arachni::Options.instance.url.user,
+            :password                      => Arachni::Options.instance.url.password,
+            :method                        => :auto,
+            :user_agent                    => Arachni::Options.instance.user_agent,
+            :follow_location               => true
+        )
 
         # pp response.headers_hash['Set-Cookie']
         # pp @cookie_store
