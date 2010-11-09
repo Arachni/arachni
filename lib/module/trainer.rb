@@ -161,7 +161,8 @@ class Trainer
             # ap  res[0].request.headers
 
             # @page.headers    = res[0].request.headers
-            @page.query_vars = @parser.link_vars( @page.url ).dup
+            @page.query_vars = @parser.link_vars( @parser.url ).dup
+            @page.url        = @parser.url.dup
 
         end
 
