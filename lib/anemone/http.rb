@@ -126,6 +126,8 @@ class HTTP
             :remove_id       => true
         ).response
 
+        # response = Typhoeus::Request.get( url.to_s )
+
         # pp response.headers_hash['Set-Cookie']
         # pp @cookie_store
 
