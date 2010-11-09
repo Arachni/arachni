@@ -26,7 +26,7 @@ class Links < Anemone::Parser
     # @return   [Array<String>]  paths
     #
     def parse( doc )
-        doc.search( "//link[@href]" ).map { |a| pp a['href'] }
+        doc.search( "//link[@href]" ).map { |a| a['href'] }
     end
 
 end
