@@ -25,8 +25,31 @@ require 'webrick/cookie'
 #
 module Anemone
 
+#
+# Base Spider parser class for modules.
+#
+# The aim of such modules is to extract paths from a webpage for the Spider to follow.
+#
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+# @abstract
+#
 class Parser
 
+    #
+    # This method must be implemented by all modules and must return an array
+    # of paths as plain strings
+    #
+    # @param    [Nokogiri]  Nokogiri document
+    #
+    # @return   [Array<String>]  paths
+    #
+    def parse( doc )
+
+    end
 
 end
 
