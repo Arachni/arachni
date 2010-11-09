@@ -104,6 +104,7 @@ class Parser
 
         end
 
+        cookies_arr << cookies( headers['Set-Cookie'].to_s )
         cookies_arr << cookies( headers['set-cookie'].to_s )
         cookies_arr.flatten!.uniq!
 
