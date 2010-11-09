@@ -47,7 +47,7 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        return if res.code != 200
+        return if res.code != 200 && res.code != 0
 
         begin
             url = res.effective_url
