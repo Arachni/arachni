@@ -241,7 +241,7 @@ class HTTP
 
             opts = {
                 :headers       => headers,
-                :params        => params,
+                :params        => params.empty? ? nil : params,
                 :follow_location => follow_location
             }.merge( @opts )
 
