@@ -55,7 +55,7 @@ class Spider
     def initialize( opts )
         @opts = opts
         @anemone_opts = {
-            :threads              =>  3,
+            :threads              =>  1,
             :discard_page_bodies  =>  false,
             :delay                =>  0,
             :obey_robots_txt      =>  false,
