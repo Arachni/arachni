@@ -8,7 +8,6 @@
 
 =end
 
-require 'net/https'
 require Arachni::Options.instance.dir['lib'] + 'anemone/page'
 require Arachni::Options.instance.dir['lib'] + 'anemone/cookie_store'
 
