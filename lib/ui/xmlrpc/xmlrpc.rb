@@ -6,12 +6,21 @@ module Arachni
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
+
 module UI
 
 #
 # Arachni::UI:XMLRPC class
 #
-# Provides an Arachni XML-RPC client.
+# Provides an self sufficient Arachni XML-RPC client.
+#
+# It mimics the standard CLI interface's functionality
+# albeit in a client-server fashion.
+#
+# This should be your first stop when looking into creating your own XMLRPC client. <br/>
+# Of course you don't need to instantiate the framework or any other Arachni related classes
+# in your own client, this is just to provide some other info to the user.
+#
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -52,6 +61,7 @@ class XMLRPC
             exit
         end
 
+        # start the XMLRPC client
         @server = ::XMLRPC::Client.new2( @opts.server )
 
         # there'll be a HELL of lot of output so things might get..laggy.
@@ -96,6 +106,7 @@ class XMLRPC
 
             print_line
 
+            # grab the XMLRPC server output while a scan is running
             while( @server.call( "framework.busy?" ) )
                 output
 
@@ -114,6 +125,11 @@ class XMLRPC
         reset
     end
 
+    private
+
+    #
+    # Grabs the output from the XMLRPC server and routes it to the proper output method.
+    #
     def output
         @server.call( "service.output" ).each {
             |out|
@@ -144,6 +160,10 @@ class XMLRPC
         print_line
         print_info( 'Results thus far:' )
 
+        #
+        # make it easier on the user, grab the report to have something
+        # to show him while the scan is paused.
+        #
         begin
             print_vulns( @server.call( "framework.report" ) )
         rescue Exception => e
@@ -169,6 +189,11 @@ class XMLRPC
 
     end
 
+    #
+    # Laconically output the discovered vulnerabilties/
+    #
+    # This method is used during a pause.
+    #
     def print_vulns( audit_store )
 
         print_line( )
@@ -191,9 +216,14 @@ class XMLRPC
 
     end
 
-
+    #
+    # Parses, sets and sends options to the XMLRPC server.
+    #
     def parse_opts
 
+        #
+        # No modules have been specified, set the mods to '*' (all).
+        #
         if( !@opts.mods || @opts.mods.empty? )
             print_info( "No modules were specified." )
             print_info( " -> Will run all mods." )
@@ -201,6 +231,9 @@ class XMLRPC
             @opts.mods = ['*']
         end
 
+        #
+        # The user hasn't selected any elements to audit, set it to audit links, forms and cookies.
+        #
         if( !@opts.audit_links &&
             !@opts.audit_forms &&
             !@opts.audit_cookies &&
@@ -215,12 +248,24 @@ class XMLRPC
         end
 
         # do not send these options over the wire
-        illegal =[
+        illegal = [
+            # this is bad, do not override the server's directory structure
             'dir',
+
+            # this is of no use to the server is a local option for this UI
             'server',
+
+            # profiles are not to be sent over the wire
             'load_profile',
+
+            # report options should remain local
+            # If you send this to the server it will cause a Ruby segfault.
             'repopts',
             'repsave',
+
+            # do not automatically send this options over
+            # we'll take care of this ourselves as soon as we get to the 'cookie_jar'
+            # option.
             'cookies'
         ]
 
@@ -291,16 +336,25 @@ class XMLRPC
 
     end
 
+    #
+    # Remote kill-switch, shuts down the server
+    #
     def shutdown
         print_status "Shutting down the server..."
         @server.call( "service.shutdown" )
     end
 
+    #
+    # Resets the server preparing it for re-use.
+    #
     def reset
         print_status "Resetting the server..."
         @server.call( "service.reset" )
     end
 
+    #
+    # Grabs the report from the XMLRPC server and runs the selected Arachni report module.
+    #
     def report
         print_status "Grabbing scan report..."
 
@@ -310,6 +364,7 @@ class XMLRPC
         # this will return the AuditStore as a string in YAML format
         audit_store = YAML.load( @server.call( "framework.auditstore" ) )
 
+        # run the loaded reports and get the generated filename
         filename = @framework.reports.run( audit_store )
 
         if !filename
