@@ -339,7 +339,7 @@ class Framework
     end
 
     def prepare_cookie_jar(  )
-        return if !@opts.cookie_jar
+        return if !@opts.cookie_jar || !@opts.cookie_jar.is_a?( String )
 
         # make sure that the provided cookie-jar file exists
         if !File.exist?( @opts.cookie_jar )
