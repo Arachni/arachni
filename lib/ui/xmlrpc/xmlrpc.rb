@@ -43,12 +43,6 @@ class XMLRPC
         # print banner message
         banner
 
-        # Check for missing url
-        if( !@opts.url )
-            print_error( "Missing url argument." )
-            exit 0
-        end
-
         # if the user needs help, output it and exit
         if opts.help
             usage
@@ -60,6 +54,13 @@ class XMLRPC
             lsrep
             exit
         end
+
+        # Check for missing url
+        if( !@opts.url && !@opts.lsmod )
+            print_error( "Missing url argument." )
+            exit 0
+        end
+
 
         # start the XMLRPC client
         @server = ::XMLRPC::Client.new2( @opts.server )
