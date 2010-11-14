@@ -15,8 +15,6 @@ module UI
 #
 # XML-RPC deamon Output module
 #
-# Provides a command line output interface to the framework.
-#
 # It basically classifies and buffers all system messages until it's time to
 # flush the buffer and send them over the wire.
 #

@@ -15,7 +15,10 @@ require Options.instance.dir['lib'] + 'module/manager'
 module UI
 module RPCD
 module Module
+
 #
+# We need to extend the original Manager and redeclare its inherited methods
+# which are required over XMLRPC.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

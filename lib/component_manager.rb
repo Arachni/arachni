@@ -1,16 +1,52 @@
+=begin
+                  Arachni
+  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
 
 module Arachni
 
+#
+# Component Manager
+#
+# Handles modules, reports, path extrator modules, plug-ins, pretty much
+# every modular aspect of the framework.
+#
+# It is usually extended to fill-in for system specific functionality.
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+#
 class ComponentManager < Hash
 
+    #
+    # The following are used by {#parse}:
+    #    * '*' means all modules
+    #    * module names prefixed with '-' will be excluded
+    #
     WILDCARD = '*'
     EXCLUDE  = '-'
 
+    #
+    # @param    [String]    the path to the component library/folder
+    # @param    [Module]    the parent module of the components
+    #
     def initialize( lib, parent )
         @lib    = lib
         @parent = parent
     end
 
+    #
+    # Loads components
+    #
+    # @param [Array]    mods    array of names of components to load
+    #
     def load( components )
         parse( components ).each {
             |component|
@@ -18,6 +54,11 @@ class ComponentManager < Hash
         }
     end
 
+    #
+    # It parses the component array making sure that its structure is valid
+    #
+    # @param    [Array]     array of component names
+    #
     def parse( components )
         unload = []
         load   = []
@@ -58,6 +99,13 @@ class ComponentManager < Hash
         return load - unload
     end
 
+    #
+    # Returns a component class object by name, loading it on the fly need be.
+    #
+    # @param    [String]    name    component name
+    #
+    # @return   [Class]
+    #
     def []( name )
 
         return fetch( name ) if include?( name )
@@ -74,6 +122,11 @@ class ComponentManager < Hash
         return fetch( name ) rescue nil
     end
 
+    #
+    # Returns array of available component names.
+    #
+    # @return    [Array]
+    #
     def available
         components = []
         paths.each {
@@ -84,6 +137,13 @@ class ComponentManager < Hash
         return components
     end
 
+    #
+    # Converts the name of a component to a file-path.
+    #
+    # @param    [String]    name    the name of the component
+    #
+    # @return   [String]
+    #
     def name_to_path( name )
         paths.each {
             |path|
@@ -92,10 +152,22 @@ class ComponentManager < Hash
         return
     end
 
+    #
+    # Converts the path of a component to a component name.
+    #
+    # @param    [String]    path    the file-path of the component
+    #
+    # @return   [String]
+    #
     def path_to_name( path )
         File.basename( path, '.rb' )
     end
 
+    #
+    # Returns the paths of all available components (excluding helper files).
+    #
+    # @return   [Array]
+    #
     def paths
         cpaths = paths = Dir.glob( File.join( "#{@lib}**", "*.rb" ) )
         return paths.reject {
