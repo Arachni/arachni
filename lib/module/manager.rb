@@ -31,27 +31,23 @@ module Module
 #
 # Arachni::Module::Manager class
 #
-# Holds and manages the registry of the modules and their results.
+# Holds and manages the modules and their results.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.1
 #
 class Manager < Arachni::ComponentManager
 
     include Arachni::UI::Output
 
     #
-    # Initializes Arachni::Module::Registry with the module library
-    #
-    # @param [String] lib path the the module directory
+    # @param    [Arachni::Options]  opts
     #
     def initialize( opts )
-        super( opts.dir['reports'], Arachni::Modules )
+        super( opts.dir['modules'], Arachni::Modules )
         @opts = opts
-        @lib  = opts.dir['modules']
-
         @@results  = []
     end
 
