@@ -38,9 +38,9 @@ module Arachni
     #
     def self.reset
         Element::Auditable.reset
-        Module::Registry.reset
-        Report::Registry.reset
-        Arachni::Module::HTTP.instance.reset
+        Module::Manager.reset
+        Report::Manager.reset
+        Arachni::HTTP.instance.reset
     end
 
 #
@@ -96,20 +96,7 @@ class Framework
         @opts = opts
 
         @modules = Arachni::Module::Manager.new( @opts )
-
-        # pp mods = @modules.parse( opts.mods )
-        # pp @modules[ mods[0] ]
-        # pp @modules
-
         @reports = Arachni::Report::Manager.new( @opts )
-
-        # pp reps = @reports.parse( opts.reports )
-        # pp @reports[ reps[0] ]
-        # pp @reports
-
-
-        # @modules = Arachni::Module::Registry.new( @opts )
-        # @reports = Arachni::Report::Registry.new( @opts )
 
         prepare_cookie_jar( )
         prepare_user_agent( )
@@ -209,6 +196,8 @@ class Framework
 
         # restore the original redundacy rules and their counters
         @opts.redundant = @orig_redundant
+        opts = @opts.to_h
+        opts['mods'] = @modules.keys
 
         if( !fresh && @store )
             return @store
@@ -216,7 +205,7 @@ class Framework
             return @store = AuditStore.new( {
                 :version  => VERSION,
                 :revision => REVISION,
-                :options  => @opts.to_h,
+                :options  => opts,
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
                 :vulns    => @modules.results( ).deep_clone
             } )
