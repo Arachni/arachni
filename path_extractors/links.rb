@@ -8,6 +8,8 @@
 
 =end
 
+module Anemone::Extractors
+
 #
 # Extracts paths from "link" HTML elements.
 #
@@ -16,7 +18,7 @@
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Links < Anemone::Parser
+class Links < Paths
 
     #
     # Returns an array of paths as plain strings
@@ -29,4 +31,5 @@ class Links < Anemone::Parser
         doc.search( "//link[@href]" ).map { |a| a['href'] }
     end
 
+end
 end

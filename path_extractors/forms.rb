@@ -8,6 +8,8 @@
 
 =end
 
+module Anemone::Extractors
+
 #
 # Extracts paths from "form" HTML elements.
 #
@@ -16,7 +18,7 @@
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Forms < Anemone::Parser
+class Forms < Paths
 
     #
     # Returns an array of paths as plain strings
@@ -29,4 +31,5 @@ class Forms < Anemone::Parser
         doc.search( "//form[@action]" ).map { |a| a['action'] }
     end
 
+end
 end

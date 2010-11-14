@@ -8,6 +8,8 @@
 
 =end
 
+module Anemone::Extractors
+
 #
 # Extracts paths from frames.
 #
@@ -16,7 +18,7 @@
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Frames < Anemone::Parser
+class Frames < Paths
 
     #
     # Returns an array of paths as plain strings
@@ -32,4 +34,5 @@ class Frames < Anemone::Parser
         }
     end
 
+end
 end

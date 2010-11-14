@@ -8,6 +8,8 @@
 
 =end
 
+module Anemone::Extractors
+
 #
 # Extracts paths from anchor elements.
 #
@@ -16,7 +18,7 @@
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Anchors < Anemone::Parser
+class Anchors < Paths
 
     #
     # Returns an array of paths as plain strings
@@ -29,4 +31,5 @@ class Anchors < Anemone::Parser
         doc.search( "//a[@href]" ).map { |a| a['href'] }
     end
 
+end
 end

@@ -12,7 +12,6 @@ require 'nokogiri'
 require 'ostruct'
 require 'webrick/cookie'
 
-
 #
 # Overides Anemone's Page class methods:<br/>
 # o in_domain?( uri ): adding support for subdomain crawling<br/>
@@ -25,6 +24,7 @@ require 'webrick/cookie'
 #
 module Anemone
 
+module Extractors
 #
 # Base Spider parser class for modules.
 #
@@ -37,7 +37,7 @@ module Anemone
 # @version: 0.1
 # @abstract
 #
-class Parser
+class Paths
 
     #
     # This method must be implemented by all modules and must return an array
@@ -50,7 +50,7 @@ class Parser
     def parse( doc )
 
     end
-
+end
 end
 
 class Page
@@ -105,49 +105,30 @@ class Page
     end
 
     #
-    # Loads and returns all Spider (path extraction) modules
-    #
-    # @return   [Array]     module instances
-    #
-    def load_modules( )
-        return @@modules if !@@modules.empty?
-
-        lib = Arachni::Options.instance.dir['pwd'] + 'path_extractors/'
-        modules = Dir.new( lib ).entries.grep( /\.rb$/ ).sort
-
-        modules.each {
-            |mod_path|
-
-            file      = File.join( lib, mod_path )
-            namespace = ::Module.new
-
-            begin
-                namespace.module_eval( File.read( file, File.size( file ) ) )
-                namespace.constants.each {
-                    |mod|
-
-                    klass = namespace.const_get( mod )
-                    @@modules << klass.new
-
-                    print_status( "Loaded Spider module \"#{mod}\"." )
-
-                }
-            rescue ::Exception => e
-                print_error( "Spider module #{mod_path} failed to load: #{e.class} #{e}" )
-                print_debug_backtrace( e )
-            end
-        }
-
-        return @@modules
-    end
-
-    #
     # Runs all Spider (path extraction) modules and returns an array of paths
     #
     # @return   [Array]   paths
     #
     def run_modules
-        return load_modules.map { |mod| mod.parse( doc ) }.flatten.uniq
+        opts = Arachni::Options.instance
+        require opts.dir['lib'] + 'component_manager'
+
+        lib = opts.dir['pwd'] + 'path_extractors/'
+
+
+        begin
+            manager = ::Arachni::ComponentManager.new( lib, Extractors )
+            manager.available
+
+            return manager.available.map {
+                |name|
+                manager[name].new.parse( doc )
+            }.flatten.uniq
+
+        rescue ::Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+        end
     end
 
     #

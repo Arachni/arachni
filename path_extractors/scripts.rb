@@ -8,6 +8,8 @@
 
 =end
 
+module Anemone::Extractors
+
 #
 # Extracts paths from "script" HTML elements.
 #
@@ -16,7 +18,7 @@
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Scripts < Anemone::Parser
+class Scripts < Paths
 
     #
     # Returns an array of paths as plain strings
@@ -29,4 +31,5 @@ class Scripts < Anemone::Parser
         doc.search( "//script[@src]" ).map { |a| a['src'] }
     end
 
+end
 end
