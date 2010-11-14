@@ -56,6 +56,44 @@ class ComponentManager < Hash
         }
     end
 
+    def prep_opts( component_name, component, user_opts = {} )
+        info = component.info
+        return {} if !info.include?( :options ) || info[:options].empty?
+
+        options = { }
+        errors  = { }
+        info[:options].each {
+            |opt|
+
+            name  = opt.name
+            val   = user_opts[name]
+
+            if( opt.empty_required_value?( val ) )
+                errors[name] = {
+                    :opt   => opt,
+                    :value => val,
+                    :type  => :empty_required_value
+                }
+            elsif( !opt.valid?( val ) )
+                errors[name] = {
+                    :opt   => opt,
+                    :value => val,
+                    :type  => :invalid
+                }
+            end
+
+            val = !val.nil? ? val : opt.default
+            options[name] = opt.normalize( val )
+        }
+
+        if( !errors.empty? )
+            print_errors( component_name, errors )
+        end
+
+        return options
+    end
+
+
     #
     # It parses the component array making sure that its structure is valid
     #
@@ -177,6 +215,33 @@ class ComponentManager < Hash
     end
 
     private
+
+    def print_errors( name, errors )
+
+        print_line
+        print_line
+
+        print_error( "Invalid options for plugin: #{name}" )
+
+        errors.each {
+            |optname, error|
+
+            val = error[:value].nil? ? '<empty>' : error[:value]
+
+            if( error[:type] == :invalid )
+                msg = "Invalid type"
+            else
+                msg = "Empty required value"
+            end
+
+            print_info( " *  #{msg}: #{optname} => #{val}" )
+            print_info( " *  Expected type: #{error[:opt].type}" )
+
+            print_line
+        }
+
+        exit
+    end
 
     def load_from_path( path )
         ::Kernel::load( path )

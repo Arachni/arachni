@@ -60,12 +60,6 @@ class HTML < Arachni::Report::Base
     def self.info
         {
             :name           => 'HTML Report',
-            :options        => {
-                'headers' =>
-                    ['true/false (Default: true)', 'Include headers in the report?' ],
-                'html_response' =>
-                    [ 'true/false (Default: true)', 'Include the HTML response in the report?' ]
-            },
             :description    => %q{Exports a report as an HTML document.},
             :author         => 'zapotek',
             :version        => '0.1',

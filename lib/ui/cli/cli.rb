@@ -74,8 +74,8 @@ class CLI
         # *do not* forget this check, otherwise the reports registry
         # will desync
         #
-        if( @opts.reports.size == 0 && !@opts.lsrep )
-            @opts.reports << 'stdout'
+        if( @opts.reports.empty? && @opts.lsrep.empty? )
+            @opts.reports['stdout'] = {}
         end
 
         # instantiate the big-boy!
@@ -257,6 +257,7 @@ class CLI
                     exit 0
 
                 when 'lsrep'
+                    next if arg.empty?
                     lsrep
                     exit 0
 
@@ -282,7 +283,7 @@ class CLI
                     end
 
                 when 'reports'
-                    exception_jail{ @arachni.reports.load( arg ) }
+                    exception_jail{ @arachni.reports.load( arg.keys ) }
 
                 when 'plugins'
                     exception_jail{ @arachni.plugins.load( arg.keys ) }
@@ -396,10 +397,11 @@ class CLI
             if( info[:options] && !info[:options].empty? )
                 print_line( "Options:\t" )
 
-                info[:options].each_pair {
-                    |option, info|
-                    print_info( "\t#{option} - #{info[1]}" )
-                    print_info( "\tValues: #{info[0]}" )
+                info[:options].each {
+                    |option|
+                    print_info( "\t#{option.name} - #{option.desc}" )
+                    print_info( "\tType:    #{option.type}" )
+                    print_info( "\tDefault: #{option.default}" )
 
                     print_line( )
                 }
@@ -675,11 +677,8 @@ USAGE
     --repload=<file>              load audit results from <file>
                                     (Allows you to create a new reports from old/finished scans.)
 
-    --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected reports.
-                                    (One invocation only, options will be applied to all loaded reports.)
-
-    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+    --report=<report>:<optname>=<val>,<optname2>=<val2>,...
+                                  <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
 

@@ -55,20 +55,11 @@ class Base
             #
             # Arachni doesn't do any checking whatsoever.
             #
-            :options        => {
-                # option name
-                'option_one_something' =>
-                    [   # the available values for the option
-                        'true/false (Default: true)',
-                        # the description of the option
-                        'Do something?'
-                    ],
-                'option_two_something' =>
-                    [
-                        '1..inf (Default: inf)',
-                        'How many times to do something?'
-                    ]
-            },
+            :options        => [
+                #                    option name    required?       description                         default
+                # Arachni::OptBool.new( 'html',    [ false, 'Include the HTML responses in the report?', true ] ),
+                # Arachni::OptBool.new( 'headers', [ false, 'Include the headers in the report?', true ] ),
+            ],
             :description    => %q{This class should be extended by all reports.},
             :author         => 'zapotek',
             :version        => '0.1',

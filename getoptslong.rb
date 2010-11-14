@@ -16,7 +16,7 @@ opts = GetoptLong.new(
     [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
     [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
     [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
-    [ '--lsrep',                   GetoptLong::NO_ARGUMENT ],
+    [ '--lsrep',                   GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
     [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
@@ -131,7 +131,7 @@ begin
                 options.lsplug << Regexp.new( arg.to_s )
 
             when '--lsrep'
-                options.lsrep = true
+                options.lsrep << Regexp.new( arg.to_s )
 
             when '--threads'
                 options.threads = arg.to_i
@@ -158,7 +158,19 @@ begin
                 options.mods = arg.to_s.split( /,/ )
 
             when '--report'
-                options.reports << arg
+                report, opt_str = arg.split( ':' )
+
+                opts = {}
+                if( opt_str )
+                    opt_arr = opt_str.split( ',' )
+                    opt_arr.each {
+                        |opt|
+                        name, val = opt.split( '=' )
+                        opts[name] = val
+                    }
+                end
+
+                options.reports[report] = opts
 
             when '--repload'
                 options.repload = arg

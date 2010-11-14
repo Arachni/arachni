@@ -197,13 +197,6 @@ class Options
     attr_accessor :repsave
 
     #
-    # Options to be passed to the reports
-    #
-    # @return    [Hash]     name=>value pairs
-    #
-    attr_accessor :repopts
-
-    #
     # Where to save the Arachni Framework Profile (.afp) file
     #
     # @return    [String]
@@ -353,9 +346,11 @@ class Options
         @exclude    = []
         @include    = []
         @redundant  = []
-        @reports    = []
+
+        @reports    = {}
+        @lsrep      = []
+
         @lsmod      = []
-        @repopts    = Hash.new
         @dir        = Hash.new
         @exclude_cookies    = []
         @load_profile       = []

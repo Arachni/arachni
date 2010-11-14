@@ -72,8 +72,9 @@ class Manager < Arachni::ComponentManager
                     '-' + Time.now.to_s
             end
 
-            new_rep = report.new( audit_store.deep_clone, @opts.repopts,
-                            @opts.repsave + EXTENSION )
+            new_rep = report.new( audit_store.deep_clone,
+                prep_opts( name, report, @opts.reports[name] ),
+                @opts.repsave + EXTENSION )
 
             new_rep.run( )
         }
