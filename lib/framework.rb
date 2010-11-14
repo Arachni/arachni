@@ -448,16 +448,9 @@ class Framework
             # instantiate the module
             mod_new = mod.new( page )
 
-            # run the methods specified by the module API
-
-            # optional
-            mod_new.prepare   if mod.method_defined?( 'prepare' )
-
-            # mandatory
+            mod_new.prepare
             mod_new.run
-
-            # optional
-            mod_new.clean_up  if mod.method_defined?( 'clean_up' )
+            mod_new.clean_up
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
