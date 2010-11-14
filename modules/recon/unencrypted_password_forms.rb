@@ -13,7 +13,6 @@
 module Arachni
 
 module Modules
-module Recon
 
 #
 # Unencrypted password form
@@ -28,8 +27,6 @@ module Recon
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
 class UnencryptedPasswordForms < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     def initialize( page )
         # in this case we don't need to call the parent
@@ -123,7 +120,6 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Path Traversal audit module.
@@ -26,8 +25,6 @@ module Audit
 # @see http://projects.webappsec.org/Path-Traversal
 #
 class PathTraversal < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -133,7 +130,6 @@ class PathTraversal < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

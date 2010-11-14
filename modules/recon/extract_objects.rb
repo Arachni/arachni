@@ -13,7 +13,7 @@
 module Arachni
 
 module Modules
-module Recon
+
 #
 # This is a discovery/data mining example module.
 #
@@ -36,8 +36,6 @@ module Recon
 #
 class ExtractObjects < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
-
     def initialize( page )
         # in this case we don't need to call the parent
         @page = page
@@ -48,8 +46,8 @@ class ExtractObjects < Arachni::Module::Base
         # this is an example module,
         # there's no need for it during an audit
         return
-        
-        # get all objects from the HTML code 
+
+        # get all objects from the HTML code
         @__objects = @page.html.scan( /<object(.*?)<\/object>/ixm )
 
         #
@@ -61,7 +59,7 @@ class ExtractObjects < Arachni::Module::Base
         add_storage( self.class.info[:name], @__objects )
     end
 
-    
+
     def self.info
         {
             :name           => 'ExtractObjects',
@@ -74,8 +72,7 @@ class ExtractObjects < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
         }
     end
-    
-end
+
 end
 end
 end

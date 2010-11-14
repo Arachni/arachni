@@ -21,7 +21,9 @@ require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'audit_store'
 require opts.dir['lib'] + 'vulnerability'
 require opts.dir['lib'] + 'module'
+require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
+require opts.dir['lib'] + 'component_manager'
 require 'yaml'
 require 'ap'
 require 'pp'
@@ -93,8 +95,21 @@ class Framework
 
         @opts = opts
 
-        @modules = Arachni::Module::Registry.new( @opts )
-        @reports = Arachni::Report::Registry.new( @opts )
+        @modules = Arachni::Module::Manager.new( @opts )
+
+        # pp mods = @modules.parse( opts.mods )
+        # pp @modules[ mods[0] ]
+        # pp @modules
+
+        @reports = Arachni::Report::Manager.new( @opts )
+
+        # pp reps = @reports.parse( opts.reports )
+        # pp @reports[ reps[0] ]
+        # pp @reports
+
+
+        # @modules = Arachni::Module::Registry.new( @opts )
+        # @reports = Arachni::Report::Registry.new( @opts )
 
         prepare_cookie_jar( )
         prepare_user_agent( )
@@ -149,8 +164,8 @@ class Framework
     end
 
     def stats( )
-        req_cnt = Arachni::Module::HTTP.instance.request_count
-        res_cnt = Arachni::Module::HTTP.instance.response_count
+        req_cnt = Arachni::HTTP.instance.request_count
+        res_cnt = Arachni::HTTP.instance.response_count
 
         return {
             :requests   => req_cnt,
@@ -346,7 +361,7 @@ class Framework
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
         else
-            @opts.cookies = Arachni::Module::HTTP.parse_cookiejar( @opts.cookie_jar )
+            @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar )
         end
 
     end
@@ -369,14 +384,15 @@ class Framework
     def run_mods( page )
         return if !page
 
-        for mod in @modules.loaded( )
+        @modules.each_pair {
+            |name, mod|
 
             while( paused? )
                 ::IO::select( nil, nil, nil, 1 )
             end
 
             run_mod( mod, page.deep_clone )
-        end
+        }
 
         if( !@opts.http_harvest_last )
             harvest_http_responses( )
@@ -403,12 +419,12 @@ class Framework
         ' conditions this may take a while.' )
 
        # run all the queued HTTP requests and harvest the responses
-       Arachni::Module::HTTP.instance.run
+       Arachni::HTTP.instance.run
 
        @page_queue = Queue.new
 
        # try to get an updated page from the Trainer
-       page = Arachni::Module::HTTP.instance.trainer.page
+       page = Arachni::HTTP.instance.trainer.page
 
        # if there was an updated page push it in the queue
        @page_queue << page if page
@@ -420,10 +436,10 @@ class Framework
            run_mods( page )
 
            # run all the queued HTTP requests and harvest the responses
-           Arachni::Module::HTTP.instance.run
+           Arachni::HTTP.instance.run
 
            # check to see if the page was updated
-           page = Arachni::Module::HTTP.instance.trainer.page
+           page = Arachni::HTTP.instance.trainer.page
            # and push it in the queue to be audited as well
            @page_queue << page if page
 

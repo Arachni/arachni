@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # HTTP Response Splitting audit module.
@@ -24,27 +23,24 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3
 #
-# @see http://cwe.mitre.org/data/definitions/20.html    
+# @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
-# @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html    
+# @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
 #
 class ResponseSplitting < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
 
         # initialize the header
         @__header = ''
-        
+
         # initialize the array that will hold the results
         @results = []
     end
 
     def prepare( )
-        
+
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
@@ -52,9 +48,9 @@ class ResponseSplitting < Arachni::Module::Base
         # thus site is vulnerable.
         @__header = "\r\nX-CRLF-Safe: no"
     end
-    
+
     def run( )
-        
+
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
         audit( @__header ) {
@@ -63,13 +59,13 @@ class ResponseSplitting < Arachni::Module::Base
         }
     end
 
-    
+
     def self.info
         {
             :name           => 'ResponseSplitting',
             :description    => %q{Response Splitting recon module.
                 Tries to inject some data into the webapp and figure out
-                if any of them end up in the response header. 
+                if any of them end up in the response header.
             },
             :elements       => [
                 Vulnerability::Element::FORM,
@@ -83,7 +79,7 @@ class ResponseSplitting < Arachni::Module::Base
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
             :targets        => { 'Generic' => 'all' },
-                
+
             :vulnerability   => {
                 :name        => %q{Response splitting},
                 :description => %q{The web application includes user input
@@ -97,12 +93,12 @@ class ResponseSplitting < Arachni::Module::Base
 
         }
     end
-    
+
     private
-    
+
     def __log_results( opts, var, res )
         if res.headers_hash['X-CRLF-Safe']
-          
+
             url = res.effective_url
             @results << Vulnerability.new( {
                     :var          => var,
@@ -115,19 +111,18 @@ class ResponseSplitting < Arachni::Module::Base
                     :response     => res.body,
                     :headers      => {
                         :request    => res.request.headers,
-                        :response   => res.headers,    
+                        :response   => res.headers,
                     }
                 }.merge( self.class.info )
             )
 
             print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-            
+
             # register our results with the system
             register_results( @results )
         end
     end
 
-end
 end
 end
 end

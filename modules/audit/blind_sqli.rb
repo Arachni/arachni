@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Blind SQL injection audit module
@@ -29,9 +28,6 @@ module Audit
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
 #
 class BlindSQLInjection < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -305,7 +301,6 @@ class BlindSQLInjection < Arachni::Module::Base
         register_results( @results )
     end
 
-end
 end
 end
 end

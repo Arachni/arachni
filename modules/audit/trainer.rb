@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 #
@@ -28,7 +27,6 @@ module Audit
 #
 class Trainer < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
     include Arachni::Module::Utilities
 
     def initialize( page )
@@ -85,7 +83,6 @@ class Trainer < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

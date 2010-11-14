@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Recon
 
 #
 # Backup file discovery module.
@@ -26,9 +25,6 @@ module Recon
 #
 #
 class BackupFiles < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     include Arachni::Module::Utilities
 
@@ -170,7 +166,6 @@ class BackupFiles < Arachni::Module::Base
         return req
     end
 
-end
 end
 end
 end

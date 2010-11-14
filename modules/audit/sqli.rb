@@ -13,7 +13,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # SQL Injection audit module.<br/>
@@ -32,9 +31,6 @@ module Audit
 # @see http://www.owasp.org/index.php/SQL_Injection
 #
 class SQLInjection < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     include Arachni::Module::Utilities
 
@@ -197,7 +193,6 @@ class SQLInjection < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

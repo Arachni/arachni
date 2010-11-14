@@ -13,7 +13,6 @@ require 'digest/sha1'
 module Arachni
 
 module Modules
-module Recon
 
 #
 # Common directories discovery module.
@@ -29,9 +28,6 @@ module Recon
 #
 #
 class CommonDirectories < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     include Arachni::Module::Utilities
 
@@ -130,7 +126,6 @@ class CommonDirectories < Arachni::Module::Base
 
     end
 
-end
 end
 end
 end

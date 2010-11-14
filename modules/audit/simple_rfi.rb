@@ -13,7 +13,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Simple Remote File Inclusion tutorial module.
@@ -50,14 +49,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # @return [Arachni::Module::HTTP]
     #
     attr_reader :http
-
-    #
-    # REQUIRED
-    #
-    # Register us with the system.
-    # If you ommit this the system won't be able to see you.
-    #
-    include Arachni::Module::Registrar
 
     #
     # REQUIRED
@@ -221,21 +212,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     end
 
     #
-    # OPTIONAL
-    #
-    # In case you depend on other modules you can return an array
-    # of their names (not their class names, the module names as they
-    # appear by the "-l" CLI argument) and they will be loaded for you.
-    #
-    # This is also great for creating audit/discovery/whatever profiles.
-    #
-    def self.deps
-        # example:
-        # ['eval', 'sqli']
-        []
-    end
-
-    #
     # The following are our own helper methods.
     # It's good practice to prefix them with 2 undescores ( __foo() ).
     #
@@ -277,7 +253,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         audit_cookies( @__injection_url, @__opts )
     end
 
-end
 end
 end
 end

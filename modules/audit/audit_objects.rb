@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # This module manipulates/audits/whatever
@@ -33,34 +32,32 @@ module Audit
 #
 class AuditObjects < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
-
     def initialize( page )
         super( page )
     end
 
     def run( )
-        
+
         # this is an example module,
         # there's no need for it during an audit
         return
-        
+
         # you can get the objects you want by key
         objects = get_storage( 'objects' )
 
         if( objects.size == 0 )
             return
         end
-        
+
         # or you can get the whole storage
 #        storage =  get_store( )
-                
+
         print_ok( 'Found an object:')
         print_ok( objects.to_s )
-        
+
     end
 
-    
+
     def self.info
         {
             :name           => 'AuditObjects',
@@ -74,16 +71,15 @@ class AuditObjects < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
         }
     end
-    
+
     #
     # Let the framework know our dependencies
     #
     def self.deps
-        # we depend on the 'extract_objects' module 
+        # we depend on the 'extract_objects' module
         ['extract_objects']
     end
 
-end
 end
 end
 end

@@ -61,7 +61,7 @@ class Base
     def initialize( page )
 
         @page  = page
-        @http  = Arachni::Module::HTTP.instance
+        @http  = Arachni::HTTP.instance
         @http.trainer.page = @page.dup
 
         # initialize the HTTP cookiejar with the user supplied one
@@ -88,6 +88,8 @@ class Base
             @http.trainer.init_cookies( @page.cookies )
             @@last_url = @page.url
         end
+
+        @@mod_results ||= []
 
     end
 
@@ -165,19 +167,8 @@ class Base
         }
     end
 
-    #
-    # ABSTRACT - OPTIONAL
-    #
-    # In case you depend on other modules you can return an array
-    # of their names (not their class names, the module names as they
-    # appear by the "--lsmod" CLI argument) and they will be loaded for you.
-    #
-    # This is also great for creating audit/discovery/whatever profiles.
-    #
-    def self.deps
-        # example:
-        # ['eval', 'sqli']
-        []
+    def register_results( results )
+        Arachni::Module::Manager.register_results( results )
     end
 
 end

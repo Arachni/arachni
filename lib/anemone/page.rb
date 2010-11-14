@@ -112,7 +112,7 @@ class Page
     def load_modules( )
         return @@modules if !@@modules.empty?
 
-        lib = Arachni::Options.instance.dir['modules'] + 'spider/'
+        lib = Arachni::Options.instance.dir['pwd'] + 'path_extractors/'
         modules = Dir.new( lib ).entries.grep( /\.rb$/ ).sort
 
         modules.each {

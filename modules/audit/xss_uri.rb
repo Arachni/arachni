@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # XSS in URI audit module.
@@ -27,7 +26,6 @@ module Audit
 #
 class XSSURI < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
     include Arachni::Module::Utilities
 
     def initialize( page )
@@ -124,7 +122,6 @@ class XSSURI < Arachni::Module::Base
     end
 
 
-end
 end
 end
 end

@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # XSS audit module.<br/>
@@ -28,8 +27,6 @@ module Audit
 # @see http://secunia.com/advisories/9716/
 #
 class XSS < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     include Arachni::Module::Utilities
 
@@ -83,7 +80,6 @@ class XSS < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

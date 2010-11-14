@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Simple shell command injection module.<br/>
@@ -27,8 +26,6 @@ module Audit
 # @see http://www.owasp.org/index.php/OS_Command_Injection
 #
 class SimpleCmdExec < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -77,7 +74,6 @@ class SimpleCmdExec < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

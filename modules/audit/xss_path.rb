@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # XSS in path audit module.
@@ -26,8 +25,6 @@ module Audit
 # @see http://secunia.com/advisories/9716/
 #
 class XSSPath < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     include Arachni::Module::Utilities
 
@@ -123,7 +120,6 @@ class XSSPath < Arachni::Module::Base
     end
 
 
-end
 end
 end
 end

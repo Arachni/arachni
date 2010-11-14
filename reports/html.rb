@@ -27,9 +27,6 @@ module Reports
 #
 class HTML < Arachni::Report::Base
 
-    # register us with the system
-    include Arachni::Report::Registrar
-
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
@@ -39,7 +36,7 @@ class HTML < Arachni::Report::Base
         @audit_store   = audit_store
         @options       = options
         @outfile       = outfile + '.html'
-        
+
         @tpl = File.dirname( __FILE__ ) + '/html/templates/index.tpl'
     end
 
@@ -52,9 +49,9 @@ class HTML < Arachni::Report::Base
         print_status( 'Creating HTML report...' )
 
         @template = Liquid::Template.parse( IO.read( @tpl ) )
-        
+
         out = @template.render( __prepare_data( ) )
-        
+
         __save( @outfile, out )
 
         print_status( 'Saved in \'' + @outfile + '\'.' )
@@ -76,7 +73,7 @@ class HTML < Arachni::Report::Base
     end
 
     private
-    
+
     def __save( outfile, out )
         file = File.new( outfile, 'w' )
         file.write( out )
@@ -94,24 +91,24 @@ class HTML < Arachni::Report::Base
                     |name, value|
                     refs << { 'name' => name, 'value' => value }
                 }
-                                
+
                 @audit_store.vulns[i].references = refs
             end
-        
+
             vuln.variations.each_with_index {
                 |variation, j|
-                
+
                 if( variation['regexp'] )
                     variation['regexp'] = variation['regexp'].to_s
                 end
-                
+
                 if( variation['response'] )
                     @audit_store.vulns[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
-                    
+
                     @audit_store.vulns[i].variations[j].delete( 'response' )
                 end
-                
+
                 if( variation['headers']['request'].is_a?( Hash ) )
                     request = ''
                     variation['headers']['request'].each_pair {
@@ -121,7 +118,7 @@ class HTML < Arachni::Report::Base
                     @audit_store.vulns[i].variations[j]['headers']['request']=
                         request.clone
                 end
-                
+
                 if( variation['headers']['response'].is_a?( Hash ) )
                     response = ''
                     variation['headers']['response'].each_pair {
@@ -131,13 +128,13 @@ class HTML < Arachni::Report::Base
                     @audit_store.vulns[i].variations[j]['headers']['response']=
                         response.clone
                 end
-                    
+
             }
-            
+
         }
-     
+
         hash = @audit_store.to_h
-        
+
         hash['date'] = Time.now.to_s
         hash['opts'] = @options
 
@@ -147,13 +144,13 @@ class HTML < Arachni::Report::Base
                 |name, value|
                 cookies << { 'name' => name, 'value' => value }
             }
-            
+
             hash['options']['cookies'] = cookies
         end
-        
+
         hash['sitemap']   = @audit_store.sitemap
         hash['REPORT_FP'] = REPORT_FP
-        
+
         return hash
     end
 

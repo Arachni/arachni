@@ -25,9 +25,6 @@ module Reports
 #
 class Stdout < Arachni::Report::Base
 
-    # register us with the system
-    include Arachni::Report::Registrar
-
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report

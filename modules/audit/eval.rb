@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # eval() audit module.
@@ -35,9 +34,6 @@ module Audit
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
 #
 class Eval < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -121,7 +117,6 @@ class Eval < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

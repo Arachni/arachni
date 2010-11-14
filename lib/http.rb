@@ -16,8 +16,6 @@ require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 
-module Module
-
 #
 # Arachni::Module::HTTP class
 #
@@ -38,7 +36,7 @@ module Module
 #
 class HTTP
 
-    include Output
+    include Arachni::UI::Output
     include Singleton
     include Arachni::Module::Utilities
 
@@ -534,6 +532,5 @@ class HTTP
       { :name => 'HTTP' }
     end
 
-end
 end
 end

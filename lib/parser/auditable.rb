@@ -376,7 +376,7 @@ class Auditable
 
             @results ||= []
             @results << Vulnerability.new( res.merge( @auditor.class.info ) )
-            Arachni::Module::Registry.register_results( @results.uniq )
+            Arachni::Module::Manager.register_results( @results.uniq )
         end
     end
 

@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Cross-Site Request Forgery audit module.
@@ -48,9 +47,6 @@ module Audit
 # @see http://cwe.mitre.org/data/definitions/352.html
 #
 class CSRF < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -343,7 +339,6 @@ class CSRF < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end
