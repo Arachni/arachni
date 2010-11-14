@@ -44,11 +44,8 @@ class Manager < Arachni::ComponentManager
     # @param    [Arachni::Options]    opts
     #
     def initialize( opts )
-        super( opts.dir['reports'], Arachni::Modules )
+        super( opts.dir['pwd'] + 'plugins', Arachni::Plugins )
         @opts = opts
-        @lib  = opts.dir['modules']
-
-        @@results  = []
     end
 
 end

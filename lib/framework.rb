@@ -21,6 +21,7 @@ require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'audit_store'
 require opts.dir['lib'] + 'vulnerability'
 require opts.dir['lib'] + 'module'
+require opts.dir['lib'] + 'plugin'
 require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'component_manager'
@@ -82,6 +83,7 @@ class Framework
     attr_reader :opts
     attr_reader :reports
     attr_reader :modules
+    attr_reader :plugins
 
     #
     # Initializes system components.
@@ -97,6 +99,7 @@ class Framework
 
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
+        @plugins = Arachni::Plugin::Manager.new( @opts )
 
         prepare_cookie_jar( )
         prepare_user_agent( )
