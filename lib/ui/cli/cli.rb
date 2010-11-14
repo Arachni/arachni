@@ -251,6 +251,11 @@ class CLI
                     lsmod
                     exit 0
 
+                when 'lsplug'
+                    next if arg.empty?
+                    lsplug
+                    exit 0
+
                 when 'lsrep'
                     lsrep
                     exit 0
@@ -279,6 +284,9 @@ class CLI
                 when 'reports'
                     exception_jail{ @arachni.reports.load( arg ) }
 
+                when 'plugins'
+                    exception_jail{ @arachni.plugins.load( arg.keys ) }
+
                 when 'repload'
                     exception_jail{ @arachni.reports.run( AuditStore.load( arg ) ) }
                     exit 0
@@ -298,13 +306,14 @@ class CLI
     # Outputs all available modules and their info.
     #
     def lsmod
-
-        i = 0
+        print_line
+        print_line
         print_info( 'Available modules:' )
         print_line
 
         mods = @arachni.lsmod( )
 
+        i = 0
         mods.each {
             |info|
 
@@ -370,7 +379,8 @@ class CLI
     # Outputs all available reports and their info.
     #
     def lsrep
-        i = 0
+        print_line
+        print_line
         print_info( 'Available reports:' )
         print_line
 
@@ -383,7 +393,7 @@ class CLI
             print_line( "Name:\t\t"       + info[:name] )
             print_line( "Description:\t"  + info[:description] )
 
-            if( info[:options] && info[:options].size > 0 )
+            if( info[:options] && !info[:options].empty? )
                 print_line( "Options:\t" )
 
                 info[:options].each_pair {
@@ -399,12 +409,51 @@ class CLI
             print_line( "Version:\t"      + info[:version] )
             print_line( "Path:\t"         + info[:path] )
 
-            i+=1
+            print_line
+        }
+
+    end
+
+    #
+    # Outputs all available reports and their info.
+    #
+    def lsplug
+        print_line
+        print_line
+        print_info( 'Available plugins:' )
+        print_line
+
+        @arachni.lsplug().each {
+            |info|
+
+            print_status( "#{info[:plug_name]}:" )
+            print_line( "--------------------" )
+
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
+
+            if( info[:options] && !info[:options].empty? )
+                print_line( "Options:\t" )
+
+                info[:options].each {
+                    |option|
+                    print_info( "\t#{option.name} - #{option.desc}" )
+                    print_info( "\tType:    #{option.type}" )
+                    print_info( "\tDefault: #{option.default}" )
+
+                    print_line( )
+                }
+            end
+
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
+            print_line( "Path:\t"         + info[:path] )
 
             print_line
         }
 
     end
+
 
     #
     # Loads an Arachni Framework Profile file and merges it with the
@@ -632,6 +681,15 @@ USAGE
 
     --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
+                                    (Can be used multiple times.)
+
+    Plugins ------------------------
+
+    --lsplug                      list available reports
+
+    --plugin=<plugin>:<optname>=<val>,<optname2>=<val2>,...
+
+                                  <plugin>: the name of the report as displayed by '--lsplug'
                                     (Can be used multiple times.)
 
 

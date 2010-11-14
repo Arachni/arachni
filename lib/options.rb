@@ -331,6 +331,8 @@ class Options
     # to be populated by the framework
     attr_accessor :delta_time
 
+    attr_accessor :lsplug
+    attr_accessor :plugins
 
     attr_accessor :rpc_port
     attr_accessor :ssl
@@ -357,6 +359,9 @@ class Options
         @dir        = Hash.new
         @exclude_cookies    = []
         @load_profile       = []
+
+        @plugins = {}
+        @lsplug  = []
 
         # set some defaults
         @redirect_limit = 20

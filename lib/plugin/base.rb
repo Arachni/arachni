@@ -29,11 +29,26 @@ class Base
     include Arachni::UI::Output
 
     #
+    # OPTIONAL
+    #
+    def prepare( )
+
+    end
+
+    #
     # REQUIRED
     #
     def run( )
 
     end
+
+    #
+    # OPTIONAL
+    #
+    def clean_up( )
+
+    end
+
 
     #
     # REQUIRED

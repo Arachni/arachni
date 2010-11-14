@@ -10,6 +10,8 @@
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'component_options'
+
 #
 # Component Manager
 #
@@ -114,9 +116,7 @@ class ComponentManager < Hash
             |path|
 
             next if name != path_to_name( path )
-
-            ::Kernel::load( path )
-             self[name] = @parent.const_get( @parent.constants[-1] )
+            self[path_to_name( path )] = load_from_path( path )
         }
 
         return fetch( name ) rescue nil
@@ -177,6 +177,12 @@ class ComponentManager < Hash
     end
 
     private
+
+    def load_from_path( path )
+        ::Kernel::load( path )
+        return @parent.const_get( @parent.constants[-1] )
+    end
+
 
     def helper?( paths, path )
         path = File.dirname( path )

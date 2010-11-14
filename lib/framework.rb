@@ -119,8 +119,7 @@ class Framework
 
         @spider   = Arachni::Spider.new( @opts )
 
-        # @plugins.load( [ '*' ] )
-        # @plugins.run
+        @plugins.run
 
         @opts.start_datetime = Time.now
 
@@ -244,9 +243,7 @@ class Framework
     #
     def lsmod
 
-        i = 0
         mod_info = []
-
         @modules.available( ).each {
             |name|
 
@@ -267,8 +264,6 @@ class Framework
             info[:version]   = info[:version].strip
             info[:path]      = path.strip
 
-            i+=1
-
             mod_info << info
         }
 
@@ -287,9 +282,7 @@ class Framework
     #
     def lsrep
 
-        i = 0
         rep_info = []
-
         @reports.available( ).each {
             |report|
 
@@ -298,15 +291,38 @@ class Framework
             info[:rep_name]    = report
             info[:path]        = @reports.name_to_path( report )
 
-            i+=1
-
             rep_info << info
         }
-
         @reports.clear( )
 
         return rep_info
     end
+
+    #
+    # Returns an array of hashes with information
+    # about all available reports
+    #
+    # @return    [Array<Hash>]
+    #
+    def lsplug
+
+        plug_info = []
+        @plugins.available( ).each {
+            |plugin|
+
+            info = @plugins[plugin].info
+
+            info[:plug_name]   = plugin
+            info[:path]        = @plugins.name_to_path( plugin )
+
+            plug_info << info
+        }
+
+        @plugins.clear( )
+
+        return plug_info
+    end
+
 
     #
     # Returns the version of the framework

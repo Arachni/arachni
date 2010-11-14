@@ -28,6 +28,29 @@ class Sample < Arachni::Plugin::Base
         @options   = options
     end
 
+    def prepare
+        @dance =<<EODANCE
+
+   _                             .-.
+  / )  .-.    ___          __   (   )
+ ( (  (   ) .'___)        (__'-._) (
+  \ '._) (,'.'               '.     '-.
+   '.      /  "\               '    -. '.
+     )    /   \ \   .-.   ,'.   )  (  ',_)    _
+   .'    (     \ \ (   \ . .' .'    )    .-. ( \
+  (  .''. '.    \ \|  .' .' ,',--, /    (   ) ) )
+   \ \   ', :    \    .-'  ( (  ( (     _) (,' /
+    \ \   : :    )  / _     ' .  \ \  ,'      /
+  ,' ,'   : ;   /  /,' '.   /.'  / / ( (\    (
+  '.'      "   (    .-'. \       ''   \_)\    \
+                \  |    \ \__             )    )
+              ___\ |     \___;           /  , /
+             /  ___)                    (  ( (
+  PN         '.'                         ) ;) ;
+                                        (_/(_/
+EODANCE
+    end
+
     #
     # REQUIRED
     #
@@ -35,12 +58,20 @@ class Sample < Arachni::Plugin::Base
     #
     def run( )
 
-        print_line( )
-        print_info( "Here's the framework:" )
-        pp @framework
+        if( @options['print_framework'] )
+            print_info( "Here's the framework:" )
+            pp @framework
+        end
 
-        print_info( "Options:" )
-        pp @options
+        if( @options['print_options'] )
+            print_info( "Options:" )
+            ap @options
+        end
+
+        if( @options['dance'] )
+            print_info( @dance )
+        end
+
     end
 
     #
@@ -54,6 +85,11 @@ class Sample < Arachni::Plugin::Base
             :description    => %q{Sample plugin.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
+            :options        => [
+                Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
+                Arachni::OptBool.new( 'print_options', [ false, 'Do you want to print the options?', true ] ),
+                Arachni::OptBool.new( 'dance', [ true, 'Wanna dance?', true ] )
+            ]
         }
     end
 

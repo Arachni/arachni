@@ -51,7 +51,9 @@ opts = GetoptLong.new(
     [ '--http-harvest-last',  '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
     [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
-    [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ]
+    [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
+    [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
 )
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
@@ -63,6 +65,7 @@ options.dir            = Hash.new
 options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
 options.dir['modules'] = options.dir['pwd'] + 'modules/'
 options.dir['reports'] = options.dir['pwd'] + 'reports/'
+options.dir['plugins'] = options.dir['pwd'] + 'plugins/'
 options.dir['lib']     = options.dir['pwd'] + 'lib/'
 
 opts.quiet = true
@@ -88,6 +91,21 @@ begin
             when '--debug'
                 options.debug = true
 
+            when '--plugin'
+                plugin, opt_str = arg.split( ':' )
+
+                opts = {}
+                if( opt_str )
+                    opt_arr = opt_str.split( ',' )
+                    opt_arr.each {
+                        |opt|
+                        name, val = opt.split( '=' )
+                        opts[name] = val
+                    }
+                end
+
+                options.plugins[plugin] = opts
+
             when '--redundant'
                 options.redundant << {
                     'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
@@ -108,6 +126,9 @@ begin
 
             when '--lsmod'
                 options.lsmod << Regexp.new( arg.to_s )
+
+            when '--lsplug'
+                options.lsplug << Regexp.new( arg.to_s )
 
             when '--lsrep'
                 options.lsrep = true
