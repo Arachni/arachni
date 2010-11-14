@@ -99,7 +99,7 @@ class Framework
 
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
-        @plugins = Arachni::Plugin::Manager.new( @opts )
+        @plugins = Arachni::Plugin::Manager.new( self )
 
         prepare_cookie_jar( )
         prepare_user_agent( )
@@ -118,6 +118,9 @@ class Framework
     def run
 
         @spider   = Arachni::Spider.new( @opts )
+
+        # @plugins.load( [ '*' ] )
+        # @plugins.run
 
         @opts.start_datetime = Time.now
 
