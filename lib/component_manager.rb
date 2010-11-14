@@ -68,7 +68,7 @@ class ComponentManager < Hash
             next if name != path_to_name( path )
 
             ::Kernel::load( path )
-            self[name] = @parent.const_get( @parent.constants[-1] )
+             self[name] = @parent.const_get( @parent.constants[-1] )
         }
 
         return fetch( name ) rescue nil
@@ -78,16 +78,16 @@ class ComponentManager < Hash
         components = []
         paths.each {
             |path|
-            components << path_to_name( path )
+            name = path_to_name( path )
+            components << name
         }
-
         return components
     end
 
     def name_to_path( name )
         paths.each {
             |path|
-            return path if name != path_to_name( path )
+            return path if name == path_to_name( path )
         }
         return
     end
@@ -97,7 +97,23 @@ class ComponentManager < Hash
     end
 
     def paths
-        Dir.glob( File.join( "#{@lib}**", "*.rb" ) )
+        cpaths = paths = Dir.glob( File.join( "#{@lib}**", "*.rb" ) )
+        return paths.reject {
+            |path|
+            helper?( paths, path )
+        }
+    end
+
+    private
+
+    def helper?( paths, path )
+        path = File.dirname( path )
+        paths.each {
+            |cpath|
+            return true if path == File.dirname( cpath ) + '/' + path_to_name( path )
+        }
+
+        return false
     end
 
 end
