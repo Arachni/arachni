@@ -65,7 +65,7 @@ class XMLRPCD
             :SSLCACertificateFile => opts.ssl_ca
         )
 
-        #debug!
+        # debug!
 
         set_handlers
 
@@ -82,7 +82,8 @@ class XMLRPCD
     # (And I don't mean sexually...)
     #
     def reset
-        exception_jail{
+        exception_jail {
+            @framework.modules.clear
             Arachni.reset
             Arachni::Options.instance.reset
             prep_framework
@@ -182,9 +183,9 @@ USAGE
         @server.mount( "/RPC2", @service )
         @service.clear_handlers
         @service.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
+        @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
         @service.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
         @service.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
-        @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
     end
 
 end
