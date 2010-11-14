@@ -48,13 +48,6 @@ class Base
     def self.info
         {
             :name           => 'Report abstract class.',
-
-            #
-            # you can provide the user with options to allow him to
-            # customize the report to his needs.
-            #
-            # Arachni doesn't do any checking whatsoever.
-            #
             :options        => [
                 #                    option name    required?       description                         default
                 # Arachni::OptBool.new( 'html',    [ false, 'Include the HTML responses in the report?', true ] ),
