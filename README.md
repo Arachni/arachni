@@ -12,7 +12,7 @@ End-users should check out the links bellow.
  - Modify Anemone to support modules for path extraction. -- **Done**
  - Modify Anemone to use Typhoeus instead of Net::HTTP -- adding NTML auth and other goodies. -- **Done**
  - Refactor, re-organize and clean up the framework code and architecture. -- **Done**
- - Add plug-in support -- allowing the framework to be extended with virtually any functionality (e.g. passive proxy etc ).
+ - Add plug-in support -- allowing the framework to be extended with virtually any functionality (e.g. passive proxy etc ).  -- **Done**
  - Add the following modules:
    - Audit:
      - XPath injection
