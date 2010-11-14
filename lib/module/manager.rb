@@ -86,7 +86,6 @@ class Manager < Arachni::ComponentManager
 
     def self.reset
         @@results.clear
-        self.clear
         Arachni::Modules.reset
     end
 
