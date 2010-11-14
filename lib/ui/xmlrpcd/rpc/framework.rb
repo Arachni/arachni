@@ -11,6 +11,7 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'framework'
+require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/module/manager'
 
 module UI
 module RPCD
@@ -30,38 +31,14 @@ class Framework < Arachni::Framework
     # a separate thread.
     #
     alias :old_run :run
-    alias :old_stats :stats
-    alias :old_pause :pause
-    alias :old_paused? :paused?
-    alias :old_resume :resume
-    alias :old_lsmod :lsmod
 
-    private :old_run, :old_stats, :old_pause, :old_paused?, :old_resume, :lsmod
-
-    #
-    # for some reason XMLRPC's add_handler() doesn't see these methods
-    # even though they were public in the parent, so we need to re-declare them ;)
-    #
-    public :pause, :paused?, :resume, :lsmod, :lsrep
+    # make this inherited methods visible again
+    private :old_run, :stats, :pause, :paused?, :resume, :lsmod, :modules
+    public  :stats, :pause, :paused?, :resume, :lsmod, :modules
 
     def initialize( opts )
         super( opts )
-    end
-
-    def pause
-        old_pause
-    end
-
-    def paused?
-        old_paused?
-    end
-
-    def resume
-        old_resume
-    end
-
-    def stats
-        old_stats
+        @modules = Arachni::UI::RPCD::Module::Manager.new( opts )
     end
 
     #
