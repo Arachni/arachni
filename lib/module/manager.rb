@@ -29,17 +29,14 @@ end
 module Module
 
 #
-# Arachni::Module::Registry class
+# Arachni::Module::Manager class
 #
-# Holds and manages the registry of the modules,
-# their results and their shared datastore.
-#
-# It also provides methods for getting modules' info, listing available modules etc.
+# Holds and manages the registry of the modules and their results.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.2
 #
 class Manager < Arachni::ComponentManager
 

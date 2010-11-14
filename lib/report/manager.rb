@@ -29,14 +29,14 @@ end
 module Report
 
 #
-# Arachni::Report::Registry class
+# Arachni::Report::Manager class
 #
 # Holds and manages the registry of the reports.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1.3
+# @version: 0.2
 #
 class Manager < Arachni::ComponentManager
 
