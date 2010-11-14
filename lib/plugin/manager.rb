@@ -43,9 +43,16 @@ class Manager < Arachni::ComponentManager
     #
     # @param    [Arachni::Options]    opts
     #
-    def initialize( opts )
-        super( opts.dir['pwd'] + 'plugins', Arachni::Plugins )
-        @opts = opts
+    def initialize( framework )
+        super( framework.opts.dir['pwd'] + 'plugins', Arachni::Plugins )
+        @framework = framework
+    end
+
+    def run
+        each {
+            |name, plugin|
+            plugin.new( @framework, {} ).run
+        }
     end
 
 end
