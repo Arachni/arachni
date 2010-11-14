@@ -78,7 +78,7 @@ class ComponentManager < Hash
             components.each {
                 |component|
                 if( !avail_components.include?( component ) )
-                      raise( Arachni::Exceptions::ModNotFound,
+                      raise( Arachni::Exceptions::ComponentNotFound,
                           "Error: Component #{component} wasn't found." )
                 end
             }

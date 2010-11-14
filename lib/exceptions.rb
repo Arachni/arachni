@@ -9,7 +9,7 @@
 =end
 
 module Arachni
-    
+
 #
 # Arachni::Exceptions module<br/>
 # It holds the framework's exceptions.
@@ -25,47 +25,52 @@ module Exceptions
         super( msg )
     end
 
-    
+
     class NoAuditOpts < StandardError
         include Exceptions
-        
+
     end
 
     class NoMods < StandardError
         include Exceptions
-        
+
+    end
+
+    class ComponentNotFound < StandardError
+        include Exceptions
+
     end
 
     class ModNotFound < StandardError
         include Exceptions
-        
+
     end
 
     class DepModNotFound < StandardError
         include Exceptions
-        
+
     end
-            
+
     class ReportNotFound < StandardError
         include Exceptions
-        
+
     end
-    
+
     class NoURL < StandardError
         include Exceptions
-            
+
     end
 
     class InvalidURL < StandardError
         include Exceptions
-            
-    end    
-    
+
+    end
+
     class NoCookieJar < StandardError
         include Exceptions
-            
-    end    
-    
+
+    end
+
 end
 
 end
