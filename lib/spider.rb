@@ -90,12 +90,11 @@ class Spider
     end
 
     #
-    # Runs the Spider and passes the url, html
-    # and headers Hash
+    # Runs the Spider and passes parsed page to the block
     #
-    # @param [Proc] block  a block expecting url, html, cookies
+    # @param [Block] block
     #
-    # @return [Array] array of links, a sitemap
+    # @return [Arachni::Parser::Page]
     #
     def run( &block )
 
