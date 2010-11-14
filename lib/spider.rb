@@ -54,6 +54,8 @@ class Spider
     #
     def initialize( opts )
         @opts = opts
+        @parser   = Arachni::Parser.new( @opts )
+
         @anemone_opts = {
             :threads              =>  1,
             :discard_page_bodies  =>  false,
@@ -128,7 +130,7 @@ class Spider
                 # call the block...if we have one
                 if block
                     begin
-                        block.call( url, page.body, page.headers )
+                        block.call( @parser.run( url, page.body, page.headers ).clone )
                     rescue Exception
                         raise
                     end

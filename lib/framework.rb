@@ -128,7 +128,6 @@ class Framework
     def run
 
         @spider   = Arachni::Spider.new( @opts )
-        @parser   = Arachni::Parser.new( @opts )
 
         @opts.start_datetime = Time.now
 
@@ -182,14 +181,13 @@ class Framework
     # to (#run_mods} to be audited.
     #
     def audit
-        pages = []
 
         # initiates the crawl
         @sitemap = @spider.run {
-            | url, html, headers |
+            | page |
 
             exception_jail{
-                run_mods( @parser.run( url, html, headers ).clone )
+                run_mods( page )
             }
         }
 
