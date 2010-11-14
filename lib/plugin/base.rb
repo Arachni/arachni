@@ -57,31 +57,15 @@ class Base
     #
     def self.info
         {
-            'Name'           => 'Abstract plugin class.',
-
-            #
-            # you can provide the user with options to allow him to
-            # customize the report to his needs.
-            #
-            # Arachni doesn't do any checking whatsoever.
-            #
-            'Options'        => {
-                # option name
-                'option_one_something' =>
-                    [   # the available values for the option
-                        'true/false (Default: true)',
-                        # the description of the option
-                        'Do something?'
-                    ],
-                'option_two_something' =>
-                    [
-                        '1..inf (Default: inf)',
-                        'How many times to do something?'
-                    ]
-            },
-            'Description'    => %q{This class should be extended by all plugins.},
-            'Author'         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            'Version'        => '0.1',
+            :name           => 'Abstract plugin class',
+            :description    => %q{Abstract plugin class.},
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.1',
+            :options        => [
+                #                        option name       required?       description                     default
+                # Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
+                # Arachni::OptString.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
+            ]
         }
     end
 
