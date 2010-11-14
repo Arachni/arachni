@@ -2,7 +2,7 @@
 # ChangeLog
 
 ## Version 0.2.1
-- Major performance improvements (approx. 4 times faster than v0.2)(YMMV)
+- Major performance improvements
 - Major system refactoring and code clean-up
 - Major module API refactoring providing even more flexibility regarding element auditing and manipulation
 - Integration with the Metasploit Framework via:
@@ -10,6 +10,10 @@
    - Arachni plug-in for the [Metasploit](http://www.metasploit.com/) framework, used to load the ArachniMetareport in order to provide advanced automated and manual exploitation of WebApp vulnerabilities.
    - Advanced generic WebApp exploit modules for the [Metasploit](http://www.metasploit.com/) framework, utilized either manually or automatically by the Arachni MSF plug-in.
 - Improved Blind SQL Injection module, significantly less requests per audit.
+- New XMLRPC server
+- New XMLRPC CLI client
+- NTLM authentication support
+- Support for path extractor modules for the Spider
 
 ## Version 0.2
 
