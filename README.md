@@ -5,13 +5,24 @@ End-users should check out the links bellow.
 
 ## Current branch goals
  - Provide integration with the Metasploit framework to assist with automated and manual exploitation through:
-   - ArachniMetareport.
-   - Arachni plug-in for the Metasploit framework.
-   - Advanced generic webapp exploit modules for the Metasploit framework.
- - Refactor, re-organize and clean up the framework code and architecture.
- - Add reusable/persistent XML-RPC server and command line XMLRPC client.
- - Modify Anemone to support modules for path extraction.
- - Modify Anemone to use Typhoeus instead of Net::HTTP -- adding NTML auth and other goodies.
+   - ArachniMetareport. -- **Done**
+   - Arachni plug-in for the Metasploit framework. -- **Done**
+   - Advanced generic webapp exploit modules for the Metasploit framework. -- **Done**
+ - Add reusable/persistent XML-RPC server and command line XMLRPC client. -- **Done**
+ - Modify Anemone to support modules for path extraction. -- **Done**
+ - Modify Anemone to use Typhoeus instead of Net::HTTP -- adding NTML auth and other goodies. -- **Done**
+ - Refactor, re-organize and clean up the framework code and architecture. -- **Done**
+ - Add plug-in support -- allowing the framework to be extended with virtually any functionality (e.g. passive proxy etc ).
+ - Add the following modules:
+   - Audit:
+     - XPath injection
+     - WebDAV vulnerabilities
+     - XST injection
+     - LDAP injection
+   - Recon:
+     - Google Hacking DB
+     - Robot file reader
+     - Allowed HTTP methods
 
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2.1<br/>
