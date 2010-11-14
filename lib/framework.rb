@@ -254,16 +254,15 @@ class Framework
         i = 0
         mod_info = []
 
-        @modules.available( ).each_pair {
-            |mod_name, path|
+        @modules.available( ).each {
+            |name|
 
-            next if !lsmod_match?( path['path'] )
+            path = @modules.name_to_path( name )
+            next if !lsmod_match?( path )
 
-            @modules.load( mod_name )
+            info = @modules[name].info( )
 
-            info = @modules.info( i )
-
-            info[:mod_name]    = mod_name
+            info[:mod_name]    = name
             info[:name]        = info[:name].strip
             info[:description] = info[:description].strip
 
@@ -273,7 +272,7 @@ class Framework
 
             info[:author]    = info[:author].strip
             info[:version]   = info[:version].strip
-            info[:path]      = path['path'].strip
+            info[:path]      = path.strip
 
             i+=1
 
@@ -298,15 +297,13 @@ class Framework
         i = 0
         rep_info = []
 
-        @reports.available( ).each_pair {
-            |rep_name, path|
+        @reports.available( ).each {
+            |report|
 
-            @reports.load( rep_name )
+            info = @reports[report].info
 
-            info = @reports.info( i )
-
-            info[:rep_name]    = rep_name
-            info[:path]        = path['path'].strip
+            info[:rep_name]    = report
+            info[:path]        = @reports.name_to_path( report )
 
             i+=1
 
