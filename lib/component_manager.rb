@@ -208,10 +208,7 @@ class ComponentManager < Hash
     #
     def paths
         cpaths = paths = Dir.glob( File.join( "#{@lib}**", "*.rb" ) )
-        return paths.reject {
-            |path|
-            helper?( paths, path )
-        }
+        return paths.reject { |path| helper?( path ) }
     end
 
     private
@@ -249,14 +246,8 @@ class ComponentManager < Hash
     end
 
 
-    def helper?( paths, path )
-        path = File.dirname( path )
-        paths.each {
-            |cpath|
-            return true if path == File.dirname( cpath ) + '/' + path_to_name( path )
-        }
-
-        return false
+    def helper?( path )
+        return File.exist?( File.dirname( path ) + '.rb' )
     end
 
 end
