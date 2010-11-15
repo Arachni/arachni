@@ -171,7 +171,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-       Arachni - Web Application Security Scanner Framework v0.2 [0.1.7]
+       Arachni - Web Application Security Scanner Framework v0.2.1 [0.2]
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
@@ -309,14 +309,20 @@ Still, this can be an invaluable asset to Fuzzer modules.
     --repload=<file>              load audit results from <file>
                                     (Allows you to create a new reports from old/finished scans.)
 
-    --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected reports.
-                                    (One invocation only, options will be applied to all loaded reports.)
+    --report=<report>:<optname>=<val>,<optname2>=<val2>,...
 
-    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+                                  <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
+### Plugins
+
+    --lsplug                      list available plugins
+
+    --plugin=<plugin>:<optname>=<val>,<optname2>=<val2>,...
+
+                                  <plugin>: the name of the plugin as displayed by '--lsplug'
+                                    (Can be used multiple times.)
 
 ### Proxy
 
