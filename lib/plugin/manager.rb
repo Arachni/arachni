@@ -68,7 +68,7 @@ class Manager < Arachni::ComponentManager
         }
     end
 
-    def block
+    def block!
         while( !@jobs.empty? )
 
             print_line
