@@ -123,11 +123,14 @@ class Stdout < Arachni::Report::Base
             print_line
             print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
             print_line
-            print_info( 'References:' )
-            vuln.references.each{
-                |ref|
-                print_info( '  ' + ref[0] + ' - ' + ref[1] )
-            }
+
+            if( vuln.references )
+                print_info( 'References:' )
+                vuln.references.each{
+                    |ref|
+                    print_info( '  ' + ref[0] + ' - ' + ref[1] )
+                }
+            end
 
             print_info_variations( vuln )
 
