@@ -12,6 +12,8 @@ module Arachni
 module Plugins
 
 #
+# Sample plug-in to demo basic functionality.
+#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
@@ -57,9 +59,6 @@ EODANCE
     # Use it to run your report.
     #
     def run( )
-
-        pp Thread.current[:name]
-        pp @framework.plugins.busy?
 
         if( @options['print_framework'] )
             print_info( "Here's the framework:" )
