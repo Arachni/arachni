@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
-<!-- 
+<!--
         HTML Report template for Arachni - Web Application Vulnerability Scanning Framework
      -->
 
@@ -13,44 +13,44 @@
   <title>Web Application Security Report - Arachni Framework</title>
   <style type="text/css">
 /*<![CDATA[*/
-      body { 
+      body {
         padding: 0 20px;
-        font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif; 
+        font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif;
         font-size: 13px;
       }
       body.frames { padding: 10px; }
       h1 { font-size: 25px; margin: 1em 0 0.5em; padding-top: 4px; border-top: 1px dotted #d5d5d5; }
-      h2 { 
+      h2 {
         padding: 0;
         padding-bottom: 3px;
         border-bottom: 1px #aaa solid;
         font-size: 1.4em;
         margin: 1.8em 0 0.5em;
       }
-      .note { 
+      .note {
         color: #222;
-        -moz-border-radius: 3px; -webkit-border-radius: 3px; 
+        -moz-border-radius: 3px; -webkit-border-radius: 3px;
         background: #e3e4e3; border: 1px solid #d5d5d5; padding: 7px 10px;
       }
-      
+
       p {
         padding: 0;
         margin: 0;
       }
       a:link, a:visited { text-decoration: none; color: #05a; }
       a:hover { background: #ffffa5; }
-      
+
       #search { position: absolute; right: 14px; top: 0px; }
-      #search a:link, #search a:visited { 
+      #search a:link, #search a:visited {
         display: block; float: left; margin-right: 4px;
         padding: 8px 10px; text-decoration: none; color: #05a; background: #eaeaff;
         border: 1px solid #d8d8e5;
-        -moz-border-radius-bottomleft: 3px; -moz-border-radius-bottomright: 3px; 
+        -moz-border-radius-bottomleft: 3px; -moz-border-radius-bottomright: 3px;
         -webkit-border-bottom-left-radius: 3px; -webkit-border-bottom-right-radius: 3px;
       }
       #search a:hover { background: #eef; color: #06b; }
-      #search a.active { 
-        background: #568; padding-bottom: 20px; color: #fff; border: 1px solid #457; 
+      #search a.active {
+        background: #568; padding-bottom: 20px; color: #fff; border: 1px solid #457;
         -moz-border-radius-topleft: 5px; -moz-border-radius-topright: 5px;
         -webkit-border-top-left-radius: 5px; -webkit-border-top-right-radius: 5px;
       }
@@ -63,16 +63,16 @@
       #menu a:link, #menu a:visited { color: #333; text-decoration: none; border-bottom: 1px dotted #bbd; }
       #menu a:hover { color: #05a; }
       #menu .noframes { display: none; }
-      
+
       #footer { margin-top: 15px; border-top: 1px solid #ccc; text-align: center; padding: 7px 0; color: #999; }
       #footer a:link, #footer a:visited { color: #444; text-decoration: none; border-bottom: 1px dotted #bbd; }
       #footer a:hover { color: #05a; }
-      
+
       #search_frame {
         background: #fff;
         display: none;
-        position: absolute; 
-        top: 36px; 
+        position: absolute;
+        top: 36px;
         right: 18px;
         width: 500px;
         height: 80%;
@@ -84,33 +84,33 @@
         -moz-border-radius: 2px;
         -webkit-border-radius: 2px;
       }
-      
+
      pre.code { color: #000; }
-    
+
     .left {
         float:left;
         padding-right: 100px;
     }
-    
+
     .vulns {
         width: 100%;
-        display: block;        
+        display: block;
     }
-    
+
     .page_break {
         padding: 35px;
         border-bottom: 2px solid grey;
     }
-    
+
     .variation {
         display: none;
     }
-    
+
     .variation_header {
         padding-bottom: 3px;
         border-bottom: 1px #aaa solid;
     }
-    
+
   /*]]>*/
   </style>
   <style type="text/css">
@@ -122,7 +122,7 @@
   li.c1 {list-style: none}
   /*]]>*/
   </style>
-  
+
   <script type="text/javascript">
 
   function $() {
@@ -137,10 +137,10 @@
       }
       return elements;
   }
-    
+
   function toggleElem( id ){
 
-    if( $(id).style.display == 'none' || 
+    if( $(id).style.display == 'none' ||
         $(id).style.display == '' )
     {
         $(id).style.display    = 'block';
@@ -149,14 +149,14 @@
         $(id).style.display    = 'none';
         sign = '[+]';
     }
-    
+
     if( $(id + '_sign') ){
             $(id + '_sign').innerHTML = sign;
     }
-    
+
   }
   </script>
-  
+
 </head>
 
 <body>
@@ -166,7 +166,7 @@
     </h1>
     <strong>Report generated on</strong>:
     <p class="note">{{date}}</p>
-    
+
 
     <h2>Configuration</h2>
     <strong>Version</strong>: {{version}}<br />
@@ -179,26 +179,26 @@
 
       <strong>URL:</strong> {{options.url}}<br />
       <strong>User agent:</strong> {{options.user_agent | escape}}<br />
-      
+
       <table>
         <tr>
-        
+
         <th>
             <h4>Audited elements</h4>
         </th>
-        
+
         <th>
             <h4>Modules</h4>
         </th>
-        
+
         <th>
             <h4>Filters</h4>
         </th>
-        
+
         <th>
             <h4>Cookies</h4>
         </th>
-        
+
         </tr>
       <tr  class="c3">
       <td>
@@ -206,15 +206,15 @@
         {% if options.audit_links %}
         <li>Links</li>
         {% endif %}
-        
+
         {% if options.audit_forms %}
         <li>Forms</li>
         {% endif %}
-        
+
         {% if options.audit_cookies %}</li>
         <li>Cookies</li>
         {% endif %}
-        
+
         {% if options.audit_headers %}</li>
         <li>Headers</li>
         {% endif %}
@@ -297,14 +297,14 @@
       {% for vuln in vulns %}
       <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}</a>:</h3>
       In <span class="note">{{vuln.elem}}</span> variable
-      <span class="note">{{vuln.var | escape}}</span> 
+      <span class="note">{{vuln.var | escape}}</span>
       at <span class="note">{{vuln.url | escape}}</span>.
       {% endfor %}
       </p>
 
       <div class="vulns">
         <h2>Vulnerabilities</h2>
-        
+
         {% for vuln in vulns %}
 
         <h3 id="vuln_{{forloop.index}}">
@@ -315,10 +315,7 @@
         <br/>
         <div class="left">
           <strong>Module name</strong>:
-          <a target="_blank"
-            href="http://arachni.sourceforge.net/Arachni/Modules/{{vuln.mod_name}}.html">
             {{vuln.mod_name}}
-          </a>
           <br />
           <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
           <strong>Vulnerable URL</strong>: {{vuln.url | escape}}<br />
@@ -328,22 +325,12 @@
 
           <h3>Description</h3>
           <p class="note">{{vuln.description | escape}}</p>
-          
+
           <h3>Requires manual verification?</h3>
           <p class="note">{{vuln.verification | escape}}</p>
-                  
-          {% if vuln.remedy_guidance != "" %}
-          <h3>Remedial guidance</h3>
-          <p class="note">{{vuln.remedy_guidance | escape}}</p>
-          {% endif %}
-          
-          {% if vuln.remedy_code != "" %}
-          <h3>Remedial code</h3>
-          <pre class="code note">{{vuln.remedy_code | escape}}</pre>
-          {% endif %}
-            
+
         </div>
-        
+
         <strong>CWE</strong>: {{vuln.cwe}}
         (<a target="_blank" href="{{vuln.cwe_url}}">{{vuln.cwe_url}}</a>)<br />
         <strong>Severity</strong>: {{vuln.severity}}<br />
@@ -370,7 +357,16 @@
         <br />
         <br />
         <br />
-        
+          {% if vuln.remedy_guidance != "" %}
+          <h3>Remedial guidance</h3>
+          <p class="note">{{vuln.remedy_guidance | escape}}</p>
+          {% endif %}
+
+          {% if vuln.remedy_code != "" %}
+          <h3>Remedial code</h3>
+          <pre class="code note">{{vuln.remedy_code | escape}}</pre>
+          {% endif %}
+
         {% assign toploop_index = forloop.index %}
         {% for variation in vuln.variations %}
         <h3 class="variation_header">
@@ -379,25 +375,22 @@
             Variation {{forloop.index}}
           </a>
         </h3>
-        
+
         <strong>Vulnerable URL</strong>:
         <p class="note"><a href="{{variation.url}}">{{variation.url}}</a></p>
-        
+
         <div class="variation" id="var_{{toploop_index}}_{{forloop.index}}">
         <strong>Injected value</strong>:
         <pre class="note">{{variation.injected | escape}}</pre>
-        
+
         <strong>ID</strong>:<br />
         <pre class="note">{{variation.id | escape}}</pre>
-        
+
         <strong>Regular expression</strong>:<br />
         <pre class="note">{{variation.regexp | escape}}</pre>
-        
+
         <strong>Matched by the regular expression</strong>:<br />
-        <pre class="note">{% for match in variation.regexp_match %}
- {{match | escape}}
- {% endfor %}
-         </pre>
+        <pre class="note">{{variation.regexp_match }}</pre>
 
 {% if opts.headers != 'false' %}
         <table>
@@ -418,7 +411,7 @@
               <pre class="note">{{ variation.headers.response | escape }}</pre>
             </td>
           </tr>
-          
+
         </table>
 {% endif %}
         <br/>
@@ -437,7 +430,7 @@
         <br />
         {% endfor %}
       </div>
-      
+
       <h2 id="sitemap">Sitemap</h2>
       {% for url in sitemap %}
       <a href="{{url}}">{{url}}</a><br/>
