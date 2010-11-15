@@ -123,6 +123,51 @@ module Auditor
     }
 
     #
+    # Matches the HTML in @page.html to an array of regular expressions
+    # and logs the results.
+    #
+    # @param    [Array<Regexp>]     regexps
+    #
+    def match_and_log( regexps )
+        # make sure that we're working with an array
+        regexps = [regexps].flatten
+
+        regexps.each {
+            |regexp|
+            @page.html.scan( regexp ).each {
+                |match|
+                log_match( regexp, match )
+            }
+        }
+    end
+
+    #
+    # Logs a vulnerability based on a regular expression and it's matched string
+    #
+    # @param    [Regexp]    regexp
+    # @param    [String]    match
+    #
+    def log_match( regexp, match )
+        # Instantiate a new Vulnerability class and
+        # append it to the results array
+        vuln = Vulnerability.new( {
+            'var'          => 'n/a',
+            'url'          => @page.url,
+            'injected'     => 'n/a',
+            'id'           => 'n/a',
+            'regexp'       => regexp,
+            'regexp_match' => match,
+            'elem'         => Vulnerability::Element::LINK,
+            'response'     => @page.html,
+            'headers'      => {
+                'request'    => 'n/a',
+                'response'   => 'n/a',
+            }
+        }.merge( self.class.info ) )
+        register_results( [vuln] )
+    end
+
+    #
     # Provides easy access to element auditing.
     #
     # If no elements have been specified in 'opts' it will
