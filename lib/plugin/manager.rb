@@ -40,8 +40,6 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::UI::Output
 
-    alias old_load_from_path load_from_path
-
     #
     # @param    [Arachni::Options]    opts
     #
@@ -61,11 +59,6 @@ class Manager < Arachni::ComponentManager
             plugin_new.run
             plugin_new.clean_up
         }
-    end
-
-
-    def load_from_path( path )
-        return old_load_from_path( path )
     end
 
 end
