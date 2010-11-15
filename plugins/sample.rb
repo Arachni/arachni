@@ -75,15 +75,6 @@ EODANCE
             print_info( @dance )
         end
 
-        i = 0
-        while( i < 5 )
-
-            print_status( "Working...it ain't easy being a plugin..." )
-
-            ::IO.select( nil, nil, nil, 1.0 )
-
-            i += 1
-        end
     end
 
     #
