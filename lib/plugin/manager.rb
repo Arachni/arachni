@@ -42,7 +42,7 @@ class Manager < Arachni::ComponentManager
     include Arachni::Module::Utilities
 
     #
-    # @param    [Arachni::Options]    opts
+    # @param    [Arachni::Framework]    framework   framework instance
     #
     def initialize( framework )
         super( framework.opts.dir['plugins'], Arachni::Plugins )
@@ -51,6 +51,9 @@ class Manager < Arachni::ComponentManager
         @jobs = []
     end
 
+    #
+    # Runs each plug-in in its own thread.
+    #
     def run
         each {
             |name, plugin|
@@ -72,6 +75,9 @@ class Manager < Arachni::ComponentManager
         }
     end
 
+    #
+    # Blocks until all plug-ins have finished executing.
+    #
     def block!
         while( !@jobs.empty? )
 
@@ -85,24 +91,51 @@ class Manager < Arachni::ComponentManager
         end
     end
 
+    #
+    # Will return false if all plug-ins have finished executing.
+    #
+    # @return   [Bool]
+    #
     def busy?
         !@jobs.reject{ |j| j.alive? }.empty?
     end
 
+    #
+    # Returns the names of the running plug-ins.
+    #
+    # @return   [Array]
+    #
     def job_names
         @jobs.map{ |j| j[:name] }
     end
 
+    #
+    # Returns all the running threads.
+    #
+    # @return   [Array<Thread>]
+    #
     def jobs
         @jobs
     end
 
+    #
+    # Kills a plug-in by name.
+    #
+    # @param    [String]    name
+    #
     def kill( name )
         job = get( name )
         return job.kill if job
         return nil
     end
 
+    #
+    # Gets a running plug-in by name.
+    #
+    # @param    [String]    name
+    #
+    # @return   [Thread]
+    #
     def get( name )
         @jobs.each { |job| return job if job[:name] == name }
     end

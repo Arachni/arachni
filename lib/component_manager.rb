@@ -36,8 +36,8 @@ class ComponentManager < Hash
     EXCLUDE  = '-'
 
     #
-    # @param    [String]    the path to the component library/folder
-    # @param    [Module]    the parent module of the components
+    # @param    [String]    lib       the path to the component library/folder
+    # @param    [Module]    parent    the parent module of the components
     #
     def initialize( lib, parent )
         @lib    = lib
@@ -45,9 +45,9 @@ class ComponentManager < Hash
     end
 
     #
-    # Loads components
+    # Loads components.
     #
-    # @param [Array]    mods    array of names of components to load
+    # @param    [Array]    components    array of names of components to load
     #
     def load( components )
         parse( components ).each {
@@ -56,6 +56,15 @@ class ComponentManager < Hash
         }
     end
 
+    #
+    # Validates and prepares options for a given component.
+    #
+    # @param    [String]    component_name    the name of the component
+    # @param    [Class]     component         the component
+    # @param    [Hash]      user_opts         the user options
+    #
+    # @return   [Hash]   the prepared options to be passed to the component
+    #
     def prep_opts( component_name, component, user_opts = {} )
         info = component.info
         return {} if !info.include?( :options ) || info[:options].empty?
@@ -97,7 +106,9 @@ class ComponentManager < Hash
     #
     # It parses the component array making sure that its structure is valid
     #
-    # @param    [Array]     array of component names
+    # @param    [Array]    components   array of component names
+    #
+    # @return   [Array]    array of modules to load
     #
     def parse( components )
         unload = []
