@@ -156,7 +156,7 @@ class XMLRPC
     def pause( )
 
         print_status( 'Paused...' )
-        @server.call( "framework.pause" )
+        @server.call( "framework.pause!" )
 
         print_line
         print_info( 'Results thus far:' )
@@ -179,14 +179,14 @@ class XMLRPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.call( "framework.abort" )
+            @server.call( "framework.abort!" )
             reset
             print_info( 'Exiting...' )
             exit 0
         end
 
         @pause = false
-        @server.call( "framework.resume" )
+        @server.call( "framework.resume!" )
 
     end
 

@@ -33,8 +33,8 @@ class Framework < Arachni::Framework
     alias :old_run :run
 
     # make this inherited methods visible again
-    private :old_run, :stats, :pause, :paused?, :resume, :lsmod, :modules
-    public  :stats, :pause, :paused?, :resume, :lsmod, :modules
+    private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules
+    public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules
 
     def initialize( opts )
         super( opts )
@@ -56,7 +56,7 @@ class Framework < Arachni::Framework
     #
     # Aborts the running audit.
     #
-    def abort
+    def abort!
         @job.kill
         return true
     end
