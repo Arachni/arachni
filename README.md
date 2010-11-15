@@ -157,6 +157,15 @@ You can find a tutorial module here: {Arachni::Modules::SimpleRFI}
 You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
 And a more complex HTML report here: {Arachni::Reports::HTML}
 
+
+### Plug-in Management ({Arachni::Plugin})
+
+ - Modular design
+    - Very easy to add new plug-ins.
+    - Plug-ins are framework demi-gods, they have direct access to the framework instance.
+    - Can be used to add any functionality to Arachni.
+
+
 ### Trainer subsystem ({Arachni::Module::Trainer})
 
 The Trainer is what enables Arachni to learn from the scan it performs
