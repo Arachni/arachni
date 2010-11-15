@@ -117,11 +117,11 @@ class Framework
     #
     def run
 
-        @spider   = Arachni::Spider.new( @opts )
-
-        @plugins.run
+        @spider = Arachni::Spider.new( @opts )
 
         @opts.start_datetime = Time.now
+
+        @plugins.run
 
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results
@@ -150,6 +150,8 @@ class Framework
         if( @opts.repsave && !@opts.repload )
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
+
+        @plugins.block
 
         return true
     end

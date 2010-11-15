@@ -58,6 +58,9 @@ EODANCE
     #
     def run( )
 
+        pp Thread.current[:name]
+        pp @framework.plugins.busy?
+
         if( @options['print_framework'] )
             print_info( "Here's the framework:" )
             pp @framework
@@ -72,6 +75,15 @@ EODANCE
             print_info( @dance )
         end
 
+        i = 0
+        while( i < 5 )
+
+            print_status( "Working...it ain't easy being a plugin..." )
+
+            ::IO.select( nil, nil, nil, 1.0 )
+
+            i += 1
+        end
     end
 
     #
@@ -88,7 +100,7 @@ EODANCE
             :options        => [
                 Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
                 Arachni::OptBool.new( 'print_options', [ false, 'Do you want to print the options?', true ] ),
-                Arachni::OptBool.new( 'dance', [ true, 'Wanna dance?' ] )
+                Arachni::OptBool.new( 'dance', [ false, 'Wanna dance?', false ] )
             ]
         }
     end

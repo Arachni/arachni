@@ -46,6 +46,8 @@ class Manager < Arachni::ComponentManager
     def initialize( framework )
         super( framework.opts.dir['plugins'], Arachni::Plugins )
         @framework = framework
+
+        @jobs = []
     end
 
     def run
@@ -54,12 +56,53 @@ class Manager < Arachni::ComponentManager
 
             opts = @framework.opts.plugins[name]
 
-            plugin_new = plugin.new( @framework, prep_opts( name, plugin, opts ) )
-            plugin_new.prepare
-            plugin_new.run
-            plugin_new.clean_up
+            @jobs << Thread.new {
+
+                Thread.current[:name] = name
+
+                plugin_new = plugin.new( @framework, prep_opts( name, plugin, opts ) )
+                plugin_new.prepare
+                plugin_new.run
+                plugin_new.clean_up
+            }
         }
     end
+
+    def block
+        while( !@jobs.empty? )
+
+            print_line
+            print_info( "Waiting on the following (#{@jobs.size}) plugins to finish:" )
+            print_info( job_names.join( ', ' ) )
+            print_line
+
+            @jobs.delete_if { |j| !j.alive? }
+            ::IO::select( nil, nil, nil, 1 )
+        end
+    end
+
+    def busy?
+        !@jobs.reject{ |j| j.alive? }.empty?
+    end
+
+    def job_names
+        @jobs.map{ |j| j[:name] }
+    end
+
+    def jobs
+        @jobs
+    end
+
+    def kill( name )
+        job = get( name )
+        return job.kill if job
+        return nil
+    end
+
+    def get( name )
+        @jobs.each { |job| return job if job[:name] == name }
+    end
+
 
 end
 end
