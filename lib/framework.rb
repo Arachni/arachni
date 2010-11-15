@@ -85,6 +85,7 @@ class Framework
     attr_reader :modules
     attr_reader :plugins
     attr_reader :spider
+    attr_reader :page_queue
 
     #
     # Initializes system components.
@@ -101,6 +102,7 @@ class Framework
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
+        @page_queue = Queue.new
 
         prepare_cookie_jar( )
         prepare_user_agent( )
@@ -440,8 +442,6 @@ class Framework
 
        # run all the queued HTTP requests and harvest the responses
        Arachni::HTTP.instance.run
-
-       @page_queue = Queue.new
 
        # try to get an updated page from the Trainer
        page = Arachni::HTTP.instance.trainer.page
