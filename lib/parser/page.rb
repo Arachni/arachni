@@ -43,6 +43,8 @@ class Page
     #
     attr_accessor :headers
 
+    attr_accessor :response_headers
+
     #
     # @see Parser#links
     #

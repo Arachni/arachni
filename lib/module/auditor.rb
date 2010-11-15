@@ -60,6 +60,7 @@ module Auditor
         FORM    = Vulnerability::Element::FORM
         COOKIE  = Vulnerability::Element::COOKIE
         HEADER  = Vulnerability::Element::HEADER
+        BODY    = Vulnerability::Element::BODY
     end
 
     #
@@ -75,7 +76,8 @@ module Auditor
         # use the elements in {#self.info}.
         #
         :elements => [ Element::LINK, Element::FORM,
-                       Element::COOKIE, Element::HEADER ],
+                       Element::COOKIE, Element::HEADER,
+                       Vulnerability::Element::BODY ],
 
         #
         # The regular expression to match against the response body.
@@ -129,15 +131,42 @@ module Auditor
     # @param    [Array<Regexp>]     regexps
     #
     def match_and_log( regexps )
+
         # make sure that we're working with an array
         regexps = [regexps].flatten
 
+        elems = self.class.info[:elements]
+        elems = OPTIONS[:elements] if !elems || elems.empty?
+
         regexps.each {
             |regexp|
+
             @page.html.scan( regexp ).each {
                 |match|
-                log_match( regexp, match )
-            }
+
+                log_match(
+                    :regexp  => regexp,
+                    :match   => match,
+                    :element => Vulnerability::Element::BODY
+                )
+            } if elems.include? Vulnerability::Element::BODY
+
+            @page.response_headers.each {
+                |k,v|
+                next if !v
+
+                v.to_s.scan( regexp ).each {
+                    |match|
+
+                    log_match(
+                        :var => k,
+                        :regexp  => regexp,
+                        :match   => match,
+                        :element => Vulnerability::Element::HEADER
+                    )
+                }
+            } if elems.include? Vulnerability::Element::HEADER
+
         }
     end
 
@@ -147,21 +176,34 @@ module Auditor
     # @param    [Regexp]    regexp
     # @param    [String]    match
     #
-    def log_match( regexp, match )
+    def log_match( opts, res = nil )
+
+        request_headers  = '<n/a>'
+        response_headers = @page.response_headers
+        response         = @page.html
+        url              = @page.url
+
+        if( res )
+            request_headers  = res.request.headers
+            response_headers = res.headers
+            response         = res.body
+            url              = res.effective_url
+        end
+
         # Instantiate a new Vulnerability class and
         # append it to the results array
         vuln = Vulnerability.new( {
-            'var'          => 'n/a',
-            'url'          => @page.url,
-            'injected'     => 'n/a',
-            'id'           => 'n/a',
-            'regexp'       => regexp,
-            'regexp_match' => match,
-            'elem'         => Vulnerability::Element::LINK,
-            'response'     => @page.html,
-            'headers'      => {
-                'request'    => 'n/a',
-                'response'   => 'n/a',
+            :var          => opts[:var] || '<n/a>',
+            :url          => url,
+            :injected     => 'n/a',
+            :id           => 'n/a',
+            :regexp       => opts[:regexp],
+            :regexp_match => opts[:match],
+            :elem         => opts[:element],
+            :response     => response,
+            :headers      => {
+                :request    => request_headers,
+                :response   => response_headers,
             }
         }.merge( self.class.info ) )
         register_results( [vuln] )
