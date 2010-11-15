@@ -84,6 +84,7 @@ class Framework
     attr_reader :reports
     attr_reader :modules
     attr_reader :plugins
+    attr_reader :spider
 
     #
     # Initializes system components.
@@ -145,6 +146,12 @@ class Framework
 
         # refresh the audit store
         audit_store( true )
+
+        @running = false
+
+        # wait for the plugins to finish
+        @plugins.block!
+
         # run reports
         if( @opts.reports )
             exception_jail{ @reports.run( audit_store( ) ) }
@@ -155,16 +162,7 @@ class Framework
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
 
-        @running = false
-
-        # run all plugins
-        @plugins.block!
-
         return true
-    end
-
-    def running?
-        @running
     end
 
     def stats( )
@@ -336,6 +334,21 @@ class Framework
         return plug_info
     end
 
+    def running?
+        @running
+    end
+
+    def paused?
+        @paused || false
+    end
+
+    def pause!
+        @paused = true
+    end
+
+    def resume!
+        @paused = false
+    end
 
     #
     # Returns the version of the framework
@@ -417,18 +430,6 @@ class Framework
             harvest_http_responses( )
         end
 
-    end
-
-    def paused?
-        @paused || false
-    end
-
-    def pause
-        @paused = true
-    end
-
-    def resume
-        @paused = false
     end
 
     def harvest_http_responses
