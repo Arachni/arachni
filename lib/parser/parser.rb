@@ -76,7 +76,7 @@ class Parser
     #
     # @return [Page]
     #
-    def run( url, html, headers )
+    def run( url, html, response_headers )
 
         @url = url
 
@@ -104,8 +104,8 @@ class Parser
 
         end
 
-        cookies_arr << cookies( headers['Set-Cookie'].to_s )
-        cookies_arr << cookies( headers['set-cookie'].to_s )
+        cookies_arr << cookies( response_headers['Set-Cookie'].to_s )
+        cookies_arr << cookies( response_headers['set-cookie'].to_s )
         cookies_arr.flatten!.uniq!
 
         return Page.new( {
@@ -113,6 +113,7 @@ class Parser
             :query_vars  => query_vars,
             :html        => html,
             :headers     => headers(),
+            :response_headers     => response_headers,
             :forms       => forms,
             :links       => links,
             :cookies     => merge_with_cookiejar( cookies_arr ),
