@@ -32,9 +32,9 @@ It is unlikely that you will need it, but if you do, use
 
 
 **3. Avoid creating your own instance of Net::HTTP or other lib.**<br/>
-You are provided with pre-configured wrapper ({Arachni::Module::Base#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
+You are provided with a pre-configured wrapper ({Arachni::Module::Base#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
 
-Take a look in the tutorial module to see what you get: {Arachni::Modules::Audit::SimpleRFI}
+Take a look in the tutorial module to see what you get: {Arachni::Modules::SimpleRFI}
 
 The base module will also give you some insights: {Arachni::Module::Base}
 
@@ -45,28 +45,16 @@ run-time settings in {Arachni::Options}.
 ## Creating New Modules
 Arachni provides you with examples for the usual types of modules.
 
-This is your main guide: {Arachni::Modules::Audit::SimpleRFI}
+This is your main guide: {Arachni::Modules::SimpleRFI}
 
 This covers most of the usual tasks when writing a module.
 It lets Arachni do all the work.
 
 For something more elaborate look in:<br/>
-- {Arachni::Modules::Audit::ResponseSplitting}<br/>
-- {Arachni::Modules::Audit::SQLInjection}
+- {Arachni::Modules::ResponseSplitting}<br/>
+- {Arachni::Modules::SQLInjection}
 
 These modules do their own vulnerability checking and logging.
-
-If you want to create coupled modules take a look in:<br/>
-- {Arachni::Modules::Recon::ExtractObjects}<br/>
-- {Arachni::Modules::Audit::AuditObjects}
-
-In this case {Arachni::Modules::Recon::ExtractObjects} extracts information from the
-web pages and saves it in the module datastore.
-
-The datastore is persistent and shared between all modules.
-
-{Arachni::Modules::Audit::AuditObjects} then gets the data harvested by {Arachni::Modules::Recon::ExtractObjects}
-and handles it accordingly.
 
 One last note.
 You're probably going to be working with large arrays of strings,
@@ -98,6 +86,18 @@ However, do provide an appropriate default `outfile` value in `initialize()`.
 
 Other than that you can do whatever you want, you have all of Ruby's
 power to work with.
+
+
+## Creating New Plug-ins
+
+Unlike the two previous types of components (reports and modules) plug-ins are demi-gods.<br/>
+Each plug-in is passed an instance of the framework to do what they please with it.<br/>
+Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.<br/>
+Plug-ins are run in parallel with the framework and are executed right before the scan process starts.<br/>
+
+Have a look the following demo plug-ins:<br/>
+- {Arachni::Plugins::ClearStdout}<br/>
+- {Arachni::Plugins::Sample}
 
 
 ## Licensing

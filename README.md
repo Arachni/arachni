@@ -133,12 +133,6 @@ Can extract and analyze:
 The analyzer can graciously handle badly written HTML code
 due to the combination of regular expression analysis and [Nokogiri](http://nokogiri.org/) HTML parser.
 
-The analyzer serves as the first layer of HTML analysis.<br/>
-More complex analysis, for JS, AJAX, Java Applets etc, can be achieved by adding data-mining/audit pairs of modules
-like:<br/>
-- {Arachni::Modules::Recon::ExtractObjects}<br/>
-- {Arachni::Modules::Audit::AuditObjects}
-
 This way the system can be extended to be able to handle virtually anything.
 
 ###  Module Management ({Arachni::Module})
@@ -148,10 +142,10 @@ This way the system can be extended to be able to handle virtually anything.
  - Helper audit methods
     - For forms, links and cookies.
     - Writing RFI, SQL injection, XSS etc mods is a matter of minutes if not seconds.
- - Helper {Arachni::Module::HTTP} interface
+ - Helper {Arachni::HTTP} interface
     - A high-performance, simple and easy to use Typhoeus wrapper.
 
-You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
+You can find a tutorial module here: {Arachni::Modules::SimpleRFI}
 
 ### Report Management ({Arachni::Report})
 
