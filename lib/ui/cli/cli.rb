@@ -586,6 +586,7 @@ USAGE
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
 
+
     Profiles -----------------------
 
     --save-profile=<file>       save the current run profile/options to <file>
@@ -598,6 +599,7 @@ USAGE
                                       * --redundant)
 
     --show-profile              will output the running profile as CLI arguments
+
 
     Crawler -----------------------
 
@@ -664,6 +666,7 @@ USAGE
                                       --mods=*,-backup_files,-xss
                                    The above will load all modules except for the 'backup_files' and 'xss' modules. )
 
+
     Reports ------------------------
 
     --lsrep                       list available reports
@@ -675,17 +678,19 @@ USAGE
                                     (Allows you to create a new reports from old/finished scans.)
 
     --report=<report>:<optname>=<val>,<optname2>=<val2>,...
+
                                   <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
+
     Plugins ------------------------
 
-    --lsplug                      list available reports
+    --lsplug                      list available plugins
 
     --plugin=<plugin>:<optname>=<val>,<optname2>=<val2>,...
 
-                                  <plugin>: the name of the report as displayed by '--lsplug'
+                                  <plugin>: the name of the plugin as displayed by '--lsplug'
                                     (Can be used multiple times.)
 
 
