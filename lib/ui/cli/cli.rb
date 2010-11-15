@@ -329,19 +329,16 @@ class CLI
                     info[:elements].join( ', ' ).downcase )
             end
 
-            if( info[:dependencies] )
-                print_line( "Dependencies:\t" +
-                    info[:dependencies].join( ', ' ).downcase )
-            end
-
             print_line( "Author:\t\t"     + info[:author] )
             print_line( "Version:\t"      + info[:version] )
 
-            print_line( "References:" )
-            info[:references].keys.each {
-                |key|
-                print_info( key + "\t\t" + info[:references][key] )
-            }
+            if( info[:references] )
+                print_line( "References:" )
+                info[:references].keys.each {
+                    |key|
+                    print_info( key + "\t\t" + info[:references][key] )
+                }
+            end
 
             print_line( "Targets:" )
             info[:targets].keys.each {
