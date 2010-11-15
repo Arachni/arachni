@@ -26,7 +26,7 @@ module Plugin
 class Base
 
     # get the output interface
-    include Arachni::UI::Output
+    include Arachni::Module::Output
 
     #
     # OPTIONAL
