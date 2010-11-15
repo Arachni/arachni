@@ -120,6 +120,10 @@ class Stdout < Arachni::Report::Base
             print_info( 'Variable: ' + vuln.var )
             print_info( 'Description: ' )
             print_info( vuln.description )
+
+            print_line
+            print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+
             print_line
             print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
             print_line
