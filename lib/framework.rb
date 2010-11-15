@@ -108,6 +108,8 @@ class Framework
         # for the reports
         @orig_redundant = @opts.redundant.deep_clone
 
+        @running = false
+
     end
 
     #
@@ -116,11 +118,13 @@ class Framework
     # It parses the instanse options and runs the audit
     #
     def run
+        @running = true
 
         @spider = Arachni::Spider.new( @opts )
 
         @opts.start_datetime = Time.now
 
+        # run all plugins
         @plugins.run
 
         # catch exceptions so that if something breaks down or the user opted to
@@ -151,9 +155,16 @@ class Framework
             exception_jail{ audit_store_save( @opts.repsave ) }
         end
 
-        @plugins.block
+        @running = false
+
+        # run all plugins
+        @plugins.block!
 
         return true
+    end
+
+    def running?
+        @running
     end
 
     def stats( )
