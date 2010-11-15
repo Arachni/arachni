@@ -50,7 +50,7 @@ class XMLRPC
         end
 
         # if the user wants to see the available reports, output them and exit
-        if opts.lsrep
+        if !opts.lsrep.empty?
             lsrep
             exit
         end
@@ -325,8 +325,8 @@ class XMLRPC
                     @server.call( "opts.http_req_limit=", arg ).to_s
 
             when 'reports'
-                arg << 'stdout'
-                exception_jail{ @framework.reports.load( arg ) }
+                arg['stdout'] = {}
+                exception_jail{ @framework.reports.load( arg.keys ) }
 
             else
                 print_status "Setting #{opt}."
