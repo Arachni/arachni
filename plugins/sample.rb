@@ -88,7 +88,7 @@ EODANCE
             :options        => [
                 Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
                 Arachni::OptBool.new( 'print_options', [ false, 'Do you want to print the options?', true ] ),
-                Arachni::OptBool.new( 'dance', [ true, 'Wanna dance?', true ] )
+                Arachni::OptBool.new( 'dance', [ true, 'Wanna dance?' ] )
             ]
         }
     end
