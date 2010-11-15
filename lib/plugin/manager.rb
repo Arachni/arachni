@@ -39,6 +39,7 @@ module Plugin
 class Manager < Arachni::ComponentManager
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     #
     # @param    [Arachni::Options]    opts
@@ -58,12 +59,15 @@ class Manager < Arachni::ComponentManager
 
             @jobs << Thread.new {
 
-                Thread.current[:name] = name
+                exception_jail {
+                    Thread.current[:name] = name
 
-                plugin_new = plugin.new( @framework, prep_opts( name, plugin, opts ) )
-                plugin_new.prepare
-                plugin_new.run
-                plugin_new.clean_up
+                    plugin_new = plugin.new( @framework, prep_opts( name, plugin, opts ) )
+                    plugin_new.prepare
+                    plugin_new.run
+                    plugin_new.clean_up
+                }
+
             }
         }
     end
