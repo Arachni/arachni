@@ -81,11 +81,39 @@ class Framework
     # @return [Options]
     #
     attr_reader :opts
+
+    #
+    # @return   [Arachni::Report::Manager]   report manager
+    #
     attr_reader :reports
+
+    #
+    # @return   [Arachni::Module::Manager]   module manager
+    #
     attr_reader :modules
+
+    #
+    # @return   [Arachni::Plugin::Manager]   plugin manager
+    #
     attr_reader :plugins
+
+    #
+    # @return   [Arachni::Spider]   spider
+    #
     attr_reader :spider
+
+    #
+    # Holds candidate pages to be audited.
+    #
+    # Pages in the queue are pushed in by the trainer, the queue doesn't hold
+    # pages returned by the spider.
+    #
+    # Plug-ins can push their own pages to be audited if they wish to...
+    #
+    # @return   [Queue<Arachni::Parser::Page>]   page queue
+    #
     attr_reader :page_queue
+
 
     #
     # Initializes system components.
@@ -102,6 +130,7 @@ class Framework
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
+
         @page_queue = Queue.new
 
         prepare_cookie_jar( )
