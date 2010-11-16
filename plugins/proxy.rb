@@ -56,7 +56,8 @@ class Proxy < Arachni::Plugin::Base
     def self.info
         {
             :name           => 'Proxy',
-            :description    => %q{.},
+            :description    => %q{Gathers data based on user actions and exhanged HTTP
+                traffic and pushes that data to the framework's page-queue to be audited.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
