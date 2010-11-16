@@ -51,12 +51,12 @@ class Proxy < Arachni::Plugin::Base
     end
 
     def prepare
-        require @framework.opts.dir['plugins'] + '/proxy/arachni_proxy_server.rb'
+        require @framework.opts.dir['plugins'] + '/proxy/server.rb'
 
         # we'll need this to parse server responses into Arachni::Parser::Page objects
         @parser = Arachni::Parser.new( @framework.opts )
 
-        @server = WEBrick::ArachniProxyServer.new(
+        @server = Server.new(
             :BindAddress    => @options['bind_address'] || '0.0.0.0',
             :Port           => @options['port'] || 8282,
             :ProxyVia       => false,

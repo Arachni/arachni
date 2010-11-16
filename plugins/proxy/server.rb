@@ -13,8 +13,10 @@ require 'stringio'
 require 'zlib'
 require 'open-uri'
 
-module WEBrick
+module Arachni
+module Plugins
 
+class Proxy
     #
     # We add our own type of WEBrick::HTTPProxyServer class that supports
     # notifications when the user tries to access a resource irrelevant
@@ -25,7 +27,7 @@ module WEBrick
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class ArachniProxyServer < HTTPProxyServer
+    class Server < WEBrick::HTTPProxyServer
 
         def choose_header(src, dst)
             connections = split_field(src['connection'])
@@ -58,6 +60,7 @@ module WEBrick
             res.body << reasons.map{ |msg| " *  #{msg}" }.join( "\n" )
         end
     end
-
 end
 
+end
+end
