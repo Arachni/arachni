@@ -272,6 +272,33 @@ end
 
 ###
 #
+# Network address option.
+#
+###
+class OptAddress < OptBase
+    def type
+        return 'address'
+    end
+
+    def valid?(value)
+        return false if empty_required_value?(value)
+
+        if (value != nil and value.empty? == false)
+            require 'socket'
+            begin
+                ::IPSocket.getaddress( value )
+            rescue
+                return false
+            end
+        end
+
+        return super
+    end
+end
+
+
+###
+#
 # File system path option.
 #
 ###
