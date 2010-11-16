@@ -15,6 +15,8 @@
 - NTLM authentication support (**New**)
 - Support for path extractor modules for the Spider (**New**)
 - Plug-in support -- allowing the framework to be extended with virtually any functionality (**New**).
+- Added plug-ins: (**New**)
+   - Passive proxy
 
 ## Version 0.2
 
