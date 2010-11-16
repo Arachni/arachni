@@ -677,7 +677,7 @@ USAGE
     --repload=<file>              load audit results from <file>
                                     (Allows you to create a new reports from old/finished scans.)
 
-    --report=<report>:<optname>=<val>,<optname2>=<val2>,...
+    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
@@ -688,7 +688,7 @@ USAGE
 
     --lsplug                      list available plugins
 
-    --plugin=<plugin>:<optname>=<val>,<optname2>=<val2>,...
+    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <plugin>: the name of the plugin as displayed by '--lsplug'
                                     (Can be used multiple times.)
