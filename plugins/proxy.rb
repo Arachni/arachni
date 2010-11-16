@@ -80,7 +80,7 @@ class Proxy < Arachni::Plugin::Base
     #
     def handler( req, res )
 
-        if( 'gzip' == res.header['content-encoding'] )
+        if( res.header['content-encoding'] == 'gzip' )
             res.header.delete( 'content-encoding' )
             res.body = Zlib::GzipReader.new( StringIO.new( res.body ) ).read
         end
@@ -152,7 +152,7 @@ class Proxy < Arachni::Plugin::Base
             :version        => '0.1',
             :options        => [
                 Arachni::OptPort.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
-                Arachni::OptString.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
+                Arachni::OptAddress.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
             ]
         }
     end
