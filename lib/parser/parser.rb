@@ -108,6 +108,10 @@ class Parser
         cookies_arr << cookies( response_headers['set-cookie'].to_s )
         cookies_arr.flatten!.uniq!
 
+        jar = {}
+        jar = @opts.cookies if @opts.cookies
+        cookies_arr.each{ |cookie| jar.merge!( cookie.simple ) }
+
         return Page.new( {
             :url         => url,
             :query_vars  => query_vars,
@@ -117,7 +121,7 @@ class Parser
             :forms       => forms,
             :links       => links,
             :cookies     => merge_with_cookiejar( cookies_arr ),
-            :cookiejar   => @opts.cookies
+            :cookiejar   => jar
         } )
 
     end
