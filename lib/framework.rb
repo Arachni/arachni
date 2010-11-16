@@ -181,13 +181,16 @@ class Framework
         # make sure this is disabled or it'll break report output
         @@only_positives = false
 
-        # refresh the audit store
-        audit_store( true )
-
         @running = false
 
         # wait for the plugins to finish
         @plugins.block!
+
+        # a plug-in may have updated the page queue, rock it!
+        audit_queue
+
+        # refresh the audit store
+        audit_store( true )
 
         # run reports
         if( @opts.reports )
@@ -235,6 +238,25 @@ class Framework
             harvest_http_responses( )
         end
 
+    end
+
+    def audit_queue
+
+        # this will run until no new elements appear for the given page
+        while( !@page_queue.empty? && page = @page_queue.pop )
+
+            # audit the page
+            run_mods( page )
+
+            # run all the queued HTTP requests and harvest the responses
+            @http.run
+
+            # check to see if the page was updated
+            page = @http.trainer.page
+            # and push it in the queue to be audited as well
+            @page_queue << page if page
+
+        end
     end
 
 
@@ -483,23 +505,7 @@ class Framework
 
        # if there was an updated page push it in the queue
        @page_queue << page if page
-
-       # this will run until no new elements appear for the given page
-       while( !@page_queue.empty? && page = @page_queue.pop )
-
-           # audit the page
-           run_mods( page )
-
-           # run all the queued HTTP requests and harvest the responses
-           @http.run
-
-           # check to see if the page was updated
-           page = @http.trainer.page
-           # and push it in the queue to be audited as well
-           @page_queue << page if page
-
-       end
-
+       audit_queue
     end
 
     #
