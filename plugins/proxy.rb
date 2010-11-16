@@ -24,7 +24,7 @@ module Plugins
 #
 class Proxy < Arachni::Plugin::Base
 
-    SHUTDOWN_URL = 'http://arachni.plugin.terminate/'
+    SHUTDOWN_URL = 'http://arachni.proxy.shutdown/'
 
     MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
 
@@ -113,7 +113,7 @@ class Proxy < Arachni::Plugin::Base
 
         reasons = []
 
-        if terminate?( url )
+        if shutdown?( url )
             print_status( 'Shutting down...' )
             @server.shutdown
             reasons << MSG_SHUTDOWN
@@ -135,7 +135,7 @@ class Proxy < Arachni::Plugin::Base
         return reasons
     end
 
-    def terminate?( url )
+    def shutdown?( url )
         return url.to_s == SHUTDOWN_URL
     end
 
