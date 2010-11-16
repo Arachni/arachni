@@ -24,6 +24,20 @@ module Plugins
 #
 class Proxy < Arachni::Plugin::Base
 
+    SHUTDOWN_URL = 'http://arachni.plugin.terminate/'
+
+    MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
+
+    MSG_DISALOWED = "You can't access this resource via the Arachni " +
+                    "proxy plug-in for the following reasons:"
+
+    MSG_NOT_IN_DOMAIN = 'This resource is on a domain or subdomain' +
+        ' outside the scope of the audit.'
+
+    MSG_EXCLUDED = 'This resource is matched by an exclude rule.'
+
+    MSG_NOT_INCLUDED = 'This resource is disallowed based on an include rule.'
+
     #
     # @param    [Arachni::Framework]    framework
     # @param    [Hash]        options    options passed to the plugin
@@ -37,19 +51,95 @@ class Proxy < Arachni::Plugin::Base
     end
 
     def prepare
-        require @framework.opts.dir['plugins'] + '/proxy/trainer_proxy.rb'
+        require @framework.opts.dir['plugins'] + '/proxy/arachni_proxy_server.rb'
+
+        # we'll need this to parse server responses into Arachni::Parser::Page objects
+        @parser = Arachni::Parser.new( @framework.opts )
+
+        @server = WEBrick::ArachniProxyServer.new(
+            :BindAddress    => @options['bind_address'] || '0.0.0.0',
+            :Port           => @options['port'] || 8282,
+            :ProxyVia       => false,
+            :ProxyContentHandler => method( :handler ),
+            :ProxyURITest   => method( :allowed? ),
+            :AccessLog      => [],
+            :Logger         => WEBrick::Log::new( "/dev/null", 7 )
+        )
     end
 
     def run( )
+        print_status( "Listening on: " +
+            "http://#{@server[:BindAddress]}:#{@server[:Port]}" )
 
-        # start the proxy trainer
-        ps = TrainerProxy.new( @framework, @options )
-        ps.start
+        print_status( "Shutdown URL: #{SHUTDOWN_URL}" )
+        @server.start
+    end
 
+    #
+    # Called by the proxy to process each page
+    #
+    def handler( req, res )
+
+        if( 'gzip' == res.header['content-encoding'] )
+            res.header.delete( 'content-encoding' )
+            res.body = Zlib::GzipReader.new( StringIO.new( res.body ) ).read
+        end
+
+        headers = {}
+        headers.merge( res.header.dup )     if res.header
+        headers['set-cookie'] = res.cookies if !res.cookies.empty?
+
+        page = @parser.run( req.unparsed_uri, res.body, headers )
+
+        print_info " *  #{page.forms.size} forms"
+        print_info " *  #{page.links.size} links"
+        print_info " *  #{page.cookies.size} cookies"
+
+        @framework.page_queue << page
+
+        return res
+    end
+
+    #
+    # Checks if the URL is allowed.
+    #
+    # URLs outside the scope of the scan are not allowed.
+    #
+    def allowed?( uri )
+
+        url = URI( uri )
+
+        print_status( 'Requesting: ' + uri )
+
+        reasons = []
+
+        if terminate?( url )
+            print_status( 'Shutting down...' )
+            @server.shutdown
+            reasons << MSG_SHUTDOWN
+            return reasons
+        end
+
+        @parser.url = @framework.opts.url
+
+        reasons << MSG_NOT_IN_DOMAIN if !@parser.in_domain?( url )
+        reasons << MSG_EXCLUDED      if @parser.exclude?( url )
+        reasons << MSG_NOT_INCLUDED  if !@parser.include?( url )
+
+        if !reasons.empty?
+            print_info( "#{MSG_DISALOWED}" )
+            reasons.each{ |msg| print_info " *  #{msg}" }
+            reasons << MSG_DISALOWED
+        end
+
+        return reasons
+    end
+
+    def terminate?( url )
+        return url.to_s == SHUTDOWN_URL
     end
 
     def clean_up
-        # start the audit
         @framework.resume!
     end
 
