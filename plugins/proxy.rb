@@ -57,8 +57,8 @@ class Proxy < Arachni::Plugin::Base
         @parser = Arachni::Parser.new( @framework.opts )
 
         @server = Server.new(
-            :BindAddress    => @options['bind_address'] || '0.0.0.0',
-            :Port           => @options['port'] || 8282,
+            :BindAddress    => @options['bind_address'],
+            :Port           => @options['port'],
             :ProxyVia       => false,
             :ProxyContentHandler => method( :handler ),
             :ProxyURITest   => method( :allowed? ),
