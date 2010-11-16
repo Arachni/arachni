@@ -41,7 +41,7 @@ module Arachni
         Element::Auditable.reset
         Module::Manager.reset
         Report::Manager.reset
-        Arachni::HTTP.instance.reset
+        @http.reset
     end
 
 #
@@ -103,6 +103,11 @@ class Framework
     attr_reader :spider
 
     #
+    # @return   [Arachni::HTTP]
+    #
+    attr_reader :http
+
+    #
     # Holds candidate pages to be audited.
     #
     # Pages in the queue are pushed in by the trainer, the queue doesn't hold
@@ -130,6 +135,7 @@ class Framework
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
+        @http    = Arachni::HTTP.instance
 
         @page_queue = Queue.new
 
@@ -197,8 +203,8 @@ class Framework
     end
 
     def stats( )
-        req_cnt = Arachni::HTTP.instance.request_count
-        res_cnt = Arachni::HTTP.instance.response_count
+        req_cnt = @http.request_count
+        res_cnt = @http.response_count
 
         return {
             :requests   => req_cnt,
@@ -424,7 +430,7 @@ class Framework
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
         else
-            @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar )
+            @opts.cookies = @http.class.parse_cookiejar( @opts.cookie_jar )
         end
 
     end
@@ -470,10 +476,10 @@ class Framework
         ' conditions this may take a while.' )
 
        # run all the queued HTTP requests and harvest the responses
-       Arachni::HTTP.instance.run
+       @http.run
 
        # try to get an updated page from the Trainer
-       page = Arachni::HTTP.instance.trainer.page
+       page = @http.trainer.page
 
        # if there was an updated page push it in the queue
        @page_queue << page if page
@@ -485,10 +491,10 @@ class Framework
            run_mods( page )
 
            # run all the queued HTTP requests and harvest the responses
-           Arachni::HTTP.instance.run
+           @http.run
 
            # check to see if the page was updated
-           page = Arachni::HTTP.instance.trainer.page
+           page = @http.trainer.page
            # and push it in the queue to be audited as well
            @page_queue << page if page
 
