@@ -97,6 +97,7 @@ class Spider
     # @return [Arachni::Parser::Page]
     #
     def run( &block )
+        return if @opts.link_count_limit == 0
 
         i = 1
         # start the crawl
