@@ -81,10 +81,10 @@ class Manager < Arachni::ComponentManager
     def block!
         while( !@jobs.empty? )
 
-            print_line
-            print_info( "Waiting on the following (#{@jobs.size}) plugins to finish:" )
-            print_info( job_names.join( ', ' ) )
-            print_line
+            print_debug
+            print_debug( "Waiting on the following (#{@jobs.size}) plugins to finish:" )
+            print_bebug( job_names.join( ', ' ) )
+            print_debug
 
             @jobs.delete_if { |j| !j.alive? }
             ::IO::select( nil, nil, nil, 1 )
