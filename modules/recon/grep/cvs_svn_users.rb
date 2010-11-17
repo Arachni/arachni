@@ -58,7 +58,7 @@ class CvsSvnUsers < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
                 :name        => %q{CVS/SVN user disclosure.},
-                :description => %q{An CVS or SVN user is disclosed in the body of the HTML page.},
+                :description => %q{A CVS or SVN user is disclosed in the body of the HTML page.},
                 :cwe         => '200',
                 :severity    => Vulnerability::Severity::LOW,
                 :cvssv2      => '0',
