@@ -25,6 +25,9 @@ End-users should check out the links bellow.
      - Google Hacking DB
      - Robot file reader
      - Allowed HTTP methods
+     - CVS/SVN user disclosure  -- **Done**
+     - Private IP address disclosure  -- **Done**
+
 
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2.1<br/>
