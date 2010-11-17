@@ -22,6 +22,7 @@ options.dir            = Hash.new
 options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
 options.dir['modules'] = options.dir['pwd'] + 'modules/'
 options.dir['reports'] = options.dir['pwd'] + 'reports/'
+options.dir['plugins'] = options.dir['pwd'] + 'plugins/'
 options.dir['lib']     = options.dir['pwd'] + 'lib/'
 
 # Construct getops struct

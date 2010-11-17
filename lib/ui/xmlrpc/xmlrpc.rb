@@ -73,6 +73,12 @@ class XMLRPC
         @server.instance_variable_get( :@http ).
             instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
+        # if the user wants to see the available reports, output them and exit
+        if !opts.lsplug.empty?
+            lsplug( @server.call( "framework.lsplug" ) )
+            exit
+        end
+
         # if the user wants to see the available modules
         # grab them from the server, output them, exit and reset the server.
         # not 100% sure that we need to reset but better to be safe than sorry.
@@ -320,6 +326,16 @@ class XMLRPC
                     print_info ' * ' + mod
                 }
 
+            when 'plugins'
+                next if arg.empty?
+
+                print_status 'Loading plug-ins:'
+                @server.call( "plugins.load", arg ).each {
+                    |mod|
+                    print_info ' * ' + mod
+                }
+
+
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +
                     @server.call( "opts.http_req_limit=", arg ).to_s
@@ -516,6 +532,47 @@ class XMLRPC
     end
 
     #
+    # Outputs all available reports and their info.
+    #
+    def lsplug( plugins )
+        print_line
+        print_line
+        print_info( 'Available plugins:' )
+        print_line
+
+        plugins.each {
+            |info|
+
+            print_status( "#{info['plug_name']}:" )
+            print_line( "--------------------" )
+
+            print_line( "Name:\t\t"       + info['name'] )
+            print_line( "Description:\t"  + info['description'] )
+
+            if( info['options'] && !info['options'].empty? )
+                print_line( "Options:\t" )
+
+                info['options'].each {
+                    |option|
+                    print_info( "\t#{option['name']} - #{option['desc']}" )
+                    print_info( "\tType:    #{option['type']}" )
+                    print_info( "\tDefault: #{option['default']}" )
+
+                    print_line( )
+                }
+            end
+
+            print_line( "Author:\t\t"     + info['author'] )
+            print_line( "Version:\t"      + info['version'] )
+            print_line( "Path:\t"         + info['path'] )
+
+            print_line
+        }
+
+    end
+
+
+    #
     # Outputs Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
     #
@@ -659,14 +716,25 @@ class XMLRPC
     --lsrep                       list available reports
 
     --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: #{@framework.reports.extension})
+                                    (The file will be saved with an extention of: #{@arachni.reports.extension})
 
-    --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected reports.
-                                    (One invocation only, options will be applied to all loaded reports.)
+    --repload=<file>              load audit results from <file>
+                                    (Allows you to create a new reports from old/finished scans.)
 
-    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
+
+                                  <repname>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
+                                    (Can be used multiple times.)
+
+
+    Plugins ------------------------
+
+    --lsplug                      list available plugins
+
+    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
+
+                                  <plugin>: the name of the plugin as displayed by '--lsplug'
                                     (Can be used multiple times.)
 
 USAGE

@@ -12,6 +12,7 @@ module Arachni
 
 require Options.instance.dir['lib'] + 'framework'
 require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/module/manager'
+require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/plugin/manager'
 
 module UI
 module RPCD
@@ -33,13 +34,43 @@ class Framework < Arachni::Framework
     alias :old_run :run
 
     # make this inherited methods visible again
-    private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules
-    public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules
+    private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
+    public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
 
     def initialize( opts )
         super( opts )
         @modules = Arachni::UI::RPCD::Module::Manager.new( opts )
+        @plugins = Arachni::UI::RPCD::Plugin::Manager.new( self )
     end
+
+    #
+    # Returns an array of hashes with information
+    # about all available reports
+    #
+    # @return    [Array<Hash>]
+    #
+    def lsplug
+
+        plug_info = []
+
+        @plugins.available( ).each {
+            |plugin|
+
+            info = @plugins[plugin].info
+
+            info[:plug_name]   = plugin
+            info[:path]        = @plugins.name_to_path( plugin )
+
+            info[:options] = info[:options].map{ |opt| opt.to_h }
+
+            plug_info << info
+        }
+
+        @plugins.clear( )
+
+        return plug_info
+    end
+
 
     #
     # Starts the audit.

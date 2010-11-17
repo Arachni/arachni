@@ -65,7 +65,7 @@ class XMLRPCD
             :SSLCACertificateFile => opts.ssl_ca
         )
 
-        # debug!
+        debug!
 
         set_handlers
 
@@ -186,6 +186,7 @@ USAGE
         @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
         @service.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
         @service.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
+        @service.add_handler( ::XMLRPC::iPIMethods( "plugins" ), @framework.plugins )
     end
 
 end
