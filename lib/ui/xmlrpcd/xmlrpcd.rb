@@ -65,7 +65,7 @@ class XMLRPCD
             :SSLCACertificateFile => opts.ssl_ca
         )
 
-        debug!
+        # debug!
 
         set_handlers
 
