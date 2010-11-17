@@ -58,14 +58,12 @@ class Manager < Arachni::ComponentManager
         each {
             |name, plugin|
 
-            opts = @framework.opts.plugins[name]
-
             @jobs << Thread.new {
 
                 exception_jail {
                     Thread.current[:name] = name
 
-                    plugin_new = plugin.new( @framework, prep_opts( name, plugin, opts ) )
+                    plugin_new = create( name )
                     plugin_new.prepare
                     plugin_new.run
                     plugin_new.clean_up
@@ -73,6 +71,11 @@ class Manager < Arachni::ComponentManager
 
             }
         }
+    end
+
+    def create( name )
+        opts = @framework.opts.plugins[name]
+        self[name].new( @framework, prep_opts( name, self[name], opts ) )
     end
 
     #
