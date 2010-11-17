@@ -27,7 +27,7 @@ module Module
 #
 class Manager < ::Arachni::Module::Manager
 
-    # make this inherited methods visible again
+    # make these inherited methods visible again
     private :load, :available
     public :load, :available
 
