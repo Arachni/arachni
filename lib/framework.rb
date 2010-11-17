@@ -41,7 +41,7 @@ module Arachni
         Element::Auditable.reset
         Module::Manager.reset
         Report::Manager.reset
-        @http.reset
+        Arachni::HTTP.instance.reset
     end
 
 #
@@ -135,7 +135,6 @@ class Framework
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
-        @http    = Arachni::HTTP.instance
 
         @page_queue = Queue.new
 
@@ -148,6 +147,10 @@ class Framework
 
         @running = false
 
+    end
+
+    def http
+        Arachni::HTTP.instance
     end
 
     #
@@ -206,8 +209,8 @@ class Framework
     end
 
     def stats( )
-        req_cnt = @http.request_count
-        res_cnt = @http.response_count
+        req_cnt = http.request_count
+        res_cnt = http.response_count
 
         return {
             :requests   => req_cnt,
@@ -249,10 +252,10 @@ class Framework
             run_mods( page )
 
             # run all the queued HTTP requests and harvest the responses
-            @http.run
+            http.run
 
             # check to see if the page was updated
-            page = @http.trainer.page
+            page = http.trainer.page
             # and push it in the queue to be audited as well
             @page_queue << page if page
 
@@ -377,6 +380,7 @@ class Framework
     def lsplug
 
         plug_info = []
+
         @plugins.available( ).each {
             |plugin|
 
@@ -452,7 +456,7 @@ class Framework
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
         else
-            @opts.cookies = @http.class.parse_cookiejar( @opts.cookie_jar )
+            @opts.cookies = http.class.parse_cookiejar( @opts.cookie_jar )
         end
 
     end
@@ -498,10 +502,10 @@ class Framework
         ' conditions this may take a while.' )
 
        # run all the queued HTTP requests and harvest the responses
-       @http.run
+       http.run
 
        # try to get an updated page from the Trainer
-       page = @http.trainer.page
+       page = http.trainer.page
 
        # if there was an updated page push it in the queue
        @page_queue << page if page
