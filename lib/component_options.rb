@@ -116,6 +116,21 @@ class OptBase
         value
     end
 
+    #
+    # Converts the Options object to hash
+    #
+    # @return    [Hash]
+    #
+    def to_h
+        hash = Hash.new
+        self.instance_variables.each {
+            |var|
+            hash[var.to_s.gsub( /@/, '' )] = self.instance_variable_get( var )
+        }
+        return hash
+    end
+
+
 protected
 
     attr_writer   :required, :desc, :default # :nodoc:
