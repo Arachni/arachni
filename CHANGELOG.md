@@ -14,6 +14,14 @@
 - XMLRPC CLI client (**New**)
 - NTLM authentication support (**New**)
 - Support for path extractor modules for the Spider (**New**)
+- Path extractors: (**New**)
+   - Generic -- extracts URLs from arbitrary text
+   - Anchors
+   - Form actions
+   - Frame sources
+   - Links
+   - META refresh
+   - Script 'src' and script code
 - Plug-in support -- allowing the framework to be extended with virtually any functionality (**New**).
 - Added plug-ins: (**New**)
    - Passive proxy
