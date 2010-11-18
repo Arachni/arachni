@@ -91,13 +91,39 @@ class Proxy < Arachni::Plugin::Base
 
         page = @parser.run( req.unparsed_uri, res.body, headers )
 
+        page = update_forms( page, req ) if req.body
+
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
         print_info " *  #{page.cookies.size} cookies"
 
-        @framework.page_queue << page
+        @framework.page_queue << page.dup
 
         return res
+    end
+
+    def update_forms( page, req )
+        params = {}
+
+        URI.decode( req.body ).split( '&' ).each {
+            |param|
+            k,v = param.split( '=', 2 )
+            params[k] = v
+        }
+
+        raw = {
+            'attrs' => {
+                'action' => req.unparsed_uri,
+                'method' => req.request_method,
+            }
+        }
+
+        form = ::Arachni::Parser::Element::Form.new( req.unparsed_uri, raw )
+        form.auditable = params
+
+        page.forms << form
+
+        return page
     end
 
     #
