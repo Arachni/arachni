@@ -10,6 +10,14 @@ End-users should check out the links bellow.
    - Advanced generic webapp exploit modules for the Metasploit framework. -- **Done**
  - Add reusable/persistent XML-RPC server and command line XMLRPC client. -- **Done**
  - Modify Anemone to support modules for path extraction. -- **Done**
+ - Path extractors
+   - Generic -- extracts URLs from arbitrary text -- **Done**
+   - Anchors -- **Done**
+   - Form actions -- **Done**
+   - Frame sources -- **Done**
+   - Links -- **Done**
+   - META refresh -- **Done**
+   - Script 'src' and script code -- **Done**
  - Modify Anemone to use Typhoeus instead of Net::HTTP -- adding NTML auth and other goodies. -- **Done**
  - Refactor, re-organize and clean up the framework code and architecture. -- **Done**
  - Add plug-in support -- allowing the framework to be extended with virtually any functionality.  -- **Done**
