@@ -308,9 +308,14 @@ class Parser
     # @return [Array<Element::Cookie>] of cookies
     #
     def cookies( headers )
-        cookies = WEBrick::Cookie.parse_set_cookies( headers )
 
         cookies_arr = []
+
+        begin
+            cookies = WEBrick::Cookie.parse_set_cookies( headers )
+        rescue
+            return cookies_arr = []
+        end
 
         cookies.each_with_index {
             |cookie, i|
