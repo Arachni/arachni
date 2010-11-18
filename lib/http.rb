@@ -243,7 +243,7 @@ class HTTP
                 :follow_location => follow_location
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( URI.escape( url ), opts )
             req.train! if train
 
             queue( req, async )
