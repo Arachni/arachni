@@ -501,7 +501,7 @@ class Options
     private
 
     def normalize_name( name )
-        name.to_s.gsub( /@/, '' )
+        name.to_s.gsub( '@', '' )
     end
 
 
