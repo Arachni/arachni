@@ -23,6 +23,7 @@ End-users should check out the links bellow.
  - Add plug-in support -- allowing the framework to be extended with virtually any functionality.  -- **Done**
  - Add the following plug-ins:
    - Passive proxy -- **Done**
+   - Automated login
  - Add the following modules:
    - Audit:
      - XPath injection
