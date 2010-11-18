@@ -11,7 +11,8 @@
 module Anemone::Extractors
 
 #
-# Extracts paths from "script" HTML elements.
+# Extracts paths from "script" HTML elements.<br/>
+# Both from "src" and the text inside the scripts.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -28,7 +29,8 @@ class Scripts < Paths
     # @return   [Array<String>]  paths
     #
     def parse( doc )
-        doc.search( "//script[@src]" ).map { |a| a['src'] }
+        doc.search( "//script[@src]" ).map { |a| a['src'] } |
+        doc.search( "//script" ).map { |script| URI.extract( script.to_s ) }
     end
 
 end
