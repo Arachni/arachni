@@ -29,7 +29,7 @@ End-users should check out the links bellow.
    - Audit:
      - XPath injection
      - WebDAV vulnerabilities
-     - XST injection
+     - XST
      - LDAP injection
    - Recon:
      - Google Hacking DB
