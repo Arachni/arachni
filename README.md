@@ -32,7 +32,7 @@ End-users should check out the links bellow.
      - LDAP injection
    - Recon:
      - Google Hacking DB
-     - Robot file reader
+     - Robot file reader  -- **Done** (in the Common Files module)
      - Allowed HTTP methods
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
