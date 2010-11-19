@@ -18,6 +18,7 @@ End-users should check out the links bellow.
    - Links -- **Done**
    - META refresh -- **Done**
    - Script 'src' and script code -- **Done**
+   - Sitemap -- **Done**
  - Modify Anemone to use Typhoeus instead of Net::HTTP -- adding NTML auth and other goodies. -- **Done**
  - Refactor, re-organize and clean up the framework code and architecture. -- **Done**
  - Add plug-in support -- allowing the framework to be extended with virtually any functionality.  -- **Done**
