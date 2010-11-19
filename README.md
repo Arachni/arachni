@@ -28,13 +28,13 @@ End-users should check out the links bellow.
  - Add the following modules:
    - Audit:
      - XPath injection
-     - WebDAV vulnerabilities
-     - XST
      - LDAP injection
    - Recon:
      - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
      - Allowed HTTP methods
+     - WebDAV vulnerabilities
+     - XST
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
 
