@@ -83,7 +83,7 @@ class XPathInjection < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
                 :name        => %q{XPath Injection},
-                :description => %q{XPath code can be injected into the web application.},
+                :description => %q{XPath queries can be injected into the web application.},
                 :cwe         => '91',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '',
