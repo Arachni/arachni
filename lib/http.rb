@@ -293,6 +293,47 @@ class HTTP
     end
 
     #
+    # Sends an HTTP TRACE request to "url".
+    #
+    # @param  [URI]   url     URL to POST
+    # @param  [Hash]  opts    request options
+    #                          * :params  => request parameters || {}
+    #                          * :train   => force Arachni to analyze the HTML code || false
+    #                          * :async   => make the request async? || true
+    #                          * :headers => HTTP request headers  || {}
+    #
+    # @return [Typhoeus::Request]
+    #
+    def trace( url, opts = { } )
+
+        params    = opts[:params]
+        train     = opts[:train]
+
+        async     = opts[:async]
+        async     = true if async == nil
+
+        headers   = opts[:headers] || {}
+        headers   = @init_headers.dup.merge( headers )
+
+        exception_jail {
+
+            opts = {
+                :method        => :trace,
+                :headers       => headers,
+                :params        => params,
+                :follow_location => false
+            }.merge( @opts )
+
+            req = Typhoeus::Request.new( url, opts )
+            req.train! if train
+
+            queue( req, async )
+            return req
+        }
+    end
+
+
+    #
     # Gets a url with cookies and url variables
     #
     # @param  [URI]   url      URL to GET
