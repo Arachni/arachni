@@ -37,6 +37,8 @@ End-users should check out the links bellow.
      - XST  -- **Done**
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
+     - Directory listing
+     - Interesting -- non markup/image/etc. -- files
 
 
 # Arachni - Web Application Security Scanner Framework
