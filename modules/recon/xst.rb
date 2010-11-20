@@ -85,7 +85,7 @@ class XST < Arachni::Module::Base
             :var          => 'n/a',
             :url          => res.effective_url,
             :injected     => 'n/a',
-            :method       => 'TRACE',
+            :method       => res.request.method.to_s.upcase,
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
