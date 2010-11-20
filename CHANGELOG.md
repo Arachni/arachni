@@ -34,6 +34,7 @@
       - Private IP address disclosure
       - XST
       - WebDAV detection
+      - Allowed HTTP methods
 
 
 ## Version 0.2

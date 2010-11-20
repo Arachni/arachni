@@ -32,7 +32,7 @@ End-users should check out the links bellow.
    - Recon:
      - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
-     - Allowed HTTP methods
+     - Allowed HTTP methods  -- **Done**
      - WebDAV detection  -- **Done**
      - XST  -- **Done**
      - CVS/SVN user disclosure  -- **Done**
