@@ -34,11 +34,11 @@ class XST < Arachni::Module::Base
         super( page )
 
         # we need to run only once
-        @@run ||= false
+        @@__ran ||= false
     end
 
     def run( )
-        return if @@run
+        return if @@__ran
 
         print_status( "Checking..." )
 
@@ -50,7 +50,7 @@ class XST < Arachni::Module::Base
     end
 
     def clean_up
-        @@run = true
+        @@__ran = true
     end
 
     def self.info
