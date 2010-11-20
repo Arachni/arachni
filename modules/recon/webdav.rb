@@ -59,22 +59,13 @@ class WebDav < Arachni::Module::Base
 
         print_status( "Checking: #{path}" )
 
-        req = @http.request( path,
-            :method => :options,
-            :headers => {
-                'Content-Type' => 'application/xml',
-                'Depth'        => 0
-            }
-        )
-
-        req.on_complete {
+        @http.request( path, :method => :options ).on_complete {
             |res|
             allowed = res.headers_hash['Allow'].split( ',' ).map{ |method| method.strip }
             __log_results( res ) if allowed.include?( @__check )
         }
 
         @@__auditted << path
-
     end
 
     def self.info
