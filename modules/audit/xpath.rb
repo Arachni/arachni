@@ -42,7 +42,7 @@ class XPathInjection < Arachni::Module::Base
         @__regexps_file = 'regexps.txt'
 
         # prepare the strings that will hopefully cause the webapp
-        # to output SQL error messages
+        # to output XPath error messages
         @__injection_strs = [
             "'\"",
             "<!--"
