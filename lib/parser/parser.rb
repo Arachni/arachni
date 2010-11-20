@@ -110,7 +110,11 @@ class Parser
 
         jar = {}
         jar = @opts.cookies if @opts.cookies
-        cookies_arr.each{ |cookie| jar.merge!( cookie.simple ) }
+
+        preped = {}
+        cookies_arr.each{ |cookie| preped.merge!( cookie.simple ) }
+
+        jar = preped.merge( jar )
 
         return Page.new( {
             :url         => url,
