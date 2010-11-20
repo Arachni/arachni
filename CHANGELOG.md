@@ -33,6 +33,7 @@
       - CVS/SVN user disclosure
       - Private IP address disclosure
       - XST
+      - WebDAV detection
 
 
 ## Version 0.2

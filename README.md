@@ -33,7 +33,7 @@ End-users should check out the links bellow.
      - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
      - Allowed HTTP methods
-     - WebDAV vulnerabilities
+     - WebDAV detection  -- **Done**
      - XST  -- **Done**
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
