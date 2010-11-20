@@ -32,7 +32,7 @@ SQL;
     if( !$SQL['result'] ) {
         $SQL['result'] = 'Nothing found.';
     }
-    
+
 
     $SQL['error'] = mysql_error();
     print_r( $SQL['result'] );
