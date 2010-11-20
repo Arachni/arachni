@@ -29,9 +29,11 @@
 - Added modules: (**New**)
    - Audit
       - XPath injection
+      - LDAP injection
    - Recon
       - CVS/SVN user disclosure
       - Private IP address disclosure
+      - Robot file reader (in the Common Files module)
       - XST
       - WebDAV detection
       - Allowed HTTP methods

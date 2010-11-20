@@ -28,7 +28,7 @@ End-users should check out the links bellow.
  - Add the following modules:
    - Audit:
      - XPath injection  -- **Done**
-     - LDAP injection
+     - LDAP injection  -- **Done**
    - Recon:
      - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
