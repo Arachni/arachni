@@ -13,10 +13,7 @@ module Arachni
 module Modules
 
 #
-# WebDAV detection recon module.
-#
-# It doesn't check for a functional DAV implementation but uses the
-# OPTIONS HTTP method to see if 'PROPFIND' is allowed.
+# Allowed HTTP methods recon module.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -58,8 +55,6 @@ class AllowedMethods < Arachni::Module::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :references     => {
-                'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
-                'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
             },
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
