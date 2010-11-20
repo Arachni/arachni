@@ -21,7 +21,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Stdout < Arachni::Report::Base
 
@@ -121,8 +121,10 @@ class Stdout < Arachni::Report::Base
             print_info( 'Description: ' )
             print_info( vuln.description )
 
-            print_line
-            print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+            if vuln.cwe && !vuln.cwe.empty?
+                print_line
+                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+            end
 
             print_line
             print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
@@ -155,7 +157,7 @@ class Stdout < Arachni::Report::Base
             :name           => 'Stdout',
             :description    => %q{Prints the results to standard output.},
             :author         => 'zapotek',
-            :version        => '0.2',
+            :version        => '0.2.1',
         }
     end
 
