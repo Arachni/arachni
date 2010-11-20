@@ -101,7 +101,6 @@ class Page
       @error = params[:error]
 
       @fetched = !params[:code].nil?
-      @@modules ||= []
     end
 
     #
@@ -117,12 +116,11 @@ class Page
 
 
         begin
-            manager = ::Arachni::ComponentManager.new( lib, Extractors )
-            manager.available
+            @@manager ||= ::Arachni::ComponentManager.new( lib, Extractors )
 
-            return manager.available.map {
+            return @@manager.available.map {
                 |name|
-                manager[name].new.parse( doc )
+                @@manager[name].new.parse( doc )
             }.flatten.uniq
 
         rescue ::Exception => e
