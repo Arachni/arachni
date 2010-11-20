@@ -201,6 +201,32 @@ class HTTP
     end
 
     #
+    # Makes a generic request
+    #
+    # @param  [URI]  url
+    # @param  [Hash] opts
+    #
+    # @return [Typhoeus::Request]
+    #
+    def request( url, opts )
+        headers   = opts[:headers]   || {}
+        opts[:headers] = @init_headers.dup.merge( headers )
+
+        train     = opts[:train]
+        async     = opts[:async]
+        async     = true if async == nil
+
+        exception_jail {
+
+            req = Typhoeus::Request.new( URI.escape( url ), opts.merge( @opts ) )
+            req.train! if train
+
+            queue( req, async )
+            return req
+        }
+    end
+
+    #
     # Gets a URL passing the provided query parameters
     #
     # @param  [URI]  url     URL to GET
