@@ -27,9 +27,12 @@
 - Added plug-ins: (**New**)
    - Passive proxy
 - Added modules: (**New**)
+   - Audit
+      - XPath injection
    - Recon
       - CVS/SVN user disclosure
       - Private IP address disclosure
+      - XST
 
 
 ## Version 0.2

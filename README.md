@@ -27,14 +27,14 @@ End-users should check out the links bellow.
    - Automated login
  - Add the following modules:
    - Audit:
-     - XPath injection
+     - XPath injection  -- **Done**
      - LDAP injection
    - Recon:
      - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
      - Allowed HTTP methods
      - WebDAV vulnerabilities
-     - XST
+     - XST  -- **Done**
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
 
