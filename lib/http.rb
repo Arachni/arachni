@@ -255,6 +255,7 @@ class HTTP
 
 
         params = params.merge( { @rand_seed => '' } ) if !remove_id
+
         #
         # the exception jail function wraps the block passed to it
         # in exception handling and runs it
@@ -263,13 +264,27 @@ class HTTP
         #
         exception_jail {
 
+            #
+            # There are cases where the url already has a query and we also have
+            # some params to work with. Some webapp frameworks will break
+            # or get confused...plus the url will not be RFC compliant.
+            #
+            # Thus we need to merge the provided params with the
+            # params of the url query and remove the latter from the url.
+            #
+            cparams = params.dup
+            curl    = url.dup
+
+            cparams = q_to_h( curl ).merge( cparams )
+            curl.gsub!( "?#{URI(curl).query}", '' )
+
             opts = {
                 :headers       => headers,
-                :params        => params.empty? ? nil : params,
+                :params        => cparams.empty? ? nil : cparams,
                 :follow_location => follow_location
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( URI.escape( url ), opts )
+            req = Typhoeus::Request.new( URI.escape( curl ), opts )
             req.train! if train
 
             queue( req, async )
@@ -443,6 +458,16 @@ class HTTP
             return req
         }
 
+    end
+
+    def q_to_h( url )
+        params = {}
+        URI.decode( URI( url.to_s ).query ).split( '&' ).each {
+            |param|
+            k,v = param.split( '=', 2 )
+            params[k] = v
+        }
+        return params
     end
 
     #
