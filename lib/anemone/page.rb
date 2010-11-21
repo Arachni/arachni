@@ -144,7 +144,11 @@ class Page
           next if path.nil? or path.empty?
           abs = to_absolute( URI( path ) ) rescue next
 
-          @links << abs if in_domain?( abs )
+          if in_domain?( abs )
+              @links << abs
+              # force dir listing
+              @links << URI( File.dirname( abs.to_s ) ) rescue next
+          end
       }
 
       @links.uniq!
