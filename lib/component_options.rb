@@ -287,6 +287,34 @@ end
 
 ###
 #
+# URL option.
+#
+###
+class OptUrl < OptBase
+    def type
+        return 'url'
+    end
+
+    def valid?(value)
+        return false if empty_required_value?(value)
+
+        if (value != nil and value.empty? == false)
+            require 'uri'
+            require 'socket'
+            begin
+                ::IPSocket.getaddress( URI( value ).host )
+            rescue
+                return false
+            end
+        end
+
+        return super
+    end
+end
+
+
+###
+#
 # Network address option.
 #
 ###
