@@ -4,6 +4,8 @@
  *
  */
 
+error_reporting( 0 );
+
 echo <<<EOHTML
     <pre>
 This form is vulnerable to Blind SQL Injection.
@@ -16,6 +18,8 @@ if( $_GET['id'] ) {
     echo "<pre>";
     mysql_connect( 'localhost', 'root' );
     mysql_select_db( 'arachni' );
+
+    $_GET['id'] = str_replace( '\\', '', $_GET['id'] );
 
     $SQL['query']   =<<<SQL
 SELECT *
@@ -36,9 +40,9 @@ SQL;
 
     $SQL['error'] = mysql_error();
     print_r( $SQL['result'] );
-/*    print_r( $SQL['query'] );*/
-/*    print_r( $SQL['error'] );*/
-    echo "</pre>";
+/*    print_r( $SQL['query'] );
+    print_r( $SQL['error'] );
+*/    echo "</pre>";
 }
 
 /*$log = '';
