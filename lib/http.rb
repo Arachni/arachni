@@ -273,10 +273,10 @@ class HTTP
             # params of the url query and remove the latter from the url.
             #
             cparams = params.dup
-            curl    = url.dup
+            curl    = URI.escape( url.dup )
 
             cparams = q_to_h( curl ).merge( cparams )
-            curl.gsub!( "?#{URI(curl).query}", '' )
+            curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
 
             opts = {
                 :headers       => headers,
@@ -284,7 +284,7 @@ class HTTP
                 :follow_location => follow_location
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( URI.escape( curl ), opts )
+            req = Typhoeus::Request.new( curl, opts )
             req.train! if train
 
             queue( req, async )
@@ -462,7 +462,11 @@ class HTTP
 
     def q_to_h( url )
         params = {}
-        URI.decode( URI( url.to_s ).query ).split( '&' ).each {
+
+        query = URI( url.to_s ).query
+        return params if !query
+
+        query.split( '&' ).each {
             |param|
             k,v = param.split( '=', 2 )
             params[k] = v
