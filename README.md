@@ -24,13 +24,13 @@ End-users should check out the links bellow.
  - Add plug-in support -- allowing the framework to be extended with virtually any functionality.  -- **Done**
  - Add the following plug-ins:
    - Passive proxy -- **Done**
-   - Automated login
+   - Automated login -- **Done**
+   - Google Hacking DB
  - Add the following modules:
    - Audit:
      - XPath injection  -- **Done**
      - LDAP injection  -- **Done**
    - Recon:
-     - Google Hacking DB
      - Robot file reader  -- **Done** (in the Common Files module)
      - Allowed HTTP methods  -- **Done**
      - WebDAV detection  -- **Done**

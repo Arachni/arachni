@@ -26,6 +26,7 @@
 - Plug-in support -- allowing the framework to be extended with virtually any functionality (**New**).
 - Added plug-ins: (**New**)
    - Passive proxy
+   - Automated login
 - Added modules: (**New**)
    - Audit
       - XPath injection
