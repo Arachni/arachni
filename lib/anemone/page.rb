@@ -129,6 +129,10 @@ class Page
         end
     end
 
+    def dir( url )
+        URI( File.dirname( URI( url.to_s ).path ) + '/' )
+    end
+
     #
     # Array of distinct links to follow
     #
@@ -147,7 +151,8 @@ class Page
           if in_domain?( abs )
               @links << abs
               # force dir listing
-              @links << URI( File.dirname( abs.to_s ) ) rescue next
+              # ap to_absolute( get_path( abs.to_s ).to_s ).to_s
+              # @links << to_absolute( dir( abs.to_s ).to_s ) rescue next
           end
       }
 
