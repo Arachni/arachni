@@ -58,7 +58,6 @@ class Eval < Arachni::Module::Base
         # the sum of the 2 numbers as a string
         @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
         @__opts[:regexp]  = Regexp.new( @__opts[:match] )
-        @__opts[:format]  = OPTIONS[:format] | [ Format::SEMICOLON ]
 
         # code to be injected to the webapp
         @__injection_strs = [
@@ -69,6 +68,11 @@ class Eval < Arachni::Module::Base
             "puts " + @__rand1 + " + " + @__rand2 # Ruby
         ]
 
+        @__variations = [
+            ';%s',
+            "\";%s#",
+            "';%s#"
+        ]
     end
 
     def run( )
@@ -76,9 +80,16 @@ class Eval < Arachni::Module::Base
         # iterate through the injection codes
         @__injection_strs.each {
             |str|
-            audit( str, @__opts )
+            __variations( str ).each {
+                |var|
+                audit( var, @__opts )
+            }
         }
 
+    end
+
+    def __variations( str )
+        @__variations.map{ |var| var % str } | [str]
     end
 
 
