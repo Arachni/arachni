@@ -98,6 +98,7 @@ class WebDav < Arachni::Module::Base
     end
 
     def __log_results( res )
+        return if @@__found
 
         @@__found = true
 

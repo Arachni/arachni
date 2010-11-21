@@ -47,6 +47,10 @@ class AllowedMethods < Arachni::Module::Base
         }
     end
 
+    def clean_up
+        @@__ran = true
+    end
+
     def self.info
         {
             :name           => 'AllowedMethods',
@@ -71,7 +75,6 @@ class AllowedMethods < Arachni::Module::Base
 
     def __log_results( res )
 
-        @@__ran = true
         methods = res.headers_hash['Allow']
         vuln = Vulnerability.new( {
             :var          => 'n/a',
