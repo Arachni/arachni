@@ -71,6 +71,9 @@ class Manager < Arachni::ComponentManager
 
             }
         }
+
+        # wait a bit for the plugins to settle
+        ::IO::select( nil, nil, nil, 1 )
     end
 
     def create( name )
