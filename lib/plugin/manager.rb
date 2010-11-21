@@ -72,7 +72,7 @@ class Manager < Arachni::ComponentManager
             }
         }
 
-        # wait a bit for the plugins to settle
+        print_status( 'Waiting for plugins to settle...' )
         ::IO::select( nil, nil, nil, 1 )
     end
 
