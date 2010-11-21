@@ -41,11 +41,11 @@ SQL;
     echo "</pre>";
 }
 
-$log = '';
+/*$log = '';
 $log .= print_r( $_GET, true );
 $log .= print_r( $_POST, true );
 $log .= print_r( getallheaders( ), true );
 
 file_put_contents( 'log.txt', $log );
-
+*/
 ?>
