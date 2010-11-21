@@ -115,6 +115,7 @@ class Stdout < Arachni::Report::Base
             print_ok( vuln.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
 
+            print_info( 'Severity: ' + vuln.severity ) if vuln.severity
             print_info( 'URL:      ' + vuln.url )
             print_info( 'Elements: ' + vuln.elem )
             print_info( 'Variable: ' + vuln.var )
