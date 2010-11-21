@@ -158,7 +158,7 @@ class Auditable
             # inform the user about what we're auditing
             print_status( get_status_str( altered ) )
 
-            opts[:altered] = altered
+            opts[:altered] = altered.dup
 
             # submit the element with the injection values
             req = elem.submit( opts )
@@ -187,35 +187,39 @@ class Auditable
     def injection_sets( injection_str, opts = { } )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
-        hash = auditable( )
+        hash = auditable( ).dup
 
         var_combo = []
         if( !hash || hash.size == 0 ) then return [] end
 
-        if( self.is_a? Arachni::Parser::Element::Form )
-            # this is the original hash, in case the default values
-            # are valid and present us with new attack vectors
-            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.dup }
+        if( self.is_a?( Arachni::Parser::Element::Form ) )
 
-            duphash = hash.dup
-            elem = self.dup
-            elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
-            var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
+            if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
+                # this is the original hash, in case the default values
+                # are valid and present us with new attack vectors
+                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.dup }
+            end
 
+            if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE ) )
+                duphash = hash.dup
+                elem = self.dup
+                elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
+                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
+            end
         end
 
         chash = hash.dup
         hash.keys.each {
             |k|
 
-            hash = Arachni::Module::KeyFiller.fill( hash )
+            chash = Arachni::Module::KeyFiller.fill( chash )
             opts[:format].each {
                 |format|
 
-                str  = format_str( injection_str, hash[k], format )
+                str  = format_str( injection_str, chash[k], format )
 
                 elem = self.dup
-                elem.auditable = hash.merge( { k => str } )
+                elem.auditable = chash.merge( { k => str } )
                 var_combo << { k => elem }
             }
 
