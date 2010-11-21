@@ -61,8 +61,11 @@ class WebDav < Arachni::Module::Base
 
         @http.request( path, :method => :options ).on_complete {
             |res|
-            allowed = res.headers_hash['Allow'].split( ',' ).map{ |method| method.strip }
-            __log_results( res ) if allowed.include?( @__check )
+            begin
+                allowed = res.headers_hash['Allow'].split( ',' ).map{ |method| method.strip }
+                __log_results( res ) if allowed.include?( @__check )
+            rescue
+            end
         }
 
         @@__auditted << path
