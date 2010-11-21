@@ -92,14 +92,14 @@ begin
                 options.debug = true
 
             when '--plugin'
-                plugin, opt_str = arg.split( ':' )
+                plugin, opt_str = arg.split( ':', 2 )
 
                 opts = {}
                 if( opt_str )
                     opt_arr = opt_str.split( ',' )
                     opt_arr.each {
                         |opt|
-                        name, val = opt.split( '=' )
+                        name, val = opt.split( '=', 2 )
                         opts[name] = val
                     }
                 end
