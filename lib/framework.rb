@@ -161,8 +161,6 @@ class Framework
     def run
         @running = true
 
-        @spider = Arachni::Spider.new( @opts )
-
         @opts.start_datetime = Time.now
 
         # run all plugins
@@ -227,6 +225,10 @@ class Framework
     # to (#run_mods} to be audited.
     #
     def audit
+
+        wait_if_paused
+
+        @spider = Arachni::Spider.new( @opts )
 
         # initiates the crawl
         @sitemap = @spider.run {
@@ -433,6 +435,13 @@ class Framework
 
     private
 
+    def wait_if_paused
+        while( paused? )
+            ::IO::select( nil, nil, nil, 1 )
+        end
+    end
+
+
     #
     # Prepares the user agent to be used throughout the system.
     #
@@ -482,10 +491,7 @@ class Framework
         @modules.each_pair {
             |name, mod|
 
-            while( paused? )
-                ::IO::select( nil, nil, nil, 1 )
-            end
-
+            wait_if_paused
             run_mod( mod, page.deep_clone )
         }
 
