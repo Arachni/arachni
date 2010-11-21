@@ -25,7 +25,6 @@ End-users should check out the links bellow.
  - Add the following plug-ins:
    - Passive proxy -- **Done**
    - Automated login -- **Done**
-   - Google Hacking DB
  - Add the following modules:
    - Audit:
      - XPath injection  -- **Done**
