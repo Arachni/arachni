@@ -499,10 +499,11 @@ class XMLRPC
             if( info[:options] && info[:options].size > 0 )
                 print_line( "Options:\t" )
 
-                info[:options].each_pair {
-                    |option, info|
-                    print_info( "\t#{option} - #{info[1]}" )
-                    print_info( "\tValues: #{info[0]}" )
+                info[:options].each {
+                    |option|
+                    print_info( "\t#{option.name} - #{option.desc}" )
+                    print_info( "\tType:    #{option.type}" )
+                    print_info( "\tDefault: #{option.default}" )
 
                     print_line( )
                 }
