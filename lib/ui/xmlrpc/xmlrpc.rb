@@ -61,9 +61,14 @@ class XMLRPC
             exit 0
         end
 
-
-        # start the XMLRPC client
-        @server = ::XMLRPC::Client.new2( @opts.server )
+        begin
+            # start the XMLRPC client
+            @server = ::XMLRPC::Client.new2( @opts.server )
+        rescue Exception => e
+            print_error( "Could not connect to server." )
+            print_error( "Error: #{e.to_s}." )
+            print_debug_backtrace( e )
+        end
 
         # there'll be a HELL of lot of output so things might get..laggy.
         # a big timeout is required to avoid Timeout exceptions...
@@ -95,14 +100,17 @@ class XMLRPC
         @pause = false
         trap( 'INT' ){ @pause = true }
 
-        #begin
+        begin
             parse_opts
-        #rescue Exception => e
-        #    print_error e.inspect
-        #    print_debug_backtrace( e )
-        #    reset
-        #    exit
-        #end
+        rescue Exception => e
+            print_error( 'Error: ' + e.to_s )
+            print_debug_backtrace( e )
+            begin
+                reset
+            rescue
+            end
+            exit
+        end
     end
 
     def run
