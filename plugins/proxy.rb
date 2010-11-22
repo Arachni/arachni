@@ -164,9 +164,9 @@ class Proxy < Arachni::Plugin::Base
 
         print_status( 'Requesting: ' + url.to_s )
 
-        if !(url.to_s =~ /http(s):\/\//)
-            url = URI( @framework.opts.url.scheme + '://' + url.to_s )
-        end
+        # if !(url.to_s =~ /http(s):\/\//)
+        #     url = URI( @framework.opts.url.scheme + '://' + url.to_s )
+        # end
 
         reasons = []
 
