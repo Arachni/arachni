@@ -36,13 +36,6 @@ class SQLInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
-
-        # initialize variables
-        @__id = []
-        @__injection_strs = []
-
-        # initialize the results hash
-        @results = []
     end
 
     def prepare( )

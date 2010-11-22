@@ -32,9 +32,6 @@ class XPathInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
-
-        # initialize the results array
-        @__results = []
     end
 
     def prepare( )
