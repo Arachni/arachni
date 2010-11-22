@@ -90,16 +90,43 @@ class Proxy < Arachni::Plugin::Base
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
         page = @parser.run( req.unparsed_uri, res.body, headers )
-
         page = update_forms( page, req ) if req.body
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
         print_info " *  #{page.cookies.size} cookies"
 
+        update_framework_cookies( page )
         @framework.page_queue << page.dup
 
         return res
+    end
+
+    def update_framework_cookies( page )
+
+        print_status( 'Updating framework cookies...' )
+
+        # convert the page cookies to a hash
+        cookies = {}
+        page.cookies.each {
+            |cookie|
+            cookies.merge!( cookie.simple )
+        }
+
+        if cookies.empty?
+            print_error( 'Could not extract cookies...' )
+            return
+        else
+            print_info( 'Extracted cookies:' )
+            cookies.each{
+                |k, v|
+                print_info( "  * #{k} => #{v}" )
+            }
+        end
+
+        # set the cookies system-wide so that the spider can use it
+        @framework.opts.cookies = cookies
+
     end
 
     def update_forms( page, req )
