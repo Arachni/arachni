@@ -36,8 +36,6 @@ class HTML < Arachni::Report::Base
         @audit_store   = audit_store
         @options       = options
         @outfile       = outfile + '.html'
-
-        @tpl = File.dirname( __FILE__ ) + '/html/templates/index.tpl'
     end
 
     #
@@ -48,7 +46,7 @@ class HTML < Arachni::Report::Base
         print_line( )
         print_status( 'Creating HTML report...' )
 
-        @template = Liquid::Template.parse( IO.read( @tpl ) )
+        @template = Liquid::Template.parse( IO.read( @options['tpl'] ) )
 
         out = @template.render( __prepare_data( ) )
 
@@ -63,6 +61,10 @@ class HTML < Arachni::Report::Base
             :description    => %q{Exports a report as an HTML document.},
             :author         => 'zapotek',
             :version        => '0.1',
+            :options        => [
+                Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
+                    File.dirname( __FILE__ ) + '/html/default.tpl' ] ),
+            ]
         }
     end
 
