@@ -110,7 +110,7 @@ class CommonDirectories < Arachni::Module::Base
             :id           => dirname,
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::LINK,
+            :elem         => Vulnerability::Element::PATH,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,

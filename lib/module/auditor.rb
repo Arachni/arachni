@@ -61,6 +61,8 @@ module Auditor
         COOKIE  = Vulnerability::Element::COOKIE
         HEADER  = Vulnerability::Element::HEADER
         BODY    = Vulnerability::Element::BODY
+        PATH    = Vulnerability::Element::PATH
+        SERVER  = Vulnerability::Element::SERVER
     end
 
     #

@@ -110,7 +110,7 @@ class WebDav < Arachni::Module::Base
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => 'n/a',
+            :elem         => Vulnerability::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,

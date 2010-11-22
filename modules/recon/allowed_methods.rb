@@ -84,7 +84,7 @@ class AllowedMethods < Arachni::Module::Base
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => methods,
-            :elem         => 'n/a',
+            :elem         => Vulnerability::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
