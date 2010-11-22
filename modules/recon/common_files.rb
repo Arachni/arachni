@@ -86,7 +86,7 @@ class CommonFiles < Arachni::Module::Base
                 :name        => %q{A common sensitive file exists on the server.},
                 :description => %q{},
                 :cwe         => '530',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Vulnerability::Severity::LOW,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
