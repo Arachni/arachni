@@ -672,7 +672,7 @@ USAGE
     --lsrep                       list available reports
 
     --repload=<file>              load audit results from an .afr file
-                                    (Allows you to create a new reports from finished scans.)
+                                    (Allows you to create new reports from finished scans.)
 
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
