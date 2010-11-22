@@ -63,10 +63,8 @@ class ResponseSplitting < Arachni::Module::Base
     def self.info
         {
             :name           => 'ResponseSplitting',
-            :description    => %q{Response Splitting recon module.
-                Tries to inject some data into the webapp and figure out
-                if any of them end up in the response header.
-            },
+            :description    => %q{Tries to inject some data into the webapp and figure out
+                if any of them end up in the response header.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
@@ -87,7 +85,8 @@ class ResponseSplitting < Arachni::Module::Base
                 :cwe         => '20',
                 :severity    => Vulnerability::Severity::MEDIUM,
                 :cvssv2       => '5.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being included as part of the HTTP response headers.},
                 :remedy_code => '',
             }
 

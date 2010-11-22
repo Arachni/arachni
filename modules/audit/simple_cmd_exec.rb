@@ -58,15 +58,16 @@ class SimpleCmdExec < Arachni::Module::Base
             :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            :targets        => { 'PHP' => 'all' },
+            :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
                 :name        => %q{OS command injection},
                 :description => %q{The web application allows an attacker to
-                    execute OS commands.},
+                    execute arbitrary OS commands.},
                 :cwe         => '78',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being evaluated as OS level shell code.},
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_exec'
             }

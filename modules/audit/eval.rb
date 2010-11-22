@@ -96,8 +96,9 @@ class Eval < Arachni::Module::Base
     def self.info
         {
             :name           => 'Eval',
-            :description    => %q{eval() recon module. Tries to inject code
-                into the web application.},
+            :description    => %q{It tries to inject code snippets into the
+                web application and assess whether or not the injection
+                was successful.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
@@ -116,11 +117,15 @@ class Eval < Arachni::Module::Base
 
             :vulnerability   => {
                 :name        => %q{Code injection},
-                :description => %q{Code can be injected into the web application.},
+                :description => %q{Arbitrary code can be injected into the web application
+                    which is then executed as part of the system.},
                 :cwe         => '94',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '7.5',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being evaluated as executable code.
+                    Better yet, the web application should stop evaluating user
+                    inputs as any part of dynamic code altogether.},
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_php_eval'
             }

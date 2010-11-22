@@ -102,7 +102,9 @@ class PathTraversal < Arachni::Module::Base
     def self.info
         {
             :name           => 'PathTraversal',
-            :description    => %q{Path Traversal module.},
+            :description    => %q{It injects paths of common files (/etc/passwd and boot.ini)
+                and evaluates the existance of a path traversal vulnerability
+                based on the presence of relevant content in the HTML responses.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
@@ -118,11 +120,13 @@ class PathTraversal < Arachni::Module::Base
 
             :vulnerability   => {
                 :name        => %q{Path Traversal},
-                :description => %q{Improper limitation of a pathname to a restricted directory.},
+                :description => %q{The web application enforces improper limitation
+                    of a pathname to a restricted directory.},
                 :cwe         => '22',
                 :severity    => Vulnerability::Severity::MEDIUM,
                 :cvssv2       => '4.3',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being used as a part of a filesystem path.},
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_path_traversal'
             }

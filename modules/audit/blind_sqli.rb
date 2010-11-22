@@ -236,7 +236,10 @@ class BlindSQLInjection < Arachni::Module::Base
     def self.info
         {
             :name           => 'BlindSQLInjection',
-            :description    => %q{Blind SQL injection audit module.},
+            :description    => %q{It uses rDiff analysis to decide how different inputs affect
+                the behavior of the the web pages.
+                Using that as a basis it extrapolates about what inputs
+                are vulnerable to blind SQL injection.},
             :elements       => [
                 Vulnerability::Element::LINK
             ],
@@ -250,11 +253,15 @@ class BlindSQLInjection < Arachni::Module::Base
 
             :vulnerability   => {
                 :name        => %q{Blind SQL Injection},
-                :description => %q{SQL code can be injected into the web application.},
+                :description => %q{SQL code can be injected into the web application
+                    even though it may not obvious due to suppression of error messages.},
                 :cwe         => '89',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{Suppression of error messages leads to
+                    security through obscurity which is not a good practise.
+                    The web application needs to enforce stronger validation
+                    on user inputs.},
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_sqlmap'
             }

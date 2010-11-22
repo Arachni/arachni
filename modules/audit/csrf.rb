@@ -327,12 +327,16 @@ class CSRF < Arachni::Module::Base
             :vulnerability   => {
                 :name        => %q{Cross-Site Request Forgery},
                 :description => %q{The web application does not, or can not,
-     sufficiently verify whether a well-formed, valid, consistent
-     request was intentionally provided by the user who submitted the request. },
+                     sufficiently verify whether a well-formed, valid, consistent
+                     request was intentionally provided by the user who submitted the request.
+                     This is due to a lack of secure anti-CSRF tokens to verify
+                     the freshness of the submitted data.},
                 :cwe         => '352',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{A unique token that guaranties freshness of submitted
+                    data must be added to all web application elements that can affect
+                    business logic.},
                 :remedy_code => '',
             }
 

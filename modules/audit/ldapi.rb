@@ -69,7 +69,9 @@ class LDAPInjection < Arachni::Module::Base
     def self.info
         {
             :name           => 'LDAPInjection',
-            :description    => %q{LDAP injection module},
+            :description    => %q{It tries to force the web application to
+                return LDAP error messages in order to discover failures
+                in user input validation.},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
@@ -84,11 +86,13 @@ class LDAPInjection < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
                 :name        => %q{LDAP Injection},
-                :description => %q{LDAP queries can be injected into the web application.},
+                :description => %q{LDAP queries can be injected into the web application
+                    which can be used to disclose sensitive data of affect the execution flow.},
                 :cwe         => '90',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being used in an LDAP query.},
                 :remedy_code => ''
             }
 
