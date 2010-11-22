@@ -120,7 +120,7 @@ class Proxy < Arachni::Plugin::Base
             print_debug( 'Extracted cookies:' )
             cookies.each{
                 |k, v|
-                print_info( "  * #{k} => #{v}" )
+                print_debug( "  * #{k} => #{v}" )
             }
         end
 
@@ -162,7 +162,11 @@ class Proxy < Arachni::Plugin::Base
 
         url = URI( uri )
 
-        print_status( 'Requesting: ' + uri )
+        print_status( 'Requesting: ' + url.to_s )
+
+        if !(url.to_s =~ /http(s):\/\//)
+            url = URI( @framework.opts.url.scheme + '://' + url.to_s )
+        end
 
         reasons = []
 
