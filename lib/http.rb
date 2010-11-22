@@ -12,6 +12,8 @@ require 'typhoeus'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'typhoeus/easy'
+require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
@@ -80,21 +82,16 @@ class HTTP
 
         req_limit = opts.http_req_limit
 
-        @hydra = Typhoeus::Hydra.new(
+        hydra_opts = {
             :max_concurrency               => req_limit,
             :disable_ssl_peer_verification => true,
             :username                      => opts.url.user,
             :password                      => opts.url.password,
-            :method                        => :auto
-        )
+            :method                        => :auto,
+        }
 
-        @hydra_sync = Typhoeus::Hydra.new(
-            :max_concurrency               => req_limit,
-            :disable_ssl_peer_verification => true,
-            :username                      => opts.url.user,
-            :password                      => opts.url.password,
-            :method                        => :auto
-        )
+        @hydra      = Typhoeus::Hydra.new( hydra_opts )
+        @hydra_sync = Typhoeus::Hydra.new( hydra_opts )
 
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
@@ -111,7 +108,11 @@ class HTTP
 
         @opts = {
             :user_agent      => opts.user_agent,
-            :follow_location => false
+            :follow_location => false,
+            :proxy           => "#{opts.proxy_addr}:#{opts.proxy_port}",
+            :proxy_username  => opts.proxy_user,
+            :proxy_password  => opts.proxy_pass,
+            :proxy_type      => opts.proxy_type
         }
 
         @__not_found  = nil

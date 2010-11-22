@@ -132,7 +132,11 @@ class HTTP
             :password                      => Arachni::Options.instance.url.password,
             :method                        => :auto,
             :user_agent                    => Arachni::Options.instance.user_agent,
-            :follow_location               => true
+            :follow_location               => true,
+            :proxy                         => "#{Arachni::Options.instance.proxy_addr}:#{Arachni::Options.instance.proxy_port}",
+            :proxy_username                => Arachni::Options.instance.proxy_user,
+            :proxy_password                => Arachni::Options.instance.proxy_pass,
+            :proxy_type                    => Arachni::Options.instance.proxy_type,
         )
 
         # pp response.headers_hash['Set-Cookie']

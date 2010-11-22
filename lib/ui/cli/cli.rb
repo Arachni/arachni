@@ -697,12 +697,11 @@ USAGE
 
     --proxy-auth=<user:passwd>    specify proxy auth credentials
 
-    --proxy-type=<type>           proxy type can be either socks or http
+    --proxy-type=<type>           proxy type can be http, http_1_0, socks4, socks5, socks4a
                                     (Default: http)
 
 
 USAGE
-
     end
 
 end
