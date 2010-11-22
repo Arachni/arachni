@@ -146,6 +146,7 @@ class Framework
         @orig_redundant = @opts.redundant.deep_clone
 
         @running = false
+        @paused  = 0
 
     end
 
@@ -404,15 +405,15 @@ class Framework
     end
 
     def paused?
-        @paused || false
+        @paused > 0
     end
 
     def pause!
-        @paused = true
+        @paused += 1
     end
 
     def resume!
-        @paused = false
+        @paused -= 1
     end
 
     #
