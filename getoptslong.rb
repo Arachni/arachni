@@ -244,20 +244,3 @@ rescue Exception => e
 end
 
 options.url = ARGV.shift
-
-#
-# If proxy type is socks include socksify
-# and let it proxy all tcp connections for us.
-#
-# Then nil out the proxy opts or else they're going to be
-# passed as an http proxy to Anemone::HTTP.refresh_connection()
-#
-if options.proxy_type == 'socks'
-    require 'socksify'
-
-    TCPSocket.socks_server = options.proxy_addr
-    TCPSocket.socks_port = options.proxy_port
-
-    options.proxy_addr = nil
-    options.proxy_port = nil
-end

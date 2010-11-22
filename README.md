@@ -381,9 +381,7 @@ For a full explenation of all available options you can consult the [User Guide]
 
   * ruby1.9.1 or later
   * Nokogiri
-  * Anemone
   * Typhoeus
-  * Sockify
   * Awesome print
   * Liquid (For {Arachni::Reports::HTML} reporting)
   * Yardoc (if you want to generate the documentation)
@@ -394,7 +392,7 @@ Run the following to install all required system libraries:
 (Adapt the above line to your Linux distro.)
 
 Run the following to install all gem dependencies:
-    sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+    sudo gem install nokogiri typhoeus awesome_print liquid yard
 
 (Make sure you install the gems with gem version 1.9.1 and run arachni with ruby version 1.9.1)
 
