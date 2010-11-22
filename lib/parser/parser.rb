@@ -411,13 +411,13 @@ class Parser
     # +false+ otherwise
     #
     def in_domain?( uri )
-        uri = URI.parse( URI.escape( uri.to_s ) )
+        curi = URI.parse( URI.escape( uri.to_s ) )
 
         if( @opts.follow_subdomains )
-            return extract_domain( uri ) ==  extract_domain( URI( @url.to_s ) )
+            return extract_domain( curi ) ==  extract_domain( URI( @url.to_s ) )
         end
 
-        return uri.host == URI.parse( URI.escape( @url.to_s ) ).host
+        return curi.host == URI.parse( URI.escape( @url.to_s ) ).host
     end
 
     #
