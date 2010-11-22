@@ -104,7 +104,7 @@ class Proxy < Arachni::Plugin::Base
 
     def update_framework_cookies( page )
 
-        print_status( 'Updating framework cookies...' )
+        print_debug( 'Updating framework cookies...' )
 
         # convert the page cookies to a hash
         cookies = {}
@@ -114,10 +114,10 @@ class Proxy < Arachni::Plugin::Base
         }
 
         if cookies.empty?
-            print_error( 'Could not extract cookies...' )
+            print_debug( 'Could not extract cookies...' )
             return
         else
-            print_info( 'Extracted cookies:' )
+            print_debug( 'Extracted cookies:' )
             cookies.each{
                 |k, v|
                 print_info( "  * #{k} => #{v}" )
