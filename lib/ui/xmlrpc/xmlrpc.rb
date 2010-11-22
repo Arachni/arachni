@@ -36,6 +36,8 @@ class XMLRPC
 
         @opts = opts
 
+        debug! if @opts.debug
+
         # we don't need the framework for much,
         # in this case only for report generation, version number etc.
         @framework = Arachni::Framework.new( @opts )
@@ -292,15 +294,10 @@ class XMLRPC
 
             case opt
 
-            when "debug"
-                print_status "Enabling debugging mode."
-                @server.call( "framework.debug_on" )
-                debug!
-
             when "arachni_verbose"
                 print_status "Enabling verbosity."
-                @server.call( "framework.verbose_on" )
                 verbose!
+                @server.call( "framework.verbose_on" )
 
             when 'redundant'
                 print_status 'Setting redundancy rules.'
