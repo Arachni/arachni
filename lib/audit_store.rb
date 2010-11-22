@@ -10,6 +10,8 @@
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'vulnerability'
+
 #
 # Arachni::AuditStore class
 #
@@ -64,6 +66,14 @@ class AuditStore
     #
     attr_reader :delta_time
 
+
+    ORDER = [
+        ::Arachni::Vulnerability::Severity::HIGH,
+        ::Arachni::Vulnerability::Severity::MEDIUM,
+        ::Arachni::Vulnerability::Severity::LOW,
+        ::Arachni::Vulnerability::Severity::INFORMATIONAL
+    ]
+
     def initialize( audit = {} )
 
         # set instance variables from audit opts
@@ -73,7 +83,7 @@ class AuditStore
         }
 
         @options         = prepare_options( @options )
-        @vulns           = prepare_variations( @vulns )
+        @vulns           = sort( prepare_variations( @vulns ) )
         @start_datetime  = @options['start_datetime'].asctime
 
         if @options['finish_datetime']
@@ -83,6 +93,7 @@ class AuditStore
         end
 
         @delta_time      = secs_to_hms( @options['delta_time'] )
+
     end
 
     #
@@ -126,6 +137,18 @@ class AuditStore
     end
 
     private
+
+    def sort( vulns )
+        sorted = []
+        vulns.each {
+            |vuln|
+            sorted[ORDER.rindex( vuln.severity )] ||= []
+            sorted[ORDER.rindex( vuln.severity )] << vuln
+        }
+
+        return sorted.flatten.reject{ |vuln| vuln.nil? }
+    end
+
 
     #
     # Converts obj to hash
