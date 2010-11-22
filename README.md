@@ -323,11 +323,8 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --lsrep                       list available reports
 
-    --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: .afr)
-
-    --repload=<file>              load audit results from <file>
-                                    (Allows you to create a new reports from old/finished scans.)
+    --repload=<file>              load audit results from an .afr file
+                                    (Allows you to create new reports from finished scans.)
 
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
@@ -350,7 +347,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --proxy-auth=<user:passwd>  specify proxy auth credentials
 
-    --proxy-type=<type>         proxy type can be either socks or http
+    --proxy-type=<type>           proxy type can be http, http_1_0, socks4, socks5, socks4a
                                   (Default: http)
 
 
@@ -365,11 +362,11 @@ which will load all modules and audit all forms, links and cookies.
 In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
-    $ ./arachni.rb -gpcfv --mods=* http://test.com --repsave=test.com
+    $ ./arachni.rb -fv --mods=* http://test.com --report=afr:outfile=test.com.afr
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni.rb --report=html --repload=test.com.afr --repsave=my_report
+    $ ./arachni.rb --repload=test.com.afr --report=html:outfile=my_report.html
 
 or any other report type as shown by:
 
