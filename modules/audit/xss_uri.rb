@@ -104,7 +104,7 @@ class XSSURI < Arachni::Module::Base
                 :id           => @str,
                 :regexp       => regexp,
                 :regexp_match => @str,
-                :elem         => Vulnerability::Element::LINK,
+                :elem         => Vulnerability::Element::PATH,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
