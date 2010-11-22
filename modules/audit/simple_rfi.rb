@@ -167,7 +167,8 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     def self.info
         {
             :name           => 'SimpleRFI',
-            :description    => %q{Simple Remote File Inclusion recon module},
+            :description    => %q{It injects a remote URL in all available
+                inputs and checks for relevant content in the HTTP response body.},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it. If a page doesn't have any of those elements
@@ -191,7 +192,9 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
             :vulnerability   => {
                 :name        => %q{Remote file inclusion},
-                :description => %q{A remote file inclusion vulnerability exists.},
+                :description => %q{The web application can be forced to include
+                    3rd party remote content which can often lead to arbitrary code
+                    execution, amongst other attacks.},
                 :cwe         => '94',
                 #
                 # Severity can be:
@@ -203,7 +206,8 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 #
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2      => '7.5',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{Enforce strict validation and filtering
+                    on user inputs.},
                 :remedy_code => '',
                 :metasploitable	=> 'unix/webapp/arachni_php_include'
             }
