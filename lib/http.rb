@@ -188,7 +188,7 @@ class HTTP
                     req2.on_complete {
                         |res2|
                         @trainer.add_response( res2, true )
-                    }
+                    } if req2
                 else
                     @trainer.add_response( res )
                 end
@@ -276,7 +276,12 @@ class HTTP
             curl    = URI.escape( url.dup )
 
             cparams = q_to_h( curl ).merge( cparams )
-            curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
+
+            begin
+                curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
+            rescue
+                return
+            end
 
             opts = {
                 :headers       => headers,
@@ -463,14 +468,18 @@ class HTTP
     def q_to_h( url )
         params = {}
 
-        query = URI( url.to_s ).query
-        return params if !query
+        begin
+            query = URI( url.to_s ).query
+            return params if !query
 
-        query.split( '&' ).each {
-            |param|
-            k,v = param.split( '=', 2 )
-            params[k] = v
-        }
+            query.split( '&' ).each {
+                |param|
+                k,v = param.split( '=', 2 )
+                params[k] = v
+            }
+        rescue
+        end
+
         return params
     end
 
