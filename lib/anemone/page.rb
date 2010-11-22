@@ -120,7 +120,7 @@ class Page
 
             return @@manager.available.map {
                 |name|
-                @@manager[name].new.parse( doc )
+                @@manager[name].new.run( doc )
             }.flatten.uniq
 
         rescue ::Exception => e

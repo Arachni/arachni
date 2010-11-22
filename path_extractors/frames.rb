@@ -27,7 +27,7 @@ class Frames < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         doc.css( 'frame', 'iframe' ).map {
             |a|
             a.attributes['src'].content rescue next

@@ -27,7 +27,7 @@ class Anchors < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         doc.search( "//a[@href]" ).map { |a| a['href'] }
     end
 

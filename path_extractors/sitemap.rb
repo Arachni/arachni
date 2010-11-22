@@ -23,7 +23,7 @@ class Sitemap < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         [ '/sitemap.xml', '/sitemap.xml.gz' ]
     end
 

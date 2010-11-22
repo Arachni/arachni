@@ -27,7 +27,7 @@ class Links < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         doc.search( "//link[@href]" ).map { |a| a['href'] }
     end
 

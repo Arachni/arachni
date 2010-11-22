@@ -31,7 +31,7 @@ class Generic < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         URI.extract( doc.to_s )
     end
 

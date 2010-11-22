@@ -28,7 +28,7 @@ class Scripts < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         doc.search( "//script[@src]" ).map { |a| a['src'] } |
         doc.search( "//script" ).map { |script| URI.extract( script.to_s ) }
     end

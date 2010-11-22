@@ -27,7 +27,7 @@ class MetaRefresh < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         begin
             doc.search( "//meta[@http-equiv='refresh']" ).
                 map { |url| url['content'].split( ';' )[1].split( '=' )[1] }

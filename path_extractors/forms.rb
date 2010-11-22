@@ -27,7 +27,7 @@ class Forms < Paths
     #
     # @return   [Array<String>]  paths
     #
-    def parse( doc )
+    def run( doc )
         doc.search( "//form[@action]" ).map { |a| a['action'] }
     end
 
