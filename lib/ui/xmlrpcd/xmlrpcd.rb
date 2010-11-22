@@ -86,6 +86,7 @@ class XMLRPCD
             @framework.modules.clear
             Arachni.reset
             Arachni::Options.instance.reset
+            Arachni::Options.instance.link_count_limit = nil
             prep_framework
             set_handlers
             output
