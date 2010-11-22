@@ -25,11 +25,10 @@ class Text < Arachni::Report::Base
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]        options    options passed to the report
-    # @param [String]      outfile    where to save the report
     #
-    def initialize( audit_store, options = nil, outfile = nil )
+    def initialize( audit_store, options )
         @audit_store = audit_store
-        @outfile     = outfile + '.txt'
+        @outfile     = options['outfile']
 
         # text buffer
         @__buffer = ''
@@ -150,6 +149,10 @@ class Text < Arachni::Report::Base
             :description    => %q{Exports a report as a plain text file.},
             :author         => 'zapotek',
             :version        => '0.1',
+            :options        => [
+                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
+                    Time.now.to_s + '.txt' ] ),
+            ]
         }
     end
 

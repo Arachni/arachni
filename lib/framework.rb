@@ -199,11 +199,6 @@ class Framework
             exception_jail{ @reports.run( audit_store( ) ) }
         end
 
-        # save the AuditStore in a file
-        if( @opts.repsave && !@opts.repload )
-            exception_jail{ audit_store_save( @opts.repsave ) }
-        end
-
         return true
     end
 
@@ -293,23 +288,6 @@ class Framework
          end
     end
 
-
-    #
-    # Saves an AuditStore instance in 'file'
-    #
-    # @param    [String]    file
-    #
-    def audit_store_save( file )
-
-        file += @reports.extension
-
-        print_line( )
-        print_status( 'Dumping audit results in \'' + file  + '\'.' )
-
-        audit_store.save( file )
-
-        print_status( 'Done!' )
-    end
 
     #
     # Returns an array of hashes with information

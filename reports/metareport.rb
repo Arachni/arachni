@@ -29,11 +29,10 @@ class Metareport < Arachni::Report::Base
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]        options    options passed to the report
-    # @param [String]      outfile    where to save the report
     #
-    def initialize( audit_store, options = nil, outfile = nil )
+    def initialize( audit_store, options )
         @audit_store = audit_store
-        @outfile     = outfile + '.msf'
+        @options     = options
     end
 
     def run( )
@@ -98,10 +97,10 @@ class Metareport < Arachni::Report::Base
 
         # pp msf
 
-        outfile = File.new( @outfile, 'w')
+        outfile = File.new( @options['outfile'], 'w')
         YAML.dump( msf, outfile )
 
-        print_status( 'Saved in \'' + @outfile + '\'.' )
+        print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
     end
 
     def sub_cookie( str, params )
@@ -126,6 +125,11 @@ class Metareport < Arachni::Report::Base
             :description    => %q{Creates a file to be used with the Arachni MSF plug-in.},
             :author         => 'zapotek',
             :version        => '0.1',
+            :options        => [
+                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
+                    Time.now.to_s + '.msf' ] ),
+            ]
+
         }
     end
 

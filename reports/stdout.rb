@@ -28,9 +28,8 @@ class Stdout < Arachni::Report::Base
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
-    # @param [String]    outfile    where to save the report
     #
-    def initialize( audit_store, options = nil, outfile = nil )
+    def initialize( audit_store, options )
         @audit_store = audit_store
     end
 

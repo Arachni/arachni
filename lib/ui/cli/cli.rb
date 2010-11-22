@@ -671,11 +671,8 @@ USAGE
 
     --lsrep                       list available reports
 
-    --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: #{@arachni.reports.extension})
-
-    --repload=<file>              load audit results from <file>
-                                    (Allows you to create a new reports from old/finished scans.)
+    --repload=<file>              load audit results from an .afr file
+                                    (Allows you to create a new reports from finished scans.)
 
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 

@@ -72,6 +72,7 @@ class ComponentManager < Hash
         info = component.info
         return {} if !info.include?( :options ) || info[:options].empty?
 
+        user_opts ||= {}
         options = { }
         errors  = { }
         info[:options].each {

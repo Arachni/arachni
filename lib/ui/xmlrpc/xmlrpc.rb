@@ -382,19 +382,7 @@ class XMLRPC
         audit_store = YAML.load( @server.call( "framework.auditstore" ) )
 
         # run the loaded reports and get the generated filename
-        filename = @framework.reports.run( audit_store )
-
-        if !filename
-            filename = URI.parse( audit_store.options['url'] ).host +
-                        '-' + Time.now.to_s
-        end
-
-        filename += @framework.reports.extension
-
-        print_status( 'Dumping audit results in \'' + filename  + '\'.' )
-        audit_store.save( filename  )
-
-        print_status( 'Done!' )
+        @framework.reports.run( audit_store )
 
         print_status "Grabbing stats..."
 

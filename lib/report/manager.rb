@@ -58,28 +58,20 @@ class Manager < Arachni::ComponentManager
     def run( audit_store )
         self.each {
             |name, report|
-
-            #
-            # if the user hasn't selected a filename for the report
-            # choose one for him
-            #
-            # You might think that it's stupid putting this inside the loop
-            # but it isn't.
-            # If 2 reports use the same extension they will overwrite each other's files.
-            #
-            if( !@opts.repsave || @opts.repsave.size == 0 )
-                @opts.repsave = URI.parse( audit_store.options['url'] ).host +
-                    '-' + Time.now.to_s
-            end
-
-            new_rep = report.new( audit_store.deep_clone,
-                prep_opts( name, report, @opts.reports[name] ),
-                @opts.repsave + EXTENSION )
-
-            new_rep.run( )
+            run_one( name, audit_store )
         }
 
+        # run the default report
+        run_one( 'afr', audit_store )
+
         return @opts.repsave
+    end
+
+    def run_one( name, audit_store )
+        report = self.[](name).new( audit_store.deep_clone,
+            prep_opts( name, self.[](name), @opts.reports[name] ) )
+
+        report.run( )
     end
 
     def self.reset

@@ -30,12 +30,10 @@ class HTML < Arachni::Report::Base
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
-    # @param [String]    outfile    where to save the report
     #
-    def initialize( audit_store, options, outfile = 'report' )
+    def initialize( audit_store, options )
         @audit_store   = audit_store
         @options       = options
-        @outfile       = outfile + '.html'
     end
 
     #
@@ -50,9 +48,9 @@ class HTML < Arachni::Report::Base
 
         out = @template.render( __prepare_data( ) )
 
-        __save( @outfile, out )
+        __save( @options['outfile'], out )
 
-        print_status( 'Saved in \'' + @outfile + '\'.' )
+        print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
     end
 
     def self.info
@@ -64,6 +62,8 @@ class HTML < Arachni::Report::Base
             :options        => [
                 Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
                     File.dirname( __FILE__ ) + '/html/default.tpl' ] ),
+                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
+                    Time.now.to_s + '.html' ] ),
             ]
         }
     end
