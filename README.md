@@ -328,7 +328,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
-                                  <repname>: the name of the report as displayed by '--lsrep'
+                                  <report>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
