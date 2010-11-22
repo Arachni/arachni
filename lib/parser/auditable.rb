@@ -322,16 +322,20 @@ class Auditable
     #
     # @param  [String]  var  the name of the vulnerable input vector
     # @param  [Typhoeus::Response]
-    # @param  [String]  injected_str
     # @param  [Hash]  opts
     #
     # @return  [Hash]
     #
     def get_matches( var, res, opts )
+        regexps    = [opts[:regexp]].flatten
+        regexps.each{ |regexp| match_and_log( regexp, var, res, opts ) }
+    end
+
+    def match_and_log( regexp, var, res, opts )
 
         elem       = opts[:element]
         match      = opts[:match]
-        regexp     = opts[:regexp]
+
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
 
@@ -340,11 +344,10 @@ class Auditable
         # an annoying encoding exception may be thrown by scan()
         # the sob started occuring again....
         begin
-            if( @page.html.scan( regexp )[0] )
+            if( @auditor.page.html.scan( regexp )[0] )
                 verification = true
             end
         rescue
-
         end
 
         # fairly obscure condition...pardon me...
@@ -355,7 +358,8 @@ class Auditable
             print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
 
             verified = match ? match : match_data
-            print_verbose( "Injected string:\t" + opts[:combo][var] )
+            injected = opts[:combo][var] ? opts[:combo][var] : '<n/a>'
+            print_verbose( "Injected string:\t" + injected )
             print_verbose( "Verified string:\t" + verified )
             print_verbose( "Matched regular expression: " + regexp.to_s )
             print_verbose( '---------' ) if only_positives?
@@ -363,7 +367,7 @@ class Auditable
             res = {
                 :var          => var,
                 :url          => url,
-                :injected     => opts[:combo][var],
+                :injected     => injected,
                 :id           => match.to_s,
                 :regexp       => regexp.to_s,
                 :regexp_match => match_data,
