@@ -55,6 +55,7 @@ class Manager < Arachni::ComponentManager
     # Runs each plug-in in its own thread.
     #
     def run
+        i = 0
         each {
             |name, plugin|
 
@@ -70,10 +71,14 @@ class Manager < Arachni::ComponentManager
                 }
 
             }
+
+            i += 1
         }
 
-        print_status( 'Waiting for plugins to settle...' )
-        ::IO::select( nil, nil, nil, 1 )
+        if i > 0
+            print_status( 'Waiting for plugins to settle...' )
+            ::IO::select( nil, nil, nil, 1 )
+        end
     end
 
     def create( name )
