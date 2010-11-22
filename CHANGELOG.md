@@ -38,6 +38,8 @@
       - XST
       - WebDAV detection
       - Allowed HTTP methods
+- NTLM authentication support
+- Extended proxy support (SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0).
 
 
 ## Version 0.2

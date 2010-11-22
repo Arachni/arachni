@@ -107,12 +107,10 @@ However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exist
  - Cookie-jar support
  - SSL support.
  - User Agent spoofing.
- - Proxy support for SOCKS and HTTP(S).
-    - SOCKS support is kindly provided by [socksify](http://socksify.rubyforge.org/).
+ - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication.
+ - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
  - Highlighted command line output.
- - Total control over the scanning process.
  - UI abstraction.
  - Pause/resume functionality.
     - Interrupts pause the system, the user then has the option to either resume or exit.
