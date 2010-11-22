@@ -414,7 +414,7 @@ class Parser
         uri = URI.parse( URI.escape( uri.to_s ) )
 
         if( @opts.follow_subdomains )
-            return extract_domain( uri ) ==  extract_domain( URI( @url ) )
+            return extract_domain( uri ) ==  extract_domain( URI( @url.to_s ) )
         end
 
         return uri.host == URI.parse( URI.escape( @url.to_s ) ).host
@@ -448,6 +448,8 @@ class Parser
     end
 
     def include?( url )
+        return true if @opts.include.empty?
+
         @opts.include.each {
             |pattern|
             return true if url.to_s =~ pattern
