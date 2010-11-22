@@ -38,7 +38,6 @@ module Plugin
 #
 class Manager < Arachni::ComponentManager
 
-    include Arachni::UI::Output
     include Arachni::Module::Utilities
 
     #

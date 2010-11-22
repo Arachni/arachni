@@ -27,6 +27,9 @@ require Options.instance.dir['lib'] + 'component_options'
 #
 class ComponentManager < Hash
 
+    include Arachni::UI::Output
+
+
     #
     # The following are used by {#parse}:
     #    * '*' means all modules
@@ -229,7 +232,7 @@ class ComponentManager < Hash
         print_line
         print_line
 
-        print_error( "Invalid options for plugin: #{name}" )
+        print_error( "Invalid options for component: #{name}" )
 
         errors.each {
             |optname, error|
