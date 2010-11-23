@@ -1,3 +1,17 @@
+=begin
+                  Arachni
+  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
+#
+# Overrides get_easy_object() adding proxy support. <br/>
+# This is a temporary solution until the next release of Typhoeus.
+#
 module Typhoeus
   class Hydra
 
