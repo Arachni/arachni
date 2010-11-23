@@ -55,14 +55,14 @@ class Manager < Arachni::ComponentManager
     #
     # @param  [AuditStore]  audit_store
     #
-    def run( audit_store )
+    def run( audit_store, run_afr = true )
         self.each {
             |name, report|
             run_one( name, audit_store )
         }
 
         # run the default report
-        run_one( 'afr', audit_store )
+        run_one( 'afr', audit_store ) if run_afr
     end
 
     def run_one( name, audit_store )
