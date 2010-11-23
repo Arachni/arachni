@@ -104,7 +104,7 @@ class Parser
 
         end
 
-        cookies_arr << cookies( response_headers['Set-Cookie'].to_s )
+        cookies_arr << cookies( response_headers['Set-Cookie'].to_s, html )
         cookies_arr << cookies( response_headers['set-cookie'].to_s )
         cookies_arr.flatten!.uniq!
 
@@ -307,21 +307,36 @@ class Parser
     #
     # Extracts cookies from an HTTP headers
     #
-    # @param  [String] headers HTTP headers
+    # @param  [String] headers  HTTP headers
+    # @param  [String] html     the HTML code of the page
     #
     # @return [Array<Element::Cookie>] of cookies
     #
-    def cookies( headers )
+    def cookies( headers, html = '' )
 
         cookies_arr = []
+        cookies     = []
 
         begin
-            cookies = WEBrick::Cookie.parse_set_cookies( headers )
-        rescue
-            return cookies_arr = []
+            doc = Nokogiri::HTML( html )
+            doc.search( "//meta[@http-equiv]" ).each {
+                |elem|
+
+                next if elem['http-equiv'].downcase != 'set-cookie'
+                k, v = elem['content'].split( ';' )[0].split( '=', 2 )
+                cookies_arr << Element::Cookie.new( @url, { 'name' => k, 'value' => v } )
+            }
+        rescue Exception => e
+            return cookies_arr
         end
 
-        cookies.each_with_index {
+        begin
+            cookies << WEBrick::Cookie.parse_set_cookies( headers + meta.to_s )
+        rescue
+            return cookies_arr
+        end
+
+        cookies.flatten.uniq.each_with_index {
             |cookie, i|
             cookies_arr[i] = Hash.new
 
@@ -340,7 +355,7 @@ class Parser
 
             cookies_arr[i] = Element::Cookie.new( @url, cookies_arr[i] )
         }
-
+        cookies_arr.flatten!
         return cookies_arr
     end
 
