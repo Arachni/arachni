@@ -63,8 +63,6 @@ class Manager < Arachni::ComponentManager
 
         # run the default report
         run_one( 'afr', audit_store )
-
-        return @opts.repsave
     end
 
     def run_one( name, audit_store )

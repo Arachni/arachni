@@ -12,7 +12,6 @@ require 'getoptlong'
 # Construct getops struct
 opts = GetoptLong.new(
     [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
-    [ '--resume',            '-r', GetoptLong::NO_ARGUMENT ],
     [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
     [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
     [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
@@ -23,18 +22,14 @@ opts = GetoptLong.new(
     [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
     [ '--audit-headers',           GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
-    [ '--delay',                   GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--threads',           '-t', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
     [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--repopts',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--repsave',                 GetoptLong::REQUIRED_ARGUMENT ],
     [ '--load-profile',            GetoptLong::REQUIRED_ARGUMENT ],
     [ '--save-profile',            GetoptLong::REQUIRED_ARGUMENT ],
     [ '--show-profile',            GetoptLong::NO_ARGUMENT ],
@@ -81,9 +76,6 @@ begin
 
             when '--only-positives'
                 options.only_positives = true
-
-            when '--resume'
-                options.resume = true
 
             when '--verbosity'
                 options.arachni_verbose = true
@@ -133,9 +125,6 @@ begin
             when '--lsrep'
                 options.lsrep << Regexp.new( arg.to_s )
 
-            when '--threads'
-                options.threads = arg.to_i
-
             when '--http-req-limit'
               options.http_req_limit = arg.to_i
 
@@ -174,17 +163,6 @@ begin
 
             when '--repload'
                 options.repload = arg
-
-            when '--repsave'
-                options.repsave = arg
-
-            when '--repopts'
-                arg.split( /,/ ).each {
-                    |opt|
-
-                    name, value = opt.split( /:/ )
-                    options.repopts[name] = value
-                }
 
             when '--save-profile'
                 options.save_profile = arg

@@ -271,26 +271,33 @@ class CLI
 
                 when 'mods'
                     begin
-                        @opts.mods = @arachni.modules.load( arg )
-                    rescue Arachni::Exceptions::ModNotFound => e
-                        print_error( e.to_s )
-                        print_info( "Run arachni with the '--lsmod' parameter" +
-                            " to see all available modules." )
-                        print_line
+                        exception_jail{
+                            @opts.mods = @arachni.modules.load( arg )
+                        }
+                    rescue
                         exit 0
-                    rescue Exception => e
-                        exception_jail{ raise e }
                     end
 
                 when 'reports'
-                    exception_jail{ @arachni.reports.load( arg.keys ) }
+                    begin
+                        exception_jail{ @arachni.reports.load( arg.keys ) }
+                    rescue
+                        exit 0
+                    end
 
                 when 'plugins'
-                    exception_jail{ @arachni.plugins.load( arg.keys ) }
+                    begin
+                        exception_jail{ @arachni.plugins.load( arg.keys ) }
+                    rescue
+                        exit 0
+                    end
 
                 when 'repload'
-                    exception_jail{ @arachni.reports.run( AuditStore.load( arg ) ) }
-                    exit 0
+                    begin
+                        exception_jail{ @arachni.reports.run( AuditStore.load( arg ) ) }
+                    rescue
+                        exit 0
+                    end
 
             end
         }
@@ -546,20 +553,11 @@ class CLI
 
     -v                          be verbose
 
-USAGE
-
-        print_line <<USAGE
     --debug                     show what is happening internally
                                   (You should give it a shot sometime ;) )
 
     --only-positives            echo positive results *only*
 
-USAGE
-
-    # --threads=<number>          how many threads to instantiate
-    #                               If no thread limit has been specified
-    #                                 each module will run in its own thread.
-        print_line <<USAGE
     --http-req-limit            concurent HTTP requests limit
                                   (Be carefull not to kill your server.)
                                   (Default: 60)

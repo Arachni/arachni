@@ -56,11 +56,6 @@ class Options
     attr_accessor :only_positives
 
     #
-    # Not implemented
-    #
-    attr_accessor :resume
-
-    #
     # Be verbose?
     #
     # @return    [Bool]
@@ -127,13 +122,6 @@ class Options
     attr_accessor :lsrep
 
     #
-    # How many threads to spawn?
-    #
-    # @return    [Integer]
-    #
-    attr_accessor :threads
-
-    #
     # How many concurrent HTTP requests?
     #
     # @return    [Integer]
@@ -188,13 +176,6 @@ class Options
     # @return    [String]
     #
     attr_accessor :repload
-
-    #
-    # Where to save the Arachni Framework Report (.afr) file
-    #
-    # @return    [String]
-    #
-    attr_accessor :repsave
 
     #
     # Where to save the Arachni Framework Profile (.afp) file
