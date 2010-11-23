@@ -96,18 +96,24 @@ class Proxy < Arachni::Plugin::Base
         print_info " *  #{page.links.size} links"
         print_info " *  #{page.cookies.size} cookies"
 
-        update_framework_cookies( page )
+        update_framework_cookies( page, req )
         @framework.page_queue << page.dup
 
         return res
     end
 
-    def update_framework_cookies( page )
+    def update_framework_cookies( page, req )
 
         print_debug( 'Updating framework cookies...' )
 
-        # convert the page cookies to a hash
         cookies = {}
+
+        req['Cookie'].split( ';' ).each{
+            |cookie|
+            k, v = cookie.split( '=', 2 )
+            cookies[k.strip] = v.strip
+        }
+
         page.cookies.each {
             |cookie|
             cookies.merge!( cookie.simple )
