@@ -326,12 +326,11 @@ class Parser
                 k, v = elem['content'].split( ';' )[0].split( '=', 2 )
                 cookies_arr << Element::Cookie.new( @url, { 'name' => k, 'value' => v } )
             }
-        rescue Exception => e
-            return cookies_arr
+        rescue
         end
 
         begin
-            cookies << WEBrick::Cookie.parse_set_cookies( headers + meta.to_s )
+            cookies << WEBrick::Cookie.parse_set_cookies( headers )
         rescue
             return cookies_arr
         end
