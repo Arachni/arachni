@@ -376,7 +376,7 @@ For a full explenation of all available options you can consult the [User Guide]
 
 ## Requirements
 
-  * ruby1.9.1 or later
+  * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
   * Nokogiri
   * Typhoeus
   * Awesome print
