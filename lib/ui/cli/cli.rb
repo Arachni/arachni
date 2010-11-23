@@ -332,7 +332,7 @@ class CLI
             print_line( "Description:\t"  + info[:description] )
 
             if( info[:elements] && info[:elements].size > 0 )
-                print_line( "HTML Elements:\t" +
+                print_line( "Elements:\t" +
                     info[:elements].join( ', ' ).downcase )
             end
 
