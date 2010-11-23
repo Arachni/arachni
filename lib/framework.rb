@@ -146,7 +146,7 @@ class Framework
         @orig_redundant = @opts.redundant.deep_clone
 
         @running = false
-        @paused  = 0
+        @paused  = []
 
     end
 
@@ -383,15 +383,15 @@ class Framework
     end
 
     def paused?
-        @paused > 0
+        !@paused.empty?
     end
 
     def pause!
-        @paused += 1
+        @paused << caller
     end
 
     def resume!
-        @paused -= 1
+        @paused.delete( caller )
     end
 
     #
@@ -413,6 +413,12 @@ class Framework
     end
 
     private
+
+    def caller
+        if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
+            return Regexp.last_match[1]
+        end
+    end
 
     def wait_if_paused
         while( paused? )
