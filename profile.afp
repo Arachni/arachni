@@ -1,0 +1,48 @@
+--- !ruby/object:Arachni::Options 
+audit_cookies: true
+audit_forms: true
+audit_links: true
+authed_by: 
+dir: 
+exclude: []
+
+exclude_cookies: []
+
+http_req_limit: 1
+include: []
+
+load_profile: 
+lsmod: []
+
+lsplug: []
+
+lsrep: []
+
+mods: 
+- xpath
+plugins: 
+  proxy: {}
+
+  autologin: 
+    url: http://localhost/~zapotek
+    params: GG=GG
+redirect_limit: 20
+redundant: []
+
+reports: 
+  html: 
+    outfile: my_report.html
+save_profile: 
+url: !ruby/object:URI::HTTP 
+  fragment: 
+  host: localhost
+  opaque: 
+  parser: 
+  password: 
+  path: /~zapotek/tests/links/xpath.php
+  port: 80
+  query: 
+  registry: 
+  scheme: http
+  user: 
+user_agent: Arachni/0.2.1
