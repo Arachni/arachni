@@ -195,7 +195,7 @@ class Framework
         audit_store( true )
 
         # run reports
-        if( !@opts.reports.empty? )
+        if( @opts.reports && !@opts.reports.empty? )
             exception_jail{ @reports.run( audit_store( ) ) }
         end
 
