@@ -131,8 +131,10 @@ module Auditor
     # and logs the results.
     #
     # @param    [Array<Regexp>]     regexps
+    # @param    [Block]             block       block to verify matches before logging
+    #                                               must return true/false
     #
-    def match_and_log( regexps )
+    def match_and_log( regexps, &block )
 
         # make sure that we're working with an array
         regexps = [regexps].flatten
@@ -147,6 +149,7 @@ module Auditor
                 |match|
 
                 next if !match
+                next if block && !block.call( match )
 
                 log_match(
                     :regexp  => regexp,
@@ -163,6 +166,7 @@ module Auditor
                     |match|
 
                     next if !match
+                    next if block && !block.call( match )
 
                     log_match(
                         :var => k,
