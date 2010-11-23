@@ -85,10 +85,8 @@ class CLI
         # echo the banner
         banner( )
 
-        exception_jail {
-            # work on the user supplied arguments
-            parse_opts( )
-        }
+        # work on the user supplied arguments
+        parse_opts( )
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
@@ -293,11 +291,8 @@ class CLI
                     end
 
                 when 'repload'
-                    begin
-                        exception_jail{ @arachni.reports.run( AuditStore.load( arg ) ) }
-                    rescue
-                        exit 0
-                    end
+                    exception_jail{ @arachni.reports.run( AuditStore.load( arg ), false ) }
+                    exit 0
 
             end
         }
