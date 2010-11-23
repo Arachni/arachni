@@ -388,10 +388,12 @@ class Framework
 
     def pause!
         @paused << caller
+        return true
     end
 
     def resume!
         @paused.delete( caller )
+        return true
     end
 
     #
