@@ -24,7 +24,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -58,6 +58,7 @@ class Eval < Arachni::Module::Base
         # the sum of the 2 numbers as a string
         @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
         @__opts[:regexp]  = Regexp.new( @__opts[:match] )
+        @__opts[:format]  = [ Format::APPEND ]
 
         # code to be injected to the webapp
         @__injection_strs = [
@@ -105,7 +106,7 @@ class Eval < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
