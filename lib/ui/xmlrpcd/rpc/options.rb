@@ -35,10 +35,13 @@ class Options
             next if var.to_s == '@dir'
 
             begin
-                send( "#{var}=", nil )
-            rescue
+                instance_variable_set( var.to_s, nil )
+            rescue Exception => e
+                ap e.to_s
+                ap e.backtrace
             end
         }
+
 
         @exclude    = []
         @include    = []

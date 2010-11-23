@@ -321,7 +321,7 @@ class Options
         # nil everything out
         self.instance_variables.each {
             |var|
-            send( "#{var}=", nil )
+            instance_variable_set( var.to_s, nil )
         }
 
         @exclude    = []
