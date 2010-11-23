@@ -145,6 +145,9 @@ module Auditor
 
             @page.html.scan( regexp ).flatten.uniq.each {
                 |match|
+
+                next if !match
+
                 log_match(
                     :regexp  => regexp,
                     :match   => match,
@@ -158,6 +161,8 @@ module Auditor
 
                 v.to_s.scan( regexp ).flatten.uniq.each {
                     |match|
+
+                    next if !match
 
                     log_match(
                         :var => k,
