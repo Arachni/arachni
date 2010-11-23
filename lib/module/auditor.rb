@@ -199,7 +199,7 @@ module Auditor
             :injected     => 'n/a',
             :id           => 'n/a',
             :regexp       => opts[:regexp],
-            :regexp_match => opts[:match],
+            :regexp_match => opts[:match] || '<n/a>',
             :elem         => opts[:element],
             :response     => response,
             :headers      => {
