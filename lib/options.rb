@@ -354,7 +354,7 @@ class Options
         require 'uri'
 
         begin
-            @url = URI( str )
+            @url = URI( str.to_s )
         rescue
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
@@ -439,11 +439,19 @@ class Options
                 }
                 return arg
 
-            when 'repopts'
-                arg = " --#{key}="
+            when 'plugins','report'
+                arg = ''
                 var.each {
                     |opt, val|
-                    arg += "#{opt}:#{val},"
+                    arg += " --#{key.chomp( 's' )}=#{opt}"
+                    arg += ':' if !val.empty?
+
+                    val.each {
+                        |k, v|
+                        arg += "#{k}=#{v},"
+                    }
+
+                    arg.chomp!( ',' )
                 }
                 return arg
 
