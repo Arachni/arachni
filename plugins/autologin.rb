@@ -87,7 +87,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         # convert the response cookies to a hash
         cookies = {}
-        @parser.cookies( res.headers_hash['Set-Cookie'].to_s ).each {
+        @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).each {
             |cookie|
             cookies.merge!( cookie.simple )
         }
