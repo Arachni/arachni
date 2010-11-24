@@ -4,7 +4,7 @@
 #
 
 if [ `whoami` = 'zapotek' ]; then
-    outdir='-o /home/zapotek/workspace/arachni-experimental/'
+    outdir='-o /home/zapotek/workspace/arachni-gh-pages/'
 
     inkscape gfx/logo.svg --export-png=/home/zapotek/workspace/arachni-gh-pages/logo.png
     inkscape gfx/icon.svg --export-png=/home/zapotek/workspace/arachni-gh-pages/icon.png
