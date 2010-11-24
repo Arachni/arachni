@@ -156,7 +156,6 @@ class BlindSQLInjection < Arachni::Module::Base
                 # remove context-irrelevant dynamic content like banners and such
                 # from the error page
                 @__html_bad[altered] = @__html_bad[altered].rdiff( res.body.clone )
-
             }
         }
 
@@ -235,11 +234,12 @@ class BlindSQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'BlindSQLInjection',
+            :name           => 'Blind SQL Injection',
             :description    => %q{It uses rDiff analysis to decide how different inputs affect
                 the behavior of the the web pages.
-                Using that as a basis it extrapolates about what inputs
-                are vulnerable to blind SQL injection.},
+                Using that as a basis it extrapolates about what inputs are vulnerable to blind SQL injection.
+                (Note: This module may get confused by certain types of XSS vulnerabilities.
+                    If this module returns a positive result you should investigate nonetheless.)},
             :elements       => [
                 Vulnerability::Element::LINK
             ],
@@ -303,6 +303,8 @@ class BlindSQLInjection < Arachni::Module::Base
         )
 
         print_ok( "In #{Vulnerability::Element::LINK} var '#{var}' ( #{url} )" )
+        print_debug( 'Request ID: ' + res.request.id.to_s )
+        print_debug( 'Body: ' + res.body )
 
         # register our results with the system
         register_results( @results )
