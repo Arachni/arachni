@@ -15,7 +15,7 @@ fi
 
 yardoc --verbose --protected --title \
   "Arachni - Web Application Security Scanner Framework" \
-  plugins/* reports/* modules/* lib/* $outdir \
+  external/* path_extractors/* plugins/* reports/* modules/* lib/* $outdir \
   - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
   CONTRIBUTORS.md ACKNOWLEDGMENTS.md DIAGRAMS.md
 
