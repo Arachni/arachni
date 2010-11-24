@@ -37,6 +37,7 @@ End-users should check out the links bellow.
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
      - Credit card number disclosure  -- **Done**
+     - HTTP PUT support -- **Done**
 
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2.1<br/>
