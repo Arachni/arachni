@@ -382,6 +382,7 @@ For a full explenation of all available options you can consult the [User Guide]
   * Awesome print
   * Liquid (For {Arachni::Reports::HTML} reporting)
   * Yardoc (if you want to generate the documentation)
+  * Robots
 
 Run the following to install all required system libraries:
     sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
@@ -389,7 +390,7 @@ Run the following to install all required system libraries:
 (Adapt the above line to your Linux distro.)
 
 Run the following to install all gem dependencies:
-    sudo gem install nokogiri typhoeus awesome_print liquid yard
+    sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
 (Make sure you install the gems with gem version 1.9.1 and run arachni with ruby version 1.9.1)
 
