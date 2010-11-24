@@ -337,6 +337,10 @@ For a full explenation of all available options you can consult the [User Guide]
 
 ## Requirements
 
+As of (the upcoming) version 0.2.1 Arachni will also be released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.
+CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.
+Choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page.
+
   * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
   * Nokogiri
   * Typhoeus
@@ -353,7 +357,7 @@ Run the following to install all required system libraries:
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
-(Make sure you install the gems with gem version 1.9.1 and run arachni with ruby version 1.9.1)
+(If you have more than one Ruby version installed make sure you install the gems and run Arachni with the proper version.)
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
