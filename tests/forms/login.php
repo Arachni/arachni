@@ -132,7 +132,7 @@ SQL;
        $SQL['result'][]  = $row;
     }
 
-    $SQL['error'] = mysql_error();
+    echo $SQL['error'] = mysql_error();
     echo "</pre>";
 }
 

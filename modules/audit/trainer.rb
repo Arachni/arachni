@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 #
@@ -28,17 +27,17 @@ module Audit
 #
 class Trainer < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
+    include Arachni::Module::Utilities
 
     def initialize( page )
         super( page )
     end
-    
+
     def prepare( )
-        
+
         # this will be the used as the injection string
-        @str = '_arachni_trainer_' + Arachni::Module::Utilities.seed
-        
+        @str = '_arachni_trainer_' + seed
+
         @opts = {
             #
             # tell the frameworm to learn from the
@@ -49,7 +48,7 @@ class Trainer < Arachni::Module::Base
     end
 
     def run( )
-      
+
         #
         # this will inject the string in @str into all available inputs
         #
@@ -59,12 +58,12 @@ class Trainer < Arachni::Module::Base
             #
             # however since we haven't passed at least a regexp to audit()
             # we need to provide a block otherwise the Auditor will complain...
-            # 
+            #
             # that bastard!
             #
         }
     end
-    
+
     def self.info
         {
             :name           => 'Trainer',
@@ -84,7 +83,6 @@ class Trainer < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

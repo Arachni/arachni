@@ -14,7 +14,7 @@ module UI
 
 #
 # CLI Output module
-#    
+#
 # Provides a command line output interface to the framework.<br/>
 # All UIs should provide an Arachni::UI::Output module with these methods.
 #
@@ -29,17 +29,17 @@ module Output
     #
     # if it's on verbose messages will be enabled
     @@verbose = false
-    
+
     # debug flag
     #
     # if it's on debugging messages will be enabled
     @@debug   = false
-    
+
     # only_positives flag
     #
     # if it's on status messages will be disabled
     @@only_positives  = false
-    
+
     # Prints an error message
     #
     # It ignores all flags, error messages will be output under all
@@ -51,7 +51,7 @@ module Output
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr )
     end
-    
+
     # Prints a status message
     #
     # Obeys {@@only_positives}
@@ -66,7 +66,7 @@ module Output
         if @@only_positives then return end
         print_color( '[*]', 34, str )
     end
-    
+
     # Prints an info message
     #
     # Obeys {@@only_positives}
@@ -81,7 +81,7 @@ module Output
         if @@only_positives then return end
         print_color( '[~]', 30, str )
     end
-    
+
     # Prints a good message, something that went very very right,
     # like the discovery of a vulnerability
     #
@@ -93,7 +93,7 @@ module Output
     def print_ok( str = '' )
         print_color( '[+]', 32, str )
     end
-    
+
     # Prints a debugging message
     #
     # Obeys {@@debug}
@@ -139,7 +139,7 @@ module Output
         if !@@debug then return end
         e.backtrace.each{ |line| print_debug( line ) }
     end
-            
+
     # Prints a verbose message
     #
     # Obeys {@@verbose}
@@ -154,7 +154,7 @@ module Output
         if !@@verbose then return end
         print_color( '[v]', 37, str )
     end
-    
+
     # Prints a line of message
     #
     # Obeys {@@only_positives}
@@ -169,7 +169,7 @@ module Output
         if @@only_positives then return end
         puts str
     end
-    
+
     # Sets the {@@verbose} flag to true
     #
     # @see #verbose?
@@ -179,7 +179,7 @@ module Output
     def verbose!
         @@verbose = true
     end
-    
+
     # Returns the {@@verbose} flag
     #
     # @see #verbose!
@@ -189,7 +189,7 @@ module Output
     def verbose?
         @@verbose
     end
-    
+
     # Sets the {@@debug} flag to true
     #
     # @see #debug?
@@ -209,7 +209,7 @@ module Output
     def debug?
         @@debug
     end
-        
+
     # Sets the {@@only_positives} flag to true
     #
     # @see #only_positives?
@@ -219,7 +219,7 @@ module Output
     def only_positives!
         @@only_positives = true
     end
-    
+
     # Returns the {@@only_positives} flag
     #
     # @see #only_positives!
@@ -229,9 +229,9 @@ module Output
     def only_positives?
         @@only_positives
     end
-    
+
     private
-    
+
     # Prints a message prefixed with a colored sign.
     #
     # Disregards all flags.
@@ -245,7 +245,7 @@ module Output
     def print_color( sign, color, string, out = $stdout )
         out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
-        
+
 end
 
 end

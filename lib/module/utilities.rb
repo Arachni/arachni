@@ -23,7 +23,7 @@ module Module
 # @version: 0.1.1
 #
 module Utilities
-  
+
     #
     # Gets path from URL
     #
@@ -31,69 +31,67 @@ module Utilities
     #
     # @return  [String]   path
     #
-    def Utilities.get_path( url )
-        
+    def get_path( url )
+
         filename = File.basename( URI( URI.escape( url ) ).path )
         regexp   = filename + '(.*)'
         path     = url.gsub( Regexp.new( regexp ), '' )
-        
+
         if( path == 'http:' || path == 'https:' )
             path =  url
         end
-        
+
         return path.chomp( '?' )
     end
-    
-    #
-    # Gets the reverse diff (strings that have not changed) between 2 strings
-    #
-    #
-    #  text1 = <<END
-    #  This is the first test.
-    #  Not really sure what else to put here...
-    #  END
-    # 
-    #  text2 = <<END
-    #  This is the second test.
-    #  Not really sure what else to put here...
-    #  Boo-Yah!
-    #  END
-    # 
-    #  Arachni::Modules::Utilities.rdiff( text1, text2 )
-    #    # => "This is the  test.\nNot really sure what else to put here...\n"
-    #
-    #
-    # @param  [String]  text1
-    # @param  [String]  text2
-    #
-    # @return  [String]
-    #
-    def Utilities.rdiff( text1, text2 )
-        
-        return text1 if text1 == text2
-        
-        # get the words of the first text in an array
-        words1 = text1.split( /\b/ )
-    
-        # get the words of the second text in an array
-        words2 = text2.split( /\b/ )
-    
-        # get all the words that are different between the 2 arrays
-        # math style!
-        changes  = words1 - words2
-        changes << words2 - words1
-        changes.flatten!
-    
-        # get what hasn't changed (the rdiff, so to speak) as a string
-        return ( words1 - changes ).join( '' ) 
-    
-    end
-  
-    def Utilities.seed
+
+    def seed
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
-  
-end  
+
+    #
+    # Gets module data files from 'modules/[modtype]/[modname]/[filename]'
+    #
+    # @param    [String]    filename filename, without the path
+    # @param    [Block]     the block to be passed each line as it's read
+    #
+    def read_file( filename, &block )
+
+        # the path of the module that called us
+        mod_path = block.source_location[0]
+
+        # the name of the module that called us
+        mod_name = File.basename( mod_path, ".rb")
+
+        # the path to the module's data file directory
+        path    = File.expand_path( File.dirname( mod_path ) ) +
+            '/' + mod_name + '/'
+
+        file = File.open( path + '/' + filename ).each {
+            |line|
+            yield line.strip
+        }
+
+        file.close
+
+    end
+
+    #
+    # Wraps the "block" in exception handling code and runs it.
+    #
+    # @param    [Block]
+    #
+    def exception_jail( &block )
+        begin
+            block.call
+        rescue Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+            raise e
+        end
+    end
+
+
+end
 
 end
 end

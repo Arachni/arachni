@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Unvalidated redirect audit module.
@@ -25,12 +24,9 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-# @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards    
+# @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
 class UnvalidatedRedirect < Arachni::Module::Base
-
-    # register us with the system
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -45,11 +41,11 @@ class UnvalidatedRedirect < Arachni::Module::Base
           'http://www.arachni-boogie-woogie.com',
         ]
     end
-    
+
     def run( )
         @__urls.each {
             |url|
-            
+
             audit( url ) {
                 |res, var, opts|
                 __log_results( opts, var, res, url )
@@ -57,7 +53,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
         }
     end
 
-    
+
     def self.info
         {
             :name           => 'UnvalidatedRedirect',
@@ -74,7 +70,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
                  'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
             },
             :targets        => { 'Generic' => 'all' },
-                
+
             :vulnerability   => {
                 :name        => %q{Unvalidated redirect},
                 :description => %q{The web application redirects users to unvalidated URLs.},
@@ -87,14 +83,14 @@ class UnvalidatedRedirect < Arachni::Module::Base
 
         }
     end
-    
+
     private
-    
+
     def __log_results( opts, var, res, url )
-        
-        
+
+
         if( res.headers_hash['Location'] == url )
-            
+
             @results << Vulnerability.new( {
                     :var          => var,
                     :url          => res.effective_url,
@@ -106,19 +102,18 @@ class UnvalidatedRedirect < Arachni::Module::Base
                     :response     => res.body,
                     :headers      => {
                         :request    => res.request.headers,
-                        :response   => res.headers,    
+                        :response   => res.headers,
                     }
                 }.merge( self.class.info )
             )
 
             print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-            
+
             # register our results with the system
             register_results( @results )
         end
     end
 
-end
 end
 end
 end

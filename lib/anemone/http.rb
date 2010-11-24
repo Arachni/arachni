@@ -7,8 +7,10 @@
   (See LICENSE file for details)
 
 =end
-require 'rubygems'
-require 'anemone'
+
+require Arachni::Options.instance.dir['lib'] + 'anemone/page'
+require Arachni::Options.instance.dir['lib'] + 'anemone/cookie_store'
+
 
 #
 # Overides Anemone's HTTP class methods:
@@ -20,55 +22,142 @@ require 'anemone'
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1
 #
-class Anemone::HTTP
+module Anemone
+
+class HTTP
 
     include Arachni::UI::Output
 
-    def refresh_connection( url )
+    # Maximum number of redirects to follow on each get_response
+    REDIRECT_LIMIT = 5
 
-        http = Net::HTTP.new( url.host, url.port,
-        @opts['proxy_addr'], @opts['proxy_port'],
-        @opts['proxy_user'], @opts['proxy_pass'] )
+    # CookieStore for this HTTP client
+    attr_reader :cookie_store
 
-        if url.scheme == 'https'
-            http.use_ssl = true
-            http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    def initialize(opts = {})
+      @connections = {}
+      @opts = opts
+      @cookie_store = CookieStore.new(@opts[:cookies])
+    end
+
+    #
+    # Fetch a single Page from the response of an HTTP request to *url*.
+    # Just gets the final destination page.
+    #
+    def fetch_page(url, referer = nil, depth = nil)
+      fetch_pages(url, referer, depth).last
+    end
+
+    #
+    # Create new Pages from the response of an HTTP request to *url*,
+    # including redirects
+    #
+    def fetch_pages(url, referer = nil, depth = nil)
+      begin
+        url = URI(url) unless url.is_a?(URI)
+        pages = []
+        get(url, referer) do |response, code, location, redirect_to, response_time|
+          pages << Page.new(location, :body => response.body.dup,
+                                      :code => code,
+                                      :headers => response.headers_hash,
+                                      :referer => referer,
+                                      :depth => depth,
+                                      :redirect_to => redirect_to,
+                                      :response_time => response_time)
         end
 
-        @connections[url.host][url.port] = http.start
+        return pages
+      rescue => e
+        if verbose?
+          puts e.inspect
+          puts e.backtrace
+        end
+        return [Page.new(url, :error => e)]
+      end
+    end
+
+    #
+    # The maximum number of redirects to follow
+    #
+    def redirect_limit
+      @opts[:redirect_limit] || REDIRECT_LIMIT
+    end
+
+    #
+    # The user-agent string which will be sent with each request,
+    # or nil if no such option is set
+    #
+    def user_agent
+      @opts[:user_agent]
+    end
+
+    #
+    # Does this HTTP client accept cookies from the server?
+    #
+    def accept_cookies?
+      @opts[:accept_cookies]
+    end
+
+    private
+
+    #
+    # Retrieve HTTP responses for *url*, including redirects.
+    # Yields the response object, response code, and URI location
+    # for each response.
+    #
+    def get(url, referer = nil)
+        response = get_response(url, referer)
+        yield response, response.code, url, '', response.time
     end
 
     #
     # Get an HTTPResponse for *url*, sending the appropriate User-Agent string
     #
     def get_response(url, referer = nil)
-        full_path = url.query.nil? ? url.path : "#{url.path}?#{url.query}"
-
         opts = {}
-        opts['User-Agent'] = user_agent if user_agent
         opts['Referer'] = referer.to_s if referer
-        opts['Cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
-        opts['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        
-        retries = 0
-        begin
-            start = Time.now()
-            response = connection(url).get(full_path, opts)
-            finish = Time.now()
-            response_time = ((finish - start) * 1000).round
-            @cookie_store.merge!(response['Set-Cookie']) if accept_cookies?
-            return response, response_time
-        rescue Exception => e
-            retries += 1
-            
-            print_error( e.to_s )
-            print_info( ( 7 - retries ).to_s +
-                ' retries remaining for url: ' + url.to_s )
-                
-            print_debug_backtrace( e )
-            refresh_connection(url)
-            retry unless retries > 7
-        end
+        opts['cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
+
+        # response = Arachni::Module::HTTP.instance.get( url.to_s,
+        #     :headers         => opts,
+        #     :follow_location => true,
+        #     :async           => false,
+        #     :remove_id       => true
+        # ).response
+
+        response = Typhoeus::Request.get( url.to_s,
+            :headers                       => opts,
+            :disable_ssl_peer_verification => true,
+            :username                      => Arachni::Options.instance.url.user,
+            :password                      => Arachni::Options.instance.url.password,
+            :method                        => :auto,
+            :user_agent                    => Arachni::Options.instance.user_agent,
+            :follow_location               => true,
+            :proxy                         => "#{Arachni::Options.instance.proxy_addr}:#{Arachni::Options.instance.proxy_port}",
+            :proxy_username                => Arachni::Options.instance.proxy_user,
+            :proxy_password                => Arachni::Options.instance.proxy_pass,
+            :proxy_type                    => Arachni::Options.instance.proxy_type,
+        )
+
+        # pp response.headers_hash['Set-Cookie']
+        # pp @cookie_store
+
+        @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
+        return response
     end
 
+
+    def verbose?
+      @opts[:verbose]
+    end
+
+    #
+    # Allowed to connect to the requested url?
+    #
+    def allowed?(to_url, from_url)
+      to_url.host.nil? || (to_url.host == from_url.host)
+    end
+
+
+end
 end

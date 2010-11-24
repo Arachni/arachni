@@ -8,19 +8,13 @@
 
 =end
 
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'anemone/core.rb'
-require opts.dir['lib'] + 'anemone/http.rb'
-require opts.dir['lib'] + 'anemone/page.rb'
-require opts.dir['lib'] + 'net/http.rb'
-require 'ap'
-require 'pp'
+require Arachni::Options.instance.dir['lib'] + 'anemone'
 
 module Arachni
 
 #
 # Spider class
-#    
+#
 # Crawls the URL in opts[:url] and grabs the HTML code and headers.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -60,8 +54,10 @@ class Spider
     #
     def initialize( opts )
         @opts = opts
+        @parser   = Arachni::Parser.new( @opts )
+
         @anemone_opts = {
-            :threads              =>  3,
+            :threads              =>  1,
             :discard_page_bodies  =>  false,
             :delay                =>  0,
             :obey_robots_txt      =>  false,
@@ -82,43 +78,42 @@ class Spider
             |k, v|
             @anemone_opts[k] = hash_opts[k.to_s] if hash_opts[k.to_s]
         }
-        
+
         @anemone_opts = @anemone_opts.merge( hash_opts )
-        
+
         @sitemap = []
         @on_every_page_blocks = []
 
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
-        @opts.include =
-            @opts.include.empty? ? [ Regexp.new( '.*' ) ] : @opts.include
+        @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
     end
 
     #
-    # Runs the Spider and passes the url, html
-    # and headers Hash
+    # Runs the Spider and passes parsed page to the block
     #
-    # @param [Proc] block  a block expecting url, html, cookies
+    # @param [Block] block
     #
-    # @return [Array] array of links, a sitemap
+    # @return [Arachni::Parser::Page]
     #
     def run( &block )
+        return if @opts.link_count_limit == 0
 
         i = 1
         # start the crawl
         Anemone.crawl( @opts.url, @anemone_opts ) {
             |anemone|
-            
+
             # apply 'exclude' patterns
             anemone.skip_links_like( @opts.exclude ) if @opts.exclude
-            
+
             # apply 'include' patterns and grab matching pages
             # as they are discovered
             anemone.on_pages_like( @opts.include ) {
                 |page|
 
                 url = url_sanitize( page.url.to_s )
-                
+
                 # something went kaboom, tell the user and skip the page
                 if page.error
                     print_error( "[Error: " + (page.error.to_s) + "] " + url )
@@ -131,17 +126,17 @@ class Spider
 
                 print_line
                 print_status( "[HTTP: #{page.code}] " + url )
-                
+
                 # call the block...if we have one
                 if block
                     begin
-                        block.call( url, page.body, page.headers )
+                        block.call( @parser.run( url, page.body, page.headers ).clone )
                     rescue Exception
                         raise
                     end
                 end
 
-                # run blocks specified later 
+                # run blocks specified later
                 @on_every_page_blocks.each {
                     |block|
                     block.call( page )
@@ -168,11 +163,11 @@ class Spider
     # Decodes URLs to reverse multiple encodes and removes NULL characters
     #
     def url_sanitize( url )
-        
+
         while( url =~ /%/ )
             url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
-        end 
-        
+        end
+
         return url
     end
 

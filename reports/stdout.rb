@@ -9,8 +9,8 @@
 =end
 
 module Arachni
-module Reports    
-    
+module Reports
+
 #
 # Default report.
 #
@@ -21,33 +21,31 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Stdout < Arachni::Report::Base
-    
-    # register us with the system
-    include Arachni::Report::Registrar
-    
+
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
-    # @param [String]    outfile    where to save the report
     #
-    def initialize( audit_store, options = nil, outfile = nil )
+    def initialize( audit_store, options )
         @audit_store = audit_store
     end
-    
+
     #
     # REQUIRED
     #
     # Use it to run your report.
     #
     def run( )
-        
+
+        print_line( "\n" )
+        print_line( "=" * 80 )
+        print_line( "\n" )
         print_ok( 'Web Application Security Report - Arachni Framework' )
         print_line
         print_info( 'Report generated on: ' + Time.now.to_s )
-        print_line
         print_info( 'Report false positives: ' + REPORT_FP )
         print_line
         print_ok( 'System settings:' )
@@ -70,7 +68,7 @@ class Stdout < Arachni::Report::Base
         print_status( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
         print_line
         print_status( 'Filters: ' )
-        
+
         if @audit_store.options['exclude']
             print_info( "  Exclude:" )
             @audit_store.options['exclude'].each {
@@ -78,7 +76,7 @@ class Stdout < Arachni::Report::Base
                 print_info( '    ' + ex )
             }
         end
-        
+
         if @audit_store.options['include']
             print_info( "  Include:" )
             @audit_store.options['include'].each {
@@ -103,42 +101,52 @@ class Stdout < Arachni::Report::Base
                 print_info( "  #{cookie[0]} = #{cookie[1]}" )
             }
         end
-        
+
         print_line
         print_info( '===========================' )
         print_line
         print_ok( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
         print_line
-        
+
         @audit_store.vulns.each {
             |vuln|
-            
+
             print_ok( vuln.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
-            
+
+            print_info( 'Severity: ' + vuln.severity ) if vuln.severity
             print_info( 'URL:      ' + vuln.url )
             print_info( 'Elements: ' + vuln.elem )
             print_info( 'Variable: ' + vuln.var )
             print_info( 'Description: ' )
             print_info( vuln.description )
+
+            if vuln.cwe && !vuln.cwe.empty?
+                print_line
+                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+            end
+
             print_line
             print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
             print_line
-            print_info( 'References:' )
-            vuln.references.each{
-                |ref|
-                print_info( '  ' + ref[0] + ' - ' + ref[1] )
-            }
-            
+
+            if( vuln.references )
+                print_info( 'References:' )
+                vuln.references.each{
+                    |ref|
+                    print_info( '  ' + ref[0] + ' - ' + ref[1] )
+                }
+            end
+
             print_info_variations( vuln )
-            
+
             print_line
         }
-        
+
         print_line( "\n" )
 
     end
-    
+
     #
     # REQUIRED
     #
@@ -149,10 +157,10 @@ class Stdout < Arachni::Report::Base
             :name           => 'Stdout',
             :description    => %q{Prints the results to standard output.},
             :author         => 'zapotek',
-            :version        => '0.2',
+            :version        => '0.2.1',
         }
     end
-    
+
     def print_info_variations( vuln )
         print_line
         print_status( 'Variations' )
@@ -165,11 +173,11 @@ class Stdout < Arachni::Report::Base
             print_info( 'Injected value:     ' + var['injected'] )
             print_info( 'Regular expression: ' + var['regexp'].to_s )
             print_info( 'Matched string:     ' + var['regexp_match'] )
-            
+
             print_line
         }
     end
-    
+
 end
 
 end

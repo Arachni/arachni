@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # XSS audit module.<br/>
@@ -23,23 +22,23 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.2
 #
-# @see http://cwe.mitre.org/data/definitions/79.html    
+# @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
 class XSS < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
+    include Arachni::Module::Utilities
 
     def initialize( page )
         super( page )
 
         @results    = []
     end
-    
+
     def prepare( )
-        str = '<arachni_xss_' + Arachni::Module::Utilities.seed
-        @opts = { 
+        str = '<arachni_xss_' + seed
+        @opts = {
             :format => [ Format::APPEND | Format::NULL ],
             :match  => str,
             :regexp => Regexp.new( str )
@@ -49,7 +48,7 @@ class XSS < Arachni::Module::Base
     def run( )
         audit( @opts[:match], @opts )
     end
-    
+
     def self.info
         {
             :name           => 'XSS',
@@ -81,7 +80,6 @@ class XSS < Arachni::Module::Base
         }
     end
 
-end
 end
 end
 end

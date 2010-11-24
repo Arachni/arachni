@@ -1,0 +1,26 @@
+supplied argument is not a valid ldap
+javax.naming.NameNotFoundException
+LDAPException
+com.sun.jndi.ldap
+Search: Bad search filter
+Protocol error occurred
+Size limit has exceeded
+An inappropriate matching occurred
+A constraint violation occurred
+The syntax is invalid
+Object does not exist
+The alias is invalid
+The distinguished name has an invalid syntax
+The server does not handle directory requests
+There was a naming violation
+There was an object class violation
+Results returned are too large
+Unknown error occurred
+Local error occurred
+The search filter is incorrect
+The search filter is invalid
+The search filter cannot be recognized
+Invalid DN syntax
+No Such Object
+IPWorksASP.LDAP
+Module Products.LDAPMultiPlugins

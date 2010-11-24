@@ -1,3 +1,5 @@
+robots.txt
+sitemap.xml
 sitemap.xml.gz
 phpinfo.php
 CVS/Repository

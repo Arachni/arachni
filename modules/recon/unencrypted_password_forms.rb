@@ -13,8 +13,7 @@
 module Arachni
 
 module Modules
-module Recon
-  
+
 #
 # Unencrypted password form
 #
@@ -23,59 +22,57 @@ module Recon
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
 class UnencryptedPasswordForms < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
-
     def initialize( page )
         # in this case we don't need to call the parent
         @page = page
-        
+
         @results    = []
         @@__audited ||= []
     end
-    
+
     def run( )
-        
-        get_forms.each {
+
+        @page.forms.each {
             |form|
             __check( form )
         }
-        
+
         # register our results with the system
         register_results( @results )
     end
-    
+
     def __check( form )
-        
-        scheme = URI( form['attrs']['action'] ).scheme
+
+        scheme = URI( form.action ).scheme
         return if( scheme.downcase == 'https' )
-        
-        form['auditable'].each {
+
+        form.raw['auditable'].each {
             |input|
-            
+
             next if !input['type']
-            
+
             if( input['type'].downcase == 'password' )
-                __log( form['attrs']['action'], input )
+                __log( form.url, input )
             end
         }
     end
-    
+
     def __log( url, input )
-        
+
         if @@__audited.include?( input['name'] )
             print_info( 'Skipping already audited field \'' +
                 input['name'] + '\' of url: ' + url )
             return
         end
-        
+
         @@__audited << input['name']
-      
+
         # append the result to the results array
         @results << Vulnerability.new( {
             :var          => input['name'],
@@ -88,14 +85,14 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :response     => @page.html,
             :headers      => {
                 :request    => 'n/a',
-                :response   => 'n/a',    
+                :response   => 'n/a',
             }
         }.merge( self.class.info ) )
-        
+
         print_ok( "Found unprotected password field '#{input['name']}' at #{url}" )
 
     end
-    
+
     def self.info
         {
             :name           => 'UnencryptedPasswordForms',
@@ -122,8 +119,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
 
         }
     end
-    
-end
+
 end
 end
 end

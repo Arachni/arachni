@@ -1,6 +1,48 @@
 
 # ChangeLog
 
+## Version 0.2.1
+- Major performance improvements
+- Major system refactoring and code clean-up
+- Major module API refactoring providing even more flexibility regarding element auditing and manipulation
+- Integration with the Metasploit Framework via: (**New**)
+   - ArachniMetareport, an Arachni report specifically designed to provide WebApp context to the [Metasploit](http://www.metasploit.com/) framework.
+   - Arachni plug-in for the [Metasploit](http://www.metasploit.com/) framework, used to load the ArachniMetareport in order to provide advanced automated and manual exploitation of WebApp vulnerabilities.
+   - Advanced generic WebApp exploit modules for the [Metasploit](http://www.metasploit.com/) framework, utilized either manually or automatically by the Arachni MSF plug-in.
+- Improved Blind SQL Injection module, significantly less requests per audit.
+- XMLRPC server (**New**)
+- XMLRPC CLI client (**New**)
+- NTLM authentication support (**New**)
+- Support for path extractor modules for the Spider (**New**)
+- Path extractors: (**New**)
+   - Generic -- extracts URLs from arbitrary text
+   - Anchors
+   - Form actions
+   - Frame sources
+   - Links
+   - META refresh
+   - Script 'src' and script code
+   - Sitemap
+- Plug-in support -- allowing the framework to be extended with virtually any functionality (**New**).
+- Added plug-ins: (**New**)
+   - Passive proxy
+   - Automated login
+- Added modules: (**New**)
+   - Audit
+      - XPath injection
+      - LDAP injection
+   - Recon
+      - CVS/SVN user disclosure
+      - Private IP address disclosure
+      - Robot file reader (in the Common Files module)
+      - XST
+      - WebDAV detection
+      - Allowed HTTP methods
+      - Credit card number disclosure
+      - HTTP PUT support
+- Extended proxy support (SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0). (**New**)
+
+
 ## Version 0.2
 
 - Improved output.

@@ -10,8 +10,8 @@
 
 
 module Arachni
-module Reports    
-    
+module Reports
+
 #
 # Creates a plain text report of the audit.
 #
@@ -21,29 +21,25 @@ module Reports
 # @version: 0.1
 #
 class Text < Arachni::Report::Base
-    
-    # register us with the system
-    include Arachni::Report::Registrar
-    
+
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]        options    options passed to the report
-    # @param [String]      outfile    where to save the report
     #
-    def initialize( audit_store, options = nil, outfile = nil )
+    def initialize( audit_store, options )
         @audit_store = audit_store
-        @outfile     = outfile + '.txt'
-        
+        @outfile     = options['outfile']
+
         # text buffer
         @__buffer = ''
     end
-    
+
     def run( )
-        
+
         print_line( )
         print_status( 'Creating text report...' )
 
-        
+
         __buffer( 'Web Application Security Report - Arachni Framework' )
         __buffer
         __buffer( 'Report generated on: ' + Time.now.to_s )
@@ -70,7 +66,7 @@ class Text < Arachni::Report::Base
         __buffer( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
         __buffer
         __buffer( 'Filters: ' )
-        
+
         if @audit_store.options['exclude']
             __buffer( "  Exclude:" )
             @audit_store.options['exclude'].each {
@@ -78,7 +74,7 @@ class Text < Arachni::Report::Base
                 __buffer( '    ' + ex )
             }
         end
-        
+
         if @audit_store.options['include']
             __buffer( "  Include:" )
             @audit_store.options['include'].each {
@@ -103,19 +99,19 @@ class Text < Arachni::Report::Base
                 __buffer( "  #{cookie[0]} = #{cookie[1]}" )
             }
         end
-        
+
         __buffer
         __buffer( '===========================' )
         __buffer
         __buffer( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
         __buffer
-        
+
         @audit_store.vulns.each {
             |vuln|
-            
+
             __buffer( vuln.name )
             __buffer( '~~~~~~~~~~~~~~~~~~~~' )
-            
+
             __buffer( 'URL:      ' + vuln.url )
             __buffer( 'Elements: ' + vuln.elem )
             __buffer( 'Variable: ' + vuln.var )
@@ -129,19 +125,19 @@ class Text < Arachni::Report::Base
                 |ref|
                 __buffer( '  ' + ref[0] + ' - ' + ref[1] )
             }
-            
+
             __buffer_variations( vuln )
-            
+
             __buffer
         }
-        
+
         __buffer( "\n" )
 
         __buffer_write( )
-        
+
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
-    
+
     #
     # REQUIRED
     #
@@ -153,9 +149,13 @@ class Text < Arachni::Report::Base
             :description    => %q{Exports a report as a plain text file.},
             :author         => 'zapotek',
             :version        => '0.1',
+            :options        => [
+                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
+                    Time.now.to_s + '.txt' ] ),
+            ]
         }
     end
-    
+
     def __buffer_variations( vuln )
         __buffer
         __buffer( 'Variations' )
@@ -168,21 +168,21 @@ class Text < Arachni::Report::Base
             __buffer( 'Injected value:     ' + var['injected'] )
             __buffer( 'Regular expression: ' + var['regexp'].to_s )
             __buffer( 'Matched string:     ' + var['regexp_match'] )
-            
+
             __buffer
         }
     end
-    
+
     def __buffer( str = '' )
         @__buffer += str + "\n"
     end
-    
+
     def __buffer_write( )
         file = File.new( @outfile, 'w' )
         file.write( @__buffer )
         file.close
     end
-    
+
 end
 
 end

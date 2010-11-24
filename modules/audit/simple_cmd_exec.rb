@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Simple shell command injection module.<br/>
@@ -21,14 +20,12 @@ module Audit
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
-# @see http://www.owasp.org/index.php/OS_Command_Injection    
-#    
+# @see http://www.owasp.org/index.php/OS_Command_Injection
+#
 class SimpleCmdExec < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
@@ -36,8 +33,9 @@ class SimpleCmdExec < Arachni::Module::Base
         @__opts = {}
         @__opts[:regexp]   = /100434/ixm
         @__opts[:match]    = '100434'
+        @__opts[:format]   = OPTIONS[:format] | [ Format::SEMICOLON ]
         @__injection_str   = 'expr 978 + 99456'
-        
+
         @results = []
     end
 
@@ -45,7 +43,7 @@ class SimpleCmdExec < Arachni::Module::Base
         audit( @__injection_str, @__opts )
     end
 
-    
+
     def self.info
         {
             :name           => 'SimpleCmdExec',
@@ -56,26 +54,27 @@ class SimpleCmdExec < Arachni::Module::Base
                 Vulnerability::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            :targets        => { 'PHP' => 'all' },
+            :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
                 :name        => %q{OS command injection},
                 :description => %q{The web application allows an attacker to
-                    execute OS commands.},
+                    execute arbitrary OS commands.},
                 :cwe         => '78',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being evaluated as OS level shell code.},
                 :remedy_code => '',
+                :metasploitable => 'unix/webapp/arachni_exec'
             }
 
         }
     end
 
-end
 end
 end
 end

@@ -1,12 +1,12 @@
 # Arachni - Web Application Security Scanner Framework
-**Version**:     0.2<br/>
+**Version**:     0.2.1<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
 **Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
 **Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)<br/>
 **Copyright**:    2010<br/>
-**License**:      [GNU General Public License v2](file.LICENSE.html)<br/>
+**License**:      [GNU General Public License v2](file.LICENSE.html)
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
@@ -68,12 +68,10 @@ However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exist
  - Cookie-jar support
  - SSL support.
  - User Agent spoofing.
- - Proxy support for SOCKS and HTTP(S).
-    - SOCKS support is kindly provided by [socksify](http://socksify.rubyforge.org/).
+ - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication.
+ - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
  - Highlighted command line output.
- - Total control over the scanning process.
  - UI abstraction.
  - Pause/resume functionality.
     - Interrupts pause the system, the user then has the option to either resume or exit.
@@ -96,7 +94,7 @@ The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some
 
 
 
-### HTML Analyzer ({Arachni::Analyzer})
+### HTML Parser ({Arachni::Parser})
 
 Can extract and analyze:
 
@@ -107,12 +105,6 @@ Can extract and analyze:
 The analyzer can graciously handle badly written HTML code
 due to the combination of regular expression analysis and [Nokogiri](http://nokogiri.org/) HTML parser.
 
-The analyzer serves as the first layer of HTML analysis.<br/>
-More complex analysis, for JS, AJAX, Java Applets etc, can be achieved by adding data-mining/audit pairs of modules
-like:<br/>
-- {Arachni::Modules::Recon::ExtractObjects}<br/>
-- {Arachni::Modules::Audit::AuditObjects}
-
 This way the system can be extended to be able to handle virtually anything.
 
 ###  Module Management ({Arachni::Module})
@@ -122,10 +114,10 @@ This way the system can be extended to be able to handle virtually anything.
  - Helper audit methods
     - For forms, links and cookies.
     - Writing RFI, SQL injection, XSS etc mods is a matter of minutes if not seconds.
- - Helper {Arachni::Module::HTTP} interface
+ - Helper {Arachni::HTTP} interface
     - A high-performance, simple and easy to use Typhoeus wrapper.
 
-You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
+You can find a tutorial module here: {Arachni::Modules::SimpleRFI}
 
 ### Report Management ({Arachni::Report})
 
@@ -136,6 +128,15 @@ You can find a tutorial module here: {Arachni::Modules::Audit::SimpleRFI}
 
 You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
 And a more complex HTML report here: {Arachni::Reports::HTML}
+
+
+### Plug-in Management ({Arachni::Plugin})
+
+ - Modular design
+    - Very easy to add new plug-ins.
+    - Plug-ins are framework demi-gods, they have direct access to the framework instance.
+    - Can be used to add any functionality to Arachni.
+
 
 ### Trainer subsystem ({Arachni::Module::Trainer})
 
@@ -151,7 +152,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-       Arachni - Web Application Security Scanner Framework v0.2 [0.1.7]
+       Arachni - Web Application Security Scanner Framework v0.2.1 [0.2]
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
@@ -283,20 +284,23 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --lsrep                       list available reports
 
-    --repsave=<file>              save the audit results in <file>
-                                    (The file will be saved with an extention of: .afr)
+    --repload=<file>              load audit results from an .afr file
+                                    (Allows you to create new reports from finished scans.)
 
-    --repload=<file>              load audit results from <file>
-                                    (Allows you to create a new reports from old/finished scans.)
+    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
-    --repopts=<option1>:<value>,<option2>:<value>,...
-                                  Set options for the selected reports.
-                                    (One invocation only, options will be applied to all loaded reports.)
-
-    --report=<repname>            <repname>: the name of the report as displayed by '--lsrep'
+                                  <report>: the name of the report as displayed by '--lsrep'
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
+### Plugins
+
+    --lsplug                      list available plugins
+
+    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
+
+                                  <plugin>: the name of the plugin as displayed by '--lsplug'
+                                    (Can be used multiple times.)
 
 ### Proxy
 
@@ -304,37 +308,42 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --proxy-auth=<user:passwd>  specify proxy auth credentials
 
-    --proxy-type=<type>         proxy type can be either socks or http
+    --proxy-type=<type>           proxy type can be http, http_1_0, socks4, socks5, socks4a
                                   (Default: http)
 
 
-### Example
+### Examples
 
-In the following example all modules will be run against <i>http://test.com</i>
-, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
+As of v0.2.1 you can simply run Arachni like so:
+
+    $ ./arachni.rb http://test.com
+
+which will load all modules and audit all forms, links and cookies.
+
+In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
-    $ ./arachni.rb -gpcfv --mods=* http://test.com --repsave=test.com
+    $ ./arachni.rb -fv http://test.com --report=afr:outfile=test.com.afr
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni.rb --report=html --repload=test.com.afr --repsave=my_report
+    $ ./arachni.rb --repload=test.com.afr --report=html:outfile=my_report.html
 
 or any other report type as shown by:
 
     $ ./arachni.rb --lsrep
 
+For a full explenation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
 ## Requirements
 
-  * ruby1.9.1 or later
+  * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
   * Nokogiri
-  * Anemone
   * Typhoeus
-  * Sockify
   * Awesome print
   * Liquid (For {Arachni::Reports::HTML} reporting)
   * Yardoc (if you want to generate the documentation)
+  * Robots
 
 Run the following to install all required system libraries:
     sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
@@ -342,7 +351,7 @@ Run the following to install all required system libraries:
 (Adapt the above line to your Linux distro.)
 
 Run the following to install all gem dependencies:
-    sudo gem install nokogiri anemone typhoeus socksify awesome_print liquid yard
+    sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
 (Make sure you install the gems with gem version 1.9.1 and run arachni with ruby version 1.9.1)
 

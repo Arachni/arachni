@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # XSS in path audit module.
@@ -21,22 +20,22 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2
 #
-# @see http://cwe.mitre.org/data/definitions/79.html    
+# @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
 class XSSPath < Arachni::Module::Base
 
-    include Arachni::Module::Registrar
+    include Arachni::Module::Utilities
 
     def initialize( page )
         super( page )
 
         @results    = []
     end
-    
+
     def prepare( )
-        @str = '/<arachni_xss_path_' + Arachni::Module::Utilities.seed
+        @str = '/<arachni_xss_path_' + seed
         @__injection_strs = [
             @str,
             '?>"\'>' + @str,
@@ -46,23 +45,23 @@ class XSSPath < Arachni::Module::Base
 
     def run( )
 
-        path = Module::Utilities.get_path( @page.url )
-        
+        path = get_path( @page.url )
+
         @__injection_strs.each {
             |str|
-            
+
             url  = path + str
             req  = @http.get( url )
-            
+
             req.on_complete {
                 |res|
                 __log_results( res, str )
             }
         }
-        
+
     end
 
-    
+
     def self.info
         {
             :name           => 'XSSPath',
@@ -88,9 +87,9 @@ class XSSPath < Arachni::Module::Base
 
         }
     end
-    
+
     def __log_results( res, id )
-        
+
         if ( id && res.body.scan( Regexp.escape( id ) )[0] == id ) ||
            ( !id && res.body.scan( Regexp.escape( id ) )[0].size > 0 )
 
@@ -107,21 +106,20 @@ class XSSPath < Arachni::Module::Base
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
-                    :response   => res.headers,    
+                    :response   => res.headers,
                 }
             }.merge( self.class.info ) )
-                    
+
             # inform the user that we have a match
             print_ok( "Match at #{url}" )
             print_verbose( "Inected string: #{id}" )
-                
+
             # register our results with the system
             register_results( @results )
         end
     end
 
 
-end
 end
 end
 end

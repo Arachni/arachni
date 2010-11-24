@@ -10,13 +10,14 @@ if [ `whoami` = 'zapotek' ]; then
     inkscape gfx/icon.svg --export-png=/home/zapotek/workspace/arachni-gh-pages/icon.png
     inkscape gfx/icon.svg --export-png=/home/zapotek/workspace/arachni-gh-pages/favicon.ico
     inkscape gfx/banner.svg --export-png=/home/zapotek/workspace/arachni-gh-pages/banner.png
-    
+
 fi
 
 yardoc --verbose --protected --title \
-  "Arachni - Web Application Security Scanner Framework" reports/* modules/* lib/* \
-  $outdir \
-  - LICENSE.md AUTHORS.md ACKNOWLEDGMENTS.md DIAGRAMS.md HACKING.md CHANGELOG.md \
-  CONTRIBUTORS.md
+  "Arachni - Web Application Security Scanner Framework" \
+  plugins/* reports/* modules/* lib/* $outdir \
+  - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
+  CONTRIBUTORS.md ACKNOWLEDGMENTS.md DIAGRAMS.md
+
 
 rm -rf .yard*

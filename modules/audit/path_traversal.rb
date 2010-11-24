@@ -11,7 +11,6 @@
 module Arachni
 
 module Modules
-module Audit
 
 #
 # Path Traversal audit module.
@@ -21,22 +20,20 @@ module Audit
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.1
 #
-# @see http://cwe.mitre.org/data/definitions/22.html    
+# @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
 #
 class PathTraversal < Arachni::Module::Base
-
-    include Arachni::Module::Registrar
 
     def initialize( page )
         super( page )
 
         @results    = []
     end
-    
+
     def prepare( )
-      
+
         #
         # the way this works is pretty cool since it will actually
         # exploit the vulnerability in order to verify that it worked
@@ -49,8 +46,8 @@ class PathTraversal < Arachni::Module::Base
         # and give accurate feedback about the context in which the vulnerability
         # was flagged.
         #
-        
-        
+
+
         @__trv =  '../../../../../../../../../../../../../../../../'
         @__ext = [
             "",
@@ -66,7 +63,7 @@ class PathTraversal < Arachni::Module::Base
             "\0.png",
             "\0.css"
         ]
-        
+
         @__params = [
             {
                 'value'  => 'etc/passwd',
@@ -76,9 +73,9 @@ class PathTraversal < Arachni::Module::Base
                 'value'  => 'boot.ini',
                 'regexp' => /\[boot loader\](.*)\[operating systems\]/i
             }
-          
+
         ]
-        
+
         @__opts = {
             # we don't want the Auditor to interfere with our injecion strings
             :format => [ Format::STRAIGHT ],
@@ -90,11 +87,11 @@ class PathTraversal < Arachni::Module::Base
 
         @__params.each {
             |param|
-            
+
             @__opts[:regexp] = param['regexp']
             @__ext.each {
                 |ext|
-                
+
                 injection_str = @__trv + param['value'] + ext
                 audit( injection_str, @__opts )
             }
@@ -105,8 +102,10 @@ class PathTraversal < Arachni::Module::Base
     def self.info
         {
             :name           => 'PathTraversal',
-            :description    => %q{Path Traversal module.},
-            :elements       => [ 
+            :description    => %q{It injects paths of common files (/etc/passwd and boot.ini)
+                and evaluates the existance of a path traversal vulnerability
+                based on the presence of relevant content in the HTML responses.},
+            :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
                 Vulnerability::Element::COOKIE
@@ -118,21 +117,23 @@ class PathTraversal < Arachni::Module::Base
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
             },
             :targets        => { 'Generic' => 'all' },
-                
+
             :vulnerability   => {
                 :name        => %q{Path Traversal},
-                :description => %q{Improper limitation of a pathname to a restricted directory.},
+                :description => %q{The web application enforces improper limitation
+                    of a pathname to a restricted directory.},
                 :cwe         => '22',
                 :severity    => Vulnerability::Severity::MEDIUM,
                 :cvssv2       => '4.3',
-                :remedy_guidance    => '',
+                :remedy_guidance    => %q{User inputs must be validated and filtered
+                    before being used as a part of a filesystem path.},
                 :remedy_code => '',
+                :metasploitable => 'unix/webapp/arachni_path_traversal'
             }
 
         }
     end
-    
-end
+
 end
 end
 end
