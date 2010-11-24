@@ -36,6 +36,7 @@ End-users should check out the links bellow.
      - XST  -- **Done**
      - CVS/SVN user disclosure  -- **Done**
      - Private IP address disclosure  -- **Done**
+     - Credit card number disclosure  -- **Done**
 
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2.1<br/>
