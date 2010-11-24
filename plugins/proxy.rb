@@ -210,7 +210,9 @@ class Proxy < Arachni::Plugin::Base
         {
             :name           => 'Proxy',
             :description    => %q{Gathers data based on user actions and exchanged HTTP
-                traffic and pushes that data to the framework's page-queue to be audited.},
+                traffic and pushes that data to the framework's page-queue to be audited.
+                It also updates the framework cookies with the cookies of the HTTP requests and
+                responses, thus it can also be used to login to a web application.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [

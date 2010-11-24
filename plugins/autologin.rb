@@ -139,8 +139,8 @@ class AutoLogin < Arachni::Plugin::Base
         {
             :name           => 'AutoLogin',
             :description    => %q{It looks for the login form in the user provided URL,
-                merges its input field with the user supplied parameters and sets the cookies
-                of the response as framework-wide cookies to be user by the spider later on.
+                merges its input fields with the user supplied parameters and sets the cookies
+                of the response and request as framework-wide cookies to be user by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
