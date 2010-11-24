@@ -232,12 +232,27 @@ class Page
       # remove anchor
       link = URI.encode(link.to_s.gsub(/#[a-zA-Z0-9_-]*$/,''))
 
+      if url = base
+        base_url = URI(url)
+      else
+        base_url = @url.dup
+      end
+
       relative = URI(link)
-      absolute = @url.merge(relative)
+      absolute = base_url.merge(relative)
 
       absolute.path = '/' if absolute.path.empty?
 
       return absolute
+    end
+
+    def base
+      begin
+        tmp = doc.search( '//base[@href]' )
+        return tmp[0]['href'].dup
+      rescue
+        return
+      end
     end
 
     #
