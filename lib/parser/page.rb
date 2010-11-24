@@ -28,8 +28,14 @@ class Page
     #
     attr_accessor :url
 
+    #
+    # @return    [Fixnum]    the HTTP response code
+    #
     attr_accessor :code
 
+    #
+    # @return    [String]    the request method that returned the page
+    #
     attr_accessor :method
 
     #
@@ -43,10 +49,15 @@ class Page
     attr_accessor :html
 
     #
-    # @return    [Array<Arachni::Parser::Element::Header]
+    # Request headers
+    #
+    # @return    [Array<Arachni::Parser::Element::Header>]
     #
     attr_accessor :headers
 
+    #
+    # @return    [Hash]
+    #
     attr_accessor :response_headers
 
     #
