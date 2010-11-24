@@ -362,6 +362,7 @@ class Auditable
             print_verbose( "Injected string:\t" + injected )
             print_verbose( "Verified string:\t" + verified )
             print_verbose( "Matched regular expression: " + regexp.to_s )
+            print_debug( 'Request ID: ' + res.request.id.to_s )
             print_verbose( '---------' ) if only_positives?
 
             res = {
