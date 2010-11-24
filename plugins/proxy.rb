@@ -91,6 +91,8 @@ class Proxy < Arachni::Plugin::Base
 
         page = @parser.run( req.unparsed_uri, res.body, headers )
         page = update_forms( page, req ) if req.body
+        page.method = res.request_method
+        page.code   = res.status
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"

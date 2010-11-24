@@ -28,6 +28,10 @@ class Page
     #
     attr_accessor :url
 
+    attr_accessor :code
+
+    attr_accessor :method
+
     #
     # @return    [Hash]    url variables
     #

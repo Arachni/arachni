@@ -130,7 +130,10 @@ class Spider
                 # call the block...if we have one
                 if block
                     begin
-                        block.call( @parser.run( url, page.body, page.headers ).clone )
+                        new_page = @parser.run( url, page.body, page.headers )
+                        new_page.code   = page.code
+                        new_page.method = 'GET'
+                        block.call( new_page.clone )
                     rescue Exception
                         raise
                     end

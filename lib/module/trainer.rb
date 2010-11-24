@@ -158,11 +158,11 @@ class Trainer
                 # raise e
             end
 
-            # ap  res[0].request.headers
-
             @page.response_headers    = res[0].headers_hash
             @page.query_vars = @parser.link_vars( @parser.url ).dup
             @page.url        = @parser.url.dup
+            @page.code       = res[0].code
+            @page.method     = res[0].request.method.to_s.upcase
 
         end
 
