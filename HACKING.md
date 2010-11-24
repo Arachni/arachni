@@ -90,10 +90,10 @@ power to work with.
 
 ## Creating New Plug-ins
 
-Unlike the two previous types of components (reports and modules) plug-ins are demi-gods.<br/>
-Each plug-in is passed an instance of the framework to do what they please with it.<br/>
-Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.<br/>
-Plug-ins are run in parallel with the framework and are executed right before the scan process starts.<br/>
+Unlike the two previous types of components plug-ins are demi-gods.
+Each plug-in is passed the instance of the running framework to do with it what it pleases.
+Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.
+Plug-ins run in parallel to the framework and are executed right before the scan process starts.
 
 Have a look the following demo plug-ins:<br/>
 - {Arachni::Plugins::ClearStdout}<br/>
