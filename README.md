@@ -341,6 +341,7 @@ As of (the upcoming) version 0.2.1 Arachni will also be released as [CDE package
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
 You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 
+Otherwise, in order to use Arachni you will need the following:
   * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
   * Nokogiri
   * Typhoeus
