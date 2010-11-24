@@ -357,7 +357,7 @@ Run the following to install all required system libraries:
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
-(If you have more than one Ruby version installed make sure you install the gems and run Arachni with the proper version.)
+(If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version.)
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
