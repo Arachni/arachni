@@ -22,7 +22,7 @@ Unlike other scanners, Arachni takes into account the dynamic nature of web appl
 through the paths of a web application's cyclomatic complexity.<br/>
 This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
 
-Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).<br/>
+Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)).<br/>
 Thus, you'll only be limited by the responsiveness of the server under audit and your available bandwidth.
 
 **Note**: Despite the fact that Arachni is mostly targeted towards web application security,
