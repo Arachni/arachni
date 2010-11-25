@@ -303,8 +303,12 @@ class BlindSQLInjection < Arachni::Module::Base
         )
 
         print_ok( "In #{Vulnerability::Element::LINK} var '#{var}' ( #{url} )" )
-        print_debug( 'Request ID: ' + res.request.id.to_s )
-        print_debug( 'Body: ' + res.body )
+        #
+        # If I un-comment the following, with debugging disabled,
+        # something will block for a long time... how weird is that?
+        #
+        # print_debug( 'Request ID: ' + res.request.id.to_s )
+        # print_debug( 'Body: ' + res.body )
 
         # register our results with the system
         register_results( @results )
