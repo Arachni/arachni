@@ -31,14 +31,14 @@ it can easily be used for general purpose scraping, data-mining, etc with the ad
 
 ### Arachni offers:
 
-**1 A stable, efficient, high-performance framework**<br/>
+#### A stable, efficient, high-performance framework
 
 Module, report and plugin writers are allowed to easily and quickly create and deploy their components
 with the minimum amount of restrictions imposed upon them, while provided with the necessary infrastructure to accomplish their goals.<br/>
 Furthermore, they are encouraged to take full advantage of the Ruby language under a unified framework that will increase their productivity
 without stifling them or complicating their tasks.<br/>
 
-**2 Simplicity**<br/>
+#### Simplicity
 Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
 From a user's or a component developer's point of view everything appears simple and straight-forward all the while providing power, performance and flexibility.
 
