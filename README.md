@@ -330,7 +330,7 @@ or any other report type as shown by:
 
     $ ./arachni.rb --lsrep
 
-For a full explenation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
+For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
 ## Requirements
 
