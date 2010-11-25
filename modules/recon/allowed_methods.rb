@@ -75,7 +75,10 @@ class AllowedMethods < Arachni::Module::Base
 
     def __log_results( res )
 
-        return if (methods = res.headers_hash['Allow']).empty?
+        methods = res.headers_hash['Allow']
+
+        return if !methods || methods.empty?
+
         vuln = Vulnerability.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
