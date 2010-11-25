@@ -85,9 +85,10 @@ The analyzer can graciously handle badly written HTML code due to a combination 
 ###  Module Management
 
  - Very simple and easy to use module API providing access to multiple levels of complexity.
- - Helper audit methods.
+ - Helper audit methods:
     - For forms, links and cookies auditing.
-    - Writing RFI, SQL injection, XSS etc mods is a matter of minutes if not seconds.
+    - A wide range of injection strings/input combinations.
+    - Writing RFI, SQL injection, XSS etc modules is a matter of minutes if not seconds.
  - Currently available modules:
     - Audit:
         - Blind SQL injection
@@ -113,6 +114,9 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - Insufficient Transport Layer Protection for password forms
         - WebDAV detection
         - HTTP TRACE detection
+        - Credit Card number disclosure
+        - CVS/SVN user disclosure
+        - Private IP address disclosure
 
 ### Report Management
 
