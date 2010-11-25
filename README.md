@@ -25,8 +25,7 @@ This way attack/input vectors that would otherwise be undetectable by non-humans
 Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)).<br/>
 Thus, you'll only be limited by the responsiveness of the server under audit and your available bandwidth.
 
-**Note**: Despite the fact that Arachni is mostly targeted towards web application security,
-it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
+**Note**: _Despite the fact that Arachni is mostly targeted towards web application security, it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules._
 
 
 ### Arachni offers:
@@ -338,19 +337,19 @@ For a full explenation of all available options you can consult the [User Guide]
   * Nokogiri
   * Typhoeus
   * Awesome print
-  * Liquid (For {Arachni::Reports::HTML} reporting)
-  * Yardoc (if you want to generate the documentation)
+  * Liquid (for HTML reporting)
+  * Yardoc (to generate the documentation)
   * Robots
 
 Run the following to install all required system libraries:
     sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
 
-(Adapt the above line to your Linux distro.)
+_Adapt the above line to your Linux distro._
 
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
-(If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version.)
+_If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version._
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
