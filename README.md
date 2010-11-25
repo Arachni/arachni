@@ -127,7 +127,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - XML
     - TXT
     - YAML serialization
-    - Metareport (providing Metasploit integration to allow for automated and assisted exploitation)
+    - Metareport (providing Metasploit integration to allow for [automated and assisted exploitation](http://zapotek.github.com/arachni/file.EXPLOITATION.html))
 
 ### Plug-in Management
 
