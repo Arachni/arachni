@@ -14,16 +14,13 @@ Kindly sponsored by: [![NopSec](http://zapotek.github.com/arachni/nopsec_logo.pn
 
 ## Synopsis
 
-{Arachni} is a feature-full, modular, high-performance Ruby framework aimed towards helping
+Arachni is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators evaluate the security of web applications.
 
-{Arachni} is smart, it trains itself by learning from the HTTP responses it receives
-during the audit process.<br/>
-Unlike other scanners, Arachni takes into account the dynamic
-nature of web applications and can detect changes caused while travelling<br/>
+Arachni is smart, it trains itself by learning from the HTTP responses it receives during the audit process.<br/>
+Unlike other scanners, Arachni takes into account the dynamic nature of web applications and can detect changes caused while travelling<br/>
 through the paths of a web application's cyclomatic complexity.<br/>
-This way attack/input vectors that would otherwise be undetectable by non-humans
-are seamlessly handled by Arachni.
+This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
 
 Finally, Arachni yields great performance due to its asynchronous HTTP  model (courtesy of Typhoeus).<br/>
 Thus, you'll only be limited by the responsiveness of the server under audit and your available bandwidth.
@@ -32,34 +29,18 @@ Note: Despite the fact that Arachni is mostly targeted towards web application s
 it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
 
 
-{Arachni} offers:
+Arachni offers:
 
 **1 A stable, efficient, high-performance framework**<br/>
 
-Module and report writers are allowed to easily and quickly create and deploy modules
-with the minimum amount of restrictions imposed upon them, while provided
-with the necessary infrastructure to accomplish their goals.<br/>
-Furthermore, they are encouraged to take full advantage of the Ruby language
-under a unified framework that will increase their productivity
+Module, report and plugin writers are allowed to easily and quickly create and deploy their components
+with the minimum amount of restrictions imposed upon them, while provided with the necessary infrastructure to accomplish their goals.<br/>
+Furthermore, they are encouraged to take full advantage of the Ruby language under a unified framework that will increase their productivity
 without stifling them or complicating their tasks.<br/>
-Basically, Arachni gives you the right tools for the job and gets the hell out of your way.
 
 **2 Simplicity**<br/>
 Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
-From a user's or a module developer's point of view everything appears simple and straight-forward
-all the while providing power, performance and flexibility.
-
-There are only a couple of rules a developer needs to follow:
-
-- Implement an abstract class
-- Do his thing
-
-That's pretty much all you are expected and need to do...
-A glance at an existing report or module will be all you need to get you going.
-
-Users just need to take a look at the help output.<br/>
-However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exists for those who want to be aware of all the details.
-
+From a user's or a component developer's point of view everything appears simple and straight-forward all the while providing power, performance and flexibility.
 
 ## Feature List
 
@@ -73,28 +54,25 @@ However, extensive [documentation](http://github.com/Zapotek/arachni/wiki) exist
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
  - Highlighted command line output.
  - UI abstraction.
+    - Command line UI
+    - XMLRPC command line client/server
  - Pause/resume functionality.
-    - Interrupts pause the system, the user then has the option to either resume or exit.
  - High performance asynchronous HTTP requests.
 
+### Website Crawler
 
-### Website Crawler ({Arachni::Spider})
-
-The crawler is provided by [Anemone](http://anemone.rubyforge.org/) -- with some slight modifications to accommodate extra features.
+The crawler is provided by a modified version of [Anemone](http://anemone.rubyforge.org/).
 
  - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
  - URL exclusion filter based on regular expressions.
  - URL inclusion filter based on regular expressions.
- - Stays in domain by default and it'll probably stay that way.
  - Can optionally follow subdomains.
- - Multi-threaded with adjustable thread count.
  - Adjustable depth limit.
- - Adjustable  link count limit.
+ - Adjustable link count limit.
  - Adjustable redirect limit.
+ - Modular path extraction via "Path Extractor" components.
 
-
-
-### HTML Parser ({Arachni::Parser})
+### HTML Parser
 
 Can extract and analyze:
 
@@ -102,51 +80,66 @@ Can extract and analyze:
  - Links
  - Cookies
 
-The analyzer can graciously handle badly written HTML code
-due to the combination of regular expression analysis and [Nokogiri](http://nokogiri.org/) HTML parser.
+The analyzer can graciously handle badly written HTML code due to a combination of regular expression analysis and the [Nokogiri](http://nokogiri.org/) HTML parser.
 
-This way the system can be extended to be able to handle virtually anything.
+###  Module Management
 
-###  Module Management ({Arachni::Module})
-
- - Modular design
-    - Very simple and easy to use module API providing access at multiple levels.
- - Helper audit methods
-    - For forms, links and cookies.
+ - Very simple and easy to use module API providing access to multiple levels of complexity.
+ - Helper audit methods.
+    - For forms, links and cookies auditing.
     - Writing RFI, SQL injection, XSS etc mods is a matter of minutes if not seconds.
- - Helper {Arachni::HTTP} interface
-    - A high-performance, simple and easy to use Typhoeus wrapper.
+ - Currently available modules:
+    - Audit:
+        - Blind SQL injection
+        - CSRF detection
+        - Eval/Code injection
+        - LDAP injection
+        - Path traversal
+        - Response splitting
+        - OS command injection
+        - Remote file inclusion
+        - SQL injection
+        - Unvalidated redirects
+        - XPath injection
+        - Path XSS
+        - URI XSS
+        - XSS
+    - Recon:
+        - Allowed HTTP methods
+        - Back-up files
+        - Common directories
+        - Common files
+        - HTTP PUT
+        - Insufficient Transport Layer Protection for password forms
+        - WebDAV detection
+        - HTTP TRACE detection
 
-You can find a tutorial module here: {Arachni::Modules::SimpleRFI}
+### Report Management
 
-### Report Management ({Arachni::Report})
+ - Modular design.
+ - Currently available reports:
+    - Standard output
+    - HTML
+    - XML
+    - TXT
+    - YAML serialization
+    - Metareport (providing Metasploit integration to allow for automated and assisted exploitation)
+
+### Plug-in Management
 
  - Modular design
-    - Very easy to add new reports.
-    - Reports are similar to modules...but a lot simpler.
+ - Plug-ins are framework demi-gods, they have direct access to the framework instance.
+ - Can be used to add any functionality to Arachni.
+ - Currently available plugins:
+    - Passive Proxy
+    - Form based AutoLogin
 
+### Trainer subsystem
 
-You can find an up-to-date sample report here: {Arachni::Reports::AP}<br/>
-And a more complex HTML report here: {Arachni::Reports::HTML}
+The Trainer is what enables Arachni to learn from the scan it performs and incorporate that knowledge, on the fly, for the duration of the audit.
 
-
-### Plug-in Management ({Arachni::Plugin})
-
- - Modular design
-    - Very easy to add new plug-ins.
-    - Plug-ins are framework demi-gods, they have direct access to the framework instance.
-    - Can be used to add any functionality to Arachni.
-
-
-### Trainer subsystem ({Arachni::Module::Trainer})
-
-The Trainer is what enables Arachni to learn from the scan it performs
-and incorporate that knowledge, on the fly, for the duration of the audit.
-
-Modules have the ability to individually force the Framework to learn from the HTTP responses they are
-going to induce.<br/>
-However, this is usually not required since Arachni is aware of which requests are more likely
-to uncover new elements or attack vectors and will adapt itself accordingly.
+Modules have the ability to individually force the Framework to learn from the HTTP responses they are going to induce.<br/>
+However, this is usually not required since Arachni is aware of which requests are more likely to uncover new elements or attack vectors and will adapt itself accordingly.
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
