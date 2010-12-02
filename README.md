@@ -354,6 +354,10 @@ Run the following to install all required system libraries:
 
 _Adapt the above line to your Linux distro._
 
+Users are **strongly** encouraged to compile Ruby 1.9.2 from source and use it to run Arachni,
+in which case following system packages don't need to be installed:
+    ruby1.9.1-full ruby1.8-dev rubygems
+
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
