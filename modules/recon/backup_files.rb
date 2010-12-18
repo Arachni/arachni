@@ -118,7 +118,7 @@ class BackupFiles < Arachni::Module::Base
         # which will lead to false positives, take care of that.
         return if res.body == @page.html
 
-        return if( res.code != 200 || @http.custom_404?( res.body ) )
+        return if( res.code != 200 || @http.custom_404?( res ) )
 
         url = res.effective_url
         # append the result to the results array

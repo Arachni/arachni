@@ -99,7 +99,7 @@ class CommonDirectories < Arachni::Module::Base
     #
     def __log_results( res, dirname )
 
-        return if( res.code != 200 || @http.custom_404?( res.body ) )
+        return if( res.code != 200 || @http.custom_404?( res ) )
 
         url = res.effective_url
         # append the result to the results array

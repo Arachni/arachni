@@ -226,7 +226,7 @@ class BlindSQLInjection < Arachni::Module::Base
         check = res.body.rdiff( @page.html )
 
         if( check == @__content && @__html_bad[var] != check &&
-            !@http.custom_404?( res.body ) && res.code == 200 )
+            !@http.custom_404?( res ) && res.code == 200 )
             __log_results( var, res, str )
         end
 

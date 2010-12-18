@@ -115,8 +115,6 @@ class HTTP
             :proxy_type      => opts.proxy_type
         }
 
-        @__not_found  = nil
-
         @request_count  = 0
         @response_count = 0
 
@@ -148,7 +146,6 @@ class HTTP
     def queue( req, async = true )
 
         req.id = @request_count
-        @last_url = req.url
 
         if( !async )
             @hydra_sync.queue( req )
@@ -586,16 +583,16 @@ class HTTP
     end
 
     #
-    # Checks whether or not the provided HTML code is a custom 404 page
+    # Checks whether or not the provided response is a custom 404 page
     #
-    # @param  [String]  html  the HTML code to check
+    # @param  [Typhoeus::Response]  res  the response to check
     #
     # @param  [Bool]
     #
-    def custom_404?( html )
+    def custom_404?( res )
 
         @_404 ||= {}
-        path  = get_path( @last_url.to_s )
+        ap path  = get_path( res.effective_url )
         @_404[path] ||= {}
 
         if( !@_404[path]['file'] )
@@ -608,13 +605,6 @@ class HTTP
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
             not_found2  = Typhoeus::Request.get( force_404 ).body
 
-            #
-            # some websites may have dynamic 404 pages or simply include
-            # the query that caused the 404 in the 404 page causing the 404 pages to change.
-            #
-            # so get rid of the differences between the 2 404s (if there are any)
-            # and store what *doesn't* change into @__404
-            #
             @_404[path]['file_rdiff'] = @_404[path]['file'].rdiff( not_found2 )
         end
 
@@ -629,11 +619,8 @@ class HTTP
             @_404[path]['dir_rdiff'] = @_404[path]['dir'].rdiff( not_found2 )
         end
 
-        #
-        # get the rdiff between 'html' and an actual 404
-        #
-        return @_404[path]['dir'].rdiff( html ) == @_404[path]['dir_rdiff'] ||
-            @_404[path]['file'].rdiff( html ) == @_404[path]['file_rdiff']
+        return @_404[path]['dir'].rdiff( res.body ) == @_404[path]['dir_rdiff'] ||
+            @_404[path]['file'].rdiff( res.body ) == @_404[path]['file_rdiff']
     end
 
     private
