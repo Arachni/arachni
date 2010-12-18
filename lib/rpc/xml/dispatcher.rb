@@ -86,6 +86,7 @@ class Dispatcher
 
             service = Kernel.fork {
                 server = Arachni::UI::XMLRPCD.new( @opts )
+                trap( "INT", "IGNORE" )
                 server.run
             }
 
