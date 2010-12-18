@@ -70,7 +70,7 @@ class Framework
     include Arachni::Module::Utilities
 
     # the universal system version
-    VERSION      = '0.2.1'
+    VERSION      = '0.2.2'
 
     # the version of *this* class
     REVISION     = '0.2'
