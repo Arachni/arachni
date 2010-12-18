@@ -592,7 +592,7 @@ class HTTP
     def custom_404?( res )
 
         @_404 ||= {}
-        ap path  = get_path( res.effective_url )
+        path  = get_path( res.effective_url )
         @_404[path] ||= {}
 
         if( !@_404[path]['file'] )
