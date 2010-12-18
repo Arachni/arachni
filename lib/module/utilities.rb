@@ -34,7 +34,7 @@ module Utilities
     def get_path( url )
 
         filename = File.basename( URI( URI.escape( url ) ).path )
-        regexp   = filename + '(.*)'
+        regexp   = URI.decode( filename ) + '(.*)'
         path     = url.gsub( Regexp.new( regexp ), '' )
 
         if( path == 'http:' || path == 'https:' )

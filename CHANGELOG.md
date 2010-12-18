@@ -1,6 +1,11 @@
 
 # ChangeLog
 
+## Version 0.2.2
+- Improved detection of custom 404 pages.
+- Added an XMLRPC dispatch server.
+    Dispatches XMLRPC servers on demand providing a centralised environment for multiple XMLRPC clients.
+
 ## Version 0.2.1
 - Major performance improvements
 - Major system refactoring and code clean-up

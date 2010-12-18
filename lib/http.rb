@@ -594,16 +594,16 @@ class HTTP
     #
     def custom_404?( html )
 
-        if( !@__not_found )
+        if( !@__not_found_file )
 
             path = get_path( @last_url.to_s )
 
             # force a 404 and grab the html body
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            @__not_found = Typhoeus::Request.get( force_404 ).body
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+            @__not_found_file = Typhoeus::Request.get( force_404 ).body
 
             # force another 404 and grab the html body
-            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
             not_found2  = Typhoeus::Request.get( force_404 ).body
 
             #
@@ -613,16 +613,27 @@ class HTTP
             # so get rid of the differences between the 2 404s (if there are any)
             # and store what *doesn't* change into @__404
             #
-            @__404 = @__not_found.rdiff( not_found2 )
+            @__404_file = @__not_found_file.rdiff( not_found2 )
+        end
+
+        if( !@__not_found_dir )
+
+            path = get_path( @last_url.to_s )
+
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            @__not_found_dir = Typhoeus::Request.get( force_404 ).body
+
+            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            not_found2  = Typhoeus::Request.get( force_404 ).body
+
+            @__404_dir = @__not_found_dir.rdiff( not_found2 )
         end
 
         #
         # get the rdiff between 'html' and an actual 404
         #
-        # if this rdiff matches the rdiff in @__404 then by extension
-        # the 'html' is a 404
-        #
-        return @__not_found.rdiff( html ) == @__404
+        return @__not_found_dir.rdiff( html ) == @__404_dir ||
+            @__not_found_file.rdiff( html ) == @__404_file
     end
 
     private
