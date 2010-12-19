@@ -44,7 +44,9 @@ class XST < Arachni::Module::Base
 
         @http.trace( URI( @page.url ).host ).on_complete {
             |res|
-            __log_results( res ) if res.code == 200
+            # checking for a 200 code is not enought, there are some weird
+            # webservers out there that don't give a flying fuck about standards
+            __log_results( res ) if res.code == 200 && !res.body.empty?
         }
 
     end
