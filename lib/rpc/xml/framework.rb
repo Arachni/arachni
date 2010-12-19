@@ -14,8 +14,8 @@ require Options.instance.dir['lib'] + 'framework'
 require Options.instance.dir['lib'] + 'rpc/xml/module/manager'
 require Options.instance.dir['lib'] + 'rpc/xml/plugin/manager'
 
-module UI
-module RPCD
+module RPC
+module XML
 
 #
 # Extends the Framework adding XML-RPC specific functionality
@@ -39,8 +39,8 @@ class Framework < Arachni::Framework
 
     def initialize( opts )
         super( opts )
-        @modules = Arachni::UI::RPCD::Module::Manager.new( opts )
-        @plugins = Arachni::UI::RPCD::Plugin::Manager.new( self )
+        @modules = Arachni::RPC::XML::Module::Manager.new( opts )
+        @plugins = Arachni::RPC::XML::Plugin::Manager.new( self )
     end
 
     #

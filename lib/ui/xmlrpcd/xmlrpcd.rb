@@ -139,7 +139,7 @@ class XMLRPCD
     #
     def prep_framework
         @framework = nil
-        @framework = Arachni::UI::RPCD::Framework.new( Options.instance )
+        @framework = Arachni::RPC::XML::Framework.new( Options.instance )
     end
 
     #

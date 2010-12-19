@@ -12,8 +12,8 @@ module Arachni
 
 require Options.instance.dir['lib'] + 'module/manager'
 
-module UI
-module RPCD
+module RPC
+module XML
 module Module
 
 #
