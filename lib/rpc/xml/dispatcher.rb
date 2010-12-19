@@ -40,6 +40,7 @@ module XML
 class Dispatcher
 
     include Arachni::Module::Utilities
+    include Arachni::UI::Output
 
     def initialize( opts )
 
@@ -82,6 +83,8 @@ class Dispatcher
         trap( 'HUP' ) { @server.shutdown }
         trap( 'INT' ) { @server.shutdown }
 
+        @jobs = []
+
     end
 
     # Starts the dispatcher's server
@@ -100,19 +103,29 @@ class Dispatcher
             # get an available port for the child
             @opts.rpc_port = avail_port( )
 
-            service = Kernel.fork {
+            pid = Kernel.fork {
                 server = Arachni::UI::XMLRPCD.new( @opts )
                 trap( "INT", "IGNORE" )
                 server.run
             }
 
+            @jobs << {
+                'pid'  => pid,
+                'port' => @opts.rpc_port,
+                # 'owner' => ''
+            }
+
             # let the child go about his business
-            Process.detach( service )
+            Process.detach( pid )
 
             return @opts.rpc_port
         }
 
         return false
+    end
+
+    def jobs
+        @jobs
     end
 
     #
