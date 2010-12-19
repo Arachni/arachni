@@ -628,8 +628,6 @@ class XMLRPC
 
     SSL --------------------------
 
-    --ssl                       use SSL?
-
     --ssl_pkey   <file>         location of the SSL private key (.key)
 
     --ssl_cert   <file>         location of the SSL certificate (.cert)
