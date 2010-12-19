@@ -11,8 +11,8 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'framework'
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/module/manager'
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/plugin/manager'
+require Options.instance.dir['lib'] + 'rpc/xml/module/manager'
+require Options.instance.dir['lib'] + 'rpc/xml/plugin/manager'
 
 module UI
 module RPCD

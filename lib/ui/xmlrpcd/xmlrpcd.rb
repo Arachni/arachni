@@ -16,8 +16,8 @@ require 'openssl'
 module Arachni
 
 require Options.instance.dir['lib'] + 'ui/xmlrpcd/output'
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/framework'
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/rpc/options'
+require Options.instance.dir['lib'] + 'rpc/xml/framework'
+require Options.instance.dir['lib'] + 'rpc/xml/options'
 
 module UI
 
