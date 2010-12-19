@@ -5,6 +5,7 @@
 - Improved detection of custom 404 pages.
 - Added an XMLRPC dispatch server.
     Dispatches XMLRPC servers on demand providing a centralised environment for multiple XMLRPC clients.
+- Cleaned up XMLRPC class structure and namespace
 
 ## Version 0.2.1
 - Major performance improvements
