@@ -34,7 +34,7 @@ require Options.instance.dir['lib'] + 'module/trainer'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 class HTTP
 

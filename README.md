@@ -150,7 +150,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-       Arachni - Web Application Security Scanner Framework v0.2.1 [0.2]
+       Arachni - Web Application Security Scanner Framework v0.2.2 [0.2]
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
@@ -312,7 +312,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ### Examples
 
-As of v0.2.1 you can simply run Arachni like so:
+You can simply run Arachni like so:
 
     $ ./arachni.rb http://test.com
 

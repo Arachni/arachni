@@ -22,7 +22,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -73,7 +73,7 @@ class CommonDirectories < Arachni::Module::Base
             :description    => %q{Tries to find common directories on the server.},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {

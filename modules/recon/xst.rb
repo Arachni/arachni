@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
@@ -61,7 +61,7 @@ class XST < Arachni::Module::Base
             :description    => %q{Sends an HTTP TRACE request and checks if it succeeded.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'CAPEC'     => 'http://capec.mitre.org/data/definitions/107.html',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross_Site_Tracing'

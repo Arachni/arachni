@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 #
 class CommonFiles < Arachni::Module::Base
@@ -79,7 +79,7 @@ class CommonFiles < Arachni::Module::Base
             :description    => %q{Tries to find common sensitive files on the server.},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
