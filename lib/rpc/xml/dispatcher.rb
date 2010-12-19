@@ -42,15 +42,31 @@ class Dispatcher
     include Arachni::Module::Utilities
 
     def initialize( opts )
+
+        banner
+
+        if opts.help
+            print_help
+            exit 0
+        end
+
+
         @opts = opts
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
+        if opts.ssl_pkey || opts.ssl_pkey
+            verification = OpenSSL::SSL::VERIFY_PEER |
+                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        else
+            verification = ::OpenSSL::SSL::VERIFY_NONE
+        end
+
         @server = ::WEBrick::HTTPServer.new(
             :Port            => opts.rpc_port || 7331,
             :SSLEnable       => opts.ssl      || false,
-            :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
+            :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
@@ -98,6 +114,51 @@ class Dispatcher
 
         return false
     end
+
+    #
+    # Outputs the Arachni banner.<br/>
+    # Displays version number, revision number, author details etc.
+    #
+    def banner
+
+        puts 'Arachni - Web Application Security Scanner Framework
+       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+                                      <zapotek@segfault.gr>
+               (With the support of the community and the Arachni Team.)
+
+       Website:       http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki'
+        puts
+        puts
+
+    end
+
+    def print_help
+        puts <<USAGE
+  Usage:  arachni_xmlrpcd_dispatcher.rb \[options\]
+
+  Supported options:
+
+    -h
+    --help                      output this
+
+    --port                      specify port to listen to
+
+    SSL --------------------------
+
+    (All SSL options will be honored by the dispatched XMLRPC instances as well.)
+
+    --ssl                       use SSL?
+
+    --ssl_pkey   <file>         location of the SSL private key (.key)
+
+    --ssl_cert   <file>         location of the SSL certificate (.cert)
+
+    --ssl_ca     <file>         location of the CA file (.cert)
+
+USAGE
+    end
+
 
     private
 

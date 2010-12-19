@@ -55,10 +55,17 @@ class XMLRPCD
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
+        if opts.ssl_pkey || opts.ssl_pkey
+            verification = OpenSSL::SSL::VERIFY_PEER |
+                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        else
+            verification = ::OpenSSL::SSL::VERIFY_NONE
+        end
+
         @server = ::WEBrick::HTTPServer.new(
             :Port            => opts.rpc_port || 1337,
             :SSLEnable       => opts.ssl      || false,
-            :SSLVerifyClient => ::OpenSSL::SSL::VERIFY_NONE,
+            :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
@@ -156,7 +163,7 @@ class XMLRPCD
 
     def print_help
         puts <<USAGE
-  Usage:  arachni_xmlrpc.rb \[options\]
+  Usage:  arachni_xmlrpcd.rb \[options\]
 
   Supported options:
 
@@ -165,9 +172,14 @@ class XMLRPCD
 
     --port                      specify port to listen to
 
+    SSL --------------------------
+
     --ssl                       use SSL?
+
     --ssl_pkey   <file>         location of the SSL private key (.key)
+
     --ssl_cert   <file>         location of the SSL certificate (.cert)
+
     --ssl_ca     <file>         location of the CA file (.cert)
 
 USAGE

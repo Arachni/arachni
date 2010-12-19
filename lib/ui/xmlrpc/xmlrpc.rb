@@ -76,9 +76,14 @@ class XMLRPC
         # a big timeout is required to avoid Timeout exceptions...
         @server.timeout = 9999999
 
-        # a little black magic to disable cert verification
-        @server.instance_variable_get( :@http ).
-            instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+
+        if @opts.ssl_pkey || @opts.ssl_pkey
+            @server.instance_variable_get( :@http ).
+                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
+        else
+            @server.instance_variable_get( :@http ).
+                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+        end
 
         # if the user wants to see the available reports, output them and exit
         if !opts.lsplug.empty?
@@ -143,6 +148,23 @@ class XMLRPC
     end
 
     private
+
+    def prep_ssl_context
+
+        pkey = ::OpenSSL::PKey::RSA.new( File.read( @opts.ssl_pkey ) )         if @opts.ssl_pkey
+        cert = ::OpenSSL::X509::Certificate.new( File.read( @opts.ssl_cert ) ) if @opts.ssl_cert
+
+
+        ssl_context = OpenSSL::SSL::SSLContext.new
+        ssl_context.ca_file = @opts.ssl_ca
+        ssl_context.verify_depth = 5
+        ssl_context.verify_mode = ::OpenSSL::SSL::VERIFY_PEER |
+            ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        ssl_context.key  = pkey
+        ssl_context.cert = cert
+        return ssl_context
+    end
+
 
     #
     # Grabs the output from the XMLRPC server and routes it to the proper output method.
@@ -604,6 +626,17 @@ class XMLRPC
   Supported options:
 
 
+    SSL --------------------------
+
+    --ssl                       use SSL?
+
+    --ssl_pkey   <file>         location of the SSL private key (.key)
+
+    --ssl_cert   <file>         location of the SSL certificate (.cert)
+
+    --ssl_ca     <file>         location of the CA file (.cert)
+
+
     General ----------------------
 
     -h
@@ -641,6 +674,7 @@ class XMLRPC
     --authed-by=<who>           who authorized the scan, include name and e-mail address
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
+
 
     Crawler -----------------------
 
