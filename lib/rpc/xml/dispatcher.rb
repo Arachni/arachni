@@ -210,7 +210,7 @@ USAGE
         hash = {}
         struct.each_pair {
             |k, v|
-            v = v.to_s if v.is_a?( Bignum )
+            v = v.to_s if v.is_a?( Bignum ) || v.is_a?( Fixnum )
             hash[k.to_s] = v
         }
 
