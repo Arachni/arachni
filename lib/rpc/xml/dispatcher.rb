@@ -9,6 +9,7 @@
 =end
 
 require 'socket'
+require 'sys/proctable'
 
 module Arachni
 
@@ -41,6 +42,7 @@ class Dispatcher
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
+    include ::Sys
 
     def initialize( opts )
 
@@ -125,7 +127,13 @@ class Dispatcher
     end
 
     def jobs
-        @jobs
+        jobs = []
+        @jobs.each {
+            |job|
+            job['proc'] = proc( job['pid'] )
+            jobs << job
+        }
+        return jobs
     end
 
     #
@@ -174,6 +182,22 @@ USAGE
 
 
     private
+
+    def proc( pid )
+        struct_to_h( ProcTable.ps( pid ) )
+    end
+
+    def struct_to_h( struct )
+
+        hash = {}
+        struct.each_pair {
+            |k, v|
+            v = v.to_s if v.is_a?( Bignum )
+            hash[k.to_s] = v
+        }
+
+        return hash
+    end
 
     #
     # Returns a random available port
