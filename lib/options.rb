@@ -316,6 +316,9 @@ class Options
 
     attr_accessor :server
 
+    attr_accessor :reroute_to_logfile
+
+
     def initialize( )
 
         # nil everything out

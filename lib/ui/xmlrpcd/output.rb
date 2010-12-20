@@ -40,6 +40,8 @@ module Output
     # if it's on status messages will be disabled
     @@only_positives  = false
 
+    @@reroute_to_file = false
+
     @@buffer ||= []
 
     #
@@ -55,6 +57,22 @@ module Output
         return buf
     end
 
+    def buffer( msg )
+        if file = @@reroute_to_file
+            File.open( file, 'a+' ) {
+                |f|
+
+                type = msg.keys[0]
+                str  = msg.values[0]
+                next if str.empty?
+
+                f.write( "#{type}:  #{str}\n" )
+            }
+        else
+            @@buffer << msg
+        end
+    end
+
     # Prints an error message
     #
     # It ignores all flags, error messages will be output under all
@@ -64,7 +82,7 @@ module Output
     # @return    [void]
     #
     def print_error( str = '' )
-        @@buffer << { :error => str }
+        buffer( :error => str )
         print_color( '[-]', 31, str, $stderr )
     end
 
@@ -80,7 +98,7 @@ module Output
     #
     def print_status( str = '' )
         if @@only_positives then return end
-        @@buffer << { :status => str }
+        buffer( :status => str )
     end
 
     # Prints an info message
@@ -95,7 +113,7 @@ module Output
     #
     def print_info( str = '' )
         if @@only_positives then return end
-        @@buffer << { :info => str }
+        buffer( :info => str )
     end
 
     # Prints a good message, something that went very very right,
@@ -107,7 +125,7 @@ module Output
     # @return    [void]
     #
     def print_ok( str = '' )
-        @@buffer << { :ok => str }
+        buffer( :ok => str )
     end
 
     # Prints a debugging message
@@ -122,7 +140,12 @@ module Output
     #
     def print_debug( str = '' )
         if !@@debug then return end
-        print_color( '[!]', 36, str, $stderr )
+
+        if reroute_to_file?
+            buffer( :debug => str )
+        else
+            print_color( '[!]', 36, str, $stderr )
+        end
     end
 
     # Pretty prints an object, used for debugging,
@@ -168,7 +191,7 @@ module Output
     #
     def print_verbose( str = '' )
         if !@@verbose then return end
-        @@buffer << { :verbose => str }
+        buffer( :verbose => str )
     end
 
     # Prints a line of message
@@ -183,7 +206,7 @@ module Output
     #
     def print_line( str = '' )
         if @@only_positives then return end
-        @@buffer << { :line => str }
+        buffer( :line => str )
     end
 
     # Sets the {@@verbose} flag to true
@@ -244,6 +267,14 @@ module Output
     #
     def only_positives?
         @@only_positives
+    end
+
+    def reroute_to_file( file )
+        @@reroute_to_file = file
+    end
+
+    def reroute_to_file?
+        @@reroute_to_file
     end
 
     private

@@ -44,12 +44,24 @@ class XMLRPCD
     #
     def initialize( opts )
 
+        @opts = opts
+
         prep_framework
         banner
 
-        if opts.help
+        if @opts.help
             print_help
             exit 0
+        end
+
+        if @opts.debug
+            debug!
+        end
+
+
+        if @opts.reroute_to_logfile
+            reroute_to_file( @opts.dir['pwd'] +
+                "logs/#{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
         end
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
@@ -171,6 +183,10 @@ class XMLRPCD
     --help                      output this
 
     --port                      specify port to listen to
+
+    --reroute-to-logfile        reroute all output to a logfile under 'logs/'
+
+    --debug
 
     SSL --------------------------
 

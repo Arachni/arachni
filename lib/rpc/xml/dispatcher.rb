@@ -183,6 +183,11 @@ class Dispatcher
 
     --port                      specify port to listen to
 
+    --reroute-to-logfile        reroute all output to a logfile under 'logs/'
+
+    --debug
+
+
     SSL --------------------------
 
     (All SSL options will be honored by the dispatched XMLRPC instances as well.)

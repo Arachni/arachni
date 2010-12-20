@@ -29,6 +29,8 @@ options.dir['lib']     = options.dir['pwd'] + 'lib/'
 opts = GetoptLong.new(
     [ '--help',             '-h', GetoptLong::NO_ARGUMENT ],
     [ '--port',                   GetoptLong::OPTIONAL_ARGUMENT ],
+    [ '--debug',                  GetoptLong::NO_ARGUMENT ],
+    [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -43,6 +45,12 @@ begin
 
             when '--help'
                 options.help = true
+
+            when '--debug'
+                options.debug = true
+
+            when '--reroute-to-logfile'
+                options.reroute_to_logfile = true
 
             when '--port'
                 options.rpc_port = arg.to_i
