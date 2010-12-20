@@ -357,7 +357,12 @@ _Adapt the above line to your Linux distro._
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
+If you wish to use the XMLRPC Dispatcher (_arachni_xmlrpcd_dispatcher.rb_) you'll also need to install [sys-proctable](https://github.com/djberg96/sys-proctable/wiki).
+
+
 _If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version._
+
+
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
