@@ -126,6 +126,13 @@ class Dispatcher
         return false
     end
 
+    #
+    # Returns proc info for a given pid
+    #
+    # @param    [Fixnum]      pid
+    #
+    # @return   [Hash]
+    #
     def job( pid )
         @jobs.each {
             |cjob|
@@ -133,6 +140,11 @@ class Dispatcher
         }
     end
 
+    #
+    # Returns proc info for all jobs
+    #
+    # @return   [Array<Hash>]
+    #
     def jobs
         jobs = []
         @jobs.each {
