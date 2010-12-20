@@ -120,18 +120,24 @@ class Dispatcher
             # let the child go about his business
             Process.detach( pid )
 
-            return @opts.rpc_port
+            return job( pid )
         }
 
         return false
     end
 
+    def job( pid )
+        @jobs.each {
+            |cjob|
+            return cjob.merge( 'proc' =>  proc( cjob['pid'] ) ) if cjob['pid'] == pid
+        }
+    end
+
     def jobs
         jobs = []
         @jobs.each {
-            |job|
-            job['proc'] = proc( job['pid'] )
-            jobs << job
+            |cjob|
+            jobs << job( cjob['pid'] )
         }
         return jobs
     end
