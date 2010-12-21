@@ -108,7 +108,7 @@ class Dispatcher
     #
     # @return   Fixnum  port number on success / false otherwise
     #
-    def dispatch
+    def dispatch( owner = 'unknown' )
         exception_jail{
 
             # get an available port for the child
@@ -126,16 +126,15 @@ class Dispatcher
 
                 print_status( "Server shutdown   -- PID: #{Process.pid} - " +
                     "Port: #{@opts.rpc_port}" )
-
             }
 
             print_status( "Server dispatched -- PID: #{pid} - " +
-                "Port: #{@opts.rpc_port}" )
+                "Port: #{@opts.rpc_port} - Owner: #{owner}" )
 
             @jobs << {
-                'pid'  => pid,
-                'port' => @opts.rpc_port,
-                # 'owner' => ''
+                'pid'   => pid,
+                'port'  => @opts.rpc_port,
+                'owner' => owner
             }
 
             # let the child go about his business
@@ -170,7 +169,8 @@ class Dispatcher
         jobs = []
         @jobs.each {
             |cjob|
-            jobs << job( cjob['pid'] )
+            proc_info = job( cjob['pid'] )
+            jobs << proc_info if proc_info
         }
         return jobs
     end
@@ -244,8 +244,10 @@ USAGE
     end
 
     def struct_to_h( struct )
-
         hash = {}
+
+        return hash if !struct
+
         struct.each_pair {
             |k, v|
             v = v.to_s if v.is_a?( Bignum ) || v.is_a?( Fixnum )
