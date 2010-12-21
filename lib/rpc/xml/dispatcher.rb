@@ -106,9 +106,15 @@ class Dispatcher
     #
     # Creates a new XMLRPC server instance and returns the port number
     #
-    # @return   Fixnum  port number on success / false otherwise
+    # @param    [String]    owner   an owner assign to the dispatched XMLRPC server
+    #
+    # @return   [Fixnum]    port number on success / false otherwise
     #
     def dispatch( owner = 'unknown' )
+
+        # just to make sure...
+        owner = owner.to_s
+
         exception_jail{
 
             # get an available port for the child
