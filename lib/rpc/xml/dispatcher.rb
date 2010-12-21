@@ -14,6 +14,7 @@ require 'sys/proctable'
 module Arachni
 
 require Options.instance.dir['lib'] + 'rpc/xml/server'
+require Options.instance.dir['lib'] + 'rpc/xml/output'
 
 module RPC
 module XML
@@ -54,6 +55,9 @@ class Dispatcher
         end
 
         @opts = opts
+        @opts.rpc_port ||= 7331
+
+        prep_logging
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
@@ -65,31 +69,37 @@ class Dispatcher
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
 
+        print_status( 'Initing HTTP Server...' )
+
         @server = ::WEBrick::HTTPServer.new(
-            :Port            => opts.rpc_port || 7331,
-            :SSLEnable       => opts.ssl      || false,
+            :Port            => @opts.rpc_port,
+            :SSLEnable       => @opts.ssl      || false,
             :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => opts.ssl_ca
+            :SSLCACertificateFile => @opts.ssl_ca
         )
 
+        print_status( 'Initing XMLRPC Server...' )
         @service = ::XMLRPC::WEBrickServlet.new(  )
         @service.add_introspection
         @server.mount( "/RPC2", @service )
         @service.add_handler( ::XMLRPC::iPIMethods( "dispatcher" ), self )
 
         # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { @server.shutdown }
-        trap( 'INT' ) { @server.shutdown }
+        trap( 'HUP' ) { shutdown }
+        trap( 'INT' ) { shutdown }
 
         @jobs = []
+
+        print_status( 'Initialization complete.' )
 
     end
 
     # Starts the dispatcher's server
     def run
+        print_status( 'Starting the server...' )
         @server.start
     end
 
@@ -105,10 +115,22 @@ class Dispatcher
             @opts.rpc_port = avail_port( )
 
             pid = Kernel.fork {
-                server = Arachni::RPC::XML::Server.new( @opts )
-                trap( "INT", "IGNORE" )
-                server.run
+                exception_jail {
+                    server = Arachni::RPC::XML::Server.new( @opts )
+                    trap( "INT", "IGNORE" )
+                    server.run
+                }
+
+                # restore logging
+                reroute_to_file( @logfile )
+
+                print_status( "Server shutdown   -- PID: #{Process.pid} - " +
+                    "Port: #{@opts.rpc_port}" )
+
             }
+
+            print_status( "Server dispatched -- PID: #{pid} - " +
+                "Port: #{@opts.rpc_port}" )
 
             @jobs << {
                 'pid'  => pid,
@@ -204,6 +226,18 @@ USAGE
 
 
     private
+
+    def shutdown
+        print_status( 'Shutting down...' )
+        @server.shutdown
+        print_status( 'Done.' )
+    end
+
+    def prep_logging
+        # reroute all output to a logfile
+        @logfile ||= reroute_to_file( @opts.dir['root'] +
+            "logs/XMLRPC-Dispatcher - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+    end
 
     def proc( pid )
         struct_to_h( ProcTable.ps( pid ) )

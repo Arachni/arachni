@@ -66,7 +66,7 @@ module Output
                 str  = msg.values[0]
                 next if str.empty?
 
-                f.write( "#{type}:  #{str}\n" )
+                f.write( "[#{Time.now.asctime}] [#{type}]  #{str}\n" )
             }
         else
             @@buffer << msg

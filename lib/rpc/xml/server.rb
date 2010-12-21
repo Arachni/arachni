@@ -66,6 +66,8 @@ class Server
         if @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['root'] +
                 "logs/XMLRPC-Server - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+        else
+            reroute_to_file( false )
         end
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
@@ -78,6 +80,7 @@ class Server
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
 
+        print_status( 'Initing HTTP Server...' )
         @server = ::WEBrick::HTTPServer.new(
             :Port            => opts.rpc_port || 1337,
             :SSLEnable       => opts.ssl      || false,
@@ -103,6 +106,9 @@ class Server
     # (And I don't mean sexually...)
     #
     def reset
+
+        print_status( 'Resetting...' )
+
         exception_jail {
             @framework.modules.clear
             Arachni.reset
@@ -111,6 +117,9 @@ class Server
             set_handlers
             output
         }
+
+        print_status( 'Done.' )
+
         return true
     end
 
@@ -129,7 +138,10 @@ class Server
     # Makes the HTTP(S) server go bye-bye...Lights out!
     #
     def shutdown
+        print_status( 'Shutting down...' )
         @server.shutdown
+        print_status( 'Done.' )
+        return true
     end
 
     #
@@ -138,6 +150,7 @@ class Server
     def run( )
 
         begin
+            print_status( 'Starting the server...' )
             # start the show!
             @server.start
         rescue Exception => e
@@ -208,6 +221,7 @@ USAGE
     # It also prepares all the RPC handlers.
     #
     def set_handlers
+        print_status( 'Initing XMLRPC Server...' )
         @service = ::XMLRPC::WEBrickServlet.new(  )
         @service.add_introspection
         @server.mount( "/RPC2", @service )
