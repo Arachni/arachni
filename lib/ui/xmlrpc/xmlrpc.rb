@@ -91,6 +91,7 @@ class XMLRPC
         # if the user wants to see the available reports, output them and exit
         if !opts.lsplug.empty?
             lsplug( @server.call( "framework.lsplug" ) )
+            shutdown
             exit
         end
 
@@ -142,9 +143,9 @@ class XMLRPC
             end
 
             puts
-            report
         }
 
+        report
         shutdown
     end
 
@@ -245,6 +246,7 @@ class XMLRPC
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
             @server.call( "framework.abort!" )
+            report
             shutdown
             print_info( 'Exiting...' )
             exit 0
