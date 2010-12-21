@@ -13,7 +13,7 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/xmlrpcd'
+require Options.instance.dir['lib'] + 'rpc/xml/server'
 
 module RPC
 module XML
@@ -52,7 +52,6 @@ class Dispatcher
             print_help
             exit 0
         end
-
 
         @opts = opts
 
@@ -106,7 +105,7 @@ class Dispatcher
             @opts.rpc_port = avail_port( )
 
             pid = Kernel.fork {
-                server = Arachni::UI::XMLRPCD.new( @opts )
+                server = Arachni::RPC::XML::Server.new( @opts )
                 trap( "INT", "IGNORE" )
                 server.run
             }

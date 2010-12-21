@@ -64,8 +64,11 @@ class XMLRPC
         end
 
         begin
+
+            prep_instance( )
+
             # start the XMLRPC client
-            @server = ::XMLRPC::Client.new2( @opts.server )
+            @server = ::XMLRPC::Client.new2( instance_url( ) )
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
@@ -92,11 +95,10 @@ class XMLRPC
         end
 
         # if the user wants to see the available modules
-        # grab them from the server, output them, exit and reset the server.
-        # not 100% sure that we need to reset but better to be safe than sorry.
+        # grab them from the server, output them, exit and shutdown the server.
         if !opts.lsmod.empty?
             lsmod( @server.call( "framework.lsmod" ) )
-            reset
+            shutdown
             exit
         end
 
@@ -113,7 +115,7 @@ class XMLRPC
             print_error( 'Error: ' + e.to_s )
             print_debug_backtrace( e )
             begin
-                reset
+                shutdown
             rescue
             end
             exit
@@ -143,11 +145,36 @@ class XMLRPC
             report
         }
 
-        # ensure that the framework will be reset
-        reset
+        shutdown
     end
 
     private
+
+    def instance_url
+        server = URI( @opts.server.to_s )
+        return server.scheme + '://' + server.host + ':' + @instance['port'].to_s
+    end
+
+    def prep_instance
+
+        # connect to the dispatcher
+        @dispatcher = ::XMLRPC::Client.new2( @opts.server )
+
+        # there'll be a HELL of lot of output so things might get..laggy.
+        # a big timeout is required to avoid Timeout exceptions...
+        @dispatcher.timeout = 9999999
+
+
+        if @opts.ssl_pkey || @opts.ssl_pkey
+            @dispatcher.instance_variable_get( :@http ).
+                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
+        else
+            @dispatcher.instance_variable_get( :@http ).
+                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+        end
+
+        @instance = @dispatcher.call( 'dispatcher.dispatch' )
+    end
 
     def prep_ssl_context
 
@@ -218,7 +245,7 @@ class XMLRPC
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
             @server.call( "framework.abort!" )
-            reset
+            shutdown
             print_info( 'Exiting...' )
             exit 0
         end
@@ -386,14 +413,6 @@ class XMLRPC
     def shutdown
         print_status "Shutting down the server..."
         @server.call( "service.shutdown" )
-    end
-
-    #
-    # Resets the server preparing it for re-use.
-    #
-    def reset
-        print_status "Resetting the server..."
-        @server.call( "service.reset" )
     end
 
     #

@@ -15,11 +15,12 @@ require 'openssl'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'ui/xmlrpcd/output'
+require Options.instance.dir['lib'] + 'rpc/xml/output'
 require Options.instance.dir['lib'] + 'rpc/xml/framework'
 require Options.instance.dir['lib'] + 'rpc/xml/options'
 
-module UI
+module RPC
+module XML
 
 #
 # Arachni::UI:XMLRPCD class
@@ -31,7 +32,7 @@ module UI
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1
 #
-class XMLRPCD
+class Server
 
     # the output interface for XML-RPC
     include Arachni::UI::Output
@@ -219,5 +220,6 @@ USAGE
 
 end
 
+end
 end
 end
