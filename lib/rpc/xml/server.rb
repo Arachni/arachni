@@ -23,9 +23,12 @@ module RPC
 module XML
 
 #
-# Arachni::UI:XMLRPCD class
+# XMLRPC Server class
 #
 # Provides an XML-RPC server to assist with general integration and UI development.
+#
+# Only instantiated by the Dispatcher to provide support for multiple
+# and concurent XMLRPC clients/scans.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
