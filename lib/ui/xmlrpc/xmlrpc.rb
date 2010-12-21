@@ -174,7 +174,9 @@ class XMLRPC
                 instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
         end
 
-        @instance = @dispatcher.call( 'dispatcher.dispatch' )
+        # get a new instance and assign the url we're going to audit as the
+        # 'owner'
+        @instance = @dispatcher.call( 'dispatcher.dispatch', @opts.url.to_s )
     end
 
     def prep_ssl_context
