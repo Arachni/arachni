@@ -59,7 +59,9 @@ From a user's or a component developer's point of view everything appears simple
     - XMLRPC Client/Dispatch server
        - Centralised deployment
        - Multiple clients
-       - Parallel scans.
+       - Parallel scans
+       - SSL encryption
+       - SSL cert based client authentication
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
 
