@@ -54,9 +54,12 @@ From a user's or a component developer's point of view everything appears simple
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
  - Highlighted command line output.
- - UI abstraction.
+ - UI abstraction:
     - Command line UI
-    - XMLRPC command line client/server
+    - XMLRPC Client/Dispatch server
+       - Centralised deployment
+       - Multiple clients
+       - Parallel scans.
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
 
