@@ -65,7 +65,7 @@ class Server
 
         if @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['root'] +
-                "logs/#{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+                "logs/XMLRPC-Server - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
         end
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
@@ -87,8 +87,6 @@ class Server
             :SSLPrivateKey   => pkey,
             :SSLCACertificateFile => opts.ssl_ca
         )
-
-        # debug!
 
         set_handlers
 
