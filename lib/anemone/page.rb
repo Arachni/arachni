@@ -112,7 +112,7 @@ class Page
         opts = Arachni::Options.instance
         require opts.dir['lib'] + 'component_manager'
 
-        lib = opts.dir['pwd'] + 'path_extractors/'
+        lib = opts.dir['root'] + 'path_extractors/'
 
 
         begin

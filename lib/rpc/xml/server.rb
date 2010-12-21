@@ -64,7 +64,7 @@ class Server
 
 
         if @opts.reroute_to_logfile
-            reroute_to_file( @opts.dir['pwd'] +
+            reroute_to_file( @opts.dir['root'] +
                 "logs/#{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
         end
 

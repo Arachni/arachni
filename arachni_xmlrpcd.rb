@@ -19,11 +19,11 @@ require 'lib/options'
 options = Arachni::Options.instance
 
 options.dir            = Hash.new
-options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
-options.dir['modules'] = options.dir['pwd'] + 'modules/'
-options.dir['reports'] = options.dir['pwd'] + 'reports/'
-options.dir['plugins'] = options.dir['pwd'] + 'plugins/'
-options.dir['lib']     = options.dir['pwd'] + 'lib/'
+options.dir['root']     = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['modules'] = options.dir['root'] + 'modules/'
+options.dir['reports'] = options.dir['root'] + 'reports/'
+options.dir['plugins'] = options.dir['root'] + 'plugins/'
+options.dir['lib']     = options.dir['root'] + 'lib/'
 
 # Construct getops struct
 opts = GetoptLong.new(
