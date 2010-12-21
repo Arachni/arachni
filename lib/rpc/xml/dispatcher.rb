@@ -22,7 +22,7 @@ module XML
 # Dispatcher class
 #
 # Dispatches XML-RPC servers on demand providing a centralised environment
-# for multiple XMLRPC clients.
+# for multiple XMLRPC clients and allows for extensive process monitoring.
 #
 # The process goes something like this:
 #   * a client issues a 'dispatch' call
