@@ -206,6 +206,8 @@ class Framework
         req_cnt = http.request_count
         res_cnt = http.response_count
 
+        @opts.delta_time ||= Time.now - @opts.start_datetime
+
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
