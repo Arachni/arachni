@@ -141,7 +141,8 @@ class Server
             @jobs << {
                 'pid'   => pid,
                 'port'  => @opts.rpc_port,
-                'owner' => owner
+                'owner' => owner,
+                'starttime' => Time.now
             }
 
             # let the child go about his business
@@ -162,8 +163,14 @@ class Server
     #
     def job( pid )
         @jobs.each {
-            |cjob|
-            return cjob.merge( 'proc' =>  proc( cjob['pid'] ) ) if cjob['pid'] == pid
+            |i|
+            cjob = i.dup
+            if cjob['pid'] == pid
+                cjob['currtime'] = Time.now
+                cjob['runtime']  = cjob['currtime'] - cjob['starttime']
+                cjob['proc'] =  proc( cjob['pid'] )
+                return cjob
+            end
         }
     end
 

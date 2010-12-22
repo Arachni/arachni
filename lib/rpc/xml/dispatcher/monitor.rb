@@ -92,12 +92,15 @@ class Monitor
 
     def print_job_table( jobs )
 
-        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Memory', 'Priority', 'State' ]
+        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Start time',
+            'Current time', 'Run-time', 'Memory', 'Priority', 'State' ]
 
         rows = []
         jobs.each {
             |job|
             rows << [ job['proc']['ppid'], job['pid'], job['port'], job['owner'],
+                job['starttime'].to_time, job['currtime'].to_time,
+                secs_to_hms( job['runtime'] ),
                 proc_mem( job['proc']['rss'] ), job['proc']['priority'],
                 proc_state( job['proc']['state'] ) ]
         }
@@ -157,6 +160,14 @@ class Monitor
         ssl_context.key  = pkey
         ssl_context.cert = cert
         return ssl_context
+    end
+
+    def secs_to_hms( secs )
+        secs = secs.to_i
+        return [secs/3600, secs/60 % 60, secs % 60].map {
+            |t|
+            t.to_s.rjust( 2, '0' )
+        }.join(':')
     end
 
 
