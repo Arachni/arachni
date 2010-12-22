@@ -317,6 +317,7 @@ class Options
     attr_accessor :server
 
     attr_accessor :reroute_to_logfile
+    attr_accessor :pool_size
 
 
     def initialize( )

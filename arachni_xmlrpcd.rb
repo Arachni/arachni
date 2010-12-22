@@ -31,6 +31,7 @@ opts = GetoptLong.new(
     [ '--port',                   GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--debug',                  GetoptLong::NO_ARGUMENT ],
     [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
+    [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -54,6 +55,9 @@ begin
 
             when '--port'
                 options.rpc_port = arg.to_i
+
+            when '--pool-size'
+                options.pool_size = arg.to_i
 
             when '--ssl'
                 options.ssl = true

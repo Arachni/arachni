@@ -57,6 +57,7 @@ class Server
 
         @opts = opts
         @opts.rpc_port ||= 7331
+        @opts.pool_size ||= 10
 
         prep_logging
 
@@ -93,6 +94,11 @@ class Server
         trap( 'INT' ) { shutdown }
 
         @jobs = []
+        @pool = Queue.new
+
+        print_status( 'Warming up the pool...' )
+        prep_pool
+        print_status( 'Done.' )
 
         print_status( 'Initialization complete.' )
 
@@ -115,43 +121,18 @@ class Server
 
         # just to make sure...
         owner = owner.to_s
+        cjob  = @pool.pop
+        cjob['owner']     = owner
+        cjob['starttime'] = Time.now
 
-        exception_jail{
+        print_status( "Server dispatched -- PID: #{cjob['pid']} - " +
+            "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
 
-            # get an available port for the child
-            @opts.rpc_port = avail_port( )
+        prep_pool
 
-            pid = Kernel.fork {
-                exception_jail {
-                    server = Arachni::RPC::XML::Server.new( @opts )
-                    trap( "INT", "IGNORE" )
-                    server.run
-                }
+        @jobs << cjob
 
-                # restore logging
-                reroute_to_file( @logfile )
-
-                print_status( "Server shutdown   -- PID: #{Process.pid} - " +
-                    "Port: #{@opts.rpc_port}" )
-            }
-
-            print_status( "Server dispatched -- PID: #{pid} - " +
-                "Port: #{@opts.rpc_port} - Owner: #{owner}" )
-
-            @jobs << {
-                'pid'   => pid,
-                'port'  => @opts.rpc_port,
-                'owner' => owner,
-                'starttime' => Time.now
-            }
-
-            # let the child go about his business
-            Process.detach( pid )
-
-            return job( pid )
-        }
-
-        return false
+        return job( cjob['pid'] )
     end
 
     #
@@ -167,6 +148,7 @@ class Server
             cjob = i.dup
             if cjob['pid'] == pid
                 cjob['currtime'] = Time.now
+                cjob['age'] = cjob['currtime'] - cjob['birthdate']
                 cjob['runtime']  = cjob['currtime'] - cjob['starttime']
                 cjob['proc'] =  proc( cjob['pid'] )
                 return cjob
@@ -188,6 +170,19 @@ class Server
         }
         return jobs
     end
+
+   def stats
+       cjobs    = jobs( )
+       running  = cjobs.reject{ |job| job['proc'].empty? }
+       finished = cjobs - running
+
+       return {
+           'running_jobs'    => running,
+           'finished_jobs'   => finished,
+           'init_pool_size'  => @opts.pool_size,
+           'curr_pool_size'  => @pool.size
+       }
+   end
 
     #
     # Outputs the Arachni banner.<br/>
@@ -220,6 +215,9 @@ class Server
 
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
+    --pool-size                 how many server workers/processes should be available
+                                  at any given moment
+
     --debug
 
 
@@ -240,6 +238,47 @@ USAGE
 
 
     private
+
+    def prep_pool
+
+        owner = 'dispatcher'
+
+        (@pool.size - @opts.pool_size).abs.times {
+            exception_jail{
+
+                # get an available port for the child
+                @opts.rpc_port = avail_port( )
+
+                pid = Kernel.fork {
+                    exception_jail {
+                        server = Arachni::RPC::XML::Server.new( @opts )
+                        trap( "INT", "IGNORE" )
+                        server.run
+                    }
+
+                    # restore logging
+                    reroute_to_file( @logfile )
+
+                    print_status( "Server shutdown   -- PID: #{Process.pid} - " +
+                        "Port: #{@opts.rpc_port}" )
+                }
+
+                print_status( "Server added to pool -- PID: #{pid} - " +
+                    "Port: #{@opts.rpc_port} - Owner: #{owner}" )
+
+                @pool << {
+                    'pid'   => pid,
+                    'port'  => @opts.rpc_port,
+                    'owner' => owner,
+                    'birthdate' => Time.now
+                }
+
+                # let the child go about his business
+                Process.detach( pid )
+            }
+        }
+
+    end
 
     def shutdown
         print_status( 'Shutting down...' )

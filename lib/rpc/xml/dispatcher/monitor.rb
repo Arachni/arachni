@@ -40,6 +40,20 @@ class Monitor
             # start the XMLRPC client
             @dispatcher = ::XMLRPC::Client.new2( @opts.url.to_s )
 
+            # there'll be a HELL of lot of output so things might get..laggy.
+            # a big timeout is required to avoid Timeout exceptions...
+            @dispatcher.timeout = 9999999
+
+
+            if @opts.ssl_pkey || @opts.ssl_pkey
+                @dispatcher.instance_variable_get( :@http ).
+                    instance_variable_set( :@ssl_context, prep_ssl_context( ) )
+            else
+                @dispatcher.instance_variable_get( :@http ).
+                    instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+            end
+
+
             # it seems like the XMLRPC client will connect us on the first
             # call...so make sure that it *can* actually connect
             @dispatcher.call( 'dispatcher.jobs' )
@@ -48,19 +62,6 @@ class Monitor
             print_error( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
             exit 0
-        end
-
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @dispatcher.timeout = 9999999
-
-
-        if @opts.ssl_pkey || @opts.ssl_pkey
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
-        else
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
         end
 
         # trap interupts and exit cleanly when required
@@ -75,20 +76,20 @@ class Monitor
 
         # grab the XMLRPC server output while a scan is running
         while( 1 )
-            jobs    = @dispatcher.call( 'dispatcher.jobs' )
-            running = running_jobs( jobs )
+            stats        = @dispatcher.call( 'dispatcher.stats' )
+            running_jobs = stats['running_jobs']
             clear_screen
 
             banner
-            print_job_cnt( running )
+            print_stats( stats )
 
             print_line
 
-            print_job_table( running )
+            print_job_table( running_jobs )
 
             # things will get crazy if we don't block a bit I think...
             # we'll see...
-            ::IO::select( nil, nil, nil, 0.5 )
+            ::IO::select( nil, nil, nil, 1 )
         end
 
     end
@@ -97,15 +98,16 @@ class Monitor
 
     def print_job_table( jobs )
 
-        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Start time (Server-side)',
-            'Current time (Server-side)', 'Run-time', 'Memory', 'Priority', 'State' ]
+        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Birthdate (Server-side)',
+            'Start time (Server-side)', 'Current time (Server-side)', 'Age',
+            'Run-time', 'Memory', 'Priority', 'State' ]
 
         rows = []
         jobs.each {
             |job|
             rows << [ job['proc']['ppid'], job['pid'], job['port'], job['owner'],
-                job['starttime'].to_time, job['currtime'].to_time,
-                secs_to_hms( job['runtime'] ),
+                job['birthdate'].to_time, job['starttime'].to_time, job['currtime'].to_time,
+                secs_to_hms( job['age'] ), secs_to_hms( job['runtime'] ),
                 proc_mem( job['proc']['rss'] ), job['proc']['priority'],
                 proc_state( job['proc']['state'] ) ]
         }
@@ -115,12 +117,11 @@ class Monitor
         print_line( table( headings, *rows ) )
     end
 
-    def print_job_cnt( jobs )
-        print_info( 'Number of running instances: ' + jobs.size.to_s )
-    end
-
-    def running_jobs( jobs )
-        jobs.reject{ |job| job['proc'].empty? }
+    def print_stats( stats )
+        print_info( 'Number of finished instances: ' + stats['finished_jobs'].size.to_s )
+        print_info( 'Number of running instances:  ' + stats['running_jobs'].size.to_s )
+        print_info( 'Initial pool size: ' + stats['init_pool_size'].to_s )
+        print_info( 'Current pool size: ' + stats['curr_pool_size'].to_s )
     end
 
     def clear_screen
