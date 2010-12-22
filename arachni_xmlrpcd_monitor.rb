@@ -49,12 +49,6 @@ begin
             when '--debug'
                 options.debug = true
 
-            when '--reroute-to-logfile'
-                options.reroute_to_logfile = true
-
-            when '--port'
-                options.rpc_port = arg.to_i
-
             when '--ssl'
                 options.ssl = true
 
@@ -71,7 +65,9 @@ begin
     }
 end
 
-require options.dir['lib'] + 'rpc/xml/dispatcher/server'
+options.url = ARGV.shift
 
-dispatcher = Arachni::RPC::XML::Dispatcher::Server.new( Arachni::Options.instance )
+require options.dir['lib'] + 'rpc/xml/dispatcher/monitor'
+
+dispatcher = Arachni::RPC::XML::Dispatcher::Monitor.new( Arachni::Options.instance )
 dispatcher.run

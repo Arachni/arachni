@@ -18,6 +18,7 @@ require Options.instance.dir['lib'] + 'rpc/xml/output'
 
 module RPC
 module XML
+module Dispatcher
 
 #
 # Dispatcher class
@@ -39,7 +40,7 @@ module XML
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Dispatcher
+class Server
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
@@ -201,7 +202,7 @@ class Dispatcher
 
     def print_help
         puts <<USAGE
-  Usage:  arachni_xmlrpcd_dispatcher.rb \[options\]
+  Usage:  arachni_xmlrpcd.rb \[options\]
 
   Supported options:
 
@@ -306,6 +307,7 @@ USAGE
 
 end
 
+end
 end
 end
 end
