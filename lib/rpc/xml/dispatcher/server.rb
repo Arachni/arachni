@@ -48,6 +48,10 @@ class Server
 
     def initialize( opts )
 
+        @opts = opts
+        @opts.rpc_port  ||= 7331
+        @opts.pool_size ||= 5
+
         banner
 
         if opts.help
@@ -55,9 +59,6 @@ class Server
             exit 0
         end
 
-        @opts = opts
-        @opts.rpc_port ||= 7331
-        @opts.pool_size ||= 10
 
         prep_logging
 
@@ -216,7 +217,7 @@ class Server
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
     --pool-size                 how many server workers/processes should be available
-                                  at any given moment
+                                  at any given moment (Default: #{@opts.pool_size})
 
     --debug
 
