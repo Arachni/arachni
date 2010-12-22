@@ -112,11 +112,11 @@ class Server
     end
 
     #
-    # Creates a new XMLRPC server instance and returns the port number
+    # Dispatches an XMLRPC server instance from the pool
     #
     # @param    [String]    owner   an owner assign to the dispatched XMLRPC server
     #
-    # @return   [Fixnum]    port number on success / false otherwise
+    # @return   [Hash]      includes port number, owner, clock info and proc info
     #
     def dispatch( owner = 'unknown' )
 
@@ -172,18 +172,23 @@ class Server
         return jobs
     end
 
-   def stats
-       cjobs    = jobs( )
-       running  = cjobs.reject{ |job| job['proc'].empty? }
-       finished = cjobs - running
+    #
+    # Returns server stats regarding the jobs and pool
+    #
+    # @return   [Hash]
+    #
+    def stats
+        cjobs    = jobs( )
+        running  = cjobs.reject{ |job| job['proc'].empty? }
+        finished = cjobs - running
 
-       return {
-           'running_jobs'    => running,
-           'finished_jobs'   => finished,
-           'init_pool_size'  => @opts.pool_size,
-           'curr_pool_size'  => @pool.size
-       }
-   end
+        return {
+            'running_jobs'    => running,
+            'finished_jobs'   => finished,
+            'init_pool_size'  => @opts.pool_size,
+            'curr_pool_size'  => @pool.size
+        }
+    end
 
     #
     # Outputs the Arachni banner.<br/>
@@ -240,6 +245,10 @@ USAGE
 
     private
 
+    #
+    # Initializes and updates the pool making sure that the number of
+    # available server processes stays constant for any given moment
+    #
     def prep_pool
 
         owner = 'dispatcher'
