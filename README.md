@@ -62,6 +62,7 @@ From a user's or a component developer's point of view everything appears simple
        - Parallel scans
        - SSL encryption
        - SSL cert based client authentication
+       - Remote monitoring
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
 
