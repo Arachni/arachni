@@ -57,6 +57,11 @@ class Monitor
             @dispatcher.instance_variable_get( :@http ).
                 instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
         end
+
+        # trap interupts and exit cleanly when required
+        trap( 'HUP' ) { exit 0 }
+        trap( 'INT' ) { exit 0 }
+
     end
 
     def run
