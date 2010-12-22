@@ -39,10 +39,15 @@ class Monitor
         begin
             # start the XMLRPC client
             @dispatcher = ::XMLRPC::Client.new2( @opts.url.to_s )
+
+            # it seems like the XMLRPC client will connect us on the first
+            # call...so make sure that it *can* actually connect
+            @dispatcher.call( 'dispatcher.jobs' )
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
+            exit 0
         end
 
         # there'll be a HELL of lot of output so things might get..laggy.
@@ -92,8 +97,8 @@ class Monitor
 
     def print_job_table( jobs )
 
-        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Start time',
-            'Current time', 'Run-time', 'Memory', 'Priority', 'State' ]
+        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Start time (Server-side)',
+            'Current time (Server-side)', 'Run-time', 'Memory', 'Priority', 'State' ]
 
         rows = []
         jobs.each {

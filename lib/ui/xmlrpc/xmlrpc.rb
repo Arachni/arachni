@@ -73,6 +73,7 @@ class XMLRPC
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
+            exit 0
         end
 
         # there'll be a HELL of lot of output so things might get..laggy.
