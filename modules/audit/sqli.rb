@@ -62,7 +62,10 @@ class SQLInjection < Arachni::Module::Base
 
         # prepare the string that will hopefully cause the webapp
         # to output SQL error messages
-        @__injection_str = '\'--`'
+        @__injection_str = [
+            '\'`--',
+            ')'
+            ]
 
         @__opts = {
             :format => [ Format::APPEND ],
@@ -72,9 +75,7 @@ class SQLInjection < Arachni::Module::Base
     end
 
     def run( )
-        # send the bad characters in @__injection_strs via the page forms
-        # and pass a block that will check for a positive result
-        audit( @__injection_str, @__opts )
+        @__injection_str.each { |str| audit( str, @__opts ) }
     end
 
 
