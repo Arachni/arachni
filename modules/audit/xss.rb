@@ -52,7 +52,7 @@ class XSS < Arachni::Module::Base
     def self.info
         {
             :name           => 'XSS',
-            :description    => %q{Cross-Site Scripting recon module},
+            :description    => %q{Cross-Site Scripting module},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
