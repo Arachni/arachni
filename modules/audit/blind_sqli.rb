@@ -254,7 +254,7 @@ class BlindSQLInjection < Arachni::Module::Base
             :vulnerability   => {
                 :name        => %q{Blind SQL Injection},
                 :description => %q{SQL code can be injected into the web application
-                    even though it may not obvious due to suppression of error messages.},
+                    even though it may not be obvious due to suppression of error messages.},
                 :cwe         => '89',
                 :severity    => Vulnerability::Severity::HIGH,
                 :cvssv2       => '9.0',
