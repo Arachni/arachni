@@ -83,8 +83,7 @@ class XSSEvent < Arachni::Module::Base
             |attr|
             doc.xpath("//*[@#{attr}]").each {
                 |elem|
-                puts elem.to_s
-                return elem.to_s if elem.to_s.match( injected_str )
+                return elem.to_s if injected_str && elem.to_s.match( injected_str )
             }
         }
 
