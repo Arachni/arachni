@@ -112,6 +112,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - Path XSS
         - URI XSS
         - XSS
+        - XSS in event attribute of HTML elements
+        - XSS in HTML tags
     - Recon:
         - Allowed HTTP methods
         - Back-up files
