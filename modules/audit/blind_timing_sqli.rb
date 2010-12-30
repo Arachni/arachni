@@ -54,6 +54,8 @@ class BlindTimingSQLInjection < Arachni::Module::Base
     end
 
     def run( )
+        return
+
         @@__injection_str.each {
             |str|
             audit( str, @__opts ) {
