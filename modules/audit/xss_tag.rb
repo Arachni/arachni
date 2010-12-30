@@ -65,19 +65,31 @@ class XSSImageSource < Arachni::Module::Base
 
             # see if we managed to inject a working HTML attribute to any
             # elements
-            if !(elem = doc.xpath("//*[@#{TAG_NAME}]")).empty?
+            if !(html_elem = doc.xpath("//*[@#{TAG_NAME}]")).empty?
+
+                elem = opts[:element]
+                url  = res.effective_url
+                print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
+
+                injected = opts[:combo][altered] ? opts[:combo][altered] : '<n/a>'
+                print_verbose( "Injected string:\t" + injected )
+                print_verbose( "Verified string:\t" + html_elem.to_s )
+                print_debug( 'Request ID: ' + res.request.id.to_s )
+                print_verbose( '---------' ) if only_positives?
+
 
                 res = {
                     :var          => altered,
-                    :url          => res.effective_url,
-                    :injected     => opts[:combo][altered] ? opts[:combo][altered] : '<n/a>',
-                    :id           => elem.to_s,
-                    :regexp       => elem.to_s,
-                    :regexp_match => elem.to_s,
+                    :url          => url,
+                    :injected     => injected,
+                    :id           => html_elem.to_s,
+                    :regexp       => html_elem.to_s,
+                    :regexp_match => html_elem.to_s,
                     :response     => res.body,
-                    :elem         => opts[:element],
+                    :elem         => elem,
                     :method       => res.request.method.to_s,
                     :opts         => opts.dup,
+                    :verification => 'true',
                     :headers      => {
                         :request    => res.request.headers,
                         :response   => res.headers,
