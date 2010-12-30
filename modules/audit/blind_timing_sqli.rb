@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
@@ -54,13 +52,13 @@ class BlindTimingSQLInjection < Arachni::Module::Base
     end
 
     def run( )
-        return
-
         @@__injection_str.each {
             |str|
             audit( str, @__opts ) {
                 |res, altered, opts|
-                _log( res, altered, opts ) if res.time > TIME
+                if res.time > TIME + @http.average_res_time
+                    _log( res, altered, opts )
+                end
             }
         }
     end
@@ -88,6 +86,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             :elem         => elem,
             :method       => res.request.method.to_s,
             :opts         => opts.dup,
+            :verification => true,
             :headers      => {
                     :request    => res.request.headers,
                     :response   => res.headers,
@@ -102,7 +101,9 @@ class BlindTimingSQLInjection < Arachni::Module::Base
     def self.info
         {
             :name           => 'Blind (timing) SQL injection',
-            :description    => %q{Blind SQL Injection module using timing attacks.},
+            :description    => %q{Blind SQL Injection module using timing attacks
+                (if the remote server suddenly becomes unresponsive or your network
+                connection suddenly chokes up this module will probably produce false positives).},
             :elements       => [
                 Vulnerability::Element::FORM,
                 Vulnerability::Element::LINK,
