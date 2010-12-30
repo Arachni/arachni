@@ -25,7 +25,7 @@ module Modules
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
-class XSSImageSource < Arachni::Module::Base
+class XSSHTMLTag < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
