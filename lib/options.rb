@@ -348,7 +348,7 @@ class Options
 
         # relatively low but will give good performance without bottleneck
         # on low bandwidth conections
-        @http_req_limit = 60
+        @http_req_limit = 20
 
     end
 
