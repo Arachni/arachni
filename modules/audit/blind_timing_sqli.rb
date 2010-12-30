@@ -58,7 +58,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             |str|
             audit( str, @__opts ) {
                 |res, altered, opts|
-                _log( res, altered, opts ) if res.code == 500 || res.time > TIME
+                _log( res, altered, opts ) if res.time > TIME
             }
         }
     end
