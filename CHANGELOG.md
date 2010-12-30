@@ -13,6 +13,8 @@
    - Audit
       - XSS in event attribute of HTML elements
       - XSS in HTML tags
+      - Blind SQL injection using timing attacks
+
 
 ## Version 0.2.1
 - Major performance improvements

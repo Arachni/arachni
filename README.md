@@ -98,7 +98,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Writing RFI, SQL injection, XSS etc modules is a matter of minutes if not seconds.
  - Currently available modules:
     - Audit:
-        - Blind SQL injection
+        - Blind SQL injection using rDiff analysis
+        - Blind SQL injection using timing attacks
         - CSRF detection
         - Eval/Code injection
         - LDAP injection
