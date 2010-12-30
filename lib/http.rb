@@ -121,6 +121,8 @@ class HTTP
         # we'll use it to identify our requests
         @rand_seed = seed( )
 
+        @curr_res_time = 0
+        @curr_res_cnt  = 0
 
     end
 
@@ -133,7 +135,13 @@ class HTTP
     def run
       exception_jail {
           @hydra.run
+          @curr_res_time = 0
+          @curr_res_cnt  = 0
       }
+    end
+
+    def average_res_time
+        return @curr_res_time / @curr_res_cnt
     end
 
     #
@@ -169,6 +177,9 @@ class HTTP
             |res|
 
             @response_count += 1
+            @curr_res_cnt   += 1
+            @curr_res_time  += res.time
+
             print_debug( '------------' )
             print_debug( 'Got response.' )
             print_debug( 'Request ID#: ' + res.request.id.to_s )
