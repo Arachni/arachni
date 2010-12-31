@@ -35,6 +35,7 @@ class XSSScriptTag < Arachni::Module::Base
 
     def prepare( )
         @_injection_strs = [
+            "arachni_xss_in_script_tag_" + seed + "",
             "\"arachni_xss_in_script_tag_" + seed + "\"",
             "'arachni_xss_in_script_tag_" + seed + "'"
         ]
