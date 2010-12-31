@@ -48,7 +48,8 @@ class XSSEvent < Arachni::Module::Base
         'onmousemove',
         'onmouseout',
         'onmouseover',
-        'onmouseup'
+        'onmouseup',
+        'src' # not an event but it fits the module structure
     ]
 
     def initialize( page )
@@ -57,9 +58,9 @@ class XSSEvent < Arachni::Module::Base
 
     def prepare( )
         @_injection_strs = [
-            # "; arachni_xss_in_element_event=" + seed + '//',
-            "\"; arachni_xss_in_element_event=" + seed + '//',
-            "'; arachni_xss_in_element_event=" + seed + '//',
+            ";arachni_xss_in_element_event=" + seed + '//',
+            "\";arachni_xss_in_element_event=" + seed + '//',
+            "';arachni_xss_in_element_event=" + seed + '//',
         ]
 
         @_opts = {
