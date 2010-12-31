@@ -37,16 +37,26 @@ class XSS < Arachni::Module::Base
     end
 
     def prepare( )
-        str = '<arachni_xss_' + seed
-        @opts = {
+        @_injection_strs = [
+            '<arachni_xss_' + seed,
+            '<arachni_xss_\'";_' + seed,
+        ]
+        @_opts = {
             :format => [ Format::APPEND | Format::NULL ],
-            :match  => str,
-            :regexp => Regexp.new( str )
         }
     end
 
     def run( )
-        audit( @opts[:match], @opts )
+        @_injection_strs.each {
+            |str|
+
+            opts = {
+                :match  => str,
+                :regexp => Regexp.new( str )
+            }.merge( @_opts )
+
+            audit( str, opts )
+        }
     end
 
     def self.info
