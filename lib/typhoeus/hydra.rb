@@ -73,13 +73,13 @@ module Typhoeus
     private :get_easy_object
 
     def response_from_easy(easy, request)
-      @@prev_time ||= 0
+      @prev_time ||= 0
 
-      if @@prev_time == 0 || easy.total_time_taken < @@prev_time
-          @@prev_time = time = easy.total_time_taken
+      if @prev_time == 0 || easy.total_time_taken < @prev_time
+          @prev_time = time = easy.total_time_taken
       else
-          time = easy.total_time_taken - @@prev_time
-          @@prev_time = easy.total_time_taken
+          time = easy.total_time_taken - @prev_time
+          @prev_time = easy.total_time_taken
       end
 
       Response.new(:code    => easy.response_code,
