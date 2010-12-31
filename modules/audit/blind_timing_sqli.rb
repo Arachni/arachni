@@ -56,7 +56,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             |str|
             audit( str, @__opts ) {
                 |res, altered, opts|
-                if res.time > TIME + @http.average_res_time
+                if res.start_transfer_time > TIME + @http.average_res_time
                     _log( res, altered, opts )
                 end
             }

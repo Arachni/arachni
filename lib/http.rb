@@ -15,6 +15,7 @@ module Arachni
 require Options.instance.dir['lib'] + 'typhoeus/easy'
 require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
+require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 
@@ -178,7 +179,7 @@ class HTTP
 
             @response_count += 1
             @curr_res_cnt   += 1
-            @curr_res_time  += res.time
+            @curr_res_time  += res.start_transfer_time
 
             print_debug( '------------' )
             print_debug( 'Got response.' )
