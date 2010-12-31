@@ -40,6 +40,8 @@ module Output
     # if it's on status messages will be disabled
     @@only_positives  = false
 
+    @@mute  = false
+
     # Prints an error message
     #
     # It ignores all flags, error messages will be output under all
@@ -230,6 +232,19 @@ module Output
         @@only_positives
     end
 
+    def mute!
+        @@mute = true
+    end
+
+    def unmute!
+        @@mute = false
+    end
+
+
+    def mute?
+        @@mute
+    end
+
     private
 
     # Prints a message prefixed with a colored sign.
@@ -243,6 +258,7 @@ module Output
     # @return    [void]
     #
     def print_color( sign, color, string, out = $stdout )
+        return if mute?
         out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
 

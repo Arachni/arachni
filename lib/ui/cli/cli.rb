@@ -150,25 +150,29 @@ class CLI
     #
     def handle_interrupt( )
 
-        print_line
-        print_info( 'Results thus far:' )
+        Thread.new {
+            print_line
+            print_info( 'Results thus far:' )
 
-        begin
-            print_vulns( @arachni.audit_store( true ) )
-        rescue Exception => e
-            exception_jail{ raise e }
-            exit 0
-        end
+            begin
+                print_vulns( @arachni.audit_store( true ) )
+            rescue Exception => e
+                exception_jail{ raise e }
+                exit 0
+            end
 
-        print_info( 'Arachni was interrupted,' +
-            ' do you want to continue?' )
+            print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
 
-        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+            mute!
 
-        if gets[0] == 'e'
-            print_info( 'Exiting...' )
-            exit 0
-        end
+            if gets[0] == 'e'
+                unmute!
+                print_info( 'Exiting...' )
+                exit 0
+            end
+
+            unmute!
+        }
 
     end
 
