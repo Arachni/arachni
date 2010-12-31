@@ -228,9 +228,13 @@ class Framework
 
         @spider = Arachni::Spider.new( @opts )
 
+        @sitemap ||= []
+
         # initiates the crawl
-        @sitemap = @spider.run {
-            | page |
+        @spider.run {
+            |page|
+
+            @sitemap << page.url
 
             exception_jail{
                 run_mods( page )
