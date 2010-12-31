@@ -11,8 +11,9 @@
    - Cleaned up XMLRPC class structure and namespace.
 - Added modules:  (**New**)
    - Audit
-      - XSS in event attribute of HTML elements
+      - XSS in event attributes of HTML elements
       - XSS in HTML tags
+      - XSS in HTML 'script' tags
       - Blind SQL injection using timing attacks
 
 
