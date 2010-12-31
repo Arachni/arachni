@@ -143,8 +143,8 @@ class Stdout < Arachni::Report::Base
             print_line
         }
 
-        sitemap   = @audit_store.sitemap
-        vuln_urls = @audit_store.vulns.map { |vuln| vuln.url }
+        sitemap   = @audit_store.sitemap.uniq
+        vuln_urls = @audit_store.vulns.map { |vuln| vuln.url }.uniq
 
         print_info( 'URL health list.' )
         print_info( '--------------------' )
@@ -169,9 +169,14 @@ class Stdout < Arachni::Report::Base
 
         print_line
 
-        print_info( 'Total: ' + sitemap.size.to_s )
-        print_ok( 'Safe: ' + (sitemap.size - vuln_urls.size).to_s )
-        print_error( 'Vulnerable: ' + vuln_urls.size.to_s )
+        total = sitemap.size
+        vuln  = vuln_urls.size
+        safe  = total - vuln
+        vuln_percentage = ( ( Float( vuln ) / total ) * 100 ).round
+
+        print_info( 'Total: ' + total.to_s )
+        print_ok( 'Safe: ' + safe.to_s )
+        print_error( 'Vulnerable: ' + vuln.to_s + " ( #{vuln_percentage.to_s}% )" )
 
 
     end
