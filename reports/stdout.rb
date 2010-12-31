@@ -143,7 +143,36 @@ class Stdout < Arachni::Report::Base
             print_line
         }
 
-        print_line( "\n" )
+        sitemap   = @audit_store.sitemap
+        vuln_urls = @audit_store.vulns.map { |vuln| vuln.url }
+
+        print_info( 'URL health list.' )
+        print_info( '--------------------' )
+
+        print_line
+        print_info( 'Color codes:' )
+        print_ok( 'Safe' )
+        print_error( 'Vulnerable' )
+        print_line
+
+        sitemap.each {
+            |url|
+
+            next if ! (url = normalize( url ))
+
+            if vuln_urls.include?( url )
+                print_error( url )
+            else
+                print_ok( url )
+            end
+        }
+
+        print_line
+
+        print_info( 'Total: ' + sitemap.size.to_s )
+        print_ok( 'Safe: ' + (sitemap.size - vuln_urls.size).to_s )
+        print_error( 'Vulnerable: ' + vuln_urls.size.to_s )
+
 
     end
 
@@ -160,6 +189,14 @@ class Stdout < Arachni::Report::Base
             :version        => '0.2.1',
         }
     end
+
+    def normalize( url )
+        query = URI( url ).query
+        return url if !query
+
+        url.gsub( '?' + query, '' )
+    end
+
 
     def print_info_variations( vuln )
         print_line
