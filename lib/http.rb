@@ -142,6 +142,7 @@ class HTTP
     end
 
     def average_res_time
+        return 0 if @curr_res_cnt == 0
         return @curr_res_time / @curr_res_cnt
     end
 
@@ -296,7 +297,8 @@ class HTTP
             opts = {
                 :headers       => headers,
                 :params        => cparams.empty? ? nil : cparams,
-                :follow_location => follow_location
+                :follow_location => follow_location,
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
             req = Typhoeus::Request.new( curl, opts )
@@ -337,7 +339,8 @@ class HTTP
                 :method        => :post,
                 :headers       => headers,
                 :params        => params,
-                :follow_location => false
+                :follow_location => false,
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
@@ -422,6 +425,7 @@ class HTTP
                 :headers         => headers,
                 :follow_location => false,
                 # :params          => params
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
             req = Typhoeus::Request.new( url, opts )
@@ -464,6 +468,7 @@ class HTTP
                 :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 # :params        => params
+                :timeout       => opts[:timeout]
             )
             req.train! if train
 

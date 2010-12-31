@@ -28,7 +28,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    TIME = 6
+    TIME = 6000 # ms
 
     def initialize( page )
         super( page )
@@ -41,12 +41,13 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         if @@__injection_str.empty?
             read_file( 'payloads.txt' ) {
                 |str|
-                @@__injection_str << str.gsub( '__TIME__', TIME.to_s )
+                @@__injection_str << str.gsub( '__TIME__', ( TIME / 1000 ).to_s )
             }
         end
 
         @__opts = {
-            :format => [ Format::STRAIGHT, Format::APPEND ]
+            :format  => [ Format::STRAIGHT, Format::APPEND ],
+            :timeout => TIME + ( @http.average_res_time * 1000 )
         }
 
     end
@@ -56,7 +57,8 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             |str|
             audit( str, @__opts ) {
                 |res, altered, opts|
-                if res.start_transfer_time > TIME + @http.average_res_time
+                # we have a timeout which probably means the attack succeeded
+                if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
                     _log( res, altered, opts )
                 end
             }
