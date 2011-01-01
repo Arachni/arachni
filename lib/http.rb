@@ -118,7 +118,7 @@ class HTTP
         @opts = {
             :user_agent      => opts.user_agent,
             :follow_location => false,
-            :timeout         => 8000
+            # :timeout         => 8000
         }.merge( proxy_opts )
 
         @request_count  = 0
