@@ -137,12 +137,10 @@ class BlindSQLInjection < Arachni::Module::Base
             # get injection variations that will hopefully cause an internal/silent
             # SQL error
             @__candidate.injection_sets( str, @__opts ).each {
-                |variation|
+                |link|
 
                 # the altered link variable
-                altered = variation.keys[0]
-                # auditable link object
-                link    = variation.values[0]
+                altered = link.altered
 
                 print_status( @__candidate.get_status_str( altered ) )
 
@@ -175,12 +173,10 @@ class BlindSQLInjection < Arachni::Module::Base
 
             # get injection variations that will hopefully not break anything
             @__candidate.injection_sets( str, @__opts ).each {
-                |variation|
+                |link|
 
                 # the altered link variable
-                altered = variation.keys[0]
-                # auditable link object
-                link    = variation.values[0]
+                altered = link.altered
 
                 # register us as the auditor
                 link.auditor( self )
