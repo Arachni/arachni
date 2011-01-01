@@ -155,10 +155,12 @@ class Auditable
             altered = variation.keys[0]
             elem    = variation.values[0]
 
+            opts[:altered] = altered.dup
+
+            return if skip?( opts.merge( :url => elem.action ) )
+
             # inform the user about what we're auditing
             print_status( get_status_str( altered ) )
-
-            opts[:altered] = altered.dup
 
             # submit the element with the injection values
             req = elem.submit( opts )
@@ -173,6 +175,10 @@ class Auditable
         }
 
         audited( audit_id )
+    end
+
+    def skip?( opts )
+        return @auditor.skip?( opts ) if @auditor.respond_to?( :skip? )
     end
 
     #
@@ -276,6 +282,8 @@ class Auditable
 
         altered = variation.keys[0]
         combo   = variation.values[0].auditable
+        opts[:injected] = injected_str.to_s
+        opts[:combo]    = combo
 
         if( !opts[:async] )
 
@@ -296,9 +304,6 @@ class Auditable
             else
                 print_status( 'Analyzing response #' + res.request.id.to_s + '...' )
             end
-
-            opts[:injected] = injected_str.to_s
-            opts[:combo]    = combo
 
             # call the block, if there's one
             if block_given?
