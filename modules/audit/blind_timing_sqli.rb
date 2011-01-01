@@ -54,9 +54,9 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         @__logged = []
     end
 
-    def skip?( opts )
+    def skip?( elem )
         if @__logged.include?(
-            _skip_format( opts[:url], opts[:element], opts[:altered] )
+            _skip_format( elem.action, elem.type, elem.altered )
            )
             return true
         end

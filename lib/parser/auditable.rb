@@ -49,6 +49,7 @@ class Auditable
         @@audited = []
     end
 
+    attr_accessor :altered
 
     #
     # Holds constant bitfields that describe the preferred formatting
@@ -150,14 +151,13 @@ class Auditable
         results = []
         # iterate through all variation and audit each one
         injection_sets( injection_str, opts ).each {
-            |variation|
+            |elem|
 
-            altered = variation.keys[0]
-            elem    = variation.values[0]
+            altered = elem.altered
 
             opts[:altered] = altered.dup
 
-            return if skip?( opts.merge( :url => elem.action ) )
+            return if skip?( elem )
 
             # inform the user about what we're auditing
             print_status( get_status_str( altered ) )
@@ -167,7 +167,7 @@ class Auditable
             return if !req
 
             injected = elem.auditable[altered]
-            on_complete( req, injection_str, variation, opts, &block )
+            on_complete( req, injection_str, elem, opts, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -177,8 +177,8 @@ class Auditable
         audited( audit_id )
     end
 
-    def skip?( opts )
-        return @auditor.skip?( opts ) if @auditor.respond_to?( :skip? )
+    def skip?( elem )
+        return @auditor.skip?( elem )
     end
 
     #
@@ -203,14 +203,17 @@ class Auditable
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
                 # this is the original hash, in case the default values
                 # are valid and present us with new attack vectors
-                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.dup }
+                elem = self.dup
+                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
+                var_combo << elem
             end
 
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE ) )
                 duphash = hash.dup
                 elem = self.dup
                 elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
-                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
+                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
+                var_combo << elem
             end
         end
 
@@ -225,8 +228,9 @@ class Auditable
                 str  = format_str( injection_str, chash[k], format )
 
                 elem = self.dup
+                elem.altered = k.dup
                 elem.auditable = chash.merge( { k => str } )
-                var_combo << { k => elem }
+                var_combo << elem
             }
 
         }
@@ -278,10 +282,10 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    def on_complete( req, injected_str, variation, opts, &block )
+    def on_complete( req, injected_str, elem, opts, &block )
 
-        altered = variation.keys[0]
-        combo   = variation.values[0].auditable
+        altered = elem.altered
+        combo   = elem.auditable
         opts[:injected] = injected_str.to_s
         opts[:combo]    = combo
 
@@ -507,10 +511,10 @@ class Auditable
         print_debug('|' )
 
         combos.each{
-          |set|
+          |elem|
 
-          altered = set.keys[0]
-          combo   = set.values[0].auditable
+          altered = elem.altered
+          combo   = elem.auditable
 
 
           print_debug( '|' )
