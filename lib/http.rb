@@ -92,7 +92,7 @@ class HTTP
         }
 
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
-        @hydra_sync = Typhoeus::Hydra.new( hydra_opts )
+        @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( :max_concurrency => 1 ) )
 
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
@@ -107,14 +107,19 @@ class HTTP
             'User-Agent'    => opts.user_agent
         }
 
-        @opts = {
-            :user_agent      => opts.user_agent,
-            :follow_location => false,
+        proxy_opts = {}
+        proxy_opts = {
             :proxy           => "#{opts.proxy_addr}:#{opts.proxy_port}",
             :proxy_username  => opts.proxy_user,
             :proxy_password  => opts.proxy_pass,
             :proxy_type      => opts.proxy_type
-        }
+        } if opts.proxy_addr
+
+        @opts = {
+            :user_agent      => opts.user_agent,
+            :follow_location => false,
+            :timeout         => 8000
+        }.merge( proxy_opts )
 
         @request_count  = 0
         @response_count = 0
@@ -134,11 +139,11 @@ class HTTP
     # after all module threads have beed joined!
     #
     def run
-      exception_jail {
-          @hydra.run
-          @curr_res_time = 0
-          @curr_res_cnt  = 0
-      }
+        exception_jail {
+            @hydra.run
+            @curr_res_time = 0
+            @curr_res_cnt  = 0
+        }
     end
 
     def average_res_time
