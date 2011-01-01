@@ -46,10 +46,20 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         end
 
         @__opts = {
-            :format  => [ Format::STRAIGHT, Format::APPEND ],
-            :timeout => TIME + ( @http.average_res_time * 1000 )
+            :format  => [ Format::STRAIGHT ],
+            :timeout => TIME + ( @http.average_res_time * 1000 ),
+            # :async   => false
         }
 
+        @__logged = []
+    end
+
+    def skip?( opts )
+        if @__logged.include?(
+            _skip_format( opts[:url], opts[:element], opts[:altered] )
+           )
+            return true
+        end
     end
 
     def run( )
@@ -65,17 +75,28 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         }
     end
 
+    def _skip_format( url, type, name )
+        purl = URI( url )
+        if purl.query
+            url = url.gsub( '?' + purl.query, '' )
+        end
+
+        return "#{url}:#{type}:#{name}"
+    end
+
     def _log( res, altered, opts )
 
         elem = opts[:element]
         url  = res.effective_url
         print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
 
-        injected = opts[:combo][altered] ? opts[:combo][altered] : '<n/a>'
+        injected = opts[:injected] ? opts[:injected] : '<n/a>'
         print_verbose( "Injected string:\t" + injected )
         print_debug( 'Request ID: ' + res.request.id.to_s )
         print_verbose( '---------' ) if only_positives?
 
+        @__logged << _skip_format( url, elem, altered )
+        @__logged.uniq!
 
         res = {
             :var          => altered,
@@ -119,7 +140,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
             :vulnerability   => {
-                :name        => %q{Blind SQL Injection},
+                :name        => %q{Blind SQL Injection (timing attack)},
                 :description => %q{SQL code can be injected into the web application
                     even though it may not be obvious due to suppression of error messages.},
                 :cwe         => '89',
