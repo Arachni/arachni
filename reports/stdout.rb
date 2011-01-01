@@ -146,6 +146,8 @@ class Stdout < Arachni::Report::Base
         sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
         sitemap |= vuln_urls = @audit_store.vulns.map { |vuln| vuln.url }.uniq
 
+        return if sitemap.size == 0
+
         print_info( 'URL health list.' )
         print_info( '--------------------' )
 
