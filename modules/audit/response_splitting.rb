@@ -54,8 +54,8 @@ class ResponseSplitting < Arachni::Module::Base
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
         audit( @__header ) {
-            |res, var, opts|
-            __log_results( opts, var, res )
+            |res, opts|
+            __log_results( res, opts )
         }
     end
 
@@ -95,10 +95,11 @@ class ResponseSplitting < Arachni::Module::Base
 
     private
 
-    def __log_results( opts, var, res )
+    def __log_results( res, opts )
         if res.headers_hash['X-CRLF-Safe'] && !res.headers_hash['X-CRLF-Safe'].empty?
 
             url = res.effective_url
+            var = opts[:altered]
             @results << Vulnerability.new( {
                     :var          => var,
                     :url          => url,

@@ -47,8 +47,8 @@ class UnvalidatedRedirect < Arachni::Module::Base
             |url|
 
             audit( url ) {
-                |res, var, opts|
-                __log_results( opts, var, res, url )
+                |res, opts|
+                __log_results( res, opts, url )
             }
         }
     end
@@ -86,11 +86,12 @@ class UnvalidatedRedirect < Arachni::Module::Base
 
     private
 
-    def __log_results( opts, var, res, url )
+    def __log_results( res, opts, url )
 
 
         if( res.headers_hash['Location'] == url )
 
+            var = opts[:altered]
             @results << Vulnerability.new( {
                     :var          => var,
                     :url          => res.effective_url,

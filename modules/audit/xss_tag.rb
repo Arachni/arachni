@@ -51,13 +51,13 @@ class XSSHTMLTag < Arachni::Module::Base
         @_injection_strs.each {
             |str|
             audit( str, @_opts ) {
-                |res, altered, opts|
-                _log( res, altered, opts )
+                |res, opts|
+                _log( res, opts )
             }
         }
     end
 
-    def _log( res, altered, opts )
+    def _log( res, opts )
         return if !res.body
 
         begin
@@ -67,11 +67,12 @@ class XSSHTMLTag < Arachni::Module::Base
             # elements
             if !(html_elem = doc.xpath("//*[@#{TAG_NAME}]")).empty?
 
-                elem = opts[:element]
+                elem    = opts[:element]
+                altered = opts[:altered]
                 url  = res.effective_url
                 print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
 
-                injected = opts[:combo][altered] ? opts[:combo][altered] : '<n/a>'
+                injected = opts[:injected] ? opts[:injected] : '<n/a>'
                 print_verbose( "Injected string:\t" + injected )
                 print_verbose( "Verified string:\t" + html_elem.to_s )
                 print_debug( 'Request ID: ' + res.request.id.to_s )

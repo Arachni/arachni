@@ -72,8 +72,8 @@ class XSSEvent < Arachni::Module::Base
         @_injection_strs.each {
             |str|
             audit( str, @_opts ) {
-                |res, altered, opts|
-                _log( res, altered, opts )
+                |res, opts|
+                _log( res, opts )
             }
         }
     end
@@ -84,25 +84,27 @@ class XSSEvent < Arachni::Module::Base
             |attr|
             doc.xpath("//*[@#{attr}]").each {
                 |elem|
-                return elem.to_s if injected_str && elem.to_s.match( injected_str )
+                value = elem.attributes[attr]
+                return elem.to_s if injected_str && value.to_s.match( injected_str )
             }
         }
 
         return []
     end
 
-    def _log( res, altered, opts )
+    def _log( res, opts )
         return if !res.body
 
         begin
             # see if we managed to inject javascript into any event attribute
-            if !( html_elem = _check( res, opts[:combo][altered] ) ).empty?
+            if !( html_elem = _check( res, opts[:injected] ) ).empty?
 
                 elem = opts[:element]
                 url  = res.effective_url
+                altered = opts[:altered]
                 print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
 
-                injected = opts[:combo][altered] ? opts[:combo][altered] : '<n/a>'
+                injected = opts[:injected] ? opts[:injected] : '<n/a>'
                 print_verbose( "Injected string:\t" + injected )
                 print_verbose( "Verified string:\t" + html_elem.to_s )
                 print_debug( 'Request ID: ' + res.request.id.to_s )

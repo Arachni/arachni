@@ -66,10 +66,10 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         @@__injection_str.each {
             |str|
             audit( str, @__opts ) {
-                |res, altered, opts|
+                |res, opts|
                 # we have a timeout which probably means the attack succeeded
                 if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
-                    _log( res, altered, opts )
+                    _log( res, opts )
                 end
             }
         }
@@ -84,9 +84,10 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         return "#{url}:#{type}:#{name}"
     end
 
-    def _log( res, altered, opts )
+    def _log( res, opts )
 
-        elem = opts[:element]
+        elem    = opts[:element]
+        altered = opts[:altered]
         url  = res.effective_url
         print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
 

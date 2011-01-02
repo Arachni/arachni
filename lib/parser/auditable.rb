@@ -289,10 +289,11 @@ class Auditable
         opts[:injected] = injected_str.to_s
         opts[:combo]    = combo
 
+        # ap opts
         if( !opts[:async] )
 
             if( req && req.response )
-                block.call( req.response, altered, opts )
+                block.call( req.response, opts )
             end
 
             return
@@ -311,14 +312,14 @@ class Auditable
 
             # call the block, if there's one
             if block_given?
-                block.call( res, altered, opts )
+                block.call( res, opts )
                 next
             end
 
             next if !res.body
 
             # get matches
-            get_matches( altered, res.dup, opts )
+            get_matches( res.dup, opts )
         }
     end
 
@@ -335,15 +336,16 @@ class Auditable
     #
     # @return  [Hash]
     #
-    def get_matches( var, res, opts )
+    def get_matches( res, opts )
         regexps    = [opts[:regexp]].flatten
-        regexps.each{ |regexp| match_and_log( regexp, var, res, opts ) }
+        regexps.each{ |regexp| match_and_log( regexp, res, opts ) }
     end
 
-    def match_and_log( regexp, var, res, opts )
+    def match_and_log( regexp, res, opts )
 
         elem       = opts[:element]
         match      = opts[:match]
+        var        = opts[:altered]
 
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
