@@ -50,6 +50,7 @@ class Auditable
     end
 
     attr_accessor :altered
+    attr_reader   :opts
 
     #
     # Holds constant bitfields that describe the preferred formatting
@@ -113,6 +114,7 @@ class Auditable
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
         opts[:params]  = auditable( )
+        @opts = opts
 
         return http_request( @action, opts )
     end
@@ -164,7 +166,7 @@ class Auditable
             req = elem.submit( opts )
             return if !req
 
-            on_complete( req, elem, opts, &block )
+            on_complete( req, elem, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -278,15 +280,15 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    def on_complete( req, elem, opts, &block )
+    def on_complete( req, elem, &block )
 
-        opts[:injected] = elem.auditable[elem.altered].to_s
-        opts[:combo]    = elem.auditable
+        elem.opts[:injected] = elem.auditable[elem.altered].to_s
+        elem.opts[:combo]    = elem.auditable
 
-        if( !opts[:async] )
+        if( !elem.opts[:async] )
 
             if( req && req.response )
-                block.call( req.response, opts )
+                block.call( req.response, elem.opts )
             end
 
             return
@@ -305,14 +307,14 @@ class Auditable
 
             # call the block, if there's one
             if block_given?
-                block.call( res, opts )
+                block.call( res, elem.opts )
                 next
             end
 
             next if !res.body
 
             # get matches
-            get_matches( res.dup, opts )
+            get_matches( res.dup, elem.opts )
         }
     end
 
@@ -361,7 +363,7 @@ class Auditable
             print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
 
             verified = match ? match : match_data
-            injected = opts[:combo][var] ? opts[:combo][var] : '<n/a>'
+            injected = opts[:injected] ? opts[:injected] : '<n/a>'
             print_verbose( "Injected string:\t" + injected )
             print_verbose( "Verified string:\t" + verified )
             print_verbose( "Matched regular expression: " + regexp.to_s )
