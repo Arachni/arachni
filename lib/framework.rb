@@ -107,6 +107,9 @@ class Framework
     #
     attr_reader :http
 
+    attr_reader :sitemap
+    attr_reader :auditmap
+
     #
     # Holds candidate pages to be audited.
     #
@@ -159,7 +162,10 @@ class Framework
     #
     # It parses the instanse options and runs the audit
     #
-    def run
+    # @params   [Block]     &block  a block to call after the audit has finished
+    #                                   but before running the reports
+    #
+    def run( &block )
         @running = true
 
         @opts.start_datetime = Time.now
@@ -174,7 +180,6 @@ class Framework
             # start the audit
             audit( )
         rescue Exception
-
         end
 
         @opts.finish_datetime = Time.now
@@ -194,6 +199,11 @@ class Framework
         # refresh the audit store
         audit_store( true )
 
+        begin
+            block.call if block
+        rescue Exception
+        end
+
         # run reports
         if( @opts.reports && !@opts.reports.empty? )
             exception_jail{ @reports.run( audit_store( ) ) }
@@ -202,17 +212,23 @@ class Framework
         return true
     end
 
-    def stats( )
+    def stats( refresh_time = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
 
-        @opts.delta_time ||= Time.now - @opts.start_datetime
+        if !refresh_time || @auditmap.size == @sitemap.size
+            @opts.delta_time ||= Time.now - @opts.start_datetime
+        else
+            @opts.delta_time = Time.now - @opts.start_datetime
+        end
 
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
             :time       => audit_store.delta_time,
-            :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s
+            :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s,
+            :sitemap_size  => @sitemap.size,
+            :auditmap_size => @auditmap.size
         }
     end
 
@@ -228,17 +244,20 @@ class Framework
 
         @spider = Arachni::Spider.new( @opts )
 
-        @sitemap ||= []
+        @sitemap  ||= []
+        @auditmap ||= []
 
         # initiates the crawl
         @spider.run {
             |page|
 
-            @sitemap << page.url
+            @sitemap |= @spider.pages
 
             exception_jail{
                 run_mods( page )
             }
+
+            @auditmap << page.url
         }
 
         if( @opts.http_harvest_last )

@@ -169,6 +169,7 @@ module Output
     #
     def print_line( str = '' )
         if @@only_positives then return end
+        return if muted?
         puts str
     end
 
@@ -241,7 +242,7 @@ module Output
     end
 
 
-    def mute?
+    def muted?
         @@mute
     end
 
@@ -258,7 +259,7 @@ module Output
     # @return    [void]
     #
     def print_color( sign, color, string, out = $stdout )
-        return if mute?
+        return if muted?
         out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
 

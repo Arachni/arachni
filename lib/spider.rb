@@ -32,6 +32,8 @@ class Spider
     #
     attr_reader :opts
 
+    attr_reader :pages
+
     #
     # Sitemap, array of links
     #
@@ -111,6 +113,8 @@ class Spider
             # as they are discovered
             anemone.on_pages_like( @opts.include ) {
                 |page|
+
+                @pages = anemone.pages.keys || []
 
                 url = url_sanitize( page.url.to_s )
 

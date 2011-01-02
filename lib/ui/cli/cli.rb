@@ -90,7 +90,6 @@ class CLI
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
-
     end
 
     #
@@ -102,7 +101,9 @@ class CLI
 
         begin
             # start the show!
-            @arachni.run( )
+            @arachni.run( ){
+                @interrupt_handler.join if @interrupt_handler
+            }
             print_stats
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
@@ -123,9 +124,16 @@ class CLI
 
     private
 
-    def print_stats
-        stats   = @arachni.stats
+    def print_stats( refresh_time = false )
 
+        stats   = @arachni.stats( refresh_time )
+
+        audited = stats[:auditmap_size]
+        mapped  = stats[:sitemap_size]
+        progress = ( Float( audited ) / mapped ) * 100
+
+        print_line
+        print_info( "Audit progress: #{progress.to_s[0...4]}% ( #{audited}/#{mapped} pages )" )
         print_line
         print_info( "Sent #{stats[:requests]} requests." )
         print_info( "Received and analyzed #{stats[:responses]} responses." )
@@ -149,31 +157,51 @@ class CLI
     # The interrupt will be handled after a module has finished.
     #
     def handle_interrupt( )
+        return if @interrupt_handler && @interrupt_handler.alive?
 
-        Thread.new {
-            print_line
-            print_info( 'Results thus far:' )
+        @interrupt_handler = Thread.new {
 
-            begin
-                print_vulns( @arachni.audit_store( true ) )
-            rescue Exception => e
-                exception_jail{ raise e }
-                exit 0
-            end
+             Thread.new {
+                if gets[0] == 'e'
+                     unmute!
+                     print_info( 'Exiting...' )
+                     exit 0
+                else
+                    unmute!
+                    @interrupt_handler.kill
+                    Thread.kill
+                    break
+                end
+            }
 
-            print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+            while( 1 )
 
-            mute!
-
-            if gets[0] == 'e'
                 unmute!
-                print_info( 'Exiting...' )
-                exit 0
+                print_line
+                clear_screen
+                print_info( 'Results thus far:' )
+
+                begin
+                    print_vulns( @arachni.audit_store( true ) )
+                    print_stats( true )
+                rescue Exception => e
+                    exception_jail{ raise e }
+                    exit 0
+                end
+
+                print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+                mute!
+
+                ::IO::select( nil, nil, nil, 1 )
             end
 
             unmute!
         }
 
+    end
+
+    def clear_screen
+        puts "\e[H\e[2J"
     end
 
     def print_vulns( audit_store )
