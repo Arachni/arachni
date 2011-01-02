@@ -133,7 +133,7 @@ class CLI
         progress = ( Float( audited ) / mapped ) * 100
 
         print_line
-        print_info( "Audit progress: #{progress.to_s[0...4]}% ( #{audited}/#{mapped} pages )" )
+        print_info( "Audit progress: #{progress.to_s[0...5]}% ( #{audited}/#{mapped} pages )" )
         print_line
         print_info( "Sent #{stats[:requests]} requests." )
         print_info( "Received and analyzed #{stats[:responses]} responses." )
