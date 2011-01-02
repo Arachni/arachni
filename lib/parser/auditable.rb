@@ -153,21 +153,18 @@ class Auditable
         injection_sets( injection_str, opts ).each {
             |elem|
 
-            altered = elem.altered
-
-            opts[:altered] = altered.dup
+            opts[:altered] = elem.altered.dup
 
             return if skip?( elem )
 
             # inform the user about what we're auditing
-            print_status( get_status_str( altered ) )
+            print_status( get_status_str( opts[:altered] ) )
 
             # submit the element with the injection values
             req = elem.submit( opts )
             return if !req
 
-            injected = elem.auditable[altered]
-            on_complete( req, injection_str, elem, opts, &block )
+            on_complete( req, elem, opts, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -272,8 +269,7 @@ class Auditable
     # If no &block has been provided {#get_matches} will be called instead.
     #
     # @param  [Typhoeus::Request]  req
-    # @param  [String]  injected_str
-    # @param  [Hash]    variation
+    # @param  [Arachni::Element::Auditable]    auditable element
     # @param  [Hash]    opts           an updated hash of options
     # @param  [Block]   &block         block to be passed the:
     #                                   * HTTP response
@@ -282,14 +278,11 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    def on_complete( req, injected_str, elem, opts, &block )
+    def on_complete( req, elem, opts, &block )
 
-        altered = elem.altered
-        combo   = elem.auditable
-        opts[:injected] = injected_str.to_s
-        opts[:combo]    = combo
+        opts[:injected] = elem.auditable[elem.altered].to_s
+        opts[:combo]    = elem.auditable
 
-        # ap opts
         if( !opts[:async] )
 
             if( req && req.response )
@@ -330,7 +323,6 @@ class Auditable
     # will be returned describing the conditions under which
     # the vulnerability was discovered.
     #
-    # @param  [String]  var  the name of the vulnerable input vector
     # @param  [Typhoeus::Response]
     # @param  [Hash]  opts
     #
