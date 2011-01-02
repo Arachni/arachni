@@ -180,7 +180,7 @@ class Stdout < Arachni::Report::Base
         print_info( 'Total: ' + total.to_s )
         print_ok( 'Safe: ' + safe.to_s )
         print_error( 'Vulnerable: ' + vuln.to_s + " ( #{vuln_percentage.to_s}% )" )
-
+        print_line
 
     end
 
