@@ -348,6 +348,7 @@ For a full explanation of all available options you can consult the [User Guide]
 Arachni is also released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
 You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
+If you decide to go the CDE route you can skip the rest, you're done.
 
 Otherwise, in order to use Arachni you will need the following:
 
