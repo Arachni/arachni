@@ -163,15 +163,16 @@ class CLI
 
              Thread.new {
                 if gets[0] == 'e'
-                     unmute!
-                     print_info( 'Exiting...' )
-                     exit 0
-                else
                     unmute!
                     @interrupt_handler.kill
-                    Thread.kill
-                    break
+
+                     print_info( 'Exiting...' )
+                     exit 0
                 end
+
+                unmute!
+                @interrupt_handler.kill
+                Thread.kill
             }
 
             while( 1 )
