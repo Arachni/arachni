@@ -260,7 +260,12 @@ module Output
     #
     def print_color( sign, color, string, out = $stdout )
         return if muted?
-        out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+
+        if out.tty?
+            out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+        else
+            out.print "#{sign} #{string}\n";
+        end
     end
 
 end
