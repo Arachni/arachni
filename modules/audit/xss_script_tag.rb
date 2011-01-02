@@ -64,7 +64,8 @@ class XSSScriptTag < Arachni::Module::Base
             # see if we managed to inject a working HTML attribute to any
             # elements
             if !(html_elem = doc.xpath("//script")).empty? &&
-                html_elem.to_s.match( opts[:injected] )
+                html_elem.to_s.match( opts[:injected] ) &&
+                !html_elem.to_s.match( opts[:injected] ).to_s.empty?
 
                 elem    = opts[:element]
                 altered = opts[:altered]
