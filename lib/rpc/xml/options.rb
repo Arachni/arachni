@@ -22,6 +22,19 @@ module Arachni
 #
 class Options
 
+    def set( hash )
+        hash.each_pair {
+            |k, v|
+            begin
+                send( "#{k.to_s}=", v )
+            rescue Exception => e
+                ap e
+                ap e.backtrace
+            end
+        }
+        true
+    end
+
     #
     # Resets all important options that can affect the scan
     # during framework reuse.
@@ -36,9 +49,7 @@ class Options
 
             begin
                 instance_variable_set( var.to_s, nil )
-            rescue Exception => e
-                ap e.to_s
-                ap e.backtrace
+            rescue Exception
             end
         }
 
