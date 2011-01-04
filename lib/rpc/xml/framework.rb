@@ -37,6 +37,19 @@ class Framework < Arachni::Framework
     private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
     public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
 
+    #
+    # some XMLRPC libraries of other languages map remote objects to local objects
+    # creating an invalid syntax situation since the aforementioned languages
+    # may not allow "?" or "!" in method names.
+    #
+    # so we alias these methods to make it easier on 3rd party developers.
+    #
+    alias :pause! :pause
+    alias :paused? :is_paused
+    alias :resume! :resume
+    alias :busy? :is_busy
+    alias :debug? :is_debug
+
     def initialize( opts )
         super( opts )
         @modules = Arachni::RPC::XML::Module::Manager.new( opts )
