@@ -38,17 +38,51 @@ class Framework < Arachni::Framework
     public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
 
     #
+    # Aborts the running audit.
+    #
+    def abort!
+        @job.kill
+        return true
+    end
+
+    #
+    # Checks to see if an audit is running.
+    #
+    # @return   [Bool]
+    #
+    def busy?
+        return false if !@job
+        return @job.alive?
+    end
+
+    #
+    # Checks whether the framework is in debug mode
+    #
+    def debug?
+        @@debug
+    end
+
+    #
+    # Checks whether the framework is in debug mode
+    #
+    def verbose?
+        @@verbose
+    end
+
+
+    #
     # some XMLRPC libraries of other languages map remote objects to local objects
     # creating an invalid syntax situation since the aforementioned languages
     # may not allow "?" or "!" in method names.
     #
     # so we alias these methods to make it easier on 3rd party developers.
     #
-    alias :pause! :pause
-    alias :paused? :is_paused
-    alias :resume! :resume
-    alias :busy? :is_busy
-    alias :debug? :is_debug
+    alias :pause :pause!
+    alias :is_paused :paused?
+    alias :resume :resume!
+    alias :is_busy :busy?
+    alias :is_debug :debug?
+    alias :is_verbose :verbose?
 
     def initialize( opts )
         super( opts )
@@ -103,24 +137,6 @@ class Framework < Arachni::Framework
     end
 
     #
-    # Aborts the running audit.
-    #
-    def abort!
-        @job.kill
-        return true
-    end
-
-    #
-    # Checks to see if an audit is running.
-    #
-    # @return   [Bool]
-    #
-    def busy?
-        return false if !@job
-        return @job.alive?
-    end
-
-    #
     # Returns the results of the audit.
     #
     # @return   [Hash]
@@ -150,13 +166,6 @@ class Framework < Arachni::Framework
     end
 
     #
-    # Checks whether the framework is in debug mode
-    #
-    def debug?
-        @@debug
-    end
-
-    #
     # Enables debugging output
     #
     def verbose_on
@@ -169,14 +178,6 @@ class Framework < Arachni::Framework
     def verbose_off
         @@verbose = false
     end
-
-    #
-    # Checks whether the framework is in debug mode
-    #
-    def verbose?
-        @@verbose
-    end
-
 
 end
 
