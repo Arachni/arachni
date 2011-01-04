@@ -253,9 +253,8 @@ class Framework
 
             @sitemap |= @spider.pages
 
-            audit_queue if !@opts.spider_first
-
             @page_queue << page
+            audit_queue if !@opts.spider_first
         }
 
         audit_queue
