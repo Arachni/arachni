@@ -724,6 +724,8 @@ class XMLRPC
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
 
+    --spider-first              spider first, audit later
+
 
     Auditor ------------------------
 

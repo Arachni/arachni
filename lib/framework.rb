@@ -253,12 +253,12 @@ class Framework
 
             @sitemap |= @spider.pages
 
-            exception_jail{
-                run_mods( page )
-            }
+            audit_queue if !@opts.spider_first
 
-            @auditmap << page.url
+            @page_queue << page
         }
+
+        audit_queue
 
         if( @opts.http_harvest_last )
             harvest_http_responses( )
@@ -272,7 +272,7 @@ class Framework
         while( !@page_queue.empty? && page = @page_queue.pop )
 
             # audit the page
-            run_mods( page )
+            exception_jail{ run_mods( page ) }
 
             # run all the queued HTTP requests and harvest the responses
             http.run
@@ -506,6 +506,8 @@ class Framework
             wait_if_paused
             run_mod( mod, page.deep_clone )
         }
+
+        @auditmap << page.url
 
         if( !@opts.http_harvest_last )
             harvest_http_responses( )

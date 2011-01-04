@@ -21,6 +21,7 @@ opts = GetoptLong.new(
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
     [ '--audit-headers',           GetoptLong::NO_ARGUMENT ],
+    [ '--spider-first',            GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
     [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
@@ -82,6 +83,9 @@ begin
 
             when '--debug'
                 options.debug = true
+
+            when '--spider-first'
+                options.spider_first = true
 
             when '--plugin'
                 plugin, opt_str = arg.split( ':', 2 )

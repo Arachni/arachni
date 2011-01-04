@@ -308,6 +308,8 @@ class Options
     attr_accessor :lsplug
     attr_accessor :plugins
 
+    attr_accessor :spider_first
+
     attr_accessor :rpc_port
     attr_accessor :ssl
     attr_accessor :ssl_pkey
