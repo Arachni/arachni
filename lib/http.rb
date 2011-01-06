@@ -130,6 +130,8 @@ class HTTP
         @curr_res_time = 0
         @curr_res_cnt  = 0
 
+        @on_complete = []
+        @on_queue    = []
     end
 
     #
@@ -162,6 +164,11 @@ class HTTP
 
         req.id = @request_count
 
+        @on_queue.each {
+            |block|
+            exception_jail{ block.call( req, async ) }
+        }
+
         if( !async )
             @hydra_sync.queue( req )
         else
@@ -186,6 +193,12 @@ class HTTP
             @response_count += 1
             @curr_res_cnt   += 1
             @curr_res_time  += res.start_transfer_time
+
+            @on_complete.each {
+                |block|
+                exception_jail{ block.call( res ) }
+            }
+
 
             print_debug( '------------' )
             print_debug( 'Got response.' )
@@ -214,6 +227,22 @@ class HTTP
         exception_jail {
             @hydra_sync.run if !async
         }
+    end
+
+    #
+    # Gets called each time a request completes and passes the response
+    # to the block
+    #
+    def on_complete( &block )
+        @on_complete << block
+    end
+
+    #
+    # Gets called each time a request is queued and passes the request
+    # to the block
+    #
+    def on_queue( &block )
+        @on_queue << block
     end
 
     #
