@@ -153,7 +153,7 @@ class Server
                 cjob['runtime']  = cjob['currtime'] - cjob['starttime']
                 cjob['proc'] =  proc( cjob['pid'] )
 
-                return cjob
+                return remove_nils( cjob )
             end
         }
     end
@@ -245,6 +245,17 @@ USAGE
 
 
     private
+
+    def remove_nils( hash )
+        hash.each_pair {
+            |k, v|
+            hash[k] = '' if v.nil?
+            hash[k] = remove_nils( v ) if v.is_a? Hash
+        }
+
+        return hash
+    end
+
 
     #
     # Initializes and updates the pool making sure that the number of
