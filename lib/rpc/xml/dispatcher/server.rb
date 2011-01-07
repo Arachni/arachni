@@ -152,7 +152,8 @@ class Server
                 cjob['age'] = cjob['currtime'] - cjob['birthdate']
                 cjob['runtime']  = cjob['currtime'] - cjob['starttime']
                 cjob['proc'] =  proc( cjob['pid'] )
-                return cjob
+
+                return cjob.compact
             end
         }
     end
