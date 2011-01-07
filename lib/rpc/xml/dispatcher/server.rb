@@ -153,7 +153,7 @@ class Server
                 cjob['runtime']  = cjob['currtime'] - cjob['starttime']
                 cjob['proc'] =  proc( cjob['pid'] )
 
-                return cjob.compact
+                return cjob
             end
         }
     end
