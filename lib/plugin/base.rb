@@ -29,6 +29,16 @@ class Base
     include Arachni::Module::Output
 
     #
+    # @param    [Arachni::Framework]    framework
+    # @param    [Hash]        options    options passed to the plugin
+    #
+    def initialize( framework, options )
+        @framework = framework
+        @options   = options
+    end
+
+
+    #
     # OPTIONAL
     #
     def prepare( )
@@ -49,6 +59,9 @@ class Base
 
     end
 
+    def register_results( results )
+        @framework.plugin_store( self, results )
+    end
 
     #
     # REQUIRED

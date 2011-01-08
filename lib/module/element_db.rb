@@ -64,6 +64,9 @@ module ElementDB
 
       cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
       cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
+
+      return if cookie_jar.empty?
+
       @http.set_cookies( cookie_jar )
 
     end

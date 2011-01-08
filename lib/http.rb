@@ -532,6 +532,10 @@ class HTTP
         return params
     end
 
+    def cookie_hash
+        parse_cookie_str( @init_headers['cookie'] )
+    end
+
     #
     # Sets cookies for the HTTP session
     #

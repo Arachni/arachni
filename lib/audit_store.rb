@@ -51,6 +51,8 @@ class AuditStore
     #
     attr_reader :vulns
 
+    attr_reader :plugins
+
     #
     # @return    [String]    the date and time when the audit started
     #

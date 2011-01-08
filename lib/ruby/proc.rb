@@ -9,24 +9,21 @@
 =end
 
 #
-# Overloads the {Object} class providing a deep_clone() method
+# Overloads the {Proc} class adding dummy methods for serialization.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Object
+class Proc
 
-    #
-    # Deep-clones self using a Marshal dump-load.
-    #
-    def deep_clone
-        begin
-            return Marshal.load( Marshal.dump( self  ) )
-        rescue Exception
-            return self
-        end
+    def _dump( level )
+        return ''
+    end
+
+    def self._load args
+        return ''
     end
 
 end

@@ -151,6 +151,8 @@ class Framework
         @running = false
         @paused  = []
 
+        @plugin_store = {}
+
     end
 
     def http
@@ -307,11 +309,27 @@ class Framework
                 :revision => REVISION,
                 :options  => opts,
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-                :vulns    => @modules.results( ).deep_clone
+                :vulns    => @modules.results( ).deep_clone,
+                :plugins  => @plugin_store
             } )
          end
     end
 
+    def plugin_store( plugin, obj )
+        name = ''
+        @plugins.each_pair {
+            |k, v|
+
+            if plugin.class.name == v.name
+                name = k
+                break
+            end
+        }
+
+        @plugin_store[name] = {
+            :results => obj
+        }.merge( plugin.class.info )
+    end
 
     #
     # Returns an array of hashes with information
