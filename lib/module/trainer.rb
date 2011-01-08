@@ -206,7 +206,7 @@ class Trainer
     end
 
     def train_cookies( res )
-        cookies = @parser.cookies( res.headers_hash['Set-Cookie'].to_s ).clone
+        cookies = @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).clone
         return update_cookies( cookies )
     end
 
