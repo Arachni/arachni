@@ -143,7 +143,9 @@ class Framework < Arachni::Framework
     #
     def report
         return false if !@job
-        return audit_store( true ).to_h.dup
+        results = audit_store( true ).to_h.dup
+        results['plugins'] = YAML.dump( results['plugins'] )
+        return results
     end
 
     def auditstore
