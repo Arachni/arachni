@@ -241,6 +241,11 @@ class Cookie < Base
         @method = 'cookie'
 
         @auditable = { @raw['name'] => @raw['value'] }
+
+        @auditable.reject! {
+            |cookie|
+            Options.instance.exclude_cookies.include?( cookie )
+        }
     end
 
     def http_request( url, opts )
