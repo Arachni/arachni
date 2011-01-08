@@ -85,27 +85,6 @@ class AutoLogin < Arachni::Plugin::Base
             print_ok( 'Form submitted successfully.' )
         end
 
-        # convert the response cookies to a hash
-        cookies = {}
-        @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).each {
-            |cookie|
-            cookies.merge!( cookie.simple )
-        }
-
-        if cookies.empty?
-            print_error( 'Could not extract cookies...' )
-            return
-        else
-            print_info( 'Extracted cookies:' )
-            cookies.each{
-                |k, v|
-                print_info( "  * #{k} => #{v}" )
-            }
-        end
-
-        # set the login cookies system-wide so that the spider can use it
-        @framework.opts.cookies = cookies
-
     end
 
     def clean_up

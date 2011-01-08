@@ -61,14 +61,6 @@ module ElementDB
     #
     def init_cookies( cookies )
       @@cookies = cookies
-
-      cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-      cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
-
-      return if cookie_jar.empty?
-
-      @http.set_cookies( cookie_jar )
-
     end
 
     #
@@ -156,13 +148,8 @@ module ElementDB
         }
 
         @@cookies.flatten!
-
         @@cookies |= @new_cookies
 
-        cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-        cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
-
-        @http.set_cookies( cookie_jar )
         return [ @@cookies, cookie_cnt ]
     end
 
@@ -185,27 +172,6 @@ module ElementDB
         }
         return false
     end
-
-
-    #
-    # Returns cookies as a name=>value hash
-    #
-    # @return    [Hash]    the cookie attributes, values, etc
-    #
-    def get_cookies_simple( incookies = nil )
-        cookies = Hash.new( )
-
-        incookies = get_cookies( ) if !incookies
-
-        incookies.each {
-            |cookie|
-            cookies[cookie.raw['name']] = cookie.raw['value']
-        }
-
-        return cookies if !@page.cookiejar
-        @page.cookiejar.merge( cookies )
-    end
-
 
 end
 

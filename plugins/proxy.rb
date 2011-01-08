@@ -62,8 +62,8 @@ class Proxy < Arachni::Plugin::Base
             :ProxyVia       => false,
             :ProxyContentHandler => method( :handler ),
             :ProxyURITest   => method( :allowed? ),
-            :AccessLog      => [],
-            :Logger         => WEBrick::Log::new( "/dev/null", 7 )
+            # :AccessLog      => [],
+            # :Logger         => WEBrick::Log::new( "/dev/null", 7 )
         )
     end
 
@@ -110,11 +110,13 @@ class Proxy < Arachni::Plugin::Base
 
         cookies = {}
 
-        req['Cookie'].split( ';' ).each{
-            |cookie|
-            k, v = cookie.split( '=', 2 )
-            cookies[k.strip] = v.strip
-        }
+        if req['Cookie']
+            req['Cookie'].split( ';' ).each{
+                |cookie|
+                k, v = cookie.split( '=', 2 )
+                cookies[k.strip] = v.strip
+            }
+        end
 
         page.cookies.each {
             |cookie|
@@ -132,8 +134,7 @@ class Proxy < Arachni::Plugin::Base
             }
         end
 
-        # set the cookies system-wide so that the spider can use it
-        @framework.opts.cookies = cookies
+        @framework.http.set_cookies( cookies )
 
     end
 

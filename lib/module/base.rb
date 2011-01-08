@@ -64,11 +64,6 @@ class Base
         @http  = Arachni::HTTP.instance
         @http.trainer.page = @page.dup
 
-        # initialize the HTTP cookiejar with the user supplied one
-        if( @page.cookiejar )
-            @http.set_cookies( @page.cookiejar )
-        end
-
         #
         # This is slightly tricky...
         #

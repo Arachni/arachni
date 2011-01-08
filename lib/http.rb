@@ -107,6 +107,12 @@ class HTTP
             'User-Agent'    => opts.user_agent
         }
 
+        cookies = {}
+        cookies.merge!( parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
+        cookies.merge!( opts.cookies ) if opts.cookies
+
+        set_cookies( cookies ) if !cookies.empty?
+
         proxy_opts = {}
         proxy_opts = {
             :proxy           => "#{opts.proxy_addr}:#{opts.proxy_port}",
@@ -199,6 +205,7 @@ class HTTP
                 exception_jail{ block.call( res ) }
             }
 
+            parse_set_cookie( res )
 
             print_debug( '------------' )
             print_debug( 'Got response.' )
@@ -551,6 +558,25 @@ class HTTP
         }
     end
 
+    def parse_set_cookie( res )
+        return if res.headers_hash['Set-Cookie'].empty?
+
+        cookie_hash = {}
+        [res.headers_hash['Set-Cookie']].flatten.each {
+            |set_cookie_str|
+
+            cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
+                hash[cookie.name] = cookie.value if !!cookie
+                hash
+            end
+            )
+
+        }
+
+        current = parse_cookie_str( @init_headers['cookie'] )
+        set_cookies( current.merge( cookie_hash ) )
+    end
+
     #
     # Returns a hash of cookies as a string (merged with the cookie-jar)
     #
@@ -561,12 +587,6 @@ class HTTP
     def get_cookies_str( cookies = { } )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
-
-        cookies.reject! {
-            |cookie|
-            Options.instance.exclude_cookies.include?( cookie['name'] )
-        }
-
         cookies = jar.merge( cookies )
 
         str = ''
@@ -604,7 +624,7 @@ class HTTP
     #
     # @return   [Hash]    cookies     in name=>value pairs
     #
-    def HTTP.parse_cookiejar( cookie_jar )
+    def parse_cookiejar( cookie_jar )
 
         cookies = Hash.new
 

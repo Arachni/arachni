@@ -241,7 +241,7 @@ class Cookie < Base
         @method = 'cookie'
 
         @auditable = { @raw['name'] => @raw['value'] }
-
+        @simple = @auditable.dup
         @auditable.reject! {
             |cookie|
             Options.instance.exclude_cookies.include?( cookie )
@@ -253,7 +253,7 @@ class Cookie < Base
     end
 
     def simple
-        return @auditable.dup
+        return @simple
     end
 
     def type

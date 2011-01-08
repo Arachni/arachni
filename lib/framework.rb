@@ -493,8 +493,6 @@ class Framework
         if !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
-        else
-            @opts.cookies = http.class.parse_cookiejar( @opts.cookie_jar )
         end
 
     end
