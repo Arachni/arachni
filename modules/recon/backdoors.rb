@@ -13,15 +13,15 @@ module Arachni
 module Modules
 
 #
-# Looks for sensitive common files on the server.
+# Looks for common backdoors on the server.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1
 #
 #
-class CommonFiles < Arachni::Module::Base
+class Backdoors < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
@@ -73,18 +73,18 @@ class CommonFiles < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'CommonFiles',
-            :description    => %q{Tries to find common sensitive files on the server.},
+            :name           => 'Backdoors',
+            :description    => %q{Tries to find common backdoors on the server.},
             :elements       => [ ],
             :author         => 'zapotek',
-            :version        => '0.1.3',
+            :version        => '0.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
-                :name        => %q{A common sensitive file exists on the server.},
+                :name        => %q{A backdoor file exists on the server.},
                 :description => %q{},
                 :cwe         => '',
-                :severity    => Issue::Severity::LOW,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',

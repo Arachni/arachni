@@ -1,0 +1,16 @@
+r57shell.php
+r57.php
+c99shell.php
+c99.php
+nstview.php
+nst.php
+rst.php
+r57eng.php
+shell.php
+r.php
+lol.php
+zehir.php
+c-h.v2.php
+php-backdoor.php
+simple-backdoor.php
+cmdasp.asp
