@@ -1,5 +1,6 @@
 .buildpath
 .project
+.settings/
 
 /todo.txt
 /tmp
