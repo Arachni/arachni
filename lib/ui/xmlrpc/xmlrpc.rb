@@ -235,7 +235,7 @@ class XMLRPC
         # to show him while the scan is paused.
         #
         begin
-            print_vulns( @server.call( "framework.report" ) )
+            print_issues( @server.call( "framework.report" ) )
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
@@ -261,24 +261,24 @@ class XMLRPC
     end
 
     #
-    # Laconically output the discovered vulnerabilties/
+    # Laconically output the discovered issues
     #
     # This method is used during a pause.
     #
-    def print_vulns( audit_store )
+    def print_issues( audit_store )
 
         print_line( )
-        print_info( audit_store['vulns'].size.to_s +
-          ' vulnerabilities were detected.' )
+        print_info( audit_store['issues'].size.to_s +
+          ' issues have been detected.' )
 
         print_line( )
-        audit_store['vulns'].each {
-            |vuln|
+        audit_store['issues'].each {
+            |issue|
 
-            print_ok( "#{vuln['name']} (In #{vuln['elem']} variable '#{vuln['var']}'" +
-              " - Severity: #{vuln['severity']} - Variations: #{vuln['variations'].size.to_s})" )
+            print_ok( "#{issue['name']} (In #{issue['elem']} variable '#{issue['var']}'" +
+              " - Severity: #{issue['severity']} - Variations: #{issue['variations'].size.to_s})" )
 
-            print_info( vuln['variations'][0]['url'] )
+            print_info( issue['variations'][0]['url'] )
 
             print_line( )
         }
@@ -503,8 +503,8 @@ class XMLRPC
                 print_info( key + "\t\t" + info['targets'][key] )
             }
 
-            if( info['vulnerability'] &&
-                ( sploit = info['vulnerability']['metasploitable'] ) )
+            if( info['issue'] &&
+                ( sploit = info['issue']['metasploitable'] ) )
                 print_line( "Metasploitable:\t" + sploit )
             end
 

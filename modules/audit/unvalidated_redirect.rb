@@ -60,9 +60,9 @@ class UnvalidatedRedirect < Arachni::Module::Base
             :description    => %q{Injects URLs and checks the Location header field
                 to determnine whether the attack was successful.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1',
@@ -71,11 +71,11 @@ class UnvalidatedRedirect < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Unvalidated redirect},
                 :description => %q{The web application redirects users to unvalidated URLs.},
                 :cwe         => '819',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -92,7 +92,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
         if( res.headers_hash['Location'] == url )
 
             var = opts[:altered]
-            @results << Vulnerability.new( {
+            @results << Issue.new( {
                     :var          => var,
                     :url          => res.effective_url,
                     :injected     => url,

@@ -92,11 +92,11 @@ class BackupFiles < Arachni::Module::Base
             :version        => '0.1.5',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{A backup file exists on the server.},
                 :description => %q{},
                 :cew         => '530',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -106,7 +106,7 @@ class BackupFiles < Arachni::Module::Base
     end
 
     #
-    # Adds a vulnerability to the @results array<br/>
+    # Adds an issue to the @results array<br/>
     # and outputs an "OK" message with the filename and its url.
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
@@ -122,14 +122,14 @@ class BackupFiles < Arachni::Module::Base
 
         url = res.effective_url
         # append the result to the results array
-        @results << Vulnerability.new( {
+        @results << Issue.new( {
             :var          => 'n/a',
             :url          => url,
             :injected     => filename,
             :id           => filename,
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::PATH,
+            :elem         => Issue::Element::PATH,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,

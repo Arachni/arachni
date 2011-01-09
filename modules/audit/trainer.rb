@@ -70,10 +70,10 @@ class Trainer < Arachni::Module::Base
             :description    => %q{Pokes and probes all inputs of a given page in order to uncover new input vectors.
                 It also forces Arachni to train itself by analyzing the server responses.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE,
-                Vulnerability::Element::HEADER
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'zapotek',
             :version        => '0.1',

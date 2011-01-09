@@ -106,34 +106,34 @@ class XML < Arachni::Report::Base
 
         __end_tag( 'system' )
 
-        __simple_tag( 'vulnerability_cnt', @audit_store.vulns.size.to_s )
+        __simple_tag( 'issue_cnt', @audit_store.issues.size.to_s )
 
-        __start_tag( 'vulnerabilities' )
-        @audit_store.vulns.each {
-            |vuln|
+        __start_tag( 'issues' )
+        @audit_store.issues.each {
+            |issue|
 
-            __start_tag( 'vulnerability' )
-            __simple_tag( 'name', vuln.name )
+            __start_tag( 'issue' )
+            __simple_tag( 'name', issue.name )
 
-            __simple_tag( 'url', vuln.url )
-            __simple_tag( 'element', vuln.elem )
-            __simple_tag( 'variable', vuln.var )
-            __simple_tag( 'escription', vuln.description )
-            __simple_tag( 'manual_verification', vuln.verification.to_s )
+            __simple_tag( 'url', issue.url )
+            __simple_tag( 'element', issue.elem )
+            __simple_tag( 'variable', issue.var )
+            __simple_tag( 'escription', issue.description )
+            __simple_tag( 'manual_verification', issue.verification.to_s )
 
             __start_tag( 'references' )
-            vuln.references.each{
+            issue.references.each{
                 |ref|
                 __simple_tag( ref[0], ref[1] )
             }
             __end_tag( 'references' )
 
-            __buffer_variations( vuln )
+            __buffer_variations( issue )
 
-            __end_tag( 'vulnerability' )
+            __end_tag( 'issue' )
         }
 
-        __end_tag( 'vulnerabilities' )
+        __end_tag( 'issues' )
 
         __end_tag( 'arachni_report' )
 
@@ -142,11 +142,6 @@ class XML < Arachni::Report::Base
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'XML report',
@@ -160,9 +155,9 @@ class XML < Arachni::Report::Base
         }
     end
 
-    def __buffer_variations( vuln )
+    def __buffer_variations( issue )
         __start_tag( 'variations' )
-        vuln.variations.each_with_index {
+        issue.variations.each_with_index {
             |var|
             __start_tag( 'variation' )
 

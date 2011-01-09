@@ -68,11 +68,11 @@ class CreditCards < Arachni::Module::Base
             :author         => 'morpheuslaw <msidagni@nopsec.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Credit card number disclosure.},
                 :description => %q{A credit card number is disclosed in the body of the page.},
                 :cwe         => '200',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2      => '0',
                 :remedy_guidance    => %q{Remove credit card numbers from the body of the HTML pages.},
                 :remedy_code => '',

@@ -101,9 +101,9 @@ class Eval < Arachni::Module::Base
                 web application and assess whether or not the injection
                 was successful.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1.3',
@@ -116,12 +116,12 @@ class Eval < Arachni::Module::Base
              },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Code injection},
                 :description => %q{Arbitrary code can be injected into the web application
                     which is then executed as part of the system.},
                 :cwe         => '94',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '7.5',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being evaluated as executable code.

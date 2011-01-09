@@ -13,7 +13,7 @@ module Arachni
 module Modules
 
 #
-# Logs all non 200 (OK) server responses.
+# Logs all non 200 (OK) and non 404 server responses.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -24,6 +24,11 @@ module Modules
 class InterestingResponses < Arachni::Module::Base
 
     include Arachni::Module::Utilities
+
+    IGNORE_CODES = [
+        200,
+        404
+    ]
 
     def initialize( page )
         super( page )
@@ -40,7 +45,7 @@ class InterestingResponses < Arachni::Module::Base
         # tell the HTTP interface to cal this block every-time a request completes
         @http.on_complete {
             |res|
-            __log_results( res ) if res.code != 200 && !res.body.empty?
+            __log_results( res ) if !IGNORE_CODES.include?( res.code ) && !res.body.empty?
         }
 
     end
@@ -57,11 +62,11 @@ class InterestingResponses < Arachni::Module::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Interesting server response.},
                 :description => %q{The server responded with a non 200 (OK) code. },
                 :cwe         => '',
-                :severity    => Vulnerability::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -72,7 +77,12 @@ class InterestingResponses < Arachni::Module::Base
 
     def __log_results( res )
 
-        vuln = Vulnerability.new( {
+        @_loged ||= []
+
+        return if @_loged.include?( res.effective_url )
+
+        @_loged << res.effective_url
+        issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
             :injected     => 'n/a',
@@ -80,7 +90,7 @@ class InterestingResponses < Arachni::Module::Base
             :id           => "Code: #{res.code.to_s}",
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -89,7 +99,7 @@ class InterestingResponses < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         # inform the user that we have a match
         print_ok( "Found an interesting response (Code: #{res.code.to_s})." )

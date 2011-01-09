@@ -24,7 +24,7 @@
 #
 module Arachni
 
-class Vulnerability
+class Issue
 
     #
     # Holds constants to describe the {Vulnerability#severity} of a
@@ -52,14 +52,14 @@ class Vulnerability
     end
 
     #
-    # The name of the vulnerability
+    # The name of the issue
     #
     # @return    [String]
     #
     attr_accessor :name
 
     #
-    # The module that detected the vulnerability
+    # The module that detected the issue
     #
     # @return    [String]    the name of the module
     #
@@ -94,21 +94,21 @@ class Vulnerability
     attr_accessor :response
 
     #
-    # The injected data that revealed the vulnerability
+    # The injected data that revealed the issue
     #
     # @return    [String]
     #
     attr_accessor :injected
 
     #
-    # The string that identified the vulnerability
+    # The string that identified the issue
     #
     # @return    [String]
     #
     attr_accessor :id
 
     #
-    # The regexp that identified the vulnerability
+    # The regexp that identified the issue
     #
     # @return    [String]
     #
@@ -136,28 +136,28 @@ class Vulnerability
     attr_accessor :method
 
     #
-    # The description of the vulnerability
+    # The description of the issue
     #
     # @return    [String]
     #
     attr_accessor :description
 
     #
-    # References related to the vulnerability
+    # References related to the issue
     #
     # @return    [Hash]
     #
     attr_accessor :references
 
     #
-    # The CWE ID number of the vulnerability
+    # The CWE ID number of the issue
     #
     # @return    [String]
     #
     attr_accessor :cwe
 
     #
-    # The CWE URL of the vulnerability
+    # The CWE URL of the issue
     #
     # @return    [String]
     #
@@ -239,7 +239,7 @@ class Vulnerability
             end
         }
 
-        opts[:vulnerability].each {
+        opts[:issue].each {
             |k, v|
             begin
                 send( "#{k.to_s.downcase}=", v )
@@ -252,7 +252,7 @@ class Vulnerability
         end
 
         @mod_name   = opts[:name]
-        @references = opts[:references]
+        @references = opts[:references] || {}
 
     end
 

@@ -84,9 +84,9 @@ class SQLInjection < Arachni::Module::Base
             :name           => 'SQLInjection',
             :description    => %q{SQL injection recon module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1.4',
@@ -97,11 +97,11 @@ class SQLInjection < Arachni::Module::Base
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{SQL Injection},
                 :description => %q{SQL code can be injected into the web application.},
                 :cwe         => '89',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',

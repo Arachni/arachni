@@ -83,12 +83,12 @@ class WebDav < Arachni::Module::Base
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{WebDAV},
                 :description => %q{WebDAV is enabled on the server.
                     Consider auditing further using a specialised tool.},
                 :cwe         => '',
-                :severity    => Vulnerability::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -102,7 +102,7 @@ class WebDav < Arachni::Module::Base
 
         @@__found = true
 
-        vuln = Vulnerability.new( {
+        issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
             :injected     => 'n/a',
@@ -110,7 +110,7 @@ class WebDav < Arachni::Module::Base
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -119,7 +119,7 @@ class WebDav < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         # inform the user that we have a match
         print_ok( "Enabled for: #{res.effective_url}" )

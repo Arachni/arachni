@@ -118,7 +118,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
             }
 
             Arachni::Module::Manager.register_results(
-                [ Vulnerability.new( res.merge( self.class.info ) ) ]
+                [ Issue.new( res.merge( self.class.info ) ) ]
             )
     end
 
@@ -129,9 +129,9 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 (if the remote server suddenly becomes unresponsive or your network
                 connection suddenly chokes up this module will probably produce false positives).},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1',
@@ -140,12 +140,12 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Blind SQL Injection (timing attack)},
                 :description => %q{SQL code can be injected into the web application
                     even though it may not be obvious due to suppression of error messages.},
                 :cwe         => '89',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => %q{Suppression of error messages leads to
                     security through obscurity which is not a good practise.

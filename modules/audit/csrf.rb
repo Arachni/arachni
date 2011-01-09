@@ -98,7 +98,7 @@ class CSRF < Arachni::Module::Base
     #
     # @param  [Hash]  form
     #
-    # @return   [Bool]  true if the form if vulnerable, folse otherwise
+    # @return   [Bool]  true if the form if vulnerable, false otherwise
     #
     def __audit( form )
 
@@ -288,14 +288,14 @@ class CSRF < Arachni::Module::Base
         @@__audited << "#{url}::#{name}"
 
         # append the result to the results array
-        @results << Vulnerability.new( {
+        @results << Issue.new( {
             :var          => name,
             :url          => url,
             :injected     => 'n/a',
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::FORM,
+            :elem         => Issue::Element::FORM,
             :response     => @page.html,
             :headers      => {
                 :request    => 'n/a',
@@ -313,7 +313,7 @@ class CSRF < Arachni::Module::Base
                 which forms affect business logic and audits them for CSRF.
                 It requires a logged-in user's cookie-jar.},
             :elements       => [
-                Vulnerability::Element::FORM
+                Issue::Element::FORM
             ],
             :author         => 'zapotek',
             :version        => '0.1',
@@ -324,7 +324,7 @@ class CSRF < Arachni::Module::Base
              },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Request Forgery},
                 :description => %q{The web application does not, or can not,
                      sufficiently verify whether a well-formed, valid, consistent
@@ -332,7 +332,7 @@ class CSRF < Arachni::Module::Base
                      This is due to a lack of secure anti-CSRF tokens to verify
                      the freshness of the submitted data.},
                 :cwe         => '352',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => %q{A unique token that guaranties freshness of submitted
                     data must be added to all web application elements that can affect

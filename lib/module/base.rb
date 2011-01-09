@@ -146,10 +146,10 @@ class Base
             # empty.
             #
             # 'Elements'       => [
-            #     Vulnerability::Element::FORM,
-            #     Vulnerability::Element::LINK,
-            #     Vulnerability::Element::COOKIE,
-            #     Vulnerability::Element::HEADER
+            #     Issue::Element::FORM,
+            #     Issue::Element::LINK,
+            #     Issue::Element::COOKIE,
+            #     Issue::Element::HEADER
             # ],
             :elements       => [],
             :author         => 'zapotek',
@@ -157,16 +157,16 @@ class Base
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :description => %q{},
                 :cwe         => '',
                 #
                 # Severity can be:
                 #
-                # Vulnerability::Severity::HIGH
-                # Vulnerability::Severity::MEDIUM
-                # Vulnerability::Severity::LOW
-                # Vulnerability::Severity::INFORMATIONAL
+                # Issue::Severity::HIGH
+                # Issue::Severity::MEDIUM
+                # Issue::Severity::LOW
+                # Issue::Severity::INFORMATIONAL
                 #
                 :severity    => '',
                 :cvssv2       => '',

@@ -56,13 +56,13 @@ module Auditor
     # Holds constants that describe the HTML elements to be audited.
     #
     module Element
-        LINK    = Vulnerability::Element::LINK
-        FORM    = Vulnerability::Element::FORM
-        COOKIE  = Vulnerability::Element::COOKIE
-        HEADER  = Vulnerability::Element::HEADER
-        BODY    = Vulnerability::Element::BODY
-        PATH    = Vulnerability::Element::PATH
-        SERVER  = Vulnerability::Element::SERVER
+        LINK    = Issue::Element::LINK
+        FORM    = Issue::Element::FORM
+        COOKIE  = Issue::Element::COOKIE
+        HEADER  = Issue::Element::HEADER
+        BODY    = Issue::Element::BODY
+        PATH    = Issue::Element::PATH
+        SERVER  = Issue::Element::SERVER
     end
 
     #
@@ -79,7 +79,7 @@ module Auditor
         #
         :elements => [ Element::LINK, Element::FORM,
                        Element::COOKIE, Element::HEADER,
-                       Vulnerability::Element::BODY ],
+                       Issue::Element::BODY ],
 
         #
         # The regular expression to match against the response body.
@@ -154,9 +154,9 @@ module Auditor
                 log_match(
                     :regexp  => regexp,
                     :match   => match,
-                    :element => Vulnerability::Element::BODY
+                    :element => Issue::Element::BODY
                 )
-            } if elems.include? Vulnerability::Element::BODY
+            } if elems.include? Issue::Element::BODY
 
             @page.response_headers.each {
                 |k,v|
@@ -172,10 +172,10 @@ module Auditor
                         :var => k,
                         :regexp  => regexp,
                         :match   => match,
-                        :element => Vulnerability::Element::HEADER
+                        :element => Issue::Element::HEADER
                     )
                 }
-            } if elems.include? Vulnerability::Element::HEADER
+            } if elems.include? Issue::Element::HEADER
 
         }
     end
@@ -202,7 +202,7 @@ module Auditor
 
         # Instantiate a new Vulnerability class and
         # append it to the results array
-        vuln = Vulnerability.new( {
+        vuln = Issue.new( {
             :var          => opts[:var] || '<n/a>',
             :url          => url,
             :injected     => 'n/a',

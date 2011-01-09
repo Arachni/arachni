@@ -178,9 +178,9 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             # empty or don't define it at all.
             #
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1.2',
@@ -190,7 +190,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Remote file inclusion},
                 :description => %q{The web application can be forced to include
                     3rd party remote content which can often lead to arbitrary code
@@ -199,12 +199,12 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 #
                 # Severity can be:
                 #
-                # Vulnerability::Severity::HIGH
-                # Vulnerability::Severity::MEDIUM
-                # Vulnerability::Severity::LOW
-                # Vulnerability::Severity::INFORMATIONAL
+                # Issue::Severity::HIGH
+                # Issue::Severity::MEDIUM
+                # Issue::Severity::LOW
+                # Issue::Severity::INFORMATIONAL
                 #
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2      => '7.5',
                 :remedy_guidance    => %q{Enforce strict validation and filtering
                     on user inputs.},

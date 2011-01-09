@@ -52,11 +52,11 @@ class HTTP_PUT < Arachni::Module::Base
             :version        => '0.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{HTTP PUT is enabled.},
                 :description => %q{3rd parties can upload files to the web-server.},
                 :cwe         => '650',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -66,7 +66,7 @@ class HTTP_PUT < Arachni::Module::Base
 
     def __log_results( res )
 
-        vuln = Vulnerability.new( {
+        issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
             :injected     => 'n/a',
@@ -74,7 +74,7 @@ class HTTP_PUT < Arachni::Module::Base
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -83,7 +83,7 @@ class HTTP_PUT < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         print_ok( 'Request was accepted: ' + res.effective_url )
     end

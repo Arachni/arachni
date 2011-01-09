@@ -75,12 +75,12 @@ class XSSURI < Arachni::Module::Base
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Scripting (XSS) in URI},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
                 :cwe         => '79',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -97,14 +97,14 @@ class XSSURI < Arachni::Module::Base
 
             url = res.effective_url
             # append the result to the results hash
-            @results << Vulnerability.new( {
+            @results << Issue.new( {
                 :var          => 'n/a',
                 :url          => url,
                 :injected     => @str,
                 :id           => @str,
                 :regexp       => regexp,
                 :regexp_match => @str,
-                :elem         => Vulnerability::Element::PATH,
+                :elem         => Issue::Element::PATH,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,

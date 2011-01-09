@@ -64,10 +64,10 @@ class XSS < Arachni::Module::Base
             :name           => 'XSS',
             :description    => %q{Cross-Site Scripting module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE,
-                Vulnerability::Element::HEADER
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'zapotek',
             :version        => '0.2',
@@ -76,12 +76,12 @@ class XSS < Arachni::Module::Base
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Scripting (XSS)},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
                 :cwe         => '79',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',

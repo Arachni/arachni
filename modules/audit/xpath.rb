@@ -73,9 +73,9 @@ class XPathInjection < Arachni::Module::Base
             :name           => 'XPathInjection',
             :description    => %q{XPath injection module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
@@ -83,11 +83,11 @@ class XPathInjection < Arachni::Module::Base
                 'OWASP'      => 'http://www.owasp.org/index.php/XPATH_Injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{XPath Injection},
                 :description => %q{XPath queries can be injected into the web application.},
                 :cwe         => '91',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => ''

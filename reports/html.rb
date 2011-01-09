@@ -78,20 +78,20 @@ class HTML < Arachni::Report::Base
 
     def __prepare_data( )
 
-        @audit_store.vulns.each_with_index {
-            |vuln, i|
+        @audit_store.issues.each_with_index {
+            |issue, i|
 
-            if( vuln.references )
+            if( issue.references )
                 refs = []
-                vuln.references.each_pair {
+                issue.references.each_pair {
                     |name, value|
                     refs << { 'name' => name, 'value' => value }
                 }
 
-                @audit_store.vulns[i].references = refs
+                @audit_store.issues[i].references = refs
             end
 
-            vuln.variations.each_with_index {
+            issue.variations.each_with_index {
                 |variation, j|
 
                 if( variation['regexp'] )
@@ -99,10 +99,10 @@ class HTML < Arachni::Report::Base
                 end
 
                 if( variation['response'] )
-                    @audit_store.vulns[i].variations[j]['escaped_response'] =
+                    @audit_store.issues[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
 
-                    @audit_store.vulns[i].variations[j].delete( 'response' )
+                    @audit_store.issues[i].variations[j].delete( 'response' )
                 end
 
                 if( variation['headers']['request'].is_a?( Hash ) )
@@ -111,7 +111,7 @@ class HTML < Arachni::Report::Base
                         |key,val|
                         request += "#{key}:\t#{val}\n"
                     }
-                    @audit_store.vulns[i].variations[j]['headers']['request']=
+                    @audit_store.issues[i].variations[j]['headers']['request']=
                         request.clone
                 end
 
@@ -121,7 +121,7 @@ class HTML < Arachni::Report::Base
                         |key,val|
                         response += "#{key}:\t#{val}\n"
                     }
-                    @audit_store.vulns[i].variations[j]['headers']['response']=
+                    @audit_store.issues[i].variations[j]['headers']['response']=
                         response.clone
                 end
 

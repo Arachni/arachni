@@ -319,11 +319,11 @@ class Auditable
     end
 
     #
-    # Tries to identify a vulnerability through regexp pattern matching.
+    # Tries to identify an issue through regexp pattern matching.
     #
-    # If a vulnerability is found a message will be printed and a hash
+    # If a issue is found a message will be printed and a hash
     # will be returned describing the conditions under which
-    # the vulnerability was discovered.
+    # the issue was discovered.
     #
     # @param  [Typhoeus::Response]
     # @param  [Hash]  opts
@@ -389,7 +389,7 @@ class Auditable
             }
 
             @results ||= []
-            @results << Vulnerability.new( res.merge( @auditor.class.info ) )
+            @results << Issue.new( res.merge( @auditor.class.info ) )
             Arachni::Module::Manager.register_results( @results.uniq )
         end
     end

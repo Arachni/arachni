@@ -37,11 +37,11 @@ class PrivateIP < Arachni::Module::Base
             :author         => 'morpheuslaw <msidagni@nopsec.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Private IP address disclosure.},
                 :description => %q{A private IP address is disclosured in the body of the HTML page},
                 :cwe         => '200',
-                :severity    => Vulnerability::Severity::LOW,
+                :severity    => Issue::Severity::LOW,
                 :cvssv2      => '0',
                 :remedy_guidance    => %q{Remove private IP addresses from the body of the HTML pages.},
                 :remedy_code => '',

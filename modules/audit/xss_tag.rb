@@ -98,7 +98,7 @@ class XSSHTMLTag < Arachni::Module::Base
                 }
 
                 Arachni::Module::Manager.register_results(
-                    [ Vulnerability.new( res.merge( self.class.info ) ) ]
+                    [ Issue.new( res.merge( self.class.info ) ) ]
                 )
 
             end
@@ -110,9 +110,9 @@ class XSSHTMLTag < Arachni::Module::Base
             :name           => 'XSS in HTML tag',
             :description    => %q{Cross-Site Scripting in HTML tag.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE,
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
             ],
             :author         => 'zapotek',
             :version        => '0.1',
@@ -121,12 +121,12 @@ class XSSHTMLTag < Arachni::Module::Base
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Scripting in HTML tag.},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
                 :cwe         => '79',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',

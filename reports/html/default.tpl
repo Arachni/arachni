@@ -92,7 +92,7 @@
         padding-right: 100px;
     }
 
-    .vulns {
+    .issues {
         width: 100%;
         display: block;
     }
@@ -293,54 +293,54 @@
       <p class="note"><a href="#sitemap">Sitemap</a></p>
 
       <p>
-      <h2 id="top">{{vulns | size}} vulnerabilities discovered</h2>
-      {% for vuln in vulns %}
-      <h3><a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}</a>:</h3>
-      In <span class="note">{{vuln.elem}}</span> variable
-      <span class="note">{{vuln.var | escape}}</span>
-      at <span class="note">{{vuln.url | escape}}</span>.
+      <h2 id="top">{{issues | size}} issues discovered</h2>
+      {% for issue in issues %}
+      <h3><a href="#issue_{{forloop.index}}">[{{forloop.index}}] {{issue.name | escape}}</a>:</h3>
+      In <span class="note">{{issue.elem}}</span> variable
+      <span class="note">{{issue.var | escape}}</span>
+      at <span class="note">{{issue.url | escape}}</span>.
       {% endfor %}
       </p>
 
-      <div class="vulns">
-        <h2>Vulnerabilities</h2>
+      <div class="issues">
+        <h2>Issues</h2>
 
-        {% for vuln in vulns %}
+        {% for issue in issues %}
 
-        <h3 id="vuln_{{forloop.index}}">
-          <a href="#vuln_{{forloop.index}}">[{{forloop.index}}] {{vuln.name | escape}}
+        <h3 id="issue_{{forloop.index}}">
+          <a href="#issue_{{forloop.index}}">[{{forloop.index}}] {{issue.name | escape}}
           </a>
         </h3>
         <a href="#top">[Go to top]</a>
         <br/>
         <div class="left">
           <strong>Module name</strong>:
-            {{vuln.mod_name}}
+            {{issue.mod_name}}
           <br />
-          <strong>Vulnerable variable</strong>: {{vuln.var}}<br />
-          <strong>Vulnerable URL</strong>: {{vuln.url | escape}}<br />
+          <strong>Affected variable</strong>: {{issue.var}}<br />
+          <strong>Affected URL</strong>: {{issue.url | escape}}<br />
           <strong>HTML Element</strong>
 
-          <p class="note">{{vuln.elem}}</p>
+          <p class="note">{{issue.elem}}</p>
 
           <h3>Description</h3>
-          <p class="note">{{vuln.description | escape}}</p>
+          <p class="note">{{issue.description | escape}}</p>
 
           <h3>Requires manual verification?</h3>
-          <p class="note">{{vuln.verification | escape}}</p>
+          <p class="note">{{issue.verification | escape}}</p>
 
         </div>
 
-        <strong>CWE</strong>: {{vuln.cwe}}
-        (<a target="_blank" href="{{vuln.cwe_url}}">{{vuln.cwe_url}}</a>)<br />
-        <strong>Severity</strong>: {{vuln.severity}}<br />
-        <strong>CVSSV2</strong>: {{vuln.cvssv2}}
+        <strong>CWE</strong>: {{issue.cwe}}
+        (<a target="_blank" href="{{issue.cwe_url}}">{{issue.cwe_url}}</a>)<br />
+        <strong>Severity</strong>: {{issue.severity}}<br />
+        <strong>CVSSV2</strong>: {{issue.cvssv2}}
 
         <h3>References</h3>
 
         <ul>
-          {% if vuln.references != empty %}
-            {% for ref in vuln.references %}
+          {% if issue.references != empty %}
+            {% for ref in issue.references %}
 
           <li>{{ref.name | escape}} - <a target="_blank" href="{{ref.value}}">{{ref.value}}</a></li>
 
@@ -357,18 +357,18 @@
         <br />
         <br />
         <br />
-          {% if vuln.remedy_guidance != "" %}
+          {% if issue.remedy_guidance != "" %}
           <h3>Remedial guidance</h3>
-          <p class="note">{{vuln.remedy_guidance | escape}}</p>
+          <p class="note">{{issue.remedy_guidance | escape}}</p>
           {% endif %}
 
-          {% if vuln.remedy_code != "" %}
+          {% if issue.remedy_code != "" %}
           <h3>Remedial code</h3>
-          <pre class="code note">{{vuln.remedy_code | escape}}</pre>
+          <pre class="code note">{{issue.remedy_code | escape}}</pre>
           {% endif %}
 
         {% assign toploop_index = forloop.index %}
-        {% for variation in vuln.variations %}
+        {% for variation in issue.variations %}
         <h3 class="variation_header">
           <a href='javascript:toggleElem( "var_{{toploop_index}}_{{forloop.index}}" )'>
             <span id="var_{{toploop_index}}_{{forloop.index}}_sign">[+]</span>
@@ -376,7 +376,7 @@
           </a>
         </h3>
 
-        <strong>Vulnerable URL</strong>:
+        <strong>Affected URL</strong>:
         <p class="note"><a href="{{variation.url}}">{{variation.url}}</a></p>
 
         <div class="variation" id="var_{{toploop_index}}_{{forloop.index}}">

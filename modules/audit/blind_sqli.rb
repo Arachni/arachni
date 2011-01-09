@@ -237,7 +237,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 (Note: This module may get confused by certain types of XSS vulnerabilities.
                     If this module returns a positive result you should investigate nonetheless.)},
             :elements       => [
-                Vulnerability::Element::LINK
+                Issue::Element::LINK
             ],
             :author          => 'zapotek',
             :version         => '0.2.2',
@@ -247,12 +247,12 @@ class BlindSQLInjection < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Blind SQL Injection},
                 :description => %q{SQL code can be injected into the web application
                     even though it may not be obvious due to suppression of error messages.},
                 :cwe         => '89',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => %q{Suppression of error messages leads to
                     security through obscurity which is not a good practise.
@@ -280,7 +280,7 @@ class BlindSQLInjection < Arachni::Module::Base
             :combo         => @__candidate.auditable
         }
 
-        @results << Vulnerability.new( {
+        @results << Issue.new( {
                 :var          => var,
                 :url          => url,
                 :method       => res.request.method.to_s,
@@ -289,7 +289,7 @@ class BlindSQLInjection < Arachni::Module::Base
                 :id           => str,
                 :regexp       => 'n/a',
                 :regexp_match => 'n/a',
-                :elem         => Vulnerability::Element::LINK,
+                :elem         => Issue::Element::LINK,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
@@ -298,7 +298,7 @@ class BlindSQLInjection < Arachni::Module::Base
             }.merge( self.class.info )
         )
 
-        print_ok( "In #{Vulnerability::Element::LINK} var '#{var}' ( #{url} )" )
+        print_ok( "In #{Issue::Element::LINK} var '#{var}' ( #{url} )" )
         #
         # If I un-comment the following, with debugging disabled,
         # something will block for a long time... how weird is that?

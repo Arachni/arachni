@@ -58,11 +58,6 @@ class Text < Arachni::Report::Base
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Text report',

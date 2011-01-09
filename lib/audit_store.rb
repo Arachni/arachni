@@ -10,7 +10,7 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'vulnerability'
+require Options.instance.dir['lib'] + 'issue'
 
 #
 # Arachni::AuditStore class
@@ -47,9 +47,9 @@ class AuditStore
     attr_reader :sitemap
 
     #
-    # @return    [Array<Vulnerability>]  the discovered vulnerabilities
+    # @return    [Array<Issue>]  the discovered issues
     #
-    attr_reader :vulns
+    attr_reader :issues
 
     attr_reader :plugins
 
@@ -70,10 +70,10 @@ class AuditStore
 
 
     ORDER = [
-        ::Arachni::Vulnerability::Severity::HIGH,
-        ::Arachni::Vulnerability::Severity::MEDIUM,
-        ::Arachni::Vulnerability::Severity::LOW,
-        ::Arachni::Vulnerability::Severity::INFORMATIONAL
+        ::Arachni::Issue::Severity::HIGH,
+        ::Arachni::Issue::Severity::MEDIUM,
+        ::Arachni::Issue::Severity::LOW,
+        ::Arachni::Issue::Severity::INFORMATIONAL
     ]
 
     def initialize( audit = {} )
@@ -85,7 +85,7 @@ class AuditStore
         }
 
         @options         = prepare_options( @options )
-        @vulns           = sort( prepare_variations( @vulns ) )
+        @issues          = sort( prepare_variations( @issues ) )
         @start_datetime  = @options['start_datetime'].asctime
 
         if @options['finish_datetime']
@@ -128,27 +128,27 @@ class AuditStore
 
         hash = obj_to_hash( self )
 
-        vulns = []
-        hash['vulns'].each {
-            |vuln|
-            vulns << obj_to_hash( vuln )
+        issues = []
+        hash['issues'].each {
+            |issue|
+            issues << obj_to_hash( issue )
         }
 
-        hash['vulns'] = vulns
+        hash['issues'] = issues
         return hash
     end
 
     private
 
-    def sort( vulns )
+    def sort( issues )
         sorted = []
-        vulns.each {
-            |vuln|
-            sorted[ORDER.rindex( vuln.severity )] ||= []
-            sorted[ORDER.rindex( vuln.severity )] << vuln
+        issues.each {
+            |issue|
+            sorted[ORDER.rindex( issue.severity )] ||= []
+            sorted[ORDER.rindex( issue.severity )] << issue
         }
 
-        return sorted.flatten.reject{ |vuln| vuln.nil? }
+        return sorted.flatten.reject{ |issue| issue.nil? }
     end
 
 
@@ -218,17 +218,17 @@ class AuditStore
     end
 
     #
-    # Parses the vulnerabilities in "vulns" and aggregates them
+    # Parses the issues in "issue" and aggregates them
     # creating variations of the same attacks.
     #
-    # @see Vulnerability#variations
+    # @see Issue#variations
     #
-    # @param    [Array<Vulnerability>]    vulns
+    # @param    [Array<Issue>]    issues
     #
-    # @return    [Array<Vulnerability>]    new array of Vulnerability instances
-    #                                        with populated {Vulnerability#variations}
+    # @return    [Array<Issue>]    new array of Issue instances
+    #                                        with populated {Issue#variations}
     #
-    def prepare_variations( vulns )
+    def prepare_variations( issues )
 
         variation_keys = [
             'injected',
@@ -240,57 +240,57 @@ class AuditStore
             'opts'
         ]
 
-        new_vulns = {}
-        vulns.each {
-            |vuln|
+        new_issues = {}
+        issues.each {
+            |issue|
 
-            __id  = vuln.mod_name + '::' + vuln.elem + '::' +
-                vuln.var + '::' + vuln.url.split( /\?/ )[0]
+            __id  = issue.mod_name + '::' + issue.elem + '::' +
+                issue.var + '::' + issue.url.split( /\?/ )[0]
 
-            orig_url    = vuln.url
-            vuln.url    = vuln.url.split( /\?/ )[0]
+            orig_url    = issue.url
+            issue.url    = issue.url.split( /\?/ )[0]
 
-            if( !new_vulns[__id] )
-                new_vulns[__id] = vuln
+            if( !new_issues[__id] )
+                new_issues[__id] = issue
             end
 
-            if( !new_vulns[__id].variations )
-                new_vulns[__id].variations = []
+            if( !new_issues[__id].variations )
+                new_issues[__id].variations = []
             end
 
-            vuln.headers['request']  = vuln.headers[:request]
-            vuln.headers['response'] = vuln.headers[:response]
+            issue.headers['request']  = issue.headers[:request]
+            issue.headers['response'] = issue.headers[:response]
 
-            new_vulns[__id].variations << {
+            new_issues[__id].variations << {
                 'url'           => orig_url,
-                'injected'      => vuln.injected,
-                'id'            => vuln.id,
-                'regexp'        => vuln.regexp,
-                'regexp_match'  => vuln.regexp_match,
-                'headers'       => vuln.headers,
-                'response'      => vuln.response,
-                'opts'          => vuln.opts ? vuln.opts : {}
+                'injected'      => issue.injected,
+                'id'            => issue.id,
+                'regexp'        => issue.regexp,
+                'regexp_match'  => issue.regexp_match,
+                'headers'       => issue.headers,
+                'response'      => issue.response,
+                'opts'          => issue.opts ? issue.opts : {}
             }
 
             variation_keys.each {
                 |key|
 
-                if( new_vulns[__id].instance_variable_defined?( '@' + key ) )
-                    new_vulns[__id].remove_instance_var( '@' + key )
+                if( new_issues[__id].instance_variable_defined?( '@' + key ) )
+                    new_issues[__id].remove_instance_var( '@' + key )
                 end
             }
 
         }
 
-        vuln_keys = new_vulns.keys
-        new_vulns = new_vulns.to_a.flatten
+        issue_keys = new_issues.keys
+        new_issues = new_issues.to_a.flatten
 
-        vuln_keys.each {
+        issue_keys.each {
             |key|
-            new_vulns.delete( key )
+            new_issues.delete( key )
         }
 
-        new_vulns
+        new_issues
     end
 
     #

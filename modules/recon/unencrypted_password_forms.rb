@@ -74,14 +74,14 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         @@__audited << input['name']
 
         # append the result to the results array
-        @results << Vulnerability.new( {
+        @results << Issue.new( {
             :var          => input['name'],
             :url          => url,
             :injected     => 'n/a',
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::FORM,
+            :elem         => Issue::Element::FORM,
             :response     => @page.html,
             :headers      => {
                 :request    => 'n/a',
@@ -99,7 +99,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :description    => %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
             :elements       => [
-                Vulnerability::Element::FORM
+                Issue::Element::FORM
             ],
             :author         => 'zapotek',
             :version        => '0.1',
@@ -107,11 +107,11 @@ class UnencryptedPasswordForms < Arachni::Module::Base
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Unencrypted password form.},
                 :description => %q{Transmission of password does not use an encrypted channel.},
                 :cwe         => '319',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',

@@ -19,7 +19,6 @@ require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'
 require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'audit_store'
-require opts.dir['lib'] + 'vulnerability'
 require opts.dir['lib'] + 'module'
 require opts.dir['lib'] + 'plugin'
 require opts.dir['lib'] + 'http'
@@ -309,7 +308,7 @@ class Framework
                 :revision => REVISION,
                 :options  => opts,
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-                :vulns    => @modules.results( ).deep_clone,
+                :issues   => @modules.results( ).deep_clone,
                 :plugins  => @plugin_store
             } )
          end
@@ -587,10 +586,10 @@ class Framework
         return true if( !mod.info[:elements] || mod.info[:elements].empty? )
 
         elems = {
-            Vulnerability::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
-            Vulnerability::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
-            Vulnerability::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
-            Vulnerability::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
+            Issue::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
+            Issue::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
+            Issue::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
+            Issue::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
         }
 
         elems.each_pair {

@@ -66,9 +66,9 @@ class ResponseSplitting < Arachni::Module::Base
             :description    => %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.1.3',
@@ -78,12 +78,12 @@ class ResponseSplitting < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Response splitting},
                 :description => %q{The web application includes user input
                      in the response HTTP header.},
                 :cwe         => '20',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '5.0',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being included as part of the HTTP response headers.},
@@ -100,7 +100,7 @@ class ResponseSplitting < Arachni::Module::Base
 
             url = res.effective_url
             var = opts[:altered]
-            @results << Vulnerability.new( {
+            @results << Issue.new( {
                     :var          => var,
                     :url          => url,
                     :injected     => URI.encode( @__header ),

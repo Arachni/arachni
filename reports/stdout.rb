@@ -14,7 +14,7 @@ module Reports
 #
 # Default report.
 #
-# Outputs the vulnerabilities to stdout, used with the CLI UI.<br/>
+# Outputs the issues to stdout, used with the CLI UI.<br/>
 # All UIs must have a default report.
 #
 #
@@ -33,11 +33,6 @@ class Stdout < Arachni::Report::Base
         @audit_store = audit_store
     end
 
-    #
-    # REQUIRED
-    #
-    # Use it to run your report.
-    #
     def run( )
 
         print_line( "\n" )
@@ -105,46 +100,46 @@ class Stdout < Arachni::Report::Base
         print_line
         print_info( '===========================' )
         print_line
-        print_ok( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
+        print_ok( @audit_store.issues.size.to_s + " issues were detected." )
         print_line
 
-        @audit_store.vulns.each {
-            |vuln|
+        @audit_store.issues.each {
+            |issue|
 
-            print_ok( vuln.name )
+            print_ok( issue.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
 
-            print_info( 'Severity: ' + vuln.severity ) if vuln.severity
-            print_info( 'URL:      ' + vuln.url )
-            print_info( 'Elements: ' + vuln.elem )
-            print_info( 'Variable: ' + vuln.var )
+            print_info( 'Severity: ' + issue.severity ) if issue.severity
+            print_info( 'URL:      ' + issue.url )
+            print_info( 'Elements: ' + issue.elem )
+            print_info( 'Variable: ' + issue.var )
             print_info( 'Description: ' )
-            print_info( vuln.description )
+            print_info( issue.description )
 
-            if vuln.cwe && !vuln.cwe.empty?
+            if issue.cwe && !issue.cwe.empty?
                 print_line
-                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{issue.cwe}.html" )
             end
 
             print_line
-            print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
+            print_info( 'Requires manual verification?: ' + issue.verification.to_s )
             print_line
 
-            if( vuln.references )
+            if( issue.references )
                 print_info( 'References:' )
-                vuln.references.each{
+                issue.references.each{
                     |ref|
                     print_info( '  ' + ref[0] + ' - ' + ref[1] )
                 }
             end
 
-            print_info_variations( vuln )
+            print_info_variations( issue )
 
             print_line
         }
 
         sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
-        sitemap |= vuln_urls = @audit_store.vulns.map { |vuln| vuln.url }.uniq
+        sitemap |= issue_urls = @audit_store.issues.map { |issue| issue.url }.uniq
 
         return if sitemap.size == 0
 
@@ -153,19 +148,19 @@ class Stdout < Arachni::Report::Base
 
         print_line
         print_info( 'Color codes:' )
-        print_ok( 'Safe' )
-        print_error( 'Vulnerable' )
+        print_ok( 'No issues' )
+        print_error( 'Has issues' )
         print_line
 
-        vuln = 0
+        issue = 0
         sitemap.each {
             |url|
 
             next if !url
 
-            if vuln_urls.include?( url )
+            if issue_urls.include?( url )
                 print_error( url )
-                vuln += 1
+                issue += 1
             else
                 print_ok( url )
             end
@@ -174,21 +169,16 @@ class Stdout < Arachni::Report::Base
         print_line
 
         total = sitemap.size
-        safe  = total - vuln
-        vuln_percentage = ( ( Float( vuln ) / total ) * 100 ).round
+        safe  = total - issue
+        issue_percentage = ( ( Float( issue ) / total ) * 100 ).round
 
         print_info( 'Total: ' + total.to_s )
-        print_ok( 'Safe: ' + safe.to_s )
-        print_error( 'Vulnerable: ' + vuln.to_s + " ( #{vuln_percentage.to_s}% )" )
+        print_ok( 'Without issues: ' + safe.to_s )
+        print_error( 'With issues: ' + issue.to_s + " ( #{issue_percentage.to_s}% )" )
         print_line
 
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Stdout',
@@ -206,11 +196,11 @@ class Stdout < Arachni::Report::Base
     end
 
 
-    def print_info_variations( vuln )
+    def print_info_variations( issue )
         print_line
         print_status( 'Variations' )
         print_info( '----------' )
-        vuln.variations.each_with_index {
+        issue.variations.each_with_index {
             |var, i|
             print_info( "Variation #{i+1}:" )
             print_info( 'URL: ' + var['url'] )

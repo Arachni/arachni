@@ -61,11 +61,11 @@ class AllowedMethods < Arachni::Module::Base
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Allowed HTTP methods},
                 :description => %q{},
                 :cwe         => '',
-                :severity    => Vulnerability::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -79,7 +79,7 @@ class AllowedMethods < Arachni::Module::Base
 
         return if !methods || methods.empty?
 
-        vuln = Vulnerability.new( {
+        issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
             :injected     => 'n/a',
@@ -87,7 +87,7 @@ class AllowedMethods < Arachni::Module::Base
             :id           => 'n/a',
             :regexp       => 'n/a',
             :regexp_match => methods,
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -96,7 +96,7 @@ class AllowedMethods < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         # inform the user that we have a match
         print_ok( methods )

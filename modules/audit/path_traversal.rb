@@ -106,9 +106,9 @@ class PathTraversal < Arachni::Module::Base
                 and evaluates the existance of a path traversal vulnerability
                 based on the presence of relevant content in the HTML responses.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
             :version        => '0.2.1',
@@ -118,12 +118,12 @@ class PathTraversal < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Path Traversal},
                 :description => %q{The web application enforces improper limitation
                     of a pathname to a restricted directory.},
                 :cwe         => '22',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '4.3',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being used as a part of a filesystem path.},

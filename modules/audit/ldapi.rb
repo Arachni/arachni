@@ -70,9 +70,9 @@ class LDAPInjection < Arachni::Module::Base
                 return LDAP error messages in order to discover failures
                 in user input validation.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
@@ -81,12 +81,12 @@ class LDAPInjection < Arachni::Module::Base
                 'OWASP'     => 'http://www.owasp.org/index.php/LDAP_injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{LDAP Injection},
                 :description => %q{LDAP queries can be injected into the web application
                     which can be used to disclose sensitive data of affect the execution flow.},
                 :cwe         => '90',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being used in an LDAP query.},

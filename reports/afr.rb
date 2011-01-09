@@ -30,11 +30,6 @@ class AFR < Arachni::Report::Base
         @options       = options
     end
 
-    #
-    # REQUIRED
-    #
-    # Use it to run your report.
-    #
     def run( )
 
         print_line( )
@@ -45,11 +40,6 @@ class AFR < Arachni::Report::Base
         print_status( 'Done!' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Arachni Framework Report',
