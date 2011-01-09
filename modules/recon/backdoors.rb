@@ -99,7 +99,6 @@ class Backdoors < Arachni::Module::Base
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
     # @param  [String]  filename   the discovered filename
-    # @param  [String]  url   the url of the discovered file
     #
     def __log_results( res, filename )
 
