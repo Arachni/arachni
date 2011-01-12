@@ -248,8 +248,10 @@ class AuditStore
         issues.each {
             |issue|
 
-            __id  = issue.mod_name + '::' + issue.elem + '::' +
-                issue.var + '::' + issue.url.split( /\?/ )[0]
+            __id  = issue.mod_name +
+             '::' + issue.elem + '::' +
+                issue.var + '::' +
+                issue.url.split( /\?/ )[0]
 
             orig_url  = issue.url
             issue.url = issue.url.split( /\?/ )[0]

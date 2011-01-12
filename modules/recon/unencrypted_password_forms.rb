@@ -71,11 +71,12 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             return
         end
 
-        @@__audited << input['name']
+        name = input['name'] || input['id'] || 'n/a'
+        @@__audited << name
 
         # append the result to the results array
         @results << Issue.new( {
-            :var          => input['name'],
+            :var          => name,
             :url          => url,
             :injected     => 'n/a',
             :id           => 'n/a',
@@ -83,6 +84,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :regexp_match => 'n/a',
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
+            :method       => 'n/a',
             :headers      => {
                 :request    => 'n/a',
                 :response   => 'n/a',
