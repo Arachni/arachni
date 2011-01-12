@@ -57,6 +57,7 @@ class HTTPDicattack < Arachni::Plugin::Base
                     next if res.code != 200
 
                     print_ok( "Found a match. Username: '#{user}' -- Password: '#{pass}'" )
+                    print_info( "URL: #{res.effective_url}" )
                     exit
                 }
 
