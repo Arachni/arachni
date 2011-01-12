@@ -8,6 +8,7 @@
 
 =end
 
+require 'digest/md5'
 module Arachni
 
 require Options.instance.dir['lib'] + 'issue'
@@ -247,8 +248,8 @@ class AuditStore
             __id  = issue.mod_name + '::' + issue.elem + '::' +
                 issue.var + '::' + issue.url.split( /\?/ )[0]
 
-            orig_url    = issue.url
-            issue.url    = issue.url.split( /\?/ )[0]
+            orig_url  = issue.url
+            issue.url = issue.url.split( /\?/ )[0]
 
             if( !new_issues[__id] )
                 new_issues[__id] = issue
@@ -261,6 +262,7 @@ class AuditStore
             issue.headers['request']  = issue.headers[:request]
             issue.headers['response'] = issue.headers[:response]
 
+            new_issues[__id]._hash = Digest::MD5.hexdigest( __id )
             new_issues[__id].variations << {
                 'url'           => orig_url,
                 'injected'      => issue.injected,

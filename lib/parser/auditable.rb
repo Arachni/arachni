@@ -388,9 +388,7 @@ class Auditable
                 }
             }
 
-            @results ||= []
-            @results << Issue.new( res.merge( @auditor.class.info ) )
-            Arachni::Module::Manager.register_results( @results.uniq )
+            @auditor.register_results( [Issue.new( res.merge( @auditor.class.info ) )] )
         end
     end
 

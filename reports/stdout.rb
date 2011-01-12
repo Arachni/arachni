@@ -109,6 +109,7 @@ class Stdout < Arachni::Report::Base
             print_ok( issue.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
 
+            print_info( 'ID Hash:  ' + issue._hash )
             print_info( 'Severity: ' + issue.severity ) if issue.severity
             print_info( 'URL:      ' + issue.url )
             print_info( 'Elements: ' + issue.elem )

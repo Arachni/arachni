@@ -218,6 +218,9 @@ class Issue
 
     attr_accessor :opts
 
+    attr_accessor :internal_modname
+    attr_accessor :_hash
+
     #
     # Sets up the instanse attributes
     #
