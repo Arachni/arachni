@@ -40,9 +40,9 @@ class SSN < Arachni::Module::Base
                 :name        => %q{Disclosed US Social Security Number.},
                 :description => %q{A US Social Security Number is being disclosed.},
                 :cwe         => '200',
-                :severity    => Issue::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2      => '0',
-                :remedy_guidance    => %q{},
+                :remedy_guidance    => %q{Remove all SSN occurences from the page.},
                 :remedy_code => '',
             }
         }
