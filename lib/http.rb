@@ -559,7 +559,7 @@ class HTTP
     end
 
     def parse_set_cookie( res )
-        return if res.headers_hash['Set-Cookie'].empty?
+        return if !res.headers_hash['Set-Cookie'] || res.headers_hash['Set-Cookie'].empty?
 
         cookie_hash = {}
         [res.headers_hash['Set-Cookie']].flatten.each {
