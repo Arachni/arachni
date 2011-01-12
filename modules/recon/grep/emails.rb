@@ -33,7 +33,7 @@ class EMails < Arachni::Module::Base
         {
             :name           => 'E-mail address',
             :description    => %q{Greps pages for disclosed e-mail addresses.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {

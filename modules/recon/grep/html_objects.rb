@@ -33,7 +33,7 @@ class HTMLObjects < Arachni::Module::Base
         {
             :name           => 'HTML objects',
             :description    => %q{Greps pages for HTML objects.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
