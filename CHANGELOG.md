@@ -23,16 +23,16 @@
       - E-mail address disclosure
       - US Social Security Number disclosure
 - Added plugins:  (**New**)
-      - Dictionary attacker for HTTP Auth
-      - Cookie collector    -- Listens to all traffic and logs changes in cookies
+   - Dictionary attacker for HTTP Auth
+   - Cookie collector    -- Listens to all traffic and logs changes in cookies
 - Updated cookie handling
 - Added the '--spider-first" option
 - Changed classification from "Vulnetabilities" to "Issues"
-- New behavior on Ctrl+C
-      - The system continues to run in the background instead of pausing
-      - The user is presented with an auto-refreshing report and progress stats
-- Updated module API
-      - The modules are given access to vector skipping decisions
+- New behavior on Ctrl+C:
+   - The system continues to run in the background instead of pausing
+   - The user is presented with an auto-refreshing report and progress stats
+- Updated module API:
+   - The modules are given access to vector skipping decisions
 - Improved crawler performance
 - The default (stdout) report now outputs a color coded URL health list at the bottom
 
