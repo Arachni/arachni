@@ -128,6 +128,12 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - Credit Card number disclosure
         - CVS/SVN user disclosure
         - Private IP address disclosure
+        - Common backdoors
+        - .htaccess LIMIT misconfiguration
+        - Interesting responses
+        - HTML object grepper
+        - E-mail address disclosure
+        - US Social Security Number disclosure
 
 ### Report Management
 
@@ -148,6 +154,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
  - Currently available plugins:
     - Passive Proxy
     - Form based AutoLogin
+    - Dictionary attacker for HTTP Auth
+    - Cookie collector
 
 ### Trainer subsystem
 

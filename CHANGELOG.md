@@ -4,7 +4,7 @@
 ## Version 0.2.2
 - Improved detection of custom 404 pages.
 - XMLRPC improvements:
-   - Substituted the XMLRPC server with an XMLRPC dispatch server.<br/>  (**New**)
+   - Substituted the XMLRPC server with an XMLRPC dispatch server.  (**New**)
      Dispatches XMLRPC servers on demand providing a centralised environment for multiple XMLRPC clients.
    - Added extensive logging for XMLRPC Dispatcher and Server.  (**New**)
    - SSL cert based client authentication.  (**New**)
@@ -15,7 +15,26 @@
       - XSS in HTML tags
       - XSS in HTML 'script' tags
       - Blind SQL injection using timing attacks
-
+   - Recon
+      - Common backdoors    -- Looks for common shell names
+      - .htaccess LIMIT misconfiguration
+      - Interesting responses   -- Listens to all traffic and logs interesting server messages
+      - HTML object grepper
+      - E-mail address disclosure
+      - US Social Security Number disclosure
+- Added plugins:  (**New**)
+      - Dictionary attacker for HTTP Auth
+      - Cookie collector    -- Listens to all traffic and logs changes in cookies
+- Updated cookie handling
+- Added the '--spider-first" option
+- Changed classification from "Vulnetabilities" to "Issues"
+- New behavior on Ctrl+C
+      - The system continues to run in the background instead of pausing
+      - The user is presented with an auto-refreshing report and progress stats
+- Updated module API
+      - The modules are given access to vector skipping decisions
+- Improved crawler performance
+- The default (stdout) report now outputs a color coded URL health list at the bottom
 
 ## Version 0.2.1
 - Major performance improvements
