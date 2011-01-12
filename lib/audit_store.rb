@@ -77,7 +77,9 @@ class AuditStore
         ::Arachni::Issue::Severity::INFORMATIONAL
     ]
 
-    def initialize( audit = {} )
+    def initialize( audit = {}, framework )
+
+        @framework = framework
 
         # set instance variables from audit opts
         audit.each {
@@ -116,6 +118,7 @@ class AuditStore
     # @param    [String]    file
     #
     def save( file )
+        @framework = ''
         f = File.open( file, 'w' )
         Marshal.dump( self, f )
     end
@@ -263,6 +266,19 @@ class AuditStore
             issue.headers['response'] = issue.headers[:response]
 
             new_issues[__id]._hash = Digest::MD5.hexdigest( __id )
+
+            modname = ''
+            @framework.modules.each_pair {
+                |name, mod|
+
+                if mod.info[:name] == new_issues[__id].mod_name
+                    modname = name
+                    break
+                end
+            }
+
+            new_issues[__id].internal_modname = modname
+
             new_issues[__id].variations << {
                 'url'           => orig_url,
                 'injected'      => issue.injected,

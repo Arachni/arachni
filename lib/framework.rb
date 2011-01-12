@@ -310,7 +310,7 @@ class Framework
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
                 :issues   => @modules.results( ).deep_clone,
                 :plugins  => @plugin_store
-            } )
+            }, self )
          end
     end
 
