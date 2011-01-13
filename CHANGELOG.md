@@ -27,7 +27,7 @@
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
 - Updated cookie handling
 - Added the '--spider-first" option
-- Changed classification from "Vulnetabilities" to "Issues"
+- Changed classification from "Vulnerabilities" to "Issues"
 - New behavior on Ctrl+C:
    - The system continues to run in the background instead of pausing
    - The user is presented with an auto-refreshing report and progress stats
