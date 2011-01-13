@@ -29,7 +29,7 @@ class HTTPDicattack < Arachni::Plugin::Base
     end
 
     def prepare
-        @url     = @options['url']
+        @url     = @framework.opts.url.to_s
         @users   = File.read( @options['userlist'] ).split( "\n" )
         @passwds = File.read( @options['passwdlist'] ).split( "\n" )
     end
@@ -79,9 +79,9 @@ class HTTPDicattack < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                Arachni::OptUrl.new( 'url', [ true, 'URL of the protected directory.' ] ),
-                Arachni::OptPath.new( 'userlist', [ true, 'List of usernames (newline separated).' ] ),
-                Arachni::OptPath.new( 'passwdlist', [ true, 'List of passwords (newline separated).' ] )
+                # Arachni::OptUrl.new( 'url', [ true, 'URL of the protected directory.' ] ),
+                Arachni::OptPath.new( 'userlist', [ true, 'File with a list of usernames (newline separated).' ] ),
+                Arachni::OptPath.new( 'passwdlist', [ true, 'File with a list of passwords (newline separated).' ] )
             ]
         }
     end
