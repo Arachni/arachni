@@ -359,9 +359,11 @@ CDE packages are self contained and thus alleviate the need for Ruby and other d
 You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
+_The CDE packages do not include the XMLRPC server componenets for security reasons._
+
 Otherwise, in order to use Arachni you will need the following:
 
-  * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
+  * ruby1.9.2 (*pay close attention to the version*)
   * Nokogiri
   * Typhoeus
   * Awesome print
@@ -370,7 +372,7 @@ Otherwise, in order to use Arachni you will need the following:
   * Robots
 
 Run the following to install all required system libraries:
-    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
+    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev
 
 _Adapt the above line to your Linux distro._
 
