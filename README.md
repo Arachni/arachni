@@ -155,6 +155,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Passive Proxy
     - Form based AutoLogin
     - Dictionary attacker for HTTP Auth
+    - Dictionary attacker for form based authentication
     - Cookie collector
 
 ### Trainer subsystem

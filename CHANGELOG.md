@@ -24,6 +24,7 @@
       - US Social Security Number disclosure
 - Added plugins:  (**New**)
    - Dictionary attacker for HTTP Auth
+   - Dictionary attacker for form based authentication
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
 - Updated cookie handling
 - Added the '--spider-first" option
