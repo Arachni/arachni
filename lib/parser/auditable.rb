@@ -99,10 +99,6 @@ class Auditable
 
     end
 
-    def auditable
-
-    end
-
     #
     # Submits self using {#http_request}.
     #
@@ -113,7 +109,7 @@ class Auditable
     def submit( opts = {} )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
-        opts[:params]  = auditable( )
+        opts[:params]  = @auditable.dup
         @opts = opts
 
         return http_request( @action, opts )
