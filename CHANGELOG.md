@@ -22,6 +22,7 @@
       - HTML object grepper
       - E-mail address disclosure
       - US Social Security Number disclosure
+      - Forceful directory listing
 - Added plugins:  (**New**)
    - Dictionary attacker for HTTP Auth
    - Dictionary attacker for form based authentication

@@ -134,6 +134,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - HTML object grepper
         - E-mail address disclosure
         - US Social Security Number disclosure
+        - Forceful directory listing
 
 ### Report Management
 
