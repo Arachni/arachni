@@ -159,7 +159,7 @@ module Auditor
                 )
             } if elems.include? Issue::Element::BODY
 
-            next if string == @page.hmtl
+            next if string == @page.html
 
             @page.response_headers.each {
                 |k,v|
