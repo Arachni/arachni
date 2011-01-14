@@ -159,6 +159,8 @@ module Auditor
                 )
             } if elems.include? Issue::Element::BODY
 
+            next if string == @page.hmtl
+
             @page.response_headers.each {
                 |k,v|
                 next if !v
