@@ -131,10 +131,11 @@ module Auditor
     # and logs the results.
     #
     # @param    [Array<Regexp>]     regexps
+    # @param    [String]            string
     # @param    [Block]             block       block to verify matches before logging
     #                                               must return true/false
     #
-    def match_and_log( regexps, &block )
+    def match_and_log( regexps, string = @page.html, &block )
 
         # make sure that we're working with an array
         regexps = [regexps].flatten
@@ -145,7 +146,7 @@ module Auditor
         regexps.each {
             |regexp|
 
-            @page.html.scan( regexp ).flatten.uniq.each {
+            string.scan( regexp ).flatten.uniq.each {
                 |match|
 
                 next if !match
