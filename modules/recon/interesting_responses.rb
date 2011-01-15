@@ -8,6 +8,8 @@
 
 =end
 
+require 'digest/md5'
+
 module Arachni
 
 module Modules
@@ -79,9 +81,10 @@ class InterestingResponses < Arachni::Module::Base
 
         @_loged ||= []
 
-        return if @_loged.include?( res.effective_url )
+        digest = Digest::MD5.hexdigest( res.body )
+        return if @_loged.include?( digest )
 
-        @_loged << res.effective_url
+        @_loged << digest
         issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
