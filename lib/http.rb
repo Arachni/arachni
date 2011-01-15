@@ -539,7 +539,7 @@ class HTTP
         return params
     end
 
-    def cookie_hash
+    def current_cookies
         parse_cookie_str( @init_headers['cookie'] )
     end
 
