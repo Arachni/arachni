@@ -108,7 +108,7 @@ class HTTP
         }
 
         cookies = {}
-        cookies.merge!( parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
+        cookies.merge!( self.class.parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
         cookies.merge!( opts.cookies ) if opts.cookies
 
         set_cookies( cookies ) if !cookies.empty?
@@ -561,17 +561,23 @@ class HTTP
     def parse_set_cookie( res )
         return if !res.headers_hash['Set-Cookie'] || res.headers_hash['Set-Cookie'].empty?
 
-        cookie_hash = {}
-        [res.headers_hash['Set-Cookie']].flatten.each {
-            |set_cookie_str|
+        begin
+            cookie_hash = {}
+            [res.headers_hash['Set-Cookie']].flatten.each {
+                |set_cookie_str|
 
-            cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
-                hash[cookie.name] = cookie.value if !!cookie
-                hash
-            end
-            )
+                cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
+                    hash[cookie.name] = cookie.value if !!cookie
+                    hash
+                end
+                )
 
-        }
+            }
+        rescue Exception => e
+            print_debug( e.to_s )
+            print_debug_backtrace( e )
+            return
+        end
 
         current = parse_cookie_str( @init_headers['cookie'] )
         set_cookies( current.merge( cookie_hash ) )
@@ -624,7 +630,7 @@ class HTTP
     #
     # @return   [Hash]    cookies     in name=>value pairs
     #
-    def parse_cookiejar( cookie_jar )
+    def self.parse_cookiejar( cookie_jar )
 
         cookies = Hash.new
 
