@@ -205,7 +205,7 @@ class HTTP
                 exception_jail{ block.call( res ) }
             }
 
-            parse_set_cookie( res )
+            parse_and_set_cookies( res )
 
             print_debug( '------------' )
             print_debug( 'Got response.' )
@@ -558,11 +558,13 @@ class HTTP
         }
     end
 
-    def parse_set_cookie( res )
-        return if !res.headers_hash['Set-Cookie'] || res.headers_hash['Set-Cookie'].empty?
+    def parse_and_set_cookies( res )
+        # return if !res.headers_hash['Set-Cookie'] || res.headers_hash['Set-Cookie'].empty?
 
+        cookie_hash = {}
+
+        # extract cookies from the header field
         begin
-            cookie_hash = {}
             [res.headers_hash['Set-Cookie']].flatten.each {
                 |set_cookie_str|
 
@@ -571,13 +573,27 @@ class HTTP
                     hash
                 end
                 )
-
             }
         rescue Exception => e
             print_debug( e.to_s )
             print_debug_backtrace( e )
-            return
         end
+
+        # extract cookies from the META tags
+        begin
+            Nokogiri::HTML( res.body ).search( "//meta[@http-equiv]" ).each {
+                |elem|
+
+                next if elem['http-equiv'].downcase != 'set-cookie'
+                k, v = elem['content'].split( ';' )[0].split( '=', 2 )
+                cookie_hash[k] = v
+            }
+        rescue Exception => e
+            print_debug( e.to_s )
+            print_debug_backtrace( e )
+        end
+
+        return if cookie_hash.empty?
 
         current = parse_cookie_str( @init_headers['cookie'] )
         set_cookies( current.merge( cookie_hash ) )
