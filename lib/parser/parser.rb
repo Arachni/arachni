@@ -106,10 +106,10 @@ class Parser
 
         cookies_arr << cookies( response_headers['Set-Cookie'].to_s, html )
         cookies_arr << cookies( response_headers['set-cookie'].to_s )
-        cookies_arr.flatten!.uniq!
+        cookies_arr = merge_with_cookiejar( cookies_arr.flatten!.uniq )
 
         jar = {}
-        jar = @opts.cookies if @opts.cookies
+        jar = @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar ) if @opts.cookie_jar
 
         preped = {}
         cookies_arr.each{ |cookie| preped.merge!( cookie.simple ) }
@@ -124,9 +124,40 @@ class Parser
             :response_headers     => response_headers,
             :forms       => forms,
             :links       => links,
-            :cookies     => merge_with_cookiejar( cookies_arr ),
+            :cookies     => merge_with_cookiestore( cookies_arr ),
             :cookiejar   => jar
         } )
+
+    end
+
+    def merge_with_cookiestore( cookies )
+
+        @cookiestore ||= []
+
+        if @cookiestore.empty?
+            @cookiestore = cookies
+        else
+            tmp = {}
+            @cookiestore.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            cookies.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            @cookiestore = tmp.map {
+                |name, value|
+                Element::Cookie.new( @url, {
+                    'name'    => name,
+                    'value'   => value
+                } )
+            }
+        end
+
+        return @cookiestore
 
     end
 
