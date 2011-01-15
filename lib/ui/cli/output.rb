@@ -142,6 +142,11 @@ module Output
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
+    def print_error_backtrace( e = nil )
+        e.backtrace.each{ |line| print_error( line ) }
+    end
+
+
     # Prints a verbose message
     #
     # Obeys {@@verbose}
