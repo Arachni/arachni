@@ -85,7 +85,7 @@ module Utilities
             block.call
         rescue Exception => e
             print_error( e.to_s )
-            print_error_backtrace( e )
+            print_debug_backtrace( e )
             raise e
         end
     end
