@@ -568,7 +568,7 @@ class Framework
             mod_new.clean_up
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
-            print_error_backtrace( e )
+            print_debug_backtrace( e )
         end
     end
 
