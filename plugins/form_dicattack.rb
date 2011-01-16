@@ -30,7 +30,10 @@ class FormDicattack < Arachni::Plugin::Base
         @options   = options
 
         # disable spidering and the subsequent audit
-        @framework.opts.link_count_limit = 0
+        # @framework.opts.link_count_limit = 0
+
+        # don't scan the website just yet
+        @framework.pause!
     end
 
     def prepare
@@ -46,6 +49,8 @@ class FormDicattack < Arachni::Plugin::Base
         # we need to declare this in order to pass ourselves
         # as the auditor to the form later in order to submit it.
         @http = @framework.http
+
+        @found = false
     end
 
     def run( )
@@ -88,10 +93,14 @@ class FormDicattack < Arachni::Plugin::Base
                 form.submit( opts ).on_complete {
                     |res|
 
+                    next if @found
+
                     print_status( "#{@user_field}: '#{res.request.params[@user_field]}'" +
                         " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'" )
 
                     next if !res.body.match( @verifier )
+
+                    @found = true
 
                     print_ok( "Found a match. #{@user_field}: '#{res.request.params[@user_field]}'" +
                         " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'" )
@@ -110,6 +119,14 @@ class FormDicattack < Arachni::Plugin::Base
         @http.run
         print_error( "Couldn't find a match." )
 
+    end
+
+    def clean_up
+        # abort the rest of the queued requests
+        @http.abort
+
+        # continue with the scan
+        @framework.resume!
     end
 
     def login_form

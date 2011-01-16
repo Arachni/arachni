@@ -28,13 +28,18 @@ class HTTPDicattack < Arachni::Plugin::Base
         @options   = options
 
         # disable spidering and the subsequent audit
-        @framework.opts.link_count_limit = 0
+        # @framework.opts.link_count_limit = 0
+
+        # don't scan the website just yet
+        @framework.pause!
     end
 
     def prepare
         @url     = @framework.opts.url.to_s
         @users   = File.read( @options['username_list'] ).split( "\n" )
         @passwds = File.read( @options['password_list'] ).split( "\n" )
+
+        @found = false
     end
 
     def run( )
@@ -63,14 +68,21 @@ class HTTPDicattack < Arachni::Plugin::Base
                 @framework.http.get( url.to_s ).on_complete {
                     |res|
 
+                    next if @found
+
                     print_status( "Username: '#{user}' -- Password: '#{pass}'" )
                     next if res.code != 200
+
+                    @found = true
 
                     print_ok( "Found a match. Username: '#{user}' -- Password: '#{pass}'" )
                     print_info( "URL: #{res.effective_url}" )
 
+                    @framework.opts.url = res.effective_url
+
                     # register our findings...
                     register_results( { :username => user, :password => pass } )
+                    clean_up
 
                     raise "Stopping the attack."
 
@@ -84,6 +96,15 @@ class HTTPDicattack < Arachni::Plugin::Base
         print_error( "Couldn't find a match." )
 
     end
+
+    def clean_up
+        # abort the rest of the queued requests
+        @framework.http.abort
+
+        # continue with the scan
+        @framework.resume!
+    end
+
 
     def protected?( url )
         @framework.http.get( url, :async => false ).response.code == 401
