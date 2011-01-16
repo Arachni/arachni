@@ -15,6 +15,10 @@
 module Typhoeus
   class Hydra
 
+    def abort
+      @queued_requests.clear
+    end
+
     def get_easy_object(request)
       @running_requests += 1
 

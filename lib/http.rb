@@ -154,6 +154,18 @@ class HTTP
         }
     end
 
+    def fire_and_forget
+        exception_jail {
+            @hydra.fire_and_forget
+        }
+    end
+
+    def abort
+        exception_jail {
+            @hydra.abort
+        }
+    end
+
     def average_res_time
         return 0 if @curr_res_cnt == 0
         return @curr_res_time / @curr_res_cnt
