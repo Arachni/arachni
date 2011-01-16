@@ -124,7 +124,7 @@ class Parser
             :response_headers     => response_headers,
             :forms       => forms,
             :links       => links,
-            :cookies     => merge_with_cookiestore( cookies_arr ),
+            :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
             :cookiejar   => jar
         } )
 

@@ -543,6 +543,10 @@ class HTTP
         parse_cookie_str( @init_headers['cookie'] )
     end
 
+    def update_cookies( cookies )
+        set_cookies( current_cookies.merge( cookies ) )
+    end
+
     #
     # Sets cookies for the HTTP session
     #
@@ -594,6 +598,9 @@ class HTTP
         end
 
         return if cookie_hash.empty?
+
+        # update framework cookies
+        Arachni::Options.instance.cookies = cookie_hash
 
         current = parse_cookie_str( @init_headers['cookie'] )
         set_cookies( current.merge( cookie_hash ) )

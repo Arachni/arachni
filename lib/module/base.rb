@@ -64,6 +64,11 @@ class Base
         @http  = Arachni::HTTP.instance
         @http.trainer.page = @page.dup
 
+        # update the cookies
+        if( !@page.cookiejar.empty? )
+            @http.update_cookies( @page.cookiejar )
+        end
+
         #
         # This is slightly tricky...
         #
