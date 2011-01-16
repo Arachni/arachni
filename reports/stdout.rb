@@ -140,6 +140,8 @@ class Stdout < Arachni::Report::Base
             print_line
         }
 
+        print_plugin_results
+
         sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
         sitemap |= issue_urls = @audit_store.issues.map { |issue| issue.url }.uniq
 
@@ -214,6 +216,80 @@ class Stdout < Arachni::Report::Base
             print_line
         }
     end
+
+    def print_plugin_results
+        return if @audit_store.plugins.empty?
+
+        print_line
+        print_ok( 'Plugin data:' )
+        print_info( '---------------' )
+        print_line
+
+        print_cookie_collector
+        print_line
+        print_form_dicattack
+        print_line
+        print_http_dicattack
+        print_line
+
+        print_line
+    end
+
+    def print_cookie_collector
+        cookie_collector = @audit_store.plugins['cookie_collector']
+        return if !cookie_collector || cookie_collector[:results].empty?
+
+        print_status( 'Cookie collector' )
+        print_info( '~~~~~~~~~~~~~~~~~~' )
+
+        print_info( 'Description: ' + cookie_collector[:description] )
+        print_line
+
+        cookie_collector[:results].each_with_index {
+            |result, i|
+
+            print_info( "[#{(i + 1).to_s}] On #{result[:time]}" )
+            print_info( "URL: " + result[:res]['effective_url'] )
+            print_info( 'Cookies forced to: ' )
+            result[:cookies].each_pair{
+                |name, value|
+                print_info( "    #{name} => #{value}" )
+            }
+            print_line
+        }
+
+    end
+
+    def print_form_dicattack
+        form_dicattack = @audit_store.plugins['form_dicattack']
+        return if !form_dicattack || form_dicattack[:results].empty?
+
+        print_status( 'Form dictionary attacker' )
+        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
+
+        print_info( 'Description: ' + form_dicattack[:description] )
+        print_line
+        print_info( "Cracked credentials:" )
+        print_ok( '    Username: ' + form_dicattack[:results][:username] )
+        print_ok( '    Password: ' + form_dicattack[:results][:password] )
+
+    end
+
+    def print_http_dicattack
+        http_dicattack = @audit_store.plugins['http_dicattack']
+        return if !http_dicattack || http_dicattack[:results].empty?
+
+        print_status( 'HTTP dictionary attacker' )
+        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
+
+        print_info( 'Description: ' + http_dicattack[:description] )
+        print_line
+        print_info( "Cracked credentials:" )
+        print_ok( '    Username: ' + http_dicattack[:results][:username] )
+        print_ok( '    Password: ' + http_dicattack[:results][:password] )
+
+    end
+
 
 end
 
