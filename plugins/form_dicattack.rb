@@ -28,12 +28,15 @@ class FormDicattack < Arachni::Plugin::Base
     def initialize( framework, options )
         @framework = framework
         @options   = options
+
+        # disable spidering and the subsequent audit
+        @framework.opts.link_count_limit = 0
     end
 
     def prepare
         @url     = @framework.opts.url.to_s
-        @users   = File.read( @options['userlist'] ).split( "\n" )
-        @passwds = File.read( @options['passwdlist'] ).split( "\n" )
+        @users   = File.read( @options['username_list'] ).split( "\n" )
+        @passwds = File.read( @options['password_list'] ).split( "\n" )
         @user_field   = @options['username_field']
         @passwd_field = @options['password_field']
         @verifier     = Regexp.new( @options['login_verifier'] )
@@ -75,7 +78,14 @@ class FormDicattack < Arachni::Plugin::Base
 
                 # merge the input fields of the form with our own params
                 form.auditable.merge!( params.dup )
-                form.submit.on_complete {
+
+                # we need a clean cookie slate for each request
+                opts = {
+                    :headers => {
+                        'cookie'  => ''
+                    }
+                }
+                form.submit( opts ).on_complete {
                     |res|
 
                     print_status( "#{@user_field}: '#{res.request.params[@user_field]}'" +
@@ -85,7 +95,12 @@ class FormDicattack < Arachni::Plugin::Base
 
                     print_ok( "Found a match. #{@user_field}: '#{res.request.params[@user_field]}'" +
                         " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'" )
-                    exit
+
+                    # register our findings...
+                    register_results( { :username => user, :password => pass } )
+                    clean_up( )
+
+                    raise "Stopping the attack."
                 }
 
             }
@@ -94,7 +109,6 @@ class FormDicattack < Arachni::Plugin::Base
         print_status( "Waiting for the requests to complete..." )
         @http.run
         print_error( "Couldn't find a match." )
-        exit
 
     end
 
@@ -137,9 +151,8 @@ class FormDicattack < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                # Arachni::OptUrl.new( 'url', [ true, 'URL of the form.' ] ),
-                Arachni::OptPath.new( 'userlist', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Arachni::OptPath.new( 'passwdlist', [ true, 'File with a list of passwords (newline separated).' ] ),
+                Arachni::OptPath.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
+                Arachni::OptPath.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] ),
                 Arachni::OptString.new( 'username_field', [ true, 'The name of the username form field.'] ),
                 Arachni::OptString.new( 'password_field', [ true, 'The name of the password form field.'] ),
                 Arachni::OptString.new( 'login_verifier', [ true, 'A string that will be used to verify a successful login.

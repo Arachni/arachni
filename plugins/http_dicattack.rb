@@ -26,15 +26,25 @@ class HTTPDicattack < Arachni::Plugin::Base
     def initialize( framework, options )
         @framework = framework
         @options   = options
+
+        # disable spidering and the subsequent audit
+        @framework.opts.link_count_limit = 0
     end
 
     def prepare
         @url     = @framework.opts.url.to_s
-        @users   = File.read( @options['userlist'] ).split( "\n" )
-        @passwds = File.read( @options['passwdlist'] ).split( "\n" )
+        @users   = File.read( @options['username_list'] ).split( "\n" )
+        @passwds = File.read( @options['password_list'] ).split( "\n" )
     end
 
     def run( )
+
+        if !protected?( @url )
+            print_info( "The URL you provided doesn't seem to be protected." )
+            print_info( "Aborting..." )
+            return
+        end
+
         url = URI( @url )
 
         print_status( "Building the request queue..." )
@@ -58,7 +68,12 @@ class HTTPDicattack < Arachni::Plugin::Base
 
                     print_ok( "Found a match. Username: '#{user}' -- Password: '#{pass}'" )
                     print_info( "URL: #{res.effective_url}" )
-                    exit
+
+                    # register our findings...
+                    register_results( { :username => user, :password => pass } )
+
+                    raise "Stopping the attack."
+
                 }
 
             }
@@ -67,8 +82,11 @@ class HTTPDicattack < Arachni::Plugin::Base
         print_status( "Waiting for the requests to complete..." )
         @framework.http.run
         print_error( "Couldn't find a match." )
-        exit
 
+    end
+
+    def protected?( url )
+        @framework.http.get( url, :async => false ).response.code == 401
     end
 
     def self.info
@@ -79,9 +97,8 @@ class HTTPDicattack < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                # Arachni::OptUrl.new( 'url', [ true, 'URL of the protected directory.' ] ),
-                Arachni::OptPath.new( 'userlist', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Arachni::OptPath.new( 'passwdlist', [ true, 'File with a list of passwords (newline separated).' ] )
+                Arachni::OptPath.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
+                Arachni::OptPath.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] )
             ]
         }
     end
