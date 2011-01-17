@@ -36,6 +36,12 @@ class XMLRPC
 
         @opts = opts
 
+        # if we have a load profile load it and merge it with the
+        # user supplied options
+        if( @opts.load_profile )
+            load_profile( @opts.load_profile )
+        end
+
         debug! if @opts.debug
 
         # we don't need the framework for much,
@@ -56,6 +62,17 @@ class XMLRPC
             lsrep
             exit
         end
+
+        if opts.show_profile
+            print_profile( )
+            exit 0
+        end
+
+        if opts.save_profile
+            exception_jail{ save_profile( opts.save_profile ) }
+            exit 0
+        end
+
 
         # Check for missing url
         if( !@opts.url && !@opts.lsmod )
@@ -151,6 +168,40 @@ class XMLRPC
     end
 
     private
+
+    #
+    # Loads an Arachni Framework Profile file and merges it with the
+    # user supplied options.
+    #
+    # @param    [String]    filename    the file to load
+    #
+    def load_profile( profiles )
+        exception_jail{
+            @opts.load_profile = nil
+            profiles.each {
+                |filename|
+                @opts.merge!( YAML::load( IO.read( filename ) ) )
+            }
+        }
+    end
+
+    #
+    # Saves options to an Arachni Framework Profile file.<br/>
+    # The file will be appended with the {PROFILE_EXT} extension.
+    #
+    # @param    [String]    filename
+    #
+    def save_profile( filename )
+
+        if filename = @opts.save( filename )
+            print_status( "Saved profile in '#{filename}'." )
+            print_line( )
+        else
+            banner( )
+            print_error( 'Could not save profile.' )
+            exit 0
+        end
+    end
 
     def instance_url
         server = URI( @opts.server.to_s )

@@ -142,17 +142,26 @@ class Framework < Arachni::Framework
     # @return   [Hash]
     #
     def report
-        return false if !@job
-        results = audit_store( true ).to_h.dup
-        results['plugins'] = YAML.dump( results['plugins'] )
-        return results
+        exception_jail {
+            return false if !@job
+
+            store =  audit_store( true )
+            store.framework = ''
+
+            results = store.to_h.dup
+            results['plugins'] = YAML.dump( results['plugins'] )
+
+            return results
+        }
     end
 
     def auditstore
-        exception_jail{
+        exception_jail {
             return false if !@job
+
             store =  audit_store( true )
             store.framework = nil
+
             return YAML.dump( store )
         }
     end

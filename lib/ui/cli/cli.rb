@@ -38,13 +38,6 @@ class CLI
     #
     attr_reader :opts
 
-    #
-    # The extension of the profile files.
-    #
-    # @return    [String]
-    #
-    PROFILE_EXT = '.afp'
-
     # the output interface for CLI
     include Arachni::UI::Output
     include Arachni::Module::Utilities
@@ -514,24 +507,15 @@ class CLI
     # @param    [String]    filename
     #
     def save_profile( filename )
-        profile = @opts
 
-        profile.dir          = nil
-        profile.load_profile = nil
-        profile.save_profile = nil
-        profile.authed_by    = nil
-
-        begin
-            f = File.open( filename + PROFILE_EXT, 'w' )
-            YAML.dump( profile, f )
-            print_status( "Saved profile in '#{f.path}'." )
+        if filename = @opts.save( filename )
+            print_status( "Saved profile in '#{filename}'." )
             print_line( )
-        rescue Exception => e
+        else
             banner( )
-            exception_jail{ raise e }
+            print_error( 'Could not save profile.' )
             exit 0
         end
-
     end
 
     def print_profile( )

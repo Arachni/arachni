@@ -69,6 +69,8 @@ class AuditStore
     #
     attr_reader :delta_time
 
+    attr_accessor :framework
+
 
     ORDER = [
         ::Arachni::Issue::Severity::HIGH,

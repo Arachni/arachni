@@ -28,6 +28,13 @@ class Options
     include Singleton
 
     #
+    # The extension of the profile files.
+    #
+    # @return    [String]
+    #
+    PROFILE_EXT = '.afp'
+
+    #
     # Holds absolute paths for the directory structure of the framework
     #
     # @return    [Hash]
@@ -352,6 +359,40 @@ class Options
         # on low bandwidth conections
         @http_req_limit = 20
 
+    end
+
+    #
+    # Saves 'self' to file
+    #
+    # @param    [String]    file
+    #
+    def save( file )
+
+        dir           = @dir.clone
+        load_profile  = @load_profile.clone if @load_profile
+        save_profile  = @save_profile.clone if @save_profile
+        authed_by     = @authed_by.clone if @authed_by
+
+        @dir          = nil
+        @load_profile = nil
+        @save_profile = nil
+        @authed_by    = nil
+
+        begin
+            f = File.open( file + PROFILE_EXT, 'w' )
+            YAML.dump( self, f )
+        rescue
+            return
+        ensure
+            f.close
+
+            @dir          = dir
+            @load_profile = load_profile
+            @save_profile = save_profile
+            @authed_by    = authed_by
+        end
+
+        return f.path
     end
 
     def url=( str )
