@@ -149,8 +149,12 @@ class Framework < Arachni::Framework
     end
 
     def auditstore
-        return false if !@job
-        return YAML.dump( audit_store( true ).deep_clone )
+        exception_jail{
+            return false if !@job
+            store =  audit_store( true )
+            store.framework = nil
+            return YAML.dump( store )
+        }
     end
 
     #
