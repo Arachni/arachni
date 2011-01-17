@@ -602,7 +602,6 @@ class CLI
     Profiles -----------------------
 
     --save-profile=<file>       save the current run profile/options to <file>
-                                  (The file will be saved with an extention of: #{PROFILE_EXT})
 
     --load-profile=<file>       load a run profile from <file>
                                   (Can be used multiple times.)

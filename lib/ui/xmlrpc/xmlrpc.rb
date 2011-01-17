@@ -688,6 +688,11 @@ class XMLRPC
 
     end
 
+    def print_profile( )
+        print_info( 'Running profile:' )
+        print_info( @opts.to_args )
+    end
+
     #
     # Outputs help/usage information.<br/>
     # Displays supported options and parameters.
@@ -747,6 +752,19 @@ class XMLRPC
     --authed-by=<who>           who authorized the scan, include name and e-mail address
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
+
+
+    Profiles -----------------------
+
+    --save-profile=<file>       save the current run profile/options to <file>
+
+    --load-profile=<file>       load a run profile from <file>
+                                  (Can be used multiple times.)
+                                  (You can complement it with more options, except for:
+                                      * --mods
+                                      * --redundant)
+
+    --show-profile              will output the running profile as CLI arguments
 
 
     Crawler -----------------------
