@@ -80,17 +80,14 @@ class Base
         # during the audit, is should only be initialized *once*
         # for each page and not overwritten every single time a module is instantiated.
         #
-        @@last_url ||= ''
-        if( @@last_url != @page.url )
+        @@__last_url ||= ''
+        if( @@__last_url != @page.url )
             @http.trainer.page = @page.dup
             @http.trainer.init_forms( @page.forms )
             @http.trainer.init_links( @page.links )
             @http.trainer.init_cookies( @page.cookies )
-            @@last_url = @page.url
+            @@__last_url = @page.url
         end
-
-        @@mod_results ||= []
-
     end
 
     #
