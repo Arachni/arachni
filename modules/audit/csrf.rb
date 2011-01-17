@@ -25,21 +25,23 @@ module Modules
 #
 # === 4-pass rDiff CSRF detection:
 #
-# * Request each page twice *without* cookies,
-#   compare responses and ignore context irrelevant content using rdiff.
+# * Request each page *without* cookies
 #   * Extract forms.
-# * Request each page twice *with* cookies,
-#   compare responses and ignore context irrelevant content using rdiff.
+# * Request each page *with* cookies
 #   * Extract forms.
 # * Check forms that appear *only* when logged-in for CSRF.
 #
 # In order for the module to give meaningful results a valid cookie-jar of a logged-in
 # user must be supplied to the framework.
 #
+# However, as Arachni goes through the system it will gather
+# cookies just like a user would, so if there are forms that only appear
+# after a guest has performed a previous event it will check these too.
+#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -54,15 +56,6 @@ class CSRF < Arachni::Module::Base
 
     def prepare( )
 
-        # initialize the results array
-        @results = []
-
-        @__opts = {
-            # this module is fairly complex as is,
-            # so let's make it easier on us and work with sync requests
-            :async       => false
-        }
-
         # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
         @__trainer = @http.trainer
@@ -76,21 +69,43 @@ class CSRF < Arachni::Module::Base
         print_status( 'Looking for CSRF candidates...' )
 
         print_status( 'Simulating logged-out user.' )
-        forms_logged_out = __forms_logged_out( )
 
-        print_status( "Found #{forms_logged_out.size.to_s} context irrelevant forms." )
-
-        # get forms that are worthy of testing for CSRF
-        # i.e. apper only when the user is logged-in
-        csrf_forms = __csrf_forms( forms_logged_out )
-        print_status( "Found #{csrf_forms.size.to_s} CSRF candidates." )
-
-        csrf_forms.each {
-            |form|
-            __log( form ) if __audit( form )
+        # setup opts with empty cookies
+        opts = {
+            :headers => {
+                'cookie'  => ''
+            }
         }
 
-        register_results( @results )
+        # request page without cookies, simulating a logged-out user
+        @http.get( @page.url, opts ).on_complete {
+            |res|
+
+            # set-up the parser with the proper url so that it
+            # can fix broken 'action' attrs and the like
+            @__trainer.parser.url = res.effective_url.clone
+
+            # extract forms from the body of the response
+            forms_logged_out = @__trainer.parser.forms( res.body ).reject {
+                |form|
+                form.auditable.empty?
+            }
+
+            print_status( "Found #{forms_logged_out.size.to_s} context irrelevant forms." )
+
+            # get forms that are worthy of testing for CSRF
+            # i.e. apper only when the user is logged-in
+            csrf_forms = logged_in_only( forms_logged_out )
+
+            print_status( "Found #{csrf_forms.size.to_s} CSRF candidates." )
+
+            csrf_forms.each {
+                |form|
+                __log( form ) if unsafe?( form )
+            }
+
+        }
+
     end
 
     #
@@ -100,7 +115,7 @@ class CSRF < Arachni::Module::Base
     #
     # @return   [Bool]  true if the form if vulnerable, false otherwise
     #
-    def __audit( form )
+    def unsafe?( form )
 
         found_token = false
 
@@ -123,7 +138,7 @@ class CSRF < Arachni::Module::Base
             form.simple['auditable'].to_a.flatten.each {
                 |str|
                 next if !str
-                found_token = true  if( __csrf_token?( str ) )
+                found_token = true  if( csrf_token?( str ) )
             }
         end
 
@@ -131,11 +146,52 @@ class CSRF < Arachni::Module::Base
     end
 
     #
+    # Returns forms that only appear when the user is logged-in.
+    #
+    # These are the forms that will most likely affect business logic.
+    #
+    # @param  [Array]  forms_logged_out  forms that appear while logged-out
+    #                                      in order to eliminate them.
+    #
+    # @return  [Array]  forms to be checked for CSRF
+    #
+    def logged_in_only( logged_out )
+        csrf_forms = []
+
+        @page.forms.each {
+            |form|
+
+            next if form.auditable.size == 0
+
+            if !( forms_include?( logged_out, form ) )
+                csrf_forms << form
+            end
+
+        }
+
+        return csrf_forms
+    end
+
+    def forms_include?( forms, form )
+
+        forms.each {
+            |i_form|
+
+            if( form.id == i_form.id )
+                return true
+            end
+
+        }
+
+        return false
+    end
+
+    #
     # Checks if the str is an anti-CSRF token of base10/16/32/64.
     #
     # @param  [String]  str
     #
-    def __csrf_token?( str )
+    def csrf_token?( str )
 
         # we could use regexps but i kinda like lcamtuf's (Michal's) way
         base16_len_min    = 8
@@ -175,109 +231,11 @@ class CSRF < Arachni::Module::Base
 
     end
 
-    # def __submit( form )
-    #
-    #     form = get_form_simple( form )
-    #
-    #     url    = form['attrs']['action']
-    #     method = form['method']
-    #
-    #     opts = {
-    #         :params => Arachni::Module::KeyFiller.fill( form['auditable'] )
-    #     }.merge( @__opts )
-    #
-    #     if( method != 'get' )
-    #         req = @http.post( url, opts )
-    #     else
-    #         req = @http.get( url, opts )
-    #     end
-    #
-    #     return req.response
-    # end
-
-    #
-    # Returns forms that appear when the user is logged in.
-    #
-    # The crawling process took place with logged-in cookies
-    # so {Arachni::Parser::Page#forms} will do just fine.
-    #
-    # @return   [Array]  forms
-    #
-    def __forms_logged_in
-        return @page.forms()
-    end
-
-    #
-    # Simulates a logged-out user accessing the page and extracts
-    # forms from the HTML response.
-    #
-    # @return   [Array]  forms
-    #
-    def __forms_logged_out
-
-        # setup opts with empty cookies
-        opts = {
-            :headers => {
-                'cookie'  => ''
-            }
-        }.merge( @__opts )
-
-        # request page without cookies, simulating a logged-out user
-        res  = @http.get( @page.url, opts ).response
-
-        # set-up the parser with the proper url so that it
-        # can fix broken 'action' attrs
-        @__trainer.parser.url = res.effective_url.clone
-
-        # extract forms from the body of the response
-        return @__trainer.parser.forms( res.body ).clone
-    end
-
-    #
-    # Returns forms that only appear when the user is logged-in.
-    #
-    # These are the forms that will most likely affect business logic.
-    #
-    # @param  [Array]  forms_logged_out  forms that appear while logged-out
-    #                                      in order to eliminate them.
-    #
-    # @return  [Array]  forms to be checked for CSRF
-    #
-    def __csrf_forms( forms_logged_out )
-        csrf_forms = []
-
-        __forms_logged_in.each {
-            |form|
-
-            next if form.auditable.size == 0
-
-            if !( __forms_include?( forms_logged_out, form ) )
-                csrf_forms << form
-            end
-
-        }
-
-        return csrf_forms
-    end
-
-    def __forms_include?( forms, form )
-
-        forms.each {
-            |i_form|
-
-            if( form.id == i_form.id )
-                return true
-            end
-
-        }
-
-        return false
-    end
 
     def __log( form )
 
         url  = form.action
-        name = form.raw['attrs']['name'] || 'n/a'
+        name = form.raw['attrs']['name'] || form.raw['attrs']['id'] || 'n/a'
 
         if @@__audited.include?( "#{url}::#{name}" )
             print_info( 'Skipping already audited form with name \'' +
@@ -288,7 +246,7 @@ class CSRF < Arachni::Module::Base
         @@__audited << "#{url}::#{name}"
 
         # append the result to the results array
-        @results << Issue.new( {
+        issue = Issue.new( {
             :var          => name,
             :url          => url,
             :injected     => 'n/a',
@@ -304,6 +262,7 @@ class CSRF < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         print_ok( "Found unprotected form with name '#{name}' at '#{url}'" )
+        register_results( [ issue ] )
     end
 
     def self.info
