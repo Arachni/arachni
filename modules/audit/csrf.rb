@@ -129,7 +129,7 @@ class CSRF < Arachni::Module::Base
             next if !form.raw['auditable'][i]['type']
             next if form.raw['auditable'][i]['type'].downcase != 'hidden'
 
-            found_token = true if( __csrf_token?( str ) )
+            found_token = true if( csrf_token?( str ) )
         }
 
         if( query = URI( form.action ).query )
