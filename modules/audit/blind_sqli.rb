@@ -21,7 +21,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -31,9 +31,6 @@ class BlindSQLInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
-
-        # initialize the results array
-        @results = []
     end
 
     def prepare( )
@@ -59,14 +56,22 @@ class BlindSQLInjection < Arachni::Module::Base
         @__opts = {
             :format      => [ Format::APPEND ],
             # we need to do our own redundancy checks
-            :redundant   => true,
-            # sadly, we need to disable asynchronous requests
-            # otherwise the code would get *really* ugly
-            :async       => false
+            :redundant   => true
         }
 
         # used for redundancy checks
         @@__audited ||= []
+
+        # this is the structure of the responses
+        @responses = {
+            :orig => '',
+
+            :good => {
+
+            },
+            :bad  => {
+            }
+        }
 
     end
 
@@ -90,53 +95,47 @@ class BlindSQLInjection < Arachni::Module::Base
 
         # let's get a fresh rendering of the page to assist us with
         # irrelevant dynamic content elimination (banners, ads, etc...)
-        opts = {}
-        opts[:params] = @page.query_vars
-        opts[:async]  = false
-        res  = @http.get( @page.url, opts ).response
+        @http.get( @page.url, :params => @page.query_vars ).on_complete {
+            |res|
 
-        # eliminate dynamic content that's context-irrelevant
-        # ie. changing with every refresh
-        @__content = @page.html.rdiff( res.body )
+            # eliminate dynamic content that's context-irrelevant
+            # ie. changing with every refresh
+            @responses[:orig] = @page.html.rdiff( res.body )
+        }
 
         # force the webapp to return an error page
-        __prep_bad_response( )
+        prep_bad_responses( )
 
-        # start injecting 'nice' SQL queries
-        __audit( )
+        # start injecting 'good' SQL queries
+        prep_good_responses( )
+
+        #
+        # Block until all the requests have completed.
+        #
+        # It'd be better if we let the framework do it since it's its job
+        # but the on_complete blocks of this module would get weird
+        # and since the performance penalty is insignificant... why not?
+        #
+        @http.run
 
         # analyze the HTML code of the responses in order to determine
         # which injections were succesfull
-        __analyze( )
-
-        # register our results with the framework
-        register_results( @results )
-    end
-
-    def clean_up
-        @@__audited << __audit_id( )
-        @@__audited.uniq!
-    end
-
-    def __audit_id
-        "#{URI( @page.url).path}::#{@page.query_vars.keys}"
-    end
-
-    def __audited?
-        @@__audited.include?( __audit_id( ) )
+        analyze( )
     end
 
     # Audits page with 'bad' SQL characters and gathers error pages
-    def __prep_bad_response( )
-
-        @__html_bad ||= {}
+    def prep_bad_responses( )
 
         @__bad_chars.each {
             |str|
 
             # get injection variations that will hopefully cause an internal/silent
             # SQL error
-            @__candidate.injection_sets( str, @__opts ).each {
+            variations = @__candidate.injection_sets( str, @__opts )
+
+            @responses[:bad_total] =  variations.size
+
+            variations.each {
                 |link|
 
                 # the altered link variable
@@ -147,23 +146,21 @@ class BlindSQLInjection < Arachni::Module::Base
                 # register us as the auditor
                 link.auditor( self )
                 # submit the link and get the response
-                res = link.submit( @__opts ).response
+                link.submit( @__opts ).on_complete {
+                    |res|
 
-                @__html_bad[altered] ||= res.body.clone
+                    @responses[:bad][altered] ||= res.body.clone
 
-                # remove context-irrelevant dynamic content like banners and such
-                # from the error page
-                @__html_bad[altered] = @__html_bad[altered].rdiff( res.body.clone )
+                    # remove context-irrelevant dynamic content like banners and such
+                    # from the error page
+                    @responses[:bad][altered] = @responses[:bad][altered].rdiff( res.body.clone )
+                }
             }
         }
-
-        return @__html_bad
     end
 
     # Injects SQL code that doesn't affect the flow of execution nor presentation
-    def __audit( )
-
-        @__html_good ||= {}
+    def prep_good_responses( )
 
         @__quotes.each {
             |quote|
@@ -171,8 +168,11 @@ class BlindSQLInjection < Arachni::Module::Base
             # prepare the statement with combinations of quote characters
             str = @__injection.gsub( '%q%', quote )
 
-            # get injection variations that will hopefully not break anything
-            @__candidate.injection_sets( str, @__opts ).each {
+            variations = @__candidate.injection_sets( str, @__opts )
+
+            @responses[:good_total] =  variations.size
+
+            variations.each {
                 |link|
 
                 # the altered link variable
@@ -182,14 +182,16 @@ class BlindSQLInjection < Arachni::Module::Base
                 link.auditor( self )
 
                 # submit the link and get the response
-                res = link.submit( @__opts ).response
+                link.submit( @__opts ).on_complete {
+                    |res|
 
-                @__html_good[altered] ||= []
+                    @responses[:good][altered] ||= []
 
-                # save the response for later analysis
-                @__html_good[altered] << {
-                    'str'  => str,
-                    'res'  => res
+                    # save the response for later analysis
+                    @responses[:good][altered] << {
+                        'str'  => str,
+                        'res'  => res
+                    }
                 }
 
             }
@@ -197,11 +199,11 @@ class BlindSQLInjection < Arachni::Module::Base
 
     end
 
-    # Goes through the responses induced by {#__audit} and {#__check} their code
-    def __analyze( )
-        @__html_good.keys.each {
+    # Goes through the responses induced by {#prep_good_responses} and {#__check} their code
+    def analyze( )
+        @responses[:good].keys.each {
             |key|
-            @__html_good[key].each {
+            @responses[:good][key].each {
                 |res|
                 __check( res['str'], res['res'], key )
             }
@@ -221,12 +223,26 @@ class BlindSQLInjection < Arachni::Module::Base
         # original page then a blind SQL injection exists
         check = res.body.rdiff( @page.html )
 
-        if( check == @__content && @__html_bad[var] != check &&
+        if( check == @responses[:orig] && @responses[:bad][var] != check &&
             !@http.custom_404?( res ) && res.code == 200 )
             __log_results( var, res, str )
         end
 
     end
+
+    def clean_up
+        @@__audited << __audit_id( )
+        @@__audited.uniq!
+    end
+
+    def __audit_id
+        "#{URI( @page.url).path}::#{@page.query_vars.keys}"
+    end
+
+    def __audited?
+        @@__audited.include?( __audit_id( ) )
+    end
+
 
     def self.info
         {
@@ -280,7 +296,7 @@ class BlindSQLInjection < Arachni::Module::Base
             :combo         => @__candidate.auditable
         }
 
-        @results << Issue.new( {
+        issue = Issue.new( {
                 :var          => var,
                 :url          => url,
                 :method       => res.request.method.to_s,
@@ -299,15 +315,9 @@ class BlindSQLInjection < Arachni::Module::Base
         )
 
         print_ok( "In #{Issue::Element::LINK} var '#{var}' ( #{url} )" )
-        #
-        # If I un-comment the following, with debugging disabled,
-        # something will block for a long time... how weird is that?
-        #
-        # print_debug( 'Request ID: ' + res.request.id.to_s )
-        # print_debug( 'Body: ' + res.body )
 
         # register our results with the system
-        register_results( @results )
+        register_results( [ issue ] )
     end
 
 end
