@@ -28,7 +28,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    TIME = 6000 # ms
+    TIME = 10000 # ms
 
     def initialize( page )
         super( page )
@@ -47,41 +47,29 @@ class BlindTimingSQLInjection < Arachni::Module::Base
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => TIME + ( @http.average_res_time * 1000 ),
-            # :async   => false
+            :timeout => TIME + ( @http.average_res_time * 1000 ) - 5000
         }
 
         @__logged = []
     end
 
-    def skip?( elem )
-        if @__logged.include?(
-            _skip_format( elem.action, elem.type, elem.altered )
-           )
-            return true
-        end
-    end
-
     def run( )
+        @found ||= false
+
         @@__injection_str.each {
             |str|
             audit( str, @__opts ) {
                 |res, opts|
+
+                next if @found
+
                 # we have a timeout which probably means the attack succeeded
                 if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
+                    @found = true
                     log( opts, res )
                 end
             }
         }
-    end
-
-    def _skip_format( url, type, name )
-        purl = URI( url )
-        if purl.query
-            url = url.gsub( '?' + purl.query, '' )
-        end
-
-        return "#{url}:#{type}:#{name}"
     end
 
     def self.info
