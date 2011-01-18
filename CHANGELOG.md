@@ -42,7 +42,7 @@
 - Improved crawler performance
 - Reports updated to show plug-in results.
 
-## Version 0.2.1
+## Version 0.2.1 _(November 25, 2010)_
 - Major performance improvements
 - Major system refactoring and code clean-up
 - Major module API refactoring providing even more flexibility regarding element auditing and manipulation
@@ -84,7 +84,7 @@
 - Extended proxy support (SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0). (**New**)
 
 
-## Version 0.2
+## Version 0.2 _(October 14, 2010)_
 
 - Improved output.
   - Increased context awareness.
