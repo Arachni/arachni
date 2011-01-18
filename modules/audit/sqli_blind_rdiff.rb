@@ -27,7 +27,7 @@ module Modules
 # @see http://capec.mitre.org/data/definitions/7.html
 # @see http://www.owasp.org/index.php/Blind_SQL_Injection
 #
-class BlindSQLInjection < Arachni::Module::Base
+class BlindrDiffSQLInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
@@ -246,7 +246,7 @@ class BlindSQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'Blind SQL Injection',
+            :name           => 'Blind (rDiff) SQL Injection',
             :description    => %q{It uses rDiff analysis to decide how different inputs affect
                 the behavior of the the web pages.
                 Using that as a basis it extrapolates about what inputs are vulnerable to blind SQL injection.
