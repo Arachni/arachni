@@ -24,13 +24,13 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
 #
-class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
+class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
 
     #
     # Arachni::Module::HTTP instance
@@ -110,15 +110,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         # accordingly.
         #
 
-        #
-        # this array will hold the audit results to be registered
-        # with the system, using:
-        #
-        # register_results( @results )
-        #
-        # Should be an array of Vulnerability objects
-        #
-        @results = []
     end
 
     #
@@ -127,24 +118,9 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     # This is used to deliver the module's payload whatever it may be.
     #
     def run( )
-
         print_debug(  'In run()' )
 
-        #
-        # You don't actually need to audit links,forms and cookies
-        # individually and you don't need any of the user defined methods.
-        #
-        # You can simply do:
-        #   audit( @__injection_url, @__opts )
-        #
-        # and be done with it.
-        #
-        # All the stuff is here only to give you a feel for module writting.
-        #
-
-        __audit_links()
-        __audit_forms( )
-        __audit_cookies()
+        audit( @__injection_url, @__opts )
     end
 
     #
@@ -166,7 +142,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def self.info
         {
-            :name           => 'SimpleRFI',
+            :name           => 'Remote File Inclusion',
             :description    => %q{It injects a remote URL in all available
                 inputs and checks for relevant content in the HTTP response body.},
             #
@@ -183,7 +159,7 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'
@@ -213,48 +189,6 @@ class SimpleRFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
             }
 
         }
-    end
-
-    #
-    # The following are our own helper methods.
-    # It's good practice to prefix them with 2 undescores ( __foo() ).
-    #
-    # It's also good practice to declare them as private
-    # unless you have modules that need to interact with each other.
-    #
-    private
-
-    def __audit_links( )
-        #
-        # audit_links() is inherited from Arachni::Module::Base
-        #
-        # It helps you audit the current link's/url's variables.
-        #
-        # Look in Arachni::Module::Base#audit_links for documentation.
-        #
-        audit_links( @__injection_url, @__opts )
-    end
-
-    def __audit_forms(  )
-        #
-        # audit_forms() is inherited from Arachni::Module::Base
-        #
-        # It helps you audit all the form inputs of the current page.
-        #
-        # Look in Arachni::Module::Base#audit_forms for documentation.
-        #
-         audit_forms( @__injection_url, @__opts )
-    end
-
-    def __audit_cookies( )
-        #
-        # audit_cookies() is inherited from Arachni::Module::Base
-        #
-        # It helps you audit the current page's cookies.
-        #
-        # Look in Arachni::Module::Base#audit_cookies for documentation.
-        #
-        audit_cookies( @__injection_url, @__opts )
     end
 
 end
