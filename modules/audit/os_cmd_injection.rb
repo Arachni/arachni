@@ -29,10 +29,12 @@ class OSCmdInjection < Arachni::Module::Base
         super( page )
 
         @__opts = {}
-        @__opts[:regexp]   = /100434/ixm
-        @__opts[:match]    = '100434'
+        @__opts[:regexp]   = /c24dd6293d9d4b94f1fdc71bcbbb1d1f/ixm
+        @__opts[:match]    = 'c24dd6293d9d4b94f1fdc71bcbbb1d1f'
         @__opts[:format]   = OPTIONS[:format] | [ Format::SEMICOLON ]
-        @__injection_str   = 'expr 978 + 99456'
+
+        # 'echo' is convinient since it exists on most popular operating systems
+        @__injection_str   = 'echo c24dd6293d9d4b94f1fdc71bcbbb1d1f'
 
         @results = []
     end
