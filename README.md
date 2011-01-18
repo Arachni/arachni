@@ -160,6 +160,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Dictionary attacker for HTTP Auth
     - Dictionary attacker for form based authentication
     - Cookie collector
+    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
 
 ### Trainer subsystem
 

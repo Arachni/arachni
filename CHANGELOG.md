@@ -30,6 +30,7 @@
    - Dictionary attacker for HTTP Auth
    - Dictionary attacker for form based authentication
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
+   - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
 - Updated cookie handling
 - Added the '--spider-first" option
 - Changed classification from "Vulnerabilities" to "Issues"
@@ -39,7 +40,7 @@
 - Updated module API:
    - The modules are given access to vector skipping decisions
 - Improved crawler performance
-- The default (stdout) report now outputs a color coded URL health list at the bottom
+- Reports updated to show plug-in results.
 
 ## Version 0.2.1
 - Major performance improvements
