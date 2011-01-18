@@ -22,7 +22,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
@@ -45,10 +45,9 @@ class UnvalidatedRedirect < Arachni::Module::Base
     def run( )
         @__urls.each {
             |url|
-
             audit( url ) {
                 |res, opts|
-                __log_results( res, opts, url )
+                log( opts, res ) if( res.headers_hash['Location'] == url )
             }
         }
     end
@@ -65,7 +64,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                  'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
             },
@@ -82,37 +81,6 @@ class UnvalidatedRedirect < Arachni::Module::Base
             }
 
         }
-    end
-
-    private
-
-    def __log_results( res, opts, url )
-
-
-        if( res.headers_hash['Location'] == url )
-
-            var = opts[:altered]
-            @results << Issue.new( {
-                    :var          => var,
-                    :url          => res.effective_url,
-                    :injected     => url,
-                    :id           => '\'Location: ' + url + '\'',
-                    :regexp       => 'n/a',
-                    :regexp_match => 'n/a',
-                    :elem         => opts[:element],
-                    :response     => res.body,
-                    :headers      => {
-                        :request    => res.request.headers,
-                        :response   => res.headers,
-                    }
-                }.merge( self.class.info )
-            )
-
-            print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-
-            # register our results with the system
-            register_results( @results )
-        end
     end
 
 end

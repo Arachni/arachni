@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -69,7 +69,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 |res, opts|
                 # we have a timeout which probably means the attack succeeded
                 if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
-                    _log( res, opts )
+                    log( opts, res )
                 end
             }
         }
@@ -84,44 +84,6 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         return "#{url}:#{type}:#{name}"
     end
 
-    def _log( res, opts )
-
-        elem    = opts[:element]
-        altered = opts[:altered]
-        url  = res.effective_url
-        print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
-
-        injected = opts[:injected] ? opts[:injected] : '<n/a>'
-        print_verbose( "Injected string:\t" + injected )
-        print_debug( 'Request ID: ' + res.request.id.to_s )
-        print_verbose( '---------' ) if only_positives?
-
-        @__logged << _skip_format( url, elem, altered )
-        @__logged.uniq!
-
-        res = {
-            :var          => altered,
-            :url          => url,
-            :injected     => injected,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :response     => res.body,
-            :elem         => elem,
-            :method       => res.request.method.to_s,
-            :opts         => opts.dup,
-            :verification => true,
-            :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            }
-
-            Arachni::Module::Manager.register_results(
-                [ Issue.new( res.merge( self.class.info ) ) ]
-            )
-    end
-
     def self.info
         {
             :name           => 'Blind (timing) SQL injection',
@@ -134,7 +96,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

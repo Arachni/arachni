@@ -21,7 +21,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -55,7 +55,12 @@ class ResponseSplitting < Arachni::Module::Base
         # and pass a block that will check for a positive result
         audit( @__header ) {
             |res, opts|
-            __log_results( res, opts )
+            if res.headers_hash['X-CRLF-Safe'] &&
+               !res.headers_hash['X-CRLF-Safe'].empty?
+
+                opts[:injected] = URI.encode( opts[:injected] )
+                log( opts, res )
+            end
         }
     end
 
@@ -71,7 +76,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.3',
+            :version        => '0.1.5',
             :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
@@ -91,36 +96,6 @@ class ResponseSplitting < Arachni::Module::Base
             }
 
         }
-    end
-
-    private
-
-    def __log_results( res, opts )
-        if res.headers_hash['X-CRLF-Safe'] && !res.headers_hash['X-CRLF-Safe'].empty?
-
-            url = res.effective_url
-            var = opts[:altered]
-            @results << Issue.new( {
-                    :var          => var,
-                    :url          => url,
-                    :injected     => URI.encode( @__header ),
-                    :id           => 'x-crlf-safe',
-                    :regexp       => 'n/a',
-                    :regexp_match => 'n/a',
-                    :elem         => opts[:element],
-                    :response     => res.body,
-                    :headers      => {
-                        :request    => res.request.headers,
-                        :response   => res.headers,
-                    }
-                }.merge( self.class.info )
-            )
-
-            print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-
-            # register our results with the system
-            register_results( @results )
-        end
     end
 
 end

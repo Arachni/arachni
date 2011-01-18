@@ -152,7 +152,7 @@ module Auditor
                 next if !match
                 next if block && !block.call( match )
 
-                log_match(
+                log(
                     :regexp  => regexp,
                     :match   => match,
                     :element => Issue::Element::BODY
@@ -171,7 +171,7 @@ module Auditor
                     next if !match
                     next if block && !block.call( match )
 
-                    log_match(
+                    log(
                         :var => k,
                         :regexp  => regexp,
                         :match   => match,
@@ -189,7 +189,7 @@ module Auditor
     # @param    [Regexp]    regexp
     # @param    [String]    match
     #
-    def log_match( opts, res = nil )
+    def log( opts, res = nil )
 
         request_headers  = '<n/a>'
         response_headers = @page.response_headers
@@ -203,14 +203,19 @@ module Auditor
             url              = res.effective_url
         end
 
+        begin
+            print_ok( "In #{opts[:element]} var '#{opts[:altered]}' ( #{url} )" )
+        rescue
+        end
+
         # Instantiate a new Vulnerability class and
         # append it to the results array
         vuln = Issue.new( {
-            :var          => opts[:var] || '<n/a>',
+            :var          => opts[:altered] || '<n/a>',
             :url          => url,
-            :injected     => 'n/a',
-            :id           => 'n/a',
-            :regexp       => opts[:regexp],
+            :injected     => opts[:injected] || '<n/a>',
+            :id           => opts[:id] || '<n/a>',
+            :regexp       => opts[:regexp] || '<n/a>',
             :regexp_match => opts[:match] || '<n/a>',
             :elem         => opts[:element],
             :response     => response,

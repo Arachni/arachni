@@ -40,7 +40,7 @@ class CvsSvnUsers < Arachni::Module::Base
 
         matches.each {
             |match|
-            log_match(
+            log(
                 :regexp  => regexps.to_s,
                 :match   => match,
                 :element => Issue::Element::BODY

@@ -19,7 +19,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -66,41 +66,7 @@ class XSSHTMLTag < Arachni::Module::Base
             # see if we managed to inject a working HTML attribute to any
             # elements
             if !(html_elem = doc.xpath("//*[@#{TAG_NAME}]")).empty?
-
-                elem    = opts[:element]
-                altered = opts[:altered]
-                url  = res.effective_url
-                print_ok( "In #{elem} var '#{altered}' " + ' ( ' + url + ' )' )
-
-                injected = opts[:injected] ? opts[:injected] : '<n/a>'
-                print_verbose( "Injected string:\t" + injected )
-                print_verbose( "Verified string:\t" + html_elem.to_s )
-                print_debug( 'Request ID: ' + res.request.id.to_s )
-                print_verbose( '---------' ) if only_positives?
-
-
-                res = {
-                    :var          => altered,
-                    :url          => url,
-                    :injected     => injected,
-                    :id           => html_elem.to_s,
-                    :regexp       => html_elem.to_s,
-                    :regexp_match => html_elem.to_s,
-                    :response     => res.body,
-                    :elem         => elem,
-                    :method       => res.request.method.to_s,
-                    :opts         => opts.dup,
-                    :verification => 'true',
-                    :headers      => {
-                        :request    => res.request.headers,
-                        :response   => res.headers,
-                    }
-                }
-
-                Arachni::Module::Manager.register_results(
-                    [ Issue.new( res.merge( self.class.info ) ) ]
-                )
-
+                log( opts, res )
             end
         end
     end
@@ -115,7 +81,7 @@ class XSSHTMLTag < Arachni::Module::Base
                 Issue::Element::COOKIE,
             ],
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
