@@ -200,11 +200,12 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --http-req-limit            concurent HTTP requests limit
                                   (Be carefull not to kill your server.)
-                                  (Default: 200)
-                                  (NOTE: If your scan seems unresponsive try lowering the limit.)
+                                  (Default: 60)
+                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
                                  and harvest the HTTP responses at the end of the crawl.
+                                 (In some test cases this option has split the scan time in half.)
                                  (Default: responses will be harvested for each page)
                                  (*NOTE*: If you are scanning a high-end server and
                                    you are using a powerful machine with enough bandwidth
@@ -262,6 +263,8 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
 
+    --spider-first              spider first, audit later
+
 
 ### Auditor
 
@@ -295,12 +298,32 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' to deploy all modules)
-                                  (You can exclude modules by prefixing their name with a dash:
+                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                      xss_*   to load all xss modules
+                                      sqli_*  to load all sql injection modules
+                                      etc.
+
+                                   You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
+
+                                   Or mix and match:
+                                      -xss_*   to unload all xss modules. )
 
 ### Reports
+
+    --lsrep                       list available reports
+
+    --repload=<file>              load audit results from an .afr file
+                                    (Allows you to create new reports from finished scans.)
+
+    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
+
+                                  <report>: the name of the report as displayed by '--lsrep'
+                                    (Default: stdout)
+                                    (Can be used multiple times.)
+
+### Plugins
 
     --lsrep                       list available reports
 
@@ -321,6 +344,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
                                   <plugin>: the name of the plugin as displayed by '--lsplug'
                                     (Can be used multiple times.)
+
 
 ### Proxy
 
@@ -352,6 +376,20 @@ The Arachni Framework Report (.afr) file can later be loaded by Arachni to creat
 or any other report type as shown by:
 
     $ ./arachni.rb --lsrep
+
+#### You can make module loading easier by using wildcards (*) and exclusions (-).
+
+To load all _xss_ modules using a wildcard:
+    $ ./arachni.rb http://example.net --mods=xss_*
+
+To load all _audit_ modules using a wildcard:
+    $ ./arachni.rb http://example.net --mods=audit*
+
+To exclude only the _csrf_ module:
+    $ ./arachni.rb http://example.net --mods=*,-csrf
+
+Or you can mix and match; to run everything but the _xss_ modules:
+    $ ./arachni.rb http://example.net --mods=*,-xss_*
 
 For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
