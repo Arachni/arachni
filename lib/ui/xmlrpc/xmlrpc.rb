@@ -829,10 +829,18 @@ class XMLRPC
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' to deploy all modules)
-                                  (You can exclude modules by prefixing their name with a dash:
+                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                      xss_*   to load all xss modules
+                                      sqli_*  to load all sql injection modules
+                                      etc.
+
+                                   You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
+
+                                   Or mix and match:
+                                      -xss_*   to unload all xss modules. )
+
 
     Reports ------------------------
 
