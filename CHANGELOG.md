@@ -9,12 +9,15 @@
    - Added extensive logging for XMLRPC Dispatcher and Server.  (**New**)
    - SSL cert based client authentication.  (**New**)
    - Cleaned up XMLRPC class structure and namespace.
+   - Cleaned up module API, simpler logging.
 - Added modules:  (**New**)
    - Audit
       - XSS in event attributes of HTML elements
       - XSS in HTML tags
       - XSS in HTML 'script' tags
       - Blind SQL injection using timing attacks
+      - Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
+      - Blind OS command injection using timing attacks (*nix, Windows)
    - Recon
       - Common backdoors    -- Looks for common shell names
       - .htaccess LIMIT misconfiguration
