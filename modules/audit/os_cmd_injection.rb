@@ -25,22 +25,43 @@ module Modules
 #
 class OSCmdInjection < Arachni::Module::Base
 
+    include Arachni::Module::Utilities
+
     def initialize( page )
         super( page )
+    end
+
+    def prepare
 
         @__opts = {}
-        @__opts[:regexp]   = /c24dd6293d9d4b94f1fdc71bcbbb1d1f/ixm
-        @__opts[:match]    = 'c24dd6293d9d4b94f1fdc71bcbbb1d1f'
-        @__opts[:format]   = OPTIONS[:format] | [ Format::SEMICOLON ]
+        @__opts[:regexp]   = [
+            /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/i,
+            /\[boot loader\](.*)\[operating systems\]/i
+        ]
+        @__opts[:format]   = [ Format::STRAIGHT ]
 
-        # 'echo' is convinient since it exists on most popular operating systems
-        @__injection_str   = 'echo c24dd6293d9d4b94f1fdc71bcbbb1d1f'
+        @@__injection_str ||= []
 
-        @results = []
+        if @@__injection_str.empty?
+            read_file( 'payloads.txt' ) {
+                |str|
+
+                [ '', '&&', '|', ';' ].each {
+                    |sep|
+                    @@__injection_str << sep + " " + str
+                }
+
+                @@__injection_str << "`" + " " + str + "`"
+            }
+        end
+
     end
 
     def run( )
-        audit( @__injection_str, @__opts )
+        @@__injection_str.each {
+            |str|
+            audit( str, @__opts )
+        }
     end
 
 
