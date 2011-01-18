@@ -79,7 +79,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     def prepare( )
         #
-        # You can use print debug for debugging.
+        # You can use print_debug() for debugging.
         # Don't over-do ti though, debugging messages are supposed to
         # be helpful don't flood the output.
         #
@@ -93,15 +93,15 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         # with 2 underscores ( @__foo_attr, __foo_meth() )
         #
         @__opts = {}
-        @__opts[:regexp] = /<title>Google<\/title>/ixm
+        @__opts[:regexp] = /705cd559b16e6946826207c2199bd890/
 
         # this is our RFI id signature, we'll look for it
         # in the HTTP response body
         #
-        @__opts[:match]  = '<title>Google</title>'
+        @__opts[:match]  = '705cd559b16e6946826207c2199bd890'
 
         # inject this url to assess RFI
-        @__injection_url = 'hTtP://google.com'
+        @__injection_url = 'http://zapotek.github.com/arachni/rfi.md5.txt'
 
 
         #
