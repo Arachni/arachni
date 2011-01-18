@@ -142,45 +142,6 @@ class Stdout < Arachni::Report::Base
 
         print_plugin_results
 
-        sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
-        sitemap |= issue_urls = @audit_store.issues.map { |issue| issue.url }.uniq
-
-        return if sitemap.size == 0
-
-        print_info( 'URL health list.' )
-        print_info( '--------------------' )
-
-        print_line
-        print_info( 'Color codes:' )
-        print_ok( 'No issues' )
-        print_error( 'Has issues' )
-        print_line
-
-        issue = 0
-        sitemap.each {
-            |url|
-
-            next if !url
-
-            if issue_urls.include?( url )
-                print_error( url )
-                issue += 1
-            else
-                print_ok( url )
-            end
-        }
-
-        print_line
-
-        total = sitemap.size
-        safe  = total - issue
-        issue_percentage = ( ( Float( issue ) / total ) * 100 ).round
-
-        print_info( 'Total: ' + total.to_s )
-        print_ok( 'Without issues: ' + safe.to_s )
-        print_error( 'With issues: ' + issue.to_s + " ( #{issue_percentage.to_s}% )" )
-        print_line
-
     end
 
     def self.info
@@ -191,14 +152,6 @@ class Stdout < Arachni::Report::Base
             :version        => '0.2.1',
         }
     end
-
-    def normalize( url )
-        query = URI( url ).query
-        return url if !query
-
-        url.gsub( '?' + query, '' )
-    end
-
 
     def print_info_variations( issue )
         print_line
@@ -226,13 +179,46 @@ class Stdout < Arachni::Report::Base
         print_line
 
         print_cookie_collector
-        print_line
         print_form_dicattack
-        print_line
         print_http_dicattack
-        print_line
+        print_healthmap
+    end
+
+    def print_healthmap
+        healthmap = @audit_store.plugins['healthmap']
+        return if !healthmap || healthmap[:results].empty?
+
+        print_info( 'URL health list.' )
+        print_info( '--------------------' )
 
         print_line
+        print_info( 'Color codes:' )
+        print_ok( 'No issues' )
+        print_error( 'Has issues' )
+        print_line
+
+        healthmap[:results][:map].each {
+            |i|
+
+            state = i.keys[0]
+            url   = i.values[0]
+
+            if state == :unsafe
+                print_error( url )
+            else
+                print_ok( url )
+            end
+        }
+
+        print_line
+
+        print_info( 'Total: ' + healthmap[:results][:total].to_s )
+        print_ok( 'Without issues: ' + healthmap[:results][:safe].to_s )
+        print_error( 'With issues: ' + healthmap[:results][:unsafe].to_s +
+            " ( #{healthmap[:results][:issue_percentage].to_s}% )" )
+
+        print_line
+
     end
 
     def print_cookie_collector
@@ -258,6 +244,8 @@ class Stdout < Arachni::Report::Base
             print_line
         }
 
+        print_line
+
     end
 
     def print_form_dicattack
@@ -273,6 +261,7 @@ class Stdout < Arachni::Report::Base
         print_ok( '    Username: ' + form_dicattack[:results][:username] )
         print_ok( '    Password: ' + form_dicattack[:results][:password] )
 
+        print_line
     end
 
     def print_http_dicattack
@@ -287,6 +276,8 @@ class Stdout < Arachni::Report::Base
         print_info( "Cracked credentials:" )
         print_ok( '    Username: ' + http_dicattack[:results][:username] )
         print_ok( '    Password: ' + http_dicattack[:results][:password] )
+
+        print_line
 
     end
 
