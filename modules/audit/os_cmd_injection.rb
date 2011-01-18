@@ -13,19 +13,17 @@ module Arachni
 module Modules
 
 #
-# Simple shell command injection module.<br/>
-# It audits links, forms and cookies.
-#
+# Simple OS command injection module.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
 #
-class SimpleCmdExec < Arachni::Module::Base
+class OSCmdInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
@@ -46,28 +44,28 @@ class SimpleCmdExec < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'SimpleCmdExec',
-            :description    => %q{Simple shell command execution recon module},
+            :name           => 'OS command injection',
+            :description    => %q{Tries to find operating system command injections.},
             :elements       => [
                 Issue::Element::FORM,
                 Issue::Element::LINK,
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
             :targets        => { 'Generic' => 'all' },
             :issue   => {
-                :name        => %q{OS command injection},
+                :name        => %q{Operating system command injection},
                 :description => %q{The web application allows an attacker to
                     execute arbitrary OS commands.},
                 :cwe         => '78',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
-                    before being evaluated as OS level shell code.},
+                    before being evaluated as OS level commands.},
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_exec'
             }

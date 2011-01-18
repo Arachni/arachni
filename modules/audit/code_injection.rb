@@ -13,10 +13,6 @@ module Arachni
 module Modules
 
 #
-# eval() audit module.
-#
-# It audits links, forms and cookies for code injection.
-#
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby
 # but still needs some more testing.
 #
@@ -24,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -33,7 +29,7 @@ module Modules
 # @see http://www.aspdev.org/asp/asp-eval-execute/
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
 #
-class Eval < Arachni::Module::Base
+class CodeInjection < Arachni::Module::Base
 
     def initialize( page )
         super( page )
@@ -96,7 +92,7 @@ class Eval < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'Eval',
+            :name           => 'Code injection',
             :description    => %q{It tries to inject code snippets into the
                 web application and assess whether or not the injection
                 was successful.},
@@ -106,7 +102,7 @@ class Eval < Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'zapotek',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
                 'Perl'   => 'http://perldoc.perl.org/functions/eval.html',
