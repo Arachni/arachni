@@ -122,7 +122,13 @@ class ComponentManager < Hash
             |component|
             if component[0] == EXCLUDE
                 component[0] = ''
-                unload << component
+
+                if component['*']
+                    unload |= wilcard_to_names( component )
+                else
+                    unload << component
+                end
+
             end
         }
 
@@ -130,7 +136,20 @@ class ComponentManager < Hash
 
             avail_components  = available(  )
 
-            components.each {
+            # recon modules should be loaded before audit ones
+            # and ls_available() honors that
+            avail_components.map {
+                |component|
+                load << component if components.include?( component )
+            }
+
+            load |= components.map {
+                |component|
+                load |= wilcard_to_names( component )
+            }
+            load.flatten!
+
+            load.each {
                 |component|
                 if( !avail_components.include?( component ) )
                       raise( Arachni::Exceptions::ComponentNotFound,
@@ -138,12 +157,6 @@ class ComponentManager < Hash
                 end
             }
 
-            # recon modules should be loaded before audit ones
-            # and ls_available() honors that
-            avail_components.map {
-                |component|
-                load << component if components.include?( component )
-            }
         else
             available(  ).map {
                 |component|
@@ -173,6 +186,17 @@ class ComponentManager < Hash
         }
 
         return fetch( name ) rescue nil
+    end
+
+    def wilcard_to_names( name )
+        if name['*']
+            return paths.map {
+                |path|
+                path_to_name( path ) if path.match( Regexp.new( name ) )
+            }.compact
+        end
+
+        return []
     end
 
     #
