@@ -66,8 +66,6 @@ class CSRF < Arachni::Module::Base
 
     def run( )
 
-        return if @page.forms.empty?
-
         print_status( 'Looking for CSRF candidates...' )
 
         print_status( 'Simulating logged-out user.' )
