@@ -79,12 +79,20 @@ class InterestingResponses < Arachni::Module::Base
 
     def __log_results( res )
 
-        @_loged ||= []
+        @@_loged ||= {
+            :paths   => [],
+            :digests => []
+        }
 
         digest = Digest::MD5.hexdigest( res.body )
-        return if @_loged.include?( digest )
+        path   = URI( res.effective_url ).path
 
-        @_loged << digest
+        return if @@_loged[:paths].include?( path ) ||
+            @@_loged[:digests].include?( digest )
+
+        @@_loged[:paths]   << path
+        @@_loged[:digests] << digest
+
         issue = Issue.new( {
             :var          => 'n/a',
             :url          => res.effective_url,
