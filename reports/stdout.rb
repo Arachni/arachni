@@ -182,6 +182,7 @@ class Stdout < Arachni::Report::Base
         print_form_dicattack
         print_http_dicattack
         print_healthmap
+        print_content_types
     end
 
     def print_healthmap
@@ -276,6 +277,44 @@ class Stdout < Arachni::Report::Base
         print_info( "Cracked credentials:" )
         print_ok( '    Username: ' + http_dicattack[:results][:username] )
         print_ok( '    Password: ' + http_dicattack[:results][:password] )
+
+        print_line
+
+    end
+
+    def print_content_types
+        content_types = @audit_store.plugins['content_types']
+        return if !content_types || content_types[:results].empty?
+
+        print_status( 'Content-types' )
+        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
+
+        print_info( 'Description: ' + content_types[:description] )
+        print_line
+
+        content_types[:results].each_pair {
+            |type, responses|
+
+            print_ok( type )
+
+            responses.each {
+                |res|
+                print_status( "    URL:    " + res[:url] )
+                print_info( "    Method: " + res[:method] )
+
+                if res[:params] && res[:method].downcase == 'post'
+                    print_info( "    Parameters:" )
+                    res[:params].each_pair {
+                        |k, v|
+                        print_info( "        #{k} => #{v}" )
+                    }
+                end
+
+                print_line
+            }
+
+            print_line
+        }
 
         print_line
 
