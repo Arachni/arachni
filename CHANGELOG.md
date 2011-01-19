@@ -1,7 +1,7 @@
 
 # ChangeLog
 
-## Version 0.2.2
+## Version 0.2.2 _(Under development)_
 - Changed classification from "Vulnerabilities" to "Issues" (**New**)
 - Improved detection of custom 404 pages.
 - Reports updated to show plug-in results.
