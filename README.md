@@ -161,6 +161,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Dictionary attacker for form based authentication
     - Cookie collector
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
+    - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
 
 ### Trainer subsystem
 

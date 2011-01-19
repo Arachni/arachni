@@ -35,6 +35,7 @@
    - Dictionary attacker for form based authentication
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
+   - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
 - New behavior on Ctrl+C
    - The system continues to run in the background instead of pausing
    - The user is presented with an auto-refreshing report and progress stats
