@@ -33,30 +33,38 @@ class CommonDirectories < Arachni::Module::Base
 
     def initialize( page )
         super( page )
+    end
 
-        @__common_directories = 'directories.txt'
-
+    def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= []
-        @results   = []
+
+        # our results array
+        @results = []
+
+        @@__directories ||=[]
+        return if !@@__directories.empty?
+
+        read_file( 'directories.txt' ) {
+            |file|
+            @@__directories << file
+        }
     end
 
     def run( )
 
+        path = get_path( @page.url )
+        return if @@__audited.include?( path )
+
         print_status( "Scanning..." )
 
-        path = get_path( @page.url )
-
-        read_file( @__common_directories ) {
+        @@__directories.each {
             |dirname|
 
             url  = path + dirname + '/'
-
-            next if @@__audited.include?( url )
             print_status( "Checking for #{url}" )
 
             req  = @http.get( url, :train => true )
-            @@__audited << url
 
             req.on_complete {
                 |res|
@@ -65,6 +73,7 @@ class CommonDirectories < Arachni::Module::Base
             }
         }
 
+        @@__audited << path
     end
 
     def self.info

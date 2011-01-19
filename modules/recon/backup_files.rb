@@ -30,22 +30,32 @@ class BackupFiles < Arachni::Module::Base
 
     def initialize( page )
         super( page )
+    end
 
-        @__backup_ext_file = 'extensions.txt'
-
+    def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= []
 
         # our results array
         @results = []
+
+        @@__extensions ||=[]
+        return if !@@__extensions.empty?
+
+        read_file( 'extensions.txt' ) {
+            |file|
+            @@__extensions << file
+        }
     end
 
     def run( )
 
-        print_status( "Scanning..." )
-
         filename = File.basename( URI( @page.url ).path )
         path     = get_path( @page.url )
+
+        return if @@__audited.include?( path )
+
+        print_status( "Scanning..." )
 
         if( !filename  )
             print_info( 'Backing out. ' +
@@ -53,7 +63,7 @@ class BackupFiles < Arachni::Module::Base
             return
         end
 
-        read_file( @__backup_ext_file ) {
+        @@__extensions.each {
             |ext|
 
             #
@@ -80,6 +90,7 @@ class BackupFiles < Arachni::Module::Base
             }
         }
 
+        @@__audited << path
     end
 
 
@@ -155,13 +166,10 @@ class BackupFiles < Arachni::Module::Base
     #
     def __request_once( url )
 
-        return false if @@__audited.include?( url )
-
         print_status( "Checking for #{url}" )
 
         # force the Trainer to analyze it and if it's HTML it'll extract any new attack vectors.
         req  = @http.get( url, :train => true )
-        @@__audited << url
 
         return req
     end

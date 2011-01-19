@@ -27,39 +27,38 @@ class Backdoors < Arachni::Module::Base
 
     def initialize( page )
         super( page )
+    end
 
-        @__common_files = 'filenames.txt'
-
+    def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= []
 
         # our results array
         @results = []
+
+        @@__filenames ||=[]
+        return if !@@__filenames.empty?
+
+        read_file( 'filenames.txt' ) {
+            |file|
+            @@__filenames << file
+        }
     end
 
     def run( )
 
-        print_status( "Scanning..." )
-
         path = get_path( @page.url )
+        return if @@__audited.include?( path )
 
-        read_file( @__common_files ) {
+        print_status( "Scanning..." )
+        @@__filenames.each {
             |file|
-
-            #
-            # Test for the existance of the file
-            #
-            # We're not worrying about its contents, the Trainer will
-            # analyze it and if it's HTML it'll extract any new attack vectors.
-            #
 
             url  = path + file
 
-            next if @@__audited.include?( url )
             print_status( "Checking for #{url}" )
 
             req  = @http.get( url, :train => true )
-            @@__audited << url
 
             req.on_complete {
                 |res|
@@ -68,6 +67,7 @@ class Backdoors < Arachni::Module::Base
             }
         }
 
+        @@__audited << path
     end
 
 
