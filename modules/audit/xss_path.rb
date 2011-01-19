@@ -90,8 +90,7 @@ class XSSPath < Arachni::Module::Base
 
     def __log_results( res, id )
 
-        if ( id && res.body.scan( Regexp.escape( id ) )[0] == id ) ||
-           ( !id && res.body.scan( Regexp.escape( id ) )[0].size > 0 )
+        if res.body.substring?( id )
 
             url = res.effective_url
             # append the result to the results hash

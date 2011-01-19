@@ -84,9 +84,7 @@ class XSSEvent < Arachni::Module::Base
             |attr|
             doc.xpath("//*[@#{attr}]").each {
                 |elem|
-                value = elem.attributes[attr]
-                if injected_str && value.to_s.match( injected_str ) &&
-                   !value.to_s.match( injected_str ).to_s.empty?
+                if elem.attributes[attr].to_s.substring?( injected_str )
                     return elem.to_s
                 end
             }

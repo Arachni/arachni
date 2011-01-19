@@ -62,4 +62,9 @@ class String
 
     end
 
+    def substring?( string )
+        substring = self[string]
+        return substring && !substring.empty?
+    end
+
 end

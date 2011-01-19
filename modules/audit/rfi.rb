@@ -93,12 +93,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         # with 2 underscores ( @__foo_attr, __foo_meth() )
         #
         @__opts = {}
-        @__opts[:regexp] = /705cd559b16e6946826207c2199bd890/
-
-        # this is our RFI id signature, we'll look for it
-        # in the HTTP response body
-        #
-        @__opts[:match]  = '705cd559b16e6946826207c2199bd890'
+        @__opts[:substring] = '705cd559b16e6946826207c2199bd890'
 
         # inject this url to assess RFI
         @__injection_url = 'http://zapotek.github.com/arachni/rfi.md5.txt'

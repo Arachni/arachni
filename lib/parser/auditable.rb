@@ -327,15 +327,30 @@ class Auditable
     # @return  [Hash]
     #
     def get_matches( res, opts )
-        regexps    = [opts[:regexp]].flatten
-        regexps.each{ |regexp| match_and_log( regexp, res, opts ) }
+        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
     end
 
-    def match_and_log( regexp, res, opts )
+    def match_substring_and_log( substring, res, opts )
 
-        elem       = opts[:element]
-        match      = opts[:match]
-        var        = opts[:altered]
+        verification = false
+
+        # an annoying encoding exception may be thrown by scan()
+        # the sob started occuring again....
+        begin
+            if( @auditor.page.html.substring?( substring ) )
+                verification = true
+            end
+        rescue
+        end
+
+        if res.body.substring?( substring )
+           opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
+           @auditor.log( opts, res )
+        end
+    end
+
+    def match_regexp_and_log( regexp, res, opts )
 
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
@@ -352,39 +367,13 @@ class Auditable
         end
 
         # fairly obscure condition...pardon me...
-        if ( match && match_data == match ) ||
-           ( !match && match_data && match_data.size > 0 )
+        if ( opts[:match] && match_data == opts[:match] ) ||
+           ( !opts[:match] && match_data && match_data.size > 0 )
 
-            url = res.effective_url
-            print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
+           opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
+           opts[:regexp] = regexp
 
-            verified = match ? match : match_data
-            injected = opts[:injected] ? opts[:injected] : '<n/a>'
-            print_verbose( "Injected string:\t" + injected )
-            print_verbose( "Verified string:\t" + verified )
-            print_verbose( "Matched regular expression: " + regexp.to_s )
-            print_debug( 'Request ID: ' + res.request.id.to_s )
-            print_verbose( '---------' ) if only_positives?
-
-            res = {
-                :var          => var,
-                :url          => url,
-                :injected     => injected,
-                :id           => match.to_s,
-                :regexp       => regexp.to_s,
-                :regexp_match => match_data,
-                :response     => res.body,
-                :elem         => elem,
-                :method       => res.request.method.to_s,
-                :verification => verification,
-                :opts         => opts.dup,
-                :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            }
-
-            @auditor.register_results( [Issue.new( res.merge( @auditor.class.info ) )] )
+           @auditor.log( opts, res )
         end
     end
 

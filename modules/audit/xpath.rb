@@ -40,10 +40,10 @@ class XPathInjection < Arachni::Module::Base
         # we make this a class variable and populate it only once
         # to reduce file IO
         #
-        @@__regexps ||= []
+        @@__errors ||= []
 
-        if @@__regexps.empty?
-            read_file( 'regexps.txt' ) { |regexp| @@__regexps << regexp }
+        if @@__errors.empty?
+            read_file( 'errors.txt' ) { |error| @@__errors << error }
         end
 
         # prepare the strings that will hopefully cause the webapp
@@ -55,7 +55,7 @@ class XPathInjection < Arachni::Module::Base
 
         @__opts = {
             :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :substring => @@__errors
         }
 
     end

@@ -52,9 +52,8 @@ class CodeInjection < Arachni::Module::Base
         @__opts = {}
 
         # the sum of the 2 numbers as a string
-        @__opts[:match]   =  ( @__rand1.to_i + @__rand2.to_i ).to_s
-        @__opts[:regexp]  = Regexp.new( @__opts[:match] )
-        @__opts[:format]  = [ Format::APPEND ]
+        @__opts[:substring] = ( @__rand1.to_i + @__rand2.to_i ).to_s
+        @__opts[:format]    = [ Format::APPEND ]
 
         # code to be injected to the webapp
         @__injection_strs = [

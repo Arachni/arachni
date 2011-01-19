@@ -91,9 +91,7 @@ class XSSURI < Arachni::Module::Base
 
     def __log_results( res )
 
-        regexp = Regexp.new( Regexp.escape( @str ) )
-
-        if ( res.body.scan( regexp )[0] == @str )
+        if res.body.substring?( @str )
 
             url = res.effective_url
             # append the result to the results hash
@@ -102,7 +100,7 @@ class XSSURI < Arachni::Module::Base
                 :url          => url,
                 :injected     => @str,
                 :id           => @str,
-                :regexp       => regexp,
+                :regexp       => @str,
                 :regexp_match => @str,
                 :elem         => Issue::Element::PATH,
                 :response     => res.body,

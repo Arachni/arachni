@@ -40,10 +40,10 @@ class LDAPInjection < Arachni::Module::Base
         # we make this a class variable and populate it only once
         # to reduce file IO
         #
-        @@__regexps ||= []
+        @@__errors ||= []
 
-        if @@__regexps.empty?
-            read_file( 'regexps.txt' ) { |regexp| @@__regexps << regexp }
+        if @@__errors.empty?
+            read_file( 'errors.txt' ) { |error| @@__errors << error }
         end
 
 
@@ -52,8 +52,8 @@ class LDAPInjection < Arachni::Module::Base
         @__injection_str = "#^($!@$)(()))******"
 
         @__opts = {
-            :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :format    => [ Format::APPEND ],
+            :substring => @@__errors
         }
 
     end

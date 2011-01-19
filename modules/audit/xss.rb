@@ -52,7 +52,7 @@ class XSS < Arachni::Module::Base
 
             opts = {
                 :match  => str,
-                :regexp => Regexp.new( str )
+                :substring => str
             }.merge( @_opts )
 
             audit( str, opts )

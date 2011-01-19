@@ -208,6 +208,12 @@ module Auditor
         rescue
         end
 
+        print_verbose( "Injected string:\t" + opts[:injected] )
+        print_verbose( "Verified string:\t" + opts[:match] ) if opts[:match]
+        print_verbose( "Matched regular expression: " + opts[:regexp].to_s )
+        print_debug( 'Request ID: ' + res.request.id.to_s )
+        print_verbose( '---------' ) if only_positives?
+
         # Instantiate a new Vulnerability class and
         # append it to the results array
         vuln = Issue.new( {
@@ -215,8 +221,8 @@ module Auditor
             :url          => url,
             :injected     => opts[:injected] || '<n/a>',
             :id           => opts[:id] || '<n/a>',
-            :regexp       => opts[:regexp] || '<n/a>',
-            :regexp_match => opts[:match] || '<n/a>',
+            :regexp       => opts[:regexp].to_s || '<n/a>',
+            :regexp_match => opts[:match].to_s || '<n/a>',
             :elem         => opts[:element],
             :response     => response,
             :headers      => {
