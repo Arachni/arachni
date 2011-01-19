@@ -208,10 +208,10 @@ module Auditor
         rescue
         end
 
-        print_verbose( "Injected string:\t" + opts[:injected] )
-        print_verbose( "Verified string:\t" + opts[:match] ) if opts[:match]
+        print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
+        print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
         print_verbose( "Matched regular expression: " + opts[:regexp].to_s )
-        print_debug( 'Request ID: ' + res.request.id.to_s )
+        print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
         # Instantiate a new Vulnerability class and
