@@ -2,15 +2,19 @@
 # ChangeLog
 
 ## Version 0.2.2
+- Changed classification from "Vulnerabilities" to "Issues" (**New**)
 - Improved detection of custom 404 pages.
-- XMLRPC improvements:
-   - Substituted the XMLRPC server with an XMLRPC dispatch server.  (**New**)
-     Dispatches XMLRPC servers on demand providing a centralised environment for multiple XMLRPC clients.
-   - Added extensive logging for XMLRPC Dispatcher and Server.  (**New**)
-   - SSL cert based client authentication.  (**New**)
-   - Cleaned up XMLRPC class structure and namespace.
-   - Cleaned up module API, simpler logging.
-- Added modules:  (**New**)
+- Reports updated to show plug-in results.
+- Updated framework-wide cookie handling.
+- Crawler
+   - Improved performance
+   - Added '--spider-first" option  (**New**)
+- Substituted the XMLRPC server with an XMLRPC dispatch server  (**New**)
+   - Multiple clients
+   - Parallel scans
+   - Extensive logging
+   - SSL cert based client authentication
+- Added modules  (**New**)
    - Audit
       - XSS in event attributes of HTML elements
       - XSS in HTML tags
@@ -26,21 +30,17 @@
       - E-mail address disclosure
       - US Social Security Number disclosure
       - Forceful directory listing
-- Added plugins:  (**New**)
+- Added plugins  (**New**)
    - Dictionary attacker for HTTP Auth
    - Dictionary attacker for form based authentication
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
-- Updated cookie handling
-- Added the '--spider-first" option
-- Changed classification from "Vulnerabilities" to "Issues"
-- New behavior on Ctrl+C:
+- New behavior on Ctrl+C
    - The system continues to run in the background instead of pausing
    - The user is presented with an auto-refreshing report and progress stats
-- Updated module API:
+- Updated module API
    - The modules are given access to vector skipping decisions
-- Improved crawler performance
-- Reports updated to show plug-in results.
+   - Simplified issue logging
 
 ## Version 0.2.1 _(November 25, 2010)_
 - Major performance improvements
