@@ -42,6 +42,8 @@
 - Updated module API
    - The modules are given access to vector skipping decisions
    - Simplified issue logging
+   - Added the option of substring matching instead of regexp matching in order to improve performance.
+   - Substituted regular expression matching with substring matching wherever possible.
 
 ## Version 0.2.1 _(November 25, 2010)_
 - Major performance improvements
