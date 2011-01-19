@@ -63,7 +63,7 @@ class String
     end
 
     def substring?( string )
-        substring = self[string]
+        substring = self.downcase[string.downcase]
         return substring && !substring.empty?
     end
 
