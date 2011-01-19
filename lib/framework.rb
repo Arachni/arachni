@@ -522,6 +522,10 @@ class Framework
         }
 
         @auditmap << page.url
+        @auditmap.uniq!
+        @sitemap |= @auditmap
+        @sitemap.uniq!
+
 
         if( !@opts.http_harvest_last )
             harvest_http_responses( )
