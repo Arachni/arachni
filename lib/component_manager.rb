@@ -118,6 +118,8 @@ class ComponentManager < Hash
         unload = []
         load   = []
 
+        return load if components[0] == '-'
+
         components.each {
             |component|
             if component[0] == EXCLUDE
@@ -136,26 +138,23 @@ class ComponentManager < Hash
 
             avail_components  = available(  )
 
-            # recon modules should be loaded before audit ones
-            # and ls_available() honors that
-            avail_components.map {
+            components.each {
                 |component|
-                load << component if components.include?( component )
-            }
 
-            load |= components.map {
-                |component|
-                load |= wilcard_to_names( component )
+                if component.substring?( '*' )
+                    load |= wilcard_to_names( component )
+                else
+
+                    if( avail_components.include?( component ) )
+                        load << component
+                    else
+                        raise( Arachni::Exceptions::ComponentNotFound,
+                            "Error: Component #{component} wasn't found." )
+                    end
+                end
+
             }
             load.flatten!
-
-            load.each {
-                |component|
-                if( !avail_components.include?( component ) )
-                      raise( Arachni::Exceptions::ComponentNotFound,
-                          "Error: Component #{component} wasn't found." )
-                end
-            }
 
         else
             available(  ).map {
@@ -196,7 +195,7 @@ class ComponentManager < Hash
             }.compact
         end
 
-        return []
+        return
     end
 
     #
