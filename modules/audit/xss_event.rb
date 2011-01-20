@@ -79,6 +79,8 @@ class XSSEvent < Arachni::Module::Base
     end
 
     def _check( res, injected_str )
+        return [] if !res.body || !res.body.substring?( injected_str )
+
         doc = Nokogiri::HTML( res.body )
         EVENT_ATTRS.each {
             |attr|

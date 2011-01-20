@@ -56,7 +56,9 @@ class XSSScriptTag < Arachni::Module::Base
     end
 
     def _log( res, opts )
-        return if !res.body
+        # if we have no body or it doesn't contain the injected string under any
+        # context there's no point in parsing the HMTL to verify the vulnerability
+        return if !res.body || !res.body.substring?( opts[:injected] )
 
         begin
             doc = Nokogiri::HTML( res.body )

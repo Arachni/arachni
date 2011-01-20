@@ -58,7 +58,9 @@ class XSSHTMLTag < Arachni::Module::Base
     end
 
     def _log( res, opts )
-        return if !res.body
+        # if we have no body or it doesn't contain the TAG_NAME under any
+        # context there's no point in parsing the HMTL to verify the vulnerability
+        return if !res.body || !res.body.substring?( TAG_NAME )
 
         begin
             doc = Nokogiri::HTML( res.body )
