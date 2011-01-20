@@ -1,3 +1,5 @@
+require 'typhoeus'
+
 module Typhoeus
   class Response
     attr_reader :start_transfer_time,
