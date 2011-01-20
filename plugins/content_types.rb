@@ -34,7 +34,7 @@ class ContentTypes < Arachni::Plugin::Base
         @results = {}
         @exclude = Regexp.new( @options['exclude'] )
 
-        @logged = []
+        @logged = Set.new
     end
 
     def run( )
