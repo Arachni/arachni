@@ -44,8 +44,6 @@ class FormDicattack < Arachni::Plugin::Base
         @passwd_field = @options['password_field']
         @verifier     = Regexp.new( @options['login_verifier'] )
 
-        @parser = Arachni::Parser.new( @framework.opts )
-
         # we need to declare this in order to pass ourselves
         # as the auditor to the form later in order to submit it.
         @http = @framework.http
@@ -134,7 +132,7 @@ class FormDicattack < Arachni::Plugin::Base
         res  = @http.get( @url, :async => false ).response
 
         # parse the response as a Page object
-        page = @parser.run( @url, res.body, res.headers_hash )
+        page = Arachni::Parser.new( @framework.opts, res ).run
 
         # find the login form
         form = nil

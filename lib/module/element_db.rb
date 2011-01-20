@@ -46,14 +46,14 @@ module ElementDB
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
     def init_forms( forms )
-      @@forms = forms
+      @@forms |= forms.map { |form| form.id }
     end
 
     #
     # Initializes @@links with the links found during the crawl/analysis
     #
     def init_links( links )
-      @@links = links
+      @@links |= links.map { |link| link.id }
     end
 
     #
@@ -74,7 +74,7 @@ module ElementDB
         return [], 0 if forms.size == 0
 
         form_cnt = 0
-        @new_forms ||= []
+        new_forms ||= []
 
         forms.each {
             |form|
@@ -82,15 +82,14 @@ module ElementDB
             next if form.action.include?( seed )
             next if form.auditable.size == 0
 
-            if !(index = forms_include?( form ) )
-                @@forms << form
-                @new_forms << form
+            if !@@forms.include?( form.id )
+                @@forms << form.id
+                new_forms << form
                 form_cnt += 1
             end
         }
 
-        return @new_forms, form_cnt
-
+        return new_forms, form_cnt
     end
 
     #
@@ -103,21 +102,21 @@ module ElementDB
       return [], 0 if links.size == 0
 
       link_cnt = 0
-      @new_links ||= []
+      new_links ||= []
       links.each {
           |link|
 
           next if !link
           next if link.action.include?( seed )
 
-          if !(index = links_include?( link ) )
-              @@links    << link
-              @new_links << link
+          if !@@links.include?( link.id )
+              @@links    << link.id
+              new_links << link
               link_cnt += 1
           end
       }
 
-      return @new_links, link_cnt
+      return new_links, link_cnt
     end
 
     #
@@ -151,26 +150,6 @@ module ElementDB
         @@cookies |= @new_cookies
 
         return [ @@cookies, cookie_cnt ]
-    end
-
-    private
-
-    def forms_include?( form )
-        @@forms.each_with_index {
-            |page_form, i|
-            return i if( form.id == page_form.id )
-
-        }
-        return false
-    end
-
-    def links_include?( link )
-        @@links.each_with_index {
-            |page_link, i|
-            return i if( link.id == page_link.id )
-
-        }
-        return false
     end
 
 end

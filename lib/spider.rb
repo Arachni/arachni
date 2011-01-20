@@ -133,11 +133,18 @@ class Spider
                 # call the block...if we have one
                 if block
                     begin
-                        new_page = Arachni::Parser.new( @opts, url, page.body, page.headers ).run
+                        new_page = Arachni::Parser.new( @opts,
+                            Typhoeus::Response.new(
+                                :effective_url => url,
+                                :body          => page.body,
+                                :headers_hash  => page.headers
+                            )
+                        ).run
                         new_page.code   = page.code
                         new_page.method = 'GET'
                         block.call( new_page.clone )
-                    rescue Exception
+                    rescue Exception => e
+                        ap e.to_s
                         raise
                     end
                 end

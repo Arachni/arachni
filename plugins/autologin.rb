@@ -39,7 +39,6 @@ class AutoLogin < Arachni::Plugin::Base
     end
 
     def prepare
-        @parser = Arachni::Parser.new( @framework.opts )
         @params = parse_params
 
         # we need to declared this in order to pass ourselves
@@ -52,8 +51,9 @@ class AutoLogin < Arachni::Plugin::Base
         # grab the page containing the login form
         res  = @framework.http.get( @options['url'], :async => false ).response
 
+        parser = Arachni::Parser.new( @framework.opts, res )
         # parse the response as a Page object
-        page = @parser.run( @options['url'], res.body, res.headers_hash )
+        page = parser.run
 
         # find the login form
         login_form = nil

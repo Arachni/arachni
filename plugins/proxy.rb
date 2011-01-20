@@ -53,8 +53,14 @@ class Proxy < Arachni::Plugin::Base
     def prepare
         require @framework.opts.dir['plugins'] + '/proxy/server.rb'
 
-        # we'll need this to parse server responses into Arachni::Parser::Page objects
-        @parser = Arachni::Parser.new( @framework.opts )
+        # foo initialization, we just need it to verify URLs
+        @parser = Arachni::Parser.new( @framework.opts,
+            Typhoeus::Response.new(
+                :effective_url => @framework.opts.url.to_s,
+                :body          => '',
+                :headers_hash  => {}
+            )
+        )
 
         @server = Server.new(
             :BindAddress    => @options['bind_address'],
@@ -62,8 +68,8 @@ class Proxy < Arachni::Plugin::Base
             :ProxyVia       => false,
             :ProxyContentHandler => method( :handler ),
             :ProxyURITest   => method( :allowed? ),
-            # :AccessLog      => [],
-            # :Logger         => WEBrick::Log::new( "/dev/null", 7 )
+            :AccessLog      => [],
+            :Logger         => WEBrick::Log::new( "/dev/null", 7 )
         )
     end
 
@@ -89,7 +95,16 @@ class Proxy < Arachni::Plugin::Base
         headers.merge( res.header.dup )     if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
-        page = @parser.run( req.unparsed_uri, res.body, headers )
+        # proper initialization in order to parse the response into a page
+        @parser = Arachni::Parser.new( @framework.opts,
+            Typhoeus::Response.new(
+                :effective_url => req.unparsed_uri,
+                :body          => res.body,
+                :headers_hash  => headers
+            )
+        )
+
+        page = @parser.run
         page = update_forms( page, req ) if req.body
         page.method = res.request_method
         page.code   = res.status
@@ -134,7 +149,7 @@ class Proxy < Arachni::Plugin::Base
             }
         end
 
-        @framework.http.set_cookies( cookies )
+        @framework.http.update_cookies( cookies )
 
     end
 

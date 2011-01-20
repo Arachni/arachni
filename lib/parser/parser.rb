@@ -62,12 +62,12 @@ class Parser
     #
     # @param  [Options] opts
     #
-    def initialize( opts, url, html, response_headers )
+    def initialize( opts, res )
         @opts = opts
 
-        @url  = url
-        @html = html
-        @response_headers = response_headers
+        @url  = res.effective_url
+        @html = res.body
+        @response_headers = res.headers_hash
     end
 
     #
@@ -204,12 +204,12 @@ class Parser
     #
     # @return [Array<Element::Form>] array of forms
     #
-    def forms
+    def forms( html = nil )
 
         elements = []
 
         begin
-            html = @html.clone
+            html = html || @html.clone
             #
             # This imitates Firefox's behavior when it comes to
             # broken/unclosed form tags
@@ -347,11 +347,14 @@ class Parser
         rescue
         end
 
-        begin
-            cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
-            cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
-        rescue
-            return cookies_arr
+        # don't ask me why....
+        if @response_headers.to_s.substring?( 'set-cookie' )
+            begin
+                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
+                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
+            rescue
+                return cookies_arr
+            end
         end
 
         cookies.flatten.uniq.each_with_index {

@@ -45,9 +45,8 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        # return if res.code != 200 && res.code != 0
-
-        @parser = Parser.new( Options.instance, @page.url, res.body, res.headers_hash )
+        @parser = Parser.new( Options.instance, res )
+        @parser.url = @page.url
 
         begin
             url = res.effective_url
@@ -94,8 +93,6 @@ class Trainer
     def page
         if( @updated  )
               @updated = false
-              # page = @page.dup
-              # @page = nil
               return  @page
           else
               return nil
@@ -112,6 +109,8 @@ class Trainer
 
         print_debug( 'Started for response with request ID: #' +
           res[0].request.id.to_s )
+
+        @parser.url = res[0].effective_url.clone
 
         cookies, cookie_cnt = train_cookies( res[0] )
         if ( cookie_cnt > 0 )
@@ -181,7 +180,7 @@ class Trainer
     def train_forms( res )
         return [], 0 if !@opts.audit_forms
 
-        @parser.url = res.effective_url.clone
+        # @parser.url = res.effective_url.clone
         forms = @parser.forms( ).clone
 
         return update_forms( forms )
@@ -190,7 +189,7 @@ class Trainer
     def train_links( res, redir = false )
         return [], 0  if !@opts.audit_links
 
-        @parser.url = res.effective_url.clone
+        # @parser.url = res.effective_url.clone
 
         links   = @parser.links.clone
 

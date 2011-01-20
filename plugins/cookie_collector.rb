@@ -29,7 +29,6 @@ class CookieCollector < Arachni::Plugin::Base
     end
 
     def prepare
-        @parser  = Arachni::Parser.new( @framework.opts )
         @cookies = []
     end
 
@@ -63,7 +62,8 @@ class CookieCollector < Arachni::Plugin::Base
 
     def extract_cookies( res )
         cookies = {}
-        @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).each {
+        parser = Arachni::Parser.new( @framework.opts, res )
+        parser.cookies.each {
             |cookie|
             cookies.merge!( cookie.simple )
         }

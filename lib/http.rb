@@ -597,13 +597,20 @@ class HTTP
 
         # extract cookies from the META tags
         begin
-            Nokogiri::HTML( res.body ).search( "//meta[@http-equiv]" ).each {
-                |elem|
 
-                next if elem['http-equiv'].downcase != 'set-cookie'
-                k, v = elem['content'].split( ';' )[0].split( '=', 2 )
-                cookie_hash[k] = v
-            }
+            # get get the head in order to check if it has an http-equiv for set-cookie
+            head = res.body.match( /<head(.*)<\/head>/imx )
+
+            # if it does feed the head to the parser in order to extract the cookies
+            if head && head.to_s.substring?( 'set-cookie' )
+                Nokogiri::HTML( head.to_s ).search( "//meta[@http-equiv]" ).each {
+                    |elem|
+
+                    next if elem['http-equiv'].downcase != 'set-cookie'
+                    k, v = elem['content'].split( ';' )[0].split( '=', 2 )
+                    cookie_hash[k] = v
+                }
+            end
         rescue Exception => e
             print_debug( e.to_s )
             print_debug_backtrace( e )
