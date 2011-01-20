@@ -8,5 +8,5 @@
 # [1] https://github.com/tmm1/perftools.rb
 #
 CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat RUBYOPT="-r`gem which perftools | tail -1`" \
-ruby arachni.rb http://demo.testfire.net --link-count=5 --report=html --plugin=cookie_collector --plugin=healthmap --plugin=content_types
+ruby arachni.rb http://demo.testfire.net --link-count=5
 pprof.rb --gif /tmp/profile.dat > profile.gif
