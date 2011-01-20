@@ -6,6 +6,11 @@
 - Improved detection of custom 404 pages.
 - Reports updated to show plug-in results.
 - Updated framework-wide cookie handling.
+- Major performance optimizations (4x faster in most tests)
+   - All modules now use asynchronous requests
+   - All index Arrays have been replaced by Sets to minimize look-up times
+   - Mark-up parsing has been reduced dramatically
+   - File I/O blocking in modules has been eliminated
 - Crawler
    - Improved performance
    - Added '--spider-first" option  (**New**)
