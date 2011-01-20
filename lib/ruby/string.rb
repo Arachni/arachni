@@ -63,8 +63,8 @@ class String
     end
 
     def substring?( string )
-        match = self.downcase[string.downcase]
-        return match && !match.empty?
+        match = match( Regexp.new( Regexp.escape( string ) ) )
+        match && !match.to_s.empty?
     end
 
 end
