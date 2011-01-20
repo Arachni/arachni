@@ -63,7 +63,8 @@ class String
     end
 
     def substring?( string )
-        include?( string )
+        match = self.downcase[string.downcase]
+        return match && !match.empty?
     end
 
 end
