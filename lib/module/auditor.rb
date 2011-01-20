@@ -203,6 +203,11 @@ module Auditor
             url              = res.effective_url
         end
 
+        if response_headers['content-type'] &&
+           !response_headers['content-type'].substring?( 'text' )
+            response = nil
+        end
+
         begin
             print_ok( "In #{opts[:element]} var '#{opts[:altered]}' ( #{url} )" )
         rescue
@@ -224,7 +229,7 @@ module Auditor
             :regexp       => opts[:regexp].to_s || '<n/a>',
             :regexp_match => opts[:match].to_s || '<n/a>',
             :elem         => opts[:element],
-            :response     => response,
+            :response     => response || '<n/a>',
             :headers      => {
                 :request    => request_headers,
                 :response   => response_headers,
