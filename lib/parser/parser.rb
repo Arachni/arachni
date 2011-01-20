@@ -78,35 +78,12 @@ class Parser
     #
     def run( url, html, response_headers )
 
-        @url = url
+        @url  = url
+        @html = html
+        @response_headers = response_headers
 
-        forms       = []
-        links       = []
-        cookies_arr = []
-
-        if @opts.audit_forms
-            forms = forms( html )
-        end
-
-        if @opts.audit_links
-            links = links( html )
-
-            # get the variables of the url query as an array of hashes
-            query_vars = link_vars( url )
-
-            # if url query has variables in it append them to the page elements
-            if( query_vars.size > 0 )
-                links << Element::Link.new( url, {
-                    'href' => url,
-                    'vars' => query_vars
-                } )
-            end
-
-        end
-
-        cookies_arr << cookies( response_headers['Set-Cookie'].to_s, html )
-        cookies_arr << cookies( response_headers['set-cookie'].to_s )
-        cookies_arr = merge_with_cookiejar( cookies_arr.flatten!.uniq )
+        cookies_arr = cookies
+        cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
 
         jar = {}
         jar = @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar ) if @opts.cookie_jar
@@ -117,17 +94,22 @@ class Parser
         jar = preped.merge( jar )
 
         return Page.new( {
-            :url         => url,
-            :query_vars  => query_vars,
+            :url         => @url,
+            :query_vars  => link_vars( @url ),
             :html        => html,
             :headers     => headers(),
             :response_headers     => response_headers,
-            :forms       => forms,
-            :links       => links,
+            :forms       => @opts.audit_forms ? forms() : [],
+            :links       => @opts.audit_links ? links() : [],
             :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
             :cookiejar   => jar
         } )
 
+    end
+
+    def doc
+      return @doc if @doc
+      @doc = Nokogiri::HTML( @html ) if @html rescue nil
     end
 
     def merge_with_cookiestore( cookies )
@@ -227,7 +209,7 @@ class Parser
     #
     # @return [Array<Element::Form>] array of forms
     #
-    def forms( html )
+    def forms
 
         elements = []
 
@@ -239,16 +221,16 @@ class Parser
             #
 
             # get properly closed forms
-            forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
+            forms = @html.scan( /<form(.*?)<\/form>/ixm ).flatten
 
             # now remove them from html...
             forms.each {
                 |form|
-                html = html.gsub( form, '' )
+                html = @html.gsub( form, '' )
             }
 
             # and get unclosed forms.
-            forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
+            forms |= @html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
 
         rescue Exception => e
             return elements
@@ -312,10 +294,10 @@ class Parser
     #
     # @return [Array<Element::Link>] of links
     #
-    def links( html )
+    def links
 
         link_arr = []
-        elements_by_name( 'a', html ).each_with_index {
+        elements_by_name( 'a' ).each_with_index {
             |link|
 
             link['href'] = to_absolute( link['href'] )
@@ -332,6 +314,17 @@ class Parser
 
         }
 
+        # get the variables of the url query as an array of hashes
+        query_vars = link_vars( @url )
+
+        # if url query has variables in it append them to the page elements
+        if( query_vars.size > 0 )
+            link_arr << Element::Link.new( @url, {
+                'href' => @url,
+                'vars' => query_vars
+            } )
+        end
+
         return link_arr
     end
 
@@ -343,13 +336,12 @@ class Parser
     #
     # @return [Array<Element::Cookie>] of cookies
     #
-    def cookies( headers, html = '' )
+    def cookies
 
         cookies_arr = []
         cookies     = []
 
         begin
-            doc = Nokogiri::HTML( html )
             doc.search( "//meta[@http-equiv]" ).each {
                 |elem|
 
@@ -361,7 +353,8 @@ class Parser
         end
 
         begin
-            cookies << WEBrick::Cookie.parse_set_cookies( headers )
+            cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
+            cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
         rescue
             return cookies_arr
         end
@@ -659,10 +652,9 @@ class Parser
     # @return [Array<Hash<String, String>>]
     #
     def attrs_from_tag( tag, html )
-        doc = Nokogiri::HTML( html )
 
         elements = []
-        doc.search( tag ).each_with_index {
+        Nokogiri::HTML( html ).search( tag ).each_with_index {
             |element, i|
 
             elements[i] = Hash.new
@@ -683,9 +675,7 @@ class Parser
     #
     # @return [Array<Hash <String, String> >] of elements
     #
-    def elements_by_name( name, html )
-
-        doc = Nokogiri::HTML( html )
+    def elements_by_name( name )
 
         elements = []
         doc.search( name ).each_with_index do |input, i|

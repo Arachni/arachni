@@ -19,7 +19,6 @@ module Module
 #
 # Analyzes all HTTP responses looking for new auditable elements.
 #
-# @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.1
@@ -60,7 +59,7 @@ class Trainer
 
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-            # raise e
+            raise e
         end
 
     end
@@ -113,6 +112,7 @@ class Trainer
         print_debug( 'Started for response with request ID: #' +
           res[0].request.id.to_s )
 
+        @parser.run( @parser.url, res[0].body, res[0].headers_hash )
 
         cookies, cookie_cnt = train_cookies( res[0] )
         if ( cookie_cnt > 0 )
@@ -183,7 +183,7 @@ class Trainer
         return [], 0 if !@opts.audit_forms
 
         @parser.url = res.effective_url.clone
-        forms = @parser.forms( res.body ).clone
+        forms = @parser.forms( ).clone
 
         return update_forms( forms )
     end
@@ -193,7 +193,7 @@ class Trainer
 
         @parser.url = res.effective_url.clone
 
-        links   = @parser.links( res.body ).clone
+        links   = @parser.links.clone
 
         if( redir )
             links << Arachni::Parser::Element::Link.new( @page.url, {
@@ -206,7 +206,7 @@ class Trainer
     end
 
     def train_cookies( res )
-        cookies = @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).clone
+        cookies = @parser.cookies.clone
         return update_cookies( cookies )
     end
 
