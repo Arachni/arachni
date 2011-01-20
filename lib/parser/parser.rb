@@ -309,17 +309,6 @@ class Parser
 
         }
 
-        # get the variables of the url query as an array of hashes
-        query_vars = link_vars( @url )
-
-        # if url query has variables in it append them to the page elements
-        if( query_vars.size > 0 )
-            link_arr << Element::Link.new( @url, {
-                'href' => @url,
-                'vars' => query_vars
-            } )
-        end
-
         return link_arr
     end
 

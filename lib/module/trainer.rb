@@ -194,9 +194,10 @@ class Trainer
         links   = @parser.links.clone
 
         if( redir )
-            links << Arachni::Parser::Element::Link.new( @page.url, {
-                'href' => @page.url,
-                'vars' => @parser.link_vars( @parser.url )
+            url = to_absolute( res.effective_url )
+            links << Arachni::Parser::Element::Link.new( url, {
+                'href' => url,
+                'vars' => @parser.link_vars( url )
             } )
         end
 
