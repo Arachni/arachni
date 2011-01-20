@@ -34,7 +34,6 @@ class Trainer
 
     def initialize
       @opts     = Options.instance
-      @parser   = Parser.new( @opts )
       @updated  = false
     end
 
@@ -47,6 +46,8 @@ class Trainer
     def add_response( res, redir = false )
 
         # return if res.code != 200 && res.code != 0
+
+        @parser = Parser.new( Options.instance, @page.url, res.body, res.headers_hash )
 
         begin
             url = res.effective_url
@@ -111,8 +112,6 @@ class Trainer
 
         print_debug( 'Started for response with request ID: #' +
           res[0].request.id.to_s )
-
-        @parser.run( @parser.url, res[0].body, res[0].headers_hash )
 
         cookies, cookie_cnt = train_cookies( res[0] )
         if ( cookie_cnt > 0 )

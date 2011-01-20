@@ -62,25 +62,20 @@ class Parser
     #
     # @param  [Options] opts
     #
-    def initialize( opts )
-        @url = ''
+    def initialize( opts, url, html, response_headers )
         @opts = opts
+
+        @url  = url
+        @html = html
+        @response_headers = response_headers
     end
 
     #
     # Runs the Analyzer and extracts forms, links and cookies
     #
-    # @param [String] url the url of the HTML code, mainly used for debugging
-    # @param [String] html HTML code  to be analyzed
-    # @param [Hash]   headers HTTP headers
-    #
     # @return [Page]
     #
-    def run( url, html, response_headers )
-
-        @url  = url
-        @html = html
-        @response_headers = response_headers
+    def run
 
         cookies_arr = cookies
         cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
@@ -96,9 +91,9 @@ class Parser
         return Page.new( {
             :url         => @url,
             :query_vars  => link_vars( @url ),
-            :html        => html,
+            :html        => @html,
             :headers     => headers(),
-            :response_headers     => response_headers,
+            :response_headers     => @response_headers,
             :forms       => @opts.audit_forms ? forms() : [],
             :links       => @opts.audit_links ? links() : [],
             :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
@@ -214,23 +209,20 @@ class Parser
         elements = []
 
         begin
-
+            html = @html.clone
             #
             # This imitates Firefox's behavior when it comes to
             # broken/unclosed form tags
             #
 
             # get properly closed forms
-            forms = @html.scan( /<form(.*?)<\/form>/ixm ).flatten
+            forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
 
             # now remove them from html...
-            forms.each {
-                |form|
-                html = @html.gsub( form, '' )
-            }
+            forms.each { |form| html.gsub!( form, '' ) }
 
             # and get unclosed forms.
-            forms |= @html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
+            forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
 
         rescue Exception => e
             return elements
@@ -282,7 +274,10 @@ class Parser
             i += 1
         }
 
-        elements
+        elements.reject {
+            |form|
+            form.auditable.empty?
+        }
     end
 
     #

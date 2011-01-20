@@ -56,7 +56,6 @@ class Spider
     #
     def initialize( opts )
         @opts = opts
-        @parser   = Arachni::Parser.new( @opts )
 
         @anemone_opts = {
             :threads              =>  1,
@@ -134,7 +133,7 @@ class Spider
                 # call the block...if we have one
                 if block
                     begin
-                        new_page = @parser.run( url, page.body, page.headers )
+                        new_page = Arachni::Parser.new( @opts, url, page.body, page.headers ).run
                         new_page.code   = page.code
                         new_page.method = 'GET'
                         block.call( new_page.clone )
