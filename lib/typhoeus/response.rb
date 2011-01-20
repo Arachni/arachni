@@ -1,4 +1,3 @@
-require 'typhoeus'
 
 module Typhoeus
   class Response
@@ -24,7 +23,7 @@ module Typhoeus
       @request               = params[:request]
       @effective_url         = params[:effective_url]
       @mock                  = params[:mock] || false  # default
-      @headers_hash          = NormalizedHeaderHash.new(params[:headers_hash]) if params[:headers_hash]
+      @headers_hash          = Typhoeus::NormalizedHeaderHash.new(params[:headers_hash]) if params[:headers_hash]
     end
 
     #
