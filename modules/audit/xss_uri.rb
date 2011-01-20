@@ -34,7 +34,7 @@ class XSSURI < Arachni::Module::Base
         @results    = []
 
         # since we'll bypass the Auditor we need to keep track of our audits
-        @@__audited  ||= []
+        @@__audited  ||= Set.new
     end
 
     def prepare( )

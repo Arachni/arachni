@@ -34,7 +34,7 @@ class BackupFiles < Arachni::Module::Base
 
     def prepare
         # to keep track of the requests and not repeat them
-        @@__audited ||= []
+        @@__audited ||= Set.new
 
         # our results array
         @results = []

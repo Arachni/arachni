@@ -33,7 +33,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         @page = page
 
         @results    = []
-        @@__audited ||= []
+        @@__audited ||= Set.new
     end
 
     def run( )

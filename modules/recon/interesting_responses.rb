@@ -80,8 +80,8 @@ class InterestingResponses < Arachni::Module::Base
     def __log_results( res )
 
         @@_loged ||= {
-            :paths   => [],
-            :digests => []
+            :paths   => Set.new,
+            :digests => Set.new
         }
 
         digest = Digest::MD5.hexdigest( res.body )

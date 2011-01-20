@@ -48,7 +48,7 @@ class WebDav < Arachni::Module::Base
 
         @__check = 'PROPFIND'
 
-        @@__auditted ||= []
+        @@__auditted ||= Set.new
     end
 
     def run( )

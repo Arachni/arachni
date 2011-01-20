@@ -30,17 +30,17 @@ module ElementDB
     #
     # page forms
     #
-    @@forms    ||= []
+    @@forms    ||= Set.new
 
     #
     # page links
     #
-    @@links    ||= []
+    @@links    ||= Set.new
 
     #
     # page cookies
     #
-    @@cookies  ||= []
+    @@cookies  ||= Set.new
 
     #
     # Initializes @@forms with the cookies found during the crawl/analysis

@@ -46,7 +46,7 @@ class Auditable
     end
 
     def self.reset
-        @@audited = []
+        @@audited = Set.new
     end
 
     attr_accessor :altered
@@ -133,7 +133,7 @@ class Auditable
         audit_opt = "@audit_#{self.type}s"
         return if !Arachni::Options.instance.instance_variable_get( audit_opt )
 
-        @@audited ||= []
+        @@audited ||= Set.new
 
         opts            = Arachni::Module::Auditor::OPTIONS.merge( opts )
         opts[:element]  = self.type

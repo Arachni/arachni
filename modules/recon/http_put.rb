@@ -27,7 +27,7 @@ class HTTP_PUT < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @@__checked ||= []
+        @@__checked ||= Set.new
     end
 
     def run( )

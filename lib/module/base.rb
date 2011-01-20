@@ -8,6 +8,7 @@
 
 =end
 
+require 'set'
 require Arachni::Options.instance.dir['lib'] + 'module/output'
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/trainer'

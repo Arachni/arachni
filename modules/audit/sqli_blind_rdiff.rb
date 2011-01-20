@@ -60,7 +60,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         }
 
         # used for redundancy checks
-        @@__audited ||= []
+        @@__audited ||= Set.new
 
         # this is the structure of the responses
         @responses = {
@@ -232,7 +232,6 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
 
     def clean_up
         @@__audited << __audit_id( )
-        @@__audited.uniq!
     end
 
     def __audit_id

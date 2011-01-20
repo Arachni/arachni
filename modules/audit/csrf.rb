@@ -61,7 +61,7 @@ class CSRF < Arachni::Module::Base
         @__trainer = @http.trainer
 
         # since we bypass the Auditor we must also do our own audit tracking
-        @@__audited ||= []
+        @@__audited ||= Set.new
     end
 
     def run( )

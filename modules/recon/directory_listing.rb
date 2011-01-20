@@ -41,7 +41,7 @@ class DirectoryListing < Arachni::Module::Base
             "./"
        ]
 
-       @@__checked ||= []
+       @@__checked ||= Set.new
     end
 
     def run( )
