@@ -9,6 +9,7 @@
 =end
 
 require Arachni::Options.instance.dir['lib'] + 'anemone'
+require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 
 module Arachni
 
@@ -25,6 +26,7 @@ module Arachni
 class Spider
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     #
     #
@@ -132,7 +134,7 @@ class Spider
 
                 # call the block...if we have one
                 if block
-                    begin
+                    exception_jail{
                         new_page = Arachni::Parser.new( @opts,
                             Typhoeus::Response.new(
                                 :effective_url => url,
@@ -143,10 +145,7 @@ class Spider
                         new_page.code   = page.code
                         new_page.method = 'GET'
                         block.call( new_page.clone )
-                    rescue Exception => e
-                        ap e.to_s
-                        raise
-                    end
+                    }
                 end
 
                 # run blocks specified later
