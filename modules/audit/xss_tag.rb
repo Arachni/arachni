@@ -66,6 +66,7 @@ class XSSHTMLTag < Arachni::Module::Base
             # see if we managed to inject a working HTML attribute to any
             # elements
             if !(html_elem = doc.xpath("//*[@#{TAG_NAME}]")).empty?
+                opts[:match] = html_elem.to_s
                 log( opts, res )
             end
         end
