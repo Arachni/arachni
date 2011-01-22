@@ -143,7 +143,7 @@ class Auditable
         # if we don't have any auditable elements just return
         return if auditable.empty?
 
-        audit_id = audit_id( injection_str )
+        audit_id = audit_id( injection_str, opts )
         return if !opts[:redundant] && audited?( audit_id )
 
         results = []
@@ -280,11 +280,12 @@ class Auditable
 
         elem.opts[:injected] = elem.auditable[elem.altered].to_s
         elem.opts[:combo]    = elem.auditable
+        elem.opts[:action]   = elem.action
 
         if( !elem.opts[:async] )
 
             if( req && req.response )
-                block.call( req.response, elem.opts )
+                block.call( req.response, elem.opts, elem )
             end
 
             return
@@ -303,7 +304,7 @@ class Auditable
 
             # call the block, if there's one
             if block_given?
-                block.call( res, elem.opts )
+                block.call( res, elem.opts, elem )
                 next
             end
 
@@ -385,12 +386,13 @@ class Auditable
     #
     # @return  [String]
     #
-    def audit_id( injection_str )
+    def audit_id( injection_str, opts = {} )
         vars = auditable.keys.sort.to_s
 
+        timeout = opts[:timeout] || ''
         return "#{@auditor.class.info[:name]}:" +
           "#{@action}:" + "#{self.type}:" +
-          "#{vars}=#{injection_str.to_s}"
+          "#{vars}=#{injection_str.to_s}:timeout=#{timeout}"
     end
 
     #
