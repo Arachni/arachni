@@ -361,7 +361,7 @@ class Auditable
         # the sob started occuring again....
         begin
             if( @auditor.page.html.scan( regexp )[0] )
-                verification = true
+                opts[:verification] = true
             end
         rescue
         end
