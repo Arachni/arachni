@@ -76,7 +76,7 @@ class OSCmdInjectionTiming < Arachni::Module::Base
             },
             :targets        => { 'Generic' => 'all' },
             :issue   => {
-                :name        => %q{Operating system command injection},
+                :name        => %q{Operating system command injection (timing attack)},
                 :description => %q{The web application allows an attacker to
                     execute arbitrary OS commands even though it does not return
                     the command output in the HTML body.
