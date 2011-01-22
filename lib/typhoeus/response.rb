@@ -26,6 +26,10 @@ module Typhoeus
       @headers_hash          = Typhoeus::NormalizedHeaderHash.new(params[:headers_hash]) if params[:headers_hash]
     end
 
+    def timed_out?
+        @start_transfer_time == 0 && @code == 0 && @body.empty?
+    end
+
     #
     # Converts obj to hash
     #
