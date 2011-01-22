@@ -306,6 +306,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                 :regexp_match => 'n/a',
                 :elem         => Issue::Element::LINK,
                 :response     => res.body,
+                :verification => true,
                 :headers      => {
                     :request    => res.request.headers,
                     :response   => res.headers,
