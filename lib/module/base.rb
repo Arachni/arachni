@@ -115,9 +115,9 @@ class Base
     #
     # Implementation details are left up to the running module.
     #
-    # @param    [Hash]  opts    details about the eslement
+    # @param    [Arachni::Parser::Element]  elem
     #
-    def skip?( opts )
+    def skip?( elem )
         return false
     end
 
