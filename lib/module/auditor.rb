@@ -341,7 +341,14 @@ module Auditor
         elem.auditor( self )
         elem.audit( str, opts ) {
             |res, opts|
-            log( opts, res) if res.timed_out?
+
+            if res.timed_out?
+
+                # all issues logged by timing attacks need manual verification.
+                # end of story.
+                opts[:verification] = true
+                log( opts, res)
+            end
         }
     end
 
