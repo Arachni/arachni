@@ -6,6 +6,7 @@
 - Improved detection of custom 404 pages.
 - Reports updated to show plug-in results.
 - Updated framework-wide cookie handling.
+- Added a simple update script based on _git_.
 - Major performance optimizations (4x faster in most tests)
    - All modules now use asynchronous requests and are optimized for highest traffic efficiency
    - All index Arrays have been replaced by Sets to minimize look-up times

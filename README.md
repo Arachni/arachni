@@ -433,7 +433,9 @@ If you wish to use the XMLRPC Dispatcher and Monitor (_arachni_xmlrpcd.rb_/_arac
 
 _If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version._
 
-
+## Updating
+Staying up to date with Arachni is easy, you just need to run the _update.sh_ shell script.
+However, make sure that you have "git" in your $PATH.
 
 ## Supported platforms
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
