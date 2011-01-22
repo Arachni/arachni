@@ -138,6 +138,8 @@ class HTTP
 
         @on_complete = []
         @on_queue    = []
+
+        @after_run = []
     end
 
     #
@@ -149,6 +151,14 @@ class HTTP
     def run
         exception_jail {
             @hydra.run
+
+            @after_run.each {
+                |block|
+                block.call
+            }
+
+            @after_run.clear
+
             @curr_res_time = 0
             @curr_res_cnt  = 0
         }
@@ -247,6 +257,14 @@ class HTTP
             @hydra_sync.run if !async
         }
     end
+
+    #
+    # Gets called each time a hydra run finishes
+    #
+    def after_run( &block )
+        @after_run << block
+    end
+
 
     #
     # Gets called each time a request completes and passes the response
