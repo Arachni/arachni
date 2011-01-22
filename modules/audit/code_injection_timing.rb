@@ -64,7 +64,7 @@ class CodeInjectionTiming < Arachni::Module::Base
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => TIME + ( @http.average_res_time * 1000 ) - 5000,
+            :timeout => TIME + ( @http.average_res_time * 1000 ) - 500,
         }
 
         @__logged = []
@@ -83,6 +83,8 @@ class CodeInjectionTiming < Arachni::Module::Base
                 # we have a timeout which probably means the attack succeeded
                 if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
                     @found = true
+                    # timing attacks require manual verification
+                    opts[:verification] = true
                     log( opts, res )
                 end
             }
@@ -115,7 +117,12 @@ class CodeInjectionTiming < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Code injection (timing attack)},
                 :description => %q{Arbitrary code can be injected into the web application
-                    which is then executed as part of the system.},
+                    which is then executed as part of the system.
+                    (This issue was discovered using a timing attack; timing attacks
+                    can result in false positives in cases where the server takes
+                    an abnormally long time to respond.
+                    Either case, these issues will require further investigation
+                    even if they are false positives.)},
                 :cwe         => '94',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '7.5',

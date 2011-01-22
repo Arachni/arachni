@@ -53,7 +53,7 @@ class OSCmdInjectionTiming < Arachni::Module::Base
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => TIME + ( @http.average_res_time * 1000 ) - 3000,
+            :timeout => TIME + ( @http.average_res_time * 1000 ) - 500
         }
 
     end
@@ -66,6 +66,8 @@ class OSCmdInjectionTiming < Arachni::Module::Base
 
                 # we have a timeout which probably means the attack succeeded
                 if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
+                    # timing attacks require manual verification
+                    opts[:verification] = true
                     log( opts, res )
                 end
             }
@@ -91,7 +93,12 @@ class OSCmdInjectionTiming < Arachni::Module::Base
                 :name        => %q{Operating system command injection},
                 :description => %q{The web application allows an attacker to
                     execute arbitrary OS commands even though it does not return
-                    the command output in the HTML body.},
+                    the command output in the HTML body.
+                    (This issue was discovered using a timing attack; timing attacks
+                    can result in false positives in cases where the server takes
+                    an abnormally long time to respond.
+                    Either case, these issues will require further investigation
+                    even if they are false positives.)},
                 :cwe         => '78',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
