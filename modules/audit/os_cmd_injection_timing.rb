@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -26,8 +26,6 @@ module Modules
 class OSCmdInjectionTiming < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    TIME = 10000 # ms
 
     def initialize( page )
         super( page )
@@ -43,35 +41,23 @@ class OSCmdInjectionTiming < Arachni::Module::Base
 
                 [ '', '&&', '|', ';' ].each {
                     |sep|
-                    @@__injection_str << sep + " " +
-                        str.gsub( '__TIME__', ( TIME / 1000 ).to_s )
+                    @@__injection_str << sep + " " + str
                 }
 
-                @@__injection_str << "`" + str.gsub( '__TIME__', ( TIME / 1000 ).to_s ) + "`"
+                @@__injection_str << "`" + str + "`"
             }
         end
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => TIME + ( @http.average_res_time * 1000 ) - 500
+            :timeout => 4000,
+            :timeout_divider => 1000
         }
 
     end
 
-    def run( )
-        @@__injection_str.each {
-            |str|
-            audit( str, @__opts ) {
-                |res, opts|
-
-                # we have a timeout which probably means the attack succeeded
-                if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
-                    # timing attacks require manual verification
-                    opts[:verification] = true
-                    log( opts, res )
-                end
-            }
-        }
+    def run
+        audit_timeout( @@__injection_str, @__opts )
     end
 
     def self.info

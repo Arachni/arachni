@@ -293,6 +293,92 @@ module Auditor
         }
     end
 
+
+    #
+    # Audits elements using a 2 phase timing attack and logs results.
+    #
+    # 'opts' needs to contain a :timeout value in milliseconds.</br>
+    # Optionally, you can add a :timeout_divider.
+    #
+    # Phase 1 uses the timeout value passed in opts, phase 2 uses (timeout * 2). </br>
+    # If phase 1 fails, phase 2 is aborted. </br>
+    # If we have a result in phase 1, phase 2 verifies that result with the higher timeout.
+    #
+    # @params   [Array]     strings     injection strings
+    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    # @param  [Hash]        opts        options as described in {OPTIONS}
+    #
+    def audit_timeout( strings, opts )
+        logged = Set.new
+
+        delay = opts[:timeout]
+
+        audit_timeout_debug_msg( 1, delay )
+        timing_attack( strings, opts ) {
+            |res, opts, elem|
+
+            if !logged.include?( opts[:altered] )
+                logged << opts[:altered]
+                audit_timeout_phase_2( elem )
+            end
+        }
+    end
+
+    #
+    # Runs phase 2 of the timing attack auditng an individual element
+    # (which passed phase 1) with a higher delay and timeout
+    #
+    def audit_timeout_phase_2( elem )
+
+        opts = elem.opts
+        opts[:timeout] *= 2
+
+        audit_timeout_debug_msg( 2, opts[:timeout] )
+
+        str = opts[:timing_string].gsub( '__TIME__',
+            ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+
+        elem.auditor( self )
+        elem.audit( str, opts ) {
+            |res, opts|
+            log( opts, res) if res.timed_out?
+        }
+    end
+
+    def audit_timeout_debug_msg( phase, delay )
+        print_debug( '---------------------------------------------' )
+        print_debug( "Running phase #{phase.to_s} of timing attack." )
+        print_debug( "Delay set to: #{delay.to_s} milliseconds" )
+        print_debug( '---------------------------------------------' )
+    end
+
+    #
+    # Audits elements using a timing attack.
+    #
+    # 'opts' needs to contain a :timeout value in milliseconds.</br>
+    # Optionally, you can add a :timeout_divider.
+    #
+    # @params   [Array]     strings     injection strings
+    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    # @param    [Hash]      opts        options as described in {OPTIONS}
+    # @param    [Block]     &block      block to call if a timeout occurs,
+    #                                       it will be passed the response and opts
+    #
+    def timing_attack( strings, opts, &block )
+
+        opts[:timeout_divider] ||= 1
+        [strings].flatten.each {
+            |str|
+
+            opts[:timing_string] = str
+            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+            audit( str, opts ) {
+                |res, opts, elem|
+                block.call( res, opts, elem ) if block && res.timed_out?
+            }
+        }
+    end
+
     #
     # Provides the following methods:
     # * audit_links()
@@ -339,7 +425,6 @@ module Auditor
     def audit_elems( elements, injection_str, opts = { }, &block )
 
         opts            = OPTIONS.merge( opts )
-        opts[:element]  = Element::HEADER
         url             = @page.url
 
         opts[:injected_orig] = injection_str

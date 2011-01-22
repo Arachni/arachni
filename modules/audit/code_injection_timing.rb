@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -32,8 +32,6 @@ module Modules
 class CodeInjectionTiming < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    TIME = 10000 # ms
 
     def initialize( page )
         super( page )
@@ -49,14 +47,7 @@ class CodeInjectionTiming < Arachni::Module::Base
 
                 [ ' ', ' && ', ';' ].each {
                     |sep|
-
-                    # ok yes...this is crazy...not all of the targeted languages
-                    # use miliseconds but we're working with timeouts so why not...
-                    #
-                    # I guess we'll just see what happens, heh... xD
-                    #
-                    @@__injection_str << sep + " " +
-                        str.gsub( '__TIME__', ( TIME ).to_s )
+                    @@__injection_str << sep + " " + str
                 }
 
             }
@@ -64,33 +55,13 @@ class CodeInjectionTiming < Arachni::Module::Base
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => TIME + ( @http.average_res_time * 1000 ) - 500,
-        }
-
-        @__logged = []
-    end
-
-    def run( )
-        @found ||= false
-
-        @@__injection_str.each {
-            |str|
-            audit( str, @__opts ) {
-                |res, opts|
-
-                next if @found
-
-                # we have a timeout which probably means the attack succeeded
-                if res.start_transfer_time == 0 && res.code == 0 && res.body.empty?
-                    @found = true
-                    # timing attacks require manual verification
-                    opts[:verification] = true
-                    log( opts, res )
-                end
-            }
+            :timeout => 4000
         }
     end
 
+    def run
+        audit_timeout( @@__injection_str, @__opts )
+    end
 
     def self.info
         {
