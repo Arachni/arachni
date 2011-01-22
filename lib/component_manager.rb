@@ -118,14 +118,14 @@ class ComponentManager < Hash
         unload = []
         load   = []
 
-        return load if components[0] == '-'
+        return load if components[0] == EXCLUDE
 
         components.each {
             |component|
             if component[0] == EXCLUDE
                 component[0] = ''
 
-                if component['*']
+                if component[WILDCARD]
                     unload |= wilcard_to_names( component )
                 else
                     unload << component
@@ -141,7 +141,7 @@ class ComponentManager < Hash
             components.each {
                 |component|
 
-                if component.substring?( '*' )
+                if component.substring?( WILDCARD )
                     load |= wilcard_to_names( component )
                 else
 
@@ -188,7 +188,7 @@ class ComponentManager < Hash
     end
 
     def wilcard_to_names( name )
-        if name['*']
+        if name[WILDCARD]
             return paths.map {
                 |path|
                 path_to_name( path ) if path.match( Regexp.new( name ) )
