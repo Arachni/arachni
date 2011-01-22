@@ -109,18 +109,11 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         # start injecting 'good' SQL queries
         prep_good_responses( )
 
-        #
-        # Block until all the requests have completed.
-        #
-        # It'd be better if we let the framework do it since it's its job
-        # but the on_complete blocks of this module would get weird
-        # and since the performance penalty is insignificant... why not?
-        #
-        @http.run
-
-        # analyze the HTML code of the responses in order to determine
-        # which injections were succesfull
-        analyze( )
+        @http.after_run {
+            # analyze the HTML code of the responses in order to determine
+            # which injections were succesfull
+            analyze( )
+        }
     end
 
     # Audits page with 'bad' SQL characters and gathers error pages
