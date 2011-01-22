@@ -7,7 +7,7 @@
 - Reports updated to show plug-in results.
 - Updated framework-wide cookie handling.
 - Major performance optimizations (4x faster in most tests)
-   - All modules now use asynchronous requests
+   - All modules now use asynchronous requests and are optimized for highest traffic efficiency
    - All index Arrays have been replaced by Sets to minimize look-up times
    - Mark-up parsing has been reduced dramatically
    - File I/O blocking in modules has been eliminated
@@ -45,6 +45,7 @@
    - The system continues to run in the background instead of pausing
    - The user is presented with an auto-refreshing report and progress stats
 - Updated module API
+   - Timing/delay attacks have been abstracted and simplified via helper methods
    - The modules are given access to vector skipping decisions
    - Simplified issue logging
    - Added the option of substring matching instead of regexp matching in order to improve performance.
