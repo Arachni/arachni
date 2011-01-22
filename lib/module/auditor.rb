@@ -229,6 +229,7 @@ module Auditor
             :regexp       => opts[:regexp].to_s || '<n/a>',
             :regexp_match => opts[:match].to_s || '<n/a>',
             :elem         => opts[:element],
+            :verification => opts[:verification] || false,
             :response     => response || '<n/a>',
             :headers      => {
                 :request    => request_headers,
