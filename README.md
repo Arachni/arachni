@@ -412,7 +412,7 @@ CDE packages are self contained and thus alleviate the need for Ruby and other d
 You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
-_The CDE packages are for Linux **only** and do not include the XMLRPC server componenets for security reasons._
+_The CDE packages are for Linux **only** and do not include the XMLRPC server components for security reasons._
 
 Otherwise, in order to use Arachni you will need the following:
 
