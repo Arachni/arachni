@@ -397,7 +397,7 @@ For a full explanation of all available options you can consult the [User Guide]
 
 #### Performing a full scan quickly
 
-Arachni comes with a preconfigured profile (_profilers/full.afp_) for a full audit.
+Arachni comes with a preconfigured profile (_profiles/full.afp_) for a full audit.
 This profile loads all modules, audits links/forms/cookies/headers and loads the HealthMap and Content-Types plugins.
 
 You can use it like so:
