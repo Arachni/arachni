@@ -62,8 +62,8 @@ class CookieCollector < Arachni::Plugin::Base
 
     def extract_cookies( res )
         cookies = {}
-        parser = Arachni::Parser.new( @framework.opts, res )
-        parser.cookies.each {
+
+        Arachni::Parser.new( @framework.opts, res ).run.cookies.each {
             |cookie|
             cookies.merge!( cookie.simple )
         }
