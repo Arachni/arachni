@@ -72,7 +72,8 @@ class LDAPInjection < Arachni::Module::Base
             :elements       => [
                 Issue::Element::FORM,
                 Issue::Element::LINK,
-                Issue::Element::COOKIE
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',

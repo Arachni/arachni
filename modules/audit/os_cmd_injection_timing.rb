@@ -67,7 +67,8 @@ class OSCmdInjectionTiming < Arachni::Module::Base
             :elements       => [
                 Issue::Element::FORM,
                 Issue::Element::LINK,
-                Issue::Element::COOKIE
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'zapotek',
             :version        => '0.1',
