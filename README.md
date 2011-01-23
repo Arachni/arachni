@@ -432,7 +432,7 @@ _Adapt the above line to your Linux distro._
 Run the following to install all gem dependencies:
     sudo gem install nokogiri typhoeus awesome_print liquid yard robots
 
-If you already have the above gems install make sure that you have the latest versions:
+If you already have the above gems installed make sure that you have the latest versions:
     sudo gem update
 
 If you wish to use the XMLRPC Dispatcher and Monitor (_arachni_xmlrpcd.rb_/_arachni_xmlrpcd_monitor.rb_) you'll also need to:
