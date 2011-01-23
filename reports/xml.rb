@@ -9,7 +9,7 @@
 =end
 
 require 'base64'
-
+require 'cgi'
 
 module Arachni
 module Reports
@@ -20,7 +20,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class XML < Arachni::Report::Base
 
@@ -41,106 +41,121 @@ class XML < Arachni::Report::Base
         print_line( )
         print_status( 'Creating XML report...' )
 
-        __start_tag( 'arachni_report' )
+        start_tag( 'arachni_report' )
 
-        __simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
-        __simple_tag( 'generated_on', Time.now.to_s )
-        __simple_tag( 'report_false_positives', REPORT_FP )
+        simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
+        simple_tag( 'generated_on', Time.now.to_s )
+        simple_tag( 'report_false_positives', REPORT_FP )
 
-        __start_tag( 'system' )
-        __simple_tag( 'version', @audit_store.version )
-        __simple_tag( 'revision', @audit_store.revision )
-        __simple_tag( 'start_datetime', @audit_store.start_datetime )
-        __simple_tag( 'finish_datetime', @audit_store.finish_datetime )
-        __simple_tag( 'delta_time', @audit_store.delta_time )
+        start_tag( 'system' )
+        simple_tag( 'version', @audit_store.version )
+        simple_tag( 'revision', @audit_store.revision )
+        simple_tag( 'start_datetime', @audit_store.start_datetime )
+        simple_tag( 'finish_datetime', @audit_store.finish_datetime )
+        simple_tag( 'delta_time', @audit_store.delta_time )
 
-        __simple_tag( 'url', @audit_store.options['url'] )
-        __simple_tag( 'user_agent', @audit_store.options['user_agent'] )
+        simple_tag( 'url', @audit_store.options['url'] )
+        simple_tag( 'user_agent', @audit_store.options['user_agent'] )
 
-        __start_tag( 'audited_elements' )
-        __simple_tag( 'element', 'links' ) if @audit_store.options['audit_links']
-        __simple_tag( 'element', 'forms' ) if @audit_store.options['audit_forms']
-        __simple_tag( 'element', 'cookies' ) if @audit_store.options['audit_cookies']
-        __simple_tag( 'element', 'headers' ) if @audit_store.options['audit_headers']
-        __end_tag( 'audited_elements' )
+        start_tag( 'audited_elements' )
+        simple_tag( 'element', 'links' ) if @audit_store.options['audit_links']
+        simple_tag( 'element', 'forms' ) if @audit_store.options['audit_forms']
+        simple_tag( 'element', 'cookies' ) if @audit_store.options['audit_cookies']
+        simple_tag( 'element', 'headers' ) if @audit_store.options['audit_headers']
+        end_tag( 'audited_elements' )
 
-        __simple_tag( 'modules', @audit_store.options['mods'].join( ', ' ) )
+        start_tag( 'modules')
+        @audit_store.options['mods'].each { |mod| add_mod( mod ) }
+        end_tag( 'modules' )
 
-        __start_tag( 'filters' )
+        start_tag( 'filters' )
         if @audit_store.options['exclude']
-            __start_tag( "exclude" )
+            start_tag( "exclude" )
             @audit_store.options['exclude'].each {
                 |ex|
-                __simple_tag( 'filter', ex )
+                simple_tag( 'regexp', ex )
             }
-            __end_tag( "exclude" )
+            end_tag( "exclude" )
         end
+
 
         if @audit_store.options['include']
-            __start_tag( "include" )
+            start_tag( "include" )
             @audit_store.options['include'].each {
                 |inc|
-                __simple_tag( 'filter', inc )
+                simple_tag( 'regexp', inc )
             }
-            __end_tag( "include" )
+            end_tag( "include" )
         end
+
 
         if @audit_store.options['redundant']
-            __start_tag( "redundant" )
+            start_tag( "redundant" )
             @audit_store.options['redundant'].each {
                 |red|
-                __simple_tag( 'filter', red['regexp'] + ':' + red['count'].to_s )
+                simple_tag( 'filter', red['regexp'] + ':' + red['count'].to_s )
             }
-            __end_tag( "redundant" )
+            end_tag( "redundant" )
         end
-        __end_tag( 'filters' )
+        end_tag( 'filters' )
 
-        __start_tag( 'cookies' )
+
+        start_tag( 'cookies' )
         if( @audit_store.options['cookies'] )
             @audit_store.options['cookies'].each {
-                |cookie|
-                __simple_tag( cookie[0], cookie[1] )
+                |name, value|
+                add_cookie( name, value )
             }
         end
-        __end_tag( 'cookies' )
+        end_tag( 'cookies' )
 
-        __end_tag( 'system' )
 
-        __simple_tag( 'issue_cnt', @audit_store.issues.size.to_s )
+        end_tag( 'system' )
 
-        __start_tag( 'issues' )
+
+        start_tag( 'issues' )
         @audit_store.issues.each {
             |issue|
 
-            __start_tag( 'issue' )
-            __simple_tag( 'name', issue.name )
+            start_tag( 'issue' )
+            simple_tag( 'name', issue.name )
 
-            __simple_tag( 'url', issue.url )
-            __simple_tag( 'element', issue.elem )
-            __simple_tag( 'variable', issue.var )
-            __simple_tag( 'escription', issue.description )
-            __simple_tag( 'manual_verification', issue.verification.to_s )
+            simple_tag( 'url', issue.url )
+            simple_tag( 'element', issue.elem )
+            simple_tag( 'variable', issue.var )
+            simple_tag( 'description', issue.description )
+            simple_tag( 'manual_verification', issue.verification.to_s )
 
-            __start_tag( 'references' )
+
+            start_tag( 'references' )
             issue.references.each{
-                |ref|
-                __simple_tag( ref[0], ref[1] )
+                |name, url|
+                add_reference( name, url )
             }
-            __end_tag( 'references' )
+            end_tag( 'references' )
 
-            __buffer_variations( issue )
 
-            __end_tag( 'issue' )
+            add_variations( issue )
+
+            end_tag( 'issue' )
         }
 
-        __end_tag( 'issues' )
+        end_tag( 'issues' )
 
-        __end_tag( 'arachni_report' )
+        add_plugin_results
 
-        __xml_write( )
+        end_tag( 'arachni_report' )
 
+        xml_write( )
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
+
+    def xml_write( )
+        file = File.new( @outfile, 'w' )
+        file.write( @__buffer )
+        file.close
+    end
+
 
     def self.info
         {
@@ -155,60 +170,271 @@ class XML < Arachni::Report::Base
         }
     end
 
-    def __buffer_variations( issue )
-        __start_tag( 'variations' )
+    def add_variations( issue )
+        start_tag( 'variations' )
         issue.variations.each_with_index {
             |var|
-            __start_tag( 'variation' )
+            start_tag( 'variation' )
 
-            __simple_tag( 'url', var['url'] )
-            __simple_tag( 'id', var['id'] )
-            __simple_tag( 'injected', var['injected'] )
-            __simple_tag( 'regexp', var['regexp'].to_s )
-            __simple_tag( 'regexp_match', var['regexp_match'] )
+            simple_tag( 'url', var['url'] )
+            simple_tag( 'id', URI.encode( var['id'] ) )
+            simple_tag( 'injected', URI.encode( var['injected'] ) )
+            simple_tag( 'regexp', var['regexp'].to_s )
+            simple_tag( 'regexp_match', var['regexp_match'] )
 
-            __start_tag( 'headers' )
-            __simple_tag( 'request', var['headers']['request'].to_s )
-            __simple_tag( 'response', var['headers']['response'].to_s )
-            __end_tag( 'headers' )
+            start_tag( 'headers' )
 
-            __simple_tag( 'html', Base64.encode64( var['response'] ) )
+            if var['headers']['request'].is_a?( Hash )
+                add_headers( 'request', var['headers']['request'] )
+            end
 
-            __end_tag( 'variation' )
+            response = {}
+            if var['headers']['response'].is_a?( Hash )
+                response = var['headers']['response']
+            else
+                var['headers']['response'].split( "\r\n" ).each {
+                    |line|
+                    field, value = line.split( ':', 2 )
+                    next if !value
+                    response[field] = value
+                }
+            end
+
+            if response.is_a?( Hash )
+                add_headers( 'response', response )
+            end
+
+            end_tag( 'headers' )
+
+            if !var['response'].empty? && var['response'] != '<n/a>'
+                simple_tag( 'html', Base64.encode64( var['response'] ) )
+            end
+
+            end_tag( 'variation' )
         }
-        __end_tag( 'variations' )
+        end_tag( 'variations' )
     end
+
+
+    def add_plugin_results
+        return if @audit_store.plugins.empty?
+
+        start_tag( 'plugins' )
+
+        print_cookie_collector
+        print_form_dicattack
+        print_http_dicattack
+        print_healthmap
+        print_content_types
+
+        end_tag( 'plugins' )
+    end
+
+    def print_healthmap
+        healthmap = @audit_store.plugins['healthmap']
+        return if !healthmap || healthmap[:results].empty?
+
+        start_tag( 'healthmap' )
+        simple_tag( 'description', healthmap[:description] )
+
+        start_tag( 'results' )
+        start_tag( 'map' )
+        healthmap[:results][:map].each {
+            |i|
+
+            state = i.keys[0]
+            url   = i.values[0]
+
+            if state == :unsafe
+                add_url( 'unsafe', url )
+            else
+                add_url( 'safe', url )
+            end
+        }
+        end_tag( 'map' )
+
+        start_tag( 'stats' )
+
+        simple_tag( 'total', healthmap[:results][:total].to_s )
+        simple_tag( 'safe', healthmap[:results][:safe].to_s )
+        simple_tag( 'unsafe', healthmap[:results][:unsafe].to_s )
+        simple_tag( 'issue_percentage', healthmap[:results][:issue_percentage].to_s )
+
+        end_tag( 'stats' )
+        end_tag( 'results' )
+        end_tag( 'healthmap' )
+    end
+
+    def print_cookie_collector
+        cookie_collector = @audit_store.plugins['cookie_collector']
+        return if !cookie_collector || cookie_collector[:results].empty?
+
+        start_tag( 'cookie_collector' )
+        simple_tag( 'description', cookie_collector[:description] )
+
+        start_tag( 'results' )
+        cookie_collector[:results].each_with_index {
+            |result, i|
+
+            start_tag( 'response' )
+            simple_tag( 'time', result[:time].to_s )
+            simple_tag( 'url', result[:res]['effective_url'] )
+
+            start_tag( 'cookies' )
+            result[:cookies].each_pair{
+                |name, value|
+                add_cookie( name, value )
+            }
+            end_tag( 'cookies' )
+            end_tag( 'response' )
+        }
+        end_tag( 'results' )
+
+        end_tag( 'cookie_collector' )
+    end
+
+    def print_form_dicattack
+        form_dicattack = @audit_store.plugins['form_dicattack']
+        return if !form_dicattack || form_dicattack[:results].empty?
+
+        start_tag( 'form_dicattack' )
+        simple_tag( 'description', form_dicattack[:description] )
+
+        start_tag( 'results' )
+
+        add_credentials( form_dicattack[:results][:username],
+            form_dicattack[:results][:password] )
+
+        end_tag( 'results' )
+        end_tag( 'form_dicattack' )
+    end
+
+    def print_http_dicattack
+        http_dicattack = @audit_store.plugins['http_dicattack']
+        return if !http_dicattack || http_dicattack[:results].empty?
+
+        start_tag( 'http_dicattack' )
+        simple_tag( 'description', http_dicattack[:description] )
+
+        start_tag( 'results' )
+
+        add_credentials( http_dicattack[:results][:username],
+            http_dicattack[:results][:password] )
+
+        end_tag( 'results' )
+        end_tag( 'http_dicattack' )
+    end
+
+    def print_content_types
+        content_types = @audit_store.plugins['content_types']
+        return if !content_types || content_types[:results].empty?
+
+        start_tag( 'content_types' )
+        simple_tag( 'description', content_types[:description] )
+
+        start_tag( 'results' )
+        content_types[:results].each_pair {
+            |type, responses|
+
+            start_content_type( type )
+
+            responses.each {
+                |res|
+
+                start_tag( 'response' )
+
+                simple_tag( 'url', res[:url] )
+                simple_tag( 'method', res[:method] )
+
+                if res[:params] && res[:method].downcase == 'post'
+                    start_tag( 'params' )
+                    res[:params].each_pair {
+                        |name, value|
+                        add_param( name, value )
+                    }
+                    end_tag( 'params' )
+                end
+
+                end_tag( 'response' )
+            }
+
+            end_content_type
+        }
+
+        end_tag( 'results' )
+        end_tag( 'content_types' )
+    end
+
+
+    def simple_tag( tag, text, no_escape = false )
+        start_tag( tag )
+        __add( text, no_escape )
+        end_tag( tag )
+    end
+
+    def add_reference( name, url )
+        __buffer( "<reference name=\"#{name}\" url=\"#{url}\" />" )
+    end
+
+    def add_cookie( name, value )
+        __buffer( "<cookie name=\"#{name}\" value=\"#{value}\" />" )
+    end
+
+    def add_param( name, value )
+        __buffer( "<param name=\"#{name}\" value=\"#{value}\" />" )
+    end
+
+    def start_content_type( type )
+        __buffer( "<content_type name=\"#{type}\">" )
+    end
+
+    def end_content_type
+        __buffer( "</content_type>" )
+    end
+
+    def add_mod( name )
+        __buffer( "<module name=\"#{name}\" />" )
+    end
+
+    def add_headers( type, headers )
+
+        start_tag( type )
+        headers.each_pair {
+            |name, value|
+            __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+        }
+        end_tag( type )
+    end
+
+    def add_url( type, url )
+        __buffer( "<entry state=\"#{type}\" url=\"#{url}\" />" )
+    end
+
+    def add_credentials( username, password )
+        __buffer( "<credentials username=\"#{username}\" password=\"#{password}\" />" )
+    end
+
+    def start_tag( tag )
+        __buffer( "\n<#{tag}>" )
+    end
+
+    def end_tag( tag )
+        __buffer( "</#{tag}>\n" )
+    end
+
 
     def __buffer( str = '' )
-        @__buffer += str + "\n"
+        @__buffer += str
     end
 
-    def __simple_tag( tag, text )
-        __start_tag( tag )
-        __add( text )
-        __end_tag( tag )
-    end
-
-    def __start_tag( tag )
-        __buffer( "<#{tag}>" )
-    end
-
-    def __add( text )
-        # __buffer( "<![CDATA[#{text}]]>" )
-        __buffer( "<![CDATA[#{URI.encode( text )}]]>" )
-    end
-
-    def __end_tag( tag )
-        __buffer( "</#{tag}>" )
-    end
-
-    def __xml_write( )
-        file = File.new( @outfile, 'w' )
-        file.write( @__buffer )
-        file.close
+    def __add( text, no_escape = false )
+        if !no_escape
+            __buffer( CGI.escapeHTML( text ) )
+        else
+            __buffer( text )
+        end
     end
 
 end
-
 end
 end
