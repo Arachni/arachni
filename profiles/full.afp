@@ -1,0 +1,75 @@
+--- !ruby/object:Arachni::Options 
+audit_cookies: true
+audit_forms: true
+audit_headers: true
+audit_links: true
+authed_by: 
+dir: 
+exclude: []
+
+exclude_cookies: []
+
+http_req_limit: 20
+include: []
+
+load_profile: 
+lsmod: []
+
+lsplug: []
+
+lsrep: []
+
+mods: 
+- interesting_responses
+- common_files
+- xst
+- http_put
+- webdav
+- directory_listing
+- allowed_methods
+- htaccess_limit
+- ssn
+- private_ip
+- emails
+- credit_card
+- cvs_svn_users
+- captcha
+- html_objects
+- unencrypted_password_forms
+- backdoors
+- backup_files
+- common_directories
+- trainer
+- os_cmd_injection
+- sqli
+- xss_script_tag
+- sqli_blind_rdiff
+- path_traversal
+- xss_event
+- xss_uri
+- sqli_blind_timing
+- code_injection
+- rfi
+- xss_tag
+- response_splitting
+- csrf
+- os_cmd_injection_timing
+- ldapi
+- code_injection_timing
+- xss_path
+- xpath
+- unvalidated_redirect
+- xss
+plugins: 
+  healthmap: {}
+
+  content_types: {}
+
+redirect_limit: 20
+redundant: []
+
+reports: 
+  stdout: {}
+
+save_profile: 
+user_agent: Arachni/0.2.2

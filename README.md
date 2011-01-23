@@ -395,6 +395,16 @@ Or you can mix and match; to run everything but the _xss_ modules:
 
 For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
+#### Performing a full scan quickly
+
+Arachni comes with a preconfigured profile (_profilers/full.afp_) for a full audit.
+This profile loads all modules, audits links/forms/cookies/headers and loads the HealthMap and Content-Types plugins.
+
+You can use it like so:
+    $ ./arachni.rb --load-profile=profiles/full.afp http://example.net
+
+_You are encouraged to create your own profiles using the relevant options._
+
 ## Requirements
 
 Arachni is also released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
