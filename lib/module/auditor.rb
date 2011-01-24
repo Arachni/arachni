@@ -304,7 +304,7 @@ module Auditor
     # If phase 1 fails, phase 2 is aborted. </br>
     # If we have a result in phase 1, phase 2 verifies that result with the higher timeout.
     #
-    # @params   [Array]     strings     injection strings
+    # @param   [Array]     strings     injection strings
     #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
     # @param  [Hash]        opts        options as described in {OPTIONS}
     #
@@ -365,7 +365,7 @@ module Auditor
     # 'opts' needs to contain a :timeout value in milliseconds.</br>
     # Optionally, you can add a :timeout_divider.
     #
-    # @params   [Array]     strings     injection strings
+    # @param   [Array]     strings     injection strings
     #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
     # @param    [Hash]      opts        options as described in {OPTIONS}
     # @param    [Block]     &block      block to call if a timeout occurs,

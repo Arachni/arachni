@@ -163,7 +163,7 @@ class Framework
     #
     # It parses the instanse options and runs the audit
     #
-    # @params   [Block]     &block  a block to call after the audit has finished
+    # @param   [Block]     &block  a block to call after the audit has finished
     #                                   but before running the reports
     #
     def run( &block )
