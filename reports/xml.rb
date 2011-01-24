@@ -9,7 +9,6 @@
 =end
 
 require 'base64'
-require 'cgi'
 
 module Arachni
 module Reports
@@ -23,6 +22,80 @@ module Reports
 # @version: 0.1.1
 #
 class XML < Arachni::Report::Base
+
+    module Buffer
+
+        require 'cgi'
+
+        def append( str )
+            __add( str, true )
+        end
+
+        def simple_tag( tag, text, no_escape = false )
+            start_tag( tag )
+            __add( text, no_escape )
+            end_tag( tag )
+        end
+
+        def start_tag( tag )
+            __buffer( "\n<#{tag}>" )
+        end
+
+        def end_tag( tag )
+            __buffer( "</#{tag}>\n" )
+        end
+
+        def add_cookie( name, value )
+            __buffer( "<cookie name=\"#{name}\" value=\"#{value}\" />" )
+        end
+
+        def add_credentials( username, password )
+            __buffer( "<credentials username=\"#{username}\" password=\"#{password}\" />" )
+        end
+
+        def add_reference( name, url )
+            __buffer( "<reference name=\"#{name}\" url=\"#{url}\" />" )
+        end
+
+        def add_param( name, value )
+            __buffer( "<param name=\"#{name}\" value=\"#{value}\" />" )
+        end
+
+        def add_mod( name )
+            __buffer( "<module name=\"#{name}\" />" )
+        end
+
+        def add_headers( type, headers )
+
+            start_tag( type )
+            headers.each_pair {
+                |name, value|
+                __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+            }
+            end_tag( type )
+        end
+
+
+        def buffer
+            return @__buffer
+        end
+
+        def __buffer( str = '' )
+            @__buffer ||= ''
+            @__buffer += str
+        end
+
+        def __add( text, no_escape = false )
+            if !no_escape
+                __buffer( CGI.escapeHTML( text ) )
+            else
+                __buffer( text )
+            end
+        end
+
+    end
+
+    include Buffer
 
     #
     # @param [AuditStore]  audit_store
@@ -142,7 +215,12 @@ class XML < Arachni::Report::Base
 
         end_tag( 'issues' )
 
-        add_plugin_results
+        start_tag( 'plugins' )
+
+        # get XML formatted plugin data and append them to the XML buffer
+        format_plugin_results( @audit_store.plugins ).values.compact.each { |xml| append( xml ) }
+
+        end_tag( 'plugins' )
 
         end_tag( 'arachni_report' )
 
@@ -213,226 +291,6 @@ class XML < Arachni::Report::Base
             end_tag( 'variation' )
         }
         end_tag( 'variations' )
-    end
-
-
-    def add_plugin_results
-        return if @audit_store.plugins.empty?
-
-        start_tag( 'plugins' )
-
-        print_cookie_collector
-        print_form_dicattack
-        print_http_dicattack
-        print_healthmap
-        print_content_types
-
-        end_tag( 'plugins' )
-    end
-
-    def print_healthmap
-        healthmap = @audit_store.plugins['healthmap']
-        return if !healthmap || healthmap[:results].empty?
-
-        start_tag( 'healthmap' )
-        simple_tag( 'description', healthmap[:description] )
-
-        start_tag( 'results' )
-        start_tag( 'map' )
-        healthmap[:results][:map].each {
-            |i|
-
-            state = i.keys[0]
-            url   = i.values[0]
-
-            if state == :unsafe
-                add_url( 'unsafe', url )
-            else
-                add_url( 'safe', url )
-            end
-        }
-        end_tag( 'map' )
-
-        start_tag( 'stats' )
-
-        simple_tag( 'total', healthmap[:results][:total].to_s )
-        simple_tag( 'safe', healthmap[:results][:safe].to_s )
-        simple_tag( 'unsafe', healthmap[:results][:unsafe].to_s )
-        simple_tag( 'issue_percentage', healthmap[:results][:issue_percentage].to_s )
-
-        end_tag( 'stats' )
-        end_tag( 'results' )
-        end_tag( 'healthmap' )
-    end
-
-    def print_cookie_collector
-        cookie_collector = @audit_store.plugins['cookie_collector']
-        return if !cookie_collector || cookie_collector[:results].empty?
-
-        start_tag( 'cookie_collector' )
-        simple_tag( 'description', cookie_collector[:description] )
-
-        start_tag( 'results' )
-        cookie_collector[:results].each_with_index {
-            |result, i|
-
-            start_tag( 'response' )
-            simple_tag( 'time', result[:time].to_s )
-            simple_tag( 'url', result[:res]['effective_url'] )
-
-            start_tag( 'cookies' )
-            result[:cookies].each_pair{
-                |name, value|
-                add_cookie( name, value )
-            }
-            end_tag( 'cookies' )
-            end_tag( 'response' )
-        }
-        end_tag( 'results' )
-
-        end_tag( 'cookie_collector' )
-    end
-
-    def print_form_dicattack
-        form_dicattack = @audit_store.plugins['form_dicattack']
-        return if !form_dicattack || form_dicattack[:results].empty?
-
-        start_tag( 'form_dicattack' )
-        simple_tag( 'description', form_dicattack[:description] )
-
-        start_tag( 'results' )
-
-        add_credentials( form_dicattack[:results][:username],
-            form_dicattack[:results][:password] )
-
-        end_tag( 'results' )
-        end_tag( 'form_dicattack' )
-    end
-
-    def print_http_dicattack
-        http_dicattack = @audit_store.plugins['http_dicattack']
-        return if !http_dicattack || http_dicattack[:results].empty?
-
-        start_tag( 'http_dicattack' )
-        simple_tag( 'description', http_dicattack[:description] )
-
-        start_tag( 'results' )
-
-        add_credentials( http_dicattack[:results][:username],
-            http_dicattack[:results][:password] )
-
-        end_tag( 'results' )
-        end_tag( 'http_dicattack' )
-    end
-
-    def print_content_types
-        content_types = @audit_store.plugins['content_types']
-        return if !content_types || content_types[:results].empty?
-
-        start_tag( 'content_types' )
-        simple_tag( 'description', content_types[:description] )
-
-        start_tag( 'results' )
-        content_types[:results].each_pair {
-            |type, responses|
-
-            start_content_type( type )
-
-            responses.each {
-                |res|
-
-                start_tag( 'response' )
-
-                simple_tag( 'url', res[:url] )
-                simple_tag( 'method', res[:method] )
-
-                if res[:params] && res[:method].downcase == 'post'
-                    start_tag( 'params' )
-                    res[:params].each_pair {
-                        |name, value|
-                        add_param( name, value )
-                    }
-                    end_tag( 'params' )
-                end
-
-                end_tag( 'response' )
-            }
-
-            end_content_type
-        }
-
-        end_tag( 'results' )
-        end_tag( 'content_types' )
-    end
-
-
-    def simple_tag( tag, text, no_escape = false )
-        start_tag( tag )
-        __add( text, no_escape )
-        end_tag( tag )
-    end
-
-    def add_reference( name, url )
-        __buffer( "<reference name=\"#{name}\" url=\"#{url}\" />" )
-    end
-
-    def add_cookie( name, value )
-        __buffer( "<cookie name=\"#{name}\" value=\"#{value}\" />" )
-    end
-
-    def add_param( name, value )
-        __buffer( "<param name=\"#{name}\" value=\"#{value}\" />" )
-    end
-
-    def start_content_type( type )
-        __buffer( "<content_type name=\"#{type}\">" )
-    end
-
-    def end_content_type
-        __buffer( "</content_type>" )
-    end
-
-    def add_mod( name )
-        __buffer( "<module name=\"#{name}\" />" )
-    end
-
-    def add_headers( type, headers )
-
-        start_tag( type )
-        headers.each_pair {
-            |name, value|
-            __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
-        }
-        end_tag( type )
-    end
-
-    def add_url( type, url )
-        __buffer( "<entry state=\"#{type}\" url=\"#{url}\" />" )
-    end
-
-    def add_credentials( username, password )
-        __buffer( "<credentials username=\"#{username}\" password=\"#{password}\" />" )
-    end
-
-    def start_tag( tag )
-        __buffer( "\n<#{tag}>" )
-    end
-
-    def end_tag( tag )
-        __buffer( "</#{tag}>\n" )
-    end
-
-
-    def __buffer( str = '' )
-        @__buffer += str
-    end
-
-    def __add( text, no_escape = false )
-        if !no_escape
-            __buffer( CGI.escapeHTML( text ) )
-        else
-            __buffer( text )
-        end
     end
 
 end

@@ -140,8 +140,13 @@ class Stdout < Arachni::Report::Base
             print_line
         }
 
-        print_plugin_results
+        print_line
+        print_ok( 'Plugin data:' )
+        print_info( '---------------' )
+        print_line
 
+        # let the plugin formatters to their thing and print their results
+        format_plugin_results( @audit_store.plugins )
     end
 
     def self.info
@@ -169,157 +174,6 @@ class Stdout < Arachni::Report::Base
             print_line
         }
     end
-
-    def print_plugin_results
-        return if @audit_store.plugins.empty?
-
-        print_line
-        print_ok( 'Plugin data:' )
-        print_info( '---------------' )
-        print_line
-
-        print_cookie_collector
-        print_form_dicattack
-        print_http_dicattack
-        print_healthmap
-        print_content_types
-    end
-
-    def print_healthmap
-        healthmap = @audit_store.plugins['healthmap']
-        return if !healthmap || healthmap[:results].empty?
-
-        print_info( 'URL health list.' )
-        print_info( '--------------------' )
-
-        print_line
-        print_info( 'Color codes:' )
-        print_ok( 'No issues' )
-        print_error( 'Has issues' )
-        print_line
-
-        healthmap[:results][:map].each {
-            |i|
-
-            state = i.keys[0]
-            url   = i.values[0]
-
-            if state == :unsafe
-                print_error( url )
-            else
-                print_ok( url )
-            end
-        }
-
-        print_line
-
-        print_info( 'Total: ' + healthmap[:results][:total].to_s )
-        print_ok( 'Without issues: ' + healthmap[:results][:safe].to_s )
-        print_error( 'With issues: ' + healthmap[:results][:unsafe].to_s +
-            " ( #{healthmap[:results][:issue_percentage].to_s}% )" )
-
-        print_line
-
-    end
-
-    def print_cookie_collector
-        cookie_collector = @audit_store.plugins['cookie_collector']
-        return if !cookie_collector || cookie_collector[:results].empty?
-
-        print_status( 'Cookie collector' )
-        print_info( '~~~~~~~~~~~~~~~~~~' )
-
-        print_info( 'Description: ' + cookie_collector[:description] )
-        print_line
-
-        cookie_collector[:results].each_with_index {
-            |result, i|
-
-            print_info( "[#{(i + 1).to_s}] On #{result[:time]}" )
-            print_info( "URL: " + result[:res]['effective_url'] )
-            print_info( 'Cookies forced to: ' )
-            result[:cookies].each_pair{
-                |name, value|
-                print_info( "    #{name} => #{value}" )
-            }
-            print_line
-        }
-
-        print_line
-
-    end
-
-    def print_form_dicattack
-        form_dicattack = @audit_store.plugins['form_dicattack']
-        return if !form_dicattack || form_dicattack[:results].empty?
-
-        print_status( 'Form dictionary attacker' )
-        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
-
-        print_info( 'Description: ' + form_dicattack[:description] )
-        print_line
-        print_info( "Cracked credentials:" )
-        print_ok( '    Username: ' + form_dicattack[:results][:username] )
-        print_ok( '    Password: ' + form_dicattack[:results][:password] )
-
-        print_line
-    end
-
-    def print_http_dicattack
-        http_dicattack = @audit_store.plugins['http_dicattack']
-        return if !http_dicattack || http_dicattack[:results].empty?
-
-        print_status( 'HTTP dictionary attacker' )
-        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
-
-        print_info( 'Description: ' + http_dicattack[:description] )
-        print_line
-        print_info( "Cracked credentials:" )
-        print_ok( '    Username: ' + http_dicattack[:results][:username] )
-        print_ok( '    Password: ' + http_dicattack[:results][:password] )
-
-        print_line
-
-    end
-
-    def print_content_types
-        content_types = @audit_store.plugins['content_types']
-        return if !content_types || content_types[:results].empty?
-
-        print_status( 'Content-types' )
-        print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
-
-        print_info( 'Description: ' + content_types[:description] )
-        print_line
-
-        content_types[:results].each_pair {
-            |type, responses|
-
-            print_ok( type )
-
-            responses.each {
-                |res|
-                print_status( "    URL:    " + res[:url] )
-                print_info( "    Method: " + res[:method] )
-
-                if res[:params] && res[:method].downcase == 'post'
-                    print_info( "    Parameters:" )
-                    res[:params].each_pair {
-                        |k, v|
-                        print_info( "        #{k} => #{v}" )
-                    }
-                end
-
-                print_line
-            }
-
-            print_line
-        }
-
-        print_line
-
-    end
-
 
 end
 

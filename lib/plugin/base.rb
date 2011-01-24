@@ -12,6 +12,28 @@ module Arachni
 module Plugin
 
 #
+# Will be extended by plugin formatters which provide plugin data formatting
+# for the reports.
+#
+# Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
+#
+#
+class Formatter
+
+    # get the output interface
+    include Arachni::UI::Output
+
+    def initialize( plugin_data )
+
+    end
+
+    def run
+
+    end
+
+end
+
+#
 # Arachni::Plugin::Base class
 #
 # An abstract class for the plugins.<br/>
