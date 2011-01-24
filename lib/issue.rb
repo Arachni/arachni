@@ -27,7 +27,7 @@ module Arachni
 class Issue
 
     #
-    # Holds constants to describe the {Vulnerability#severity} of a
+    # Holds constants to describe the {Issue#severity} of a
     # vulnerability.
     #
     module Severity
@@ -38,7 +38,7 @@ class Issue
     end
 
     #
-    # Holds constants to describe the {Vulnerability#elem} of a
+    # Holds constants to describe the {Issue#elem} of a
     # vulnerability.
     #
     module Element
