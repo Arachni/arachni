@@ -14,6 +14,7 @@ require 'rubygems'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
 opts = Arachni::Options.instance
 
+require opts.dir['lib'] + 'arachni'
 require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'
@@ -67,9 +68,6 @@ class Framework
     #
     include Arachni::UI::Output
     include Arachni::Module::Utilities
-
-    # the universal system version
-    VERSION      = '0.2.2'
 
     # the version of *this* class
     REVISION     = '0.2'
@@ -304,7 +302,7 @@ class Framework
             return @store
         else
             return @store = AuditStore.new( {
-                :version  => VERSION,
+                :version  => version( ),
                 :revision => REVISION,
                 :options  => opts,
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
@@ -443,7 +441,7 @@ class Framework
     # @return    [String]
     #
     def version
-        VERSION
+        Arachni::VERSION
     end
 
     #
@@ -475,7 +473,7 @@ class Framework
     #
     def prepare_user_agent
         if( !@opts.user_agent )
-            @opts.user_agent = 'Arachni/' + VERSION
+            @opts.user_agent = 'Arachni/' + version( )
         end
 
         if( @opts.authed_by )

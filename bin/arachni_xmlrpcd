@@ -13,13 +13,14 @@ require 'getoptlong'
 require 'pp'
 require 'ap'
 
-$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
+cwd = File.expand_path( File.dirname( __FILE__ ) )
+$:.unshift( cwd )
 
-require 'lib/options'
+require cwd + '/../lib/options'
 options = Arachni::Options.instance
 
 options.dir            = Hash.new
-options.dir['root']     = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['root']    = cwd + '/../'
 options.dir['modules'] = options.dir['root'] + 'modules/'
 options.dir['reports'] = options.dir['root'] + 'reports/'
 options.dir['plugins'] = options.dir['root'] + 'plugins/'

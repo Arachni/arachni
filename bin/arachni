@@ -12,9 +12,11 @@
 require 'pp'
 require 'ap'
 
-$:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
-require 'getoptslong.rb'
-require Arachni::Options.instance.dir['lib'] + 'ui/xmlrpc/xmlrpc'
+cwd = File.expand_path( File.dirname( __FILE__ ) )
+$:.unshift( cwd )
+require cwd + '/../getoptslong.rb'
 
-client = Arachni::UI::XMLRPC.new( Arachni::Options.instance )
-client.run
+require Arachni::Options.instance.dir['lib'] + 'ui/cli/cli'
+
+cli = Arachni::UI::CLI.new( Arachni::Options.instance )
+cli.run
