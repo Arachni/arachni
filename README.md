@@ -437,6 +437,12 @@ The prefered ways to accomplish this is by either using [RVM](http://rvm.beginre
 To install Arachni:
     $ gem install arachni
 
+### Source
+
+If you want to clone and repository and work with the source code then you'll need to run the following to install all gem dependencies:
+    $ gem install nokogiri typhoeus awesome_print liquid yard robots sys-proctable terminal-table
+
+
 ## Supported platforms
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
