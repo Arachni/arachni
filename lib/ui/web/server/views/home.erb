@@ -1,4 +1,63 @@
+<h1> Scan options </h1>
 <form action="/scan" method="post">
-    <input name="url" value="http://demo.testfire.net" />
-    <input type="submit" value="Scan" />
+
+    <fieldset>
+        <legend>URL:</legend>
+        <input name="url" value="http://demo.testfire.net" />
+    </fieldset>
+
+    <fieldset>
+        <legend>HTTP options:</legend>
+        Cocurrent HTTP request limit: <input name="http_req_limit" /></br>
+        HTTP harvest last: <input type="checkbox" name="http_harvest_last" /></br>
+        Cookie jar: <input type="file" name="cookiejar" size="25" /></br>
+        User agent: <input name="user_agent" value="Arachni" /></br>
+        Authorized by: <input name="authed_by" /></br>
+    </fieldset>
+
+    <fieldset>
+        <legend>Crawler options:</legend>
+        Exclude rules: <textarea name="exclude"></textarea>(Newline separated)</br>
+        Include rules: <textarea name="include"></textarea>(Newline separated)</br>
+        Redundant rules: <textarea name="redundant"></textarea>(Newline separated)</br>
+        Depth: <input name="authed_by" />(Default: infinite)</br>
+        Link count limit: <input name="link_count_limit" />(Default: infinite)</br>
+        Redirect limit: <input name="redirect_limit" />(Default: infinite)</br>
+        Follow subdomain: <input type="checkbox" name="follow_subdomains" /></br>
+        Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" /></br>
+        Spider first: <input type="checkbox" name="spider_first" /></br>
+    </fieldset>
+
+    <fieldset>
+        <legend>Auditor:</legend>
+        Audit links: <input type="checkbox" name="audit_links" checked="checked" /></br>
+        Audit forms: <input type="checkbox" name="audit_forms" checked="checked" /></br>
+        Audit cookies: <input type="checkbox" name="audit_cookies" checked="checked" /></br>
+        Audit headers: <input type="checkbox" name="audit_headers" /></br>
+        Cookies to exclude: <textarea name="exclude_cookies"></textarea>(Newline separated)</br>
+    </fieldset>
+
+    <fieldset>
+        <legend>Modules:</legend>
+        <select name="mods" multiple="multiple">
+          <option value="xss">XSS</option>
+          <option value="sqli">SQL injection</option>
+          <option value="...">..</option>
+        </select>
+        (Select all)
+    </fieldset>
+
+    <fieldset>
+        <legend>Plugins:</legend>
+        <select name="plugins" multiple="multiple">
+          <option value="content_types">Content types</option>
+          <option value="proxy">Proxy</option>
+          <option value="...">..</option>
+        </select>
+        (Select all)
+    </fieldset>
+
+
+    <input type="button" name="save_profile" value="Save profile" />
+    <input type="submit" value="Launch Scan" />
 </form>
