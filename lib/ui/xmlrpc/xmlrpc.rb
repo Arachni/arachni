@@ -3,6 +3,9 @@ require 'openssl'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+require Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
@@ -25,7 +28,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class XMLRPC
 
@@ -82,10 +85,17 @@ class XMLRPC
 
         begin
 
-            prep_instance( )
+            @dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.server )
+
+            # get a new instance and assign the url we're going to audit as the
+            # 'owner'
+            @instance = @dispatcher.dispatch( @opts.url.to_s )
+
+            instance_url = URI( @opts.server.to_s )
+            instance_url.port = @instance['port']
 
             # start the XMLRPC client
-            @server = ::XMLRPC::Client.new2( instance_url( ) )
+            @server = Arachni::RPC::XML::Client::Instance.new( @opts, instance_url.to_s )
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
@@ -93,22 +103,9 @@ class XMLRPC
             exit 0
         end
 
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @server.timeout = 9999999
-
-
-        if @opts.ssl_pkey || @opts.ssl_pkey
-            @server.instance_variable_get( :@http ).
-                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
-        else
-            @server.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-        end
-
         # if the user wants to see the available reports, output them and exit
         if !opts.lsplug.empty?
-            lsplug( @server.call( "framework.lsplug" ) )
+            lsplug( @server.framework.lsplug )
             shutdown
             exit
         end
@@ -116,7 +113,7 @@ class XMLRPC
         # if the user wants to see the available modules
         # grab them from the server, output them, exit and shutdown the server.
         if !opts.lsmod.empty?
-            lsmod( @server.call( "framework.lsmod" ) )
+            lsmod( @server.framework.lsmod )
             shutdown
             exit
         end
@@ -145,12 +142,12 @@ class XMLRPC
 
         exception_jail {
             print_status 'Running framework...'
-            @server.call( "framework.run" )
+            @server.framework.run
 
             print_line
 
             # grab the XMLRPC server output while a scan is running
-            while( @server.call( "framework.busy?" ) )
+            while( @server.framework.busy? )
                 output
 
                 pause if @pause
@@ -203,56 +200,11 @@ class XMLRPC
         end
     end
 
-    def instance_url
-        server = URI( @opts.server.to_s )
-        return server.scheme + '://' + server.host + ':' + @instance['port'].to_s
-    end
-
-    def prep_instance
-
-        # connect to the dispatcher
-        @dispatcher = ::XMLRPC::Client.new2( @opts.server )
-
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @dispatcher.timeout = 9999999
-
-
-        if @opts.ssl_pkey || @opts.ssl_pkey
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
-        else
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-        end
-
-        # get a new instance and assign the url we're going to audit as the
-        # 'owner'
-        @instance = @dispatcher.call( 'dispatcher.dispatch', @opts.url.to_s )
-    end
-
-    def prep_ssl_context
-
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( @opts.ssl_pkey ) )         if @opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( @opts.ssl_cert ) ) if @opts.ssl_cert
-
-
-        ssl_context = OpenSSL::SSL::SSLContext.new
-        ssl_context.ca_file = @opts.ssl_ca
-        ssl_context.verify_depth = 5
-        ssl_context.verify_mode = ::OpenSSL::SSL::VERIFY_PEER |
-            ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-        ssl_context.key  = pkey
-        ssl_context.cert = cert
-        return ssl_context
-    end
-
-
     #
     # Grabs the output from the XMLRPC server and routes it to the proper output method.
     #
     def output
-        @server.call( "service.output" ).each {
+        @server.service.output.each {
             |out|
             type = out.keys[0]
             msg  = out.values[0]
@@ -276,7 +228,7 @@ class XMLRPC
     def pause( )
 
         print_status( 'Paused...' )
-        @server.call( "framework.pause!" )
+        @server.framework.pause!
 
         print_line
         print_info( 'Results thus far:' )
@@ -286,7 +238,7 @@ class XMLRPC
         # to show him while the scan is paused.
         #
         begin
-            print_issues( @server.call( "framework.report" ) )
+            print_issues( YAML.load( @server.framework.report ) )
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
@@ -299,7 +251,7 @@ class XMLRPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.call( "framework.abort!" )
+            @server.framework.abort!
             report
             shutdown
             print_info( 'Exiting...' )
@@ -307,7 +259,7 @@ class XMLRPC
         end
 
         @pause = false
-        @server.call( "framework.resume!" )
+        @server.framework.resume!
 
     end
 
@@ -402,7 +354,7 @@ class XMLRPC
             when "arachni_verbose"
                 print_status "Enabling verbosity."
                 verbose!
-                @server.call( "framework.verbose_on" )
+                @server.framework.verbose_on
 
             when 'redundant'
                 print_status 'Setting redundancy rules.'
@@ -413,7 +365,7 @@ class XMLRPC
                     rule['regexp'] = rule['regexp'].to_s
                     redundant << rule
                 }
-                @server.call( "opts.redundant=", redundant )
+                @server.opts.redundant( redundant )
 
             when 'exclude', 'include'
                 print_status "Setting #{opt} rules."
@@ -424,14 +376,14 @@ class XMLRPC
 
             when 'cookie_jar'
                 print_status 'Setting cookies:'
-                @server.call( "opts.cookies=", parse_cookie_jar( arg ) ).each_pair {
+                @server.opts.cookies( parse_cookie_jar( arg ) ).each_pair {
                     |k, v|
                     print_info ' * ' + k + ' => ' + v
                 }
 
             when 'mods'
                 print_status 'Loading modules:'
-                @server.call( "modules.load", arg ).each {
+                @server.modules.load( arg ).each {
                     |mod|
                     print_info ' * ' + mod
                 }
@@ -440,7 +392,7 @@ class XMLRPC
                 next if arg.empty?
 
                 print_status 'Loading plug-ins:'
-                @server.call( "plugins.load", arg ).each {
+                @server.plugins.load( arg ).each {
                     |mod|
                     print_info ' * ' + mod
                 }
@@ -448,7 +400,7 @@ class XMLRPC
 
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +
-                    @server.call( "opts.http_req_limit=", arg ).to_s
+                    @server.opts.http_req_limit( arg ).to_s
 
             when 'reports'
                 arg['stdout'] = {}
@@ -468,7 +420,7 @@ class XMLRPC
     #
     def shutdown
         print_status "Shutting down the server..."
-        @server.call( "service.shutdown" )
+        @server.service.shutdown
     end
 
     #
@@ -481,14 +433,14 @@ class XMLRPC
         # ap @server.call( "framework.report" )
 
         # this will return the AuditStore as a string in YAML format
-        audit_store = YAML.load( @server.call( "framework.auditstore" ) )
+        audit_store = YAML.load( @server.framework.auditstore )
 
         # run the loaded reports and get the generated filename
         @framework.reports.run( audit_store )
 
         print_status "Grabbing stats..."
 
-        stats = @server.call( "framework.stats" )
+        stats = @server.framework.stats
         print_line
         print_info( "Sent #{stats['requests']} requests." )
         print_info( "Received and analyzed #{stats['responses']} responses." )

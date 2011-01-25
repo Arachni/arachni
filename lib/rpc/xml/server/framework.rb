@@ -11,11 +11,12 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'framework'
-require Options.instance.dir['lib'] + 'rpc/xml/module/manager'
-require Options.instance.dir['lib'] + 'rpc/xml/plugin/manager'
+require Options.instance.dir['lib'] + 'rpc/xml/server/module/manager'
+require Options.instance.dir['lib'] + 'rpc/xml/server/plugin/manager'
 
 module RPC
 module XML
+module Server
 
 #
 # Extends the Framework adding XML-RPC specific functionality
@@ -23,7 +24,7 @@ module XML
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Framework < Arachni::Framework
 
@@ -86,8 +87,8 @@ class Framework < Arachni::Framework
 
     def initialize( opts )
         super( opts )
-        @modules = Arachni::RPC::XML::Module::Manager.new( opts )
-        @plugins = Arachni::RPC::XML::Plugin::Manager.new( self )
+        @modules = Arachni::RPC::XML::Server::Module::Manager.new( opts )
+        @plugins = Arachni::RPC::XML::Server::Plugin::Manager.new( self )
     end
 
     #
@@ -197,6 +198,7 @@ class Framework < Arachni::Framework
 
 end
 
+end
 end
 end
 end
