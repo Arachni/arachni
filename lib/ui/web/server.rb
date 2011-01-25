@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'erb'
 require 'yaml'
+require 'ap'
 
 
 module Arachni
@@ -21,7 +22,7 @@ class Server < Sinatra::Base
 
         def each
             yield "<pre>"
-            @output << { '' => '<meta http-equiv="refresh" content="1"> ' }
+            @output << { '' => '<meta http-equiv="refresh" content="1">' }
             @output.each {
                 |out|
                 yield "#{out.keys[0]}: #{out.values[0]}</br>"
@@ -36,18 +37,40 @@ class Server < Sinatra::Base
     set :public, "#{dir}/server/public"
     set :static, true
     set :environment, :development
+
+    set :dispatcher_url, 'http://localhost:7331'
+
     enable :sessions
 
-    def show( page, layout = true )
+    def exception_jail( &block )
         begin
-            erb page.to_sym
+            block.call
         rescue Exception => e
             erb :error, { :layout => false }, :error => e.to_s
         end
     end
 
-    def arachni_from_session
-        Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+    def show( page, layout = true )
+        exception_jail {
+            erb page.to_sym
+        }
+    end
+
+    def connect_to_instance( port )
+        exception_jail {
+            uri = URI( settings.dispatcher_url )
+            uri.port = port.to_i
+            @instance ||= {}
+            @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
+        }
+    end
+
+    def dispatcher
+        @dispatcher ||= Arachni::RPC::XML::Client::Dispatcher.new( options, settings.dispatcher_url )
+    end
+
+    def options
+        Arachni::Options.instance
     end
 
     get "/" do
@@ -55,12 +78,8 @@ class Server < Sinatra::Base
     end
 
     post "/scan" do
-         dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( Arachni::Options.instance, 'http://localhost:7331' )
-
         instance = dispatcher.dispatch
-        session['url'] = "http://localhost:" + instance['port'].to_s
-
-        arachni = arachni_from_session( )
+        arachni = connect_to_instance( instance['port'] )
 
         arachni.opts.url( params['url'] )
         arachni.opts.link_count_limit( 1 )
@@ -70,18 +89,42 @@ class Server < Sinatra::Base
         arachni.modules.load( ['*'] )
         arachni.framework.run
 
-        redirect '/output'
+        redirect '/instance/' + instance['port'].to_s
     end
 
-    get "/output" do
-        arachni = arachni_from_session( )
+    get "/instance/:port" do
+        arachni = connect_to_instance( params[:port] )
         if arachni.framework.busy?
             OutputStream.new( arachni.service.output )
         else
-            "<pre>" + YAML::load( arachni.framework.report ).to_s + "</pre>"
+            report = YAML::load( arachni.framework.report )
+            arachni.service.shutdown
+            "<pre>" + report.to_s + "</pre>"
         end
     end
 
+    put "/instance/:port/pause"
+        exception_jail {
+            connect_to_instance( params[:port] ).framework.pause!
+        }
+    end
+
+    put "/instance/:port/resume"
+        exception_jail {
+            connect_to_instance( params[:port] ).framework.resume!
+        }
+    end
+
+    delete "/instance/:port"
+        exception_jail {
+            connect_to_instance( params[:port] ).framework.abort!
+            connect_to_instance( params[:port] ).service.shutdown!
+        }
+    end
+
+    get "/stats" do
+        dispatcher.stats.to_s
+    end
 
     run!
 end
