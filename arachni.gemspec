@@ -40,8 +40,8 @@ Gem::Specification.new do |s|
       s.add_dependency "robots",          "~> 0.10.0"
       s.add_dependency "sys-proctable",   "~> 0.8.1"
       s.add_dependency "terminal-table",  "~> 1.4.2"
-      s.add_dependency "sinatra",         ">= 0.9.2"
-      s.add_dependency "json",            "~> 1.4.6"
+      # s.add_dependency "sinatra",         ">= 0.9.2"
+      # s.add_dependency "json",            "~> 1.4.6"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
