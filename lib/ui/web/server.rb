@@ -1,12 +1,13 @@
 require 'sinatra/base'
 require 'erb'
+require 'yaml'
 
 
 module Arachni
 module UI
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/xml/output'
-require Arachni::Options.instance.dir['lib'] + 'framework'
+require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
 
 module Web
 
@@ -14,14 +15,14 @@ class Server < Sinatra::Base
 
     class OutputStream
 
-        include Arachni::UI::Output
-
-        def initialize( framework )
-            @framework  = framework
+        def initialize( output )
+            @output  = output
         end
 
         def each
-            flush_buffer.each {
+            yield "<pre>"
+            @output << { '' => '<meta http-equiv="refresh" content="1"> ' }
+            @output.each {
                 |out|
                 yield "#{out.keys[0]}: #{out.values[0]}</br>"
             }
@@ -35,7 +36,6 @@ class Server < Sinatra::Base
     set :public, "#{dir}/server/public"
     set :static, true
     set :environment, :development
-    set :framework, Arachni::Framework.new( Arachni::Options.instance )
     enable :sessions
 
     def show( page, layout = true )
@@ -51,14 +51,33 @@ class Server < Sinatra::Base
     end
 
     post "/scan" do
-        params.to_s
-        settings.framework.opts.url = params['url']
-        settings.framework.opts.link_count_limit = 1
-        settings.framework.opts.audit_links = true
-        settings.framework.modules.load( ['xss'] )
-        settings.framework.run
-        OutputStream.new( settings.framework )
+         dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( Arachni::Options.instance, 'http://localhost:7331' )
+
+        instance = dispatcher.dispatch
+        session['url'] = "http://localhost:" + instance['port'].to_s
+
+        arachni = Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+
+        arachni.opts.url( params['url'] )
+        arachni.opts.link_count_limit( 5 )
+        arachni.opts.audit_links( true )
+        arachni.opts.audit_forms( true )
+        arachni.opts.audit_cookies( true )
+        arachni.modules.load( ['*'] )
+        arachni.framework.run
+
+        redirect '/output'
     end
+
+    get "/output" do
+        arachni = Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+        if arachni.framework.busy?
+            OutputStream.new( arachni.service.output )
+        else
+            "<pre>" + arachni.framework.report.to_s + "</pre>"
+        end
+    end
+
 
     run!
 end
