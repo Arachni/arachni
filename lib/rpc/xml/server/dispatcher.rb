@@ -13,12 +13,12 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/xml/server'
-require Options.instance.dir['lib'] + 'rpc/xml/output'
+require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
+require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 
 module RPC
 module XML
-module Dispatcher
+module Server
 
 #
 # Dispatcher class
@@ -38,9 +38,9 @@ module Dispatcher
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
-class Server
+class Dispatcher
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
@@ -273,7 +273,7 @@ USAGE
 
                 pid = Kernel.fork {
                     exception_jail {
-                        server = Arachni::RPC::XML::Server.new( @opts )
+                        server = Arachni::RPC::XML::Server::Instance.new( @opts )
                         trap( "INT", "IGNORE" )
                         server.run
                     }

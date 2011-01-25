@@ -4,20 +4,19 @@ require 'terminal-table/import'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 
-module RPC
-module XML
-module Dispatcher
+module UI
 
 #
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
-class Monitor
+class DispatcherMonitor
 
     include Arachni::UI::Output
 
@@ -38,25 +37,11 @@ class Monitor
 
         begin
             # start the XMLRPC client
-            @dispatcher = ::XMLRPC::Client.new2( @opts.url.to_s )
-
-            # there'll be a HELL of lot of output so things might get..laggy.
-            # a big timeout is required to avoid Timeout exceptions...
-            @dispatcher.timeout = 9999999
-
-
-            if @opts.ssl_pkey || @opts.ssl_pkey
-                @dispatcher.instance_variable_get( :@http ).
-                    instance_variable_set( :@ssl_context, prep_ssl_context( ) )
-            else
-                @dispatcher.instance_variable_get( :@http ).
-                    instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-            end
-
+            @dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.url.to_s )
 
             # it seems like the XMLRPC client will connect us on the first
             # call...so make sure that it *can* actually connect
-            @dispatcher.call( 'dispatcher.jobs' )
+            @dispatcher.jobs
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
@@ -76,7 +61,7 @@ class Monitor
 
         # grab the XMLRPC server output while a scan is running
         while( 1 )
-            stats        = @dispatcher.call( 'dispatcher.stats' )
+            stats        = @dispatcher.stats
             running_jobs = stats['running_jobs']
             clear_screen
 
@@ -152,22 +137,6 @@ class Monitor
         end
     end
 
-    def prep_ssl_context
-
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( @opts.ssl_pkey ) )         if @opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( @opts.ssl_cert ) ) if @opts.ssl_cert
-
-
-        ssl_context = OpenSSL::SSL::SSLContext.new
-        ssl_context.ca_file = @opts.ssl_ca
-        ssl_context.verify_depth = 5
-        ssl_context.verify_mode = ::OpenSSL::SSL::VERIFY_PEER |
-            ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-        ssl_context.key  = pkey
-        ssl_context.cert = cert
-        return ssl_context
-    end
-
     def secs_to_hms( secs )
         secs = secs.to_i
         return [secs/3600, secs/60 % 60, secs % 60].map {
@@ -224,7 +193,5 @@ USAGE
 
 end
 
-end
-end
 end
 end

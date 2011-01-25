@@ -68,7 +68,7 @@ end
 
 options.url = ARGV.shift
 
-require options.dir['lib'] + 'rpc/xml/dispatcher/monitor'
+require options.dir['lib'] + 'ui/xmlrpc/dispatcher_monitor'
 
-dispatcher = Arachni::RPC::XML::Dispatcher::Monitor.new( Arachni::Options.instance )
+dispatcher = Arachni::UI::DispatcherMonitor.new( Arachni::Options.instance )
 dispatcher.run

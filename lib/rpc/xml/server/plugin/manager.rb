@@ -14,6 +14,7 @@ require Options.instance.dir['lib'] + 'plugin/manager'
 
 module RPC
 module XML
+module Server
 module Plugin
 
 #
@@ -23,7 +24,7 @@ module Plugin
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Manager < ::Arachni::Plugin::Manager
 
@@ -49,6 +50,7 @@ class Manager < ::Arachni::Plugin::Manager
 
 end
 
+end
 end
 end
 end

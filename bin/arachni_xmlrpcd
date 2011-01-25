@@ -76,7 +76,7 @@ begin
     }
 end
 
-require options.dir['lib'] + 'rpc/xml/dispatcher/server'
+require options.dir['lib'] + 'rpc/xml/server/dispatcher'
 
-dispatcher = Arachni::RPC::XML::Dispatcher::Server.new( Arachni::Options.instance )
+dispatcher = Arachni::RPC::XML::Server::Dispatcher.new( Arachni::Options.instance )
 dispatcher.run
