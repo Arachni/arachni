@@ -431,12 +431,11 @@ _The CDE packages are for Linux **only** and do not include the XMLRPC server co
 
 ### Gem
 
-In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.
+In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
 To install Arachni:
-
-  * gem install arachni
+    $ gem install arachni
 
 ## Supported platforms
 
