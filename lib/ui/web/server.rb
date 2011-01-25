@@ -46,6 +46,10 @@ class Server < Sinatra::Base
         end
     end
 
+    def arachni_from_session
+        Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+    end
+
     get "/" do
         show :home
     end
@@ -56,10 +60,10 @@ class Server < Sinatra::Base
         instance = dispatcher.dispatch
         session['url'] = "http://localhost:" + instance['port'].to_s
 
-        arachni = Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+        arachni = arachni_from_session( )
 
         arachni.opts.url( params['url'] )
-        arachni.opts.link_count_limit( 5 )
+        arachni.opts.link_count_limit( 1 )
         arachni.opts.audit_links( true )
         arachni.opts.audit_forms( true )
         arachni.opts.audit_cookies( true )
@@ -70,11 +74,11 @@ class Server < Sinatra::Base
     end
 
     get "/output" do
-        arachni = Arachni::RPC::XML::Client::Instance.new( Arachni::Options.instance, session['url'] )
+        arachni = arachni_from_session( )
         if arachni.framework.busy?
             OutputStream.new( arachni.service.output )
         else
-            "<pre>" + arachni.framework.report.to_s + "</pre>"
+            "<pre>" + YAML::load( arachni.framework.report ).to_s + "</pre>"
         end
     end
 
