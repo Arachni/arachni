@@ -365,36 +365,36 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 You can simply run Arachni like so:
 
-    $ ./arachni.rb http://test.com
+    $ arachni http://test.com
 
 which will load all modules and audit all forms, links and cookies.
 
 In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
-    $ ./arachni.rb -fv http://test.com --report=afr:outfile=test.com.afr
+    $ arachni -fv http://test.com --report=afr:outfile=test.com.afr
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni.rb --repload=test.com.afr --report=html:outfile=my_report.html
+    $ arachni --repload=test.com.afr --report=html:outfile=my_report.html
 
 or any other report type as shown by:
 
-    $ ./arachni.rb --lsrep
+    $ arachni --lsrep
 
 #### You can make module loading easier by using wildcards (*) and exclusions (-).
 
 To load all _xss_ modules using a wildcard:
-    $ ./arachni.rb http://example.net --mods=xss_*
+    $ arachni http://example.net --mods=xss_*
 
 To load all _audit_ modules using a wildcard:
-    $ ./arachni.rb http://example.net --mods=audit*
+    $ arachni http://example.net --mods=audit*
 
 To exclude only the _csrf_ module:
-    $ ./arachni.rb http://example.net --mods=*,-csrf
+    $ arachni http://example.net --mods=*,-csrf
 
 Or you can mix and match; to run everything but the _xss_ modules:
-    $ ./arachni.rb http://example.net --mods=*,-xss_*
+    $ arachni http://example.net --mods=*,-xss_*
 
 For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
@@ -404,7 +404,7 @@ Arachni comes with a preconfigured profile (_profiles/comprehensive.afp_) for a 
 This profile loads all modules, audits links/forms/cookies and loads the HealthMap and Content-Types plugins.
 
 You can use it like so:
-    $ ./arachni.rb --load-profile=profiles/comprehensive.afp http://example.net
+    $ arachni --load-profile=profiles/comprehensive.afp http://example.net
 
 #### Performing a full scan quickly
 
@@ -413,54 +413,32 @@ The _full_ profile adds header auditing to the _comprehensive_ profile.
 _NOTICE: Auditing headers can increase scan time by an order of magnitude (depending on the website) and may be considered over-the-top in most scenarios._
 
 You can use it like so:
-    $ ./arachni.rb --load-profile=profiles/full.afp http://example.net
+    $ arachni --load-profile=profiles/full.afp http://example.net
 
 
 _You are encouraged to create your own profiles using the relevant options._
 
-## Requirements
+## Installation
 
-Arachni is also released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
+### CDE packages
+
+Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
 You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
 _The CDE packages are for Linux **only** and do not include the XMLRPC server components for security reasons._
 
-Otherwise, in order to use Arachni you will need the following:
+### Gem
 
-  * ruby1.9.2 (*pay close attention to the version*)
-  * Nokogiri
-  * Typhoeus
-  * Awesome print
-  * Liquid (for HTML reporting)
-  * Yardoc (to generate the documentation)
-  * Robots
+In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.
+The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
-Run the following to install all required system libraries:
-    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev
-
-_Adapt the above line to your Linux distro._
-
-Run the following to install all gem dependencies:
-    sudo gem install nokogiri typhoeus awesome_print liquid yard robots
-
-If you already have the above gems installed make sure that you have the latest versions:
-    sudo gem update
-
-If you wish to use the XMLRPC Dispatcher and Monitor (_arachni_xmlrpcd.rb_/_arachni_xmlrpcd_monitor.rb_) you'll also need to:
-
-  * install [sys-proctable](https://github.com/djberg96/sys-proctable/wiki)
-  * sudo gem install terminal-table
-
-
-_If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version._
-
-## Updating
-Staying up to date with Arachni is easy, you just need to run the _update.sh_ shell script.
-However, make sure that you have "git" in your $PATH.
+To install Arachni:
+  * gem install arachni
 
 ## Supported platforms
+
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
 and the aforementioned requirements.
 
