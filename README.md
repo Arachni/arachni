@@ -435,6 +435,7 @@ In order to use Arachni you will need to have Ruby 1.9.2 installed *including* t
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
 To install Arachni:
+
   * gem install arachni
 
 ## Supported platforms
