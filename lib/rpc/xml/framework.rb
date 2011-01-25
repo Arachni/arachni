@@ -139,7 +139,7 @@ class Framework < Arachni::Framework
     #
     # Returns the results of the audit.
     #
-    # @return   [Hash]
+    # @return   [YAML]  YAML dump of the results hash
     #
     def report
         exception_jail {
@@ -147,14 +147,15 @@ class Framework < Arachni::Framework
 
             store =  audit_store( true )
             store.framework = ''
-
-            results = store.to_h.dup
-            results['plugins'] = YAML.dump( results['plugins'] )
-
-            return results
+            return YAML.dump( store.to_h.dup )
         }
     end
 
+    #
+    # Returns the results of the audit as a serialized AuditStore object.
+    #
+    # @return   [YAML]  YAML dump of the AuditStore
+    #
     def auditstore
         exception_jail {
             return false if !@job
