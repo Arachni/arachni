@@ -8,6 +8,9 @@
 
 =end
 
+require 'xmlrpc/client'
+require 'openssl'
+
 module Arachni
 module RPC
 module XML
