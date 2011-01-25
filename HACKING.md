@@ -34,7 +34,7 @@ It is unlikely that you will need it, but if you do, use
 **3. Avoid creating your own instance of Net::HTTP or other lib.**<br/>
 You are provided with a pre-configured wrapper ({Arachni::Module::Base#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
 
-Take a look in the tutorial module to see what you get: {Arachni::Modules::SimpleRFI}
+Take a look in the tutorial module to see what you get: {Arachni::Modules::RFI}
 
 The base module will also give you some insights: {Arachni::Module::Base}
 
@@ -45,7 +45,7 @@ run-time settings in {Arachni::Options}.
 ## Creating New Modules
 Arachni provides you with examples for the usual types of modules.
 
-This is your main guide: {Arachni::Modules::SimpleRFI}
+This is your main guide: {Arachni::Modules::RFI}
 
 This covers most of the usual tasks when writing a module.
 It lets Arachni do all the work.
