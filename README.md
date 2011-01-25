@@ -416,7 +416,7 @@ You can use it like so:
     $ arachni --load-profile=profiles/full.afp http://example.net
 
 
-_You are encouraged to create your own profiles using the relevant options._
+_If you installed the Gem then you'll have to look for the "profiles" directory in your gems path._
 
 ## Installation
 
