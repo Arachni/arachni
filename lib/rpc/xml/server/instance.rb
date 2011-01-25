@@ -42,6 +42,8 @@ class Instance
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
+    alias :shutdown! :shutdown
+
     #
     # Initializes the XML-RPC interface, the HTTP(S) server and the framework.
     #
