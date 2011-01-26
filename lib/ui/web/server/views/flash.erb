@@ -5,10 +5,10 @@
         <h3 id="flash" class="<%= name %>"><%= flash[name] %></h3>
         <% end %>
 
+        <% end %>
+
         <script types="text/javascript">
             if( elem = document.getElementById( 'flash' ) ){
                 setTimeout( "elem.style.display = 'none'", 2500 )
             }
         </script>
-
-        <% end %>
