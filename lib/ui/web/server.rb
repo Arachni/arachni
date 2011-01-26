@@ -27,6 +27,7 @@ class Server < Sinatra::Base
             @output << { '' => '<meta http-equiv="refresh" content="1">' }
             @output.each {
                 |out|
+                next if out.values[0].empty?
                 yield "#{out.keys[0]}: #{out.values[0]}</br>"
             }
         end
@@ -48,6 +49,14 @@ class Server < Sinatra::Base
         def csrf_tag
             Rack::Csrf.csrf_tag( env )
         end
+
+        def modules
+            @@modules
+        end
+
+        def plugins
+            @@plugins
+        end
     end
 
     dir = File.dirname( File.expand_path( __FILE__ ) )
@@ -62,11 +71,11 @@ class Server < Sinatra::Base
     enable :sessions
 
     def exception_jail( &block )
-        begin
+        # begin
             block.call
-        rescue Exception => e
-            erb :error, { :layout => false }, :error => e.to_s
-        end
+        # rescue Exception => e
+        #     erb :error, { :layout => false }, :error => e.to_s
+        # end
     end
 
     def show( page, layout = true )
@@ -98,44 +107,60 @@ class Server < Sinatra::Base
         cparams = {}
         params.each_pair {
             |name, value|
-            next if value.empty? || [ 'plugins', 'mods', '_csrf' ].include?( name )
+            next if value.empty? || [ 'plugins', 'modules', '_csrf' ].include?( name )
             value = true if value == 'on'
             cparams[name] = value
         }
         return cparams
     end
 
+    def prep_modules( params )
+        [] if !params['modules']
+        return params['modules'].keys
+    end
+
     def prep_plugins( params )
         plugins  = {}
 
         return plugins if !params['plugins']
-        params['plugins'].each {
+        params['plugins'].values.each {
             |name|
             plugins[name] = {}
         }
-        ap plugins
         return plugins
     end
 
     get "/" do
+
+        @@modules ||= []
+        if @@modules.empty?
+            instance = dispatcher.dispatch
+            arachni = connect_to_instance( instance['port'] )
+            @@modules = arachni.framework.lsmod.dup
+            @@plugins = arachni.framework.lsplug.dup
+            arachni.service.shutdown!
+        end
+
         show :home
     end
 
     post "/scan" do
+
         instance = dispatcher.dispatch
         arachni  = connect_to_instance( instance['port'] )
 
         arachni.opts.set( prep_opts( params ) )
 
-        if !params['mods']
-            flash.now[:err] = "No modules have been selected."
+        if !params['modules']
+            flash[:err] = "No modules have been selected."
             show :home
         elsif !params['audit_links'] && !params['audit_forms'] &&
               !params['audit_cookies'] && !params['audit_headers']
-            flash.now[:err] = "No elements have been selected for audit."
+            flash[:err] = "No elements have been selected for audit."
             show :home
         else
-            arachni.modules.load( params['mods'] )
+
+            arachni.modules.load( prep_modules( params ) )
             arachni.plugins.load( prep_plugins( params ) )
             arachni.framework.run
 

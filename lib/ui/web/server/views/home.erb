@@ -42,21 +42,21 @@
 
     <fieldset>
         <legend>Modules:</legend>
-        <select name="mods[]" multiple="multiple">
-          <option value="xss">XSS</option>
-          <option value="sqli">SQL injection</option>
-          <option value="...">..</option>
-        </select>
+        <% modules.each do |mod|%>
+        <input type="checkbox" name="modules[<%=mod['mod_name']%>]" /><%=mod['name']%></br>
+        <div class="notice"> <%=mod['description']%></div>
+
+        <% end %>
         (Select all)
     </fieldset>
 
     <fieldset>
         <legend>Plugins:</legend>
-        <select name="plugins[]" multiple="multiple">
-          <option value="content_types">Content types</option>
-          <option value="proxy">Proxy</option>
-          <option value="...">..</option>
-        </select>
+        <% plugins.each do |plugin|%>
+        <input type="checkbox" name="plugins[<%=plugin['plug_name']%>]" /><%=plugin['name']%></br>
+        <div class="notice"> <%=plugin['description']%></div>
+
+        <% end %>
         (Select all)
     </fieldset>
 
