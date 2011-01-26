@@ -1,0 +1,61 @@
+
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !stats['running_jobs'].empty? %>
+        <table>
+            <tr>
+                <th>Parent PID</th>
+                <th>PID</th>
+                <th>Port</th>
+                <th>Owner</th>
+                <th>Birthdate (Server-side)</th>
+                <th>Start time (Server-side)</th>
+                <th>Current time (Server-side)</th>
+                <th>Age</th>
+                <th>Runtime</th>
+                <th>Memory consumption</th>
+                <th>Process priority</th>
+                <th>Process state</th>
+            </tr>
+        <% stats['running_jobs'].each do |job| %>
+            <tr>
+
+
+                <td><%=job['proc']['ppid']%></td>
+                <td><%=job['pid']%></td>
+                <td><%=job['port']%></td>
+                <td><%=job['owner']%></td>
+                <td><%=job['birthdate'].to_time%></td>
+                <td><%=job['starttime'].to_time%></td>
+                <td><%=job['currtime'].to_time%></td>
+                <td><%=secs_to_hms( job['age'] )%></td>
+                <td><%=secs_to_hms( job['runtime'] )%></td>
+                <td><%=proc_mem( job['proc']['rss'] )%></td>
+                <td><%=job['proc']['priority']%></td>
+                <td><%=proc_state( job['proc']['state'] )%></td>
+
+                <td>
+                    <form action="/dispatcher/<%=job['port']%>/pause" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Pause" />
+                    </form>
+
+                    <form action="/dispatcher/<%=job['port']%>/resume" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Resume" />
+                    </form>
+
+                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Shutdown" />
+                    </form>
+
+                    <a href="/instance/<%=job['port']%>">Attach</a>
+                    </form>
+                </td>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <span class="notice"> There are no running scans at the moment.</span>
+        <% end %>

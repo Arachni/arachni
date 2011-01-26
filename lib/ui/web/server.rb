@@ -57,6 +57,39 @@ class Server < Sinatra::Base
         def plugins
             @@plugins
         end
+
+        def proc_mem( rss )
+            # we assume a page size of 4096
+            (rss.to_i * 4096 / 1024 / 1024).to_s + 'MB'
+        end
+
+        def proc_state( state )
+            case state
+                when 'S'
+                return 'Sleeping'
+
+                when 'D'
+                return 'Disk Sleep'
+
+                when 'Z'
+                return 'Zombie'
+
+                when 'T'
+                return 'Traced/Stoped'
+
+                when 'W'
+                return 'Paging'
+            end
+        end
+
+        def secs_to_hms( secs )
+            secs = secs.to_i
+            return [secs/3600, secs/60 % 60, secs % 60].map {
+                |t|
+                t.to_s.rjust( 2, '0' )
+            }.join(':')
+        end
+
     end
 
     dir = File.dirname( File.expand_path( __FILE__ ) )
@@ -80,7 +113,11 @@ class Server < Sinatra::Base
 
     def show( page, layout = true )
         exception_jail {
-            erb page.to_sym,  { :layout => layout }
+            if page == :dispatcher
+                erb :dispatcher, { :layout => true }, :stats => dispatcher.stats
+            else
+                erb page.to_sym,  { :layout => layout }
+            end
         }
     end
 
@@ -96,7 +133,7 @@ class Server < Sinatra::Base
     end
 
     def dispatcher
-        @dispatcher ||= Arachni::RPC::XML::Client::Dispatcher.new( options, settings.dispatcher_url )
+        Arachni::RPC::XML::Client::Dispatcher.new( options, settings.dispatcher_url )
     end
 
     def options
@@ -144,14 +181,16 @@ class Server < Sinatra::Base
         show :home
     end
 
+    get "/dispatcher" do
+        show :dispatcher
+    end
+
     post "/scan" do
 
-        instance = dispatcher.dispatch
-        arachni  = connect_to_instance( instance['port'] )
-
-        arachni.opts.set( prep_opts( params ) )
-
-        if !params['modules']
+        if !params['url'] || params['url'].empty?
+            flash[:err] = "URL cannot be empty."
+            show :home
+        elsif !params['modules']
             flash[:err] = "No modules have been selected."
             show :home
         elsif !params['audit_links'] && !params['audit_forms'] &&
@@ -160,12 +199,17 @@ class Server < Sinatra::Base
             show :home
         else
 
+            instance = dispatcher.dispatch( params['url'] )
+            arachni  = connect_to_instance( instance['port'] )
+
+            arachni.opts.set( prep_opts( params ) )
             arachni.modules.load( prep_modules( params ) )
             arachni.plugins.load( prep_plugins( params ) )
             arachni.framework.run
 
             redirect '/instance/' + instance['port'].to_s
         end
+
     end
 
 
@@ -187,28 +231,28 @@ class Server < Sinatra::Base
         }
     end
 
-    post "/instance/:port/pause" do
+    post "/*/:port/pause" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
-            flash.now[:notice] = "Will pause as soon as the current page is audited."
-            show :instance
+            flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
+            show params[:splat][0].to_sym
         }
     end
 
-    post "/instance/:port/resume" do
+    post "/*/:port/resume" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.resume!
-            flash.now[:ok] = "Resuming..."
-            show :instance
+            flash.now[:ok] = "Instance on port #{params[:port]} resumes."
+            show params[:splat][0].to_sym
         }
     end
 
-    post "/instance/:port/shutdown" do
+    post "/*/:port/shutdown" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.abort!
             connect_to_instance( params[:port] ).service.shutdown!
             flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
-            show :instance
+            show params[:splat][0].to_sym
         }
     end
 
