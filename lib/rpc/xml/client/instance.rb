@@ -59,6 +59,8 @@ class Instance
     class OptsMapper < Mapper
 
         def method_missing( sym, *args, &block )
+            return super( sym, *args, &block ) if sym == :set
+
             call = "#{@remote}.#{sym.to_s}="
             @server.call( call, *args )
         end
