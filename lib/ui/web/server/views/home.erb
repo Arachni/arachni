@@ -2,6 +2,8 @@
 
 <form action="/scan" method="post">
 
+    <%= erb :flash, {:layout => false} %>
+
     <fieldset>
         <legend>URL:</legend>
         <input name="url" value="http://demo.testfire.net" />

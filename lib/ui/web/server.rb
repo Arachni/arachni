@@ -128,7 +128,12 @@ class Server < Sinatra::Base
         arachni.opts.set( prep_opts( params ) )
 
         if !params['mods']
-            erb :error, { :layout => false }, :error => "No modules selected."
+            flash.now[:err] = "No modules have been selected."
+            show :home
+        elsif !params['audit_links'] && !params['audit_forms'] &&
+              !params['audit_cookies'] && !params['audit_headers']
+            flash.now[:err] = "No elements have been selected for audit."
+            show :home
         else
             arachni.modules.load( params['mods'] )
             arachni.plugins.load( prep_plugins( params ) )
@@ -142,10 +147,6 @@ class Server < Sinatra::Base
     get "/instance/:port" do
         show :instance
     end
-
-    # get "/instance/:port/controls" do
-    #     show :instance
-    # end
 
     get "/instance/:port/output" do
         exception_jail {
@@ -172,6 +173,7 @@ class Server < Sinatra::Base
     post "/instance/:port/resume" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.resume!
+            flash.now[:ok] = "Resuming..."
             show :instance
         }
     end
