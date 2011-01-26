@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require "rack/csrf"
 require 'erb'
 require 'yaml'
 require 'ap'
@@ -29,6 +30,22 @@ class Server < Sinatra::Base
             }
         end
 
+    end
+
+
+    configure do
+        use Rack::Session::Cookie
+        use Rack::Csrf, :raise => true
+    end
+
+    helpers do
+        def csrf_token
+            Rack::Csrf.csrf_token( env )
+        end
+
+        def csrf_tag
+            Rack::Csrf.csrf_tag( env )
+        end
     end
 
     dir = File.dirname( File.expand_path( __FILE__ ) )
@@ -79,7 +96,7 @@ class Server < Sinatra::Base
         cparams = {}
         params.each_pair {
             |name, value|
-            next if value.empty? || [ 'plugins', 'mods' ].include?( name )
+            next if value.empty? || [ 'plugins', 'mods', '_csrf' ].include?( name )
             value = true if value == 'on'
             cparams[name] = value
         }
@@ -106,14 +123,17 @@ class Server < Sinatra::Base
         instance = dispatcher.dispatch
         arachni  = connect_to_instance( instance['port'] )
 
-        ap params
-
         arachni.opts.set( prep_opts( params ) )
-        arachni.modules.load( params['mods'] )
-        arachni.plugins.load( prep_plugins( params ) )
-        arachni.framework.run
 
-        redirect '/instance/' + instance['port'].to_s
+        if !params['mods']
+            erb :error, { :layout => false }, :error => "No modules selected."
+        else
+            arachni.modules.load( params['mods'] )
+            arachni.plugins.load( prep_plugins( params ) )
+            arachni.framework.run
+
+            redirect '/instance/' + instance['port'].to_s
+        end
     end
 
 
