@@ -109,7 +109,7 @@ class Framework < Arachni::Framework
             info[:plug_name]   = plugin
             info[:path]        = @plugins.name_to_path( plugin )
 
-            info[:options] = info[:options].map{
+            info[:options] = [info[:options]].flatten.compact.map {
                 |opt|
                 opt_h = opt.to_h
                 opt_h['default'] = 'nil' if opt_h['default'].nil?
