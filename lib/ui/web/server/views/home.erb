@@ -52,22 +52,26 @@
             <legend>Modules:</legend>
             <div class="height_scroller">
                 <% modules.each do |mod|%>
-                <input type="checkbox" name="modules[<%=mod['mod_name']%>]" /><%=mod['name']%></br>
+                <input type="checkbox" class="module" name="modules[<%=mod['mod_name']%>]" /><%=mod['name']%></br>
                 <div class="notice"> <%=mod['description']%></div>
                 <% end %>
             </div>
-            (Select all)
+
+            <input type="button" onclick="javascript:checkAll( 'module' );" value="Check all"/>
+            <input type="button" onclick="javascript:uncheckAll( 'module' );" value="Uncheck all"/>
         </fieldset>
 
         <fieldset>
             <legend>Plugins:</legend>
             <div class="height_scroller">
                 <% plugins.each do |plugin|%>
-                <input type="checkbox" name="plugins[<%=plugin['plug_name']%>]" /><%=plugin['name']%></br>
+                <input type="checkbox" class="plugin" name="plugins[<%=plugin['plug_name']%>]" /><%=plugin['name']%></br>
                 <div class="notice"> <%=plugin['description']%></div>
                 <% end %>
             </div>
-            (Select all)
+
+            <input type="button" onclick="javascript:checkAll( 'plugin' );" value="Check all"/>
+            <input type="button" onclick="javascript:uncheckAll( 'plugin' );" value="Uncheck all"/>
         </fieldset>
 
     </div>
