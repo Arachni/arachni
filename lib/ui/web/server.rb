@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require "rack/csrf"
+require 'rack-flash'
 require 'erb'
 require 'yaml'
 require 'ap'
@@ -32,6 +33,7 @@ class Server < Sinatra::Base
 
     end
 
+    use Rack::Flash
 
     configure do
         use Rack::Session::Cookie
@@ -69,7 +71,7 @@ class Server < Sinatra::Base
 
     def show( page, layout = true )
         exception_jail {
-            erb page.to_sym
+            erb page.to_sym,  { :layout => layout }
         }
     end
 
@@ -141,13 +143,14 @@ class Server < Sinatra::Base
         show :instance
     end
 
-    get "/instance/:port/controls" do
-        show :controls
-    end
+    # get "/instance/:port/controls" do
+    #     show :instance
+    # end
 
     get "/instance/:port/output" do
         exception_jail {
             arachni = connect_to_instance( params[:port] )
+
             if arachni.framework.busy?
                 OutputStream.new( arachni.service.output )
             else
@@ -161,14 +164,15 @@ class Server < Sinatra::Base
     post "/instance/:port/pause" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
-            show :controls
+            flash.now[:notice] = "Will pause as soon as the current page is audited."
+            show :instance
         }
     end
 
     post "/instance/:port/resume" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.resume!
-            show :controls
+            show :instance
         }
     end
 
@@ -176,7 +180,8 @@ class Server < Sinatra::Base
         exception_jail {
             connect_to_instance( params[:port] ).framework.abort!
             connect_to_instance( params[:port] ).service.shutdown!
-            show :controls
+            flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+            show :instance
         }
     end
 

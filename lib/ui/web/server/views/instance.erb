@@ -1,6 +1,30 @@
-<html>
-    <body>
-        <iframe src="/instance/<%= params['port'] %>/controls" width="100%" height="300"> </iframe>
+
+        <h1> Instance controls </h1>
+        <form action="/instance/<%=params['port']%>/pause" method="post">
+            <%= csrf_tag %>
+            <input type="submit" value="Pause" />
+        </form>
+
+        <form action="/instance/<%=params['port']%>/resume" method="post">
+            <%= csrf_tag %>
+            <input type="submit" value="Resume" />
+        </form>
+
+        <form action="/instance/<%=params['port']%>/shutdown" method="post">
+            <%= csrf_tag %>
+            <input type="submit" value="Shutdown" />
+        </form>
+
+         <% if flash.has?(:err) %>
+            <h3 class="err"><%= flash[:err] %></h3>
+         <% end %>
+
+         <% if flash.has?(:ok) %>
+              <h3 class="ok"><%= flash[:ok] %></h3>
+         <% end %>
+
+         <% if flash.has?(:notice) %>
+              <h3 class="highlight"><%= flash[:notice] %></h3>
+         <% end %>
+
         <iframe src="/instance/<%= params['port'] %>/output" width="100%" height="300"/> </iframe>
-    </body>
-</html>

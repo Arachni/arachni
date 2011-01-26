@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <title>Arachni - Web Application Security Scanner</title>
+    <style type="text/css" media="screen">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Helvetica;
+        font-size: 18px;
+      }
+
+      a {
+        color: #f09;
+        text-decoration: none;
+        padding: 0px 3px;
+      }
+
+      a:hover {
+        background: #f09;
+        color: #fff;
+      }
+
+      a:active {
+        text-decoration: underline;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      code {
+        font-family: Bitstream Vera Sans Mono , monospace;
+        background: #D4EBF7;
+      }
+
+      form {
+        margin: 0.4em auto;
+        display: inline-block;
+      }
+
+      label {
+        line-height: 1em;
+        height: 1em;
+      }
+
+      label span {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 1px;
+      }
+
+      label a {
+        font-weight: bold;
+        float: right;
+        margin-right: 79px;
+        line-height: 1.5em;
+      }
+
+      input[type="text"] {
+        padding: 2px;
+        font-size: 18px;
+        width: 610px;
+        margin-right: 10px;
+      }
+
+      input[type="submit"] {
+        cursor: pointer;
+        vertical-align: 20%;
+      }
+
+      .err, .ok {
+        margin: 0.3em 0;
+        padding: 5px 7px;
+        text-align: center;
+        color: #fff;
+      }
+
+      .ok {
+        background: #00A8FF;
+      }
+
+      .err {
+        background: #f10;
+      }
+
+      .err_on {
+        display: inline-block;
+        padding: 0px 3px;
+        color: #f10;
+        font-weight: bold;
+      }
+
+      .highlight {
+        background: #ffc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      #content {
+        width: 700px;
+        margin: 1em auto;
+      }
+
+      #result {
+        font-size: 48px;
+        margin: 10% auto 20%;
+        text-align: center;
+        display: block;
+      }
+
+      #result cite {
+        font-size: 14px;
+        display: block;
+        text-align: right;
+      }
+
+      #result cite code {
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <h1><code>Arachni - Web Application Security Scanner</code></h1>
+      <%= yield %>
+    </div>
+  </body>
+</html>
+
