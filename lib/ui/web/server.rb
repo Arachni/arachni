@@ -57,12 +57,10 @@ class Server < Sinatra::Base
     end
 
     def connect_to_instance( port )
-        exception_jail {
-            uri = URI( settings.dispatcher_url )
-            uri.port = port.to_i
-            @instance ||= {}
-            @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
-        }
+        uri = URI( settings.dispatcher_url )
+        uri.port = port.to_i
+        @instance ||= {}
+        @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
     end
 
     def dispatcher
@@ -82,7 +80,7 @@ class Server < Sinatra::Base
         arachni = connect_to_instance( instance['port'] )
 
         arachni.opts.url( params['url'] )
-        arachni.opts.link_count_limit( 1 )
+        arachni.opts.link_count_limit( 10 )
         arachni.opts.audit_links( true )
         arachni.opts.audit_forms( true )
         arachni.opts.audit_cookies( true )
@@ -93,32 +91,45 @@ class Server < Sinatra::Base
     end
 
     get "/instance/:port" do
-        arachni = connect_to_instance( params[:port] )
-        if arachni.framework.busy?
-            OutputStream.new( arachni.service.output )
-        else
-            report = YAML::load( arachni.framework.report )
-            arachni.service.shutdown
-            "<pre>" + report.to_s + "</pre>"
-        end
+        erb :instance
     end
 
-    put "/instance/:port/pause"
+    get "/instance/:port/controls" do
+        erb :controls
+    end
+
+    get "/instance/:port/output" do
+        exception_jail {
+            arachni = connect_to_instance( params[:port] )
+            if arachni.framework.busy?
+                OutputStream.new( arachni.service.output )
+            else
+                report = YAML::load( arachni.framework.report )
+                arachni.service.shutdown
+                "<pre>" + report.to_s + "</pre>"
+            end
+        }
+    end
+
+    post "/instance/:port/pause" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
+            erb :controls
         }
     end
 
-    put "/instance/:port/resume"
+    post "/instance/:port/resume" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.resume!
+            erb :controls
         }
     end
 
-    delete "/instance/:port"
+    post "/instance/:port/shutdown" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.abort!
             connect_to_instance( params[:port] ).service.shutdown!
+            erb :controls
         }
     end
 
