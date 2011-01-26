@@ -60,7 +60,11 @@ class Server < Sinatra::Base
         uri = URI( settings.dispatcher_url )
         uri.port = port.to_i
         @instance ||= {}
-        @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
+        begin
+            @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
+        rescue Exception
+            raise "Instance on port #{port} has shutdown."
+        end
     end
 
     def dispatcher
@@ -71,31 +75,54 @@ class Server < Sinatra::Base
         Arachni::Options.instance
     end
 
+    def prep_opts( params )
+        cparams = {}
+        params.each_pair {
+            |name, value|
+            next if value.empty? || [ 'plugins', 'mods' ].include?( name )
+            value = true if value == 'on'
+            cparams[name] = value
+        }
+        return cparams
+    end
+
+    def prep_plugins( params )
+        plugins  = {}
+
+        return plugins if !params['plugins']
+        params['plugins'].each {
+            |name|
+            plugins[name] = {}
+        }
+        ap plugins
+        return plugins
+    end
+
     get "/" do
         show :home
     end
 
     post "/scan" do
         instance = dispatcher.dispatch
-        arachni = connect_to_instance( instance['port'] )
+        arachni  = connect_to_instance( instance['port'] )
 
-        arachni.opts.url( params['url'] )
-        arachni.opts.link_count_limit( 10 )
-        arachni.opts.audit_links( true )
-        arachni.opts.audit_forms( true )
-        arachni.opts.audit_cookies( true )
-        arachni.modules.load( ['*'] )
+        ap params
+
+        arachni.opts.set( prep_opts( params ) )
+        arachni.modules.load( params['mods'] )
+        arachni.plugins.load( prep_plugins( params ) )
         arachni.framework.run
 
         redirect '/instance/' + instance['port'].to_s
     end
 
+
     get "/instance/:port" do
-        erb :instance
+        show :instance
     end
 
     get "/instance/:port/controls" do
-        erb :controls
+        show :controls
     end
 
     get "/instance/:port/output" do
@@ -114,14 +141,14 @@ class Server < Sinatra::Base
     post "/instance/:port/pause" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
-            erb :controls
+            show :controls
         }
     end
 
     post "/instance/:port/resume" do
         exception_jail {
             connect_to_instance( params[:port] ).framework.resume!
-            erb :controls
+            show :controls
         }
     end
 
@@ -129,7 +156,7 @@ class Server < Sinatra::Base
         exception_jail {
             connect_to_instance( params[:port] ).framework.abort!
             connect_to_instance( params[:port] ).service.shutdown!
-            erb :controls
+            show :controls
         }
     end
 
