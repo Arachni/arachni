@@ -1,66 +1,75 @@
-<h1> Scan options </h1>
 
 <form action="/scan" method="post">
 
     <%= erb :flash, {:layout => false} %>
 
-    <fieldset>
-        <legend>URL:</legend>
-        <input name="url" value="http://demo.testfire.net" />
-    </fieldset>
+    <div class="left">
 
-    <fieldset>
-        <legend>HTTP options:</legend>
-        Cocurrent HTTP request limit: <input name="http_req_limit" /></br>
-        HTTP harvest last: <input type="checkbox" name="http_harvest_last" /></br>
-        Cookie jar: <input type="file" name="cookiejar" size="25" /></br>
-        User agent: <input name="user_agent" value="Arachni" /></br>
-        Authorized by: <input name="authed_by" /></br>
-    </fieldset>
+        <%= csrf_tag %>
+        <input type="button" name="save_profile" value="Save profile" />
+        <input type="submit" value="Launch Scan" />
 
-    <fieldset>
-        <legend>Crawler options:</legend>
-        Exclude rules: <textarea name="exclude"></textarea>(Newline separated)</br>
-        Include rules: <textarea name="include"></textarea>(Newline separated)</br>
-        Redundant rules: <textarea name="redundant"></textarea>(Newline separated)</br>
-        Depth: <input name="authed_by" />(Default: infinite)</br>
-        Link count limit: <input name="link_count_limit" />(Default: infinite)</br>
-        Redirect limit: <input name="redirect_limit" />(Default: infinite)</br>
-        Follow subdomain: <input type="checkbox" name="follow_subdomains" /></br>
-        Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" /></br>
-        Spider first: <input type="checkbox" name="spider_first" /></br>
-    </fieldset>
+        <fieldset>
+            <legend>URL:</legend>
+            <input name="url" value="http://demo.testfire.net" />
+        </fieldset>
 
-    <fieldset>
-        <legend>Auditor:</legend>
-        Audit links: <input type="checkbox" name="audit_links" checked="checked" /></br>
-        Audit forms: <input type="checkbox" name="audit_forms" checked="checked" /></br>
-        Audit cookies: <input type="checkbox" name="audit_cookies" checked="checked" /></br>
-        Audit headers: <input type="checkbox" name="audit_headers" /></br>
-        Cookies to exclude: <textarea name="exclude_cookies"></textarea>(Newline separated)</br>
-    </fieldset>
+        <fieldset>
+            <legend>HTTP options:</legend>
+            Cocurrent HTTP request limit: <input name="http_req_limit" /></br>
+            HTTP harvest last: <input type="checkbox" name="http_harvest_last" /></br>
+            Cookie jar: <input type="file" name="cookiejar" size="25" /></br>
+            User agent: <input name="user_agent" value="Arachni" /></br>
+            Authorized by: <input name="authed_by" /></br>
+        </fieldset>
 
-    <fieldset>
-        <legend>Modules:</legend>
-        <% modules.each do |mod|%>
-        <input type="checkbox" name="modules[<%=mod['mod_name']%>]" /><%=mod['name']%></br>
-        <div class="notice"> <%=mod['description']%></div>
+        <fieldset>
+            <legend>Crawler options:</legend>
+            Exclude rules: <textarea name="exclude"></textarea>(Newline separated)</br>
+            Include rules: <textarea name="include"></textarea>(Newline separated)</br>
+            Redundant rules: <textarea name="redundant"></textarea>(Newline separated)</br>
+            Depth: <input name="authed_by" />(Default: infinite)</br>
+            Link count limit: <input name="link_count_limit" />(Default: infinite)</br>
+            Redirect limit: <input name="redirect_limit" />(Default: infinite)</br>
+            Follow subdomain: <input type="checkbox" name="follow_subdomains" /></br>
+            Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" /></br>
+            Spider first: <input type="checkbox" name="spider_first" /></br>
+        </fieldset>
 
-        <% end %>
-        (Select all)
-    </fieldset>
+        <fieldset>
+            <legend>Auditor:</legend>
+            Audit links: <input type="checkbox" name="audit_links" checked="checked" /></br>
+            Audit forms: <input type="checkbox" name="audit_forms" checked="checked" /></br>
+            Audit cookies: <input type="checkbox" name="audit_cookies" checked="checked" /></br>
+            Audit headers: <input type="checkbox" name="audit_headers" /></br>
+            Cookies to exclude: <textarea name="exclude_cookies"></textarea>(Newline separated)</br>
+        </fieldset>
 
-    <fieldset>
-        <legend>Plugins:</legend>
-        <% plugins.each do |plugin|%>
-        <input type="checkbox" name="plugins[<%=plugin['plug_name']%>]" /><%=plugin['name']%></br>
-        <div class="notice"> <%=plugin['description']%></div>
+    </div>
 
-        <% end %>
-        (Select all)
-    </fieldset>
+    <div class="right">
+        <fieldset>
+            <legend>Modules:</legend>
+            <div class="height_scroller">
+                <% modules.each do |mod|%>
+                <input type="checkbox" name="modules[<%=mod['mod_name']%>]" /><%=mod['name']%></br>
+                <div class="notice"> <%=mod['description']%></div>
+                <% end %>
+            </div>
+            (Select all)
+        </fieldset>
 
-    <%= csrf_tag %>
-    <input type="button" name="save_profile" value="Save profile" />
-    <input type="submit" value="Launch Scan" />
+        <fieldset>
+            <legend>Plugins:</legend>
+            <div class="height_scroller">
+                <% plugins.each do |plugin|%>
+                <input type="checkbox" name="plugins[<%=plugin['plug_name']%>]" /><%=plugin['name']%></br>
+                <div class="notice"> <%=plugin['description']%></div>
+                <% end %>
+            </div>
+            (Select all)
+        </fieldset>
+
+    </div>
+
 </form>

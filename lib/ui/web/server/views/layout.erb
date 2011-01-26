@@ -99,8 +99,22 @@
         margin-bottom: 10px;
       }
 
+      .left {
+          float: left;
+          width: 50%
+      }
+
+      .right {
+          float: right;
+          width: 50%
+      }
+
+      .height_scroller {
+          height: 300px;
+          overflow: scroll
+      }
+
       #content {
-        width: 700px;
         margin: 1em auto;
       }
 
@@ -124,7 +138,7 @@
   </head>
   <body>
     <div id="content">
-      <h1><code>Arachni </br> Web Application Security Scanner</code></h1>
+      <h1><code>Arachni - Web Application Security Scanner</code></h1>
       <%= yield %>
     </div>
   </body>
