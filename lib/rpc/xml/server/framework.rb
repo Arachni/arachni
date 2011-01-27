@@ -112,7 +112,8 @@ class Framework < Arachni::Framework
             info[:options] = [info[:options]].flatten.compact.map {
                 |opt|
                 opt_h = opt.to_h
-                opt_h['default'] = 'nil' if opt_h['default'].nil?
+                opt_h['default'] = '' if opt_h['default'].nil?
+                opt_h['type']    = opt.type
                 opt_h
             }
 
