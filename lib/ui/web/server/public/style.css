@@ -135,6 +135,11 @@ form.settings input, textarea {
     margin-right: 10px
 }
 
+.options input, textarea {
+    float: right;
+    margin-right: 10px
+}
+
 form.reset input {
     float: left;
 }

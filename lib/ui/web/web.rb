@@ -1,2 +1,0 @@
-require 'framework'
-require 'web'

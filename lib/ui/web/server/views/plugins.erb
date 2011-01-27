@@ -18,9 +18,24 @@
 
             <% plugins.each do |plugin|%>
             <p>
-                <h3><input type="checkbox" class="plugin" name="plugins[<%=plugin['plug_name']%>]"
-                        <% if session['opts']['plugins'] && session['opts']['plugins'].include?( plugin['plug_name'] ) %> checked="checked" <% end %> /> <%=plugin['name']%></h3>
+                <fieldset>
+                <h3>
+                    <legend>
+                        <input type="checkbox" class="plugin" name="plugins[<%=plugin['plug_name']%>]"
+                        <% if session['opts']['plugins'] && session['opts']['plugins'].include?( plugin['plug_name'] ) %> checked="checked" <% end %> />
+                        <%=plugin['name']%>
+                    </legend>
+                </h3>
+                <h5>Description</h5>
                 <div class="notice"> <%=plugin['description']%></div>
+
+                <%= erb :options, { :layout => false }, :component => plugin%>
+
+                <p>
+                    <strong>Version:</strong> <%=plugin['version']%></br>
+                    <strong>Author:</strong> <%=escape( plugin['author'])%>
+                </p>
+                </fieldset>
             </p>
             <% end %>
 

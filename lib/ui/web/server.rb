@@ -3,6 +3,8 @@ require "rack/csrf"
 require 'rack-flash'
 require 'erb'
 require 'yaml'
+require 'cgi'
+require 'fileutils'
 require 'ap'
 
 
@@ -15,6 +17,8 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
 
 module Web
+
+    VERSION = '0.1-pre'
 
 class Server < Sinatra::Base
 
@@ -44,6 +48,10 @@ class Server < Sinatra::Base
     end
 
     helpers do
+
+        def escape( str )
+            CGI.escapeHTML( str )
+        end
 
         def selected_tab?( tab )
             splits = env['PATH_INFO'].split( '/' )
@@ -137,15 +145,26 @@ class Server < Sinatra::Base
         Arachni::Options.instance
     end
 
+    def to_i( str )
+        return str if !str.is_a?( String )
+
+        if str.match( /\d+/ ).to_s.size == str.size
+            return str.to_i
+        else
+            return str
+        end
+    end
+
     def prep_opts( params )
+
         cparams = {}
         params.each_pair {
             |name, value|
 
-            next if name == '_csrf' || ( value.is_a?( String ) && value.empty?)
+            next if [ '_csrf', 'modules', 'plugins' ].include?( name ) || ( value.is_a?( String ) && value.empty?)
 
             value = true if value == 'on'
-            cparams[name] = value
+            cparams[name] = to_i( value )
         }
 
         if !cparams['audit_links'] && !cparams['audit_forms'] &&
@@ -160,6 +179,7 @@ class Server < Sinatra::Base
     end
 
     def prep_modules( params )
+        return ['-'] if !params['modules']
         mods = params['modules'].keys
         return ['*'] if mods.empty?
         return mods
@@ -171,13 +191,15 @@ class Server < Sinatra::Base
         return plugins if !params['plugins']
         params['plugins'].keys.each {
             |name|
-            plugins[name] = {}
+            plugins[name] = params['options'][name] || {}
         }
+
         return plugins
     end
 
     def prep_session
-        session['opts'] ||= {
+        session['opts'] ||= {}
+        session['opts']['settings'] ||= {
             'audit_links'    => true,
             'audit_forms'    => true,
             'audit_cookies'  => true,
@@ -189,6 +211,22 @@ class Server < Sinatra::Base
             'content_types' => {},
             'healthmap'     => {}
         }
+    end
+
+    def handle_report( report )
+        reports = ::Arachni::Report::Manager.new( ::Arachni::Options.instance )
+        [ 'afr', 'html' ].each {
+            |ext|
+            reports.run_one( ext, report )
+
+            file = Dir.glob( ::Arachni::Options.instance.dir['root'] + "*.#{ext}" ).last
+            new_loc = settings.public + "/reports/#{ext}/" + File.basename( file )
+            FileUtils.mv( file, new_loc )
+        }
+    end
+
+    def get_reports( type )
+        Dir.glob( settings.public + "/reports/#{type}/*.#{type}" )
     end
 
     get "/" do
@@ -211,16 +249,16 @@ class Server < Sinatra::Base
             instance = dispatcher.dispatch( params['url'] )
             arachni  = connect_to_instance( instance['port'] )
 
-            session['opts']['url'] = params['url']
+            session['opts']['settings']['url'] = params['url']
 
-            session['opts']['audit_links']   = true if session['opts']['audit_links']
-            session['opts']['audit_forms']   = true if session['opts']['audit_forms']
-            session['opts']['audit_cookies'] = true if session['opts']['audit_cookies']
-            session['opts']['audit_headers'] = true if session['opts']['audit_headers']
+            session['opts']['settings']['audit_links']   = true if session['opts']['settings']['audit_links']
+            session['opts']['settings']['audit_forms']   = true if session['opts']['settings']['audit_forms']
+            session['opts']['settings']['audit_cookies'] = true if session['opts']['settings']['audit_cookies']
+            session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
-            arachni.opts.set( session['opts'] )
+            arachni.opts.set( prep_opts( session['opts']['settings'] ) )
             arachni.modules.load( session['opts']['modules'] )
-            arachni.plugins.load( session['opts']['plugins'] )
+            arachni.plugins.load( YAML::load( session['opts']['plugins'] ) )
             arachni.framework.run
 
             redirect '/instance/' + instance['port'].to_s
@@ -234,6 +272,7 @@ class Server < Sinatra::Base
     end
 
     post "/modules" do
+        # session['opts']['modules'] = YAML::dump( prep_modules( params ) )
         session['opts']['modules'] = prep_modules( params )
         flash.now[:notice] = "Modules updated."
         show :modules, true
@@ -245,7 +284,7 @@ class Server < Sinatra::Base
     end
 
     post "/plugins" do
-        session['opts']['plugins'] = prep_plugins( params )
+        session['opts']['plugins'] = YAML::dump( prep_plugins( params ) )
         flash.now[:notice] = "Plugins updated."
         show :plugins, true
     end
@@ -256,7 +295,9 @@ class Server < Sinatra::Base
     end
 
     post "/settings" do
-        session['opts'].merge!( prep_opts( params ) )
+        url = session['opts']['settings']['url'].dup
+        session['opts']['settings'] = prep_opts( params )
+        session['opts']['settings']['url'] = url
         flash.now[:notice] = "Settings updated."
         show :settings, true
     end
@@ -272,15 +313,14 @@ class Server < Sinatra::Base
             if arachni.framework.busy?
                 OutputStream.new( arachni.service.output )
             else
-                report = YAML::load( arachni.framework.report )
+                handle_report( YAML::load( arachni.framework.auditstore ) )
                 arachni.service.shutdown!
-                "<pre>" + report.to_s + "</pre>"
+                File.read( get_reports( 'html' ).last )
             end
         }
     end
 
     post "/*/:port/pause" do
-        ap env
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
             flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
@@ -309,6 +349,15 @@ class Server < Sinatra::Base
     end
 
     run!
+
+    at_exit do
+        begin
+            # shutdown our helper instance
+            @@arachni ||= nil
+            @@arachni.service.shutdown! if @@arachni
+        rescue
+        end
+    end
 end
 
 end
