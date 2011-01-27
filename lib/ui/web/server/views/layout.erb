@@ -94,6 +94,7 @@
     </head>
     <div class="wrapper">
         <div id="container">
+            <div class="spider">
             <div id="header">
                 <h1><a href="/">Arachni v<%=Arachni::VERSION%></a></h1>
                 <h2>Web Application Security Scanner Framework</h2>
@@ -107,6 +108,7 @@
                     <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
                     <li <% if selected_tab?( 'dispatcher' )%>class="selected" <%end%>><a href="/dispatcher">Dispatcher</a></li>
                 </ul>
+            </div>
             </div>
             <div id="body">
                 <div id="content">

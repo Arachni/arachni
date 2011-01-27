@@ -200,6 +200,10 @@ li ol, li ul {
     padding-top: 5px;
 }
 
+.spider {
+    background: transparent url('spider.png') no-repeat  left;
+
+}
 
 #container {
     width: 960px;
@@ -220,7 +224,7 @@ li ol, li ul {
 
 #header h1 a {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, Sans-Serif;
-    color: #fff;
+    color: #DDD;
     font-size: 45px;
     font-weight: bold;
     text-decoration: none;
