@@ -225,9 +225,10 @@ class Server < Sinatra::Base
     end
 
     def prep_session
+        session[:dispatcher_url] ||= 'http://localhost:7331'
+
         ensure_dispatcher
 
-        session[:dispatcher_url] ||= 'http://localhost:7331'
         session['opts'] ||= {}
         session['opts']['settings'] ||= {
             'audit_links'    => true,
