@@ -1,0 +1,14 @@
+
+        <form action="/dispatcher" method="post">
+
+            <%= csrf_tag %>
+            <input type="submit" value="Connect" />
+
+            <div id="page-intro">
+                <p> Couldn't connect to the dispatcher, if you have indeed started one please enter its URL bellow in the form of <em>http://server:port</em>.</p>
+                <h2>URL: <input name="url"/></h2>
+            </div>
+
+        </form>
+
+        <%= erb :flash, {:layout => false} %>

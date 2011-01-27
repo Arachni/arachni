@@ -27,7 +27,7 @@
                     </legend>
                 </h3>
                 <h5>Description</h5>
-                <div class="notice"> <%=plugin['description']%></div>
+                <div class="notice"> <%=escape( plugin['description'] )%></div>
 
                 <%= erb :options, { :layout => false }, :component => plugin%>
 

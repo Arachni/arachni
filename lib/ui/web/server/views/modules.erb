@@ -56,7 +56,7 @@
                                 <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
                                 <%=mod['name']%>
                         </h4>
-                        <div class="notice"> <%=mod['description']%></div>
+                        <div class="notice"> <%=escape( mod['description'] )%></div>
                     </p>
                     <% end %>
                 </fieldset>
