@@ -191,6 +191,11 @@ class Dispatcher
         }
     end
 
+    def alive?
+        return true
+    end
+    alias :is_alive :alive?
+
     #
     # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
