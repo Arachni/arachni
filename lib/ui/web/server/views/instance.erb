@@ -13,7 +13,7 @@
             <input type="submit" value="Resume" />
         </form>
 
-        <form action="/instance/<%=params['port']%>/shutdown" method="post">
+        <form action="/instance/<%=params['port']%>/shutdown" method="post" target="_blank">
             <%= csrf_tag %>
             <input type="submit" value="Shutdown" />
         </form>

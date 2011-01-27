@@ -47,7 +47,7 @@
                         <input type="submit" value="Resume" />
                     </form>
 
-                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post">
+                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" target="_blank">
                         <%= csrf_tag %>
                         <input type="submit" value="Shutdown" />
                     </form>

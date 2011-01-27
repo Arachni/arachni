@@ -251,8 +251,9 @@ class Server < Sinatra::Base
             reports.run_one( ext, report )
 
             file = Dir.glob( ::Arachni::Options.instance.dir['root'] + "*.#{ext}" ).last
+            next if !file
+
             new_loc = settings.public + "/reports/#{ext}/" + File.basename( file )
-            next if !new_loc
             FileUtils.mv( file, new_loc )
         }
     end
@@ -400,9 +401,15 @@ class Server < Sinatra::Base
     end
 
     post "/*/:port/shutdown" do
-        connect_to_instance( params[:port] ).service.shutdown!
-        flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
-        show params[:splat][0].to_sym
+        arachni = connect_to_instance( params[:port] )
+
+        # flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+
+        handle_report( YAML::load( arachni.framework.auditstore ) )
+        arachni.service.shutdown!
+        File.read( get_reports( 'html' ).last )
+
+        # show params[:splat][0].to_sym
     end
 
     get "/stats" do
