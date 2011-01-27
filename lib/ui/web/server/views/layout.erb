@@ -1,76 +1,9 @@
 <html>
   <head>
     <title>Arachni - Web Application Security Scanner Framework</title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/style.css" type="text/css" />
     <style type="text/css" media="screen">
-      * {
-        margin: 0;
-        padding: 0;
-      }
-
-      body {
-        font-family: Helvetica;
-        font-size: 18px;
-      }
-
-      a {
-        color: #f09;
-        text-decoration: none;
-        padding: 0px 3px;
-      }
-
-      a:hover {
-        background: #f09;
-        color: #fff;
-      }
-
-      a:active {
-        text-decoration: underline;
-      }
-
-      h1 {
-        text-align: center;
-      }
-
-      code {
-        font-family: Bitstream Vera Sans Mono , monospace;
-        background: #D4EBF7;
-      }
-
-      form {
-        margin: 0.4em auto;
-        display: inline-block;
-      }
-
-      label {
-        line-height: 1em;
-        height: 1em;
-      }
-
-      label span {
-        display: block;
-        font-size: 12px;
-        margin-bottom: 1px;
-      }
-
-      label a {
-        font-weight: bold;
-        float: right;
-        margin-right: 79px;
-        line-height: 1.5em;
-      }
-
-      input[type="text"] {
-        padding: 2px;
-        font-size: 18px;
-        width: 610px;
-        margin-right: 10px;
-      }
-
-      input[type="submit"], input[type="button"] {
-        cursor: pointer;
-        vertical-align: 20%;
-      }
-
       .err, .ok {
         margin: 0.3em 0;
         padding: 5px 7px;
@@ -114,26 +47,6 @@
           overflow: scroll
       }
 
-      #content {
-        margin: 1em auto;
-      }
-
-      #result {
-        font-size: 48px;
-        margin: 10% auto 20%;
-        text-align: center;
-        display: block;
-      }
-
-      #result cite {
-        font-size: 14px;
-        display: block;
-        text-align: right;
-      }
-
-      #result cite code {
-        font-style: normal;
-      }
     </style>
 
     <script type="text/javascript">
@@ -178,12 +91,71 @@
 
     </script>
 
-  </head>
-  <body>
-    <div id="content">
-      <h1><code>Arachni - Web Application Security Scanner Framework</code></h1>
-      <%= yield %>
-    </div>
-  </body>
-</html>
+    </head>
+    <div class="wrapper">
+        <div id="container">
+            <div id="header">
+                <h1><a href="/">Arachni v<%=Arachni::VERSION%></a></h1>
+                <h2>Web Application Security Scanner Framework</h2>
+            </div>
+            <div id="nav">
+                <ul>
+                    <li <% if selected_tab?( '/' )%>class="selected" <%end%>> <a href="/">Home</a></li>
+                    <li <% if selected_tab?( 'modules' )%>class="selected" <%end%>><a href="/modules">Modules</a></li>
+                    <li <% if selected_tab?( 'plugins' )%>class="selected" <%end%>><a href="/plugins">Plugins</a></li>
+                    <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
+                    <li <% if selected_tab?( 'dispatcher' )%>class="selected" <%end%>><a href="/dispatcher">Dispatcher</a></li>
+                </ul>
+            </div>
+            <div id="body">
+                <div id="content">
+                <%= yield %>
+                </div>
+            </div>
 
+            <div class="clear"></div>
+        </div>
+    </div>
+    <div id="footer">
+        <div class="footer-content">
+
+            <div class="footer-box">
+                <h4><a href="https://github.com/Zapotek/arachni">About Arachni</a></h4>
+                <p>
+                    Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
+                    helping penetration testers and administrators evaluate the security of web applications.
+                </p>
+            </div>
+
+            <div class="footer-box">
+                <h4>Help</h4>
+                <ul>
+                  <li><a href="http://github.com/Zapotek/arachni/wiki">Wiki</a></li>
+                  <li><a href="http://groups.google.com/group/arachni">Google Group</a></li>
+                  <li><a href="https://github.com/Zapotek/arachni/issues">Found a bug?</a></li>
+                  <li><a href="http://zapotek.github.com/arachni/">API documentation</a></li>
+
+                </ul>
+            </div>
+
+            <div class="footer-box">
+
+                <h4>Interesting links</h4>
+                <ul>
+                    <li><a href="http://trainofthought.segfault.gr/category/projects/arachni/">News straight from the developer's blog</a></li>
+                    <li><a href="http://twitter.com/Zap0tek">Developer's Twitter feed</a></li>
+                    <li><a href="https://github.com/Zapotek/arachni/tree/experimental">The bleeding edge, Arachni's experimental branch</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-box end-footer-box">
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div id="footer-links">
+            <p>&copy; <a href="mailto:tasos.laskos@gmail.com">Tasos "Zapotek" Laskos</a> 2011 <a href="http://www.spyka.net"></a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

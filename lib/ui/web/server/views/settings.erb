@@ -1,0 +1,90 @@
+
+        <form action="/settings" method="post">
+
+            <%= erb :flash, {:layout => false} %>
+
+                <%= csrf_tag %>
+                <div id="page-intro">
+                    <h2>Settings</h2>
+                    <p>
+                        <input type="submit" value="Save" />
+                    </p>
+                </div>
+
+            <div class="left">
+                <fieldset>
+                    <legend><h3>Auditor</h3></legend>
+                    <p>
+                        Audit links: <input type="checkbox" name="audit_links" <% if session['opts']['audit_links'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Audit forms: <input type="checkbox" name="audit_forms" <% if session['opts']['audit_forms'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Audit cookies: <input type="checkbox" name="audit_cookies" <% if session['opts']['audit_cookies'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Audit headers: <input type="checkbox" name="audit_headers" <% if session['opts']['audit_headers'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Cookies to exclude: <textarea name="exclude_cookies"><%=session['opts']['exclude_cookies']%></textarea>(Newline separated)
+                    </p>
+                </fieldset>
+
+                <fieldset>
+                    <legend><h3>HTTP options</h3></legend>
+                    <p>
+                        Cocurrent HTTP request limit: <input name="http_req_limit" value="<%=session['opts']['http_req_limit']%>"/>
+                    </p>
+                    <p>
+                        HTTP harvest last: <input type="checkbox" name="http_harvest_last" <% if session['opts']['http_harvest_last'] == true %> checked="checked" <% end %> />
+                    <p>
+                    <p>
+                        Cookie jar: <input type="file" name="cookiejar" size="25" />
+                    </p>
+                    <p>
+                        User agent: <input name="user_agent" value="<%=session['opts']['user_agent']%>"/>
+                    </p>
+                    <p>
+                        Authorized by: <input name="authed_by" value="<%=session['opts']['authed_by']%>"/>
+                    </p>
+
+                </fieldset>
+            </div>
+
+            <div class="right">
+
+                <fieldset>
+                    <legend><h3>Crawler options</h3></legend>
+                    <p>
+                        Exclude rules: <textarea name="exclude"><%=session['opts']['exclude']%></textarea>(Newline separated)
+                    </p>
+                    <p>
+                    Include rules: <textarea name="include"><%=session['opts']['include']%></textarea>(Newline separated)
+                    </p>
+                    <p>
+                        Redundant rules: <textarea name="redundant"><%=session['opts']['redundant']%></textarea>(Newline separated)
+                    </p>
+                    <p>
+                        Depth: <input name="authed_by" value="<%=session['opts']['authed_by']%>"/>(Default: infinite)
+                    </p>
+                    <p>
+                        Link count limit: <input name="link_count_limit" value="<%=session['opts']['link_count_limit']%>"/>(Default: infinite)
+                    </p>
+                    <p>
+                        Redirect limit: <input name="redirect_limit" value="<%=session['opts']['redirect_limit']%>"/>(Default: infinite)
+                    </p>
+                    <p>
+                        Follow subdomain: <input type="checkbox" name="follow_subdomains" <% if session['opts']['follow_subdomains'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" <% if session['opts']['obey_robots_txt'] == true %> checked="checked" <% end %> />
+                    </p>
+                    <p>
+                        Spider first: <input type="checkbox" name="spider_first" <% if session['opts']['spider_first'] == true %> checked="checked" <% end %> />
+                    </p>
+                </fieldset>
+
+            </div>
+
+        </form>

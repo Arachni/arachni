@@ -1,0 +1,24 @@
+
+        <form action="/plugins" method="post">
+
+            <%= erb :flash, {:layout => false} %>
+
+            <%= csrf_tag %>
+            <div id="page-intro">
+                <h2>Plugins</h2>
+                <p>
+                    <input type="button" onclick="javascript:checkAll( 'plugin' );" value="Check all"/>
+                    <input type="button" onclick="javascript:uncheckAll( 'plugin' );" value="Uncheck all"/>
+                    <input type="submit" value="Save" />
+                </p>
+            </div>
+
+            <% plugins.each do |plugin|%>
+            <p>
+                <h3><input type="checkbox" class="plugin" name="plugins[<%=plugin['plug_name']%>]"
+                        <% if session['opts']['plugins'] && session['opts']['plugins'].include?( plugin['plug_name'] ) %> checked="checked" <% end %> /> <%=plugin['name']%></h3>
+                <div class="notice"> <%=plugin['description']%></div>
+            </p>
+            <% end %>
+
+        </form>

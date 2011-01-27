@@ -9,6 +9,8 @@ require 'ap'
 module Arachni
 module UI
 
+require Arachni::Options.instance.dir['lib'] + 'ui/cli/output'
+require Arachni::Options.instance.dir['lib'] + 'framework'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
 
@@ -42,6 +44,12 @@ class Server < Sinatra::Base
     end
 
     helpers do
+
+        def selected_tab?( tab )
+            splits = env['PATH_INFO'].split( '/' )
+            ( splits.empty? && tab == '/' ) || splits[1] == tab
+        end
+
         def csrf_token
             Rack::Csrf.csrf_token( env )
         end
@@ -50,36 +58,26 @@ class Server < Sinatra::Base
             Rack::Csrf.csrf_tag( env )
         end
 
+        def helper_instance
+            @@arachni ||= nil
+            if !@@arachni
+                instance = dispatcher.dispatch( 'Web Interface [Do *not* kill]' )
+                @@arachni = connect_to_instance( instance['port'] )
+            end
+            return @@arachni
+        end
+
         def modules
-            @@modules
+            @@modules ||= helper_instance.framework.lsmod.dup
         end
 
         def plugins
-            @@plugins
+            @@plugins ||= helper_instance.framework.lsplug.dup
         end
 
         def proc_mem( rss )
             # we assume a page size of 4096
             (rss.to_i * 4096 / 1024 / 1024).to_s + 'MB'
-        end
-
-        def proc_state( state )
-            case state
-                when 'S'
-                return 'Sleeping'
-
-                when 'D'
-                return 'Disk Sleep'
-
-                when 'Z'
-                return 'Zombie'
-
-                when 'T'
-                return 'Traced/Stoped'
-
-                when 'W'
-                return 'Paging'
-            end
         end
 
         def secs_to_hms( secs )
@@ -124,16 +122,15 @@ class Server < Sinatra::Base
     def connect_to_instance( port )
         uri = URI( settings.dispatcher_url )
         uri.port = port.to_i
-        @instance ||= {}
         begin
-            @instance[port] ||= Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
+            return Arachni::RPC::XML::Client::Instance.new( options, uri.to_s )
         rescue Exception
             raise "Instance on port #{port} has shutdown."
         end
     end
 
     def dispatcher
-        Arachni::RPC::XML::Client::Dispatcher.new( options, settings.dispatcher_url )
+        @dispatcher ||= Arachni::RPC::XML::Client::Dispatcher.new( options, settings.dispatcher_url )
     end
 
     def options
@@ -144,40 +141,58 @@ class Server < Sinatra::Base
         cparams = {}
         params.each_pair {
             |name, value|
-            next if value.empty? || [ 'plugins', 'modules', '_csrf' ].include?( name )
+
+            next if name == '_csrf' || ( value.is_a?( String ) && value.empty?)
+
             value = true if value == 'on'
             cparams[name] = value
         }
+
+        if !cparams['audit_links'] && !cparams['audit_forms'] &&
+              !cparams['audit_cookies'] && !cparams['audit_headers']
+
+            cparams['audit_links']   = true
+            cparams['audit_forms']   = true
+            cparams['audit_cookies'] = true
+        end
+
         return cparams
     end
 
     def prep_modules( params )
-        [] if !params['modules']
-        return params['modules'].keys
+        mods = params['modules'].keys
+        return ['*'] if mods.empty?
+        return mods
     end
 
     def prep_plugins( params )
         plugins  = {}
 
         return plugins if !params['plugins']
-        params['plugins'].values.each {
+        params['plugins'].keys.each {
             |name|
             plugins[name] = {}
         }
         return plugins
     end
 
+    def prep_session
+        session['opts'] ||= {
+            'audit_links'    => true,
+            'audit_forms'    => true,
+            'audit_cookies'  => true,
+            'http_req_limit' => 20,
+            'user_agent'     => 'Arachni/' + Arachni::VERSION
+        }
+        session['opts']['modules'] ||= [ '*' ]
+        session['opts']['plugins'] ||= {
+            'content_types' => {},
+            'healthmap'     => {}
+        }
+    end
+
     get "/" do
-
-        @@modules ||= []
-        if @@modules.empty?
-            instance = dispatcher.dispatch
-            arachni = connect_to_instance( instance['port'] )
-            @@modules = arachni.framework.lsmod.dup
-            @@plugins = arachni.framework.lsplug.dup
-            arachni.service.shutdown!
-        end
-
+        prep_session
         show :home
     end
 
@@ -190,21 +205,22 @@ class Server < Sinatra::Base
         if !params['url'] || params['url'].empty?
             flash[:err] = "URL cannot be empty."
             show :home
-        elsif !params['modules']
-            flash[:err] = "No modules have been selected."
-            show :home
-        elsif !params['audit_links'] && !params['audit_forms'] &&
-              !params['audit_cookies'] && !params['audit_headers']
-            flash[:err] = "No elements have been selected for audit."
-            show :home
+
         else
 
             instance = dispatcher.dispatch( params['url'] )
             arachni  = connect_to_instance( instance['port'] )
 
-            arachni.opts.set( prep_opts( params ) )
-            arachni.modules.load( prep_modules( params ) )
-            arachni.plugins.load( prep_plugins( params ) )
+            session['opts']['url'] = params['url']
+
+            session['opts']['audit_links']   = true if session['opts']['audit_links']
+            session['opts']['audit_forms']   = true if session['opts']['audit_forms']
+            session['opts']['audit_cookies'] = true if session['opts']['audit_cookies']
+            session['opts']['audit_headers'] = true if session['opts']['audit_headers']
+
+            arachni.opts.set( session['opts'] )
+            arachni.modules.load( session['opts']['modules'] )
+            arachni.plugins.load( session['opts']['plugins'] )
             arachni.framework.run
 
             redirect '/instance/' + instance['port'].to_s
@@ -212,9 +228,41 @@ class Server < Sinatra::Base
 
     end
 
+    get "/modules" do
+        prep_session
+        show :modules, true
+    end
+
+    post "/modules" do
+        session['opts']['modules'] = prep_modules( params )
+        flash.now[:notice] = "Modules updated."
+        show :modules, true
+    end
+
+    get "/plugins" do
+        prep_session
+        erb :plugins, { :layout => true }
+    end
+
+    post "/plugins" do
+        session['opts']['plugins'] = prep_plugins( params )
+        flash.now[:notice] = "Plugins updated."
+        show :plugins, true
+    end
+
+    get "/settings" do
+        prep_session
+        erb :settings, { :layout => true }
+    end
+
+    post "/settings" do
+        session['opts'].merge!( prep_opts( params ) )
+        flash.now[:notice] = "Settings updated."
+        show :settings, true
+    end
 
     get "/instance/:port" do
-        show :instance
+        show :instance, true
     end
 
     get "/instance/:port/output" do
@@ -225,13 +273,14 @@ class Server < Sinatra::Base
                 OutputStream.new( arachni.service.output )
             else
                 report = YAML::load( arachni.framework.report )
-                arachni.service.shutdown
+                arachni.service.shutdown!
                 "<pre>" + report.to_s + "</pre>"
             end
         }
     end
 
     post "/*/:port/pause" do
+        ap env
         exception_jail {
             connect_to_instance( params[:port] ).framework.pause!
             flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
@@ -249,7 +298,6 @@ class Server < Sinatra::Base
 
     post "/*/:port/shutdown" do
         exception_jail {
-            connect_to_instance( params[:port] ).framework.abort!
             connect_to_instance( params[:port] ).service.shutdown!
             flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
             show params[:splat][0].to_sym

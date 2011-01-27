@@ -1,0 +1,24 @@
+
+        <form action="/modules" method="post">
+
+            <%= erb :flash, {:layout => false} %>
+
+            <%= csrf_tag %>
+            <div id="page-intro">
+                <h2>Modules</h2>
+                <p>
+                    <input type="button" onclick="javascript:checkAll( 'module' );" value="Check all"/>
+                    <input type="button" onclick="javascript:uncheckAll( 'module' );" value="Uncheck all"/>
+                    <input type="submit" value="Save" />
+                </p>
+            </div>
+
+            <% modules.each do |mod|%>
+            <p>
+                <h3><input type="checkbox" class="module" name="modules[<%=mod['mod_name']%>]"
+                        <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> /> <%=mod['name']%></h3>
+                <div class="notice"> <%=mod['description']%></div>
+            </p>
+            <% end %>
+
+        </form>
