@@ -8,10 +8,11 @@
         </div>
         <%= erb :flash, {:layout => false} %>
 
+        <% if !stats['running_jobs'].empty? %>
         <p>
             <em>If sou see a lot of WebUI helpers pilling up feel free to shut them down and save yourself some memory.</em>
         </p>
-        <% if !stats['running_jobs'].empty? %>
+
         <table>
             <tr>
                 <th>PID</th>
