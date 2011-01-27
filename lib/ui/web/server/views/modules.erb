@@ -7,18 +7,60 @@
             <div id="page-intro">
                 <h2>Modules</h2>
                 <p>
-                    <input type="button" onclick="javascript:checkAll( 'module' );" value="Check all"/>
-                    <input type="button" onclick="javascript:uncheckAll( 'module' );" value="Uncheck all"/>
+                    Module components assert and log entities of security interest about a web application.
+                </p>
+                <p>
+                    <input type="button" onclick="javascript:checkAll( 'audit' );checkAll( 'recon' );" value="Check all"/>
+                    <input type="button" onclick="javascript:uncheckAll( 'audit' );uncheckAll( 'recon' );" value="Uncheck all"/>
                     <input type="submit" value="Save" />
                 </p>
             </div>
 
-            <% modules.each do |mod|%>
-            <p>
-                <h3><input type="checkbox" class="module" name="modules[<%=mod['mod_name']%>]"
-                        <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> /> <%=mod['name']%></h3>
-                <div class="notice"> <%=mod['description']%></div>
-            </p>
-            <% end %>
+            <div class="left">
+                <fieldset>
+                    <legend><h3>Audit</h3></legend>
+                    <p>Audit modules actively test the web application via inputs like link parameters, forms, cookies and headers in order to assert the existence of security Issues.</p>
+                    <p>
+                        <input type="button" onclick="javascript:checkAll( 'audit' );" value="Check all"/>
+                        <input type="button" onclick="javascript:uncheckAll( 'audit' );" value="Uncheck all"/>
+                    </p>
+
+                    <% modules.each do |mod|%>
+                    <% next if mod['path'] =~ /recon/ %>
+                    <p>
+                        <h4>
+                            <input type="checkbox" class="audit" name="modules[<%=mod['mod_name']%>]"
+                                <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
+                                <%=mod['name']%>
+                        </h4>
+                        <div class="notice"> <%=mod['description']%></div>
+                    </p>
+                    <% end %>
+                </fieldset>
+            </div>
+
+            <div class="right">
+                <fieldset>
+                    <legend><h3>Recon</h3></legend>
+                    <p>Recon modules passively test the web application, mainly analyzing server configuration, responses and looking for directories and files.</br></br></p>
+                    <p>
+                        <input type="button" onclick="javascript:checkAll( 'recon' );" value="Check all"/>
+                        <input type="button" onclick="javascript:uncheckAll( 'recon' );" value="Uncheck all"/>
+                    </p>
+
+                    <% modules.each do |mod|%>
+                    <% next if mod['path'] =~ /audit/ %>
+                    <p>
+                        <h4>
+                            <input type="checkbox" class="recon" name="modules[<%=mod['mod_name']%>]"
+                                <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
+                                <%=mod['name']%>
+                        </h4>
+                        <div class="notice"> <%=mod['description']%></div>
+                    </p>
+                    <% end %>
+                </fieldset>
+            </div>
+
 
         </form>

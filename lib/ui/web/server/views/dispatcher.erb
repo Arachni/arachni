@@ -1,7 +1,10 @@
 
         <div id="page-intro">
             <h2>Dispatcher</h2>
-            <p></p>
+            <p>The dispatcher is the central magement system.
+                It spawns an XMLRPC server per scan and provides statistics for all running server instances.</br>
+                This interface allows you to "Attach" to (see the output of), pause, resume and shutdown instances.
+            </p>
         </div>
         <%= erb :flash, {:layout => false} %>
 
@@ -30,6 +33,10 @@
                 <td><%=proc_mem( job['proc']['rss'] )%></td>
 
                 <td>
+                    <form action="/instance/<%=job['port']%>" method="get" target="_blank">
+                        <input type="submit" value="Attach" />
+                    </form>
+
                     <form action="/dispatcher/<%=job['port']%>/pause" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Pause" />
@@ -43,9 +50,6 @@
                     <form action="/dispatcher/<%=job['port']%>/shutdown" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Shutdown" />
-                    </form>
-
-                    <a href="/instance/<%=job['port']%>">Attach</a>
                     </form>
                 </td>
             </tr>

@@ -1,13 +1,14 @@
 
-        <form action="/settings" method="post">
+        <form action="/settings" class="settings" method="post">
 
             <%= erb :flash, {:layout => false} %>
 
                 <%= csrf_tag %>
                 <div id="page-intro">
                     <h2>Settings</h2>
+                    <p>General settings regarding the internals of the Arachni Framework.</p>
                     <p>
-                        <input type="submit" value="Save" />
+                        <input type="submit" class="reset" value="Save" />
                     </p>
                 </div>
 
@@ -27,7 +28,8 @@
                         Audit headers: <input type="checkbox" name="audit_headers" <% if session['opts']['audit_headers'] == true %> checked="checked" <% end %> />
                     </p>
                     <p>
-                        Cookies to exclude: <textarea name="exclude_cookies"><%=session['opts']['exclude_cookies']%></textarea>(Newline separated)
+                        Cookies to exclude: <textarea name="exclude_cookies"><%=session['opts']['exclude_cookies']%></textarea>
+                        </br>(Newline separated)
                     </p>
                 </fieldset>
 
@@ -57,22 +59,28 @@
                 <fieldset>
                     <legend><h3>Crawler options</h3></legend>
                     <p>
-                        Exclude rules: <textarea name="exclude"><%=session['opts']['exclude']%></textarea>(Newline separated)
+                        Exclude rules: <textarea name="exclude"><%=session['opts']['exclude']%></textarea>
+                        </br>(Newline separated)
                     </p>
                     <p>
-                    Include rules: <textarea name="include"><%=session['opts']['include']%></textarea>(Newline separated)
+                    Include rules: <textarea name="include"><%=session['opts']['include']%></textarea>
+                        </br>(Newline separated)
                     </p>
                     <p>
-                        Redundant rules: <textarea name="redundant"><%=session['opts']['redundant']%></textarea>(Newline separated)
+                        Redundant rules: <textarea name="redundant"><%=session['opts']['redundant']%></textarea>
+                        </br>(Newline separated)
                     </p>
                     <p>
-                        Depth: <input name="authed_by" value="<%=session['opts']['authed_by']%>"/>(Default: infinite)
+                        Depth: <input name="authed_by" value="<%=session['opts']['authed_by']%>"/>
+                        </br>(Default: infinite)
                     </p>
                     <p>
-                        Link count limit: <input name="link_count_limit" value="<%=session['opts']['link_count_limit']%>"/>(Default: infinite)
+                        Link count limit: <input name="link_count_limit" value="<%=session['opts']['link_count_limit']%>"/>
+                        </br>(Default: infinite)
                     </p>
                     <p>
-                        Redirect limit: <input name="redirect_limit" value="<%=session['opts']['redirect_limit']%>"/>(Default: infinite)
+                        Redirect limit: <input name="redirect_limit" value="<%=session['opts']['redirect_limit']%>"/>
+                        </br>(Default: infinite)
                     </p>
                     <p>
                         Follow subdomain: <input type="checkbox" name="follow_subdomains" <% if session['opts']['follow_subdomains'] == true %> checked="checked" <% end %> />

@@ -130,6 +130,16 @@ form.searchform input.s {
     border: 1px solid #000;
 }
 
+form.settings input, textarea {
+    float: right;
+    margin-right: 10px
+}
+
+form.reset input {
+    float: left;
+}
+
+
 span.required {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     color: #ff0000;
