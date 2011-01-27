@@ -29,13 +29,29 @@ class Server < Sinatra::Base
         end
 
         def each
+
+            icon_whitelist = {}
+
+            [ 'status', 'ok', 'error', 'info' ].each {
+                |icon|
+                icon_whitelist[icon] = "<img src='/icons/#{icon}.png' />"
+            }
+
+            yield '<link rel="stylesheet" href="/style.css" type="text/css" />'
             yield "<pre>"
             @output << { 'refresh' => '<meta http-equiv="refresh" content="1">' }
             @output.each {
                 |out|
+
+                type = out.keys[0]
+                msg  = out.values[0]
+
                 next if out.values[0].empty?
+
+                icon = icon_whitelist[type] || ''
+
                 if out.keys[0] != 'refresh'
-                    yield CGI.escapeHTML( "#{out.keys[0]}: #{out.values[0]}" ) + "</br>"
+                    yield icon + CGI.escapeHTML( " #{out.values[0]}" ) + "</br>"
                 else
                     yield out.values[0]
                 end
