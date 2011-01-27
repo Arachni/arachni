@@ -1,0 +1,702 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
+<!--
+        HTML Report template for Arachni - Web Application Vulnerability Scanning Framework
+     -->
+
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 11 February 2007), see www.w3.org" />
+
+  <title>Web Application Security Report - Arachni Framework</title>
+  <style type="text/css">
+/*<![CDATA[*/
+      body {
+        padding: 0 20px;
+        font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif;
+        font-size: 13px;
+      }
+      body.frames { padding: 10px; }
+      h1 { font-size: 25px; margin: 1em 0 0.5em; padding-top: 4px; border-top: 1px dotted #d5d5d5; }
+      h2 {
+        padding: 0;
+        padding-bottom: 3px;
+        border-bottom: 1px #aaa solid;
+        font-size: 1.4em;
+        margin: 1.8em 0 0.5em;
+      }
+      .note {
+        color: #222;
+        -moz-border-radius: 3px; -webkit-border-radius: 3px;
+        background: #e3e4e3; border: 1px solid #d5d5d5; padding: 7px 10px;
+      }
+
+      p {
+        padding: 0;
+        margin: 0;
+      }
+      a:link, a:visited { text-decoration: none; color: #05a; }
+      a:hover { background: #ffffa5; }
+
+      #search { position: absolute; right: 14px; top: 0px; }
+      #search a:link, #search a:visited {
+        display: block; float: left; margin-right: 4px;
+        padding: 8px 10px; text-decoration: none; color: #05a; background: #eaeaff;
+        border: 1px solid #d8d8e5;
+        -moz-border-radius-bottomleft: 3px; -moz-border-radius-bottomright: 3px;
+        -webkit-border-bottom-left-radius: 3px; -webkit-border-bottom-right-radius: 3px;
+      }
+      #search a:hover { background: #eef; color: #06b; }
+      #search a.active {
+        background: #568; padding-bottom: 20px; color: #fff; border: 1px solid #457;
+        -moz-border-radius-topleft: 5px; -moz-border-radius-topright: 5px;
+        -webkit-border-top-left-radius: 5px; -webkit-border-top-right-radius: 5px;
+      }
+      #search a.inactive { color: #999; }
+
+      #menu { font-size: 1.3em; color: #bbb; top: -5px; position: relative; }
+      #menu .title, #menu a { font-size: 0.7em; }
+      #menu .title a { font-size: 1em; }
+      #menu .title { color: #555; }
+      #menu a:link, #menu a:visited { color: #333; text-decoration: none; border-bottom: 1px dotted #bbd; }
+      #menu a:hover { color: #05a; }
+      #menu .noframes { display: none; }
+
+      #footer { margin-top: 15px; border-top: 1px solid #ccc; text-align: center; padding: 7px 0; color: #999; }
+      #footer a:link, #footer a:visited { color: #444; text-decoration: none; border-bottom: 1px dotted #bbd; }
+      #footer a:hover { color: #05a; }
+
+      #search_frame {
+        background: #fff;
+        display: none;
+        position: absolute;
+        top: 36px;
+        right: 18px;
+        width: 500px;
+        height: 80%;
+        overflow-y: scroll;
+        border: 1px solid #999;
+        border-collapse: collapse;
+        -webkit-box-shadow: -7px 5px 25px #aaa;
+        -moz-box-shadow: -7px 5px 25px #aaa;
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+      }
+
+     pre.code { color: #000; }
+
+    .left {
+        float:left;
+        padding-right: 100px;
+    }
+
+    .issues {
+        width: 100%;
+        display: block;
+    }
+
+    .page_break {
+        padding: 35px;
+        border-bottom: 2px solid grey;
+    }
+
+    .variation {
+        display: none;
+    }
+
+    .variation_header {
+        padding-bottom: 3px;
+        border-bottom: 1px #aaa solid;
+    }
+
+  /*]]>*/
+  </style>
+  <style type="text/css">
+/*<![CDATA[*/
+  iframe.c4 {width: 100%; height: 300px}
+  tr.c3, td.c3 {vertical-align: top}
+  td.c3 {vertical-align: top}
+  h3.c2 {padding-left: 400px}
+  li.c1 {list-style: none}
+  /*]]>*/
+  </style>
+
+  <script type="text/javascript">
+
+  function $() {
+      var elements = new Array();
+      for (var i = 0; i < arguments.length; i++) {
+              var element = arguments[i];
+              if (typeof element == 'string')
+                  element = document.getElementById(element);
+              if (arguments.length == 1)
+                  return element;
+              elements.push(element);
+      }
+      return elements;
+  }
+
+  function toggleElem( id ){
+
+    if( $(id).style.display == 'none' ||
+        $(id).style.display == '' )
+    {
+        $(id).style.display    = 'block';
+        sign = '[-]';
+    } else {
+        $(id).style.display    = 'none';
+        sign = '[+]';
+    }
+
+    if( $(id + '_sign') ){
+            $(id + '_sign').innerHTML = sign;
+    }
+
+  }
+  </script>
+
+</head>
+
+<body>
+  <div id="main">
+    <h1>Web Application Security Report -
+        <a target="_blank" href="http://github.com/Zapotek/arachni">Arachni Framework</a>
+    </h1>
+    <strong>Report generated on</strong>:
+    <p class="note">2011-01-27 21:00:36 +0000</p>
+
+
+    <h2>Configuration</h2>
+    <strong>Version</strong>: 0.2.2<br />
+    <strong>Revision</strong>: 0.2<br />
+    <strong>Audit started on</strong>: Thu Jan 27 21:00:30 2011<br />
+    <strong>Audit finished on</strong>: Thu Jan 27 21:00:36 2011<br />
+    <strong>Runtime</strong>: 00:00:00<br />
+
+    <h3>Runtime options</h3>
+
+      <strong>URL:</strong> http://demo.testfire.net/<br />
+      <strong>User agent:</strong> Arachni/0.2.2<br />
+
+      <table>
+        <tr>
+
+        <th>
+            <h4>Audited elements</h4>
+        </th>
+
+        <th>
+            <h4>Modules</h4>
+        </th>
+
+        <th>
+            <h4>Filters</h4>
+        </th>
+
+        <th>
+            <h4>Cookies</h4>
+        </th>
+
+        </tr>
+      <tr  class="c3">
+      <td>
+      <ul>
+        
+        <li>Links</li>
+        
+
+        
+        <li>Forms</li>
+        
+
+        </li>
+        <li>Cookies</li>
+        
+
+        
+      </ul>
+    </td>
+
+      <td>
+        <ul>
+          
+          <li>interesting_responses</li>
+          
+          <li>common_files</li>
+          
+          <li>xst</li>
+          
+          <li>http_put</li>
+          
+          <li>webdav</li>
+          
+          <li>directory_listing</li>
+          
+          <li>allowed_methods</li>
+          
+          <li>htaccess_limit</li>
+          
+          <li>ssn</li>
+          
+          <li>private_ip</li>
+          
+          <li>emails</li>
+          
+          <li>credit_card</li>
+          
+          <li>cvs_svn_users</li>
+          
+          <li>captcha</li>
+          
+          <li>html_objects</li>
+          
+          <li>unencrypted_password_forms</li>
+          
+          <li>backdoors</li>
+          
+          <li>backup_files</li>
+          
+          <li>common_directories</li>
+          
+          <li>trainer</li>
+          
+          <li>os_cmd_injection</li>
+          
+          <li>sqli</li>
+          
+          <li>xss_script_tag</li>
+          
+          <li>sqli_blind_rdiff</li>
+          
+          <li>path_traversal</li>
+          
+          <li>xss_event</li>
+          
+          <li>xss_uri</li>
+          
+          <li>sqli_blind_timing</li>
+          
+          <li>code_injection</li>
+          
+          <li>rfi</li>
+          
+          <li>xss_tag</li>
+          
+          <li>response_splitting</li>
+          
+          <li>csrf</li>
+          
+          <li>os_cmd_injection_timing</li>
+          
+          <li>ldapi</li>
+          
+          <li>code_injection_timing</li>
+          
+          <li>xss_path</li>
+          
+          <li>xpath</li>
+          
+          <li>unvalidated_redirect</li>
+          
+          <li>xss</li>
+          
+        </ul>
+      </td>
+      <td>
+      <ul>
+        <li>Exclude:
+
+          <ul>
+            
+            <li>N/A</li>
+            
+          </ul>
+        </li>
+        <li>Include:
+
+          <ul>
+            
+              </li>
+
+            <li>(?-mix:.*)</li>
+
+              
+            
+          </ul>
+        </li>
+        <li>Redundant:
+
+          <ul>
+            
+            <li>N/A</li>
+            
+          </ul>
+        </li>
+      </ul>
+
+      </td>
+      <td>
+        <ul>
+          
+            
+          <li>ASP.NET_SessionId: 53xrmfzxabhpzb45jeu3yf55</li>
+            
+          
+        </ul>
+        </td>
+        </tr>
+      </table>
+
+      <p class="note"><a target="_blank" href="http://github.com/Zapotek/arachni/issues">Report false positives</a></p>
+      <p class="note"><a href="#sitemap">Sitemap</a></p>
+
+      <p>
+      <h2 id="top">2 issues discovered</h2>
+      
+      <h3><a href="#issue_1">[1] Cross-Site Scripting (XSS)</a>:</h3>
+      In <span class="note">form</span> variable
+      <span class="note">txtSearch</span>
+      at <span class="note">http://demo.testfire.net/search.aspx</span>.
+      
+      <h3><a href="#issue_2">[2] Allowed HTTP methods</a>:</h3>
+      In <span class="note">server</span> variable
+      <span class="note">n/a</span>
+      at <span class="note">HTTP://demo.testfire.net</span>.
+      
+      </p>
+
+      <div class="issues">
+        <h2>Issues</h2>
+
+        
+
+        <h3 id="issue_1">
+          <a href="#issue_1">[1] Cross-Site Scripting (XSS)
+          </a>
+        </h3>
+        <a href="#top">[Go to top]</a>
+        <br/>
+        <div class="left">
+          <strong>Module name</strong>:
+            XSS
+          <br />
+          <strong>Affected variable</strong>: txtSearch<br />
+          <strong>Affected URL</strong>: http://demo.testfire.net/search.aspx<br />
+          <strong>HTML Element</strong>
+
+          <p class="note">form</p>
+
+          <h3>Description</h3>
+          <p class="note">Client-side code, like JavaScript, can
+                    be injected into the web application.</p>
+
+          <h3>Requires manual verification?</h3>
+          <p class="note">false</p>
+
+        </div>
+
+        <strong>CWE</strong>: 79
+        (<a target="_blank" href="http://cwe.mitre.org/data/definitions/79.html">http://cwe.mitre.org/data/definitions/79.html</a>)<br />
+        <strong>Severity</strong>: High<br />
+        <strong>CVSSV2</strong>: 9.0
+
+        <h3>References</h3>
+
+        <ul>
+          
+            
+
+          <li>ha.ckers - <a target="_blank" href="http://ha.ckers.org/xss.html">http://ha.ckers.org/xss.html</a></li>
+
+            
+
+          <li>Secunia - <a target="_blank" href="http://secunia.com/advisories/9716/">http://secunia.com/advisories/9716/</a></li>
+
+            
+          
+        </ul>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+          
+
+          
+
+        
+        
+        <h3 class="variation_header">
+          <a href='javascript:toggleElem( "var_1_1" )'>
+            <span id="var_1_1_sign">[+]</span>
+            Variation 1
+          </a>
+        </h3>
+
+        <strong>Affected URL</strong>:
+        <p class="note"><a href="http://demo.testfire.net/search.aspx?5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9=&txtSearch=arachni_text%3Carachni_xss_%27%22%3B_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9%00">http://demo.testfire.net/search.aspx?5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9=&txtSearch=arachni_text%3Carachni_xss_%27%22%3B_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9%00</a></p>
+
+        <div class="variation" id="var_1_1">
+        <strong>Injected value</strong>:
+        <pre class="note">arachni_text&lt;arachni_xss_'&quot;;_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9 </pre>
+
+        <strong>ID</strong>:<br />
+        <pre class="note">&lt;arachni_xss_'&quot;;_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+        <strong>Regular expression</strong>:<br />
+        <pre class="note">&lt;arachni_xss_'&quot;;_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+        <strong>Matched by the regular expression</strong>:<br />
+        <pre class="note"><arachni_xss_'";_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+
+        <table>
+          <tr>
+            <th>
+              <h3 class="c2">Headers</h3>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="c3">
+              <h4>Request</h4>
+              <pre class="note">cookie:	ASP.NET_SessionId=xlfldruj3jznqzmxca0lpn2r;amSessionId=162131224500;
+From:	
+Accept:	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent:	Arachni/0.2.2
+</pre>
+            </td>
+
+            <td>
+              <h4>Response</h4>
+              <pre class="note">HTTP/1.1 200 OK
+Date: Thu, 27 Jan 2011 22:21:32 GMT
+Server: Microsoft-IIS/6.0
+X-Powered-By: ASP.NET
+X-AspNet-Version: 2.0.50727
+Cache-Control: private
+Content-Type: text/html; charset=utf-8
+Content-Length: 7309
+</pre>
+            </td>
+          </tr>
+
+        </table>
+
+        <br/>
+
+
+        <h3>HTML Response</h3><iframe class="c4" src=
+        "data:text/html;base64, DQoNCjwhRE9DVFlQRSBodG1sIFBVQkxJQyAiLS8vVzNDLy9EVEQgWEhUTUwgMS4wIFRyYW5zaXRpb25hbC8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9UUi94aHRtbDEvRFREL3hodG1sMS10cmFuc2l0aW9uYWwuZHRkIj4NCg0KPGh0bWwgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGh0bWwiIHhtbDpsYW5nPSJlbiIgPg0KPGhlYWQgaWQ9Il9jdGwwX19jdGwwX2hlYWQiPjx0aXRsZT4NCglBbHRvcm8gTXV0dWFsOiBTZWFyY2ggUmVzdWx0cw0KPC90aXRsZT48bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVR5cGUiIGNvbnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD1pc28tODg1OS0xIj48bGluayBocmVmPSJzdHlsZS5jc3MiIHJlbD0ic3R5bGVzaGVldCIgdHlwZT0idGV4dC9jc3MiIC8+PG1ldGEgbmFtZT0ia2V5d29yZHMiIGNvbnRlbnQ9IkFsdG9ybyBNdXR1YWwsIHNlYXJjaCwgcXVlcnksIGZpbmQiPjwvaGVhZD4NCjxib2R5IHN0eWxlPSJtYXJnaW4tdG9wOjVweDsiPg0KDQo8ZGl2IGlkPSJoZWFkZXIiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjVweDsgd2lkdGg6IDk5JTsiPg0KICA8Zm9ybSBpZD0iZnJtU2VhcmNoIiBtZXRob2Q9ImdldCIgYWN0aW9uPSIvc2VhcmNoLmFzcHgiPg0KCSAgPHRhYmxlIHdpZHRoPSIxMDAlIiBib3JkZXI9IjAiIGNlbGxwYWRkaW5nPSIwIiBjZWxsc3BhY2luZz0iMCI+DQoJCSAgPHRyPg0KCQkgICAgICA8dGQgcm93c3Bhbj0iMiI+PGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazEiIGhyZWY9ImRlZmF1bHQuYXNweCI+PGltZyBzcmM9ImltYWdlcy9sb2dvLmdpZiIgYm9yZGVyPSIwIiAvPjwvYT48L3RkPg0KCQkJICA8dGQgYWxpZ249InJpZ2h0IiB2YWxpZ249InRvcCI+DQogIAkJCSAgPGEgaWQ9Il9jdGwwX19jdGwwX0xvZ2luTGluayIgdGl0bGU9Ikl0IGRvZXMgbm90IGFwcGVhciB0aGF0IHlvdSBoYXZlIHByb3Blcmx5IGF1dGhlbnRpY2F0ZWQgeW91cnNlbGYuICBQbGVhc2UgY2xpY2sgaGVyZSB0byBzaWduIGluLiIgaHJlZj0iYmFuay9sb2dpbi5hc3B4Ij48Yj48Zm9udCBjb2xvcj0iUmVkIj5TaWduIEluPC9mb250PjwvYj48L2E+IHwgPGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWluc2lkZV9jb250YWN0Lmh0bSI+Q29udGFjdCBVczwvYT4gfCA8YSBpZD0iX2N0bDBfX2N0bDBfSHlwZXJMaW5rNCIgaHJlZj0iZmVlZGJhY2suYXNweCI+RmVlZGJhY2s8L2E+IHwgPGxhYmVsIGZvcj0idHh0U2VhcmNoIj5TZWFyY2g8L2xhYmVsPg0KICAgICAgICAgIDxpbnB1dCB0eXBlPSJ0ZXh0IiBuYW1lPSJ0eHRTZWFyY2giIGlkPSJ0eHRTZWFyY2giIGFjY2Vzc2tleT0iUyIgLz4NCiAgICAgICAgICA8aW5wdXQgdHlwZT0ic3VibWl0IiB2YWx1ZT0iR28iIC8+DQoJCQkgIDwvdGQ+DQoJCSAgPC90cj4NCgkJICA8dHI+DQoJCQkgIDx0ZCBhbGlnbj0icmlnaHQiIHN0eWxlPSJiYWNrZ3JvdW5kLWltYWdlOnVybCgvaW1hZ2VzL2dyYWRpZW50LmpwZyk7cGFkZGluZzowcHg7bWFyZ2luOjBweDsiPjxpbWcgaWQ9Il9jdGwwX19jdGwwX0ltYWdlMSIgc3JjPSJpbWFnZXMvaGVhZGVyX3BpYy5qcGciIGJvcmRlcj0iMCIgaGVpZ2h0PSI2MCIgd2lkdGg9IjM1NCIgLz48L3RkPg0KCQkgIDwvdHI+DQoJICA8L3RhYmxlPg0KCTwvZm9ybT4NCjwvZGl2Pg0KDQo8ZGl2IGlkPSJ3cmFwcGVyIiBzdHlsZT0id2lkdGg6IDk5JTsiPg0KICAgIA0KDQo8dGFibGUgY2VsbHNwYWNpbmc9IjAiIHdpZHRoPSIxMDAlIj4NCiAgPHRyPg0KICAgIDx0ZCB3aWR0aD0iMjUlIiBjbGFzcz0iYnQgYnIgYmIiPjxkaXYgaWQ9IkhlYWRlcjEiPjxpbWcgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfSW1hZ2UxIiBzcmM9ImltYWdlcy9wZl9sb2NrLmdpZiIgYWx0PSJTZWN1cmUgTG9naW4iIGFsaWduPSJhYnNib3R0b20iIGJvcmRlcj0iMCIgaGVpZ2h0PSIxNCIgd2lkdGg9IjEyIiAvPiAmbmJzcDsgPGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfQWNjb3VudExpbmsiIHRpdGxlPSJZb3UgZG8gbm90IGFwcGVhciB0byBoYXZlIGF1dGhlbnRpY2F0ZWQgeW91cnNlbGYgd2l0aCB0aGUgYXBwbGljYXRpb24uICBDbGljayBoZXJlIHRvIGVudGVyIHlvdXIgdmFsaWQgdXNlcm5hbWUgYW5kIHBhc3N3b3JkLiIgY2xhc3M9ImZvY3VzIiBocmVmPSJiYW5rL2xvZ2luLmFzcHgiPk9OTElORSBCQU5LSU5HIExPR0lOPC9hPjwvZGl2PjwvdGQ+DQogICAgPHRkIHdpZHRoPSIyNSUiIGNsYXNzPSJjYyBidCBiciBiYiI+PGRpdiBpZD0iSGVhZGVyMiI+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTGlua0hlYWRlcjIiIGNsYXNzPSJmb2N1cyIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWwuaHRtIj5QRVJTT05BTDwvYT48L2Rpdj48L3RkPg0KICAgIDx0ZCB3aWR0aD0iMjUlIiBjbGFzcz0iY2MgYnQgYnIgYmIiPjxkaXYgaWQ9IkhlYWRlcjMiPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X0xpbmtIZWFkZXIzIiBjbGFzcz0iZm9jdXMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWJ1c2luZXNzLmh0bSI+U01BTEwgQlVTSU5FU1M8L2E+PC9kaXY+PC90ZD4NCiAgICA8dGQgd2lkdGg9IjI1JSIgY2xhc3M9ImNjIGJ0IGJiIj48ZGl2IGlkPSJIZWFkZXI0Ij48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9MaW5rSGVhZGVyNCIgY2xhc3M9ImZvY3VzIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGUuaHRtIj5JTlNJREUgQUxUT1JPIE1VVFVBTDwvYT48L2Rpdj48L3RkPg0KICA8L3RyPg0KICA8dHI+DQogICAgPHRkIHZhbGlnbj0idG9wIiBjbGFzcz0iY2MgYnIgYmIiPg0KICAgICAgICA8YnIgc3R5bGU9ImxpbmUtaGVpZ2h0OiAxMHB4OyIvPg0KICAgICAgICA8YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9DYXRMaW5rMSIgY2xhc3M9InN1YmhlYWRlciIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWwuaHRtIj5QRVJTT05BTDwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMSIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWxfZGVwb3NpdC5odG0iPkRlcG9zaXQgUHJvZHVjdDwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsyIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1wZXJzb25hbF9jaGVja2luZy5odG0iPkNoZWNraW5nPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX2xvYW5zLmh0bSI+TG9hbiBQcm9kdWN0czwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbms0IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1wZXJzb25hbF9jYXJkcy5odG0iPkNhcmRzPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazUiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX2ludmVzdG1lbnRzLmh0bSI+SW52ZXN0bWVudHMgJmFtcDsgSW5zdXJhbmNlPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazYiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX290aGVyLmh0bSI+T3RoZXIgU2VydmljZXM8L2E+PC9saT4NCiAgICAgICAgPC91bD4NCg0KICAgICAgICA8YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9DYXRMaW5rMiIgY2xhc3M9InN1YmhlYWRlciIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3MuaHRtIj5TTUFMTCBCVVNJTkVTUzwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rNyIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfZGVwb3NpdC5odG0iPkRlcG9zaXQgUHJvZHVjdHM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rOCIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfbGVuZGluZy5odG0iPkxlbmRpbmcgU2VydmljZXM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rOSIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfY2FyZHMuaHRtIj5DYXJkczwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxMCIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfaW5zdXJhbmNlLmh0bSI+SW5zdXJhbmNlPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazExIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1idXNpbmVzc19yZXRpcmVtZW50Lmh0bSI+UmV0aXJlbWVudDwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxMiIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3Nfb3RoZXIuaHRtIj5PdGhlciBTZXJ2aWNlczwvYT48L2xpPg0KICAgICAgICA8L3VsPg0KDQogICAgICAgIDxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X0NhdExpbmszIiBjbGFzcz0ic3ViaGVhZGVyIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGUuaHRtIj5JTlNJREUgQUxUT1JPIE1VVFVBTDwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMTMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWluc2lkZV9hYm91dC5odG0iPkFib3V0IFVzPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE0IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfY29udGFjdC5odG0iPkNvbnRhY3QgVXM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMTUiIGhyZWY9ImNnaS5leGUiPkxvY2F0aW9uczwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxNiIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9aW5zaWRlX2ludmVzdG9yLmh0bSI+SW52ZXN0b3IgUmVsYXRpb25zPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE3IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfcHJlc3MuaHRtIj5QcmVzcyBSb29tPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE4IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfY2FyZWVycy5odG0iPkNhcmVlcnM8L2E+PC9saT4NCiAgICAgICAgPC91bD4NCiAgICA8L3RkPg0KICAgIDx0ZCB2YWxpZ249InRvcCIgY29sc3Bhbj0iMyIgY2xhc3M9ImJiIj4NCg0KDQo8ZGl2IGNsYXNzPSJmbCIgc3R5bGU9IndpZHRoOiA5OSU7Ij4NCg0KPGgxPlNlYXJjaCBSZXN1bHRzPC9oMT4NCg0KPHA+Tm8gcmVzdWx0cyB3ZXJlIGZvdW5kIGZvciB0aGUgcXVlcnk6PGJyIC8+PGJyIC8+DQo8c3BhbiBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NYWluX2xibFNlYXJjaCI+YXJhY2huaV90ZXh0PGFyYWNobmlfeHNzXyciO181ZmVjZWI2NmZmYzg2ZjM4ZDk1Mjc4NmM2ZDY5NmM3OWMyZGJjMjM5ZGQ0ZTkxYjQ2NzI5ZDczYTI3ZmI1N2U5ADwvc3Bhbj48L3A+DQoNCjwvZGl2Pg0KDQoNCiAgICA8L3RkPg0KICA8L3RyPg0KPC90YWJsZT4NCg0KDQo8L2Rpdj4NCg0KPGRpdiBpZD0iZm9vdGVyIiBzdHlsZT0id2lkdGg6IDk5JTsiPg0KICAgIDxhIGlkPSJfY3RsMF9fY3RsMF9IeXBlckxpbms1IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1wcml2YWN5Lmh0bSI+UHJpdmFjeSBQb2xpY3k8L2E+DQogICAgJm5ic3A7Jm5ic3A7fCZuYnNwOyZuYnNwOw0KICAgIDxhIGlkPSJfY3RsMF9fY3RsMF9IeXBlckxpbms2IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1zZWN1cml0eS5odG0iPlNlY3VyaXR5IFN0YXRlbWVudDwvYT4NCiAgICAmbmJzcDsmbmJzcDt8Jm5ic3A7Jm5ic3A7DQogICAgJmNvcHk7IDIwMTEgQWx0b3JvIE11dHVhbCwgSW5jLg0KDQogICAgPGRpdiBjbGFzcz0iZGlzY2xhaW1lciI+DQogICAgICAgIFRoZSBBbHRvcm8gTXV0dWFsIHdlYnNpdGUgaXMgcHVibGlzaGVkIGJ5IFdhdGNoZmlyZSwgSW5jLiBmb3IgdGhlIHNvbGUgcHVycG9zZSBvZg0KICAgICAgICBkZW1vbnN0cmF0aW5nIHRoZSBlZmZlY3RpdmVuZXNzIG9mIFdhdGNoZmlyZSBwcm9kdWN0cyBpbiBkZXRlY3Rpbmcgd2ViIGFwcGxpY2F0aW9uDQogICAgICAgIHZ1bG5lcmFiaWxpdGllcyBhbmQgd2Vic2l0ZSBkZWZlY3RzLiBUaGlzIHNpdGUgaXMgbm90IGEgcmVhbCBiYW5raW5nIHNpdGUuIFNpbWlsYXJpdGllcywNCiAgICAgICAgaWYgYW55LCB0byB0aGlyZCBwYXJ0eSBwcm9kdWN0cyBhbmQvb3Igd2Vic2l0ZXMgYXJlIHB1cmVseSBjb2luY2lkZW50YWwuIFRoaXMgc2l0ZSBpcw0KICAgICAgICBwcm92aWRlZCAiYXMgaXMiIHdpdGhvdXQgd2FycmFudHkgb2YgYW55IGtpbmQsIGVpdGhlciBleHByZXNzIG9yIGltcGxpZWQuIFdhdGNoZmlyZSBkb2VzDQogICAgICAgIG5vdCBhc3N1bWUgYW55IHJpc2sgaW4gcmVsYXRpb24gdG8geW91ciB1c2Ugb2YgdGhpcyB3ZWJzaXRlLiBGb3IgYWRkaXRpb25hbCBUZXJtcyBvZiBVc2UsDQogICAgICAgIHBsZWFzZSBnbyB0byA8YSBpZD0iX2N0bDBfX2N0bDBfSHlwZXJMaW5rNyIgaHJlZj0iaHR0cDovL3d3dy53YXRjaGZpcmUuY29tL3N0YXRlbWVudHMvdGVybXMuYXNweCI+aHR0cDovL3d3dy53YXRjaGZpcmUuY29tL3N0YXRlbWVudHMvdGVybXMuYXNweDwvYT4uPGJyIC8+PGJyIC8+DQoNCiAgICAgICAgQ29weXJpZ2h0ICZjb3B5OyAyMDExLCBXYXRjaGZpcmUgQ29ycG9yYXRpb24sIEFsbCByaWdodHMgcmVzZXJ2ZWQuDQogICAgPC9kaXY+DQo8L2Rpdj4NCg0KPC9ib2R5Pg0KPC9odG1sPg=="></iframe>
+
+
+        </div>
+        
+        <h3 class="variation_header">
+          <a href='javascript:toggleElem( "var_1_2" )'>
+            <span id="var_1_2_sign">[+]</span>
+            Variation 2
+          </a>
+        </h3>
+
+        <strong>Affected URL</strong>:
+        <p class="note"><a href="http://demo.testfire.net/search.aspx?5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9=&txtSearch=arachni_text%3Carachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9%00">http://demo.testfire.net/search.aspx?5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9=&txtSearch=arachni_text%3Carachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9%00</a></p>
+
+        <div class="variation" id="var_1_2">
+        <strong>Injected value</strong>:
+        <pre class="note">arachni_text&lt;arachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9 </pre>
+
+        <strong>ID</strong>:<br />
+        <pre class="note">&lt;arachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+        <strong>Regular expression</strong>:<br />
+        <pre class="note">&lt;arachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+        <strong>Matched by the regular expression</strong>:<br />
+        <pre class="note"><arachni_xss_5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9</pre>
+
+
+        <table>
+          <tr>
+            <th>
+              <h3 class="c2">Headers</h3>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="c3">
+              <h4>Request</h4>
+              <pre class="note">cookie:	ASP.NET_SessionId=xlfldruj3jznqzmxca0lpn2r;amSessionId=162131224500;
+From:	
+Accept:	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent:	Arachni/0.2.2
+</pre>
+            </td>
+
+            <td>
+              <h4>Response</h4>
+              <pre class="note">HTTP/1.1 200 OK
+Date: Thu, 27 Jan 2011 22:21:33 GMT
+Server: Microsoft-IIS/6.0
+X-Powered-By: ASP.NET
+X-AspNet-Version: 2.0.50727
+Cache-Control: private
+Content-Type: text/html; charset=utf-8
+Content-Length: 7305
+</pre>
+            </td>
+          </tr>
+
+        </table>
+
+        <br/>
+
+
+        <h3>HTML Response</h3><iframe class="c4" src=
+        "data:text/html;base64, DQoNCjwhRE9DVFlQRSBodG1sIFBVQkxJQyAiLS8vVzNDLy9EVEQgWEhUTUwgMS4wIFRyYW5zaXRpb25hbC8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9UUi94aHRtbDEvRFREL3hodG1sMS10cmFuc2l0aW9uYWwuZHRkIj4NCg0KPGh0bWwgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGh0bWwiIHhtbDpsYW5nPSJlbiIgPg0KPGhlYWQgaWQ9Il9jdGwwX19jdGwwX2hlYWQiPjx0aXRsZT4NCglBbHRvcm8gTXV0dWFsOiBTZWFyY2ggUmVzdWx0cw0KPC90aXRsZT48bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVR5cGUiIGNvbnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD1pc28tODg1OS0xIj48bGluayBocmVmPSJzdHlsZS5jc3MiIHJlbD0ic3R5bGVzaGVldCIgdHlwZT0idGV4dC9jc3MiIC8+PG1ldGEgbmFtZT0ia2V5d29yZHMiIGNvbnRlbnQ9IkFsdG9ybyBNdXR1YWwsIHNlYXJjaCwgcXVlcnksIGZpbmQiPjwvaGVhZD4NCjxib2R5IHN0eWxlPSJtYXJnaW4tdG9wOjVweDsiPg0KDQo8ZGl2IGlkPSJoZWFkZXIiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjVweDsgd2lkdGg6IDk5JTsiPg0KICA8Zm9ybSBpZD0iZnJtU2VhcmNoIiBtZXRob2Q9ImdldCIgYWN0aW9uPSIvc2VhcmNoLmFzcHgiPg0KCSAgPHRhYmxlIHdpZHRoPSIxMDAlIiBib3JkZXI9IjAiIGNlbGxwYWRkaW5nPSIwIiBjZWxsc3BhY2luZz0iMCI+DQoJCSAgPHRyPg0KCQkgICAgICA8dGQgcm93c3Bhbj0iMiI+PGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazEiIGhyZWY9ImRlZmF1bHQuYXNweCI+PGltZyBzcmM9ImltYWdlcy9sb2dvLmdpZiIgYm9yZGVyPSIwIiAvPjwvYT48L3RkPg0KCQkJICA8dGQgYWxpZ249InJpZ2h0IiB2YWxpZ249InRvcCI+DQogIAkJCSAgPGEgaWQ9Il9jdGwwX19jdGwwX0xvZ2luTGluayIgdGl0bGU9Ikl0IGRvZXMgbm90IGFwcGVhciB0aGF0IHlvdSBoYXZlIHByb3Blcmx5IGF1dGhlbnRpY2F0ZWQgeW91cnNlbGYuICBQbGVhc2UgY2xpY2sgaGVyZSB0byBzaWduIGluLiIgaHJlZj0iYmFuay9sb2dpbi5hc3B4Ij48Yj48Zm9udCBjb2xvcj0iUmVkIj5TaWduIEluPC9mb250PjwvYj48L2E+IHwgPGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWluc2lkZV9jb250YWN0Lmh0bSI+Q29udGFjdCBVczwvYT4gfCA8YSBpZD0iX2N0bDBfX2N0bDBfSHlwZXJMaW5rNCIgaHJlZj0iZmVlZGJhY2suYXNweCI+RmVlZGJhY2s8L2E+IHwgPGxhYmVsIGZvcj0idHh0U2VhcmNoIj5TZWFyY2g8L2xhYmVsPg0KICAgICAgICAgIDxpbnB1dCB0eXBlPSJ0ZXh0IiBuYW1lPSJ0eHRTZWFyY2giIGlkPSJ0eHRTZWFyY2giIGFjY2Vzc2tleT0iUyIgLz4NCiAgICAgICAgICA8aW5wdXQgdHlwZT0ic3VibWl0IiB2YWx1ZT0iR28iIC8+DQoJCQkgIDwvdGQ+DQoJCSAgPC90cj4NCgkJICA8dHI+DQoJCQkgIDx0ZCBhbGlnbj0icmlnaHQiIHN0eWxlPSJiYWNrZ3JvdW5kLWltYWdlOnVybCgvaW1hZ2VzL2dyYWRpZW50LmpwZyk7cGFkZGluZzowcHg7bWFyZ2luOjBweDsiPjxpbWcgaWQ9Il9jdGwwX19jdGwwX0ltYWdlMSIgc3JjPSJpbWFnZXMvaGVhZGVyX3BpYy5qcGciIGJvcmRlcj0iMCIgaGVpZ2h0PSI2MCIgd2lkdGg9IjM1NCIgLz48L3RkPg0KCQkgIDwvdHI+DQoJICA8L3RhYmxlPg0KCTwvZm9ybT4NCjwvZGl2Pg0KDQo8ZGl2IGlkPSJ3cmFwcGVyIiBzdHlsZT0id2lkdGg6IDk5JTsiPg0KICAgIA0KDQo8dGFibGUgY2VsbHNwYWNpbmc9IjAiIHdpZHRoPSIxMDAlIj4NCiAgPHRyPg0KICAgIDx0ZCB3aWR0aD0iMjUlIiBjbGFzcz0iYnQgYnIgYmIiPjxkaXYgaWQ9IkhlYWRlcjEiPjxpbWcgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfSW1hZ2UxIiBzcmM9ImltYWdlcy9wZl9sb2NrLmdpZiIgYWx0PSJTZWN1cmUgTG9naW4iIGFsaWduPSJhYnNib3R0b20iIGJvcmRlcj0iMCIgaGVpZ2h0PSIxNCIgd2lkdGg9IjEyIiAvPiAmbmJzcDsgPGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfQWNjb3VudExpbmsiIHRpdGxlPSJZb3UgZG8gbm90IGFwcGVhciB0byBoYXZlIGF1dGhlbnRpY2F0ZWQgeW91cnNlbGYgd2l0aCB0aGUgYXBwbGljYXRpb24uICBDbGljayBoZXJlIHRvIGVudGVyIHlvdXIgdmFsaWQgdXNlcm5hbWUgYW5kIHBhc3N3b3JkLiIgY2xhc3M9ImZvY3VzIiBocmVmPSJiYW5rL2xvZ2luLmFzcHgiPk9OTElORSBCQU5LSU5HIExPR0lOPC9hPjwvZGl2PjwvdGQ+DQogICAgPHRkIHdpZHRoPSIyNSUiIGNsYXNzPSJjYyBidCBiciBiYiI+PGRpdiBpZD0iSGVhZGVyMiI+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTGlua0hlYWRlcjIiIGNsYXNzPSJmb2N1cyIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWwuaHRtIj5QRVJTT05BTDwvYT48L2Rpdj48L3RkPg0KICAgIDx0ZCB3aWR0aD0iMjUlIiBjbGFzcz0iY2MgYnQgYnIgYmIiPjxkaXYgaWQ9IkhlYWRlcjMiPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X0xpbmtIZWFkZXIzIiBjbGFzcz0iZm9jdXMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWJ1c2luZXNzLmh0bSI+U01BTEwgQlVTSU5FU1M8L2E+PC9kaXY+PC90ZD4NCiAgICA8dGQgd2lkdGg9IjI1JSIgY2xhc3M9ImNjIGJ0IGJiIj48ZGl2IGlkPSJIZWFkZXI0Ij48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9MaW5rSGVhZGVyNCIgY2xhc3M9ImZvY3VzIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGUuaHRtIj5JTlNJREUgQUxUT1JPIE1VVFVBTDwvYT48L2Rpdj48L3RkPg0KICA8L3RyPg0KICA8dHI+DQogICAgPHRkIHZhbGlnbj0idG9wIiBjbGFzcz0iY2MgYnIgYmIiPg0KICAgICAgICA8YnIgc3R5bGU9ImxpbmUtaGVpZ2h0OiAxMHB4OyIvPg0KICAgICAgICA8YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9DYXRMaW5rMSIgY2xhc3M9InN1YmhlYWRlciIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWwuaHRtIj5QRVJTT05BTDwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMSIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9cGVyc29uYWxfZGVwb3NpdC5odG0iPkRlcG9zaXQgUHJvZHVjdDwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsyIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1wZXJzb25hbF9jaGVja2luZy5odG0iPkNoZWNraW5nPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX2xvYW5zLmh0bSI+TG9hbiBQcm9kdWN0czwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbms0IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1wZXJzb25hbF9jYXJkcy5odG0iPkNhcmRzPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazUiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX2ludmVzdG1lbnRzLmh0bSI+SW52ZXN0bWVudHMgJmFtcDsgSW5zdXJhbmNlPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazYiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXBlcnNvbmFsX290aGVyLmh0bSI+T3RoZXIgU2VydmljZXM8L2E+PC9saT4NCiAgICAgICAgPC91bD4NCg0KICAgICAgICA8YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9DYXRMaW5rMiIgY2xhc3M9InN1YmhlYWRlciIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3MuaHRtIj5TTUFMTCBCVVNJTkVTUzwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rNyIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfZGVwb3NpdC5odG0iPkRlcG9zaXQgUHJvZHVjdHM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rOCIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfbGVuZGluZy5odG0iPkxlbmRpbmcgU2VydmljZXM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rOSIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfY2FyZHMuaHRtIj5DYXJkczwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxMCIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3NfaW5zdXJhbmNlLmh0bSI+SW5zdXJhbmNlPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazExIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1idXNpbmVzc19yZXRpcmVtZW50Lmh0bSI+UmV0aXJlbWVudDwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxMiIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9YnVzaW5lc3Nfb3RoZXIuaHRtIj5PdGhlciBTZXJ2aWNlczwvYT48L2xpPg0KICAgICAgICA8L3VsPg0KDQogICAgICAgIDxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X0NhdExpbmszIiBjbGFzcz0ic3ViaGVhZGVyIiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGUuaHRtIj5JTlNJREUgQUxUT1JPIE1VVFVBTDwvYT4NCiAgICAgICAgPHVsIGNsYXNzPSJzaWRlYmFyIj4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMTMiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PWluc2lkZV9hYm91dC5odG0iPkFib3V0IFVzPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE0IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfY29udGFjdC5odG0iPkNvbnRhY3QgVXM8L2E+PC9saT4NCiAgICAgICAgICAgIDxsaT48YSBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NZW51SHlwZXJMaW5rMTUiIGhyZWY9ImNnaS5leGUiPkxvY2F0aW9uczwvYT48L2xpPg0KICAgICAgICAgICAgPGxpPjxhIGlkPSJfY3RsMF9fY3RsMF9Db250ZW50X01lbnVIeXBlckxpbmsxNiIgaHJlZj0iZGVmYXVsdC5hc3B4P2NvbnRlbnQ9aW5zaWRlX2ludmVzdG9yLmh0bSI+SW52ZXN0b3IgUmVsYXRpb25zPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE3IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfcHJlc3MuaHRtIj5QcmVzcyBSb29tPC9hPjwvbGk+DQogICAgICAgICAgICA8bGk+PGEgaWQ9Il9jdGwwX19jdGwwX0NvbnRlbnRfTWVudUh5cGVyTGluazE4IiBocmVmPSJkZWZhdWx0LmFzcHg/Y29udGVudD1pbnNpZGVfY2FyZWVycy5odG0iPkNhcmVlcnM8L2E+PC9saT4NCiAgICAgICAgPC91bD4NCiAgICA8L3RkPg0KICAgIDx0ZCB2YWxpZ249InRvcCIgY29sc3Bhbj0iMyIgY2xhc3M9ImJiIj4NCg0KDQo8ZGl2IGNsYXNzPSJmbCIgc3R5bGU9IndpZHRoOiA5OSU7Ij4NCg0KPGgxPlNlYXJjaCBSZXN1bHRzPC9oMT4NCg0KPHA+Tm8gcmVzdWx0cyB3ZXJlIGZvdW5kIGZvciB0aGUgcXVlcnk6PGJyIC8+PGJyIC8+DQo8c3BhbiBpZD0iX2N0bDBfX2N0bDBfQ29udGVudF9NYWluX2xibFNlYXJjaCI+YXJhY2huaV90ZXh0PGFyYWNobmlfeHNzXzVmZWNlYjY2ZmZjODZmMzhkOTUyNzg2YzZkNjk2Yzc5YzJkYmMyMzlkZDRlOTFiNDY3MjlkNzNhMjdmYjU3ZTkAPC9zcGFuPjwvcD4NCg0KPC9kaXY+DQoNCg0KICAgIDwvdGQ+DQogIDwvdHI+DQo8L3RhYmxlPg0KDQoNCjwvZGl2Pg0KDQo8ZGl2IGlkPSJmb290ZXIiIHN0eWxlPSJ3aWR0aDogOTklOyI+DQogICAgPGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazUiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXByaXZhY3kuaHRtIj5Qcml2YWN5IFBvbGljeTwvYT4NCiAgICAmbmJzcDsmbmJzcDt8Jm5ic3A7Jm5ic3A7DQogICAgPGEgaWQ9Il9jdGwwX19jdGwwX0h5cGVyTGluazYiIGhyZWY9ImRlZmF1bHQuYXNweD9jb250ZW50PXNlY3VyaXR5Lmh0bSI+U2VjdXJpdHkgU3RhdGVtZW50PC9hPg0KICAgICZuYnNwOyZuYnNwO3wmbmJzcDsmbmJzcDsNCiAgICAmY29weTsgMjAxMSBBbHRvcm8gTXV0dWFsLCBJbmMuDQoNCiAgICA8ZGl2IGNsYXNzPSJkaXNjbGFpbWVyIj4NCiAgICAgICAgVGhlIEFsdG9ybyBNdXR1YWwgd2Vic2l0ZSBpcyBwdWJsaXNoZWQgYnkgV2F0Y2hmaXJlLCBJbmMuIGZvciB0aGUgc29sZSBwdXJwb3NlIG9mDQogICAgICAgIGRlbW9uc3RyYXRpbmcgdGhlIGVmZmVjdGl2ZW5lc3Mgb2YgV2F0Y2hmaXJlIHByb2R1Y3RzIGluIGRldGVjdGluZyB3ZWIgYXBwbGljYXRpb24NCiAgICAgICAgdnVsbmVyYWJpbGl0aWVzIGFuZCB3ZWJzaXRlIGRlZmVjdHMuIFRoaXMgc2l0ZSBpcyBub3QgYSByZWFsIGJhbmtpbmcgc2l0ZS4gU2ltaWxhcml0aWVzLA0KICAgICAgICBpZiBhbnksIHRvIHRoaXJkIHBhcnR5IHByb2R1Y3RzIGFuZC9vciB3ZWJzaXRlcyBhcmUgcHVyZWx5IGNvaW5jaWRlbnRhbC4gVGhpcyBzaXRlIGlzDQogICAgICAgIHByb3ZpZGVkICJhcyBpcyIgd2l0aG91dCB3YXJyYW50eSBvZiBhbnkga2luZCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4gV2F0Y2hmaXJlIGRvZXMNCiAgICAgICAgbm90IGFzc3VtZSBhbnkgcmlzayBpbiByZWxhdGlvbiB0byB5b3VyIHVzZSBvZiB0aGlzIHdlYnNpdGUuIEZvciBhZGRpdGlvbmFsIFRlcm1zIG9mIFVzZSwNCiAgICAgICAgcGxlYXNlIGdvIHRvIDxhIGlkPSJfY3RsMF9fY3RsMF9IeXBlckxpbms3IiBocmVmPSJodHRwOi8vd3d3LndhdGNoZmlyZS5jb20vc3RhdGVtZW50cy90ZXJtcy5hc3B4Ij5odHRwOi8vd3d3LndhdGNoZmlyZS5jb20vc3RhdGVtZW50cy90ZXJtcy5hc3B4PC9hPi48YnIgLz48YnIgLz4NCg0KICAgICAgICBDb3B5cmlnaHQgJmNvcHk7IDIwMTEsIFdhdGNoZmlyZSBDb3Jwb3JhdGlvbiwgQWxsIHJpZ2h0cyByZXNlcnZlZC4NCiAgICA8L2Rpdj4NCjwvZGl2Pg0KDQo8L2JvZHk+DQo8L2h0bWw+"></iframe>
+
+
+        </div>
+        
+
+        <p class="page_break">
+            <a href="#top">[Go to top]</a>
+        </p>
+        <br />
+        
+
+        <h3 id="issue_2">
+          <a href="#issue_2">[2] Allowed HTTP methods
+          </a>
+        </h3>
+        <a href="#top">[Go to top]</a>
+        <br/>
+        <div class="left">
+          <strong>Module name</strong>:
+            AllowedMethods
+          <br />
+          <strong>Affected variable</strong>: n/a<br />
+          <strong>Affected URL</strong>: HTTP://demo.testfire.net<br />
+          <strong>HTML Element</strong>
+
+          <p class="note">server</p>
+
+          <h3>Description</h3>
+          <p class="note"></p>
+
+          <h3>Requires manual verification?</h3>
+          <p class="note">false</p>
+
+        </div>
+
+        <strong>CWE</strong>: 
+        (<a target="_blank" href="http://cwe.mitre.org/data/definitions/.html">http://cwe.mitre.org/data/definitions/.html</a>)<br />
+        <strong>Severity</strong>: Informational<br />
+        <strong>CVSSV2</strong>: 
+
+        <h3>References</h3>
+
+        <ul>
+          
+          <li>N/A</li>
+          
+        </ul>
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+          
+
+          
+
+        
+        
+        <h3 class="variation_header">
+          <a href='javascript:toggleElem( "var_2_1" )'>
+            <span id="var_2_1_sign">[+]</span>
+            Variation 1
+          </a>
+        </h3>
+
+        <strong>Affected URL</strong>:
+        <p class="note"><a href="HTTP://demo.testfire.net">HTTP://demo.testfire.net</a></p>
+
+        <div class="variation" id="var_2_1">
+        <strong>Injected value</strong>:
+        <pre class="note">n/a</pre>
+
+        <strong>ID</strong>:<br />
+        <pre class="note">n/a</pre>
+
+        <strong>Regular expression</strong>:<br />
+        <pre class="note">n/a</pre>
+
+        <strong>Matched by the regular expression</strong>:<br />
+        <pre class="note">OPTIONS, TRACE, GET, HEAD</pre>
+
+
+        <table>
+          <tr>
+            <th>
+              <h3 class="c2">Headers</h3>
+            </th>
+          </tr>
+
+          <tr>
+            <td class="c3">
+              <h4>Request</h4>
+              <pre class="note">cookie:	ASP.NET_SessionId=xlfldruj3jznqzmxca0lpn2r;amSessionId=162131224500;
+From:	
+Accept:	text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent:	Arachni/0.2.2
+</pre>
+            </td>
+
+            <td>
+              <h4>Response</h4>
+              <pre class="note">HTTP/1.1 200 OK
+Allow: OPTIONS, TRACE, GET, HEAD
+Content-Length: 0
+Server: Microsoft-IIS/6.0
+Public: OPTIONS, TRACE, GET, HEAD, POST
+X-Powered-By: ASP.NET
+Date: Thu, 27 Jan 2011 22:21:32 GMT
+</pre>
+            </td>
+          </tr>
+
+        </table>
+
+        <br/>
+
+
+        <h3>HTML Response</h3><iframe class="c4" src=
+        "data:text/html;base64, "></iframe>
+
+
+        </div>
+        
+
+        <p class="page_break">
+            <a href="#top">[Go to top]</a>
+        </p>
+        <br />
+        
+      </div>
+
+      <h2 id="sitemap">Sitemap</h2>
+      
+      <a href="http://demo.testfire.net/">http://demo.testfire.net/</a><br/>
+      
+  </div>
+</body>
+</html>

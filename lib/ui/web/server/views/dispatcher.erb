@@ -47,7 +47,7 @@
                         <input type="submit" value="Resume" />
                     </form>
 
-                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" target="_blank">
+                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" <% if !( job['owner'] =~/Web Interface/ ) %> target="_blank" <%end%> >
                         <%= csrf_tag %>
                         <input type="submit" value="Shutdown" />
                     </form>

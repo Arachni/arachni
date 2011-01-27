@@ -403,13 +403,15 @@ class Server < Sinatra::Base
     post "/*/:port/shutdown" do
         arachni = connect_to_instance( params[:port] )
 
-        # flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
-
-        handle_report( YAML::load( arachni.framework.auditstore ) )
-        arachni.service.shutdown!
-        File.read( get_reports( 'html' ).last )
-
-        # show params[:splat][0].to_sym
+        begin
+            handle_report( YAML::load( arachni.framework.auditstore ) )
+            File.read( get_reports( 'html' ).last )
+        rescue
+            flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+            show params[:splat][0].to_sym
+        ensure
+            arachni.service.shutdown!
+        end
     end
 
     get "/stats" do
