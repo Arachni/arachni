@@ -69,6 +69,18 @@ class Server < Sinatra::Base
 
     helpers do
 
+        def format_redundants( rules )
+            return if !rules || !rules.is_a?( Array ) || rules.empty?
+
+            str = ''
+            rules.each {
+                |rule|
+                next if !rule['regexp'] || !rule['count']
+                str += rule['regexp'] + ':' + rule['count'] + "\r\n"
+            }
+            return str
+        end
+
         def escape( str )
             CGI.escapeHTML( str )
         end
@@ -184,6 +196,12 @@ class Server < Sinatra::Base
 
     def prep_opts( params )
 
+        need_to_split = [
+            'exclude_cookies',
+            'exclude',
+            'include'
+        ]
+
         cparams = {}
         params.each_pair {
             |name, value|
@@ -191,7 +209,23 @@ class Server < Sinatra::Base
             next if [ '_csrf', 'modules', 'plugins' ].include?( name ) || ( value.is_a?( String ) && value.empty?)
 
             value = true if value == 'on'
-            cparams[name] = to_i( value )
+
+            if need_to_split.include?( name )
+                cparams[name] = value.split( "\r\n" )
+
+            elsif name == 'redundant'
+                cparams[name] = []
+                value.split( "\r\n" ).each {
+                    |rule|
+                    regexp, counter = rule.split( ':', 2 )
+                    cparams[name] << {
+                        'regexp'  => regexp,
+                        'count'   => counter
+                    }
+                }
+            else
+                cparams[name] = to_i( value )
+            end
         }
 
         if !cparams['audit_links'] && !cparams['audit_forms'] &&
@@ -363,6 +397,8 @@ class Server < Sinatra::Base
             session['opts']['settings'] = prep_opts( params )
             session['opts']['settings']['url'] = url
         end
+
+        ap session['opts']['settings']
 
         flash.now[:notice] = "Settings updated."
         show :settings, true

@@ -59,16 +59,17 @@
                 <fieldset>
                     <legend><h3>Crawler options</h3></legend>
                     <p>
-                        Exclude rules: <textarea name="exclude"><%=session['opts']['settings']['exclude']%></textarea>
+                        Exclude rules: <textarea name="exclude"><% if session['opts']['settings']['exclude']%><%=session['opts']['settings']['exclude'].join( "\r\n" )%><%end%></textarea>
                         </br>(Newline separated)
                     </p>
                     <p>
-                    Include rules: <textarea name="include"><%=session['opts']['settings']['include']%></textarea>
+                    Include rules: <textarea name="include"><% if session['opts']['settings']['include']%><%=session['opts']['settings']['include'].join( "\r\n" )%><%end%></textarea>
                         </br>(Newline separated)
                     </p>
                     <p>
-                        Redundant rules: <textarea name="redundant"><%=session['opts']['settings']['redundant']%></textarea>
-                        </br>(Newline separated)
+                        Redundant rules: <textarea name="redundant"><%=format_redundants( session['opts']['settings']['redundant'] )%></textarea>
+                    </br>(Newline separated)
+                    </br>(<em>regexp:counter</em>)
                     </p>
                     <p>
                         Depth: <input name="authed_by" value="<%=session['opts']['settings']['authed_by']%>"/>
