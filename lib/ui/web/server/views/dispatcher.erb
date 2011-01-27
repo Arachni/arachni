@@ -8,6 +8,9 @@
         </div>
         <%= erb :flash, {:layout => false} %>
 
+        <p>
+            <em>If sou see a lot of WebUI helpers pilling up feel free to shut them down and save yourself some memory.</em>
+        </p>
         <% if !stats['running_jobs'].empty? %>
         <table>
             <tr>
@@ -47,7 +50,7 @@
                         <input type="submit" value="Resume" />
                     </form>
 
-                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" <% if !( job['owner'] =~/Web Interface/ ) %> target="_blank" <%end%> >
+                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" <% if !( job['owner'] =~/WebUI helper/ ) %> target="_blank" <%end%> >
                         <%= csrf_tag %>
                         <input type="submit" value="Shutdown" />
                     </form>

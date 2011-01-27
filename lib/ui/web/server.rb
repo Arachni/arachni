@@ -90,7 +90,7 @@ class Server < Sinatra::Base
             begin
                 @@arachni ||= nil
                 if !@@arachni
-                    instance = dispatcher.dispatch( 'Web Interface [Do *not* kill]' )
+                    instance = dispatcher.dispatch( 'WebUI helper' )
                     @@arachni = connect_to_instance( instance['port'] )
                 end
                 return @@arachni
