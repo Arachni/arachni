@@ -66,6 +66,7 @@ class Base
 
         # initialize a new component manager to handle the plugin formatters
         formatters = ::Arachni::ComponentManager.new( lib, ancestor.const_get( 'PluginFormatters' ) )
+        formatters.include_formatters!
 
         # load all the formatters
         formatters.load( ['*'] )

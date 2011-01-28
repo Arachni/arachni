@@ -9,6 +9,9 @@
 =end
 
 module Arachni
+
+require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+
 module Reports
 
 class XML
