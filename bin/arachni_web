@@ -57,5 +57,5 @@ end
 
 require options.dir['lib'] + 'ui/web/server'
 
-webui = Arachni::UI::Web::Server.new( Arachni::Options.instance )
-webui.run
+# Sinatra will run automatically
+Arachni::UI::Web::Server.new( Arachni::Options.instance )
