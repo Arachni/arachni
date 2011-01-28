@@ -1,5 +1,5 @@
 
-        <% if !component['options'].empty? %> <h5>Options</h5> <%end%>
+        <% if !component['options'].empty?  && !plugin_has_required_file_option?( component['options'] )%> <h5>Options</h5>
         <% component['options'].each do |opt| %>
             <p class="options">
 
@@ -8,7 +8,7 @@
                 <input name="options[<%=component['plug_name']%>][<%=opt['name']%>]"
 
                 <% if opt['type'] == 'path' %>
-                type="file" value="<%=opt['default']%>"
+                disabled="disabled" type="file" value="<%=opt['default']%>"
                 <% elsif opt['type'] == 'bool' %>
                 type="checkbox" <% if opt['default']%> checked="checked" <%end%>
                 <% else %>
@@ -19,4 +19,5 @@
 
 
             </p>
+        <%end%>
         <%end%>

@@ -69,6 +69,15 @@ class Server < Sinatra::Base
 
     helpers do
 
+        def plugin_has_required_file_option?( options )
+            options.each {
+                |opt|
+                return true if opt['type'] == 'path' && opt['required']
+            }
+
+            return false
+        end
+
         def format_redundants( rules )
             return if !rules || !rules.is_a?( Array ) || rules.empty?
 
@@ -237,8 +246,6 @@ class Server < Sinatra::Base
             cparams['audit_forms']   = true
             cparams['audit_cookies'] = true
         end
-
-        ap cparams
 
         return cparams
     end
