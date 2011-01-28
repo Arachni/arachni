@@ -262,7 +262,7 @@ class Server < Sinatra::Base
 
             if name == 'cookiejar'
                cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
-            elsif need_to_split.include?( name )
+            elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
 
             elsif name == 'redundant'
@@ -411,7 +411,8 @@ class Server < Sinatra::Base
             session['opts']['settings']['audit_cookies'] = true if session['opts']['settings']['audit_cookies']
             session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
-            arachni.opts.set( prep_opts( session['opts']['settings'] ) )
+            opts = prep_opts( session['opts']['settings'] )
+            arachni.opts.set( opts )
             arachni.modules.load( session['opts']['modules'] )
             arachni.plugins.load( YAML::load( session['opts']['plugins'] ) )
             arachni.framework.run
