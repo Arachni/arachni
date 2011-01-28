@@ -32,9 +32,14 @@
                         <h4>
                             <input type="checkbox" class="audit" name="modules[<%=mod['mod_name']%>]"
                                 <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
-                                <%=mod['name']%>
+                                <%=escape( mod['name'] )%>
                         </h4>
-                        <div class="notice"> <%=mod['description']%></div>
+                        <div class="notice"> <%=escape( mod['description'] )%></div>
+                        <p>
+                            <strong>Version:</strong> <%=mod['version']%></br>
+                            <strong>Author:</strong> <%=escape( mod['author'])%>
+                        </p>
+
                     </p>
                     <% end %>
                 </fieldset>
@@ -55,9 +60,14 @@
                         <h4>
                             <input type="checkbox" class="recon" name="modules[<%=mod['mod_name']%>]"
                                 <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
-                                <%=mod['name']%>
+                                <%=escape( mod['name'] )%>
                         </h4>
                         <div class="notice"> <%=escape( mod['description'] )%></div>
+                        <p>
+                            <strong>Version:</strong> <%=mod['version']%></br>
+                            <strong>Author:</strong> <%=escape( mod['author'])%>
+                        </p>
+
                     </p>
                     <% end %>
                 </fieldset>
