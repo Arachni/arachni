@@ -25,7 +25,7 @@
                         <% if session['opts']['plugins'] && session['opts']['plugins'].include?( plugin['plug_name'] ) %> checked="checked" <% end %> />
                         <%=plugin['name']%>
                         <%if plugin_has_required_file_option?( plugin['options'] )%>
-                        <em> (This plugin has a required option type which is not yet supported by the WebUI)</em>
+                        <em> (This plugin requires an option type which is not yet supported by the WebUI)</em>
                         <%end%>
                     </legend>
                 </h3>
