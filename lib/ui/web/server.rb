@@ -210,7 +210,9 @@ class Server < Sinatra::Base
 
             value = true if value == 'on'
 
-            if need_to_split.include?( name )
+            if name == 'cookiejar'
+               cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
+            elsif need_to_split.include?( name )
                 cparams[name] = value.split( "\r\n" )
 
             elsif name == 'redundant'
@@ -235,6 +237,8 @@ class Server < Sinatra::Base
             cparams['audit_forms']   = true
             cparams['audit_cookies'] = true
         end
+
+        ap cparams
 
         return cparams
     end
@@ -397,8 +401,6 @@ class Server < Sinatra::Base
             session['opts']['settings'] = prep_opts( params )
             session['opts']['settings']['url'] = url
         end
-
-        ap session['opts']['settings']
 
         flash.now[:notice] = "Settings updated."
         show :settings, true
