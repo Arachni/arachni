@@ -37,8 +37,8 @@ class Stdout
                 print_info( 'Description: ' + @description )
                 print_line
                 print_info( "Cracked credentials:" )
-                print_ok( '    Username: ' + @results[:username] )
-                print_ok( '    Password: ' + @results[:password] )
+                print_ok( '    Username: ' + @results[:username] ) if @results[:username]
+                print_ok( '    Password: ' + @results[:password] ) if @results[:password]
 
                 print_line
             end
