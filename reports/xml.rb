@@ -26,7 +26,7 @@ module Reports
 #
 class XML < Arachni::Report::Base
 
-    include Buffer
+    include Arachni::Reports::Buffer
 
     #
     # @param [AuditStore]  audit_store
