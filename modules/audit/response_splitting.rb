@@ -76,7 +76,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.5',
             :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',

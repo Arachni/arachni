@@ -68,7 +68,7 @@ class XSSURI < Arachni::Module::Base
             :name           => 'XSSURI',
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.3',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',

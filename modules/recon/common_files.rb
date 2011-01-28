@@ -83,7 +83,7 @@ class CommonFiles < Arachni::Module::Base
             :name           => 'CommonFiles',
             :description    => %q{Tries to find common sensitive files on the server.},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.3',
             :references     => {},
             :targets        => { 'Generic' => 'all' },

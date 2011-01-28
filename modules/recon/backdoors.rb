@@ -76,7 +76,7 @@ class Backdoors < Arachni::Module::Base
             :name           => 'Backdoors',
             :description    => %q{Tries to find common backdoors on the server.},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },

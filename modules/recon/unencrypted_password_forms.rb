@@ -103,7 +103,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :elements       => [
                 Issue::Element::FORM
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'

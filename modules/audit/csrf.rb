@@ -274,7 +274,7 @@ class CSRF < Arachni::Module::Base
             :elements       => [
                 Issue::Element::FORM
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',

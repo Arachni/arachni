@@ -154,7 +154,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.3',
             :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',

@@ -99,7 +99,7 @@ class BackupFiles < Arachni::Module::Base
             :name           => 'BackupFiles',
             :description    => %q{Tries to find sensitive backup files.},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.5',
             :references     => {},
             :targets        => { 'Generic' => 'all' },

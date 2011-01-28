@@ -101,7 +101,7 @@ class CodeInjection < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.4',
             :references     => {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',

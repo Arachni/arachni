@@ -81,7 +81,7 @@ class CommonDirectories < Arachni::Module::Base
             :name           => 'CommonDirectories',
             :description    => %q{Tries to find common directories on the server.},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.4',
             :references     => {},
             :targets        => { 'Generic' => 'all' },

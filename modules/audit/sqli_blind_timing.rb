@@ -67,7 +67,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.1',
             :references     => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',

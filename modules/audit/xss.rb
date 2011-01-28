@@ -69,7 +69,7 @@ class XSS < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',

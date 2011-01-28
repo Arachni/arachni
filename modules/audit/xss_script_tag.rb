@@ -83,7 +83,7 @@ class XSSScriptTag < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.1',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',

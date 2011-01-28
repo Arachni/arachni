@@ -89,7 +89,7 @@ class SQLInjection < Arachni::Module::Base
                 Issue::Element::COOKIE,
                 Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.4',
             :references     => {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',

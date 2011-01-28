@@ -67,7 +67,7 @@ class XSSPath < Arachni::Module::Base
             :name           => 'XSSPath',
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
