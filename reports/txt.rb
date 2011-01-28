@@ -11,8 +11,6 @@
 
 module Arachni
 
-require Options.instance.dir['reports'] + 'stdout'
-
 module Reports
 
 #
@@ -34,6 +32,8 @@ class Text < Arachni::Report::Base
     def initialize( audit_store, options )
         @audit_store = audit_store
         @outfile     = options['outfile']
+
+        require Options.instance.dir['reports'] + 'stdout'
 
         # get an instance of the stdout report
         @__stdout_rep = Arachni::Reports::Stdout.new( audit_store, options )
