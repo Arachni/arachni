@@ -41,9 +41,11 @@ Gem::Specification.new do |s|
       s.add_dependency "sys-proctable",   "~> 0.8.1"
       s.add_dependency "terminal-table",  "~> 1.4.2"
       s.add_dependency "sinatra",         ">= 0.9.2"
+      s.add_dependency "datamapper",      ">= 1.0.2"
       s.add_dependency "rack_csrf",       ">= 2.1.0"
       s.add_dependency "rack-flash",      ">= 0.1.1"
       s.add_dependency "json",            "~> 1.4.6"
+      s.add_dependency "dm-sqlite-adapter", "~> 1.0.2"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
