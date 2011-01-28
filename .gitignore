@@ -1,6 +1,8 @@
 .buildpath
 .project
 .settings/
-
+/tests/.htpasswd
+/tests/htaccess
+/lib/ui/web/server/db/log.db
 /todo.txt
 /tmp
