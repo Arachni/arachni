@@ -1,0 +1,35 @@
+
+        <div id="page-intro">
+            <h2>Reports</h2>
+            <p>The dispatcher is the central magement system.
+                It spawns an XMLRPC server per scan and provides statistics for all running server instances.</br>
+                This interface allows you to "Attach" to (see the output of), pause, resume and shutdown instances.
+            </p>
+        </div>
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !reports.empty? %>
+        <table>
+            <tr>
+                <th>Host</th>
+                <th>Audit date</th>
+                <th>Export as</th>
+            </tr>
+        <% reports.each do |report| %>
+            <tr>
+
+
+                <td><%=report['host']%></td>
+                <td><%=report['date']%></td>
+
+                <td>
+                    <% available.each do |avail| %>
+                    <a href="/report/<%=report['name']%>.<%=avail['rep_name']%>"><%=avail['name']%></a></br>
+                    <%end%>
+                </td>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <span class="notice"> There are no available report.</span>
+        <% end %>
