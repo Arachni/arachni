@@ -56,12 +56,7 @@ class ReportManager
     # @return   [String]        the path to the saved report
     #
     def save( report )
-
-        f = File.new( report_to_path( report ), 'w' )
-        f.write( report )
-        f.close
-
-        return f.path
+        return save_to_file( report, report_to_path( report ) )
     end
 
     #
@@ -154,6 +149,14 @@ class ReportManager
     end
 
     private
+
+    def save_to_file( data, file )
+        f = File.new( file, 'w' )
+        f.write( data )
+        f.close
+
+        return f.path
+    end
 
     def convert( type, report )
 

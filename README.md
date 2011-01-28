@@ -59,6 +59,7 @@ From a user's or a component developer's point of view everything appears simple
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
+    - Web UI (Utilizing the Client - Dispatch-server XMLRPC architecture)
     - XMLRPC Client/Dispatch server
        - Centralised deployment
        - Multiple clients
@@ -442,6 +443,8 @@ To install Arachni:
 If you want to clone and repository and work with the source code then you'll need to run the following to install all gem dependencies:
     $ gem install nokogiri typhoeus awesome_print liquid yard robots sys-proctable terminal-table
 
+To install the Gem or work with the source code you'll also need the following system libraries:
+    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev
 
 ## Supported platforms
 

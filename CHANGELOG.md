@@ -2,6 +2,11 @@
 # ChangeLog
 
 ## Version 0.2.2 _(Under development)_
+- Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
+   - Basically a front-end to the XMLRPC client
+   - Support for parallel scans
+   - Report management
+   - Can be used to monitor and control any running Dispatcher
 - Changed classification from "Vulnerabilities" to "Issues" (**New**)
 - Improved detection of custom 404 pages.
 - Reports updated to show plug-in results.
