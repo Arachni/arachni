@@ -204,6 +204,8 @@ class ReportManager
                     'name'        => report_mgr[avail].info[:name],
                     'rep_name'    => avail,
                     'description' => report_mgr[avail].info[:description],
+                    'version'     => report_mgr[avail].info[:version],
+                    'author'      => report_mgr[avail].info[:author]
                 }
 
                 @@available_rep_classes[avail] = report_mgr[avail]

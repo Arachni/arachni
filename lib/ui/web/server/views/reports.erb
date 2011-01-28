@@ -7,6 +7,10 @@
 
             <% if report_count > 0 %>
             <p>
+                <form action="/reports/formats" method="get">
+                    <input type="submit" value="View formats" />
+                </form>
+
                 <form action="/reports/delete" method="post">
                     <%= csrf_tag %>
                     <input type="submit" value="Delete all" />
@@ -22,7 +26,7 @@
             <tr>
                 <th>Host</th>
                 <th>Audit date</th>
-                <th>Export as</th>
+                <th>Report formats</th>
             </tr>
         <% reports.each do |report| %>
             <tr>

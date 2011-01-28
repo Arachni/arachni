@@ -547,8 +547,12 @@ class Server < Sinatra::Base
             }
         }
 
-        erb :reports, { :layout => true}, :reports => reports,
+        erb :reports, { :layout => true }, :reports => reports,
             :available => settings.reports.available
+    end
+
+    get '/reports/formats' do
+        erb :report_formats, { :layout => true }, :reports => settings.reports.available
     end
 
     post '/reports/delete' do

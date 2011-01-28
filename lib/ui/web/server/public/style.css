@@ -309,6 +309,10 @@ li ol, li ul {
     font-family: 'Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,Sans-Serif;
 }
 
+#page-intro form {
+    display: inline
+}
+
 #page-intro p {
     font-size: 12px;
 }
