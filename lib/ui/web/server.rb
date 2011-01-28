@@ -1,3 +1,13 @@
+=begin
+                  Arachni
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
 require 'sinatra/base'
 require "rack/csrf"
 require 'rack-flash'
@@ -15,7 +25,19 @@ require Arachni::Options.instance.dir['lib'] + 'ui/cli/output'
 require Arachni::Options.instance.dir['lib'] + 'framework'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+require Arachni::Options.instance.dir['lib'] + 'ui/web/report_manager'
 
+
+#
+#
+# Provides a web user interface for the Arachni Framework using Sinatra.<br/>
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1-pre
+# @see Arachni::Framework
+#
 module Web
 
     VERSION = '0.1-pre'
@@ -68,6 +90,10 @@ class Server < Sinatra::Base
     end
 
     helpers do
+
+        def report_count
+            settings.reports.all.size
+        end
 
         def plugin_has_required_file_option?( options )
             options.each {
@@ -150,6 +176,8 @@ class Server < Sinatra::Base
     set :tmp,    "#{dir}/server/tmp"
     set :static, true
     set :environment, :development
+
+    set :reports, ReportManager.new( Arachni::Options.instance, settings )
 
     enable :sessions
 
@@ -290,71 +318,6 @@ class Server < Sinatra::Base
         } )
     end
 
-    def save_report( report )
-
-        file = settings.public + "/reports/" + File.basename( get_report_filename( report ) + '.afr' )
-
-        f = File.new( file, 'w' )
-        f.write( report )
-        f.close
-
-        return f.path
-    end
-
-    def get_reports
-        Dir.glob( settings.public + "/reports/*.afr" )
-    end
-
-    def get_report_filename( report )
-        rep = YAML::load( report )
-        filename = "#{URI(rep.options['url']).host}:#{rep.start_datetime}"
-    end
-
-    def get_report( report_file, type )
-
-        report_contents = File.read( report_file )
-        outfile = settings.tmp + '/' + get_report_filename( report_contents ) + '.' + type
-
-        available_reports
-
-        opts = {}
-        @@available_rep_classes[type].info[:options].each {
-            |opt|
-            opts[opt.name] = opt.default if opt.default
-        }
-        opts['outfile'] = outfile
-
-        @@available_rep_classes[type].new( YAML::load( report_contents ), opts ).run
-
-        content = File.read( outfile )
-        FileUtils.rm( outfile )
-        return content
-    end
-
-    def available_reports
-        @@available ||= []
-        return @@available if !@@available.empty?
-
-        @@available_rep_classes = {}
-        report_mgr = ::Arachni::Report::Manager.new( options )
-        report_mgr.available.each {
-            |avail|
-
-            next if !report_mgr[avail].info[:options]
-            if has_outfile?( report_mgr[avail].info[:options] )
-                @@available << {
-                    'name'        => report_mgr[avail].info[:name],
-                    'rep_name'    => avail,
-                    'description' => report_mgr[avail].info[:description],
-                }
-
-                @@available_rep_classes[avail] = report_mgr[avail]
-
-            end
-        }
-        return @@available
-    end
-
     def ensure_dispatcher
         begin
             dispatcher.alive?
@@ -363,13 +326,10 @@ class Server < Sinatra::Base
         end
     end
 
-    def has_outfile?( options )
-        options.each {
-            |opt|
-            return true if opt.name == 'outfile'
-        }
-
-        return false
+    def save_shutdown_and_show( arachni )
+        report = settings.reports.save( arachni.framework.auditstore )
+        arachni.service.shutdown!
+        settings.reports.get( 'html', File.basename( report, '.afr' ) )
     end
 
     get "/" do
@@ -481,9 +441,7 @@ class Server < Sinatra::Base
             if arachni.framework.busy?
                 OutputStream.new( arachni.service.output )
             else
-                report = save_report( arachni.framework.auditstore )
-                arachni.service.shutdown!
-                get_report( report, 'html' )
+                save_shutdown_and_show( arachni )
             end
         rescue Errno::ECONNREFUSED
             "The server has been shut down."
@@ -491,36 +449,58 @@ class Server < Sinatra::Base
     end
 
     post "/*/:port/pause" do
-        connect_to_instance( params[:port] ).framework.pause!
-        flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
-        show params[:splat][0].to_sym
+        arachni = connect_to_instance( params[:port] )
+
+        begin
+            arachni.framework.busy?
+            arachni.framework.pause!
+            flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
+            show params[:splat][0].to_sym
+        rescue
+            flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
+            show params[:splat][0].to_sym
+        end
+
     end
 
     post "/*/:port/resume" do
-        connect_to_instance( params[:port] ).framework.resume!
-        flash.now[:ok] = "Instance on port #{params[:port]} resumes."
-        show params[:splat][0].to_sym
+        arachni = connect_to_instance( params[:port] )
+
+        begin
+            arachni.framework.busy?
+            arachni.framework.resume!
+            flash.now[:ok] = "Instance on port #{params[:port]} resumes."
+            show params[:splat][0].to_sym
+        rescue
+            flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
+            show params[:splat][0].to_sym
+        end
     end
 
     post "/*/:port/shutdown" do
         arachni = connect_to_instance( params[:port] )
 
         begin
-            report = save_report( arachni.framework.auditstore )
-            arachni.service.shutdown!
-            get_report( report, 'html' )
+            arachni.framework.busy?
+
+            begin
+                save_shutdown_and_show( arachni )
+            rescue
+                flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+                show params[:splat][0].to_sym
+            ensure
+                arachni.service.shutdown!
+            end
         rescue
-            flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+            flash.now[:notice] = "Instance on port #{params[:port]} has already been shutdown."
             show params[:splat][0].to_sym
-        ensure
-            arachni.service.shutdown!
         end
     end
 
     get "/reports" do
 
         reports = []
-        get_reports.each {
+        settings.reports.all.each {
             |report|
             name = File.basename( report, '.afr' )
             host, date = name.split( ':', 2 )
@@ -531,12 +511,22 @@ class Server < Sinatra::Base
             }
         }
 
-        erb :reports, { :layout => true}, :reports => reports, :available => available_reports
+        erb :reports, { :layout => true}, :reports => reports,
+            :available => settings.reports.available
+    end
+
+    post '/reports/delete' do
+        settings.reports.delete_all
+        redirect '/reports'
+    end
+
+    post '/report/:name/delete' do
+        settings.reports.delete( params[:name] )
+        redirect '/reports'
     end
 
     get '/report/:name.:type' do
-        report = settings.public + "/reports/" + File.basename( params[:name] ) + '.afr'
-        get_report( report, params[:type] )
+        settings.reports.get( params[:type], params[:name] )
     end
 
     run!

@@ -2,6 +2,16 @@
         <div id="page-intro">
             <h2>Reports</h2>
             <p>This page allows you to review the results of the scans you have performed and export them in various formats.</p>
+
+            <% if report_count > 0 %>
+            <p>
+                <form action="/reports/delete" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Delete all" />
+                </form>
+            </p>
+            <% end %>
+
         </div>
         <%= erb :flash, {:layout => false} %>
 
@@ -24,9 +34,16 @@
                     <a href="/report/<%=report['name']%>.<%=avail['rep_name']%>"><%=avail['name']%></a></br>
                     <%end%>
                 </td>
+
+                <td>
+                    <form action="/report/<%=report['name']%>/delete" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
             </tr>
         <% end %>
         </table>
         <% else %>
-        <span class="notice"> There are no available report.</span>
+        <span class="notice"> There are no available reports at the moment.</span>
         <% end %>
