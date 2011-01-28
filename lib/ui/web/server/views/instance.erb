@@ -3,20 +3,28 @@
             <h2>Attached to instance on port <%=params['port']%></h2>
         </div>
 
-        <form action="/instance/<%=params['port']%>/pause" method="post">
-            <%= csrf_tag %>
-            <input type="submit" value="Pause" />
-        </form>
+        <%if !shutdown %>
 
+        <%if !paused %>
+            <form action="/instance/<%=params['port']%>/pause" method="post">
+                <%= csrf_tag %>
+                <input type="submit" value="Pause" />
+            </form>
+        <%end%>
+
+        <%if paused %>
         <form action="/instance/<%=params['port']%>/resume" method="post">
             <%= csrf_tag %>
             <input type="submit" value="Resume" />
         </form>
+        <%end%>
 
         <form action="/instance/<%=params['port']%>/shutdown" method="post" target="_blank">
             <%= csrf_tag %>
             <input type="submit" value="Shutdown" />
         </form>
+
+        <% end %>
 
         <%= erb :flash, {:layout => false} %>
         <iframe src="/instance/<%= params['port'] %>/output" width="100%" height="70%"/> </iframe>

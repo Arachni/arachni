@@ -1,5 +1,5 @@
 
-        <% [:notice, :err, :ok ].each do |name| %>
+        <% [:err, :ok, :notice ].each do |name| %>
 
         <% if flash.has?( name ) %>
         <h3 id="flash" class="<%= name %>"><%= flash[name] %></h3>

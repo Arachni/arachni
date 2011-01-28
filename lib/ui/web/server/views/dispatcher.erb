@@ -5,6 +5,17 @@
                 It spawns an XMLRPC server per scan and provides statistics for all running server instances.</br>
                 This interface allows you to "Attach" to (see the output of), pause, resume and shutdown instances.
             </p>
+
+            <% if !stats['running_jobs'].empty? %>
+            <p>
+                <form action="/dispatcher/shutdown" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Shut all down" />
+                </form>
+            </p>
+            <% end %>
+
+
         </div>
         <%= erb :flash, {:layout => false} %>
 
@@ -18,6 +29,7 @@
                 <th>PID</th>
                 <th>Port</th>
                 <th>Owner</th>
+                <th>State</th>
                 <th>Start time (Server-side)</th>
                 <th>Current time (Server-side)</th>
                 <th>Runtime</th>
@@ -31,25 +43,40 @@
                 <td><%=job['pid']%></td>
                 <td><%=job['port']%></td>
                 <td><%=job['owner']%></td>
+
+                <%if !job['paused'] %>
+                    <td>Running</td>
+                <% else %>
+                    <td>Paused</td>
+                <% end %>
+
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
                 <td><%=secs_to_hms( job['runtime'] )%></td>
                 <td><%=proc_mem( job['proc']['rss'] )%></td>
 
                 <td>
+                    <% if !( job['owner'] =~/WebUI helper/ ) %>
+
                     <form action="/instance/<%=job['port']%>" method="get" target="_blank">
                         <input type="submit" value="Attach" />
                     </form>
 
+                    <%if !job['paused'] %>
                     <form action="/dispatcher/<%=job['port']%>/pause" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Pause" />
                     </form>
+                    <%end%>
 
+                    <%if job['paused'] %>
                     <form action="/dispatcher/<%=job['port']%>/resume" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Resume" />
                     </form>
+                    <% end %>
+
+                    <% end %>
 
                     <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" <% if !( job['owner'] =~/WebUI helper/ ) %> target="_blank" <%end%> >
                         <%= csrf_tag %>

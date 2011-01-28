@@ -192,7 +192,7 @@ class Server < Sinatra::Base
     def show( page, layout = true )
         if page == :dispatcher
             ensure_dispatcher
-            erb :dispatcher, { :layout => true }, :stats => dispatcher.stats
+            erb :dispatcher, { :layout => true }, :stats => dispatcher_stats
         else
             erb page.to_sym,  { :layout => layout }
         end
@@ -216,6 +216,18 @@ class Server < Sinatra::Base
         rescue Exception
             show :dispatcher_error
         end
+    end
+
+    def dispatcher_stats
+        stats = dispatcher.stats
+        stats['running_jobs'].each {
+            |job|
+            begin
+                job['paused'] = connect_to_instance( job['port'] ).framework.paused?
+            rescue
+            end
+        }
+        return stats
     end
 
     def options
@@ -332,6 +344,11 @@ class Server < Sinatra::Base
         settings.reports.get( 'html', File.basename( report, '.afr' ) )
     end
 
+    def save_and_shutdown( arachni )
+        settings.reports.save( arachni.framework.auditstore )
+        arachni.service.shutdown!
+    end
+
     get "/" do
         prep_session
         show :home
@@ -358,6 +375,19 @@ class Server < Sinatra::Base
             end
         end
     end
+
+    post "/dispatcher/shutdown" do
+        dispatcher.stats['running_jobs'].each {
+            |job|
+            begin
+                save_and_shutdown( connect_to_instance( job['port'] ) )
+            rescue
+                connect_to_instance( job['port'] ).service.shutdown!
+            end
+        }
+        redirect '/dispatcher'
+    end
+
 
     get '/dispatcher/error' do
         show :dispatcher_error
@@ -431,7 +461,14 @@ class Server < Sinatra::Base
     end
 
     get "/instance/:port" do
-        show :instance, true
+        begin
+            arachni = connect_to_instance( params[:port] )
+            erb :instance, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false
+        rescue
+            flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
+            erb :instance, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
+        end
+
     end
 
     get "/instance/:port/output" do
@@ -452,13 +489,12 @@ class Server < Sinatra::Base
         arachni = connect_to_instance( params[:port] )
 
         begin
-            arachni.framework.busy?
             arachni.framework.pause!
             flash.now[:notice] = "Instance on port #{params[:port]} will pause as soon as the current page is audited."
-            show params[:splat][0].to_sym
+            erb params[:splat][0].to_sym, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false, :stats => dispatcher_stats
         rescue
             flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
-            show params[:splat][0].to_sym
+            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
         end
 
     end
@@ -467,13 +503,12 @@ class Server < Sinatra::Base
         arachni = connect_to_instance( params[:port] )
 
         begin
-            arachni.framework.busy?
             arachni.framework.resume!
             flash.now[:ok] = "Instance on port #{params[:port]} resumes."
-            show params[:splat][0].to_sym
+            erb params[:splat][0].to_sym, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false, :stats => dispatcher_stats
         rescue
             flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
-            show params[:splat][0].to_sym
+            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
         end
     end
 
@@ -493,7 +528,7 @@ class Server < Sinatra::Base
             end
         rescue
             flash.now[:notice] = "Instance on port #{params[:port]} has already been shutdown."
-            show params[:splat][0].to_sym
+            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true
         end
     end
 
