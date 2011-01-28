@@ -44,7 +44,7 @@ class AP < Arachni::Report::Base
         {
             :name           => 'AP',
             :description    => %q{Awesome prints an AuditStore hash.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1'
         }
     end

@@ -123,7 +123,7 @@ class Metareport < Arachni::Report::Base
         {
             :name           => 'Metareport',
             :description    => %q{Creates a file to be used with the Arachni MSF plug-in.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',

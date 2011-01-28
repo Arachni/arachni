@@ -153,7 +153,7 @@ class Stdout < Arachni::Report::Base
         {
             :name           => 'Stdout',
             :description    => %q{Prints the results to standard output.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.2.1',
         }
     end

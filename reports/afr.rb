@@ -44,7 +44,7 @@ class AFR < Arachni::Report::Base
         {
             :name           => 'Arachni Framework Report',
             :description    => %q{Saves the file in the default Arachni Framework Report (.afr) format.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',

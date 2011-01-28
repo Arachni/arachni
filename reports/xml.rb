@@ -22,7 +22,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.2
 #
 class XML < Arachni::Report::Base
 
@@ -170,8 +170,8 @@ class XML < Arachni::Report::Base
         {
             :name           => 'XML report',
             :description    => %q{Exports a report as an XML file.},
-            :author         => 'zapotek',
-            :version        => '0.1',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.2',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
                     Time.now.to_s + '.xml' ] ),

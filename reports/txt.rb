@@ -62,7 +62,7 @@ class Text < Arachni::Report::Base
         {
             :name           => 'Text report',
             :description    => %q{Exports a report as a plain text file.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.2',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',

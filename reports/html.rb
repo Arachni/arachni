@@ -57,7 +57,7 @@ class HTML < Arachni::Report::Base
         {
             :name           => 'HTML Report',
             :description    => %q{Exports a report as an HTML document.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
                 Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
