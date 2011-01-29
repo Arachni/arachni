@@ -173,8 +173,13 @@ class Trainer
         effective_url = url_sanitize( url )
         @page.url     = url_sanitize( @page.url )
 
-        # prepare the page url
-        return (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup
+        begin
+            # prepare the page url
+            return (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup
+        rescue
+            # worst case scenario
+            return @page.url
+        end
     end
 
     def train_forms( res )
