@@ -12,8 +12,8 @@ require 'typhoeus'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'typhoeus/easy'
-require Options.instance.dir['lib'] + 'typhoeus/hydra'
+# require Options.instance.dir['lib'] + 'typhoeus/easy'
+# require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
@@ -593,8 +593,6 @@ class HTTP
     end
 
     def parse_and_set_cookies( res )
-        # return if !res.headers_hash['Set-Cookie'] || res.headers_hash['Set-Cookie'].empty?
-
         cookie_hash = {}
 
         # extract cookies from the header field
@@ -602,6 +600,7 @@ class HTTP
             [res.headers_hash['Set-Cookie']].flatten.each {
                 |set_cookie_str|
 
+                break if !set_cookie_str.is_a?( String )
                 cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
                     hash[cookie.name] = cookie.value if !!cookie
                     hash
