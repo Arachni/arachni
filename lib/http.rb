@@ -709,6 +709,17 @@ class HTTP
         cookies
     end
 
+    def self.content_type( headers_hash )
+        return if !headers_hash.is_a?( Hash )
+
+        headers_hash.each_pair {
+            |key, val|
+            return val if key.to_s.downcase == 'content-type'
+        }
+
+        return
+    end
+
     #
     # Encodes and parses a URL String
     #

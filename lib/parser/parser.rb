@@ -78,7 +78,7 @@ class Parser
     def run
 
         # non text files won't contain any auditable elements
-        type = @response_headers['content-type']
+        type = Arachni::HTTP.content_type( @response_headers )
         if type.is_a?( String) && !type.substring?( 'text' )
             return Page.new( {
                 :url         => @url,

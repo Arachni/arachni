@@ -164,7 +164,7 @@ class Page
     # Nokogiri document for the HTML body
     #
     def doc
-      type = @headers['content-type']
+      type = Arachni::HTTP.content_type( @headers )
       return if type.is_a?( String) && !type.substring?( 'text' )
 
       return @doc if @doc

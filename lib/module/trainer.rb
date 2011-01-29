@@ -46,7 +46,7 @@ class Trainer
     def add_response( res, redir = false )
 
         # non text files won't contain any auditable elements
-        type = res.headers['content-type']
+        type = @http.class.content_type( res.headers_hash )
         if type.is_a?( String) && !type.substring?( 'text' )
             return false
         end
