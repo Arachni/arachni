@@ -77,6 +77,23 @@ class Parser
     #
     def run
 
+        # non text files won't contain any auditable elements
+        type = @response_headers['content-type']
+        if type.is_a?( String) && !type.substring?( 'text' )
+            return Page.new( {
+                :url         => @url,
+                :query_vars  => link_vars( @url ),
+                :html        => @html,
+                :headers     => [],
+                :response_headers     => @response_headers,
+                :forms       => [],
+                :links       => [],
+                :cookies     => [],
+                :cookiejar   => []
+            } )
+        end
+
+
         cookies_arr = cookies
         cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
 

@@ -164,6 +164,9 @@ class Page
     # Nokogiri document for the HTML body
     #
     def doc
+      type = @headers['content-type']
+      return if type.is_a?( String) && !type.substring?( 'text' )
+
       return @doc if @doc
       @doc = Nokogiri::HTML( @body ) if @body rescue nil
     end
