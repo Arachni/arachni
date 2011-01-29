@@ -532,10 +532,19 @@ class Server < Sinatra::Base
     #
     post "/scan" do
 
+        valid = true
+        begin
+            URI.parse( params['url'] )
+        rescue
+            valid = false
+        end
+
         if !params['url'] || params['url'].empty?
             flash[:err] = "URL cannot be empty."
             show :home
-
+        elsif !valid
+            flash[:err] = "Invalid URL."
+            show :home
         else
 
             instance = dispatcher.dispatch( params['url'] )
