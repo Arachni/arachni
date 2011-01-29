@@ -47,6 +47,18 @@ task :profile do
         "pprof.rb --gif /tmp/profile.dat > profile.gif"
 end
 
+#
+# Installing
+#
+desc "Build and install the arachni gem."
+task :install do
+
+    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
+
+    sh "gem build arachni.gemspec"
+    sh "gem install arachni-#{Arachni::VERSION}.gem"
+end
+
 
 #
 # Publishing
