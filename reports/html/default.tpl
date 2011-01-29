@@ -318,6 +318,7 @@
             {{issue.mod_name}}
           <br />
           <strong>Affected variable</strong>: {{issue.var}}<br />
+          <strong>Request method</strong>: {{issue.method}}<br />
           <strong>Affected URL</strong>: {{issue.url | escape}}<br />
           <strong>HTML Element</strong>
 
