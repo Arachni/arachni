@@ -103,10 +103,10 @@ class Stdout < Arachni::Report::Base
         print_ok( @audit_store.issues.size.to_s + " issues were detected." )
         print_line
 
-        @audit_store.issues.each {
-            |issue|
+        @audit_store.issues.each_with_index {
+            |issue, i|
 
-            print_ok( issue.name )
+            print_ok( "[#{i+1}] " + issue.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
 
             print_info( 'ID Hash:  ' + issue._hash )
