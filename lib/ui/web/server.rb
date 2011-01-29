@@ -446,7 +446,12 @@ class Server < Sinatra::Base
             begin
                 save_and_shutdown( connect_to_instance( job['port'] ) )
             rescue
-                connect_to_instance( job['port'] ).service.shutdown!
+                begin
+                    connect_to_instance( job['port'] ).service.shutdown!
+                rescue
+                    settings.log.instance_fucker_wont_die( env, port_to_url( job['port'] ) )
+                    next
+                end
             end
 
             settings.log.instance_shutdown( env, port_to_url( job['port'] ) )
