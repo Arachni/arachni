@@ -56,6 +56,7 @@ class ReportManager
     # @return   [String]        the path to the saved report
     #
     def save( report )
+        @settings.log.report_saved( {}, get_filename( report ) )
         return save_to_file( report, report_to_path( report ) )
     end
 

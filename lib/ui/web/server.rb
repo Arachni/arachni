@@ -45,12 +45,24 @@ module Web
 
 class Server < Sinatra::Base
 
+    #
+    # Lame hack to make XMLRPC output appear stream-ish to Sinatra
+    # in order to send it back to the browser.
+    #
     class OutputStream
 
+        #
+        # Output from the XMLRPC server
+        #
+        # @param    [Array<Hash>]   output
+        #
         def initialize( output )
             @output  = output
         end
 
+        #
+        # Sinatra expects the output to respond to "each" so we oblige.
+        #
         def each
 
             icon_whitelist = {}
@@ -83,9 +95,8 @@ class Server < Sinatra::Base
 
     end
 
-    use Rack::Flash
-
     configure do
+        use Rack::Flash
         use Rack::Session::Cookie
         use Rack::Csrf, :raise => true
     end
@@ -138,7 +149,7 @@ class Server < Sinatra::Base
             begin
                 @@arachni ||= nil
                 if !@@arachni
-                    instance = dispatcher.dispatch( 'WebUI helper' )
+                    instance = dispatcher.dispatch( HELPER_OWNER )
                     @@arachni = connect_to_instance( instance['port'] )
                 end
                 return @@arachni
@@ -170,6 +181,7 @@ class Server < Sinatra::Base
 
     end
 
+
     dir = File.dirname( File.expand_path( __FILE__ ) )
 
     set :views,  "#{dir}/server/views"
@@ -179,12 +191,18 @@ class Server < Sinatra::Base
     set :static, true
     set :environment, :development
 
+    #
+    # This will be used for the "owner" field of the helper instance
+    #
+    HELPER_OWNER =  "WebUI helper"
+
     set :log,     Log.new( Arachni::Options.instance, settings )
     set :reports, ReportManager.new( Arachni::Options.instance, settings )
 
     enable :sessions
 
     configure do
+        # shit's on!
         settings.log.webui_started
     end
 
@@ -205,6 +223,11 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # Provides an easy way to connect to an instance by port
+    #
+    # @param    [Integer]   port
+    #
     def connect_to_instance( port )
         prep_session
 
@@ -215,12 +238,20 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # Converts a port to a URL instance.
+    #
+    # @param    [Integer]   port
+    #
     def port_to_url( port )
         uri = URI( session[:dispatcher_url] )
         uri.port = port.to_i
         uri.to_s
     end
 
+    #
+    # Provides easy access to the dispatcher and handles failure
+    #
     def dispatcher
         begin
             @dispatcher ||= Arachni::RPC::XML::Client::Dispatcher.new( options, session[:dispatcher_url] )
@@ -229,6 +260,9 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # Provides statistics about running jobs etc using the dispatcher
+    #
     def dispatcher_stats
         stats = dispatcher.stats
         stats['running_jobs'].each {
@@ -245,6 +279,9 @@ class Server < Sinatra::Base
         Arachni::Options.instance
     end
 
+    #
+    # Similar to String.to_i but it returns the original object if String is not a number
+    #
     def to_i( str )
         return str if !str.is_a?( String )
 
@@ -255,6 +292,13 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # Prepares form params to be used as options for XMLRPC transmission
+    #
+    # @param    [Hash]  params
+    #
+    # @return   [Hash]  normalized hash
+    #
     def prep_opts( params )
 
         need_to_split = [
@@ -321,6 +365,9 @@ class Server < Sinatra::Base
         return plugins
     end
 
+    #
+    # Makes sure that all systems are go and populates the session with default values
+    #
     def prep_session
         session[:dispatcher_url] ||= 'http://localhost:7331'
 
@@ -339,8 +386,26 @@ class Server < Sinatra::Base
             'content_types' => {},
             'healthmap'     => {}
         } )
+
+
+        #
+        # Garbage collector, zombie killer. Reaps idle processes every 5 seconds.
+        #
+        @@reaper ||= Thread.new {
+            while( true )
+                shutdown_zombies
+                ::IO::select( nil, nil, nil, 5 )
+            end
+        }
+
     end
 
+    #
+    # Makes sure that we have a dispatcher, if not it redirects the user to
+    # an appropriate error page.
+    #
+    # @return   [Bool]  true if alive, redirect if not
+    #
     def ensure_dispatcher
         begin
             dispatcher.alive?
@@ -349,15 +414,71 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # Saves the report, shuts down the instance and returns the content as HTML
+    # to be sent back to the user's browser.
+    #
+    # @param    [Arachni::RPC::XML::Client::Instance]   arachni
+    #
     def save_shutdown_and_show( arachni )
-        report = settings.reports.save( arachni.framework.auditstore )
-        arachni.service.shutdown!
+        report = save_and_shutdown( arachni )
         settings.reports.get( 'html', File.basename( report, '.afr' ) )
     end
 
+    #
+    # Saves the report and shuts down the instance
+    #
+    # @param    [Arachni::RPC::XML::Client::Instance]   arachni
+    #
     def save_and_shutdown( arachni )
-        settings.reports.save( arachni.framework.auditstore )
+        report_path = settings.reports.save( arachni.framework.auditstore )
         arachni.service.shutdown!
+        return report_path
+    end
+
+    #
+    # Kills all running instances
+    #
+    def shutdown_all
+        settings.log.dispatcher_global_shutdown( env )
+        dispatcher.stats['running_jobs'].each {
+            |job|
+            begin
+                save_and_shutdown( connect_to_instance( job['port'] ) )
+            rescue
+                connect_to_instance( job['port'] ).service.shutdown!
+            end
+
+            settings.log.instance_shutdown( env, port_to_url( job['port'] ) )
+        }
+    end
+
+    #
+    # Kills all idle instances
+    #
+    # @return    [Integer]  the number of reaped instances
+    #
+    def shutdown_zombies
+        i = 0
+        dispatcher.stats['running_jobs'].each {
+            |job|
+            begin
+                arachni = connect_to_instance( job['port'] )
+
+                begin
+                    if !arachni.framework.busy? && !job['owner'] != HELPER_OWNER
+                        save_and_shutdown( arachni )
+                        settings.log.webui_zombie_cleanup( env, port_to_url( job['port'] ) )
+                        i+=1
+                    end
+                rescue
+                end
+
+            rescue
+            end
+        }
+
+        return i
     end
 
     get "/" do
@@ -369,6 +490,9 @@ class Server < Sinatra::Base
         show :dispatcher
     end
 
+    #
+    # sets the dispatcher URL
+    #
     post "/dispatcher" do
 
         if !params['url'] || params['url'].empty?
@@ -390,18 +514,11 @@ class Server < Sinatra::Base
         end
     end
 
+    #
+    # shuts down all instances
+    #
     post "/dispatcher/shutdown" do
-        settings.log.dispatcher_global_shutdown( env )
-        dispatcher.stats['running_jobs'].each {
-            |job|
-            begin
-                save_and_shutdown( connect_to_instance( job['port'] ) )
-            rescue
-                connect_to_instance( job['port'] ).service.shutdown!
-            end
-
-            settings.log.instance_shutdown( env, port_to_url( job['port'] ) )
-        }
+        shutdown_all
         redirect '/dispatcher'
     end
 
@@ -410,6 +527,9 @@ class Server < Sinatra::Base
         show :dispatcher_error
     end
 
+    #
+    # starts a scan
+    #
     post "/scan" do
 
         if !params['url'] || params['url'].empty?
@@ -449,6 +569,9 @@ class Server < Sinatra::Base
         show :modules, true
     end
 
+    #
+    # sets modules
+    #
     post "/modules" do
         session['opts']['modules'] = prep_modules( params )
         flash.now[:notice] = "Modules updated."
@@ -460,6 +583,9 @@ class Server < Sinatra::Base
         erb :plugins, { :layout => true }
     end
 
+    #
+    # sets plugins
+    #
     post "/plugins" do
         session['opts']['plugins'] = YAML::dump( prep_plugins( params ) )
         flash.now[:notice] = "Plugins updated."
@@ -471,6 +597,9 @@ class Server < Sinatra::Base
         erb :settings, { :layout => true }
     end
 
+    #
+    # sets general framework settings
+    #
     post "/settings" do
 
         if session['opts']['settings']['url']
@@ -501,6 +630,7 @@ class Server < Sinatra::Base
             if arachni.framework.busy?
                 OutputStream.new( arachni.service.output )
             else
+                settings.log.instance_shutdown( env, port_to_url( params[:port] ) )
                 save_shutdown_and_show( arachni )
             end
         rescue Errno::ECONNREFUSED
@@ -597,8 +727,8 @@ class Server < Sinatra::Base
     end
 
     get '/report/:name.:type' do
+        settings.log.report_converted( env, params[:name] + '.' + params[:type] )
         settings.reports.get( params[:type], params[:name] )
-        settings.log.report_converted( env, params[:name] )
     end
 
     get '/log' do
@@ -608,13 +738,16 @@ class Server < Sinatra::Base
     run!
 
     at_exit do
+
         settings.log.webui_shutdown
+
         begin
             # shutdown our helper instance
             @@arachni ||= nil
             @@arachni.service.shutdown! if @@arachni
         rescue
         end
+
     end
 end
 
