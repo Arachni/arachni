@@ -1,6 +1,7 @@
 .buildpath
 .project
 .settings/
+*.gem
 /tests/.htpasswd
 /tests/htaccess
 /lib/ui/web/server/db/log.db
