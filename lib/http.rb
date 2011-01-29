@@ -12,8 +12,6 @@ require 'typhoeus'
 
 module Arachni
 
-# require Options.instance.dir['lib'] + 'typhoeus/easy'
-# require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'

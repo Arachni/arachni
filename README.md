@@ -441,7 +441,7 @@ To install Arachni:
 ### Source
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies:
-    $ gem install nokogiri typhoeus awesome_print liquid yard robots sys-proctable terminal-table datamapper dm-sqlite-adapter
+    $ gem install nokogiri arachni-typhoeus awesome_print liquid yard robots sys-proctable terminal-table datamapper dm-sqlite-adapter
 
 ### _Notice_
 To install the Gem or work with the source code you'll also need the following system libraries:
