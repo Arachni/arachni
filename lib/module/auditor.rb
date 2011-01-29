@@ -191,16 +191,20 @@ module Auditor
     #
     def log( opts, res = nil )
 
+        method = nil
+
         request_headers  = '<n/a>'
         response_headers = @page.response_headers
         response         = @page.html
         url              = @page.url
+        method           = @page.method.to_s.upcase if @page.method
 
         if( res )
             request_headers  = res.request.headers
             response_headers = res.headers
             response         = res.body
             url              = res.effective_url
+            method           = res.request.method.to_s.upcase
         end
 
         if response_headers['content-type'] &&
@@ -230,6 +234,7 @@ module Auditor
             :regexp_match => opts[:match].to_s || '<n/a>',
             :elem         => opts[:element],
             :verification => opts[:verification] || false,
+            :method       => method  || '<n/a>',
             :response     => response || '<n/a>',
             :headers      => {
                 :request    => request_headers,
