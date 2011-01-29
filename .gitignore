@@ -4,5 +4,6 @@
 /tests/.htpasswd
 /tests/htaccess
 /lib/ui/web/server/db/log.db
+/lib/ui/web/server/public/reports/*
 /todo.txt
 /tmp
