@@ -178,192 +178,56 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-       Arachni - Web Application Security Scanner Framework v0.2.2 [0.2]
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
+### WebUI
 
-       Website:       http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki
+The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to a running XMLRPC Dispatch server.
 
+Thus, you first need to start a Dispatcher like so:
+    $ arachni_xmlrpcd &
 
-      Usage:  arachni [options] url
+Then start the WebUI by running:
+    $ arachni_web
 
-      Supported options:
+And finally open up a browser window and visit: http://localhost:4567/
 
+#### Shutdown
+You can kill the WebUI by sending _Ctrl+C_ to the console from which you started it.
 
-### General
+However, in order to kill the Dispatcher (and all the processes in its pool) you will need to _killall -9 arahni_xmlrpcd_ (or _killall -9 ruby_ depending on your setup) or hunt them down manually.
+This inconvenience is by design; it guarantees that Arachni instances will be available (and usable) instantly and that running scans will continue unaffected even if the dispatcher has (for some reason) died.
 
-    -h
-    --help                      output this
+#### Parallel scans
+As you might have guessed by the use of the word _pool_ in the previous paragraph, the WebUI allows you to run as many scans as you wish at the same time.
+Of course, the amount of parallel scans you'll be able to perform will be limited by your available resources (Network bandwidth/RAM/CPU).
 
-    -v                          be verbose
+Should you shutdown the WebUI while a scan is running you'll be able to re-attach to the running process and view its progress or (if the scan has already finished) grab the report the next time you visit the WebUI.
+In most cases, you won't even need to re-attach to a process in order to get the report of the finished scan, the WebUI's zombie reaper will grab and save the report for you.
 
-    --debug                     show what is happening internally
-                                  (You should give it a shot sometime ;) )
+#### General
+In cases where the Dispatcher is started with its default settings on localhost (like the above example) the WebUI will connect to it automatically.
 
-    --only-positives            echo positive results *only*
+However, if you see an error message informing you that the WebUI could not find a dispatcher to connect to then you probably visited the WebUI before it had a chance to connect to the Dispatcher, you can just click on the "Dispatcher" tab to force it to try again; if the error does not re-appear then it connected successfully.
 
-    --http-req-limit            concurent HTTP requests limit
-                                  (Be carefull not to kill your server.)
-                                  (Default: 60)
-                                  (*NOTE*: If your scan seems unresponsive try lowering the limit.)
+If you get a scary "Broken pipe" exception a simple refresh will solve the problem.
 
-    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
-                                 and harvest the HTTP responses at the end of the crawl.
-                                 (In some test cases this option has split the scan time in half.)
-                                 (Default: responses will be harvested for each page)
-                                 (*NOTE*: If you are scanning a high-end server and
-                                   you are using a powerful machine with enough bandwidth
-                                   *and* you feel dangerous you can use
-                                   this flag with an increased '--http-req-limit'
-                                   to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
-                                  of pages this could eat up all your memory pretty quickly.)
+#### Remote deployment
+As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start a Dispatcher on a remote host and manage it via the WebUI.
+Simple as that really.
 
-    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
 
+*Beware:* This interface is brand new so if you encounter any issues please do report them.
 
-    --user-agent=<user agent>   specify user agent
+### Command line interface
 
-    --authed-by=<who>           who authorized the scan, include name and e-mail address
-                                  (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be appended to the user-agent string.)
+The command-line interface is the oldest, most tested and thus more reliable.
 
-### Profiles
+#### Help
+In order to see everything Arachni has to offer execute:
+    $ arachni -h
 
-    --save-profile=<file>       save the current run profile/options to <file>
-                                  (The file will be saved with an extention of: .afp)
+Or visit the Wiki.
 
-    --load-profile=<file>       load a run profile from <file>
-                                  (Can be used multiple times.)
-                                  (You can complement it with more options, except for:
-                                      * --mods
-                                      * --redundant)
-
-    --show-profile              will output the running profile as CLI arguments
-
-### Crawler
-
-    -e <regex>
-    --exclude=<regex>           exclude urls matching regex
-                                  (Can be used multiple times.)
-
-    -i <regex>
-    --include=<regex>           include urls matching this regex only
-                                  (Can be used multiple times.)
-
-    --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
-                                  (URLs matching <regex> will be crawled <count> links deep.)
-                                  (Can be used multiple times.)
-
-    -f
-    --follow-subdomains         follow links to subdomains (default: off)
-
-    --obey-robots-txt           obey robots.txt file (default: off)
-
-    --depth=<number>            depth limit (default: inf)
-                                  (How deep Arachni should go into the site structure.)
-
-    --link-count=<number>       how many links to follow (default: inf)
-
-    --redirect-limit=<number>   how many redirects to follow (default: inf)
-
-    --spider-first              spider first, audit later
-
-
-### Auditor
-
-    -g
-    --audit-links               audit link variables (GET)
-
-    -p
-    --audit-forms               audit form variables
-                                  (usually POST, can also be GET)
-
-    -c
-    --audit-cookies             audit cookies (COOKIE)
-
-    --exclude-cookie=<name>     cookies not to audit
-                                  (You should exclude session cookies.)
-                                  (Can be used multiple times.)
-
-    --audit-headers             audit HTTP headers
-                                  (*NOTE*: Header audits use brute force.
-                                   Almost all valid HTTP request headers will be audited
-                                   even if there's no indication that the web app uses them.)
-                                  (*WARNING*: Enabling this option will result in increased requests,
-                                   maybe by an order of magnitude.)
-
-### Modules
-
-    --lsmod=<regexp>            list available modules based on the provided regular expression
-                                  (If no regexp is provided all modules will be listed.)
-                                  (Can be used multiple times.)
-
-
-    -m <modname,modname..>
-    --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' as a module name to deploy all modules or inside module names like so:
-                                      xss_*   to load all xss modules
-                                      sqli_*  to load all sql injection modules
-                                      etc.
-
-                                   You can exclude modules by prefixing their name with a dash:
-                                      --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
-
-                                   Or mix and match:
-                                      -xss_*   to unload all xss modules. )
-
-### Reports
-
-    --lsrep                       list available reports
-
-    --repload=<file>              load audit results from an .afr file
-                                    (Allows you to create new reports from finished scans.)
-
-    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                  <report>: the name of the report as displayed by '--lsrep'
-                                    (Default: stdout)
-                                    (Can be used multiple times.)
-
-### Plugins
-
-    --lsrep                       list available reports
-
-    --repload=<file>              load audit results from an .afr file
-                                    (Allows you to create new reports from finished scans.)
-
-    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                  <report>: the name of the report as displayed by '--lsrep'
-                                    (Default: stdout)
-                                    (Can be used multiple times.)
-
-### Plugins
-
-    --lsplug                      list available plugins
-
-    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                  <plugin>: the name of the plugin as displayed by '--lsplug'
-                                    (Can be used multiple times.)
-
-
-### Proxy
-
-    --proxy=<server:port>       specify proxy
-
-    --proxy-auth=<user:passwd>  specify proxy auth credentials
-
-    --proxy-type=<type>           proxy type can be http, http_1_0, socks4, socks5, socks4a
-                                  (Default: http)
-
-
-### Examples
-
+#### Examples
 You can simply run Arachni like so:
 
     $ arachni http://test.com
