@@ -37,7 +37,9 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/log'
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1-pre
-# @see Arachni::Framework
+#
+# @see Arachni::RPC::XML::Client::Instance
+# @see Arachni::RPC::XML::Client::Dispatcher
 #
 module Web
 
@@ -467,6 +469,7 @@ class Server < Sinatra::Base
         i = 0
         dispatcher.stats['running_jobs'].each {
             |job|
+
             begin
                 arachni = connect_to_instance( job['port'] )
 
@@ -477,6 +480,7 @@ class Server < Sinatra::Base
                         i+=1
                     end
                 rescue
+
                 end
 
             rescue
