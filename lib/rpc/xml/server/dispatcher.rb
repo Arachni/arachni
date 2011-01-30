@@ -13,6 +13,7 @@ require 'sys/proctable'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 
@@ -40,53 +41,35 @@ module Server
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1
 #
-class Dispatcher
+class Dispatcher < Base
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
     include ::Sys
 
+    private :shutdown, :alive?
+    public  :shutdown, :alive?
+
     def initialize( opts )
+
+        banner
 
         @opts = opts
         @opts.rpc_port  ||= 7331
         @opts.pool_size ||= 5
-
-        banner
 
         if opts.help
             print_help
             exit 0
         end
 
+        super( @opts )
 
         prep_logging
 
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
-
-        if opts.ssl_pkey || opts.ssl_cert
-            verification = OpenSSL::SSL::VERIFY_PEER
-        else
-            verification = ::OpenSSL::SSL::VERIFY_NONE
-        end
-
-        print_status( 'Initing HTTP Server...' )
-
-        @server = ::WEBrick::HTTPServer.new(
-            :Port            => @opts.rpc_port,
-            :SSLEnable       => @opts.ssl  || false,
-            :SSLVerifyClient => verification,
-            :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
-            :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey
-        )
-
         print_status( 'Initing XMLRPC Server...' )
-        @service = ::XMLRPC::WEBrickServlet.new(  )
-        @service.add_introspection
-        @server.mount( "/RPC2", @service )
-        @service.add_handler( ::XMLRPC::iPIMethods( "dispatcher" ), self )
+
+        add_handler( "dispatcher", self )
 
         # trap interupts and exit cleanly when required
         trap( 'HUP' ) { shutdown }
@@ -106,7 +89,13 @@ class Dispatcher
     # Starts the dispatcher's server
     def run
         print_status( 'Starting the server...' )
-        @server.start
+        super
+    end
+
+    def shutdown
+        print_status( 'Shutting down...' )
+        super
+        print_status( 'Done.' )
     end
 
     #
@@ -189,11 +178,6 @@ class Dispatcher
         }
     end
 
-    def alive?
-        return true
-    end
-    alias :is_alive :alive?
-
     #
     # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
@@ -222,6 +206,7 @@ class Dispatcher
     --help                      output this
 
     --port                      specify port to listen to
+                                    (Default: #{@opts.rpc_port})
 
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
@@ -237,26 +222,22 @@ class Dispatcher
     (Do *not* use encrypted keys!)
 
     --ssl                       use SSL?
+                                   (If you want encryption without authentication
+                                    you can skip rest of the SSL options.)
 
     --ssl-pkey   <file>         location of the SSL private key (.pem)
+                                    (Used to verify the server to the clients.)
 
     --ssl-cert   <file>         location of the SSL certificate (.pem)
+                                    (Used to verify the server to the clients.)
+
+    --ssl-ca     <file>         location of the CA certificate (.pem)
+                                    (Used to verify the clients to the server.)
 USAGE
     end
 
 
     private
-
-    def remove_nils( hash )
-        hash.each_pair {
-            |k, v|
-            hash[k] = '' if v.nil?
-            hash[k] = remove_nils( v ) if v.is_a? Hash
-        }
-
-        return hash
-    end
-
 
     #
     # Initializes and updates the pool making sure that the number of
@@ -301,12 +282,6 @@ USAGE
             }
         }
 
-    end
-
-    def shutdown
-        print_status( 'Shutting down...' )
-        @server.shutdown
-        print_status( 'Done.' )
     end
 
     def prep_logging

@@ -661,8 +661,20 @@ class XMLRPC
 
 
     SSL --------------------------
+    (Do *not* use encrypted keys!)
 
-    --ssl-ca     <file>         location of the CA cert file (.pem)
+    --ssl                       use SSL?
+                                   (If you want encryption without authentication
+                                    you can skip rest of the SSL options.)
+
+    --ssl-pkey   <file>         location of the SSL private key (.pem)
+                                    (Used to verify the the client to the servers.)
+
+    --ssl-cert   <file>         location of the SSL certificate (.pem)
+                                    (Used to verify the the client to the servers.)
+
+    --ssl-ca     <file>         location of the CA certificate (.pem)
+                                    (Used to verify the servers to the client.)
 
 
     General ----------------------

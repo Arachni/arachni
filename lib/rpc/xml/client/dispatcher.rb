@@ -12,6 +12,9 @@ require 'xmlrpc/client'
 require 'openssl'
 
 module Arachni
+
+require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/base'
+
 module RPC
 module XML
 module Client
@@ -22,28 +25,12 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
-class Dispatcher
+class Dispatcher < Base
 
     def initialize( opts, url )
-        @opts = opts
-
-        # connect to the dispatcher
-        @dispatcher = ::XMLRPC::Client.new2( url )
-
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @dispatcher.timeout = 9999999
-
-
-        if @opts.ssl_ca
-            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@ca_file, @opts.ssl_ca )
-            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_PEER )
-        else
-            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-        end
-
+        super( opts, url )
     end
 
     private
@@ -51,8 +38,7 @@ class Dispatcher
     # Used to provide the illusion of locality for remote methods
     #
     def method_missing( sym, *args, &block )
-        call = "dispatcher.#{sym.to_s}"
-        @dispatcher.call( call, *args )
+        call( "dispatcher.#{sym.to_s}", *args )
     end
 
 end

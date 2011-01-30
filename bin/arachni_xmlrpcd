@@ -36,6 +36,7 @@ opts = GetoptLong.new(
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 begin
@@ -67,6 +68,9 @@ begin
 
             when '--ssl-cert'
                 options.ssl_cert = arg.to_s
+
+            when '--ssl-ca'
+                options.ssl_ca = arg.to_s
 
         end
     }

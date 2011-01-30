@@ -12,6 +12,9 @@ require 'xmlrpc/client'
 require 'openssl'
 
 module Arachni
+
+require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/base'
+
 module RPC
 module XML
 module Client
@@ -22,9 +25,9 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
-class Instance
+class Instance < Base
 
     attr_reader :opts
     attr_reader :framework
@@ -68,36 +71,13 @@ class Instance
     end
 
     def initialize( opts, url )
-
-        @opts = opts
-
-        # start the XMLRPC client
-        @server = ::XMLRPC::Client.new2( url )
-
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @server.timeout = 9999999
-
-
-        if @opts.ssl_ca
-            @server.instance_variable_get( :@http ).instance_variable_set( :@ca_file, @opts.ssl_ca )
-            @server.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_PEER )
-        else
-            @server.instance_variable_get( :@http ). instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
-        end
+        super( opts, url )
 
         @opts      = OptsMapper.new( @server, 'opts' )
         @framework = Mapper.new( @server, 'framework' )
         @modules   = Mapper.new( @server, 'modules' )
         @plugins   = Mapper.new( @server, 'plugins' )
         @service   = Mapper.new( @server, 'service' )
-    end
-
-    #
-    # Used to make old school XMLRPC calls
-    #
-    def call( method, *args )
-        @server.call( method, *args )
     end
 
 end

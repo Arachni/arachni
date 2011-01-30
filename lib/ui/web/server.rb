@@ -248,8 +248,8 @@ class Server < Sinatra::Base
     def dispatcher
         begin
             @dispatcher ||= Arachni::RPC::XML::Client::Dispatcher.new( options, session[:dispatcher_url] )
-        rescue Exception
-            show :dispatcher_error
+        rescue Exception => e
+            redirect '/dispatcher_error'
         end
     end
 
@@ -438,7 +438,7 @@ class Server < Sinatra::Base
     def ensure_dispatcher
         begin
             dispatcher.alive?
-        rescue
+        rescue Exception => e
             redirect '/dispatcher/error'
         end
     end
@@ -808,8 +808,8 @@ class Server < Sinatra::Base
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
-        if opts.ssl_pkey || opts.ssl_cert
-            verification = OpenSSL::SSL::VERIFY_PEER
+        if opts.ssl_pkey || opts.ssl_cert || opts.ssl_ca
+            verification = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
         else
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
@@ -819,7 +819,8 @@ class Server < Sinatra::Base
             :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", Arachni::Options.instance.server || ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey
+            :SSLPrivateKey   => pkey,
+            :SSLCACertificateFile => opts.ssl_ca
         }
     end
 

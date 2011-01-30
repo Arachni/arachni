@@ -15,6 +15,7 @@ require 'openssl'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 require Options.instance.dir['lib'] + 'rpc/xml/server/framework'
 require Options.instance.dir['lib'] + 'rpc/xml/server/options'
@@ -34,13 +35,17 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
-class Instance
+class Instance < Base
 
     # the output interface for XML-RPC
     include Arachni::UI::Output
     include Arachni::Module::Utilities
+
+    private :shutdown, :alive?
+    public  :shutdown, :alive?
+
 
     #
     # Initializes the XML-RPC interface, the HTTP(S) server and the framework.
@@ -49,10 +54,11 @@ class Instance
     #
     def initialize( opts )
 
-        @opts = opts
-
         prep_framework
         banner
+
+        @opts = opts
+        super( @opts )
 
         if @opts.debug
             debug!
@@ -66,30 +72,11 @@ class Instance
             reroute_to_file( false )
         end
 
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
-
-        if opts.ssl_pkey || opts.ssl_cert
-            verification = OpenSSL::SSL::VERIFY_PEER
-        else
-            verification = ::OpenSSL::SSL::VERIFY_NONE
-        end
-
-        print_status( 'Initing HTTP Server...' )
-        @server = ::WEBrick::HTTPServer.new(
-            :Port            => opts.rpc_port || 1337,
-            :SSLEnable       => opts.ssl      || false,
-            :SSLVerifyClient => verification,
-            :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
-            :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey,
-        )
-
         set_handlers
 
         # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { @server.shutdown }
-        trap( 'INT' ) { @server.shutdown }
+        trap( 'HUP' ) { shutdown }
+        trap( 'INT' ) { shutdown }
 
     end
 
@@ -133,7 +120,7 @@ class Instance
     #
     def shutdown
         print_status( 'Shutting down...' )
-        @server.shutdown
+        super
         print_status( 'Done.' )
         return true
     end
@@ -142,12 +129,12 @@ class Instance
     #
     # Starts the HTTP(S) server and the XML-RPC service.
     #
-    def run( )
+    def run
 
         begin
             print_status( 'Starting the server...' )
             # start the show!
-            @server.start
+            super
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
@@ -188,16 +175,12 @@ class Instance
     # It also prepares all the RPC handlers.
     #
     def set_handlers
-        print_status( 'Initing XMLRPC Server...' )
-        @service = ::XMLRPC::WEBrickServlet.new(  )
-        @service.add_introspection
-        @server.mount( "/RPC2", @service )
         @service.clear_handlers
-        @service.add_handler( ::XMLRPC::iPIMethods( "service" ), self )
-        @service.add_handler( ::XMLRPC::iPIMethods( "framework" ), @framework )
-        @service.add_handler( ::XMLRPC::iPIMethods( "opts" ), @framework.opts )
-        @service.add_handler( ::XMLRPC::iPIMethods( "modules" ), @framework.modules )
-        @service.add_handler( ::XMLRPC::iPIMethods( "plugins" ), @framework.plugins )
+        add_handler( "service",   self )
+        add_handler( "framework", @framework )
+        add_handler( "opts",      @framework.opts )
+        add_handler( "modules",   @framework.modules )
+        add_handler( "plugins",   @framework.plugins )
     end
 
 end

@@ -33,6 +33,8 @@ opts = GetoptLong.new(
     [ '--debug',                  GetoptLong::NO_ARGUMENT ],
     [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
+    [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
 )
 
