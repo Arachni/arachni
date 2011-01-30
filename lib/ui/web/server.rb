@@ -8,6 +8,10 @@
 
 =end
 
+require 'webrick'
+require 'webrick/https'
+require 'openssl'
+
 require 'sinatra/base'
 require "rack/csrf"
 require 'rack-flash'
@@ -778,7 +782,53 @@ class Server < Sinatra::Base
         erb :log, { :layout => true }, :entries => settings.log.entry.all.reverse
     end
 
-    run!
+    # override run! using this patch: https://github.com/sinatra/sinatra/pull/132
+    def self.run!( options = {} )
+        set options
+
+        handler = detect_rack_handler
+        handler_name = handler.name.gsub( /.*::/, '' )
+
+        # handler specific options use the lower case handler name as hash key, if present
+        handler_opts = options[handler_name.downcase.to_sym] || {}
+
+        puts "== Sinatra/#{Sinatra::VERSION} has taken the stage " +
+            "on #{port} for #{environment} with backup from #{handler_name}" unless handler_name =~/cgi/i
+
+        handler.run self, handler_opts.merge( :Host => bind, :Port => port ) do |server|
+            [ :INT, :TERM ].each { |sig| trap( sig ) { quit!( server, handler_name ) } }
+
+            set :running, true
+        end
+    rescue Errno::EADDRINUSE => e
+        puts "== Someone is already performing on port #{port}!"
+    end
+
+    def self.prep_webrick( opts )
+        pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
+        cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
+
+        if opts.ssl_pkey || opts.ssl_pkey
+            verification = OpenSSL::SSL::VERIFY_PEER |
+                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        else
+            verification = ::OpenSSL::SSL::VERIFY_NONE
+        end
+
+        return {
+            :SSLEnable       => opts.ssl || false,
+            :SSLVerifyClient => verification,
+            :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
+            :SSLCertificate  => cert,
+            :SSLPrivateKey   => pkey,
+            :SSLCACertificateFile => opts.ssl_ca
+        }
+    end
+
+    run! :host    => Arachni::Options.instance.server   || 'localhost',
+         :port    => Arachni::Options.instance.rpc_port || 4567,
+         :server => %w[ webrick ],
+         :webrick => prep_webrick( Arachni::Options.instance )
 
     at_exit do
 
@@ -792,6 +842,7 @@ class Server < Sinatra::Base
         end
 
     end
+
 end
 
 end

@@ -26,11 +26,46 @@ options.dir['reports'] = options.dir['root'] + 'reports/'
 options.dir['plugins'] = options.dir['root'] + 'plugins/'
 options.dir['lib']     = options.dir['root'] + 'lib/'
 
+def print_help
+        puts <<USAGE
+  Usage:  arachni_web \[options\]
+
+  Supported options:
+
+    -h
+    --help                      output this
+
+    --port                      specify port
+
+    --host                      specify host
+
+
+    SSL --------------------------
+
+    (All SSL options will be honored by the XMLRPC client as well
+     provided that the Dispatcher has also been setup properly for SSL.)
+
+    --ssl                       use SSL?
+
+    --ssl_pkey   <file>         location of the SSL private key (.key)
+
+    --ssl_cert   <file>         location of the SSL certificate (.cert)
+
+    --ssl_ca     <file>         location of the CA file (.cert)
+
+USAGE
+end
+
+
 # Construct getops struct
 opts = GetoptLong.new(
-    [ '--help',             '-h', GetoptLong::NO_ARGUMENT ],
-    [ '--port',                   GetoptLong::OPTIONAL_ARGUMENT ],
-    [ '--server',                 GetoptLong::OPTIONAL_ARGUMENT ],
+    [ '--help', '-h',             GetoptLong::NO_ARGUMENT ],
+    [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
+    [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-bundle',             GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 begin
@@ -40,22 +75,32 @@ begin
         case opt
 
             when '--help'
-                options.help = true
-
-            when '--debug'
-                options.debug = true
+                print_help
+                exit
 
             when '--port'
+                # not really used for RPC this time but by create another attr
                 options.rpc_port = arg.to_i
 
-            when '--server'
+            when '--host'
+                # not really used for RPC this time but by create another attr
                 options.server = arg.to_s
+
+            when '--ssl'
+                options.ssl = true
+
+            when '--ssl-pkey'
+                options.ssl_pkey = arg.to_s
+
+            when '--ssl-cert'
+                options.ssl_cert = arg.to_s
+
+            when '--ssl-bundle'
+                options.ssl_bundle = arg.to_s
 
         end
     }
 end
 
-require options.dir['lib'] + 'ui/web/server'
-
 # Sinatra will run automatically
-Arachni::UI::Web::Server.new( Arachni::Options.instance )
+require options.dir['lib'] + 'ui/web/server'
