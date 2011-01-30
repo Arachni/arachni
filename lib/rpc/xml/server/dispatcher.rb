@@ -216,7 +216,7 @@ class Dispatcher
 
     def print_help
         puts <<USAGE
-  Usage:  arachni_xmlrpcd.rb \[options\]
+  Usage:  arachni_xmlrpcd \[options\]
 
   Supported options:
 

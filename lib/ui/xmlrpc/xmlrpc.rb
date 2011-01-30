@@ -653,7 +653,7 @@ class XMLRPC
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni --server http[s]://host:port/ \[options\] url
+  Usage:  arachni_xmlrpc --server http[s]://host:port/ \[options\] url
 
   Supported options:
 
