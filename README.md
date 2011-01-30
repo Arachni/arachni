@@ -193,7 +193,7 @@ And finally open up a browser window and visit: http://localhost:4567/
 #### Shutdown
 You can kill the WebUI by sending _Ctrl+C_ to the console from which you started it.
 
-However, in order to kill the Dispatcher (and all the processes in its pool) you will need to _killall -9 arahni_xmlrpcd_ (or _killall -9 ruby_ depending on your setup) or hunt them down manually.
+However, in order to kill the Dispatcher (and all the processes in its pool) you will need to _killall -9 arachni_xmlrpcd_ (or _killall -9 ruby_ depending on your setup) or hunt them down manually.
 This inconvenience is by design; it guarantees that Arachni instances will be available (and usable) instantly and that running scans will continue unaffected even if the dispatcher has (for some reason) died.
 
 #### Parallel scans
