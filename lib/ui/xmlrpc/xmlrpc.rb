@@ -660,11 +660,11 @@ class XMLRPC
 
     SSL --------------------------
 
-    --ssl_pkey   <file>         location of the SSL private key (.key)
+    --ssl-pkey   <file>         location of the SSL private key (.key)
 
-    --ssl_cert   <file>         location of the SSL certificate (.cert)
+    --ssl-cert   <file>         location of the SSL certificate (.cert)
 
-    --ssl_ca     <file>         location of the CA file (.cert)
+    --ssl-ca     <file>         location of the CA file (.cert)
 
 
     General ----------------------
