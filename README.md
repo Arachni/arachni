@@ -190,6 +190,11 @@ Then start the WebUI by running:
 
 And finally open up a browser window and visit: http://localhost:4567/
 
+#### Options
+
+You can see all available options using:
+    $ arachni_web -h
+
 #### Shutdown
 You can kill the WebUI by sending _Ctrl+C_ to the console from which you started it.
 
@@ -214,7 +219,9 @@ If you get a scary "Broken pipe" exception a simple refresh will solve the probl
 As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start a Dispatcher on a remote host and manage it via the WebUI.
 Simple as that really.
 
-*WARNING*: XMLRPC Client-Server authentication takes place using SSL certificates, however the WebUI has no support for them just yet. So, if you're thinking about distributed deployment you'll need to take care of security matters yourself for the time being.
+*WARNING*: XMLRPC Client-Server authentication takes place using SSL certificates, however very little testing has taken place on that particular area.
+If you'd like to lend a hand I'd be glad to hear about it.
+If you're thinking about distributed deployment then you'll need to take care of security matters yourself for the time being.
 
 *Beware:* This interface is brand new so if you encounter any issues please do report them.
 
