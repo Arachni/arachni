@@ -45,12 +45,15 @@ opts = GetoptLong.new(
     [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
-    [ '--http-harvest-last',  '-s', GetoptLong::NO_ARGUMENT ],
+    [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
-    [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
     [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
     [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
+    [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
+    [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-bundle',              GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
@@ -215,6 +218,15 @@ begin
 
             when '--ssl'
                 options.ssl = true
+
+            when '--ssl-pkey'
+                options.ssl_pkey = arg.to_s
+
+            when '--ssl-cert'
+                options.ssl_cert = arg.to_s
+
+            when '--ssl-bundle'
+                options.ssl_bundle = arg.to_s
 
             when '--server'
                 options.server = arg.to_s
