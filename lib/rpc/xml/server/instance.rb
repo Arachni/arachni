@@ -54,11 +54,6 @@ class Instance
         prep_framework
         banner
 
-        if @opts.help
-            print_help
-            exit 0
-        end
-
         if @opts.debug
             debug!
         end
@@ -188,34 +183,6 @@ class Instance
         puts
         puts
 
-    end
-
-    def print_help
-        puts <<USAGE
-  Usage:  arachni_xmlrpcd.rb \[options\]
-
-  Supported options:
-
-    -h
-    --help                      output this
-
-    --port                      specify port to listen to
-
-    --reroute-to-logfile        reroute all output to a logfile under 'logs/'
-
-    --debug
-
-    SSL --------------------------
-
-    --ssl                       use SSL?
-
-    --ssl_pkey   <file>         location of the SSL private key (.key)
-
-    --ssl_cert   <file>         location of the SSL certificate (.cert)
-
-    --ssl_ca     <file>         location of the CA file (.cert)
-
-USAGE
     end
 
     #
