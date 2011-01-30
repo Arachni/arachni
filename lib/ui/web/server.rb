@@ -147,25 +147,12 @@ class Server < Sinatra::Base
             Rack::Csrf.csrf_tag( env )
         end
 
-        def helper_instance
-            begin
-                @@arachni ||= nil
-                if !@@arachni
-                    instance = dispatcher.dispatch( HELPER_OWNER )
-                    @@arachni = connect_to_instance( instance['port'] )
-                end
-                return @@arachni
-            rescue
-                redirect '/dispatcher/error'
-            end
-        end
-
         def modules
-            @@modules ||= helper_instance.framework.lsmod.dup
+            @@modules
         end
 
         def plugins
-            @@plugins ||= helper_instance.framework.lsplug.dup
+            @@plugins
         end
 
         def proc_mem( rss )
@@ -365,6 +352,42 @@ class Server < Sinatra::Base
         }
 
         return plugins
+    end
+
+    def helper_instance
+        begin
+            @@arachni ||= nil
+            if !@@arachni
+                instance = dispatcher.dispatch( HELPER_OWNER )
+                @@arachni = connect_to_instance( instance['port'] )
+            end
+            return @@arachni
+        rescue
+            redirect '/dispatcher/error'
+        end
+    end
+
+    def component_cache_filled?
+        begin
+            return @@modules.size + @@plugins.size
+        rescue
+            return false
+        end
+    end
+
+    def fill_component_cache
+
+        if !component_cache_filled?
+            do_shutdown = true
+        else
+            do_shutdown = false
+        end
+
+        @@modules ||= helper_instance.framework.lsmod.dup
+        @@plugins ||= helper_instance.framework.lsplug.dup
+
+        # shutdown the helper instance, we got what we wanted
+        helper_instance.service.shutdown! if do_shutdown
     end
 
     #
@@ -583,6 +606,7 @@ class Server < Sinatra::Base
     end
 
     get "/modules" do
+        fill_component_cache
         prep_session
         show :modules, true
     end
@@ -597,6 +621,7 @@ class Server < Sinatra::Base
     end
 
     get "/plugins" do
+        fill_component_cache
         prep_session
         erb :plugins, { :layout => true }
     end
