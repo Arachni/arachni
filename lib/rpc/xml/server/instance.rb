@@ -69,9 +69,8 @@ class Instance
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
-        if opts.ssl_pkey || opts.ssl_pkey
-            verification = OpenSSL::SSL::VERIFY_PEER |
-                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        if opts.ssl_pkey || opts.ssl_cert
+            verification = OpenSSL::SSL::VERIFY_PEER
         else
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
@@ -84,7 +83,6 @@ class Instance
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => opts.ssl_ca
         )
 
         set_handlers

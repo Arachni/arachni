@@ -176,18 +176,14 @@ class DispatcherMonitor
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_xmlrpcd_monitor.rb  [server address]
+  Usage:  arachni_xmlrpcd_monitor  [server address]
 
   Supported options:
 
 
     SSL --------------------------
 
-    --ssl-pkey   <file>         location of the SSL private key (.key)
-
-    --ssl-cert   <file>         location of the SSL certificate (.cert)
-
-    --ssl-ca     <file>         location of the CA file (.cert)
+    --ssl-ca     <file>         location of the CA cert file (.pem)
 USAGE
     end
 

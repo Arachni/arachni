@@ -22,7 +22,7 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Dispatcher
 
@@ -37,12 +37,11 @@ class Dispatcher
         @dispatcher.timeout = 9999999
 
 
-        if @opts.ssl_pkey || @opts.ssl_pkey
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
+        if @opts.ssl_ca
+            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@ca_file, @opts.ssl_ca )
+            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_PEER )
         else
-            @dispatcher.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+            @dispatcher.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
         end
 
     end
@@ -54,22 +53,6 @@ class Dispatcher
     def method_missing( sym, *args, &block )
         call = "dispatcher.#{sym.to_s}"
         @dispatcher.call( call, *args )
-    end
-
-    def prep_ssl_context
-
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( @opts.ssl_pkey ) )         if @opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( @opts.ssl_cert ) ) if @opts.ssl_cert
-
-
-        ssl_context = OpenSSL::SSL::SSLContext.new
-        ssl_context.ca_file = @opts.ssl_ca
-        ssl_context.verify_depth = 5
-        ssl_context.verify_mode = ::OpenSSL::SSL::VERIFY_PEER |
-            ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-        ssl_context.key  = pkey
-        ssl_context.cert = cert
-        return ssl_context
     end
 
 end

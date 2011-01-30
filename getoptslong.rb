@@ -53,7 +53,7 @@ opts = GetoptLong.new(
     [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-bundle',              GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-ca',                  GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
@@ -225,8 +225,8 @@ begin
             when '--ssl-cert'
                 options.ssl_cert = arg.to_s
 
-            when '--ssl-bundle'
-                options.ssl_bundle = arg.to_s
+            when '--ssl-ca'
+                options.ssl_ca = arg.to_s
 
             when '--server'
                 options.server = arg.to_s

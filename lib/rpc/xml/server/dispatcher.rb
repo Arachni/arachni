@@ -65,9 +65,8 @@ class Dispatcher
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
-        if opts.ssl_pkey || opts.ssl_pkey
-            verification = OpenSSL::SSL::VERIFY_PEER |
-                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        if opts.ssl_pkey || opts.ssl_cert
+            verification = OpenSSL::SSL::VERIFY_PEER
         else
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
@@ -76,12 +75,11 @@ class Dispatcher
 
         @server = ::WEBrick::HTTPServer.new(
             :Port            => @opts.rpc_port,
-            :SSLEnable       => @opts.ssl      || false,
+            :SSLEnable       => @opts.ssl  || false,
             :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => @opts.ssl_ca
+            :SSLPrivateKey   => pkey
         )
 
         print_status( 'Initing XMLRPC Server...' )
@@ -236,15 +234,13 @@ class Dispatcher
     SSL --------------------------
 
     (All SSL options will be honored by the dispatched XMLRPC instances as well.)
+    (Do *not* use encrypted keys!)
 
     --ssl                       use SSL?
 
-    --ssl-pkey   <file>         location of the SSL private key (.key)
+    --ssl-pkey   <file>         location of the SSL private key (.pem)
 
-    --ssl-cert   <file>         location of the SSL certificate (.cert)
-
-    --ssl-ca     <file>         location of the CA file (.cert)
-
+    --ssl-cert   <file>         location of the SSL certificate (.pem)
 USAGE
     end
 

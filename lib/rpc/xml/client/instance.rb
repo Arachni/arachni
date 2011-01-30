@@ -79,12 +79,11 @@ class Instance
         @server.timeout = 9999999
 
 
-        if @opts.ssl_pkey || @opts.ssl_pkey
-            @server.instance_variable_get( :@http ).
-                instance_variable_set( :@ssl_context, prep_ssl_context( ) )
+        if @opts.ssl_ca
+            @server.instance_variable_get( :@http ).instance_variable_set( :@ca_file, @opts.ssl_ca )
+            @server.instance_variable_get( :@http ).instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_PEER )
         else
-            @server.instance_variable_get( :@http ).
-                instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
+            @server.instance_variable_get( :@http ). instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
         end
 
         @opts      = OptsMapper.new( @server, 'opts' )
@@ -100,24 +99,6 @@ class Instance
     def call( method, *args )
         @server.call( method, *args )
     end
-
-    private
-    def prep_ssl_context
-
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( @opts.ssl_pkey ) )         if @opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( @opts.ssl_cert ) ) if @opts.ssl_cert
-
-
-        ssl_context = OpenSSL::SSL::SSLContext.new
-        ssl_context.ca_file = @opts.ssl_ca
-        ssl_context.verify_depth = 5
-        ssl_context.verify_mode = ::OpenSSL::SSL::VERIFY_PEER |
-            ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-        ssl_context.key  = pkey
-        ssl_context.cert = cert
-        return ssl_context
-    end
-
 
 end
 

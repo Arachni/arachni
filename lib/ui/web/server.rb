@@ -808,9 +808,8 @@ class Server < Sinatra::Base
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
 
-        if opts.ssl_pkey || opts.ssl_pkey
-            verification = OpenSSL::SSL::VERIFY_PEER |
-                ::OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
+        if opts.ssl_pkey || opts.ssl_cert
+            verification = OpenSSL::SSL::VERIFY_PEER
         else
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
@@ -818,14 +817,13 @@ class Server < Sinatra::Base
         return {
             :SSLEnable       => opts.ssl || false,
             :SSLVerifyClient => verification,
-            :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
+            :SSLCertName     => [ [ "CN", Arachni::Options.instance.server || ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => opts.ssl_ca
+            :SSLPrivateKey   => pkey
         }
     end
 
-    run! :host    => Arachni::Options.instance.server   || 'localhost',
+    run! :host    => Arachni::Options.instance.server   || ::WEBrick::Utils::getservername,
          :port    => Arachni::Options.instance.rpc_port || 4567,
          :server => %w[ webrick ],
          :webrick => prep_webrick( Arachni::Options.instance )

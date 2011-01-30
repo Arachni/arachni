@@ -495,10 +495,12 @@ class XMLRPC
             print_line( "Version:\t"      + info['version'] )
 
             print_line( "References:" )
-            info['references'].keys.each {
-                |key|
-                print_info( key + "\t\t" + info['references'][key] )
-            }
+            if info['references'].is_a?( Hash )
+                info['references'].keys.each {
+                    |key|
+                    print_info( key + "\t\t" + info['references'][key] )
+                }
+            end
 
             print_line( "Targets:" )
             info['targets'].keys.each {
@@ -660,11 +662,7 @@ class XMLRPC
 
     SSL --------------------------
 
-    --ssl-pkey   <file>         location of the SSL private key (.key)
-
-    --ssl-cert   <file>         location of the SSL certificate (.cert)
-
-    --ssl-ca     <file>         location of the CA file (.cert)
+    --ssl-ca     <file>         location of the CA cert file (.pem)
 
 
     General ----------------------

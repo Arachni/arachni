@@ -42,16 +42,14 @@ def print_help
 
     SSL --------------------------
 
-    (All SSL options will be honored by the XMLRPC client as well
+    (All SSL options will be honored by the XMLRPC client as well,
      provided that the Dispatcher has also been setup properly for SSL.)
 
     --ssl                       use SSL?
 
-    --ssl-pkey   <file>         location of the SSL private key (.key)
+    --ssl-pkey   <file>         location of the SSL private key (.pem)
 
-    --ssl-cert   <file>         location of the SSL certificate (.cert)
-
-    --ssl_ca     <file>         location of the CA file (.cert)
+    --ssl-cert   <file>         location of the SSL certificate (.pem)
 
 USAGE
 end
@@ -65,7 +63,6 @@ opts = GetoptLong.new(
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-bundle',             GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 begin
@@ -94,9 +91,6 @@ begin
 
             when '--ssl-cert'
                 options.ssl_cert = arg.to_s
-
-            when '--ssl-bundle'
-                options.ssl_bundle = arg.to_s
 
         end
     }
