@@ -214,6 +214,7 @@ If you get a scary "Broken pipe" exception a simple refresh will solve the probl
 As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start a Dispatcher on a remote host and manage it via the WebUI.
 Simple as that really.
 
+*WARNING*: XMLRPC Client-Server authentication takes place using SSL certificates, however the WebUI has no support for them just yet. So, if you're thinking about distributed deployment you'll need to take care of security matters yourself for the time being.
 
 *Beware:* This interface is brand new so if you encounter any issues please do report them.
 
