@@ -20,13 +20,13 @@ require cwd + '/../lib/options'
 options = Arachni::Options.instance
 
 options.dir            = Hash.new
-options.dir['root']    = cwd + '/../'
+options.dir['root']    = File.expand_path( cwd + '/../' ) + '/'
 options.dir['modules'] = options.dir['root'] + 'modules/'
 options.dir['reports'] = options.dir['root'] + 'reports/'
 options.dir['plugins'] = options.dir['root'] + 'plugins/'
 options.dir['lib']     = options.dir['root'] + 'lib/'
 
-def print_help
+def print_help( root )
         puts <<USAGE
   Usage:  arachni_web \[options\]
 
@@ -39,25 +39,7 @@ def print_help
 
     --host                      specify host
 
-
-    SSL --------------------------
-
-    (All SSL options will be honored by the XMLRPC client as well,
-     provided that the Dispatcher has also been setup properly for SSL.)
-    (Do *not* use encrypted keys!)
-
-    --ssl                       use SSL?
-                                   (If you want encryption without authentication
-                                    you can skip rest of the SSL options.)
-
-    --ssl-pkey   <file>         location of the SSL private key (.pem)
-                                    (Used to verify the server to the clients.)
-
-    --ssl-cert   <file>         location of the SSL certificate (.pem)
-                                    (Used to verify the server to the clients.)
-
-    --ssl-ca     <file>         location of the CA certificate (.pem)
-                                    (Used to verify the clients to the server.)
+    For SSL options refer to "webui.yaml" and "README.webui.yaml.txt" under "#{root}conf/".
 
 USAGE
 end
@@ -68,10 +50,6 @@ opts = GetoptLong.new(
     [ '--help', '-h',             GetoptLong::NO_ARGUMENT ],
     [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
     [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
-    [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 begin
@@ -81,7 +59,7 @@ begin
         case opt
 
             when '--help'
-                print_help
+                print_help( options.dir['root'] )
                 exit
 
             when '--port'
@@ -91,19 +69,6 @@ begin
             when '--host'
                 # not really used for RPC this time but by create another attr
                 options.server = arg.to_s
-
-            when '--ssl'
-                options.ssl = true
-
-            when '--ssl-pkey'
-                options.ssl_pkey = arg.to_s
-
-            when '--ssl-cert'
-                options.ssl_cert = arg.to_s
-
-            when '--ssl-ca'
-                options.ssl_ca = arg.to_s
-
         end
     }
 end

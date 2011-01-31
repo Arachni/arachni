@@ -105,6 +105,13 @@ class Server < Sinatra::Base
         use Rack::Flash
         use Rack::Session::Cookie
         use Rack::Csrf, :raise => true
+
+        @@conf = YAML::load_file( Arachni::Options.instance.dir['root'] + 'conf/webui.yaml' )
+        Arachni::Options.instance.ssl      = @@conf['ssl']['client']['enable']
+        Arachni::Options.instance.ssl_pkey = @@conf['ssl']['client']['key']
+        Arachni::Options.instance.ssl_cert = @@conf['ssl']['client']['cert']
+        Arachni::Options.instance.ssl_ca   = @@conf['ssl']['client']['ca']
+
     end
 
     helpers do
@@ -804,30 +811,35 @@ class Server < Sinatra::Base
         puts "== Someone is already performing on port #{port}!"
     end
 
-    def self.prep_webrick( opts )
-        pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
-        cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
+    def self.prep_webrick
+        if @@conf['ssl']['server']['key']
+            pkey = ::OpenSSL::PKey::RSA.new( File.read( @@conf['ssl']['server']['key'] ) )
+        end
 
-        if opts.ssl_pkey || opts.ssl_cert || opts.ssl_ca
+        if @@conf['ssl']['server']['cert']
+            cert = ::OpenSSL::X509::Certificate.new( File.read( @@conf['ssl']['server']['cert'] ) )
+        end
+
+        if @@conf['ssl']['key'] || @@conf['ssl']['cert'] || @@conf['ssl']['ca']
             verification = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
         else
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
 
         return {
-            :SSLEnable       => opts.ssl || false,
+            :SSLEnable       => @@conf['ssl']['server']['enable'] || false,
             :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", Arachni::Options.instance.server || ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => opts.ssl_ca
+            :SSLCACertificateFile => @@conf['ssl']['server']['ca']
         }
     end
 
     run! :host    => Arachni::Options.instance.server   || ::WEBrick::Utils::getservername,
          :port    => Arachni::Options.instance.rpc_port || 4567,
          :server => %w[ webrick ],
-         :webrick => prep_webrick( Arachni::Options.instance )
+         :webrick => prep_webrick
 
     at_exit do
 
