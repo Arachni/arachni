@@ -53,7 +53,7 @@ class ResponseSplitting < Arachni::Module::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( @__header ) {
+        audit( @__header, :param_flip => true ) {
             |res, opts|
             if res.headers_hash['X-CRLF-Safe'] &&
                !res.headers_hash['X-CRLF-Safe'].empty?
