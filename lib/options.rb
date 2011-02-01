@@ -399,6 +399,7 @@ class Options
         return if !str
 
         require 'uri'
+        require self.dir['lib'] + 'exceptions'
 
         begin
             @url = URI( str.to_s )
