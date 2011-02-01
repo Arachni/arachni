@@ -31,7 +31,7 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/report_manager'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/log'
-
+require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 
 #
 #
@@ -50,56 +50,6 @@ module Web
     VERSION = '0.1-pre'
 
 class Server < Sinatra::Base
-
-    #
-    # Lame hack to make XMLRPC output appear stream-ish to Sinatra
-    # in order to send it back to the browser.
-    #
-    class OutputStream
-
-        #
-        # Output from the XMLRPC server
-        #
-        # @param    [Array<Hash>]   output
-        #
-        def initialize( output )
-            @output  = output
-        end
-
-        #
-        # Sinatra expects the output to respond to "each" so we oblige.
-        #
-        def each
-
-            icon_whitelist = {}
-
-            [ 'status', 'ok', 'error', 'info' ].each {
-                |icon|
-                icon_whitelist[icon] = "<img src='/icons/#{icon}.png' />"
-            }
-
-            yield '<link rel="stylesheet" href="/style.css" type="text/css" />'
-            yield "<pre>"
-            @output << { 'refresh' => '<meta http-equiv="refresh" content="1">' }
-            @output.each {
-                |out|
-
-                type = out.keys[0]
-                msg  = out.values[0]
-
-                next if out.values[0].empty?
-
-                icon = icon_whitelist[type] || ''
-
-                if out.keys[0] != 'refresh'
-                    yield icon + CGI.escapeHTML( " #{out.values[0]}" ) + "</br>"
-                else
-                    yield out.values[0]
-                end
-            }
-        end
-
-    end
 
     configure do
         use Rack::Flash
@@ -680,9 +630,8 @@ class Server < Sinatra::Base
     get "/instance/:port/output" do
         begin
             arachni = connect_to_instance( params[:port] )
-
             if arachni.framework.busy?
-                OutputStream.new( arachni.service.output )
+                OutputStream.new( arachni, 38 )
             else
                 settings.log.instance_shutdown( env, port_to_url( params[:port] ) )
                 save_shutdown_and_show( arachni )
