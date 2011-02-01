@@ -34,7 +34,7 @@ module Web
         # @param    [Array<Hash>]   output
         #
         def <<( output )
-            @buffer << output
+            @buffer << output.reverse
             @buffer.flatten!
         end
 
