@@ -36,6 +36,7 @@ class AutoLogin < Arachni::Plugin::Base
         @options   = options
 
         @framework.pause!
+        print_info( "System paused." )
     end
 
     def prepare

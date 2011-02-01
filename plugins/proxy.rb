@@ -48,6 +48,7 @@ class Proxy < Arachni::Plugin::Base
 
         # don't let the framework run just yet
         @framework.pause!
+        print_info( "System paused." )
     end
 
     def prepare
@@ -78,6 +79,7 @@ class Proxy < Arachni::Plugin::Base
             "http://#{@server[:BindAddress]}:#{@server[:Port]}" )
 
         print_status( "Shutdown URL: #{SHUTDOWN_URL}" )
+        print_info( "The scan will resume once you visit the shutdown URL." )
         @server.start
     end
 

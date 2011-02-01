@@ -34,6 +34,7 @@ class FormDicattack < Arachni::Plugin::Base
 
         # don't scan the website just yet
         @framework.pause!
+        print_info( "System paused." )
     end
 
     def prepare
