@@ -41,5 +41,4 @@ In order for client SSL to work the Dispatcher will need to be setup accordingly
 Run "arachni_xmlrpcd -h" to see the Dispatcher's relevant SSL options.
 
 
-Finally, please pay close attention and do not alter to the indentation and formatting of the configuration file.
-
+Finally, please pay close attention and do not alter the indentation and formatting of the configuration file.
