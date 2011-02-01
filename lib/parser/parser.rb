@@ -12,6 +12,7 @@ module Arachni
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/elements'
 require opts.dir['lib'] + 'parser/page'
+require opts.dir['lib'] + 'module/utilities'
 
 #
 # Analyzer class
@@ -43,6 +44,8 @@ require opts.dir['lib'] + 'parser/page'
 # @version: 0.2
 #
 class Parser
+
+    include Arachni::Module::Utilities
 
     #
     # @return    [String]    the url of the page
@@ -375,6 +378,7 @@ class Parser
                 key = normalize_name( var )
                 val = value.gsub( /[\"\\\[\]]/, '' )
 
+                next if val == seed
                 cookies_arr[i][key] = val
             }
 
@@ -405,6 +409,8 @@ class Parser
         var_string.split( /&/ ).each {
             |pair|
             name, value = pair.split( /=/ )
+
+            next if value == seed
             var_hash[name] = value
         }
 
@@ -665,6 +671,7 @@ class Parser
 
             element.each {
                 |attribute|
+                next if attribute[1] == seed
                 elements[i][attribute[0].downcase] = attribute[1]
             }
 

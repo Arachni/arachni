@@ -1,6 +1,7 @@
 module Arachni
 
 require Arachni::Options.instance.dir['lib'] + 'module/output'
+require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
 
 module Element
@@ -8,6 +9,7 @@ module Element
 class Auditable
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     alias :o_print_error    :print_error
     alias :o_print_status   :print_status
@@ -216,6 +218,9 @@ class Auditable
         hash.keys.each {
             |k|
 
+            # don't audit parameter flips
+            next if hash[k] == seed
+
             chash = Arachni::Module::KeyFiller.fill( chash )
             opts[:format].each {
                 |format|
@@ -229,6 +234,13 @@ class Auditable
             }
 
         }
+
+        if opts[:param_flip]
+            elem = self.dup
+            elem.altered = 'Parameter flip'
+            elem.auditable[injection_str] = seed
+            var_combo << elem
+        end
 
         print_debug_injection_set( var_combo, opts )
 

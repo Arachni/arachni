@@ -43,7 +43,8 @@ class Trainer < Arachni::Module::Base
             # tell the frameworm to learn from the
             # server responses that this module will cause.
             #
-            :train  => true
+            :train  => true,
+            :param_flip => true
         }
     end
 

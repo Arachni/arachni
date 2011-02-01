@@ -69,7 +69,8 @@ class SQLInjection < Arachni::Module::Base
 
         @__opts = {
             :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :regexp => @@__regexps,
+            :param_flip => true
         }
 
     end
