@@ -43,6 +43,7 @@ class XSS < Arachni::Module::Base
         ]
         @_opts = {
             :format => [ Format::APPEND | Format::NULL ],
+            :flip_param => true
         }
     end
 
