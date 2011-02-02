@@ -31,7 +31,7 @@ module MetaModules
 
         def self.info
             {
-                :name           => '[Meta] ' + self.name.to_s.gsub( 'Arachni::Metas::', '' ),
+                :name           => '[Meta] ' + self.name.to_s.gsub( 'Arachni::MetaModules::', '' ),
                 :description    => %q{Performs high-level meta-analysis on the results of the scan
                     using abstract meta components.},
                 :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
@@ -59,7 +59,7 @@ class MetaModules < Arachni::Plugin::Base
     def initialize( framework, options )
         @framework = framework
 
-        @metamanager = Arachni::ComponentManager.new( @framework.opts.dir['root'] + 'metas/', MetaModules )
+        @metamanager = Arachni::ComponentManager.new( @framework.opts.dir['root'] + 'metamodules/', Arachni::MetaModules )
 
         # load all meta-components
         @metamanager.load( ['*'] )

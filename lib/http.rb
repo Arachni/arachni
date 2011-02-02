@@ -64,6 +64,8 @@ class HTTP
     attr_reader :request_count
     attr_reader :response_count
 
+    attr_reader :curr_res_time
+
     attr_reader :trainer
 
     def initialize( )
@@ -138,6 +140,7 @@ class HTTP
         @on_queue    = []
 
         @after_run = []
+        @after_run_persistent = []
     end
 
     #
@@ -156,6 +159,11 @@ class HTTP
             }
 
             @after_run.clear
+
+            @after_run_persistent.each {
+                |block|
+                block.call
+            }
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
@@ -263,6 +271,9 @@ class HTTP
         @after_run << block
     end
 
+    def after_run_persistent( &block )
+        @after_run_persistent << block
+    end
 
     #
     # Gets called each time a request completes and passes the response
