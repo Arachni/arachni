@@ -21,9 +21,9 @@ module MetaModules
 #
 class AutoThrottle < Base
 
-    HIGH_THRESHOLD    = 0.5
+    HIGH_THRESHOLD    = 0.9
     MIDDLE_THRESHOLD  = 0.34
-    LOW_THREASHOLD    = 0.2
+    LOW_THREASHOLD    = 0.05
     STEP      = 1
     MIN_CONCURRENCY = 2
 
@@ -34,29 +34,26 @@ class AutoThrottle < Base
 
     def prepare
 
-        first_run = true
-
         # run for each response as it arrives
         @http.on_complete {
 
             # adjust only after finished bursts
-            next if first_run || @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
+            next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
 
             print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
             if( @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY ) ||
-                @http.max_concurrency > @framework.opts.http_req_limit + 10
+                @http.max_concurrency > @framework.opts.http_req_limit
 
                 print_debug( "Stepping down!: -#{STEP}" )
                 @http.max_concurrency!( @http.max_concurrency - STEP )
 
-            elsif @http.average_res_time < MIDDLE_THRESHOLD && @http.average_res_time > LOW_THREASHOLD
+            elsif @http.average_res_time < HIGH_THRESHOLD && @http.average_res_time > LOW_THREASHOLD
 
                 print_debug( "Stepping up!: +#{STEP}" )
                 @http.max_concurrency!( @http.max_concurrency + STEP )
             end
         }
 
-        @http.on_complete { first_run = false }
     end
 
 end
