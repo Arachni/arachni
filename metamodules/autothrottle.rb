@@ -19,15 +19,17 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Throughput < Base
+class AutoThrottle < Base
 
-    HIGH_THRESHOLD = 0.5
-    LOW_THRESHOLD  = 0.1
+    HIGH_THRESHOLD    = 0.5
+    MIDDLE_THRESHOLD  = 0.34
+    LOW_THREASHOLD    = 0.2
     STEP      = 1
     MIN_CONCURRENCY = 2
 
     def initialize( framework )
-        @http = framework.http
+        @framework = framework
+        @http      = framework.http
     end
 
     def prepare
@@ -38,12 +40,13 @@ class Throughput < Base
             next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
 
             print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
-            if @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY
+            if( @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY ) ||
+                @http.max_concurrency > @framework.opts.http_req_limit + 10
 
                 print_debug( "Stepping down!: -#{STEP}" )
                 @http.max_concurrency!( @http.max_concurrency - STEP )
 
-            elsif @http.average_res_time < LOW_THRESHOLD
+            elsif @http.average_res_time < MIDDLE_THRESHOLD && @http.average_res_time > LOW_THREASHOLD
 
                 print_debug( "Stepping up!: +#{STEP}" )
                 @http.max_concurrency!( @http.max_concurrency + STEP )
