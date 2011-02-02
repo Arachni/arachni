@@ -33,11 +33,14 @@ class AutoThrottle < Base
     end
 
     def prepare
+
+        first_run = true
+
         # run for each response as it arrives
         @http.on_complete {
 
             # adjust only after finished bursts
-            next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
+            next if first_run || @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
 
             print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
             if( @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY ) ||
@@ -52,6 +55,8 @@ class AutoThrottle < Base
                 @http.max_concurrency!( @http.max_concurrency + STEP )
             end
         }
+
+        @http.on_complete { first_run = false }
     end
 
 end
