@@ -40,6 +40,8 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::Module::Utilities
 
+    ALWAYS_ON = [ 'metamodules', 'content_types', 'healthmap' ]
+
     #
     # @param    [Arachni::Framework]    framework   framework instance
     #
@@ -48,6 +50,7 @@ class Manager < Arachni::ComponentManager
         @framework = framework
 
         @jobs = []
+        load( ALWAYS_ON )
     end
 
     #
