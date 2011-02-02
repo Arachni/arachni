@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
       s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.rdoc_options      = ["--charset=UTF-8"]
 
-      s.add_dependency "arachni-typhoeus","~> 0.2.0"
+      s.add_dependency "arachni-typhoeus","~> 0.2.0.1"
       s.add_dependency "nokogiri",        "~> 1.4.4"
       s.add_dependency "awesome_print",   "~> 0.3.1"
       s.add_dependency "liquid",          "~> 2.2.2"
