@@ -65,6 +65,7 @@ class HTTP
     attr_reader :response_count
 
     attr_reader :curr_res_time
+    attr_reader :curr_res_cnt
 
     attr_reader :trainer
 
@@ -185,6 +186,14 @@ class HTTP
     def average_res_time
         return 0 if @curr_res_cnt == 0
         return @curr_res_time / @curr_res_cnt
+    end
+
+    def max_concurrency!( max_concurrency )
+        @hydra.max_concurrency = max_concurrency
+    end
+
+    def max_concurrency
+        @hydra.max_concurrency
     end
 
     #
