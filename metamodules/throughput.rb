@@ -24,7 +24,7 @@ class Throughput < Base
     HIGH_THRESHOLD = 0.5
     LOW_THRESHOLD  = 0.1
     STEP      = 1
-    MIN_CONCURRENCY = 5
+    MIN_CONCURRENCY = 2
 
     def initialize( framework )
         @http = framework.http
