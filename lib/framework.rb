@@ -225,9 +225,13 @@ class Framework
             :requests   => req_cnt,
             :responses  => res_cnt,
             :time       => audit_store.delta_time,
-            :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s,
+            :avg        => ( res_cnt / @opts.delta_time ).to_i.to_s,
             :sitemap_size  => @sitemap.size,
-            :auditmap_size => @auditmap.size
+            :auditmap_size => @auditmap.size,
+            :curr_res_time => http.curr_res_time,
+            :curr_res_cnt  => http.curr_res_cnt,
+            :average_res_time => http.average_res_time,
+            :max_concurrency => http.max_concurrency
         }
     end
 

@@ -136,6 +136,13 @@ class CLI
         print_info( avg )
 
         print_line
+        print_info( "Burst response time total    #{stats[:curr_res_time]}" )
+        print_info( "Burst response count total   #{stats[:curr_res_cnt]} " )
+        print_info( "Burst average response time  #{stats[:average_res_time]}" )
+        print_info( "Original max concurrency     #{@opts.http_req_limit}" )
+        print_info( "Current max concurrency      #{stats[:max_concurrency]}" )
+
+        print_line
 
     end
 
