@@ -293,7 +293,7 @@ class ComponentManager < Hash
 
 
     def helper?( path )
-        if path.substring?( 'plugin_formatters' ) && !include_formatters?( )
+        if path.substring?( 'formatters' ) && !include_formatters?( )
             return true
         else
             return File.exist?( File.dirname( path ) + '.rb' )
