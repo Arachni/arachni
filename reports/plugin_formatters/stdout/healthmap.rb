@@ -30,7 +30,7 @@ class Stdout
             end
 
             def run
-                print_info( 'URL health list.' )
+                print_status( 'URL health list.' )
                 print_info( '--------------------' )
 
                 print_line
