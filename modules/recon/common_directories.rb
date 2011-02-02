@@ -88,6 +88,7 @@ class CommonDirectories < Arachni::Module::Base
             :issue   => {
                 :name        => %q{A common directory exists on the server.},
                 :description => %q{},
+                :tags        => [ 'path', 'directory', 'common' ],
                 :cwe         => '538',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',

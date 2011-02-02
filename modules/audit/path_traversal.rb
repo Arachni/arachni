@@ -123,6 +123,7 @@ class PathTraversal < Arachni::Module::Base
                 :name        => %q{Path Traversal},
                 :description => %q{The web application enforces improper limitation
                     of a pathname to a restricted directory.},
+                :tags        => [ 'path', 'traversal', 'injection', 'regexp' ],
                 :cwe         => '22',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '4.3',

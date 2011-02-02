@@ -135,6 +135,7 @@ class DirectoryListing < Arachni::Module::Base
                 :name        => %q{Directory listing is enabled.},
                 :description => %q{In most circumstances enabling directory listings is a bad practise
                     as it allows an attacker to better grasp the web application's structure.},
+                :tags        => [ 'path', 'directory', 'listing', 'index' ],
                 :cwe         => '548',
                 :severity    => Issue::Severity::LOW,
                 :cvssv2       => '',

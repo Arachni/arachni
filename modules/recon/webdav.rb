@@ -87,6 +87,7 @@ class WebDav < Arachni::Module::Base
                 :name        => %q{WebDAV},
                 :description => %q{WebDAV is enabled on the server.
                     Consider auditing further using a specialised tool.},
+                :tags        => [ 'webdav', 'options', 'methods', 'server' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',

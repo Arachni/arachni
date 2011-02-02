@@ -116,6 +116,7 @@ class XSSEvent < Arachni::Module::Base
                 :name        => %q{Cross-Site Scripting in event tag of HTML element.},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
+                :tags        => [ 'xss', 'event', 'injection', 'regexp', 'dom', 'attribute' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

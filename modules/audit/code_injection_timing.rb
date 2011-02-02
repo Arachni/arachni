@@ -95,6 +95,7 @@ class CodeInjectionTiming < Arachni::Module::Base
                     an abnormally long time to respond.
                     Either case, these issues will require further investigation
                     even if they are false positives.)},
+                :tags        => [ 'code', 'injection', 'timing', 'blind' ],
                 :cwe         => '94',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '7.5',

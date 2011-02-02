@@ -83,6 +83,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                     an abnormally long time to respond.
                     Either case, these issues will require further investigation
                     even if they are false positives.)},
+                :tags        => [ 'sql', 'blind', 'timing', 'injection', 'database' ],
                 :cwe         => '89',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

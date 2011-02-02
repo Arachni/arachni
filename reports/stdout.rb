@@ -114,6 +114,7 @@ class Stdout < Arachni::Report::Base
             print_info( 'URL:      ' + issue.url )
             print_info( 'Element:  ' + issue.elem )
             print_info( 'Method:   ' + issue.method ) if issue.method
+            print_info( 'Tags:     ' + issue.tags.join( ', ' ) ) if issue.tags.is_a?( Array )
             print_info( 'Variable: ' + issue.var ) if issue.var
             print_info( 'Description: ' )
             print_info( issue.description )

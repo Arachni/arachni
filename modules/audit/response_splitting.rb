@@ -88,6 +88,7 @@ class ResponseSplitting < Arachni::Module::Base
                 :name        => %q{Response splitting},
                 :description => %q{The web application includes user input
                      in the response HTTP header.},
+                :tags        => [ 'response', 'splitting', 'injection', 'header' ],
                 :cwe         => '20',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '5.0',

@@ -106,6 +106,7 @@ class BackupFiles < Arachni::Module::Base
             :issue   => {
                 :name        => %q{A backup file exists on the server.},
                 :description => %q{},
+                :tags        => [ 'path', 'backup', 'file' ],
                 :cew         => '530',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

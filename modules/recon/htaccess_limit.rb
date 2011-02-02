@@ -48,6 +48,7 @@ class Htaccess < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Misconfiguration in LIMIT directive of .htaccess file.},
                 :description => %q{The .htaccess file blocks GET requests but allows POST.},
+                :tags        => [ 'htaccess', 'server', 'limit' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

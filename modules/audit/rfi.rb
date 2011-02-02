@@ -167,6 +167,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 :description => %q{The web application can be forced to include
                     3rd party remote content which can often lead to arbitrary code
                     execution, amongst other attacks.},
+                :tags        => [ 'remote', 'file', 'inclusion', 'injection', 'regexp' ],
                 :cwe         => '94',
                 #
                 # Severity can be:

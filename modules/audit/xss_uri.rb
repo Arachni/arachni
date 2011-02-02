@@ -79,6 +79,7 @@ class XSSURI < Arachni::Module::Base
                 :name        => %q{Cross-Site Scripting (XSS) in URI},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
+                :tags        => [ 'xss', 'uri', 'path', 'regexp', 'injection', 'script' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

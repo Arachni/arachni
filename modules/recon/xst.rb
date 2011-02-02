@@ -71,6 +71,7 @@ class XST < Arachni::Module::Base
                 :name        => %q{The TRACE HTTP method is enabled.},
                 :description => %q{This type of attack can occur when the there
                     is an XSS vulnerability and the server supports HTTP TRACE. },
+                :tags        => [ 'xst', 'methods', 'trace', 'server' ],
                 :cwe         => '693',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',

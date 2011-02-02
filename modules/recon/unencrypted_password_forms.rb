@@ -112,6 +112,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Unencrypted password form.},
                 :description => %q{Transmission of password does not use an encrypted channel.},
+                :tags        => [ 'unencrypted', 'password', 'form' ],
                 :cwe         => '319',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',

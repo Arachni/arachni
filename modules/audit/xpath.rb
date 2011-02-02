@@ -87,6 +87,7 @@ class XPathInjection < Arachni::Module::Base
             :issue   => {
                 :name        => %q{XPath Injection},
                 :description => %q{XPath queries can be injected into the web application.},
+                :tags        => [ 'xpath', 'database', 'error', 'injection', 'regexp' ],
                 :cwe         => '91',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

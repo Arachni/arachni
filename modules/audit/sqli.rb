@@ -102,6 +102,7 @@ class SQLInjection < Arachni::Module::Base
             :issue   => {
                 :name        => %q{SQL Injection},
                 :description => %q{SQL code can be injected into the web application.},
+                :tags        => [ 'sql','injection', 'regexp', 'database', 'error' ],
                 :cwe         => '89',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

@@ -55,6 +55,7 @@ class HTTP_PUT < Arachni::Module::Base
             :issue   => {
                 :name        => %q{HTTP PUT is enabled.},
                 :description => %q{3rd parties can upload files to the web-server.},
+                :tags        => [ 'http', 'methods', 'put', 'server' ],
                 :cwe         => '650',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

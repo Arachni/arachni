@@ -290,6 +290,7 @@ class CSRF < Arachni::Module::Base
                      request was intentionally provided by the user who submitted the request.
                      This is due to a lack of secure anti-CSRF tokens to verify
                      the freshness of the submitted data.},
+                :tags        => [ 'csrf', 'rdiff', 'form', 'token' ],
                 :cwe         => '352',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

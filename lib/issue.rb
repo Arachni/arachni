@@ -219,6 +219,7 @@ class Issue
     attr_accessor :opts
 
     attr_accessor :internal_modname
+    attr_accessor :tags
     attr_accessor :_hash
 
     #

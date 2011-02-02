@@ -86,6 +86,7 @@ class OSCmdInjectionTiming < Arachni::Module::Base
                     an abnormally long time to respond.
                     Either case, these issues will require further investigation
                     even if they are false positives.)},
+                :tags        => [ 'os', 'command', 'code', 'injection', 'timing', 'blind' ],
                 :cwe         => '78',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

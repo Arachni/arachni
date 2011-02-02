@@ -65,6 +65,16 @@ module Reports
             end_tag( type )
         end
 
+        def add_tags( tags )
+
+            start_tag( 'tags' )
+            tags.each {
+                |name|
+                __buffer( "<tag name=\"#{name}\" />" )
+            }
+            end_tag( 'tags' )
+        end
+
 
         def buffer
             return @__buffer

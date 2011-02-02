@@ -78,6 +78,7 @@ class XSSPath < Arachni::Module::Base
                 :name        => %q{Cross-Site Scripting (XSS) in path},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
+                :tags        => [ 'xss', 'path', 'injection', 'regexp' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

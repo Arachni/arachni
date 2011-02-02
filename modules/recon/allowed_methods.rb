@@ -64,6 +64,7 @@ class AllowedMethods < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Allowed HTTP methods},
                 :description => %q{},
+                :tags        => [ 'http', 'methods', 'options' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',

@@ -74,6 +74,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Unvalidated redirect},
                 :description => %q{The web application redirects users to unvalidated URLs.},
+                :tags        => [ 'unvalidated', 'redirect', 'injection', 'header', 'location' ],
                 :cwe         => '819',
                 :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',

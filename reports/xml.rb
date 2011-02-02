@@ -126,6 +126,8 @@ class XML < Arachni::Report::Base
 
             simple_tag( 'url', issue.url )
             simple_tag( 'element', issue.elem )
+            simple_tag( 'method', issue.method ) if issue.method
+            add_tags( issue.tags ) if issue.tags.is_a?( Array )
             simple_tag( 'variable', issue.var )
             simple_tag( 'description', issue.description )
             simple_tag( 'manual_verification', issue.verification.to_s )

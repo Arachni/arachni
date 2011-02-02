@@ -259,6 +259,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                 :name        => %q{Blind SQL Injection},
                 :description => %q{SQL code can be injected into the web application
                     even though it may not be obvious due to suppression of error messages.},
+                :tags        => [ 'sql', 'blind', 'rdiff', 'injection', 'database' ],
                 :cwe         => '89',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',

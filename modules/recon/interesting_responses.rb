@@ -67,6 +67,7 @@ class InterestingResponses < Arachni::Module::Base
             :issue   => {
                 :name        => %q{Interesting server response.},
                 :description => %q{The server responded with a non 200 (OK) code. },
+                :tags        => [ 'interesting', 'response', 'server' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',

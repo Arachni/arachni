@@ -86,6 +86,7 @@ class LDAPInjection < Arachni::Module::Base
                 :name        => %q{LDAP Injection},
                 :description => %q{LDAP queries can be injected into the web application
                     which can be used to disclose sensitive data of affect the execution flow.},
+                :tags        => [ 'ldap', 'injection', 'regexp' ],
                 :cwe         => '90',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

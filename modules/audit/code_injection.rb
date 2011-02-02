@@ -116,6 +116,7 @@ class CodeInjection < Arachni::Module::Base
                 :name        => %q{Code injection},
                 :description => %q{Arbitrary code can be injected into the web application
                     which is then executed as part of the system.},
+                :tags        => [ 'code', 'injection', 'regexp' ],
                 :cwe         => '94',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '7.5',

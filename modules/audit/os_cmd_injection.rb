@@ -85,6 +85,7 @@ class OSCmdInjection < Arachni::Module::Base
                 :name        => %q{Operating system command injection},
                 :description => %q{The web application allows an attacker to
                     execute arbitrary OS commands.},
+                :tags        => [ 'os', 'command', 'code', 'injection', 'regexp' ],
                 :cwe         => '78',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
