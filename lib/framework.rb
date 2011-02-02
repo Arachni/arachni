@@ -150,6 +150,7 @@ class Framework
 
         @plugin_store = {}
 
+        @current_url = ''
     end
 
     def http
@@ -230,8 +231,10 @@ class Framework
             :auditmap_size => @auditmap.size,
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
+            :curr_avg      => (http.curr_res_cnt / http.curr_res_time).to_i.to_s,
             :average_res_time => http.average_res_time,
-            :max_concurrency => http.max_concurrency
+            :max_concurrency => http.max_concurrency,
+            :current_page    => @current_url
         }
     end
 
@@ -515,6 +518,8 @@ class Framework
     #
     def run_mods( page )
         return if !page
+
+        @current_url = page.url.to_s
 
         @modules.each_pair {
             |name, mod|
