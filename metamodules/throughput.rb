@@ -24,6 +24,7 @@ class Throughput < Base
     HIGH_THRESHOLD = 0.5
     LOW_THRESHOLD  = 0.1
     STEP      = 1
+    MIN_CONCURRENCY = 5
 
     def initialize( framework )
         @http = framework.http
@@ -34,10 +35,10 @@ class Throughput < Base
         @http.on_complete {
 
             # adjust only after finished bursts
-            next if @http.curr_res_cnt % @http.max_concurrency != 0
+            next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
 
             print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
-            if @http.average_res_time > HIGH_THRESHOLD
+            if @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY
 
                 print_debug( "Stepping down!: -#{STEP}" )
                 @http.max_concurrency!( @http.max_concurrency - STEP )
