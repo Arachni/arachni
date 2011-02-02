@@ -63,14 +63,17 @@ class MetaModules < Arachni::Plugin::Base
 
         # load all meta-components
         @metamanager.load( ['*'] )
-        @inited = []
-        @inited = @metamanager.values.map { |klass| klass.new( @framework ) }
+        @inited = {}
+        @metamanager.each {
+            |name, klass|
+            @inited[name] = klass.new( @framework )
+        }
     end
 
     def prepare
         # prepare all meta modules here to give them a chance to set up their hooks
         # and callbacks to other framework interfaces.
-        @inited.each { |meta| meta.prepare }
+        @inited.values.each { |meta| meta.prepare }
 
         # we need to wait until the framework has finished running
         # in order to work with the full report
@@ -81,13 +84,21 @@ class MetaModules < Arachni::Plugin::Base
     end
 
     def run
+        results = { }
         # run all meta-modules
-        @inited.each { |meta| meta.run }
+        @inited.each_pair {
+            |name, meta|
+            if (metaresult = meta.run)
+                results[name] = { :results => metaresult }.merge( meta.class.info )
+            end
+        }
+
+        register_results( results )
     end
 
     def clean_up
         # let the meta-modules clean up after themselves
-        @inited.each { |meta| meta.clean_up }
+        @inited.values.each { |meta| meta.clean_up }
     end
 
     def self.info
