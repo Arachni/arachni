@@ -222,6 +222,10 @@ class Framework
             @opts.delta_time = Time.now - @opts.start_datetime
         end
 
+        if http.curr_res_cnt > 0
+            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
+        end
+
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
@@ -231,7 +235,7 @@ class Framework
             :auditmap_size => @auditmap.size,
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
-            :curr_avg      => (http.curr_res_cnt / http.curr_res_time).to_i.to_s,
+            :curr_avg      => curr_avg,
             :average_res_time => http.average_res_time,
             :max_concurrency => http.max_concurrency,
             :current_page    => @current_url
