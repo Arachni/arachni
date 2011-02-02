@@ -166,6 +166,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Cookie collector
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
     - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
+    - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
+       - Throughput -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
 
 ### Trainer subsystem
 
