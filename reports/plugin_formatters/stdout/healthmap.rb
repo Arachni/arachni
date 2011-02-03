@@ -30,11 +30,11 @@ class Stdout
             end
 
             def run
-                print_status( 'URL health list.' )
+                print_status( 'URL health-map' )
                 print_info( '--------------------' )
 
                 print_line
-                print_info( 'Color codes:' )
+                print_info( 'Legend:' )
                 print_ok( 'No issues' )
                 print_error( 'Has issues' )
                 print_line
