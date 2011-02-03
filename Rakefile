@@ -48,6 +48,18 @@ task :profile do
 end
 
 #
+# Cleans reports and logs
+#
+desc "Cleaning report and log files."
+task :clean do
+
+    sh "rm *.afr || true"
+    sh "rm logs/XMLRPC* || true"
+    sh "rm lib/ui/web/server/db/log.db || true"
+end
+
+
+#
 # Installing
 #
 desc "Build and install the arachni gem."
