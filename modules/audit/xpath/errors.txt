@@ -16,9 +16,7 @@ Expected node test or name specification after axis operator
 Incompatible XPath key
 Incorrect Variable Binding
 libxml2 library function failed
-libxml2
 xmlsec library function
-xmlsec
 error '80004005'
 A document must contain exactly one root element.
 Expression must evaluate to a node-set.
