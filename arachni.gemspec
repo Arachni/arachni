@@ -21,6 +21,8 @@ Gem::Specification.new do |s|
 
       s.files             = %w( README.md ACKNOWLEDGMENTS.md Rakefile getoptslong.rb LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.files            += Dir.glob("lib/**/**")
+      s.files            += Dir.glob("conf/**/**")
+      s.files            += Dir.glob("metamodules/**/**")
       s.files            += Dir.glob("external/**/**")
       s.files            += Dir.glob("logs/**/**")
       s.files            += Dir.glob("modules/**/**")
