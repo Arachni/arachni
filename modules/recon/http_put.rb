@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class HTTP_PUT < Arachni::Module::Base
 
@@ -51,7 +51,7 @@ class HTTP_PUT < Arachni::Module::Base
             :description    => %q{Checks if uploading files is possible using the HTTP PUT method.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
