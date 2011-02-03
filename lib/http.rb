@@ -318,7 +318,7 @@ class HTTP
 
         exception_jail {
 
-            req = Typhoeus::Request.new( URI.escape( url ), opts.merge( @opts ) )
+            req = Typhoeus::Request.new( normalize_url( url ), opts.merge( @opts ) )
             req.train! if train
 
             queue( req, async )
@@ -432,7 +432,7 @@ class HTTP
                 :timeout       => opts[:timeout]
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -472,7 +472,7 @@ class HTTP
                 :follow_location => false
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -517,7 +517,7 @@ class HTTP
                 :timeout       => opts[:timeout]
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -552,7 +552,7 @@ class HTTP
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
 
-            req = Typhoeus::Request.new( url,
+            req = Typhoeus::Request.new( normalize_url( url ),
                 :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
@@ -749,6 +749,10 @@ class HTTP
     #
     def parse_url( url )
         URI.parse( URI.encode( url ) )
+    end
+
+    def normalize_url( url )
+        URI.encode( URI.decode( url.to_s ) ).to_s
     end
 
     #

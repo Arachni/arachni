@@ -402,7 +402,7 @@ class Options
         require self.dir['lib'] + 'exceptions'
 
         begin
-            @url = URI( str.to_s )
+            @url = URI( URI.escape( URI.decode( str.to_s ) ) )
         rescue
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
