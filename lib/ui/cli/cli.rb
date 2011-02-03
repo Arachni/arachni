@@ -161,10 +161,13 @@ class CLI
     def handle_interrupt( )
         return if @interrupt_handler && @interrupt_handler.alive?
 
+        only_positives_opt = only_positives?
+        @@only_positives = false
         @interrupt_handler = Thread.new {
 
              Thread.new {
                 if gets[0] == 'e'
+                    @@only_positives = false
                     unmute!
                     @interrupt_handler.kill
 
@@ -172,6 +175,7 @@ class CLI
                      exit 0
                 end
 
+                @@only_positives = only_positives_opt
                 unmute!
                 @interrupt_handler.kill
                 Thread.kill
