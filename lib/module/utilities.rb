@@ -34,8 +34,8 @@ module Utilities
     def get_path( url )
         uri = URI( URI.escape( url ) )
         path = File.dirname( uri.path )
-        # path.chomp!( '/' )
-        return uri.scheme + "://" + uri.host + '/' + path
+        path << '/' if !path[-1] == '/'
+        return uri.scheme + "://" + uri.host + path
     end
 
     def seed
