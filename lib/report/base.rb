@@ -78,7 +78,7 @@ class Base
             plugin_results = plugins[name]
             next if !plugin_results || plugin_results[:results].empty?
 
-            formatted[name] = formatter.new( plugin_results ).run
+            formatted[name] = formatter.new( plugin_results.deep_clone ).run
         }
 
         return formatted
