@@ -36,7 +36,6 @@ pg_exec\(\) \[:
 supplied argument is not a valid MySQL
 Column count doesn't match value count at row
 mysql_fetch_array\(\)
-mysql_
 on MySQL result index
 You have an error in your SQL syntax;
 You have an error in your SQL syntax near
@@ -61,15 +60,12 @@ UPDATE .*? SET .*?
 INSERT INTO .*?
 Unknown column
 where clause
-SqlServer
 SQL syntax.*MySQL
 Warning.*mysql_.*
 valid MySQL result
-MySqlClient\.
 PostgreSQL.*ERROR
 Warning.*pg_.*
 valid PostgreSQL result
-Npgsql\.
 Driver.*SQL[\-\_\ ]*Server
 OLE DB.*SQL Server
 SQL Server.*Driver
