@@ -32,16 +32,10 @@ module Utilities
     # @return  [String]   path
     #
     def get_path( url )
-
-        filename = File.basename( URI( URI.escape( url ) ).path )
-        regexp   = URI.decode( filename ) + '(.*)'
-        path     = url.gsub( Regexp.new( regexp ), '' )
-
-        if( path == 'http:' || path == 'https:' )
-            path =  url
-        end
-
-        return path.chomp( '?' )
+        uri = URI( URI.escape( url ) )
+        path = File.dirname( uri.path )
+        # path.chomp!( '/' )
+        return uri.scheme + "://" + uri.host + '/' + path
     end
 
     def seed
