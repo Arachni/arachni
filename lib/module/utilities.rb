@@ -34,7 +34,7 @@ module Utilities
     def get_path( url )
         uri = URI( URI.escape( url ) )
         path = File.dirname( uri.path )
-        path << '/' if !path[-1] == '/'
+        path << '/' if path[-1] != '/'
         return uri.scheme + "://" + uri.host + path
     end
 
