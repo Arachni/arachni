@@ -37,10 +37,12 @@ class HTTP_PUT < Arachni::Module::Base
         return if @@__checked.include?( path )
         @@__checked << path
 
-        @http.request( path, :method => :put, :body => 'Created by Arachni.' ).on_complete {
+        body = 'Created by Arachni. PUT' + seed
+
+        @http.request( path, :method => :put, :body => body ).on_complete {
             @http.get( path ).on_complete {
                 |res|
-                __log_results( res ) if res.body && res.body.substring?( 'Arachni' )
+                __log_results( res ) if res.body && res.body.substring?( 'PUT' + seed )
             }
         }
     end
