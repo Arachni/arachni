@@ -88,7 +88,7 @@ class MetaModules < Arachni::Plugin::Base
         # run all meta-modules
         @inited.each_pair {
             |name, meta|
-            if (metaresult = meta.run)
+            if (metaresult = meta.run) && !metaresult.empty?
                 results[name] = { :results => metaresult }.merge( meta.class.info )
             end
         }
