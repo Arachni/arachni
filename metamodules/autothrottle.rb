@@ -24,7 +24,12 @@ class AutoThrottle < Base
     HIGH_THRESHOLD    = 0.9
     MIDDLE_THRESHOLD  = 0.34
     LOW_THREASHOLD    = 0.05
-    STEP      = 1
+
+    # easy on the throttle
+    STEP_UP      = 1
+    # hard on the breaks
+    STEP_DOWN    = -3
+
     MIN_CONCURRENCY = 2
 
     def initialize( framework )
@@ -41,16 +46,23 @@ class AutoThrottle < Base
             next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
 
             print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
-            if( @http.average_res_time > HIGH_THRESHOLD && @http.max_concurrency > MIN_CONCURRENCY ) ||
+            if( @http.max_concurrency > MIN_CONCURRENCY && @http.average_res_time > HIGH_THRESHOLD ) ||
                 @http.max_concurrency > @framework.opts.http_req_limit
 
-                print_debug( "Stepping down!: -#{STEP}" )
-                @http.max_concurrency!( @http.max_concurrency - STEP )
+                # make sure that @http.max_concurrency >= MIN_CONCURRENCY
+                if @http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY
+                    step = MIN_CONCURRENCY - @http.max_concurrency
+                else
+                    step = STEP_DOWN
+                end
+
+                print_debug( "Stepping down!: #{step}" )
+                @http.max_concurrency!( @http.max_concurrency + step )
 
             elsif @http.average_res_time < HIGH_THRESHOLD && @http.average_res_time > LOW_THREASHOLD
 
-                print_debug( "Stepping up!: +#{STEP}" )
-                @http.max_concurrency!( @http.max_concurrency + STEP )
+                print_debug( "Stepping up!: +#{STEP_UP}" )
+                @http.max_concurrency!( @http.max_concurrency + STEP_UP )
             end
         }
 
