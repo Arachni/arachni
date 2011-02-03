@@ -15,7 +15,7 @@ class Stdout
     module PluginFormatters
 
         #
-        # Stdout formatter for the results of the CookieCollector plugin
+        # Stdout formatter for the results of the MetaModules plugin
         #
         # @author: Tasos "Zapotek" Laskos
         #                                      <tasos.laskos@gmail.com>

@@ -8,7 +8,7 @@ class MetaModules
 module MetaFormatters
 
     #
-    # Stdout formatter for the results of the CookieCollector plugin
+    # Stdout formatter for the results of the TimeoutNotice metamodule
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
