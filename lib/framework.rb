@@ -222,6 +222,7 @@ class Framework
             @opts.delta_time = Time.now - @opts.start_datetime
         end
 
+        curr_avg = 0
         if http.curr_res_cnt > 0
             curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
         end
