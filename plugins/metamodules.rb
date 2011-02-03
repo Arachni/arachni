@@ -103,7 +103,7 @@ class MetaModules < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Meta',
+            :name           => 'Metamodules',
             :description    => %q{Performs high-level meta-analysis on the results of the scan
                 using abstract meta-modules.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',

@@ -50,6 +50,9 @@ class Manager < Arachni::ComponentManager
         @framework = framework
 
         @jobs = []
+    end
+
+    def load_defaults!
         load( ALWAYS_ON )
     end
 

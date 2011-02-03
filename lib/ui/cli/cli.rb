@@ -261,6 +261,7 @@ class CLI
 
         end
 
+        @arachni.plugins.load_defaults!
         @opts.to_h.each {
             |opt, arg|
 

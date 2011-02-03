@@ -40,13 +40,6 @@ class Manager < ::Arachni::Plugin::Manager
 
     def load( plugins )
 
-        if plugins.is_a?( Array )
-            converted = {}
-            plugins.each { |name| converted[name] = {} }
-            plugins = converted
-        end
-
-        @plugin_opts ||= {}
         @plugin_opts.merge!( plugins )
         super( plugins.keys )
     end

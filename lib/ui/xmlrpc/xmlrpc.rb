@@ -343,6 +343,13 @@ class XMLRPC
             'cookies'
         ]
 
+        @server.plugins.load(
+            {
+                'content_types' => {},
+                'healthmap'     => {},
+                'metamodules'   => {},
+            }
+        )
         @opts.to_h.each {
             |opt, arg|
 
@@ -391,12 +398,12 @@ class XMLRPC
             when 'plugins'
                 next if arg.empty?
 
+                ap arg
                 print_status 'Loading plug-ins:'
                 @server.plugins.load( arg ).each {
                     |mod|
                     print_info ' * ' + mod
                 }
-
 
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +

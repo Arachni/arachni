@@ -370,7 +370,8 @@ class Server < Sinatra::Base
         session['opts']['modules'] ||= [ '*' ]
         session['opts']['plugins'] ||= YAML::dump( {
             'content_types' => {},
-            'healthmap'     => {}
+            'healthmap'     => {},
+            'metamodules'   => {}
         } )
 
 
