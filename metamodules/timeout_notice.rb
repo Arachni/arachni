@@ -65,7 +65,7 @@ class TimeoutNotice < Base
         inconclusive = []
         @framework.audit_store.issues.each_with_index {
             |issue, idx|
-            if issue.tags.include?( TAG ) &&
+            if issue.tags && issue.tags.include?( TAG ) &&
                 avg[ URI( issue.url ).path ] >= TIME_THRESHOLD
 
                 inconclusive << {
