@@ -74,7 +74,8 @@ class CSRF < Arachni::Module::Base
         opts = {
             :headers => {
                 'cookie'  => ''
-            }
+            },
+            :remove_id => true
         }
 
         # request page without cookies, simulating a logged-out user
@@ -83,10 +84,10 @@ class CSRF < Arachni::Module::Base
 
             # set-up the parser with the proper url so that it
             # can fix broken 'action' attrs and the like
-            @__trainer.parser.url = res.effective_url.clone
+            parser = Arachni::Parser.new( Arachni::Options.instance, res )
 
             # extract forms from the body of the response
-            forms_logged_out = @__trainer.parser.forms( res.body ).reject {
+            forms_logged_out = parser.forms( res.body ).reject {
                 |form|
                 form.auditable.empty?
             }
