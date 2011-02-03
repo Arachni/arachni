@@ -22,7 +22,9 @@ class Stdout
         #                                      <zapotek@segfault.gr>
         # @version: 0.1
         #
-        class MetaModules < Arachni::Plugin::Formatter
+        class MetaModules
+
+            include Arachni::UI::Output
 
             def initialize( plugin_data )
                 @results     = plugin_data[:results]
