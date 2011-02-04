@@ -168,6 +168,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
     - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
        - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
+       - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+            It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
 
 ### Trainer subsystem
 
