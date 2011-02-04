@@ -54,7 +54,7 @@ class Auditable
     #
 
     def debug?
-        @auditor.debug?
+        @auditor.debug? rescue false
     end
 
     def print_error( str )
