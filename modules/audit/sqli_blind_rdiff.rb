@@ -29,6 +29,8 @@ module Modules
 #
 class BlindrDiffSQLInjection < Arachni::Module::Base
 
+    include Arachni::Module::Utilities
+
     def initialize( page )
         super( page )
     end
@@ -228,7 +230,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
     end
 
     def __audit_id
-        "#{URI( @page.url).path}::#{@page.query_vars.keys}"
+        "#{URI( normalize_url( @page.url ) ).path}::#{@page.query_vars.keys}"
     end
 
     def __audited?

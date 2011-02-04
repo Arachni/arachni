@@ -42,6 +42,10 @@ module Utilities
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
 
+    def normalize_url( url )
+        URI.encode( URI.decode( url.to_s ) ).to_s
+    end
+
     #
     # Gets module data files from 'modules/[modtype]/[modname]/[filename]'
     #

@@ -22,6 +22,8 @@ module MetaModules
 #
 class TimeoutNotice < Base
 
+    include Arachni::Module::Utilities
+
     # look for issue by tag name
     TAG            = 'timing'
 
@@ -45,7 +47,7 @@ class TimeoutNotice < Base
             # we don't care about non OK responses
             next if res.code != 200
 
-            path = URI( res.effective_url ).path
+            path = URI( normalize_url( res.effective_url ) ).path
             path = '/' if path.empty?
             @counter[path] ||= @times[path] ||= 0
 
@@ -66,7 +68,7 @@ class TimeoutNotice < Base
         @framework.audit_store.issues.each_with_index {
             |issue, idx|
             if issue.tags && issue.tags.include?( TAG ) &&
-                avg[ URI( issue.url ).path ] >= TIME_THRESHOLD
+                avg[ URI( normalize_url( issue.url ) ).path ] >= TIME_THRESHOLD
 
                 inconclusive << {
                     'hash'   => issue._hash,

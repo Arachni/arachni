@@ -41,7 +41,7 @@ class AllowedMethods < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        @http.request( URI( @page.url ).host, :method => :options ).on_complete {
+        @http.request( URI( normalize_url( @page.url ) ).host, :method => :options ).on_complete {
             |res|
             __log_results( res )
         }

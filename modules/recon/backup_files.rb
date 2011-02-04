@@ -50,7 +50,7 @@ class BackupFiles < Arachni::Module::Base
 
     def run( )
 
-        filename = File.basename( URI( @page.url ).path )
+        filename = File.basename( URI( normalize_url( @page.url ) ).path )
         path     = get_path( @page.url )
 
         return if @@__audited.include?( path )

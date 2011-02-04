@@ -751,10 +751,6 @@ class HTTP
         URI.parse( URI.encode( url ) )
     end
 
-    def normalize_url( url )
-        URI.encode( URI.decode( url.to_s ) ).to_s
-    end
-
     #
     # Checks whether or not the provided response is a custom 404 page
     #

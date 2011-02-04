@@ -21,6 +21,8 @@ module Plugins
 #
 class HealthMap < Arachni::Plugin::Base
 
+    include Arachni::Module::Utilities
+
     #
     # @param    [Arachni::Framework]    framework
     # @param    [Hash]        options    options passed to the plugin
@@ -71,7 +73,7 @@ class HealthMap < Arachni::Plugin::Base
     end
 
     def normalize( url )
-        query = URI( url ).query
+        query = URI( normalize_url( url ) ).query
         return url if !query
 
         url.gsub( '?' + query, '' )

@@ -43,7 +43,7 @@ class XSSURI < Arachni::Module::Base
 
     def run( )
 
-    uri  = URI( @page.url )
+    uri  = URI( normalize_url( @page.url ) )
     url  = uri.scheme + '://' + uri.host + uri.path  + @str
 
     if @@__audited.include?( url )

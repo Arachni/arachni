@@ -4,7 +4,7 @@
  *
  */
 
-
+sleep( 1 );
 echo <<<EOHTML
 
     <pre>

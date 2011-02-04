@@ -42,7 +42,7 @@ class XST < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        @http.trace( URI( @page.url ).host ).on_complete {
+        @http.trace( URI( normalize_url( @page.url ) ).host ).on_complete {
             |res|
             # checking for a 200 code is not enought, there are some weird
             # webservers out there that don't give a flying fuck about standards
