@@ -8,44 +8,7 @@ module Element
 
 class Auditable
 
-    include Arachni::UI::Output
     include Arachni::Module::Utilities
-
-    alias :o_print_error    :print_error
-    alias :o_print_status   :print_status
-    alias :o_print_info     :print_info
-    alias :o_print_ok       :print_ok
-    alias :o_print_debug    :print_debug
-    alias :o_print_verbose  :print_verbose
-    alias :o_print_line     :print_line
-
-    def print_error( str = '' )
-        o_print_error( info[:name] + ": " + str )
-    end
-
-    def print_status( str = '' )
-        o_print_status( info[:name] + ": " + str )
-    end
-
-    def print_info( str = '' )
-        o_print_info( info[:name] + ": " + str )
-    end
-
-    def print_ok( str = '' )
-        o_print_ok( info[:name] + ": " + str )
-    end
-
-    def print_debug( str = '' )
-        o_print_debug( info[:name] + ": " + str )
-    end
-
-    def print_verbose( str = '' )
-        o_print_verbose( info[:name] + ": " + str )
-    end
-
-    def print_line( str = '' )
-        o_print_line( info[:name] + ": " + str )
-    end
 
     def self.reset
         @@audited = Set.new
@@ -85,6 +48,27 @@ class Auditable
     def auditor( auditor )
         @auditor = auditor
     end
+
+    #
+    # Delegate output related methods to the auditor
+    #
+
+    def debug?
+        @auditor.debug?
+    end
+
+    def print_error( str )
+        @auditor.print_error( str )
+    end
+
+    def print_status( str )
+        @auditor.print_status( str )
+    end
+
+    def print_debug( str )
+        @auditor.print_debug( str )
+    end
+
 
     #
     # Callback invoked by {Arachni::Element::Auditable#audit} to submit
