@@ -32,6 +32,12 @@ module Utilities
     # @return  [String]   path
     #
     def get_path( url )
+
+        if File.extname( url ).empty?
+            url << '/' if url[-1] != '/'
+            return url
+        end
+
         uri = URI( URI.escape( url ) )
         path = File.dirname( uri.path )
         path << '/' if path[-1] != '/'
