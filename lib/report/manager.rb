@@ -72,6 +72,12 @@ class Manager < Arachni::ComponentManager
         report.run( )
     end
 
+    def paths
+        cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
+        return paths.reject { |path| helper?( path ) }
+    end
+
+
     def self.reset
         Arachni::Reports.reset
     end
