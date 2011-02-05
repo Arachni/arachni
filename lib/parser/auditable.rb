@@ -57,15 +57,15 @@ class Auditable
         @auditor.debug? rescue false
     end
 
-    def print_error( str )
+    def print_error( str = '' )
         @auditor.print_error( str )
     end
 
-    def print_status( str )
+    def print_status( str = '' )
         @auditor.print_status( str )
     end
 
-    def print_debug( str )
+    def print_debug( str = '' )
         @auditor.print_debug( str )
     end
 
