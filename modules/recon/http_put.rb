@@ -40,6 +40,8 @@ class HTTP_PUT < Arachni::Module::Base
         body = 'Created by Arachni. PUT' + seed
 
         @http.request( path, :method => :put, :body => body ).on_complete {
+            |res|
+            next if res.code != 201
             @http.get( path ).on_complete {
                 |res|
                 __log_results( res ) if res.body && res.body.substring?( 'PUT' + seed )
@@ -90,7 +92,7 @@ class HTTP_PUT < Arachni::Module::Base
         # register our results with the system
         register_results( [issue] )
 
-        print_ok( 'Request was accepted: ' + res.effective_url )
+        print_ok( 'File has been created: ' + res.effective_url )
     end
 
 end
