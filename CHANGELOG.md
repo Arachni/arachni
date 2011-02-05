@@ -51,6 +51,7 @@
       - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
       - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
            It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+      - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
 
 - New behavior on Ctrl+C
    - The system continues to run in the background instead of pausing
