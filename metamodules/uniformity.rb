@@ -48,7 +48,7 @@ class Uniformity < Base
         uniformals = {}
         pages      = {}
 
-        @framework.audit_store.issues.each_with_index {
+        @framework.audit_store.deep_clone.issues.each_with_index {
             |issue, idx|
 
             if issue.severity == SEVERITY && ELEMENTS.include?( issue.elem )
@@ -75,7 +75,7 @@ class Uniformity < Base
             end
         }
 
-        uniformals.reject!{ |k, v| v.size == 1 }
+        uniformals.reject!{ |k, v| v['hashes'].empty? || v['hashes'].size == 1 }
         pages.reject!{ |k, v| v.size == 1 }
 
         return if pages.empty?
