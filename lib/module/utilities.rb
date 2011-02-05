@@ -43,7 +43,15 @@ module Utilities
     end
 
     def normalize_url( url )
-        URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+        begin
+            return URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+        rescue
+            begin
+                return URI.encode( URI.decode( url.to_s ) ).to_s
+            rescue
+                return url
+            end
+        end
     end
 
     #
