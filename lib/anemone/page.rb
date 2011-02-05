@@ -231,6 +231,7 @@ class Page
     #
     def to_absolute(link)
       return nil if link.nil?
+      return @url if link.empty?
 
       # remove anchor
       link = URI.encode(link.to_s.gsub(/#[a-zA-Z0-9_-]*$/,''))

@@ -296,7 +296,7 @@ class Parser
 
         elements.reject {
             |form|
-            form.auditable.empty?
+            !form.is_a?( Element::Form ) || form.auditable.empty?
         }
     end
 
@@ -459,13 +459,13 @@ class Parser
     # +false+ otherwise
     #
     def in_domain?( uri )
-        curi = URI.parse( URI.escape( uri.to_s ) )
+        curi = URI.parse( normalize_url( uri.to_s ) )
 
         if( @opts.follow_subdomains )
             return extract_domain( curi ) ==  extract_domain( URI( @url.to_s ) )
         end
 
-        return curi.host == URI.parse( URI.escape( @url.to_s ) ).host
+        return curi.host == URI.parse( normalize_url( @url.to_s ) ).host
     end
 
     #

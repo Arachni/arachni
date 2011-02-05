@@ -400,9 +400,10 @@ class Options
 
         require 'uri'
         require self.dir['lib'] + 'exceptions'
+        require self.dir['lib'] + 'module/utilities'
 
         begin
-            @url = URI( URI.escape( URI.decode( str.to_s ) ) )
+            @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
         rescue
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
