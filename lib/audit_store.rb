@@ -111,7 +111,11 @@ class AuditStore
     # @return    [AuditStore]
     #
     def AuditStore.load( file )
-         Marshal.load( IO.read( file ) )
+         begin
+            Marshal.load( IO.read( file ) )
+         rescue
+             YAML.load( IO.read( file ) )
+         end
     end
 
     #
@@ -122,7 +126,11 @@ class AuditStore
     def save( file )
         @framework = ''
         f = File.open( file, 'w' )
-        Marshal.dump( self, f )
+        begin
+            Marshal.dump( self, f )
+        rescue
+            YAML.dump( self, f )
+        end
     end
 
     #
