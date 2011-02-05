@@ -732,6 +732,7 @@ class Server < Sinatra::Base
 
     get '/report/:name.:type' do
         settings.log.report_converted( env, params[:name] + '.' + params[:type] )
+        content_type( params[:type], :default => 'application/octet-stream' )
         settings.reports.get( params[:type], params[:name] )
     end
 
