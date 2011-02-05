@@ -84,13 +84,15 @@ class CSRF < Arachni::Module::Base
 
             # set-up the parser with the proper url so that it
             # can fix broken 'action' attrs and the like
-            parser = Arachni::Parser.new( Arachni::Options.instance, res )
+            @parser = Arachni::Parser.new( Arachni::Options.instance, res )
 
             # extract forms from the body of the response
-            forms_logged_out = parser.forms( res.body ).reject {
+            forms_logged_out = @parser.forms( res.body ).reject {
                 |form|
                 form.auditable.empty?
             }
+
+            forms_logged_out
 
             print_status( "Found #{forms_logged_out.size.to_s} context irrelevant forms." )
 
@@ -133,13 +135,13 @@ class CSRF < Arachni::Module::Base
             found_token = true if( csrf_token?( str ) )
         }
 
-        if( query = URI( form.action ).query )
+        link_vars = @parser.link_vars( form.action )
+        if( !link_vars.empty? )
             # and we also need to check for a token in the form action
-            action_splits = URI( form.action ).query.split( '=' )
-            form.simple['auditable'].to_a.flatten.each {
-                |str|
-                next if !str
-                found_token = true  if( csrf_token?( str ) )
+            link_vars.values.each {
+                |val|
+                next if !val
+                found_token = true  if( csrf_token?( val ) )
             }
         end
 
