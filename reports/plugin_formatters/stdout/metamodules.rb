@@ -60,8 +60,7 @@ class Stdout
                 lib = File.dirname( __FILE__ ) + '/metaformatters/'
 
                 # initialize a new component manager to handle the plugin formatters
-                formatters = ::Arachni::ComponentManager.new( lib, ancestor.const_get( 'MetaFormatters' ) )
-                formatters.include_formatters!
+                formatters = ::Arachni::Report::FormatterManager.new( lib, ancestor.const_get( 'MetaFormatters' ) )
 
                 # load all the formatters
                 formatters.load( ['*'] )

@@ -11,6 +11,15 @@
 module Arachni
 module Report
 
+class FormatterManager < ComponentManager
+
+    def paths
+        cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
+        return paths.reject { |path| helper?( path ) }
+    end
+
+end
+
 #
 # Arachni::Report::Base class
 #
@@ -65,8 +74,7 @@ class Base
         lib = File.dirname( report_path ) + '/plugin_formatters/' + File.basename( report_path, '.rb' ) +  '/'
 
         # initialize a new component manager to handle the plugin formatters
-        formatters = ::Arachni::ComponentManager.new( lib, ancestor.const_get( 'PluginFormatters' ) )
-        formatters.include_formatters!
+        formatters = FormatterManager.new( lib, ancestor.const_get( 'PluginFormatters' ) )
 
         # load all the formatters
         formatters.load( ['*'] )

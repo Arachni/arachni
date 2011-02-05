@@ -18,18 +18,17 @@ class XML
 module PluginFormatters
 
 class MetaModules
-
 module MetaFormatters
 
     #
-    # XML formatter for the results of the TimeoutNotice metamodule
+    # XML formatter for the results of the Uniformity metamodule
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class TimeoutNotice < Arachni::Plugin::Formatter
+    class Uniformity < Arachni::Plugin::Formatter
 
         include Arachni::Reports::Buffer
 
@@ -39,22 +38,38 @@ module MetaFormatters
         end
 
         def run
-            start_tag( 'timeout_notice' )
+            start_tag( 'uniformity' )
             simple_tag( 'description', @description )
             start_tag( 'results' )
 
-            @results.each { |issue| add_issue( issue ) }
+            uniformals = @results['uniformals']
+            pages      = @results['pages']
+
+            uniformals.each_pair {
+                |id, uniformal|
+
+                start_uniformals( id )
+
+                uniformal['hashes'].each_with_index {
+                    |hash, i|
+                    add_uniformal( i, uniformal )
+                }
+
+                end_tag( 'uniformals' )
+            }
 
             end_tag( 'results' )
-            end_tag( 'timeout_notice' )
+            end_tag( 'uniformity' )
         end
 
-        def add_issue( issue )
-            __buffer( "<issue hash=\"#{issue['hash'].to_s}\" " +
-                " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
-                " url=\"#{issue['url']}\" element=\"#{issue['elem']}\" " +
-                " variable=\"#{issue['var']}\" method=\"#{issue['method']}\" />" )
+        def add_uniformal( idx, uniformal )
+            __buffer( "<issue index=\"#{uniformal['indices'][idx]}\" hash=\"#{uniformal['hashes'][idx]}\" />" )
         end
+
+        def start_uniformals( id )
+            __buffer( "<uniformals id=\"#{id}\">" )
+        end
+
 
     end
 

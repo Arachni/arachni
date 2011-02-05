@@ -249,15 +249,7 @@ class ComponentManager < Hash
         return paths.reject { |path| helper?( path ) }
     end
 
-    def include_formatters!
-        @include_formatters = true
-    end
-
     private
-
-    def include_formatters?
-        return @include_formatters || false
-    end
 
     def print_errors( name, errors )
 
@@ -293,11 +285,7 @@ class ComponentManager < Hash
 
 
     def helper?( path )
-        if path.substring?( 'formatters' ) && !include_formatters?( )
-            return true
-        else
-            return File.exist?( File.dirname( path ) + '.rb' )
-        end
+        return File.exist?( File.dirname( path ) + '.rb' )
     end
 
 end
