@@ -95,6 +95,10 @@ class Server < Sinatra::Base
             CGI.escapeHTML( str )
         end
 
+        def unescape( str )
+            CGI.unescapeHTML( str )
+        end
+
         def selected_tab?( tab )
             splits = env['PATH_INFO'].split( '/' )
             ( splits.empty? && tab == '/' ) || splits[1] == tab
@@ -294,6 +298,26 @@ class Server < Sinatra::Base
         end
 
         return cparams
+    end
+
+    def escape_hash( hash )
+        hash.each_pair {
+            |k, v|
+            hash[k] = escape( hash[k] ) if hash[k].is_a?( String )
+            hash[k] = escape_hash( v ) if v.is_a? Hash
+        }
+
+        return hash
+    end
+
+    def unescape_hash( hash )
+        hash.each_pair {
+            |k, v|
+            hash[k] = unescape( hash[k] ) if hash[k].is_a?( String )
+            hash[k] = unescape_hash( v ) if v.is_a? Hash
+        }
+
+        return hash
     end
 
     def prep_modules( params )
@@ -549,6 +573,8 @@ class Server < Sinatra::Base
 
             session['opts']['settings']['url'] = params['url']
 
+            unescape_hash( session['opts'] )
+
             session['opts']['settings']['audit_links']   = true if session['opts']['settings']['audit_links']
             session['opts']['settings']['audit_forms']   = true if session['opts']['settings']['audit_forms']
             session['opts']['settings']['audit_cookies'] = true if session['opts']['settings']['audit_cookies']
@@ -577,7 +603,7 @@ class Server < Sinatra::Base
     # sets modules
     #
     post "/modules" do
-        session['opts']['modules'] = prep_modules( params )
+        session['opts']['modules'] = prep_modules( escape_hash( params ) )
         flash.now[:notice] = "Modules updated."
         show :modules, true
     end
@@ -592,7 +618,7 @@ class Server < Sinatra::Base
     # sets plugins
     #
     post "/plugins" do
-        session['opts']['plugins'] = YAML::dump( prep_plugins( params ) )
+        session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
         flash.now[:notice] = "Plugins updated."
         show :plugins, true
     end
@@ -609,7 +635,11 @@ class Server < Sinatra::Base
 
         if session['opts']['settings']['url']
             url = session['opts']['settings']['url'].dup
-            session['opts']['settings'] = prep_opts( params )
+        end
+
+         session['opts']['settings'] = prep_opts( escape_hash( params ) )
+
+        if session['opts']['settings']['url']
             session['opts']['settings']['url'] = url
         end
 
