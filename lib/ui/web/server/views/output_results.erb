@@ -6,30 +6,43 @@
   <body>
     <div id="container">
         <% if issues.size > 0 %>
-        <h4>Total: <%=issues.size%></h4>
-        <% issues.each_with_index do |issue, i|%>
-        <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
-        <p>
-             In <%= issue.elem %>
 
-             <% if issue.var && issue.var != 'n/a' %>
-             input <em><%= issue.var %></em>
-             <%end%>
+            <h4>Total: <%=issues.size%></h4>
+            <% issues.each_with_index do |issue, i|%>
+                <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
+                <p>
+                     In <%= issue.elem %>
 
-             <% if issue.method && issue.method != 'n/a' %>
-             using <%= issue.method %>
-             <%end%>
+                     <% if issue.var && issue.var != 'n/a' %>
+                     input <em><%= issue.var %></em>
+                     <%end%>
 
-             at <a href="<%= issue.url %>"><%= issue.url %></a>.
-             </br>
-         <% if issue.method && issue.method.downcase == 'get' %>
-             <strong>Live sample:</strong> <a href="<%=issue.variations[0]['url']%>"><%=issue.variations[0]['url']%></a>
-         </p>
-         <%end%>
-        <%end%>
+                     <% if issue.method && issue.method != 'n/a' %>
+                     using <%= issue.method %>
+                     <%end%>
+
+                     at <a href="<%= issue.url %>"><%= issue.url %></a>.
+                     </br>
+
+                 <% if issue.method && issue.method.downcase == 'get' %>
+                     <strong>Live sample:</strong> <a href="<%=issue.variations[0]['url']%>"><%=issue.variations[0]['url']%></a>
+                 <% elsif issue.method && issue.method.downcase == 'post' && issue.variations[0]['opts'][:combo]%>
+                    <form action="<%=issue.url%>" target="_blank" method="post">
+                        <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
+                        <input type="hidden" name="<%=name%>" value="<%=escape( value )%>" />
+                        <%end%>
+                        <input type="submit" value="Live sample">
+                    </form>
+                 <%end%>
+
+                 </p>
+
+            <%end%>
+
         <%else%>
-        <h4> Nothing yet, once something is found you'll be the first to know...</h4>
+            <h4> Nothing yet, once something is found you'll be the first to know...</h4>
         <%end%>
+
     </div>
   </body>
 </html>
