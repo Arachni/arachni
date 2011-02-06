@@ -11,3 +11,7 @@ _mmServerScripts/MMHTTPDB.asp
 _mmDBScripts/MMHTTPDB.php
 _mmDBScripts/MMHTTPDB.asp
 config/database.yml
+install.php
+wp-admin/install.php
+wp-admin/setup-config.php
+config.php
