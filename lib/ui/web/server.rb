@@ -642,6 +642,18 @@ class Server < Sinatra::Base
         end
     end
 
+    get "/instance/:port/output_results" do
+        begin
+            arachni = connect_to_instance( params[:port] )
+            if !arachni.framework.paused? && arachni.framework.busy?
+                erb :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues
+            end
+        rescue Errno::ECONNREFUSED
+            "The server has been shut down."
+        end
+    end
+
+
     post "/*/:port/pause" do
         arachni = connect_to_instance( params[:port] )
 

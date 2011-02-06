@@ -33,4 +33,12 @@
         </div>
 
         <%= erb :flash, {:layout => false} %>
-        <iframe src="/instance/<%= params['port'] %>/output" width="100%" height="70%"/> </iframe>
+        <div class="left">
+            <h3>Progress output:</h3>
+            <iframe src="/instance/<%= params['port'] %>/output" width="100%" height="70%"/> </iframe>
+        </div>
+
+        <div class="right">
+            <h3>Results thus far:</h3>
+            <iframe src="/instance/<%= params['port'] %>/output_results" width="100%" height="70%"/> </iframe>
+        </div>
