@@ -29,7 +29,7 @@
                  <% elsif issue.method && issue.method.downcase == 'post' && issue.variations[0]['opts'][:combo]%>
                     <form action="<%=issue.url%>" target="_blank" method="post">
                         <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
-                        <input type="hidden" name="<%=name%>" value="<%=escape( value )%>" />
+                        <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
                         <%end%>
                         <input type="submit" value="Live sample">
                     </form>
