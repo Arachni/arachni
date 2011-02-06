@@ -236,6 +236,7 @@ module Auditor
             :verification => opts[:verification] || false,
             :method       => method  || '<n/a>',
             :response     => response || '<n/a>',
+            :opts         => opts,
             :headers      => {
                 :request    => request_headers,
                 :response   => response_headers,
