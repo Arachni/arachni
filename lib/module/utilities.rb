@@ -33,13 +33,13 @@ module Utilities
     #
     def get_path( url )
 
-        if File.extname( url ).empty?
-            url << '/' if url[-1] != '/'
-            return url
+        uri  = URI( URI.escape( url ) )
+        path = uri.path
+
+        if !File.extname( path ).empty?
+            path = File.dirname( path )
         end
 
-        uri = URI( URI.escape( url ) )
-        path = File.dirname( uri.path )
         path << '/' if path[-1] != '/'
         return uri.scheme + "://" + uri.host + path
     end
