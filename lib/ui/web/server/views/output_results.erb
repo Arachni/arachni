@@ -6,8 +6,9 @@
   <body>
     <div id="container">
         <% if issues.size > 0 %>
-        <% issues.each do |issue|%>
-        <h5><%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
+        <h4>Total: <%=issues.size%></h4>
+        <% issues.each_with_index do |issue, i|%>
+        <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
         <p>
              In <%= issue.elem %>
 
