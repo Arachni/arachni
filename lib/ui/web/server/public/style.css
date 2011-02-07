@@ -436,7 +436,6 @@ li ol, li ul {
 }
 
 .footer-content {
-    width: 960px;
     margin: 0 auto;
     display: block;
     padding-bottom: 30px;
@@ -524,11 +523,9 @@ li ol, li ul {
     padding: 5px;
 }
 div#footer-links p {
-    text-align: right;
     padding: 0;
     margin: 0 auto;
     font-size: 10px;
-    width: 960px;
     display: block;
 }
 #footer-links a {
