@@ -108,12 +108,9 @@ class Backdoors < Arachni::Module::Base
         url = res.effective_url
         # append the result to the results array
         @results << Issue.new( {
-            :var          => 'n/a',
             :url          => url,
             :injected     => filename,
             :id           => filename,
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
             :elem         => Issue::Element::PATH,
             :response     => res.body,
             :headers      => {

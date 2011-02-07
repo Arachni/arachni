@@ -226,16 +226,16 @@ module Auditor
         # Instantiate a new Vulnerability class and
         # append it to the results array
         vuln = Issue.new( {
-            :var          => opts[:altered] || '<n/a>',
+            :var          => opts[:altered],
             :url          => url,
-            :injected     => opts[:injected] || '<n/a>',
-            :id           => opts[:id] || '<n/a>',
-            :regexp       => opts[:regexp].to_s || '<n/a>',
-            :regexp_match => opts[:match].to_s || '<n/a>',
+            :injected     => opts[:injected],
+            :id           => opts[:id],
+            :regexp       => opts[:regexp],
+            :regexp_match => opts[:match],
             :elem         => opts[:element],
             :verification => opts[:verification] || false,
-            :method       => method  || '<n/a>',
-            :response     => response || '<n/a>',
+            :method       => method,
+            :response     => response,
             :opts         => opts,
             :headers      => {
                 :request    => request_headers,

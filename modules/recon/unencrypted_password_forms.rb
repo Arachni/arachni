@@ -78,17 +78,8 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         @results << Issue.new( {
             :var          => name,
             :url          => url,
-            :injected     => 'n/a',
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-            :method       => 'n/a',
-            :headers      => {
-                :request    => 'n/a',
-                :response   => 'n/a',
-            }
         }.merge( self.class.info ) )
 
         print_ok( "Found unprotected password field '#{input['name']}' at #{url}" )

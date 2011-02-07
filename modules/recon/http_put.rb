@@ -74,13 +74,8 @@ class HTTP_PUT < Arachni::Module::Base
     def __log_results( res )
 
         issue = Issue.new( {
-            :var          => 'n/a',
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
             :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {

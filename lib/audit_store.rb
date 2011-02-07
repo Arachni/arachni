@@ -258,9 +258,11 @@ class AuditStore
         issues.each {
             |issue|
 
+            var = issue.var || ''
+
             __id  = issue.mod_name +
              '::' + issue.elem + '::' +
-                issue.var + '::' +
+                var + '::' +
                 issue.url.split( /\?/ )[0]
 
             orig_url  = issue.url
@@ -274,8 +276,9 @@ class AuditStore
                 new_issues[__id].variations = []
             end
 
-            issue.headers['request']  = issue.headers[:request]
-            issue.headers['response'] = issue.headers[:response]
+            issue.headers ||= {}
+            issue.headers['request']  = issue.headers[:request] || {}
+            issue.headers['response'] = issue.headers[:response] || {}
 
             new_issues[__id]._hash = Digest::MD5.hexdigest( __id )
 

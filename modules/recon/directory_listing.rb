@@ -150,16 +150,10 @@ class DirectoryListing < Arachni::Module::Base
         return if res.code != 200 || res.body.empty?
 
         issue = Issue.new( {
-            :var          => 'n/a',
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
             :elem         => Issue::Element::SERVER,
             :response     => res.body,
-            :verification => 'true',
             :headers      => {
                 :request    => res.request.headers,
                 :response   => res.headers,

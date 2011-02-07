@@ -63,7 +63,7 @@ class AllowedMethods < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Allowed HTTP methods},
-                :description => %q{},
+                :description => %q{The webserver claims that it supports the logged methods.},
                 :tags        => [ 'http', 'methods', 'options' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::INFORMATIONAL,
@@ -81,12 +81,8 @@ class AllowedMethods < Arachni::Module::Base
         return if !methods || methods.empty?
 
         issue = Issue.new( {
-            :var          => 'n/a',
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
             :regexp_match => methods,
             :elem         => Issue::Element::SERVER,
             :response     => res.body,

@@ -167,10 +167,10 @@ class Stdout < Arachni::Report::Base
             |var, i|
             print_info( "Variation #{i+1}:" )
             print_info( 'URL: ' + var['url'] )
-            print_info( 'ID:  ' + var['id'] )
-            print_info( 'Injected value:     ' + var['injected'] )
-            print_info( 'Regular expression: ' + var['regexp'].to_s )
-            print_info( 'Matched string:     ' + var['regexp_match'] )
+            print_info( 'ID:  ' + var['id'].to_s ) if var['id']
+            print_info( 'Injected value:     ' + var['injected'].to_s ) if var['injected']
+            print_info( 'Regular expression: ' + var['regexp'].to_s ) if var['regexp']
+            print_info( 'Matched string:     ' + var['regexp_match'].to_s ) if var['regexp_match']
 
             print_line
         }
