@@ -128,7 +128,7 @@ class XML < Arachni::Report::Base
             simple_tag( 'element', issue.elem )
             simple_tag( 'method', issue.method ) if issue.method
             add_tags( issue.tags ) if issue.tags.is_a?( Array )
-            simple_tag( 'variable', issue.var )
+            simple_tag( 'variable', issue.var ) if issue.var
             simple_tag( 'description', issue.description )
             simple_tag( 'manual_verification', issue.verification.to_s )
 
@@ -188,10 +188,10 @@ class XML < Arachni::Report::Base
             start_tag( 'variation' )
 
             simple_tag( 'url', var['url'] )
-            simple_tag( 'id', URI.encode( var['id'] ) )
-            simple_tag( 'injected', URI.encode( var['injected'] ) )
-            simple_tag( 'regexp', var['regexp'].to_s )
-            simple_tag( 'regexp_match', var['regexp_match'] )
+            simple_tag( 'id', URI.encode( var['id'] ) ) if var['id']
+            simple_tag( 'injected', URI.encode( var['injected'] ) ) if var['injected']
+            simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
+            simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
 
             start_tag( 'headers' )
 
