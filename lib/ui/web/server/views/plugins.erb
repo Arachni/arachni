@@ -8,8 +8,8 @@
                 <h2>Plugins</h2>
                 <p>
                     Plugin components extend the functionality of the framework in abstract ways.
-                </br>
-                </br>
+                <br/>
+                <br/>
                 </p>
                 <p>
                     <input type="button" onclick="javascript:checkAll( 'plugin' );" value="Check all"/>
@@ -19,7 +19,6 @@
             </div>
 
             <% plugins.each do |plugin|%>
-            <p>
                 <fieldset>
                 <h3>
                     <legend>
@@ -37,11 +36,10 @@
                 <%= erb :options, { :layout => false }, :component => plugin%>
 
                 <p>
-                    <strong>Version:</strong> <%=plugin['version']%></br>
+                    <strong>Version:</strong> <%=plugin['version']%><br/>
                     <strong>Author:</strong> <%=escape( plugin['author'])%>
                 </p>
                 </fieldset>
-            </p>
             <% end %>
 
         </form>

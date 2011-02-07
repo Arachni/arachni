@@ -1,3 +1,13 @@
+=begin
+                  Arachni
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
 module Arachni
 module UI
 module Web
@@ -19,7 +29,7 @@ module Web
             @instance = instance
 
             @style   = '<link rel="stylesheet" href="/style.css" type="text/css" /><pre>'
-            @refresh = '<meta http-equiv="refresh" content="1"/">'
+            @refresh = '<meta http-equiv="refresh" content="1"/>'
             @buffer  = []
 
             @icon_whitelist = {}
@@ -63,7 +73,7 @@ module Web
                 next if out.values[0].empty?
 
                 icon = @icon_whitelist[type] || ''
-                str = icon + CGI.escapeHTML( " #{out.values[0]}" ) + "</br>"
+                str = icon + CGI.escapeHTML( " #{out.values[0]}" ) + "<br/>"
                 @@last_output << str
                 yield str
 

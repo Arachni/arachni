@@ -8,7 +8,7 @@
                 <h2>Modules</h2>
                 <p>
                     Module components assert and log entities of security interest about a web application.
-                </br></br>
+                <br/><br/>
                 </p>
                 <p>
                     <input type="button" onclick="javascript:checkAll( 'audit' );checkAll( 'recon' );" value="Check all"/>
@@ -19,7 +19,7 @@
 
             <div class="left">
                 <fieldset>
-                    <legend><h3>Audit</h3></legend>
+                    <h3>Audit</h3>
                     <p>Audit modules actively test the web application via inputs like link parameters, forms, cookies and headers in order to assert the existence of security Issues.</p>
                     <p>
                         <input type="button" onclick="javascript:checkAll( 'audit' );" value="Check all"/>
@@ -28,7 +28,6 @@
 
                     <% modules.each do |mod|%>
                     <% next if mod['path'] =~ /recon/ %>
-                    <p>
                         <h4>
                             <input type="checkbox" class="audit" name="modules[<%=mod['mod_name']%>]"
                                 <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
@@ -36,18 +35,17 @@
                         </h4>
                         <div class="notice"> <%=escape( mod['description'] )%></div>
                         <p>
-                            <strong>Version:</strong> <%=mod['version']%></br>
+                            <strong>Version:</strong> <%=mod['version']%><br/>
                             <strong>Author:</strong> <%=escape( mod['author'])%>
                         </p>
 
-                    </p>
                     <% end %>
                 </fieldset>
             </div>
 
             <div class="right">
                 <fieldset>
-                    <legend><h3>Recon</h3></legend>
+                    <h3>Recon</h3>
                     <p>Recon modules passively test the web application, mainly analyzing server configuration, responses and looking for directories and files.</p>
                     <p>
                         <input type="button" onclick="javascript:checkAll( 'recon' );" value="Check all"/>
@@ -56,7 +54,6 @@
 
                     <% modules.each do |mod|%>
                     <% next if mod['path'] =~ /audit/ %>
-                    <p>
                         <h4>
                             <input type="checkbox" class="recon" name="modules[<%=mod['mod_name']%>]"
                                 <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
@@ -64,11 +61,9 @@
                         </h4>
                         <div class="notice"> <%=escape( mod['description'] )%></div>
                         <p>
-                            <strong>Version:</strong> <%=mod['version']%></br>
+                            <strong>Version:</strong> <%=mod['version']%><br/>
                             <strong>Author:</strong> <%=escape( mod['author'])%>
                         </p>
-
-                    </p>
                     <% end %>
                 </fieldset>
             </div>

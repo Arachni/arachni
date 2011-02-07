@@ -1,7 +1,10 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
   <head>
+      <title></title>
     <link rel="stylesheet" href="/style.css" type="text/css" />
-    <meta http-equiv="refresh" content="5"/">
+    <meta http-equiv="refresh" content="5"/>
   </head>
   <body>
     <div id="container">
@@ -10,7 +13,6 @@
             <h4>Total: <%=issues.size%></h4>
             <% issues.each_with_index do |issue, i|%>
                 <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
-                <p>
                      In <%= issue.elem %>
 
                      <% if issue.var && issue.var != 'n/a' %>
@@ -22,20 +24,20 @@
                      <%end%>
 
                      at <a href="<%= issue.url %>"><%= issue.url %></a>.
-                     </br>
+                     <br/>
 
                  <% if issue.method && issue.method.downcase == 'get' %>
-                     <strong>Live sample:</strong> <a href="<%=issue.variations[0]['url']%>"><%=issue.variations[0]['url']%></a>
+                     <strong>Live sample:</strong> <a href="<%=escape(issue.variations[0]['url'])%>"><%=escape(issue.variations[0]['url'])%></a>
                  <% elsif issue.method && issue.method.downcase == 'post' && issue.variations[0]['opts'][:combo]%>
                     <form action="<%=issue.url%>" target="_blank" method="post">
                         <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
                         <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
                         <%end%>
-                        <input type="submit" value="Live sample">
+                        <input type="submit" value="Live sample" />
                     </form>
                  <%end%>
 
-                 </p>
+                 <br/>
 
             <%end%>
 

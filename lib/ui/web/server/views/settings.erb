@@ -7,8 +7,8 @@
                 <div id="page-intro">
                     <h2>Settings</h2>
                     <p>General settings regarding the internals of the Arachni Framework.
-                        </br>
-                        </br>
+                        <br/>
+                        <br/>
                      </p>
                     <p>
                         <input type="submit" class="reset" value="Save" />
@@ -17,7 +17,7 @@
 
             <div class="left options">
                 <fieldset>
-                    <legend><h3>Auditor</h3></legend>
+                    <h3><legend>Auditor</legend></h3>
                     <p>
                         Audit links: <input type="checkbox" name="audit_links" <% if session['opts']['settings']['audit_links'] == true %> checked="checked" <% end %> />
                     </p>
@@ -32,18 +32,18 @@
                     </p>
                     <p>
                         Cookies to exclude: <textarea name="exclude_cookies"><%=session['opts']['settings']['exclude_cookies']%></textarea>
-                        </br>(Newline separated)
+                        <br/>(Newline separated)
                     </p>
                 </fieldset>
 
                 <fieldset>
-                    <legend><h3>HTTP options</h3></legend>
+                    <h3><legend>HTTP options</legend></h3>
                     <p>
                         Cocurrent HTTP request limit: <input name="http_req_limit" value="<%=session['opts']['settings']['http_req_limit']%>"/>
                     </p>
                     <p>
                         HTTP harvest last: <input type="checkbox" name="http_harvest_last" <% if session['opts']['settings']['http_harvest_last'] == true %> checked="checked" <% end %> />
-                    <p>
+                    </p>
                     <p>
                         Cookie jar: <input type="file" name="cookiejar" size="25" />
                     </p>
@@ -60,31 +60,31 @@
             <div class="right options">
 
                 <fieldset>
-                    <legend><h3>Crawler options</h3></legend>
+                    <h3><legend>Crawler options</legend></h3>
                     <p>
                         Exclude rules: <textarea name="exclude"><% if session['opts']['settings']['exclude']%><%=session['opts']['settings']['exclude'].join( "\r\n" )%><%end%></textarea>
-                        </br>(Newline separated)
+                        <br/>(Newline separated)
                     </p>
                     <p>
                     Include rules: <textarea name="include"><% if session['opts']['settings']['include']%><%=session['opts']['settings']['include'].join( "\r\n" )%><%end%></textarea>
-                        </br>(Newline separated)
+                        <br/>(Newline separated)
                     </p>
                     <p>
                         Redundant rules: <textarea name="redundant"><%=format_redundants( session['opts']['settings']['redundant'] )%></textarea>
-                    </br>(Newline separated)
-                    </br>(<em>regexp:counter</em>)
+                    <br/>(Newline separated)
+                    <br/>(<em>regexp:counter</em>)
                     </p>
                     <p>
                         Depth: <input name="depth_limit" value="<%=session['opts']['settings']['depth_limit']%>"/>
-                        </br>(Default: infinite)
+                        <br/>(Default: infinite)
                     </p>
                     <p>
                         Link count limit: <input name="link_count_limit" value="<%=session['opts']['settings']['link_count_limit']%>"/>
-                        </br>(Default: infinite)
+                        <br/>(Default: infinite)
                     </p>
                     <p>
                         Redirect limit: <input name="redirect_limit" value="<%=session['opts']['settings']['redirect_limit']%>"/>
-                        </br>(Default: infinite)
+                        <br/>(Default: infinite)
                     </p>
                     <p>
                         Follow subdomain: <input type="checkbox" name="follow_subdomains" <% if session['opts']['settings']['follow_subdomains'] == true %> checked="checked" <% end %> />

@@ -2,11 +2,10 @@
         <div id="page-intro">
             <h2>Reports</h2>
             <p>This page allows you to review the results of the scans you have performed and export them in various formats.
-            </br></br>
+            <br/><br/>
             </p>
 
             <% if report_count > 0 %>
-            <p>
                 <form action="/reports/formats" method="get">
                     <input type="submit" value="View formats" />
                 </form>
@@ -15,7 +14,6 @@
                     <%= csrf_tag %>
                     <input type="submit" value="Delete all" />
                 </form>
-            </p>
             <% end %>
 
         </div>
@@ -37,12 +35,12 @@
 
                 <td>
                     <% available.each do |avail| %>
-                    <a href="/report/<%=report['name']%>.<%=avail['rep_name']%>"><%=avail['name']%></a></br>
+                    <a href="/report/<%=CGI.escape(report['name'])%>.<%=avail['rep_name']%>"><%=avail['name']%></a><br/>
                     <%end%>
                 </td>
 
                 <td>
-                    <form action="/report/<%=report['name']%>/delete" method="post">
+                    <form action="/report/<%=CGI.escape(report['name'])%>/delete" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Delete" />
                     </form>

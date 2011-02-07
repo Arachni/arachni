@@ -3,7 +3,7 @@
         <% component['options'].each do |opt| %>
             <p class="options">
 
-                <%=opt['desc']%> <% if opt['required'] %> <strong>*</strong> <%end%>
+                <%=escape(opt['desc'])%> <% if opt['required'] %> <strong>*</strong> <%end%>
 
                 <input name="options[<%=component['plug_name']%>][<%=opt['name']%>]"
 
