@@ -42,7 +42,8 @@ td {
 
 iframe.output {
     width: 100%;
-    height: 560px
+    height: 560px;
+    border: 0px
 }
 
 code, blockquote {
@@ -249,7 +250,8 @@ li ol, li ul {
 
 #nav {
     height: 50px;
-    width: 960px;
+    min-width: 960px;
+    width: 68%;
 }
 
 #nav ul {
@@ -534,3 +536,49 @@ div#footer-links p {
     font-weight: bold;
     text-decoration: underline;
 }
+
+.err, .ok {
+    margin: 0.3em 0;
+    padding: 5px 7px;
+    text-align: center;
+    color: #fff;
+}
+
+.ok {
+    background: #00A8FF;
+}
+
+.err {
+    background: #f10;
+}
+
+.err_on {
+    display: inline-block;
+    padding: 0px 3px;
+    color: #f10;
+    font-weight: bold;
+}
+
+.notice {
+    background: #ffc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.left {
+    float: left;
+    width: 49%;
+    padding-right: 5px
+}
+
+.right {
+    float: right;
+    width: 50%;
+    border-left: 1px
+}
+
+.height_scroller {
+    height: 300px;
+    overflow: scroll
+}
+
