@@ -1,8 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" dir="ltr">
   <head>
-      <title></title>
+    <title></title>
     <link rel="stylesheet" href="/style.css" type="text/css" />
     <meta http-equiv="refresh" content="5"/>
   </head>
@@ -12,6 +11,7 @@
 
             <h4>Total: <%=issues.size%></h4>
             <% issues.each_with_index do |issue, i|%>
+            <div>
                 <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
                      In <%= issue.elem %>
 
@@ -27,7 +27,9 @@
                      <br/>
 
                  <% if issue.method && issue.method.downcase == 'get' %>
+                 <p>
                      <strong>Live sample:</strong> <a href="<%=escape(issue.variations[0]['url'])%>"><%=escape(issue.variations[0]['url'])%></a>
+                 </p>
                  <% elsif issue.method && issue.method.downcase == 'post' && issue.variations[0]['opts'][:combo]%>
                     <form action="<%=issue.url%>" target="_blank" method="post">
                         <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
@@ -37,8 +39,7 @@
                     </form>
                  <%end%>
 
-                 <br/>
-
+            </div>
             <%end%>
 
         <%else%>

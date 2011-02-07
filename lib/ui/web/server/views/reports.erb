@@ -34,9 +34,11 @@
                 <td><%=report['date']%></td>
 
                 <td>
+                    <ul class="reports">
                     <% available.each do |avail| %>
-                    <a href="/report/<%=CGI.escape(report['name'])%>.<%=avail['rep_name']%>"><%=avail['name']%></a><br/>
+                    <li><a href="/report/<%=CGI.escape(report['name'])%>.<%=avail['rep_name']%>"><%=avail['name']%></a></li>
                     <%end%>
+                    </ul>
                 </td>
 
                 <td>
