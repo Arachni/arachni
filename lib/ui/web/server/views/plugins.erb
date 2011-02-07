@@ -20,7 +20,6 @@
 
             <% plugins.each do |plugin|%>
                 <fieldset>
-                <h3>
                     <legend>
                         <input <%if plugin_has_required_file_option?( plugin['options'] )%> disabled="disabled" <%end%> type="checkbox" class="plugin" name="plugins[<%=plugin['plug_name']%>]"
                         <% if session['opts']['plugins'] && session['opts']['plugins'].include?( plugin['plug_name'] ) %> checked="checked" <% end %> />
@@ -29,7 +28,6 @@
                         <em> (This plugin requires an option type which is not yet supported by the WebUI)</em>
                         <%end%>
                     </legend>
-                </h3>
                 <h5>Description</h5>
                 <div class="notice"> <%=escape( plugin['description'] )%></div>
 
