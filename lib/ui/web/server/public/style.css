@@ -207,7 +207,7 @@ li ol, li ul {
 }
 
 .spider {
-    background: transparent url('spider.png') no-repeat  left;
+    background: transparent url('spider.png') no-repeat  right;
 
 }
 
@@ -230,7 +230,7 @@ li ol, li ul {
 
 #header h1 a {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, Sans-Serif;
-    color: #DDD;
+    color: #FFF;
     font-size: 45px;
     font-weight: bold;
     text-decoration: none;
