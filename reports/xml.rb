@@ -217,7 +217,7 @@ class XML < Arachni::Report::Base
 
             end_tag( 'headers' )
 
-            if !var['response'].empty? && var['response'] != '<n/a>'
+            if var['response'] && !var['response'].empty?
                 simple_tag( 'html', Base64.encode64( var['response'] ) )
             end
 
