@@ -92,8 +92,6 @@ class CSRF < Arachni::Module::Base
                 form.auditable.empty?
             }
 
-            forms_logged_out
-
             print_status( "Found #{forms_logged_out.size.to_s} context irrelevant forms." )
 
             # get forms that are worthy of testing for CSRF
