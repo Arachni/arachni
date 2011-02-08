@@ -193,7 +193,7 @@ module Auditor
 
         method = nil
 
-        request_headers  = '<n/a>'
+        request_headers  = nil
         response_headers = @page.response_headers
         response         = @page.html
         url              = @page.url
