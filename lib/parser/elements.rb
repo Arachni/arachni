@@ -143,6 +143,8 @@ end
 
 class Form < Base
 
+    include Arachni::Module::Utilities
+
     FORM_VALUES_ORIGINAL  = '__original_values__'
     FORM_VALUES_SAMPLE    = '__sample_values__'
 
@@ -199,10 +201,9 @@ class Form < Base
         id = simple['attrs'].to_s
 
         auditable.map {
-            |item|
-            citem = item.clone
-            citem.delete( 'value' )
-            id +=  citem.to_s
+            |name, value|
+            next if name.substring?( seed )
+            id +=  name
         }
 
         return id
