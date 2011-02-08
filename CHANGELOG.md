@@ -47,6 +47,7 @@
    - Cookie collector    -- Listens to all traffic and logs changes in cookies
    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
    - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
+   - WAF (Web Application Firewall) Detector
    - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
       - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
       - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
