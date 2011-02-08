@@ -97,7 +97,6 @@ class XSSURI < Arachni::Module::Base
             url = res.effective_url
             # append the result to the results hash
             @results << Issue.new( {
-                :var          => 'n/a',
                 :url          => url,
                 :injected     => @str,
                 :id           => @str,

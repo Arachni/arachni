@@ -252,16 +252,8 @@ class CSRF < Arachni::Module::Base
         issue = Issue.new( {
             :var          => name,
             :url          => url,
-            :injected     => 'n/a',
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-            :headers      => {
-                :request    => 'n/a',
-                :response   => 'n/a',
-            }
         }.merge( self.class.info ) )
 
         print_ok( "Found unprotected form with name '#{name}' at '#{url}'" )
