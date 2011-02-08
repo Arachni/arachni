@@ -124,6 +124,8 @@ class Trainer
             @updated = true
 
             print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        else
+            @page.cookies = @parser.cookies
         end
 
         # if the response body is the same as the page body and
@@ -141,6 +143,8 @@ class Trainer
             @updated = true
 
             print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
+        else
+            @page.forms = @parser.forms
         end
 
         if ( link_cnt > 0 )
@@ -148,6 +152,17 @@ class Trainer
             @updated = true
 
             print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
+        else
+            @page.links = @parser.links
+
+            if( res[1] )
+                url = to_absolute( res[0].effective_url )
+                @page.links << Arachni::Parser::Element::Link.new( url, {
+                    'href' => url,
+                    'vars' => @parser.link_vars( url )
+                } )
+            end
+
         end
 
         if( @updated )
