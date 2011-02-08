@@ -92,9 +92,10 @@ class Server < Sinatra::Base
         end
 
         def prep_description( str )
-            cstr = str.gsub( /^\s*$/xm, '--' )
+            placeholder =  '--' + rand( 1000 ).to_s + '--'
+            cstr = str.gsub( /^\s*$/xm, placeholder )
             cstr.gsub!( /^\s*/xm, '' )
-            cstr.gsub!( /--/xm, "\n" )
+            cstr.gsub!( placeholder, "\n" )
             cstr.chomp
         end
 
