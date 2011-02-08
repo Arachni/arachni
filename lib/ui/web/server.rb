@@ -185,6 +185,21 @@ class Server < Sinatra::Base
         end
     end
 
+    def welcomed?
+        File.exist?( settings.db + '/welcomed' )
+    end
+
+    def welcomed!
+        File.new( settings.db + '/welcomed', 'w' ).close
+    end
+
+    def ensure_welcomed
+        return if welcomed?
+
+        welcomed!
+        redirect '/welcome'
+    end
+
     #
     # Provides an easy way to connect to an instance by port
     #
@@ -509,7 +524,12 @@ class Server < Sinatra::Base
 
     get "/" do
         prep_session
+        ensure_welcomed
         show :home
+    end
+
+    get "/welcome" do
+        erb :welcome, { :layout => true }
     end
 
     get "/dispatcher" do

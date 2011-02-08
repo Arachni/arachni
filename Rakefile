@@ -56,6 +56,7 @@ task :clean do
     sh "rm *.afr || true"
     sh "rm logs/XMLRPC* || true"
     sh "rm lib/ui/web/server/db/log.db || true"
+    sh "rm lib/ui/web/server/db/welcomed || true"
 end
 
 
