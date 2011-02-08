@@ -29,7 +29,7 @@
                         <%end%>
                     </legend>
                 <h5>Description</h5>
-                <div class="notice"> <%=escape( plugin['description'] )%></div>
+                <pre class="notice"> <%=prep_description( escape( plugin['description'] ) )%></pre>
 
                 <%= erb :options, { :layout => false }, :component => plugin%>
 

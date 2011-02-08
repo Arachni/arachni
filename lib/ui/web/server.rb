@@ -91,6 +91,13 @@ class Server < Sinatra::Base
             return str
         end
 
+        def prep_description( str )
+            cstr = str.gsub( /^\s*$/xm, '--' )
+            cstr.gsub!( /^\s*/xm, '' )
+            cstr.gsub!( /--/xm, "\n" )
+            cstr.chomp
+        end
+
         def escape( str )
             CGI.escapeHTML( str )
         end
