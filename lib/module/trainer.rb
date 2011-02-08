@@ -118,15 +118,7 @@ class Trainer
 
         @parser.url = res[0].effective_url.clone
 
-        cookies, cookie_cnt = train_cookies( res[0] )
-        if ( cookie_cnt > 0 )
-            @page.cookies = cookies.flatten
-            @updated = true
-
-            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
-        else
-            @page.cookies = @parser.cookies
-        end
+        train_cookies( res[0] )
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
@@ -135,35 +127,8 @@ class Trainer
             return
         end
 
-        forms, form_cnt = train_forms( res[0] )
-        links, link_cnt = train_links( res[0], res[1] )
-
-        if ( form_cnt > 0 )
-            @page.forms = forms.flatten
-            @updated = true
-
-            print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
-        else
-            @page.forms = @parser.forms
-        end
-
-        if ( link_cnt > 0 )
-            @page.links = links.flatten
-            @updated = true
-
-            print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
-        else
-            @page.links = @parser.links
-
-            if( res[1] )
-                url = to_absolute( res[0].effective_url )
-                @page.links << Arachni::Parser::Element::Link.new( url, {
-                    'href' => url,
-                    'vars' => @parser.link_vars( url )
-                } )
-            end
-
-        end
+        train_forms( res[0] )
+        train_links( res[0], res[1] )
 
         if( @updated )
             @page.html = res[0].body.dup
@@ -208,8 +173,17 @@ class Trainer
 
         # @parser.url = res.effective_url.clone
         forms = @parser.forms( ).clone
+        cforms, form_cnt = update_forms( forms )
 
-        return update_forms( forms )
+        if ( form_cnt > 0 )
+            @page.forms = cforms.flatten
+            @updated = true
+
+            print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
+        else
+            @page.forms = forms
+        end
+
     end
 
     def train_links( res, redir = false )
@@ -227,12 +201,33 @@ class Trainer
             } )
         end
 
-        return update_links( links )
+        clinks, link_cnt = update_links( links )
+
+        if ( link_cnt > 0 )
+            @page.links = clinks.flatten
+            @updated = true
+
+            print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
+        else
+            @page.links = links
+        end
+
     end
 
     def train_cookies( res )
+
         cookies = @parser.cookies.clone
-        return update_cookies( cookies )
+        ccookies, cookie_cnt = update_cookies( cookies )
+
+        if ( cookie_cnt > 0 )
+            @page.cookies = ccookies.flatten
+            @updated = true
+
+            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        else
+            @page.cookies = cookies
+        end
+
     end
 
 
