@@ -15,11 +15,11 @@
                 <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
                      In <%= issue.elem %>
 
-                     <% if issue.var && issue.var != 'n/a' %>
+                     <% if issue.var%>
                      input <em><%= issue.var %></em>
                      <%end%>
 
-                     <% if issue.method && issue.method != 'n/a' %>
+                     <% if issue.method %>
                      using <%= issue.method %>
                      <%end%>
 
