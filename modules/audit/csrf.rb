@@ -238,7 +238,7 @@ class CSRF < Arachni::Module::Base
     def __log( form )
 
         url  = form.action
-        name = form.raw['attrs']['name'] || form.raw['attrs']['id'] || 'n/a'
+        name = form.raw['attrs']['name'] || form.raw['attrs']['id']
 
         if @@__audited.include?( "#{url}::#{name}" )
             print_info( 'Skipping already audited form with name \'' +
