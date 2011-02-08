@@ -33,7 +33,7 @@ class Stdout
 
             def run
                 print_status( 'Meta-Modules' )
-                print_info( '~~~~~~~~~~~~~~~~~~' )
+                print_info( '~~~~~~~~~~~~~~' )
 
                 print_info( 'Description: ' + @description )
                 print_line

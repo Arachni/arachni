@@ -31,7 +31,7 @@ class Stdout
 
             def run
                 print_status( 'URL health-map' )
-                print_info( '--------------------' )
+                print_info( '~~~~~~~~~~~~~~~~' )
 
                 print_line
                 print_info( 'Legend:' )
