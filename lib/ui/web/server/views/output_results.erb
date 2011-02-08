@@ -26,7 +26,8 @@
                      at <a href="<%= issue.url %>"><%= issue.url %></a>.
                      <br/>
 
-                 <% if issue.method && ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
+                 <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
+                       ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
                     <form action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
                         <% if issue.variations[0]['opts'][:combo]%>
                             <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
