@@ -26,16 +26,14 @@
                      at <a href="<%= issue.url %>"><%= issue.url %></a>.
                      <br/>
 
-                 <% if issue.method && issue.method.downcase == 'get' %>
-                 <p>
-                     <strong>Live sample:</strong> <a href="<%=escape(issue.variations[0]['url'])%>"><%=escape(issue.variations[0]['url'])%></a>
-                 </p>
-                 <% elsif issue.method && issue.method.downcase == 'post' && issue.variations[0]['opts'][:combo]%>
-                    <form action="<%=issue.url%>" target="_blank" method="post">
-                        <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
-                        <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
+                 <% if issue.method && ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
+                    <form action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
+                        <% if issue.variations[0]['opts'][:combo]%>
+                            <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
+                                <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
+                            <%end%>
                         <%end%>
-                        <input type="submit" value="Live sample" />
+                        <input type="submit" value="Live demo" />
                     </form>
                  <%end%>
 
