@@ -6,8 +6,8 @@
                 <h2>Report formats</h2>
                 <p>
                     This page lists all available report formats.
-                </br>
-                </br>
+                <br/>
+                <br/>
                 </p>
 
                 <form action="/reports" method="get">
@@ -17,20 +17,14 @@
             </div>
 
             <% reports.each do |report|%>
-            <p>
                 <fieldset>
-                <h3>
-                    <legend>
-                        <h3><%=escape( report['name'] )%></h3>
-                    </legend>
-                </h3>
+                <h3><%=escape( report['name'] )%></h3>
                 <h4>Description</h4>
                 <div class="notice"> <%=escape( report['description'] )%></div>
 
                 <p>
-                    <strong>Version:</strong> <%=report['version']%></br>
+                    <strong>Version:</strong> <%=report['version']%><br/>
                     <strong>Author:</strong> <%=escape( report['author'])%>
                 </p>
                 </fieldset>
-            </p>
             <% end %>
