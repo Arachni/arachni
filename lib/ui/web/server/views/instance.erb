@@ -121,27 +121,9 @@
                     document.getElementById( 'percentage' ).innerHTML = parseInt( percentage );
                 }
 
-                function getJSONSync( url, data, callback ) {
-                    // shift arguments if data argument was ommited
-                    if ( jQuery.isFunction( data ) ) {
-                        callback = data;
-                        data = null;
-                    }
-
-                    $.ajax({
-                        type: 'GET',
-                        url: url,
-                        dataType: 'json',
-                        success: callback,
-                        data: data,
-                        async: false
-                    });
-                }
-
-
                 function updateProgressBar(){
                     var stats_url = "/instance/<%= params['port'].to_i.to_s %>/stats.json";
-                    getJSONSync( stats_url, function(data) {
+                    $.getJSON( stats_url, function(data) {
                         if( data.stats == undefined ){ return }
                         setStats( data.stats );
                         percentage = (data.stats.auditmap_size / data.stats.sitemap_size) * 100
@@ -153,7 +135,7 @@
                     if( !document.getElementById( 'output' ) ) return;
 
                     var output_url = "/instance/<%= params['port'].to_i.to_s %>/output.json";
-                    getJSONSync( output_url, function(data) {
+                    $.getJSON( output_url, function(data) {
 
                         if( data.status == 'finished' ){
                             showShutdownDialog( );
@@ -174,7 +156,7 @@
                     if( !document.getElementById( 'output_results' ) ) return;
 
                     var output_results_url = "/instance/<%= params['port'].to_i.to_s %>/output_results.json";
-                    getJSONSync( output_results_url, function(data) {
+                    $.getJSON( output_results_url, function(data) {
                         document.getElementById( 'output_results' ).innerHTML = data.data;
                     });
                 }
@@ -207,7 +189,7 @@
                     updateOutput( );
                     setInterval( function() {
                           updateOutput( );
-                    }, 1000 );
+                    }, 1500 );
 
 
                     updateResults( )
