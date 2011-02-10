@@ -63,8 +63,12 @@ class String
     end
 
     def substring?( string )
-        match = match( Regexp.new( Regexp.escape( string ) ) )
-        match && !match.to_s.empty?
+        begin
+            match = match( Regexp.new( Regexp.escape( string ) ) )
+            match && !match.to_s.empty?
+        rescue
+            return nil
+        end
     end
 
 end
