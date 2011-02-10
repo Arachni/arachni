@@ -588,6 +588,10 @@ div#footer-links p {
     background-image: url(/css/smoothness/images/pbar-ani.gif);
 }
 
+#dialog-modal {
+    display: none;
+}
+
 iframe.report {
     width: 100%;
     height: 900px;

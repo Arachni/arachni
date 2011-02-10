@@ -65,6 +65,20 @@
                 <div class="output" id="output_results"></div>
             </div>
 
+            <div id="dialog-modal" title="Loading the scan report.">
+                <p>
+                    Please wait while the scan report is being loaded. <br/>
+                    This process maybe take a while depending on the size of the report.
+                </p>
+                <p>
+                    <em>
+                        If the loading process takes an unusually long time the zombie reaper
+                        may have beaten you to it.<br/>
+                        Use the "Reports" tab to view the report.
+                    </em>
+                </p>
+            </div>
+
             <script type="text/javascript">
 
                 function setProgressBar( progress ) {
@@ -115,7 +129,8 @@
                         if( data.report == undefined ) {
                             document.getElementById( 'output' ).innerHTML = data.data;
                         } else {
-                            showReport( data.report )
+                            showReportLoadingDialog();
+                            showReport( data.report );
                         }
 
                     });
@@ -130,6 +145,13 @@
                     });
                 }
 
+                function showReportLoadingDialog( ) {
+                    $( "#dialog-modal" ).dialog({
+                        height: 200,
+                        width: 720,
+                        modal: true
+                    });
+                }
 
                 $( document ).ready(function() {
 
@@ -138,7 +160,7 @@
                     updateProgressBar();
                     setInterval( function() {
                         updateProgressBar();
-                    }, 1000 );
+                    }, 3000 );
 
                     updateOutput( );
                     setInterval( function() {
