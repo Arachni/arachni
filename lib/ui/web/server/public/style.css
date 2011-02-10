@@ -40,10 +40,11 @@ td {
     color: #111;
 }
 
-iframe.output {
+.output {
     width: 100%;
     height: 560px;
-    border: 0px
+    border: 0px;
+    overflow: scroll
 }
 
 code, blockquote {
@@ -583,3 +584,12 @@ div#footer-links p {
     overflow: scroll
 }
 
+.ui-progressbar-value {
+    background-image: url(/css/smoothness/images/pbar-ani.gif);
+}
+
+iframe.report {
+    width: 100%;
+    height: 900px;
+    border: 0px
+}

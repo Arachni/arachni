@@ -27,9 +27,6 @@ module Web
 
             @lines    = lines
             @instance = instance
-
-            @style   = '<link rel="stylesheet" href="/style.css" type="text/css" /><pre>'
-            @refresh = '<meta http-equiv="refresh" content="1"/>'
             @buffer  = []
 
             @icon_whitelist = {}
@@ -48,13 +45,22 @@ module Web
             @buffer.flatten!
         end
 
+        def data
+            data = ''
+            each {
+                |line|
+                data << line
+            }
+
+            data
+        end
+
         #
         # Sinatra (or Rack, not sure) expects the output to respond to "each" so we oblige.
         #
         def each
 
             self << @instance.service.output
-            yield @style
 
             @@last_output ||= ''
             cnt = 0
@@ -80,8 +86,6 @@ module Web
             end
 
             self << @instance.service.output
-            yield @refresh
-
         end
 
     end

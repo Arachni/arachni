@@ -15,6 +15,7 @@ require 'openssl'
 require 'sinatra/base'
 require "rack/csrf"
 require 'rack-flash'
+require 'json'
 require 'erb'
 require 'yaml'
 require 'cgi'
@@ -686,28 +687,46 @@ class Server < Sinatra::Base
 
     end
 
-    get "/instance/:port/output" do
+    get "/instance/:port/output.json" do
+        content_type :json
+
         begin
             arachni = connect_to_instance( params[:port] )
             if arachni.framework.busy?
-                OutputStream.new( arachni, 38 )
+                { 'data' => OutputStream.new( arachni, 38 ).data }.to_json
             else
                 settings.log.instance_shutdown( env, port_to_url( params[:port] ) )
-                save_shutdown_and_show( arachni )
+                {
+                    'report' => '"data:text/html;base64, ' +
+                        Base64.encode64( save_shutdown_and_show( arachni ) ) + '"'
+                }.to_json
             end
         rescue Errno::ECONNREFUSED
-            "The server has been shut down."
+            { 'data' => "The server has been shut down." }.to_json
         end
     end
 
-    get "/instance/:port/output_results" do
+    get "/instance/:port/output_results.json" do
+        content_type :json
         begin
             arachni = connect_to_instance( params[:port] )
             if !arachni.framework.paused? && arachni.framework.busy?
-                erb :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues
+                out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues)
+                { 'data' => out }.to_json
             end
         rescue Errno::ECONNREFUSED
-            "The server has been shut down."
+            { 'data' => "The server has been shut down." }.to_json
+        end
+    end
+
+    get "/instance/:port/stats.json" do
+        content_type :json
+        begin
+            arachni = connect_to_instance( params[:port] )
+            stats = arachni.framework.stats
+            { 'refresh' => true, 'stats' => stats }.to_json
+        rescue Errno::ECONNREFUSED
+            { 'refresh' => false }.to_json
         end
     end
 
