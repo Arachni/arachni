@@ -1,7 +1,26 @@
+    <style>
+        #slider {
+            width: 50%;
+            float: right;
+        };
+    </style>
+
+    <script type="text/javascript">
+    $(function() {
+        $( "#slider" ).slider({
+            value: <%=session['opts']['settings']['http_req_limit']%>,
+            min: 1,
+            max: 200,
+            step: 1,
+            slide: function( event, ui ) {
+                $( "#http_req_limit" ).val( ui.value );
+            }
+        });
+        $( "#http_req_limit" ).val( $( "#slider" ).slider( "value" ) );
+    });
+    </script>
 
         <form action="/settings" method="post" enctype="multipart/form-data">
-
-            <%= erb :flash, {:layout => false} %>
 
                 <%= csrf_tag %>
                 <div id="page-intro">
@@ -14,6 +33,8 @@
                         <input type="submit" class="reset" value="Save" />
                     </p>
                 </div>
+
+            <%= erb :flash, {:layout => false} %>
 
             <div class="left options">
                 <fieldset>
@@ -39,7 +60,10 @@
                 <fieldset>
                     <legend>HTTP options</legend>
                     <p>
-                        Cocurrent HTTP request limit: <input name="http_req_limit" value="<%=session['opts']['settings']['http_req_limit']%>"/>
+                        Cocurrent HTTP request limit: <label for="http_req_limit"></label>
+                                                      <input id="http_req_limit" name="http_req_limit"/>
+                        <div id="slider"></div>
+                        <br/>
                     </p>
                     <p>
                         HTTP harvest last: <input type="checkbox" name="http_harvest_last" <% if session['opts']['settings']['http_harvest_last'] == true %> checked="checked" <% end %> />

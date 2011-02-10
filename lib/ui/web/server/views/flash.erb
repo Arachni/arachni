@@ -2,13 +2,17 @@
         <% [:err, :ok, :notice ].each do |name| %>
 
         <% if flash.has?( name ) %>
-        <h3 id="flash" class="<%= name %>"><%= flash[name] %></h3>
+        <div class="flash">
+            <div class="<%= name %>">
+                <%= flash[name] %>
+            </div>
+        </div>
         <% end %>
 
         <% end %>
 
         <script type="text/javascript">
-            if( elem = document.getElementById( 'flash' ) ){
-                setTimeout( "elem.style.display = 'none'", 2500 )
+            if( $( '.flash' ) ){
+                setTimeout( "$( '.flash' ).fadeOut( 1600, \"linear\" );", 2500 );
             }
         </script>

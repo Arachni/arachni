@@ -1,8 +1,6 @@
 
         <form action="/plugins" method="post">
 
-            <%= erb :flash, {:layout => false} %>
-
             <%= csrf_tag %>
             <div id="page-intro">
                 <h2>Plugins</h2>
@@ -18,6 +16,7 @@
                 </p>
             </div>
 
+            <%= erb :flash, {:layout => false} %>
             <% plugins.each do |plugin|%>
                 <fieldset>
                     <legend>

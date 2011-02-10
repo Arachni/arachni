@@ -537,11 +537,11 @@ div#footer-links p {
     text-decoration: underline;
 }
 
-.err, .ok {
+.err, .ok, .notice {
     margin: 0.3em 0;
     padding: 5px 7px;
     text-align: center;
-    color: #fff;
+    color: #000;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
 }
@@ -563,10 +563,7 @@ div#footer-links p {
 
 .notice {
     background: #ccc;
-    padding: 10px;
-    margin-bottom: 10px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+    text-align: left;
 }
 
 .left {

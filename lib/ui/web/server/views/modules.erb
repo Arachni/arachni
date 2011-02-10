@@ -1,8 +1,6 @@
 
         <form action="/modules" method="post">
 
-            <%= erb :flash, {:layout => false} %>
-
             <%= csrf_tag %>
             <div id="page-intro">
                 <h2>Modules</h2>
@@ -17,6 +15,7 @@
                 </p>
             </div>
 
+            <%= erb :flash, {:layout => false} %>
             <div class="left">
                 <fieldset>
                     <h3>Audit</h3>

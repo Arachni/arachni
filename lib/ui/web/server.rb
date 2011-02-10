@@ -632,7 +632,7 @@ class Server < Sinatra::Base
     #
     post "/modules" do
         session['opts']['modules'] = prep_modules( escape_hash( params ) )
-        flash.now[:notice] = "Modules updated."
+        flash.now[:ok] = "Modules updated."
         show :modules, true
     end
 
@@ -647,7 +647,7 @@ class Server < Sinatra::Base
     #
     post "/plugins" do
         session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
-        flash.now[:notice] = "Plugins updated."
+        flash.now[:ok] = "Plugins updated."
         show :plugins, true
     end
 
@@ -671,7 +671,7 @@ class Server < Sinatra::Base
             session['opts']['settings']['url'] = url
         end
 
-        flash.now[:notice] = "Settings updated."
+        flash.now[:ok] = "Settings updated."
         show :settings, true
     end
 
@@ -735,7 +735,7 @@ class Server < Sinatra::Base
             arachni.framework.resume!
             settings.log.instance_resumed( env, port_to_url( params[:port] ) )
 
-            flash.now[:ok] = "Instance on port #{params[:port]} resumes."
+            flash.now[:notice] = "Instance on port #{params[:port]} resumes."
             erb params[:splat][0].to_sym, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false, :stats => dispatcher_stats
         rescue
             flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
@@ -753,7 +753,7 @@ class Server < Sinatra::Base
             begin
                 save_shutdown_and_show( arachni )
             rescue
-                flash.now[:ok] = "Instance on port #{params[:port]} has been shutdown."
+                flash.now[:notice] = "Instance on port #{params[:port]} has been shutdown."
                 show params[:splat][0].to_sym
             ensure
                 arachni.service.shutdown!

@@ -3,48 +3,21 @@
   <head>
     <title>Arachni - Web Application Security Scanner Framework</title>
     <link rel="shortcut icon" href="/favicon.ico" />
+
+    <link type="text/css" href="/css/smoothness/jquery-ui-1.8.9.custom.css" rel="Stylesheet" />
     <link rel="stylesheet" href="/style.css" type="text/css" />
 
+    <script type="text/javascript" src="/js/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-1.8.9.custom.min.js"></script>
+
     <script type="text/javascript">
-
-        function getElementsByClass( searchClass, node, tag ) {
-
-            var classElements = new Array();
-
-            if ( node == null )
-                node = document;
-            if ( tag == null )
-                tag = '*';
-
-            var els     = node.getElementsByTagName(tag);
-            var elsLen  = els.length;
-            var pattern = new RegExp("(^|\\s)"+searchClass+"(\\s|$)");
-
-            for (i = 0, j = 0; i < elsLen; i++) {
-                if ( pattern.test(els[i].className) ) {
-                    classElements[j] = els[i];
-                    j++;
-                }
-            }
-
-            return classElements;
-        }
-
-
         function checkAll( type ) {
-            modules = getElementsByClass( type, document, 'input'  )
-
-            for (i = 0; i < modules.length; i++)
-                modules[i].checked = true ;
+            $( "." + type ).attr( "checked", true )
         }
 
         function uncheckAll( type ) {
-            modules = getElementsByClass( type, document, 'input'  )
-
-            for (i = 0; i < modules.length; i++)
-                modules[i].checked = false ;
+            $( "." + type ).attr( "checked", false )
         }
-
     </script>
 
     </head>
