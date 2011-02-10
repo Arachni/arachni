@@ -107,6 +107,8 @@
                 }
 
                 function updateOutput() {
+                    if( !document.getElementById( 'output' ) ) return;
+
                     var output_url = "/instance/<%= params['port'].to_i.to_s %>/output.json";
                     $.getJSON( output_url, function(data) {
 
@@ -120,6 +122,8 @@
                 }
 
                 function updateResults() {
+                    if( !document.getElementById( 'output_results' ) ) return;
+
                     var output_results_url = "/instance/<%= params['port'].to_i.to_s %>/output_results.json";
                     $.getJSON( output_results_url, function(data) {
                         document.getElementById( 'output_results' ).innerHTML = data.data;
