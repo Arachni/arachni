@@ -53,6 +53,10 @@
 
             </div>
 
+            <p><em>
+                (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
+                you may see some backwards progress or other weird progress behavior.)
+            </em></p>
             <div id="progressbar"></div>
 
             <div class="left">
@@ -65,7 +69,7 @@
                 <div class="output" id="output_results"></div>
             </div>
 
-            <div id="dialog-modal" title="Loading the scan report.">
+            <div style="display: none" id="dialog-loading" title="Loading the scan report...">
                 <p>
                     Please wait while the scan report is being loaded. <br/>
                     This process maybe take a while depending on the size of the report.
@@ -79,7 +83,14 @@
                 </p>
             </div>
 
+            <div style="display: none" id="dialog-shutdown" title="The server has been shut down...">
+                <p>
+                    The report is waiting for you <a href="/reports">here</a>.
+                </p>
+            </div>
+
             <script type="text/javascript">
+                //<![CDATA[
 
                 function setProgressBar( progress ) {
                     $( "#progressbar" ).progressbar({
@@ -110,9 +121,27 @@
                     document.getElementById( 'percentage' ).innerHTML = parseInt( percentage );
                 }
 
+                function getJSONSync( url, data, callback ) {
+                    // shift arguments if data argument was ommited
+                    if ( jQuery.isFunction( data ) ) {
+                        callback = data;
+                        data = null;
+                    }
+
+                    $.ajax({
+                        type: 'GET',
+                        url: url,
+                        dataType: 'json',
+                        success: callback,
+                        data: data,
+                        async: false
+                    });
+                }
+
+
                 function updateProgressBar(){
                     var stats_url = "/instance/<%= params['port'].to_i.to_s %>/stats.json";
-                    $.getJSON( stats_url, function(data) {
+                    getJSONSync( stats_url, function(data) {
                         if( data.stats == undefined ){ return }
                         setStats( data.stats );
                         percentage = (data.stats.auditmap_size / data.stats.sitemap_size) * 100
@@ -124,13 +153,18 @@
                     if( !document.getElementById( 'output' ) ) return;
 
                     var output_url = "/instance/<%= params['port'].to_i.to_s %>/output.json";
-                    $.getJSON( output_url, function(data) {
+                    getJSONSync( output_url, function(data) {
 
-                        if( data.report == undefined ) {
-                            document.getElementById( 'output' ).innerHTML = data.data;
+                        if( data.status == 'finished' ){
+                            showShutdownDialog( );
                         } else {
-                            showReportLoadingDialog();
-                            showReport( data.report );
+                            if( data.report == undefined ) {
+                                document.getElementById( 'output' ).innerHTML = data.data;
+                            } else {
+                                showReportLoadingDialog();
+                                showReport( data.report );
+                                $( "#dialog-loading" ).dialog('close')
+                            }
                         }
 
                     });
@@ -140,18 +174,26 @@
                     if( !document.getElementById( 'output_results' ) ) return;
 
                     var output_results_url = "/instance/<%= params['port'].to_i.to_s %>/output_results.json";
-                    $.getJSON( output_results_url, function(data) {
+                    getJSONSync( output_results_url, function(data) {
                         document.getElementById( 'output_results' ).innerHTML = data.data;
                     });
                 }
 
                 function showReportLoadingDialog( ) {
-                    $( "#dialog-modal" ).dialog({
+                    $( "#dialog-loading" ).dialog({
                         height: 200,
                         width: 720,
                         modal: true
                     });
                 }
+
+                function showShutdownDialog( ) {
+                    $( "#dialog-shutdown" ).dialog({
+                        height: 100,
+                        modal: true
+                    });
+                }
+
 
                 $( document ).ready(function() {
 
@@ -175,6 +217,7 @@
 
                 })
 
+             //]]>
             </script>
 
         </div>

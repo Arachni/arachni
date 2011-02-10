@@ -702,7 +702,7 @@ class Server < Sinatra::Base
                 }.to_json
             end
         rescue Errno::ECONNREFUSED
-            { 'data' => "The server has been shut down." }.to_json
+            { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
         end
     end
 
@@ -724,6 +724,7 @@ class Server < Sinatra::Base
         begin
             arachni = connect_to_instance( params[:port] )
             stats = arachni.framework.stats
+            stats['current_page'] = escape( stats['current_page'] )
             { 'refresh' => true, 'stats' => stats }.to_json
         rescue Errno::ECONNREFUSED
             { 'refresh' => false }.to_json
