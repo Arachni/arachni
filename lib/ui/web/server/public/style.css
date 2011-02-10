@@ -538,6 +538,8 @@ div#footer-links p {
     padding: 5px 7px;
     text-align: center;
     color: #fff;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
 .ok {
@@ -556,9 +558,11 @@ div#footer-links p {
 }
 
 .notice {
-    background: #ffc;
+    background: #ccc;
     padding: 10px;
     margin-bottom: 10px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
 .left {
