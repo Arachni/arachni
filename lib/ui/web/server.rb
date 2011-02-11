@@ -466,6 +466,7 @@ class Server < Sinatra::Base
     # @param    [Arachni::RPC::XML::Client::Instance]   arachni
     #
     def save_and_shutdown( arachni )
+        arachni.framework.clean_up!
         report_path = settings.reports.save( arachni.framework.auditstore )
         arachni.service.shutdown!
         return report_path
