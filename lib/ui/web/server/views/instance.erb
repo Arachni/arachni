@@ -83,7 +83,7 @@
                 </p>
             </div>
 
-            <div style="display: none" id="dialog-shutdown" title="The server has been shut down...">
+            <div style="display: none" id="dialog-shutdown" title="The scanner has been shutdown...">
                 <p>
                     The report is waiting for you <a href="/reports">here</a>.
                 </p>
@@ -91,6 +91,14 @@
 
             <script type="text/javascript">
                 //<![CDATA[
+
+                function inspect( id ){
+                    $( id ).dialog({
+                        height: 500,
+                        width: 1000,
+                        modal: true
+                    });
+                }
 
                 function setProgressBar( progress ) {
                     $( "#progressbar" ).progressbar({

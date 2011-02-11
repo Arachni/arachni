@@ -1,17 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" dir="ltr">
-  <head>
-    <title></title>
-    <link rel="stylesheet" href="/style.css" type="text/css" />
-    <meta http-equiv="refresh" content="5"/>
-  </head>
-  <body>
-    <div id="container">
         <% if issues.size > 0 %>
 
             <h4>Total: <%=issues.size%></h4>
             <% issues.each_with_index do |issue, i|%>
-            <div>
+            <p>
                 <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
                      In <%= issue.elem %>
 
@@ -26,26 +17,35 @@
                      at <a href="<%= issue.url %>"><%= issue.url %></a>.
                      <br/>
 
+                 <% if (issue.variations[0]['response'] && !issue.variations[0]['response'].empty?) && issue.variations[0]['regexp_match'] %>
+
+                 <div style="display: none" id="inspection-dialog_<%=i%>" title="Relevant content is shown in red.">
+                     <% match = CGI.escapeHTML( issue.variations[0]['regexp_match'] )%>
+                     <pre> <%=CGI.escapeHTML( issue.variations[0]['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
+                 </div>
+
+                 <form style="display:inline" action="#">
+                     <input onclick="javascript:inspect( '#inspection-dialog_<%=i%>')" type="button" value="Inspect" />
+                 </form>
+
+                 <%end%>
+
+
                  <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
                        ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
-                    <form action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
+                    <form style="display:inline" action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
                         <% if issue.variations[0]['opts'][:combo]%>
                             <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
                                 <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
                             <%end%>
                         <%end%>
-                        <input type="submit" value="Live demo" />
+                        <input type="submit" value="Replay" />
                     </form>
                  <%end%>
 
-            </div>
-            <br/>
+            </p>
             <%end%>
 
         <%else%>
             <h4> Nothing yet, once something is found you'll be the first to know...</h4>
         <%end%>
-
-    </div>
-  </body>
-</html>
