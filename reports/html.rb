@@ -7,8 +7,10 @@
   (See LICENSE file for details)
 
 =end
-require 'liquid'
+
+require 'erb'
 require 'base64'
+require 'cgi'
 
 module Arachni
 
@@ -44,11 +46,11 @@ class HTML < Arachni::Report::Base
         print_line( )
         print_status( 'Creating HTML report...' )
 
-        @template = Liquid::Template.parse( IO.read( @options['tpl'] ) )
+        report = ERB.new( IO.read( @options['tpl'] ) )
 
-        out = @template.render( __prepare_data( ) )
+        __prepare_data
 
-        __save( @options['outfile'], out )
+        __save( @options['outfile'], report.result( binding ) )
 
         print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
     end
@@ -61,7 +63,7 @@ class HTML < Arachni::Report::Base
             :version        => '0.1',
             :options        => [
                 Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
-                    File.dirname( __FILE__ ) + '/html/default.tpl' ] ),
+                    File.dirname( __FILE__ ) + '/html/default.erb' ] ),
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
                     Time.now.to_s + '.html' ] ),
             ]
@@ -78,76 +80,47 @@ class HTML < Arachni::Report::Base
 
     def __prepare_data( )
 
+        @graph_data = {
+            :severities => {},
+            :issues     => {},
+            :elements   => {}
+        }
+
         @audit_store.issues.each_with_index {
             |issue, i|
 
-            if( issue.references )
-                refs = []
-                issue.references.each_pair {
-                    |name, value|
-                    refs << { 'name' => name, 'value' => value }
-                }
+            @graph_data[:severities][issue.severity] ||= 0
+            @graph_data[:severities][issue.severity] += 1
 
-                @audit_store.issues[i].references = refs
-            end
+            @graph_data[:issues][issue.name] ||= 0
+            @graph_data[:issues][issue.name] += 1
+
+            @graph_data[:elements][issue.elem] ||= 0
+            @graph_data[:elements][issue.elem] += 1
 
             issue.variations.each_with_index {
                 |variation, j|
 
-                if( variation['regexp'] )
-                    variation['regexp'] = variation['regexp'].to_s
-                end
-
-                if( variation['response'] )
+                if( variation['response'] && !variation['response'].empty? )
                     @audit_store.issues[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
-
-                    @audit_store.issues[i].variations[j].delete( 'response' )
                 end
 
-                if( variation['headers']['request'].is_a?( Hash ) )
-                    request = ''
-                    variation['headers']['request'].each_pair {
-                        |key,val|
-                        request += "#{key}:\t#{val}\n"
+                response = {}
+                if !variation['headers']['response'].is_a?( Hash )
+                    variation['headers']['response'].split( "\r\n" ).each {
+                        |line|
+                        field, value = line.split( ':', 2 )
+                        next if !value
+                        response[field] = value
                     }
-                    @audit_store.issues[i].variations[j]['headers']['request']=
-                        request.clone
                 end
-
-                if( variation['headers']['response'].is_a?( Hash ) )
-                    response = ''
-                    variation['headers']['response'].each_pair {
-                        |key,val|
-                        response += "#{key}:\t#{val}\n"
-                    }
-                    @audit_store.issues[i].variations[j]['headers']['response']=
-                        response.clone
-                end
+                variation['headers']['response'] = response.dup
 
             }
 
         }
 
-        hash = @audit_store.to_h
-
-        hash['date'] = Time.now.to_s
-        hash['opts'] = @options
-
-        if( hash['options']['cookies'] )
-            cookies = []
-            hash['options']['cookies'].each_pair {
-                |name, value|
-                cookies << { 'name' => name, 'value' => value }
-            }
-
-            hash['options']['cookies'] = cookies
-        end
-
-        hash['sitemap']   = @audit_store.sitemap
-        hash['REPORT_FP'] = REPORT_FP
-
-        return hash
     end
 
 end
