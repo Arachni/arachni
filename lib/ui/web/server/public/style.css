@@ -588,6 +588,11 @@ div#footer-links p {
     background-image: url(/css/smoothness/images/pbar-ani.gif);
 }
 
+#slider {
+    width: 50%;
+    float: right;
+};
+
 #dialog-modal {
     display: none;
 }

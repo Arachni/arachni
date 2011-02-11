@@ -1,23 +1,16 @@
-    <style>
-        #slider {
-            width: 50%;
-            float: right;
-        };
-    </style>
-
     <script type="text/javascript">
-    $(function() {
-        $( "#slider" ).slider({
-            value: <%=session['opts']['settings']['http_req_limit']%>,
-            min: 1,
-            max: 200,
-            step: 1,
-            slide: function( event, ui ) {
-                $( "#http_req_limit" ).val( ui.value );
-            }
+        $(function() {
+            $( "#slider" ).slider({
+                value: <%=session['opts']['settings']['http_req_limit']%>,
+                min: 1,
+                max: 200,
+                step: 1,
+                slide: function( event, ui ) {
+                    $( "#http_req_limit" ).val( ui.value );
+                }
+            });
+            $( "#http_req_limit" ).val( $( "#slider" ).slider( "value" ) );
         });
-        $( "#http_req_limit" ).val( $( "#slider" ).slider( "value" ) );
-    });
     </script>
 
         <form action="/settings" method="post" enctype="multipart/form-data">
@@ -53,7 +46,6 @@
                     </p>
                     <p>
                         Cookies to exclude: <textarea rows="2" cols="20" name="exclude_cookies"><%=session['opts']['settings']['exclude_cookies']%></textarea>
-                        <br/>(Newline separated)
                     </p>
                 </fieldset>
 
@@ -124,3 +116,4 @@
             </div>
 
         </form>
+
