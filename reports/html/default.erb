@@ -156,9 +156,9 @@
         var c = <%=@graph_data[:issues].keys.to_s %>;
         $("#graph-issues").graph({data:d,categories:c,legend:"Issues", width: 700});
 
-        var d = <%=@graph_data[:elements].values.to_s %>;
-        var c = <%=@graph_data[:elements].keys.to_s %>;
-        $("#graph-elements").graph({data:d,categories:c,legend:"Issues in elements", width: 300});
+        // var d = <%=@graph_data[:elements].values.to_s %>;
+        // var c = <%=@graph_data[:elements].keys.to_s %>;
+        // $("#graph-elements").graph({data:d,categories:c,legend:"Issues in elements", width: 400});
 
     });
 
@@ -545,21 +545,12 @@
                 Found <%=@audit_store.issues.size%> issues.
             </p>
 
-            <div class="left">
-
-                <div class="left">
-                    <div id="graph-severities">
-                    </div>
+            <div class="float: left">
+                <div id="graph-severities">
                 </div>
-
-                <div class="right">
-                    <div id="graph-elements">
-                    </div>
-                </div>
-
             </div>
 
-            <div class="left">
+            <div class="float: left">
                 <div id="graph-issues">
                 </div>
             </div>

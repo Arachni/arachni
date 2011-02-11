@@ -78,21 +78,32 @@ class HTML < Arachni::Report::Base
     def __prepare_data( )
 
         @graph_data = {
-            :severities => {},
+            :severities => {
+                Issue::Severity::HIGH => 0,
+                Issue::Severity::MEDIUM => 0,
+                Issue::Severity::LOW => 0,
+                Issue::Severity::INFORMATIONAL => 0,
+            },
             :issues     => {},
-            :elements   => {}
+            :elements   => {
+                Issue::Element::FORM => 0,
+                Issue::Element::LINK => 0,
+                Issue::Element::COOKIE => 0,
+                Issue::Element::HEADER => 0,
+                Issue::Element::BODY => 0,
+                Issue::Element::PATH => 0,
+                Issue::Element::SERVER => 0,
+            }
         }
 
         @audit_store.issues.each_with_index {
             |issue, i|
 
-            @graph_data[:severities][issue.severity] ||= 0
             @graph_data[:severities][issue.severity] += 1
 
             @graph_data[:issues][issue.name] ||= 0
             @graph_data[:issues][issue.name] += 1
 
-            @graph_data[:elements][issue.elem] ||= 0
             @graph_data[:elements][issue.elem] += 1
 
             issue.variations.each_with_index {
