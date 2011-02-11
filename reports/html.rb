@@ -118,7 +118,6 @@ class HTML < Arachni::Report::Base
                 if !variation['headers']['response'].is_a?( Hash )
                     variation['headers']['response'].split( "\n" ).each {
                         |line|
-                        pp line
                         field, value = line.split( ':', 2 )
                         next if !value
                         response[field] = value
