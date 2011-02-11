@@ -106,7 +106,8 @@ class SQLInjection < Arachni::Module::Base
                 :cwe         => '89',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being included in database queries.',
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_sqlmap'
             }

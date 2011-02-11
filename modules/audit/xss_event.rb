@@ -114,13 +114,15 @@ class XSSEvent < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Cross-Site Scripting in event tag of HTML element.},
-                :description => %q{Client-side code, like JavaScript, can
-                    be injected into the web application.},
+                :description => %q{Unvalidated user input is being embedded inside an HMTL event element such as "onmouseover".
+                    This makes Cross-Site Scripting attacks much easier to mount since the user input
+                    lands in code waiting to be executed.},
                 :tags        => [ 'xss', 'event', 'injection', 'regexp', 'dom', 'attribute' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being included in executable code or not be included at all.',
                 :remedy_code => '',
             }
 

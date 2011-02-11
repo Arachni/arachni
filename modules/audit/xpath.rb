@@ -91,7 +91,8 @@ class XPathInjection < Arachni::Module::Base
                 :cwe         => '91',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being included in database queries.',
                 :remedy_code => ''
             }
 

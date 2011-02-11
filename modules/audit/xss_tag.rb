@@ -93,13 +93,14 @@ class XSSHTMLTag < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Cross-Site Scripting in HTML tag.},
-                :description => %q{Client-side code, like JavaScript, can
-                    be injected into the web application.},
+                :description => %q{Unvalidated user input is being embedded in a HTML element.
+                    This can lead to a Cross-Site Scripting vulnerability or a form of HTML manipulation.},
                 :tags        => [ 'xss', 'script', 'tag', 'regexp', 'dom', 'attribute', 'injection' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being returned as part of the HTML code of a page.',
                 :remedy_code => '',
             }
 

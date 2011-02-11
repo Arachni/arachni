@@ -79,13 +79,15 @@ class XSS < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Cross-Site Scripting (XSS)},
-                :description => %q{Client-side code, like JavaScript, can
-                    be injected into the web application.},
+                :description => %q{Client-side code (like JavaScript) can
+                    be injected into the web application which is then returned to the user's browser.
+                    This can lead to a compromise of the client's system or serve as a pivoting point for other attacks.},
                 :tags        => [ 'xss', 'regexp', 'injection', 'script' ],
                 :cwe         => '79',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being returned as part of the HTML code of a page.',
                 :remedy_code => '',
             }
 
