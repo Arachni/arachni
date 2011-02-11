@@ -47,6 +47,8 @@ class HTML < Arachni::Report::Base
 
         __prepare_data
 
+        @plugins = format_plugin_results( @audit_store.plugins )
+
         __save( @options['outfile'], report.result( binding ) )
 
         print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
@@ -68,6 +70,15 @@ class HTML < Arachni::Report::Base
     end
 
     private
+
+    def self.prep_description( str )
+        placeholder =  '--' + rand( 1000 ).to_s + '--'
+        cstr = str.gsub( /^\s*$/xm, placeholder )
+        cstr.gsub!( /^\s*/xm, '' )
+        cstr.gsub!( placeholder, "\n" )
+        cstr.chomp
+    end
+
 
     def __save( outfile, out )
         file = File.new( outfile, 'w' )

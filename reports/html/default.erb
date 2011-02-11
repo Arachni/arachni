@@ -701,6 +701,18 @@
             <h2>Issues</h2>
             <p> &nbsp; </p>
 
+            <% if @plugins['metamodules']%>
+            <em>
+                <strong>Notice:</strong> Before reviewing the scan results you are strongly encouraged to take full advantage of the data
+                gathered via meta-analysis.<br/>
+                They will help you shed light into the inner workings of the web application and even caution you about possible false
+                positives and/or inconclusive test results.
+            </em>
+            <div class="metamodules notice">
+                <%=@plugins['metamodules']%>
+            </div>
+            <%end%>
+
             <% @audit_store.issues.each_with_index do |issue, i|%>
             <%idx = i+1%>
             <div class="issue">
@@ -876,10 +888,16 @@
 
         <section class="tab" id="plugins">
             <h2>Plugin results</h2>
+            <p> &nbsp; </p>
+
+            <%@plugins.values.each do |plugin|%>
+            <p><%=plugin%></p>
+            <%end%>
         </section>
 
         <section class="tab" id="sitemap">
             <h2>Sitemap</h2>
+            <p> &nbsp; </p>
             <h3><%=@audit_store.sitemap.size%> pages</h3>
             <% @audit_store.sitemap.each do |url| %>
               <a href="<%=CGI.escapeHTML(url)%>"><%=CGI.escapeHTML(url)%></a><br/>
