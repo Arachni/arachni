@@ -99,11 +99,13 @@ class HTML < Arachni::Report::Base
         @audit_store.issues.each_with_index {
             |issue, i|
 
+            @graph_data[:severities][issue.severity] ||= 0
             @graph_data[:severities][issue.severity] += 1
 
             @graph_data[:issues][issue.name] ||= 0
             @graph_data[:issues][issue.name] += 1
 
+            @graph_data[:elements][issue.elem] ||= 0
             @graph_data[:elements][issue.elem] += 1
 
             issue.variations.each_with_index {
