@@ -18,7 +18,7 @@ class XML
     module PluginFormatters
 
         #
-        # XML formatter for the results of the HTTPDicattack plugin
+        # XML formatter for the results of the WAF Detector plugin
         #
         # @author: Tasos "Zapotek" Laskos
         #                                      <tasos.laskos@gmail.com>

@@ -35,7 +35,7 @@ class XML
             end
 
             def run
-                start_tag( 'form_dicattack' )
+                start_tag( 'http_dicattack' )
                 simple_tag( 'description', @description )
 
                 start_tag( 'results' )
@@ -43,7 +43,7 @@ class XML
                 add_credentials( @results[:username], @results[:password] )
 
                 end_tag( 'results' )
-                end_tag( 'form_dicattack' )
+                end_tag( 'http_dicattack' )
 
                 return buffer( )
             end
