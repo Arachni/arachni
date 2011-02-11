@@ -63,15 +63,16 @@ class HTML
                 # prepare the directory of the formatters for the running report
                 lib = File.dirname( __FILE__ ) + '/metaformatters/'
 
+                @@formatters ||= {}
                 # initialize a new component manager to handle the plugin formatters
-                formatters = ::Arachni::Report::FormatterManager.new( lib, ancestor.const_get( 'MetaFormatters' ) )
+                @@formatters[ancestor] ||= ::Arachni::Report::FormatterManager.new( lib, ancestor.const_get( 'MetaFormatters' ) )
 
                 # load all the formatters
-                formatters.load( ['*'] )
+                @@formatters[ancestor].load( ['*'] ) if @@formatters[ancestor].empty?
 
                 # run the formatters and gather the formatted data they return
                 formatted = {}
-                formatters.each_pair {
+                @@formatters[ancestor].each_pair {
                     |name, formatter|
                     plugin_results = plugins[name]
                     next if !plugin_results || plugin_results[:results].empty?
