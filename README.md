@@ -330,7 +330,7 @@ If you want to clone the repository and work with the source code then you'll ne
 
 ### _Notice_
 To install the Gem or work with the source code you'll also need the following system libraries:
-    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev
+    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
 ## Supported platforms
 
