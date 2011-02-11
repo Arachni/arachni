@@ -792,7 +792,7 @@
 
                     <% if (variation['response'] && !variation['response'].empty?) && variation['regexp_match'] %>
 
-                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="<%=issue.name%> at <%=CGI.escapeHTML(variation['url'])%>">
+                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="Relevant content is shown in red.">
                         <% match = CGI.escapeHTML( variation['regexp_match'] )%>
                         <pre> <%=CGI.escapeHTML( variation['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
                     </div>
