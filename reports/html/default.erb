@@ -845,10 +845,14 @@
                             </tr>
                             <tr>
                                 <td>
+                                    <% if variation['headers']['request'].is_a?( Hash ) %>
                                     <pre class="notice"><% variation['headers']['request'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + CGI.escapeHTML(val) + "\n"%><%end%></pre>
+                                    <%end%>
                                 </td>
                                 <td>
+                                    <% if variation['headers']['response'].is_a?( Hash ) %>
                                     <pre class="notice"><% variation['headers']['response'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + CGI.escapeHTML(val) + "\n"%><%end%></pre>
+                                    <%end%>
                                 </td>
                             </tr>
                         </table>
