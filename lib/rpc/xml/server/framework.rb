@@ -35,8 +35,8 @@ class Framework < Arachni::Framework
     alias :old_run :run
 
     # make this inherited methods visible again
-    private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
-    public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug
+    private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
+    public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
 
     #
     # Aborts the running audit.

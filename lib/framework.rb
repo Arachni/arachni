@@ -182,23 +182,7 @@ class Framework
         rescue Exception
         end
 
-        @opts.finish_datetime = Time.now
-        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
-
-        # make sure this is disabled or it'll break report output
-        @@only_positives = false
-
-        @running = false
-
-        # wait for the plugins to finish
-        @plugins.block!
-
-        # a plug-in may have updated the page queue, rock it!
-        audit_queue
-
-        # refresh the audit store
-        audit_store( true )
-
+        clean_up!
         begin
             block.call if block
         rescue Exception
@@ -216,6 +200,8 @@ class Framework
         req_cnt = http.request_count
         res_cnt = http.response_count
 
+        @auditmap ||= []
+        @sitemap  ||= []
         if !refresh_time || @auditmap.size == @sitemap.size
             @opts.delta_time ||= Time.now - @opts.start_datetime
         else
@@ -466,6 +452,27 @@ class Framework
     end
 
     private
+
+    def clean_up!
+        @opts.finish_datetime = Time.now
+        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
+
+        # make sure this is disabled or it'll break report output
+        @@only_positives = false
+
+        @running = false
+
+        # wait for the plugins to finish
+        @plugins.block!
+
+        # a plug-in may have updated the page queue, rock it!
+        audit_queue
+
+        # refresh the audit store
+        audit_store( true )
+
+        return true
+    end
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
