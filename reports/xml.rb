@@ -203,7 +203,7 @@ class XML < Arachni::Report::Base
             if var['headers']['response'].is_a?( Hash )
                 response = var['headers']['response']
             else
-                var['headers']['response'].split( "\r\n" ).each {
+                var['headers']['response'].split( "\n" ).each {
                     |line|
                     field, value = line.split( ':', 2 )
                     next if !value
