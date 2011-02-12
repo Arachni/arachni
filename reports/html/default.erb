@@ -109,7 +109,11 @@
                     xAxis: {
                         categories: <%=@graph_data[:issues].keys.to_s %>
                     },
-                    yAxis: {},
+                    yAxis: {
+                        title: {
+                            text: ''
+                        }
+                    },
                     series: [{
                         data: <%=@graph_data[:issues].values.to_s %>
                      }]
