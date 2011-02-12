@@ -8,6 +8,15 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js" type="text/javascript"></script>
   <script src="http://zapotek.github.com/arachni/charts/highcharts.js" type="text/javascript"></script>
+
+  <!--
+      Design by:
+        * Christos Chiotis <chris@survivetheinternet.com>
+        * Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+      Copyright (c) Arachni 2011.
+       -->
+
   <script type="text/javascript">
   //<![CDATA[
       function getElem( id ){
@@ -456,7 +465,7 @@
     header, nav, article, section, footer, address {display:block;}
 
     header{
-        height:32px;
+        height: 38px;
         overflow:hidden;
         background:#e1e1e1;
         background:-webkit-gradient(linear, left top, left bottom, from(#cccccc), to(#e1e1e1));
@@ -468,6 +477,7 @@
         font-size:14px;
         text-shadow:#fff 0 1px 0;
         text-align:center;
+        display: inline
         }
 
     nav{
@@ -548,7 +558,8 @@
 
     <div id="contentreport">
         <header>
-            <h1>Report generated on: <strong><%=Time.now%></strong></h1>
+            <h1>Report for <%=CGI.escapeHTML(@audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
+            <span style="float: right">Found a false positive? <a href="<%=CGI.escapeHTML(REPORT_FP)%>">Report it here</a>.</span>
         </header>
 
         <nav>
