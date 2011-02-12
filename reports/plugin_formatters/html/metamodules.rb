@@ -39,7 +39,7 @@ class HTML
             def tpl
                 %q{
                     <h3>Metamodules</h3>
-                    <blockquote><%=@description%></blockquote>
+                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
 
                     <%metaresults.each do |html|%>
                         <%=html%>
