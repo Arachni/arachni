@@ -116,16 +116,22 @@ class HTML < Arachni::Report::Base
 
             @graph_data[:severities][issue.severity] ||= 0
             @graph_data[:severities][issue.severity] += 1
+            @total_severities ||= 0
+            @total_severities += 1
 
             @graph_data[:issues][issue.name] ||= 0
             @graph_data[:issues][issue.name] += 1
 
             @graph_data[:elements][issue.elem] ||= 0
             @graph_data[:elements][issue.elem] += 1
+            @total_elements ||= 0
+            @total_elements += 1
 
             verification = issue.verification ? 'Yes' : 'No'
             @graph_data[:verification][verification] ||= 0
             @graph_data[:verification][verification] += 1
+            @total_verifications ||= 0
+            @total_verifications += 1
 
             issue.variations.each_with_index {
                 |variation, j|
@@ -148,6 +154,21 @@ class HTML < Arachni::Report::Base
 
             }
 
+        }
+
+        @graph_data[:severities].each {
+            |severity, cnt|
+            @graph_data[:severities][severity] = ((cnt/Float(@total_severities)) * 100).to_i
+        }
+
+        @graph_data[:elements].each {
+            |elem, cnt|
+            @graph_data[:elements][elem] = ((cnt/Float(@total_elements)) * 100).to_i
+        }
+
+        @graph_data[:verification].each {
+            |verification, cnt|
+            @graph_data[:verification][verification] = ((cnt/Float(@total_verifications)) * 100).to_i
         }
 
     end

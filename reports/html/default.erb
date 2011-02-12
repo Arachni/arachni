@@ -124,7 +124,6 @@
                   },
                    series: [{
                      type: 'pie',
-                     name: 'Severity levels',
                      data: [
                         <%@graph_data[:severities].each do |severity| %>
                         <%=severity.to_s%>,
@@ -151,7 +150,6 @@
                   },
                    series: [{
                      type: 'pie',
-                     name: 'Severity levels',
                      data: [
                         <%@graph_data[:elements].each do |severity| %>
                         <%=severity.to_s%>,
@@ -178,7 +176,6 @@
                   },
                    series: [{
                      type: 'pie',
-                     name: 'Severity levels',
                      data: [
                         <%@graph_data[:verification].each do |severity| %>
                         <%=severity.to_s%>,
