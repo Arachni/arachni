@@ -84,9 +84,10 @@ class CookieCollector < Arachni::Plugin::Base
         {
             :name           => 'Cookie collector',
             :description    => %q{Monitors and collects cookies while establishing a timeline of changes.
+
                 WARNING: Highly discouraged when the audit includes cookies.
-                            It will log thousands of results leading to a huge report
-                            and highly increased memory usage.},
+                    It will log thousands of results leading to a huge report,
+                    highly increased memory and CPU usage.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
         }
