@@ -22,7 +22,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class HTML < Arachni::Report::Base
 
@@ -59,7 +59,7 @@ class HTML < Arachni::Report::Base
             :name           => 'HTML Report',
             :description    => %q{Exports a report as an HTML document.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.2',
             :options        => [
                 Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
                     File.dirname( __FILE__ ) + '/html/default.erb' ] ),
