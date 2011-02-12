@@ -497,24 +497,22 @@
         -webkit-box-shadow:inset 0 1px 1px #888;
         box-shadow:inset 0 1px 1px #888;
         }
-    nav li.selected{
-        background:#e1e1e1;
-        background:-webkit-gradient(linear, left top, left bottom, from(#e1e1e1), to(#d1d1d1));
-        background:-moz-linear-gradient(top,  #e1e1e1,  #d1d1d1);
-        }
-    nav li.selected a{
-        -moz-box-shadow:none;
-        -webkit-box-shadow:none;
-        box-shadow:none;
-        }
-    nav li a:focus{outline:none;}
+    nav li.selected {background:#e1e1e1;background:-webkit-gradient(linear, left top, left bottom, from(#e1e1e1), to(#d1d1d1));background:-moz-linear-gradient(top,  #e1e1e1,  #d1d1d1);}
+    nav li.selected a {-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}
+    nav li a:focus {outline:none;}
 
     /* style your sections here */
-    section{
-        padding:20px;
-        background:#ddd;
-        }
-
+    section {padding:20px;background:#ddd;}
+    section hr {margin:10px 0;}
+    section h2 {border-bottom:1px solid #444;margin:0 0 20px 0;padding:0 0 10px 0;}
+    section p.notice {
+      white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+      white-space: -pre-wrap;      /* Opera 4-6 */
+      white-space: -o-pre-wrap;    /* Opera 7 */
+      white-space: pre-wrap;       /* css-3 */
+      word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+    section div.variations form input {cursor:pointer;}
   /*]]>*/
   </style>
 
@@ -711,6 +709,9 @@
             <div class="metamodules notice">
                 <%=@plugins['metamodules']%>
             </div>
+
+            <hr/>
+
             <%end%>
 
             <% @audit_store.issues.each_with_index do |issue, i|%>
@@ -722,17 +723,47 @@
                 </h3>
 
                 <div class="left">
-                    <strong>Module name</strong>: <%=CGI.escapeHTML(issue.mod_name)%><br />
-                    (Internal module name: <strong><%=CGI.escapeHTML(issue.internal_modname)%></strong>)<br />
+                    <ul>
+                    <li><strong>Module name</strong>: <%=CGI.escapeHTML(issue.mod_name)%> <br/>
+                    (Internal module name: <strong><%=CGI.escapeHTML(issue.internal_modname)%></strong>)</li>
 
                     <% if issue.var %>
-                    <strong>Affected variable</strong>: <%=CGI.escapeHTML(issue.var)%><br />
+                    <li><strong>Affected variable</strong>: <%=CGI.escapeHTML(issue.var)%></li>
                     <%end%>
 
-                    <strong>Affected URL</strong>: <a href="<%=CGI.escapeHTML(issue.url)%>"><%= CGI.escapeHTML(issue.url)%></a> <br />
-                    <strong>HTML Element</strong>: <%=issue.elem%><br />
-                    <strong>Requires manual verification?</strong>: <%=issue.verification ? 'Yes' : 'No'%>
+                    <li><strong>Affected URL</strong>: <a href="<%=CGI.escapeHTML(issue.url)%>"><%= CGI.escapeHTML(issue.url)%></a> </li>
+                    <li><strong>HTML Element</strong>: <%=issue.elem%></li>
+                    <li><strong>Requires manual verification?</strong>: <%=issue.verification ? 'Yes' : 'No'%></li>
+                    <hr/>
 
+                    <% if issue.cwe %>
+                    <li><strong>CWE</strong>: <%=issue.cwe%><br/>
+                    (<a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe_url%></a>)</li>
+                    <%end%>
+
+                    <li><strong>Severity</strong>: <%=issue.severity%></li>
+                    <li><strong>CVSSV2</strong>: <%=issue.cvssv2%></li>
+
+                    </ul>
+
+                    <p>
+                        <h3>References</h3>
+                        <ul>
+                            <% if issue.references && !issue.references.empty? %>
+                            <% issue.references.each_pair do |source, url| %>
+
+                            <li><%=CGI.escapeHTML(source)%> - <a target="_blank" href="<%=url%>"><%=url%></a></li>
+
+                            <%end%>
+                            <%else%>
+                                <li>N/A</li>
+                            <%end%>
+                        </ul>
+                    </p>
+
+                </div>
+
+                <div class="right">
                     <p>
                         <h3>Description</h3>
                         <blockquote><p><%=CGI.escapeHTML(issue.description)%></p></blockquote>
@@ -752,31 +783,7 @@
                     </p>
                     <%end%>
 
-                </div>
 
-                <div class="right">
-                    <% if issue.cwe %>
-                    <strong>CWE</strong>: <%=issue.cwe%>
-                    (<a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe_url%></a>)<br />
-                    <%end%>
-
-                    <strong>Severity</strong>: <%=issue.severity%><br />
-                    <strong>CVSSV2</strong>: <%=issue.cvssv2%>
-
-                    <p>
-                        <h3>References</h3>
-                        <ul>
-                            <% if issue.references && !issue.references.empty? %>
-                            <% issue.references.each_pair do |source, url| %>
-
-                            <li><%=CGI.escapeHTML(source)%> - <a target="_blank" href="<%=url%>"><%=url%></a></li>
-
-                            <%end%>
-                            <%else%>
-                                <li>N/A</li>
-                            <%end%>
-                        </ul>
-                    </p>
                 </div>
 
                 <div class="clear variations" style="display: block;">
