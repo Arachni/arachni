@@ -104,6 +104,10 @@ class HTML < Arachni::Report::Base
                 Issue::Element::BODY => 0,
                 Issue::Element::PATH => 0,
                 Issue::Element::SERVER => 0,
+            },
+            :verification => {
+                'Yes' => 0,
+                'No'  => 0
             }
         }
 
@@ -118,6 +122,10 @@ class HTML < Arachni::Report::Base
 
             @graph_data[:elements][issue.elem] ||= 0
             @graph_data[:elements][issue.elem] += 1
+
+            verification = issue.verification ? 'Yes' : 'No'
+            @graph_data[:verification][verification] ||= 0
+            @graph_data[:verification][verification] += 1
 
             issue.variations.each_with_index {
                 |variation, j|

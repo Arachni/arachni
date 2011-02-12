@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/themes/base/jquery-ui.css" type="text/css" media="all" />
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js" type="text/javascript"></script>
-
+  <script src="http://zapotek.github.com/arachni/charts/highcharts.js" type="text/javascript"></script>
   <script type="text/javascript">
   //<![CDATA[
       function getElem( id ){
@@ -86,81 +86,107 @@
 
       });
 
-      $.fn.graph = function(options){
-          var defaults = {height:300,width:500,data:'',categories:'',legend:"Graph"};
-          var options = $.extend(defaults, options);
+        var issues; // globally available
+        $(document).ready(function() {
+              issues = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'chart-issues',
+                        defaultSeriesType: 'column',
+                        backgroundColor: '#ccc'
+                    },
+                    title: {
+                        text: 'Issues by type'
+                    },
+                    xAxis: {
+                        categories: <%=@graph_data[:issues].keys.to_s %>
+                    },
+                    yAxis: {},
+                    series: [{
+                        data: <%=@graph_data[:issues].values.to_s %>
+                     }]
+                });
+           });
 
+            var severities;
+            $(document).ready(function() {
+               severities = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-severities',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Severity levels'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     name: 'Severity levels',
+                     data: [
+                        <%@graph_data[:severities].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
 
-          var root = $(this).addClass("ui-widget-content");
-          root.wrap("<div class=' ui-widget ' />");
-          var parent = root.parent();
+            var elements;
+            $(document).ready(function() {
+               elements = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-elements',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Issues by elements'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     name: 'Severity levels',
+                     data: [
+                        <%@graph_data[:elements].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
 
-          parent.prepend("<h3 class='ui-helper-reset ui-widget-header '>"+options.legend+"</h3>");
-          parent.css({height:options.height,width:options.width});
-          root.css("position","relative");
-
-          var i=0,max_val=0,scale,datalen=0,temp,w;
-
-          for(i=0;i<options.data.length;i++)
-          {
-              if(options.data[i]>=max_val)
-              max_val = options.data[i];
-          }
-
-
-          scale = options.height/options.data.length;
-          i=options.height;
-          var bg = jQuery("<div />",{ css:{height:scale - 1 }  }).addClass("ui-helper-reset ui-widget-bg");
-          var width = Math.floor((options.width-70)/options.data.length - (options.categories.length/1.5));
-          var bar = jQuery("<div />",{ css:{width:width}  }).addClass("ui-helper-reset ui-state-active ui-widget-bar");
-
-          var counter = 0;
-
-          while(i>=0) {
-              temp = bg.clone().html(max_val - counter);
-              root.append(temp);
-              i = i - scale;
-              counter = counter + max_val/8;
-              datalen++;
-          }
-
-          w= 40;
-
-          for(i=0;i<options.categories.length;i++) {
-
-              temp =  Math.floor(options.data[i]/max_val * datalen * scale ) - scale;
-              root.append(bar.clone().css({height:temp,left:w}).html(options.categories[i]));
-
-              w = w + width + 10;
-
-          }
-
-          $(".ui-widget-bg:last").css("height",0);
-          $(".bar").hover(function() {
-              $(this).toggleClass('ui-state-active ui-state-hover');
-              $(".bar").not(this).addClass('ui-priority-secondary');
-              },function(){
-                  $(this).toggleClass('ui-state-active  ui-state-hover');
-                  $(".bar").not(this).removeClass('ui-priority-secondary');
-              });
-
-
-    }
-
-    $(function(){
-        var d = <%=@graph_data[:severities].values.to_s %>;
-        var c = <%=@graph_data[:severities].keys.to_s %>;
-        $("#graph-severities").graph({data:d,categories:c,legend:"Severity levels", width: 400});
-
-        var d = <%=@graph_data[:issues].values.to_s %>;
-        var c = <%=@graph_data[:issues].keys.to_s %>;
-        $("#graph-issues").graph({data:d,categories:c,legend:"Issues", width: 700});
-
-        // var d = <%=@graph_data[:elements].values.to_s %>;
-        // var c = <%=@graph_data[:elements].keys.to_s %>;
-        // $("#graph-elements").graph({data:d,categories:c,legend:"Issues in elements", width: 400});
-
-    });
+            var verification;
+            $(document).ready(function() {
+               elements = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-verification',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Issues which require manual verification'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     name: 'Severity levels',
+                     data: [
+                        <%@graph_data[:verification].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
 
   //]]>
   </script>
@@ -424,6 +450,9 @@
     .ui-widget-bg { border-top: 1px dotted #aed0ea; font-size:9px;   }
     .ui-widget-bar {position:absolute;zIndex:10;bottom:0;font-size:10px; }
 
+    .graphs li{
+         list-style-type:none;
+    }
 
     /* Security Reports Style */
 
@@ -538,22 +567,32 @@
         <section class="tab" id="summary">
             <h2>Summary</h2>
 
-            <p>
-                Cralwed and audited <%=@audit_store.sitemap.size%> pages. <br/>
-                Found <%=@audit_store.issues.size%> issues.
-            </p>
+            <h3>Charts</h3>
 
-            <div class="float: left">
-                <div id="graph-severities">
-                </div>
-            </div>
-
-            <div class="float: left">
-                <div id="graph-issues">
-                </div>
+            <div id="chart-issues" style="width: 1000px">
             </div>
 
             <p class="clear">&nbsp;</p>
+
+            <div id="chart-severities" style="width: 500px; float:left">
+            </div>
+
+            <div id="chart-elements" style="width: 450px">
+            </div>
+
+            <p class="clear">&nbsp;</p>
+
+            <div id="chart-verification" style="width: 333px">
+            </div>
+
+
+            <p class="clear">&nbsp;</p>
+            <p class="clear">&nbsp;</p>
+
+            <hr/>
+
+
+            <h3>Found <%=@audit_store.issues.size%> issues</h3>
 
             <% @audit_store.issues.each_with_index do |issue, i| %>
             <p>
