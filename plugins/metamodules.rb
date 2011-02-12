@@ -104,8 +104,9 @@ class MetaModules < Arachni::Plugin::Base
     def self.info
         {
             :name           => 'Metamodules',
-            :description    => %q{Performs high-level meta-analysis on the results of the scan
-                using abstract meta-modules.},
+            :description    => %q{Performs high-level meta-analysis on the results of the scan using abstract meta-modules.
+                Before reviewing the scan results you are strongly encouraged to take full advantage of the data gathered via meta-analysis.
+                They will help you shed light into the inner workings of the web application and even caution you about possible false positives and/or inconclusive test results.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1'
         }
