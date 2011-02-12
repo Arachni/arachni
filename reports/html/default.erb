@@ -19,6 +19,12 @@
 
   <script type="text/javascript">
   //<![CDATA[
+
+      if( typeof jQuery == 'undefined' ) {
+          alert( "Could not load the necessary JavaScript libraries -- the presentation and functionality of the report will be crippled.\n" +
+            "Make sure that your internet connection is working and try refreshing the page." );
+      }
+
       function getElem( id ){
           return document.getElementById(id)
       }
