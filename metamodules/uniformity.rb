@@ -51,7 +51,7 @@ class Uniformity < Base
         @framework.audit_store.deep_clone.issues.each_with_index {
             |issue, idx|
 
-            if issue.severity == SEVERITY && ELEMENTS.include?( issue.elem )
+            if issue.severity == SEVERITY && ELEMENTS.include?( issue.elem ) && issue.var
 
                 id = issue.elem + ':' + issue.var + ':' + issue.internal_modname
 
