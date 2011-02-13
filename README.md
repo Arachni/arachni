@@ -194,6 +194,8 @@ Thus, you first need to start a Dispatcher like so:
 Then start the WebUI by running:
     $ arachni_web
 
+_If you get any permission errors then you probably installed the Gem using 'sudo', so use 'sudo' to start the servers too._
+
 And finally open up a browser window and visit: http://localhost:4567/
 
 #### Options
