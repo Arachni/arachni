@@ -57,7 +57,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Framework
 
@@ -70,7 +70,7 @@ class Framework
     include Arachni::Module::Utilities
 
     # the version of *this* class
-    REVISION     = '0.2'
+    REVISION     = '0.2.1'
 
     #
     # Instance options
