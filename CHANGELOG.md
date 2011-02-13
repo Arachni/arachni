@@ -63,6 +63,13 @@
    - Simplified issue logging
    - Added the option of substring matching instead of regexp matching in order to improve performance.
    - Substituted regular expression matching with substring matching wherever possible.
+- Reports:
+   - Added plug-in formatter components allowing plug-ins to have a say in how their results are presented (**New**)
+   - New HTML report (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the new HTML report template.) (**New**)
+   - Updated reports to include Plug-in results:
+      - XML report
+      - Stdout report
+      - Text report
 
 ## Version 0.2.1 _(November 25, 2010)_
 - Major performance improvements

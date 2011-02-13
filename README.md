@@ -147,7 +147,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
  - Modular design.
  - Currently available reports:
     - Standard output
-    - HTML
+    - HTML (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the new HTML report template.)
     - XML
     - TXT
     - YAML serialization
