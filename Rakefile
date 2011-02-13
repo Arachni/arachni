@@ -22,7 +22,7 @@ task :docs do
 
     sh "yardoc --verbose --title \
       \"Arachni - Web Application Security Scanner Framework\" \
-      external/* path_extractors/* plugins/* reports/* modules/* lib/* -o #{outdir} \
+      external/* path_extractors/* plugins/* reports/* modules/* metamodules/* lib/* -o #{outdir} \
       - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
       CONTRIBUTORS.md ACKNOWLEDGMENTS.md"
 
