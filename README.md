@@ -308,7 +308,7 @@ _If you installed the Gem then you'll have to look for the "profiles" directory 
 
 ## Installation
 
-### CDE packages
+### CDE packages for Linux
 
 Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
