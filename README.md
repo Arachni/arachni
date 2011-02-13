@@ -317,12 +317,6 @@ _The CDE packages are for Linux **only** and do not include the XMLRPC server co
 
 ### Gem
 
-As of version 0.2.1 Arachni will also be released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
-CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
-You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
-
-Otherwise, in order to use Arachni you will need the following:
-
 In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
@@ -330,10 +324,6 @@ To install Arachni:
     $ gem install arachni
 
 ### Source
-
-Users are **strongly** encouraged to compile Ruby 1.9.2 from source and use it to run Arachni,
-in which case the following system packages don't need to be installed:
-    ruby1.9.1-full ruby1.8-dev rubygems
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
     $ rake install
