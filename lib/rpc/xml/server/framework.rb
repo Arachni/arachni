@@ -81,6 +81,7 @@ class Framework < Arachni::Framework
     alias :pause :pause!
     alias :is_paused :paused?
     alias :resume :resume!
+    alias :clean_up :clean_up!
     alias :is_busy :busy?
     alias :is_debug :debug?
     alias :is_verbose :verbose?
