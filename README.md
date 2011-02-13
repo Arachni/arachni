@@ -308,13 +308,22 @@ _If you installed the Gem then you'll have to look for the "profiles" directory 
 
 ## Installation
 
+### CDE packages
+
+Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
+CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
+You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
+If you decide to go the CDE route you can skip the rest, you're done.
+
+
+### Gem
+
 To install the Gem or work with the source code you'll also need the following system libraries:
     $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
 You will also need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
-### Gem
 
 To install Arachni:
     $ gem install arachni
