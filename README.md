@@ -1,5 +1,5 @@
 # Arachni - Web Application Security Scanner Framework
-**Version**:     0.2.1<br/>
+**Version**:     0.2.2<br/>
 **Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
@@ -7,12 +7,15 @@
 **Google Group**: [http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)<br/>
 **Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)<br/>
 **Twitter**:      [http://twitter.com/Zap0tek](http://twitter.com/Zap0tek)<br/>
-**Copyright**:    2010<br/>
+**Copyright**:    2010-2011<br/>
 **License**:      [GNU General Public License v2](file.LICENSE.html)
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
 Kindly sponsored by: [![NopSec](http://zapotek.github.com/arachni/nopsec_logo.png)](http://www.nopsec.com)
+
+Help by donating:
+[![Click here to lend your support to: Arachni - Web Application Security Scanner Framework and make a donation at www.pledgie.com!](http://pledgie.com/campaigns/14482.png)](http://www.pledgie.com/campaigns/14482)
 
 ## Synopsis
 
@@ -54,9 +57,16 @@ From a user's or a component developer's point of view everything appears simple
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
  - Highlighted command line output.
- - UI abstraction.
+ - UI abstraction:
     - Command line UI
-    - XMLRPC command line client/server
+    - Web UI (Utilizing the Client - Dispatch-server XMLRPC architecture)
+    - XMLRPC Client/Dispatch server
+       - Centralised deployment
+       - Multiple clients
+       - Parallel scans
+       - SSL encryption
+       - SSL cert based client authentication
+       - Remote monitoring
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
 
@@ -92,20 +102,26 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Writing RFI, SQL injection, XSS etc modules is a matter of minutes if not seconds.
  - Currently available modules:
     - Audit:
-        - Blind SQL injection
+        - SQL injection
+        - Blind SQL injection using rDiff analysis
+        - Blind SQL injection using timing attacks
         - CSRF detection
-        - Eval/Code injection
+        - Code injection (PHP, Ruby, Python, JSP, ASP.NET)
+        - Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
         - LDAP injection
         - Path traversal
         - Response splitting
-        - OS command injection
+        - OS command injection (*nix, Windows)
+        - Blind OS command injection using timing attacks (*nix, Windows)
         - Remote file inclusion
-        - SQL injection
         - Unvalidated redirects
         - XPath injection
         - Path XSS
         - URI XSS
         - XSS
+        - XSS in event attributes of HTML elements
+        - XSS in HTML tags
+        - XSS in HTML 'script' tags
     - Recon:
         - Allowed HTTP methods
         - Back-up files
@@ -118,6 +134,13 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - Credit Card number disclosure
         - CVS/SVN user disclosure
         - Private IP address disclosure
+        - Common backdoors
+        - .htaccess LIMIT misconfiguration
+        - Interesting responses
+        - HTML object grepper
+        - E-mail address disclosure
+        - US Social Security Number disclosure
+        - Forceful directory listing
 
 ### Report Management
 
@@ -138,6 +161,17 @@ The analyzer can graciously handle badly written HTML code due to a combination 
  - Currently available plugins:
     - Passive Proxy
     - Form based AutoLogin
+    - Dictionary attacker for HTTP Auth
+    - Dictionary attacker for form based authentication
+    - Cookie collector
+    - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
+    - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
+    - WAF (Web Application Firewall) Detector
+    - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
+       - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
+       - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+            It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+       - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
 
 ### Trainer subsystem
 
@@ -150,190 +184,138 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-       Arachni - Web Application Security Scanner Framework v0.2.1 [0.2]
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
+### WebUI
 
-       Website:       http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki
+The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to a running XMLRPC Dispatch server.
 
+Thus, you first need to start a Dispatcher like so:
+    $ arachni_xmlrpcd &
 
-      Usage:  arachni [options] url
+Then start the WebUI by running:
+    $ arachni_web
 
-      Supported options:
+And finally open up a browser window and visit: http://localhost:4567/
 
+#### Options
 
-### General
+You can see all available options using:
+    $ arachni_web -h
 
-    -h
-    --help                      output this
+#### Shutdown
+You can kill the WebUI by sending _Ctrl+C_ to the console from which you started it.
 
-    -v                          be verbose
+However, in order to kill the Dispatcher (and all the processes in its pool) you will need to _killall -9 arachni_xmlrpcd_ (or _killall -9 ruby_ depending on your setup) or hunt them down manually.
+This inconvenience is by design; it guarantees that Arachni instances will be available (and usable) instantly and that running scans will continue unaffected even if the dispatcher has (for some reason) died.
 
-    --debug                     show what is happening internally
-                                  (You should give it a shot sometime ;) )
+#### Parallel scans
+As you might have guessed by the use of the word _pool_ in the previous paragraph, the WebUI allows you to run as many scans as you wish at the same time.
+Of course, the amount of parallel scans you'll be able to perform will be limited by your available resources (Network bandwidth/RAM/CPU).
 
-    --only-positives            echo positive results *only*
+Should you shutdown the WebUI while a scan is running you'll be able to re-attach to the running process and view its progress or (if the scan has already finished) grab the report the next time you visit the WebUI.
+In most cases, you won't even need to re-attach to a process in order to get the report of the finished scan, the WebUI's zombie reaper will grab and save the report for you.
 
-    --http-req-limit            concurent HTTP requests limit
-                                  (Be carefull not to kill your server.)
-                                  (Default: 200)
-                                  (NOTE: If your scan seems unresponsive try lowering the limit.)
+#### General
+In cases where the Dispatcher is started with its default settings on localhost (like the above example) the WebUI will connect to it automatically.
 
-    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
-                                 and harvest the HTTP responses at the end of the crawl.
-                                 (Default: responses will be harvested for each page)
-                                 (*NOTE*: If you are scanning a high-end server and
-                                   you are using a powerful machine with enough bandwidth
-                                   *and* you feel dangerous you can use
-                                   this flag with an increased '--http-req-limit'
-                                   to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
-                                  of pages this could eat up all your memory pretty quickly.)
+However, if you see an error message informing you that the WebUI could not find a dispatcher to connect to then you probably visited the WebUI before it had a chance to connect to the Dispatcher, you can just click on the "Dispatcher" tab to force it to try again; if the error does not re-appear then it connected successfully.
 
-    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
+If you get a scary "Broken pipe" exception a simple refresh will solve the problem.
 
+#### Remote deployment
+As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start a Dispatcher on a remote host and manage it via the WebUI.
+Simple as that really.
 
-    --user-agent=<user agent>   specify user agent
+#### Encryption & Authentication
+WebUI-client (browser) and XMLRPC Client-Dispatch server authentication takes place using SSL certificate/key pairs.
 
-    --authed-by=<who>           who authorized the scan, include name and e-mail address
-                                  (It'll make it easier on the sys-admins during log reviews.)
-                                  (Will be appended to the user-agent string.)
+These are the 3 basic models:
 
-### Profiles
+ - No encryption & no authentication -- Default behavior
+ - Encryption & no authentication    -- Just enable SSL in the WebUI configuration file (_conf/webui.yaml_) and the Dispatcher and all components will generate their own certificate/key pairs and disable peer verification.
+ - Encryption & authentication       -- Enable SSL and use your own cert/key pairs to authenticate clients to the WebUI and vice verse, and authenticate the XMLRPC clients controlled by the WebUI to the Dispatcher and vice versa.
 
-    --save-profile=<file>       save the current run profile/options to <file>
-                                  (The file will be saved with an extention of: .afp)
+However, you can go even further and create combinations specific to each component.
 
-    --load-profile=<file>       load a run profile from <file>
-                                  (Can be used multiple times.)
-                                  (You can complement it with more options, except for:
-                                      * --mods
-                                      * --redundant)
+*Beware:* This interface is brand new so if you encounter any issues please do report them.
 
-    --show-profile              will output the running profile as CLI arguments
+### Command line interface
 
-### Crawler
+The command-line interface is the oldest, most tested and thus more reliable.
 
-    -e <regex>
-    --exclude=<regex>           exclude urls matching regex
-                                  (Can be used multiple times.)
+#### Help
+In order to see everything Arachni has to offer execute:
+    $ arachni -h
 
-    -i <regex>
-    --include=<regex>           include urls matching this regex only
-                                  (Can be used multiple times.)
+Or visit the Wiki.
 
-    --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
-                                  (URLs matching <regex> will be crawled <count> links deep.)
-                                  (Can be used multiple times.)
+#### Examples
+You can simply run Arachni like so:
 
-    -f
-    --follow-subdomains         follow links to subdomains (default: off)
-
-    --obey-robots-txt           obey robots.txt file (default: off)
-
-    --depth=<number>            depth limit (default: inf)
-                                  (How deep Arachni should go into the site structure.)
-
-    --link-count=<number>       how many links to follow (default: inf)
-
-    --redirect-limit=<number>   how many redirects to follow (default: inf)
-
-
-### Auditor
-
-    -g
-    --audit-links               audit link variables (GET)
-
-    -p
-    --audit-forms               audit form variables
-                                  (usually POST, can also be GET)
-
-    -c
-    --audit-cookies             audit cookies (COOKIE)
-
-    --exclude-cookie=<name>     cookies not to audit
-                                  (You should exclude session cookies.)
-                                  (Can be used multiple times.)
-
-    --audit-headers             audit HTTP headers
-                                  (*NOTE*: Header audits use brute force.
-                                   Almost all valid HTTP request headers will be audited
-                                   even if there's no indication that the web app uses them.)
-                                  (*WARNING*: Enabling this option will result in increased requests,
-                                   maybe by an order of magnitude.)
-
-### Modules
-
-    --lsmod=<regexp>            list available modules based on the provided regular expression
-                                  (If no regexp is provided all modules will be listed.)
-                                  (Can be used multiple times.)
-
-
-    -m <modname,modname..>
-    --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' to deploy all modules)
-                                  (You can exclude modules by prefixing their name with a dash:
-                                      --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
-
-### Reports
-
-    --lsrep                       list available reports
-
-    --repload=<file>              load audit results from an .afr file
-                                    (Allows you to create new reports from finished scans.)
-
-    --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                  <report>: the name of the report as displayed by '--lsrep'
-                                    (Default: stdout)
-                                    (Can be used multiple times.)
-
-### Plugins
-
-    --lsplug                      list available plugins
-
-    --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
-
-                                  <plugin>: the name of the plugin as displayed by '--lsplug'
-                                    (Can be used multiple times.)
-
-### Proxy
-
-    --proxy=<server:port>       specify proxy
-
-    --proxy-auth=<user:passwd>  specify proxy auth credentials
-
-    --proxy-type=<type>           proxy type can be http, http_1_0, socks4, socks5, socks4a
-                                  (Default: http)
-
-
-### Examples
-
-As of v0.2.1 you can simply run Arachni like so:
-
-    $ ./arachni.rb http://test.com
+    $ arachni http://test.com
 
 which will load all modules and audit all forms, links and cookies.
 
 In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
 The results of the audit will be saved in the the file <i>test.com.afr</i>.
 
-    $ ./arachni.rb -fv http://test.com --report=afr:outfile=test.com.afr
+    $ arachni -fv http://test.com --report=afr:outfile=test.com.afr
 
 The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
 
-    $ ./arachni.rb --repload=test.com.afr --report=html:outfile=my_report.html
+    $ arachni --repload=test.com.afr --report=html:outfile=my_report.html
 
 or any other report type as shown by:
 
-    $ ./arachni.rb --lsrep
+    $ arachni --lsrep
+
+#### You can make module loading easier by using wildcards (*) and exclusions (-).
+
+To load all _xss_ modules using a wildcard:
+    $ arachni http://example.net --mods=xss_*
+
+To load all _audit_ modules using a wildcard:
+    $ arachni http://example.net --mods=audit*
+
+To exclude only the _csrf_ module:
+    $ arachni http://example.net --mods=*,-csrf
+
+Or you can mix and match; to run everything but the _xss_ modules:
+    $ arachni http://example.net --mods=*,-xss_*
 
 For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
 
-## Requirements
+#### Performing a comprehensive scan quickly
+
+Arachni comes with a preconfigured profile (_profiles/comprehensive.afp_) for a comprehensive audit.
+This profile loads all modules, audits links/forms/cookies and loads the HealthMap and Content-Types plugins.
+
+You can use it like so:
+    $ arachni --load-profile=profiles/comprehensive.afp http://example.net
+
+#### Performing a full scan quickly
+
+The _full_ profile adds header auditing to the _comprehensive_ profile.
+
+_NOTICE: Auditing headers can increase scan time by an order of magnitude (depending on the website) and may be considered over-the-top in most scenarios._
+
+You can use it like so:
+    $ arachni --load-profile=profiles/full.afp http://example.net
+
+
+_If you installed the Gem then you'll have to look for the "profiles" directory in your gems path._
+
+## Installation
+
+### CDE packages
+
+Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
+CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
+You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
+If you decide to go the CDE route you can skip the rest, you're done.
+
+_The CDE packages are for Linux **only** and do not include the XMLRPC server components for security reasons._
+
+### Gem
 
 As of version 0.2.1 Arachni will also be released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
@@ -341,29 +323,27 @@ You can choose the CDE package that suits you best from the [download](https://g
 
 Otherwise, in order to use Arachni you will need the following:
 
-  * ruby1.9.1 or later (**Version 1.9.2 would be preferable.**)
-  * Nokogiri
-  * Typhoeus
-  * Awesome print
-  * Liquid (for HTML reporting)
-  * Yardoc (to generate the documentation)
-  * Robots
+In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
+The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
-Run the following to install all required system libraries:
-    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev ruby1.9.1-full ruby1.8-dev rubygems
+To install Arachni:
+    $ gem install arachni
 
-_Adapt the above line to your Linux distro._
+### Source
 
 Users are **strongly** encouraged to compile Ruby 1.9.2 from source and use it to run Arachni,
 in which case the following system packages don't need to be installed:
     ruby1.9.1-full ruby1.8-dev rubygems
 
-Run the following to install all gem dependencies:
-    sudo gem install nokogiri typhoeus awesome_print liquid yard robots
+If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
+    $ rake install
 
-_If you have more than one Ruby version installed make sure that you install the gems and run Arachni with the proper version._
+### _Notice_
+To install the Gem or work with the source code you'll also need the following system libraries:
+    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
 ## Supported platforms
+
 Arachni should work on all *nix and POSIX compliant platforms with Ruby
 and the aforementioned requirements.
 

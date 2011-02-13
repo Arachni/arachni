@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -60,6 +60,15 @@ class String
         # get what hasn't changed (the rdiff, so to speak) as a string
         return ( words1 - changes ).join( '' )
 
+    end
+
+    def substring?( string )
+        begin
+            match = match( Regexp.new( Regexp.escape( string ) ) )
+            match && !match.to_s.empty?
+        rescue
+            return nil
+        end
     end
 
 end

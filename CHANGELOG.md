@@ -1,7 +1,70 @@
 
 # ChangeLog
 
-## Version 0.2.1
+## Version 0.2.2 _(Under development)_
+- Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
+   - Basically a front-end to the XMLRPC client
+   - Support for parallel scans
+   - Report management
+   - Can be used to monitor and control any running Dispatcher
+- Changed classification from "Vulnerabilities" to "Issues" (**New**)
+- Improved detection of custom 404 pages.
+- Reports updated to show plug-in results.
+- Updated framework-wide cookie handling.
+- Added parameter flipping functionality ( cheers to Nilesh Bhosale <nilesh at gslab.com >)
+- Major performance optimizations (4x faster in most tests)
+   - All modules now use asynchronous requests and are optimized for highest traffic efficiency
+   - All index Arrays have been replaced by Sets to minimize look-up times
+   - Mark-up parsing has been reduced dramatically
+   - File I/O blocking in modules has been eliminated
+- Crawler
+   - Improved performance
+   - Added '--spider-first" option  (**New**)
+- Substituted the XMLRPC server with an XMLRPC dispatch server  (**New**)
+   - Multiple clients
+   - Parallel scans
+   - Extensive logging
+   - SSL cert based client authentication
+- Added modules  (**New**)
+   - Audit
+      - XSS in event attributes of HTML elements
+      - XSS in HTML tags
+      - XSS in HTML 'script' tags
+      - Blind SQL injection using timing attacks
+      - Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
+      - Blind OS command injection using timing attacks (*nix, Windows)
+   - Recon
+      - Common backdoors    -- Looks for common shell names
+      - .htaccess LIMIT misconfiguration
+      - Interesting responses   -- Listens to all traffic and logs interesting server messages
+      - HTML object grepper
+      - E-mail address disclosure
+      - US Social Security Number disclosure
+      - Forceful directory listing
+- Added plugins  (**New**)
+   - Dictionary attacker for HTTP Auth
+   - Dictionary attacker for form based authentication
+   - Cookie collector    -- Listens to all traffic and logs changes in cookies
+   - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
+   - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
+   - WAF (Web Application Firewall) Detector
+   - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
+      - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
+      - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+           It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+      - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
+
+- New behavior on Ctrl+C
+   - The system continues to run in the background instead of pausing
+   - The user is presented with an auto-refreshing report and progress stats
+- Updated module API
+   - Timing/delay attacks have been abstracted and simplified via helper methods
+   - The modules are given access to vector skipping decisions
+   - Simplified issue logging
+   - Added the option of substring matching instead of regexp matching in order to improve performance.
+   - Substituted regular expression matching with substring matching wherever possible.
+
+## Version 0.2.1 _(November 25, 2010)_
 - Major performance improvements
 - Major system refactoring and code clean-up
 - Major module API refactoring providing even more flexibility regarding element auditing and manipulation
@@ -43,7 +106,7 @@
 - Extended proxy support (SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0). (**New**)
 
 
-## Version 0.2
+## Version 0.2 _(October 14, 2010)_
 
 - Improved output.
   - Increased context awareness.

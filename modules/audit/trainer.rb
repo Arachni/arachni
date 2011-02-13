@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -43,7 +43,8 @@ class Trainer < Arachni::Module::Base
             # tell the frameworm to learn from the
             # server responses that this module will cause.
             #
-            :train  => true
+            :train  => true,
+            :param_flip => true
         }
     end
 
@@ -70,12 +71,12 @@ class Trainer < Arachni::Module::Base
             :description    => %q{Pokes and probes all inputs of a given page in order to uncover new input vectors.
                 It also forces Arachni to train itself by analyzing the server responses.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE,
-                Vulnerability::Element::HEADER
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {
             },

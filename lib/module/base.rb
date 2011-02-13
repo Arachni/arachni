@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -8,6 +8,7 @@
 
 =end
 
+require 'set'
 require Arachni::Options.instance.dir['lib'] + 'module/output'
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/trainer'
@@ -64,9 +65,9 @@ class Base
         @http  = Arachni::HTTP.instance
         @http.trainer.page = @page.dup
 
-        # initialize the HTTP cookiejar with the user supplied one
-        if( @page.cookiejar )
-            @http.set_cookies( @page.cookiejar )
+        # update the cookies
+        if( !@page.cookiejar.empty? )
+            @http.update_cookies( @page.cookiejar )
         end
 
         #
@@ -80,17 +81,14 @@ class Base
         # during the audit, is should only be initialized *once*
         # for each page and not overwritten every single time a module is instantiated.
         #
-        @@last_url ||= ''
-        if( @@last_url != @page.url )
+        @@__last_url ||= ''
+        if( @@__last_url != @page.url )
             @http.trainer.page = @page.dup
             @http.trainer.init_forms( @page.forms )
             @http.trainer.init_links( @page.links )
             @http.trainer.init_cookies( @page.cookies )
-            @@last_url = @page.url
+            @@__last_url = @page.url
         end
-
-        @@mod_results ||= []
-
     end
 
     #
@@ -107,6 +105,20 @@ class Base
     # This is used to deliver the module's payload whatever it may be.
     #
     def run( )
+    end
+
+    #
+    # ABSTRACT - OPTIONAL
+    #
+    # This is called right before an [Arachni::Parser::Element]
+    # is submitted/auditted and is used to determine whether to skip it or not.
+    #
+    # Implementation details are left up to the running module.
+    #
+    # @param    [Arachni::Parser::Element]  elem
+    #
+    def skip?( elem )
+        return false
     end
 
     #
@@ -137,10 +149,10 @@ class Base
             # empty.
             #
             # 'Elements'       => [
-            #     Vulnerability::Element::FORM,
-            #     Vulnerability::Element::LINK,
-            #     Vulnerability::Element::COOKIE,
-            #     Vulnerability::Element::HEADER
+            #     Issue::Element::FORM,
+            #     Issue::Element::LINK,
+            #     Issue::Element::COOKIE,
+            #     Issue::Element::HEADER
             # ],
             :elements       => [],
             :author         => 'zapotek',
@@ -148,16 +160,16 @@ class Base
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :description => %q{},
                 :cwe         => '',
                 #
                 # Severity can be:
                 #
-                # Vulnerability::Severity::HIGH
-                # Vulnerability::Severity::MEDIUM
-                # Vulnerability::Severity::LOW
-                # Vulnerability::Severity::INFORMATIONAL
+                # Issue::Severity::HIGH
+                # Issue::Severity::MEDIUM
+                # Issue::Severity::LOW
+                # Issue::Severity::INFORMATIONAL
                 #
                 :severity    => '',
                 :cvssv2       => '',

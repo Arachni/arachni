@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,6 +9,7 @@
 =end
 
 require Arachni::Options.instance.dir['lib'] + 'anemone'
+require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 
 module Arachni
 
@@ -25,12 +26,15 @@ module Arachni
 class Spider
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     #
     #
     # @return [Options]
     #
     attr_reader :opts
+
+    attr_reader :pages
 
     #
     # Sitemap, array of links
@@ -54,7 +58,6 @@ class Spider
     #
     def initialize( opts )
         @opts = opts
-        @parser   = Arachni::Parser.new( @opts )
 
         @anemone_opts = {
             :threads              =>  1,
@@ -112,6 +115,8 @@ class Spider
             anemone.on_pages_like( @opts.include ) {
                 |page|
 
+                @pages = anemone.pages.keys || []
+
                 url = url_sanitize( page.url.to_s )
 
                 # something went kaboom, tell the user and skip the page
@@ -129,14 +134,18 @@ class Spider
 
                 # call the block...if we have one
                 if block
-                    begin
-                        new_page = @parser.run( url, page.body, page.headers )
+                    exception_jail{
+                        new_page = Arachni::Parser.new( @opts,
+                            Typhoeus::Response.new(
+                                :effective_url => url,
+                                :body          => page.body,
+                                :headers_hash  => page.headers
+                            )
+                        ).run
                         new_page.code   = page.code
                         new_page.method = 'GET'
                         block.call( new_page.clone )
-                    rescue Exception
-                        raise
-                    end
+                    }
                 end
 
                 # run blocks specified later

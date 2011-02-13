@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class HTTP_PUT < Arachni::Module::Base
 
@@ -27,7 +27,7 @@ class HTTP_PUT < Arachni::Module::Base
     def initialize( page )
         super( page )
 
-        @@__checked ||= []
+        @@__checked ||= Set.new
     end
 
     def run( )
@@ -37,9 +37,15 @@ class HTTP_PUT < Arachni::Module::Base
         return if @@__checked.include?( path )
         @@__checked << path
 
-        @http.request( path, :method => :put, :body => 'Created by Arachni.' ).on_complete {
+        body = 'Created by Arachni. PUT' + seed
+
+        @http.request( path, :method => :put, :body => body ).on_complete {
             |res|
-            __log_results( res ) if (200..204).include?( res.code )
+            next if res.code != 201
+            @http.get( path ).on_complete {
+                |res|
+                __log_results( res ) if res.body && res.body.substring?( 'PUT' + seed )
+            }
         }
     end
 
@@ -49,14 +55,15 @@ class HTTP_PUT < Arachni::Module::Base
             :description    => %q{Checks if uploading files is possible using the HTTP PUT method.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{HTTP PUT is enabled.},
                 :description => %q{3rd parties can upload files to the web-server.},
+                :tags        => [ 'http', 'methods', 'put', 'server' ],
                 :cwe         => '650',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -66,15 +73,10 @@ class HTTP_PUT < Arachni::Module::Base
 
     def __log_results( res )
 
-        vuln = Vulnerability.new( {
-            :var          => 'n/a',
+        issue = Issue.new( {
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -83,9 +85,9 @@ class HTTP_PUT < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
-        print_ok( 'Request was accepted: ' + res.effective_url )
+        print_ok( 'File has been created: ' + res.effective_url )
     end
 
 end

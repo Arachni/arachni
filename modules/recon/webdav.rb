@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -48,7 +48,7 @@ class WebDav < Arachni::Module::Base
 
         @__check = 'PROPFIND'
 
-        @@__auditted ||= []
+        @@__auditted ||= Set.new
     end
 
     def run( )
@@ -83,12 +83,13 @@ class WebDav < Arachni::Module::Base
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{WebDAV},
                 :description => %q{WebDAV is enabled on the server.
                     Consider auditing further using a specialised tool.},
+                :tags        => [ 'webdav', 'options', 'methods', 'server' ],
                 :cwe         => '',
-                :severity    => Vulnerability::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -102,15 +103,10 @@ class WebDav < Arachni::Module::Base
 
         @@__found = true
 
-        vuln = Vulnerability.new( {
-            :var          => 'n/a',
+        issue = Issue.new( {
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -119,7 +115,7 @@ class WebDav < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         # inform the user that we have a match
         print_ok( "Enabled for: #{res.effective_url}" )

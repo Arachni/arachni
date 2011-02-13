@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -16,7 +16,7 @@ module Plugins
 #
 # It looks for the login form in the user provided URL,
 # merges its input field with the user supplied parameters and sets the cookies
-# of the response as framework-wide cookies to be user by the spider later on.
+# of the response as framework-wide cookies to be used by the spider later on.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -36,10 +36,10 @@ class AutoLogin < Arachni::Plugin::Base
         @options   = options
 
         @framework.pause!
+        print_info( "System paused." )
     end
 
     def prepare
-        @parser = Arachni::Parser.new( @framework.opts )
         @params = parse_params
 
         # we need to declared this in order to pass ourselves
@@ -52,8 +52,9 @@ class AutoLogin < Arachni::Plugin::Base
         # grab the page containing the login form
         res  = @framework.http.get( @options['url'], :async => false ).response
 
+        parser = Arachni::Parser.new( @framework.opts, res )
         # parse the response as a Page object
-        page = @parser.run( @options['url'], res.body, res.headers_hash )
+        page = parser.run
 
         # find the login form
         login_form = nil
@@ -84,27 +85,6 @@ class AutoLogin < Arachni::Plugin::Base
         else
             print_ok( 'Form submitted successfully.' )
         end
-
-        # convert the response cookies to a hash
-        cookies = {}
-        @parser.cookies( res.headers_hash['Set-Cookie'].to_s, res.body ).each {
-            |cookie|
-            cookies.merge!( cookie.simple )
-        }
-
-        if cookies.empty?
-            print_error( 'Could not extract cookies...' )
-            return
-        else
-            print_info( 'Extracted cookies:' )
-            cookies.each{
-                |k, v|
-                print_info( "  * #{k} => #{v}" )
-            }
-        end
-
-        # set the login cookies system-wide so that the spider can use it
-        @framework.opts.cookies = cookies
 
     end
 
@@ -140,7 +120,7 @@ class AutoLogin < Arachni::Plugin::Base
             :name           => 'AutoLogin',
             :description    => %q{It looks for the login form in the user provided URL,
                 merges its input fields with the user supplied parameters and sets the cookies
-                of the response and request as framework-wide cookies to be user by the spider later on.
+                of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -12,6 +12,7 @@ module Arachni
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/elements'
 require opts.dir['lib'] + 'parser/page'
+require opts.dir['lib'] + 'module/utilities'
 
 #
 # Analyzer class
@@ -44,6 +45,8 @@ require opts.dir['lib'] + 'parser/page'
 #
 class Parser
 
+    include Arachni::Module::Utilities
+
     #
     # @return    [String]    the url of the page
     #
@@ -62,54 +65,43 @@ class Parser
     #
     # @param  [Options] opts
     #
-    def initialize( opts )
-        @url = ''
+    def initialize( opts, res )
         @opts = opts
+
+        @url  = res.effective_url
+        @html = res.body
+        @response_headers = res.headers_hash
     end
 
     #
     # Runs the Analyzer and extracts forms, links and cookies
     #
-    # @param [String] url the url of the HTML code, mainly used for debugging
-    # @param [String] html HTML code  to be analyzed
-    # @param [Hash]   headers HTTP headers
-    #
     # @return [Page]
     #
-    def run( url, html, response_headers )
+    def run
 
-        @url = url
-
-        forms       = []
-        links       = []
-        cookies_arr = []
-
-        if @opts.audit_forms
-            forms = forms( html )
+        # non text files won't contain any auditable elements
+        type = Arachni::HTTP.content_type( @response_headers )
+        if type.is_a?( String) && !type.substring?( 'text' )
+            return Page.new( {
+                :url         => @url,
+                :query_vars  => link_vars( @url ),
+                :html        => @html,
+                :headers     => [],
+                :response_headers     => @response_headers,
+                :forms       => [],
+                :links       => [],
+                :cookies     => [],
+                :cookiejar   => []
+            } )
         end
 
-        if @opts.audit_links
-            links = links( html )
 
-            # get the variables of the url query as an array of hashes
-            query_vars = link_vars( url )
-
-            # if url query has variables in it append them to the page elements
-            if( query_vars.size > 0 )
-                links << Element::Link.new( url, {
-                    'href' => url,
-                    'vars' => query_vars
-                } )
-            end
-
-        end
-
-        cookies_arr << cookies( response_headers['Set-Cookie'].to_s, html )
-        cookies_arr << cookies( response_headers['set-cookie'].to_s )
-        cookies_arr.flatten!.uniq!
+        cookies_arr = cookies
+        cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
 
         jar = {}
-        jar = @opts.cookies if @opts.cookies
+        jar = @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar ) if @opts.cookie_jar
 
         preped = {}
         cookies_arr.each{ |cookie| preped.merge!( cookie.simple ) }
@@ -117,16 +109,52 @@ class Parser
         jar = preped.merge( jar )
 
         return Page.new( {
-            :url         => url,
-            :query_vars  => query_vars,
-            :html        => html,
+            :url         => @url,
+            :query_vars  => link_vars( @url ),
+            :html        => @html,
             :headers     => headers(),
-            :response_headers     => response_headers,
-            :forms       => forms,
-            :links       => links,
-            :cookies     => merge_with_cookiejar( cookies_arr ),
+            :response_headers     => @response_headers,
+            :forms       => @opts.audit_forms ? forms() : [],
+            :links       => @opts.audit_links ? links() : [],
+            :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
             :cookiejar   => jar
         } )
+
+    end
+
+    def doc
+      return @doc if @doc
+      @doc = Nokogiri::HTML( @html ) if @html rescue nil
+    end
+
+    def merge_with_cookiestore( cookies )
+
+        @cookiestore ||= []
+
+        if @cookiestore.empty?
+            @cookiestore = cookies
+        else
+            tmp = {}
+            @cookiestore.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            cookies.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            @cookiestore = tmp.map {
+                |name, value|
+                Element::Cookie.new( @url, {
+                    'name'    => name,
+                    'value'   => value
+                } )
+            }
+        end
+
+        return @cookiestore
 
     end
 
@@ -196,12 +224,12 @@ class Parser
     #
     # @return [Array<Element::Form>] array of forms
     #
-    def forms( html )
+    def forms( html = nil )
 
         elements = []
 
         begin
-
+            html = html || @html.clone
             #
             # This imitates Firefox's behavior when it comes to
             # broken/unclosed form tags
@@ -211,10 +239,7 @@ class Parser
             forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
 
             # now remove them from html...
-            forms.each {
-                |form|
-                html = html.gsub( form, '' )
-            }
+            forms.each { |form| html.gsub!( form, '' ) }
 
             # and get unclosed forms.
             forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
@@ -269,7 +294,10 @@ class Parser
             i += 1
         }
 
-        elements
+        elements.reject {
+            |form|
+            !form.is_a?( Element::Form ) || form.auditable.empty?
+        }
     end
 
     #
@@ -281,10 +309,10 @@ class Parser
     #
     # @return [Array<Element::Link>] of links
     #
-    def links( html )
+    def links
 
         link_arr = []
-        elements_by_name( 'a', html ).each_with_index {
+        elements_by_name( 'a' ).each_with_index {
             |link|
 
             link['href'] = to_absolute( link['href'] )
@@ -312,13 +340,12 @@ class Parser
     #
     # @return [Array<Element::Cookie>] of cookies
     #
-    def cookies( headers, html = '' )
+    def cookies
 
         cookies_arr = []
         cookies     = []
 
         begin
-            doc = Nokogiri::HTML( html )
             doc.search( "//meta[@http-equiv]" ).each {
                 |elem|
 
@@ -329,10 +356,14 @@ class Parser
         rescue
         end
 
-        begin
-            cookies << WEBrick::Cookie.parse_set_cookies( headers )
-        rescue
-            return cookies_arr
+        # don't ask me why....
+        if @response_headers.to_s.substring?( 'set-cookie' )
+            begin
+                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
+                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
+            rescue
+                return cookies_arr
+            end
         end
 
         cookies.flatten.uniq.each_with_index {
@@ -347,6 +378,7 @@ class Parser
                 key = normalize_name( var )
                 val = value.gsub( /[\"\\\[\]]/, '' )
 
+                next if val == seed
                 cookies_arr[i][key] = val
             }
 
@@ -377,6 +409,8 @@ class Parser
         var_string.split( /&/ ).each {
             |pair|
             name, value = pair.split( /=/ )
+
+            next if value == seed
             var_hash[name] = value
         }
 
@@ -425,13 +459,13 @@ class Parser
     # +false+ otherwise
     #
     def in_domain?( uri )
-        curi = URI.parse( URI.escape( uri.to_s ) )
+        curi = URI.parse( normalize_url( uri.to_s ) )
 
         if( @opts.follow_subdomains )
             return extract_domain( curi ) ==  extract_domain( URI( @url.to_s ) )
         end
 
-        return curi.host == URI.parse( URI.escape( @url.to_s ) ).host
+        return curi.host == URI.parse( normalize_url( @url.to_s ) ).host
     end
 
     #
@@ -628,16 +662,16 @@ class Parser
     # @return [Array<Hash<String, String>>]
     #
     def attrs_from_tag( tag, html )
-        doc = Nokogiri::HTML( html )
 
         elements = []
-        doc.search( tag ).each_with_index {
+        Nokogiri::HTML( html ).search( tag ).each_with_index {
             |element, i|
 
             elements[i] = Hash.new
 
             element.each {
                 |attribute|
+                next if attribute[1] == seed
                 elements[i][attribute[0].downcase] = attribute[1]
             }
 
@@ -652,9 +686,7 @@ class Parser
     #
     # @return [Array<Hash <String, String> >] of elements
     #
-    def elements_by_name( name, html )
-
-        doc = Nokogiri::HTML( html )
+    def elements_by_name( name )
 
         elements = []
         doc.search( name ).each_with_index do |input, i|

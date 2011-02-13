@@ -1,0 +1,967 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
+<head>
+  <title>Web Application Security Report - Arachni Framework</title>
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/themes/base/jquery-ui.css" type="text/css" media="all" />
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="http://zapotek.github.com/arachni/charts/highcharts.js" type="text/javascript"></script>
+
+  <!--
+      Design by:
+        * Christos Chiotis <chris@survivetheinternet.com>
+        * Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+      Copyright (c) Arachni 2011.
+       -->
+
+  <script type="text/javascript">
+  //<![CDATA[
+
+      if( typeof jQuery == 'undefined' ) {
+          alert( "Could not load the necessary JavaScript libraries -- the presentation and functionality of the report will be crippled.\n" +
+            "Make sure that your internet connection is working and try refreshing the page." );
+      }
+
+      function getElem( id ){
+          return document.getElementById(id)
+      }
+
+      function toggleElem( id ){
+
+            if( getElem(id).style.display == 'none' ||
+                getElem(id).style.display == '' )
+            {
+                getElem(id).style.display    = 'block';
+                sign = '[-]';
+            } else {
+                getElem(id).style.display    = 'none';
+                sign = '[+]';
+            }
+
+            if( getElem(id + '_sign') ){
+                getElem(id + '_sign').innerHTML = sign;
+            }
+      }
+
+
+      function inspect( id ){
+          $( id ).dialog({
+              height: 500,
+              width: 1000,
+              modal: true
+          });
+      }
+
+      jQuery(function($){
+
+        tabs = function(options) {
+
+            var defaults = {
+                selector: '.tabs',
+                selectedClass: 'selected'
+            };
+
+            if(typeof options == 'string') defaults.selector = options;
+            var options = $.extend(defaults, options);
+
+            return $(options.selector).each(function(){
+
+                var obj = this;
+                var targets = Array();
+
+                function show(i){
+                    $.each(targets,function(index,value){
+                        $(value).hide();
+                    })
+                    $(targets[i]).fadeIn('fast');
+                    $(obj).children().removeClass(options.selectedClass);
+                    selected = $(obj).children().get(i);
+                    $(selected).addClass(options.selectedClass);
+                };
+
+                $('a',this).each(function(i){
+                    targets.push($(this).attr('href'));
+                    $(this).click(function(e){
+                        e.preventDefault();
+                        show(i);
+                    });
+                });
+
+                  show(0);
+
+            });
+        }
+
+        // initialize the function
+        // as a parameter we are sending a selector. For this particular script we must select the unordered (or ordered) list item element
+        tabs('nav ul');
+
+      });
+
+        var issues; // globally available
+        $(document).ready(function() {
+              issues = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'chart-issues',
+                        defaultSeriesType: 'column',
+                        backgroundColor: '#ccc'
+                    },
+                    title: {
+                        text: 'Issues by type'
+                    },
+                    xAxis: {
+                        categories: <%=@graph_data[:issues].keys.to_s %>
+                    },
+                    yAxis: {
+                        title: {
+                            text: ''
+                        }
+                    },
+                    series: [{
+                        data: <%=@graph_data[:issues].values.to_s %>
+                     }]
+                });
+           });
+
+            var severities;
+            $(document).ready(function() {
+               severities = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-severities',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Severity levels'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     data: [
+                        <%@graph_data[:severities].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
+
+            var elements;
+            $(document).ready(function() {
+               elements = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-elements',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Issues by elements'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     data: [
+                        <%@graph_data[:elements].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
+
+            var verification;
+            $(document).ready(function() {
+               elements = new Highcharts.Chart({
+                  chart: {
+                     renderTo: 'chart-verification',
+                     backgroundColor: '#ccc'
+                  },
+                  title: {
+                     text: 'Issues which require manual verification'
+                  },
+                  tooltip: {
+                     formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                     }
+                  },
+                   series: [{
+                     type: 'pie',
+                     data: [
+                        <%@graph_data[:verification].each do |severity| %>
+                        <%=severity.to_s%>,
+                        <%end%>
+                     ]
+                  }]
+               });
+            });
+
+  //]]>
+  </script>
+
+  <style type="text/css">
+  /*<![CDATA[*/
+
+    body {
+        background: #ddd;
+        margin:0;
+        padding:0;
+        font-family: Verdana, Geneva, sans-serif;
+        font-size: 12px;
+        color: #333;
+    }
+
+    .wrapper {
+        background: #ddd url('bodybg.png') repeat-x scroll top left;
+    }
+
+    .subpage {
+        background-image: url('bodybg-small.png');
+    }
+
+    * {
+        margin:0;
+        padding:0;
+    }
+
+    /** element defaults **/
+    table {
+        width: 100%;
+        text-align: left;
+    }
+
+    th, td {
+        padding: 10px 10px;
+    }
+
+    th {
+        color: #fff;
+        background: #2978A1 none repeat-x scroll -15px 0;
+    }
+
+    td {
+        color: #111;
+        vertical-align: top
+    }
+
+    code, blockquote {
+        display: block;
+        border-left: 5px solid #ddd;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+    code {
+        background-color: #ddd;
+        border: none;
+    }
+    blockquote {
+        border-left: 5px solid #333;
+    }
+
+    blockquote p {
+        font-style: italic;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        margin: 0;
+        height: 1%;
+    }
+
+    p {
+        line-height: 1.9em;
+        margin-bottom: 20px;
+    }
+
+    a {
+        color: #256F94;
+        text-decoration: none
+    }
+
+    a:hover {
+        color: #BC6637;
+    }
+
+    a:focus {
+        outline: none;
+    }
+
+    fieldset {
+        display: block;
+        border: none;
+        border-top: 1px solid #ccc;
+    }
+
+    fieldset legend {
+        font-weight: bold;
+        font-size: 13px;
+        padding-right: 10px;
+        color: #666;
+    }
+
+    fieldset form {
+        padding-top: 15px;
+    }
+
+    fieldset p label {
+        float: left;
+        width: 150px;
+    }
+
+    form input, form select, form textarea {
+        padding: 5px;
+        color: #333333;
+        border: 1px solid #999;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+    }
+
+    form input.formbutton {
+        border: none;
+        background: #FFFFFF url(bodybg.png) repeat-x scroll 0 -160px;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-family: Tahoma, Geneva, sans-serif;
+        letter-spacing: 1px;
+        width: auto;
+        overflow: visible;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+    }
+
+    form.searchform p {
+        margin: 5px 0;
+    }
+
+    form.searchform input.s {
+        border: 1px solid #000;
+    }
+
+    form.settings input, textarea {
+        float: right;
+        margin-right: 10px
+    }
+
+    .options input, textarea {
+        float: right;
+        margin-right: 10px
+    }
+
+    form.reset input {
+        float: left;
+    }
+
+
+    span.required {
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        color: #ff0000;
+    }
+
+    h1 {
+        color: #1F5D7C;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 35px;
+    }
+
+    h2 {
+        color: #111;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 28px;
+        letter-spacing: -0.5px;
+        padding: 0 0 5px;
+        margin: 0;
+        font-weight: normal;
+    }
+
+    h3 {
+        color: #BC6637;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    h4 {
+        padding-bottom: 10px;
+        font-size: 15px;
+        color: #666;
+    }
+
+    h5 {
+        padding-bottom: 10px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    ul, ol {
+        margin: 0 0 35px 35px;
+    }
+
+    li {
+        padding-bottom: 5px;
+    }
+
+    li ol, li ul {
+        font-size: 1.0em;
+        margin-bottom: 0;
+        padding-top: 5px;
+    }
+
+    iframe {
+        border: 1px solid
+    }
+
+    .clear {
+        clear: both;
+    }
+
+    .notice {
+      color: #222;
+      background: #e3e4e3;
+      border: 1px solid #d5d5d5;
+      padding: 7px 10px;
+      display: block;
+      text-align: left
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+    }
+
+    .left {
+        float: left;
+        width: 49%;
+        padding-right: 5px
+    }
+
+    .right {
+        float: right;
+        width: 50%;
+        border-left: 1px
+    }
+
+    .variation{
+        display: none;
+        padding: 20px;
+        padding-left: 40px;
+        padding-top: 0px
+    }
+
+    .hidden {
+        display: none
+    }
+
+    .separator {
+        min-width: 100%;
+        border-bottom: 1px solid #333333
+    }
+
+    .ui-widget-bg { border-top: 1px dotted #aed0ea; font-size:9px;   }
+    .ui-widget-bar {position:absolute;zIndex:10;bottom:0;font-size:10px; }
+
+    .graphs li{
+         list-style-type:none;
+    }
+
+    /* Security Reports Style */
+
+    header, nav, article, section, footer, address {display:block;}
+
+    header{
+        height: 38px;
+        overflow:hidden;
+        background:#e1e1e1;
+        background:-webkit-gradient(linear, left top, left bottom, from(#cccccc), to(#e1e1e1));
+        background:-moz-linear-gradient(top,  #cccccc,  #e1e1e1);
+        padding:0 5px;
+        }
+    header h1{
+        line-height:32px;
+        font-size:14px;
+        text-shadow:#fff 0 1px 0;
+        text-align:center;
+        display: inline
+        }
+
+    nav{
+        height:34px;
+        overflow:hidden;
+        }
+    nav ul{
+        margin:0;
+        padding:0 5px;
+        width:100%;
+        height:34px;
+        -moz-box-shadow:inset -2px 2px 2px #999;
+        -webkit-box-shadow:inset -2px 2px 2px #999;
+        box-shadow:inset -2px 0px 2px #999;
+        background:#ddd;
+        }
+    nav li{
+        list-style:none;
+        float:left;
+        height:24px;
+        line-height:24px;
+        -moz-box-shadow:0 0 3px #888;
+        -webkit-box-shadow:0 0 3px #888;
+        box-shadow:0 0 3px #888;
+        -webkit-border-bottom-right-radius:3px;
+        -webkit-border-bottom-left-radius:3px;
+        -moz-border-radius-bottomright:3px;
+        -moz-border-radius-bottomleft:3px;
+        border-bottom-right-radius:3px;
+        border-bottom-left-radius:3px;
+        margin:0 2px;
+        width:200px;
+        overflow:hidden;
+        position:relative;
+        background:#ccc;
+        background:-webkit-gradient(linear, left top, left bottom, from(#ccc), to(#aaa));
+        background:-moz-linear-gradient(top,  #ccc,  #aaa);
+        }
+    nav li a, nav li a:visited, nav li a:hover{
+        list-style:none;
+        display:block;
+        position:absolute;
+        top:0;
+        left:-2px;
+        height:24px;
+        line-height:24px;
+        width:204px;
+        text-align:center;
+        color:#333;
+        font-size:13px;
+        text-shadow:#e8e8e8 0 1px 0;
+        -moz-box-shadow:inset 0 1px 1px #888;
+        -webkit-box-shadow:inset 0 1px 1px #888;
+        box-shadow:inset 0 1px 1px #888;
+        }
+    nav li.selected {background:#e1e1e1;background:-webkit-gradient(linear, left top, left bottom, from(#e1e1e1), to(#d1d1d1));background:-moz-linear-gradient(top,  #e1e1e1,  #d1d1d1);}
+    nav li.selected a {-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;}
+    nav li a:focus {outline:none;}
+
+    /* style your sections here */
+    section {padding:20px;background:#ddd;}
+    section hr {margin:10px 0;}
+    section h2 {border-bottom:1px solid #444;margin:0 0 20px 0;padding:0 0 10px 0;}
+    section p.notice {
+      white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+      white-space: -pre-wrap;      /* Opera 4-6 */
+      white-space: -o-pre-wrap;    /* Opera 7 */
+      white-space: pre-wrap;       /* css-3 */
+      word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    }
+    section div.variations form input {cursor:pointer;}
+  /*]]>*/
+  </style>
+
+</head>
+
+<body>
+
+    <div id="contentreport">
+        <header>
+            <h1>Report for <%=CGI.escapeHTML(@audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
+            <span style="float: right">Found a false positive? <a href="<%=CGI.escapeHTML(REPORT_FP)%>">Report it here</a>.</span>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="#summary">Summary</a></li>
+                <li><a href="#issues">Issues</a></li>
+                <li><a href="#plugins">Plugin results</a></li>
+                <li><a href="#sitemap">Sitemap</a></li>
+                <li><a href="#configuration">Configuration</a></li>
+            </ul>
+        </nav>
+
+        <section class="tab" id="summary">
+            <h2>Summary</h2>
+
+            <h3>Charts</h3>
+
+            <div id="chart-issues" style="width: 1000px">
+            </div>
+
+            <p class="clear">&nbsp;</p>
+
+            <div id="chart-severities" style="width: 500px; float:left">
+            </div>
+
+            <div id="chart-elements" style="width: 450px">
+            </div>
+
+            <p class="clear">&nbsp;</p>
+
+            <div id="chart-verification" style="width: 333px">
+            </div>
+
+
+            <p class="clear">&nbsp;</p>
+            <p class="clear">&nbsp;</p>
+
+            <hr/>
+
+
+            <h3>Found <%=@audit_store.issues.size%> issues</h3>
+
+            <% @audit_store.issues.each_with_index do |issue, i| %>
+            <p>
+                <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
+                In <%= issue.elem %>
+
+                <% if issue.var%>
+                input <em><%= issue.var %></em>
+                <%end%>
+
+                <% if issue.method %>
+                using <%= issue.method %>
+                <%end%>
+
+                at <a href="<%= issue.url %>"><%= issue.url %></a>.
+            </p>
+            <%end%>
+
+        </section>
+
+        <section class="tab" id="configuration">
+            <h2>Configuration</h2>
+
+            <strong>Version</strong>: <%=@audit_store.version%><br />
+            <strong>Revision</strong>: <%=@audit_store.revision%><br />
+            <strong>Audit started on</strong>: <%=@audit_store.start_datetime%><br />
+            <strong>Audit finished on</strong>: <%=@audit_store.finish_datetime%><br />
+            <strong>Runtime</strong>: <%=@audit_store.delta_time%><br />
+
+            <p>&nbsp;</p>
+            <h3>Runtime options</h3>
+
+            <strong>URL:</strong> <%=@audit_store.options['url']%><br />
+            <strong>User agent:</strong> <%=::CGI.escapeHTML( @audit_store.options['user_agent'] )%><br />
+
+            <p>&nbsp;</p>
+
+            <table>
+                <tr>
+                    <th>Audited elements</th>
+                    <th>Modules</th>
+                    <th>Filters</th>
+                    <th>Cookies</th>
+                </tr>
+              <tr>
+                  <td>
+                      <ul>
+
+                        <% if @audit_store.options['audit_links']%>
+                        <li>Links</li>
+                        <%end%>
+
+                        <% if @audit_store.options['audit_forms']%>
+                        <li>Forms</li>
+                        <%end%>
+
+                        <% if @audit_store.options['audit_cookies']%>
+                        <li>Cookies</li>
+                        <%end%>
+
+                        <% if @audit_store.options['audit_headers']%>
+                        <li>Headers</li>
+                        <%end%>
+
+                    </ul>
+                </td>
+
+                <td>
+                    <ul>
+                    <% @audit_store.options['mods'].each do |mod|%>
+                        <li><%=mod%></li>
+                    <%end%>
+                    </ul>
+                </td>
+
+                <td>
+                    <ul>
+
+                        <li>Exclude:
+                            <ul>
+                            <% if !@audit_store.options['exclude'].empty?%>
+                            <% @audit_store.options['exclude'].each do |rule|%>
+
+                                <li><%=CGI.escapeHTML( rule )%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                            </ul>
+                        </li>
+
+                        <li>Include:
+
+                            <ul>
+                            <% if !@audit_store.options['include'].empty?%>
+                            <% @audit_store.options['include'].each do |rule|%>
+
+                                <li><%=CGI.escapeHTML( rule )%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                            </ul>
+                        </li>
+
+                        <li>Redundant:
+
+                            <ul>
+                            <% if !@audit_store.options['redundant'].empty?%>
+                            <% @audit_store.options['redundant'].each do |rule|%>
+
+                                <li><%=CGI.escapeHTML( rule['regexp'] )%> - Count: <%=rule['count']%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </td>
+
+                    <td>
+                        <ul>
+                        <% if @audit_store.options['cookies'] && !@audit_store.options['cookies'].empty?%>
+                        <% @audit_store.options['cookies'].each_pair do |name, val|%>
+                            <li><%=CGI.escapeHTML( name )%> = <%=CGI.escapeHTML( val )%></li>
+                        <%end%>
+                        <% else %>
+                            <li>N/A</li>
+                        <%end%>
+                      </ul>
+
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="tab" id="issues">
+            <h2>Issues</h2>
+            <p> &nbsp; </p>
+
+            <% if @plugins['metamodules']%>
+            <div class="metamodules notice">
+                <%=@plugins['metamodules']%>
+            </div>
+
+            <hr/>
+
+            <%end%>
+
+            <% @audit_store.issues.each_with_index do |issue, i|%>
+            <%idx = i+1%>
+            <div class="issue">
+
+                <h3 id="issue_<%=idx%>">
+                    <a href="#issue_<%=idx%>">[<%=idx%>] <%=CGI.escapeHTML(issue.name)%></a>
+                </h3>
+
+                <div class="left">
+                    <ul>
+                    <li><strong>Module name</strong>: <%=CGI.escapeHTML(issue.mod_name)%> <br/>
+                    (Internal module name: <strong><%=CGI.escapeHTML(issue.internal_modname)%></strong>)</li>
+
+                    <% if issue.var %>
+                    <li><strong>Affected variable</strong>: <%=CGI.escapeHTML(issue.var)%></li>
+                    <%end%>
+
+                    <li><strong>Affected URL</strong>: <a href="<%=CGI.escapeHTML(issue.url)%>"><%= CGI.escapeHTML(issue.url)%></a> </li>
+                    <li><strong>HTML Element</strong>: <%=issue.elem%></li>
+                    <li><strong>Requires manual verification?</strong>: <%=issue.verification ? 'Yes' : 'No'%></li>
+                    <hr/>
+
+                    <% if issue.cwe %>
+                    <li><strong>CWE</strong>: <%=issue.cwe%><br/>
+                    (<a target="_blank" href="<%=issue.cwe_url%>"><%=issue.cwe_url%></a>)</li>
+                    <%end%>
+
+                    <li><strong>Severity</strong>: <%=issue.severity%></li>
+                    <li><strong>CVSSV2</strong>: <%=issue.cvssv2%></li>
+
+                    </ul>
+
+                    <p>
+                        <h3>References</h3>
+                        <ul>
+                            <% if issue.references && !issue.references.empty? %>
+                            <% issue.references.each_pair do |source, url| %>
+
+                            <li><%=CGI.escapeHTML(source)%> - <a target="_blank" href="<%=url%>"><%=url%></a></li>
+
+                            <%end%>
+                            <%else%>
+                                <li>N/A</li>
+                            <%end%>
+                        </ul>
+                    </p>
+
+                </div>
+
+                <div class="right">
+                    <p>
+                        <h3>Description</h3>
+                        <blockquote><p><%=CGI.escapeHTML(issue.description)%></p></blockquote>
+                    </p>
+
+                    <% if issue.remedy_guidance && !issue.remedy_guidance.empty? %>
+                    <p>
+                        <h3>Remedial guidance</h3>
+                        <blockquote><p><%=CGI.escapeHTML(issue.remedy_guidance)%></p></blockquote>
+                    </p>
+                    <%end%>
+
+                    <% if issue.remedy_code && !issue.remedy_code.empty? %>
+                    <p>
+                        <h3>Remedial code</h3>
+                        <pre class="code notice"><%=CGI.escapeHTML(issue.remedy_code)%></pre>
+                    </p>
+                    <%end%>
+
+
+                </div>
+
+                <div class="clear variations" style="display: block;">
+                    <% issue.variations.each_with_index do |variation, j| %>
+                    <% var_idx = j + 1%>
+
+                    <h5 class="variation_header">
+                        <a href='javascript:toggleElem( "var_<%=var_idx%>_<%=idx%>" )'>
+                            <span id="var_<%=var_idx%>_<%=idx%>_sign">[+]</span>
+                            Variation <%=var_idx%>
+                        </a>
+                    </h5>
+
+                    <strong>Affected URL</strong>:
+                    <p class="notice"><a href="<%=CGI.escapeHTML(variation['url'])%>"><%=CGI.escapeHTML(variation['url'])%></a></p>
+
+                    <% if (variation['response'] && !variation['response'].empty?) && variation['regexp_match'] %>
+
+                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="Relevant content is shown in red.">
+                        <% match = CGI.escapeHTML( variation['regexp_match'] )%>
+                        <pre> <%=CGI.escapeHTML( variation['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
+                    </div>
+
+                    <form style="display:inline" action="#">
+                        <input onclick="javascript:inspect( '#inspection-dialog_<%=var_idx%>_<%=idx%>')" type="button" value="Inspect" />
+                    </form>
+
+                    <%end%>
+
+                    <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
+                        ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
+                    <form style="display:inline" action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
+                    <% if variation['opts'][:combo]%>
+                    <%variation['opts'][:combo].each_pair do |name, value|%>
+                        <input type="hidden" name="<%=CGI.escapeHTML(name)%>" value="<%=CGI.escapeHTML( value )%>" />
+                    <%end%>
+                    <%end%>
+                        <input type="submit" value="Replay" />
+                    </form>
+                    <%end%>
+
+                    <br/><br/>
+
+                    <div class="variation" id="var_<%=var_idx%>_<%=idx%>">
+
+                        <% if variation['injected'] %>
+                        <strong>Injected value</strong>:
+                        <pre> <%=CGI.escapeHTML(variation['injected'])%> </pre>
+                        <br/>
+                        <%end%>
+
+                        <% if variation['id'] %>
+                        <strong>ID</strong>:
+                        <pre><%=CGI.escapeHTML(variation['id'])%></pre>
+                        <br/>
+                        <%end%>
+
+                        <% if variation['regexp'] %>
+                        <strong>Regular expression</strong>:
+                        <pre><%=CGI.escapeHTML(variation['regexp'])%></pre>
+                        <br/>
+                        <%end%>
+
+                        <% if variation['regexp_match'] %>
+                        <strong>Matched by the regular expression</strong>:
+                        <pre><%=CGI.escapeHTML(variation['regexp_match'])%> </pre>
+                        <%end%>
+
+                        <br/>
+
+                        <table>
+                            <tr>
+                                <th colspan="2" style="text-align: center">Headers</th>
+                            </tr>
+                            <tr>
+                                <th>Request</th>
+                                <th>Response</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <% if variation['headers']['request'].is_a?( Hash ) %>
+                                    <pre class="notice"><% variation['headers']['request'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + CGI.escapeHTML(val) + "\n"%><%end%></pre>
+                                    <%end%>
+                                </td>
+                                <td>
+                                    <% if variation['headers']['response'].is_a?( Hash ) %>
+                                    <pre class="notice"><% variation['headers']['response'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + CGI.escapeHTML(val) + "\n"%><%end%></pre>
+                                    <%end%>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <% if variation['escaped_response']%>
+                        <h5>HTML Response</h5>
+                        <iframe style="width: 100%; height: 400px" src="data:text/html;base64, <%=variation['escaped_response']%>"></iframe>
+                        <%end%>
+
+                    </div>
+                    <%end%>
+
+                </div>
+
+            </div>
+
+            <p class="clear separator">&nbsp;</p>
+
+            <%end%>
+        </section>
+
+        <section class="tab" id="plugins">
+            <h2>Plugin results</h2>
+            <p> &nbsp; </p>
+
+            <%@plugins.values.each do |plugin|%>
+            <p><%=plugin%></p>
+            <%end%>
+        </section>
+
+        <section class="tab" id="sitemap">
+            <h2>Sitemap</h2>
+            <p> &nbsp; </p>
+            <h3><%=@audit_store.sitemap.size%> pages</h3>
+            <% @audit_store.sitemap.each do |url| %>
+              <a href="<%=CGI.escapeHTML(url)%>"><%=CGI.escapeHTML(url)%></a><br/>
+              <%end%>
+
+        </section>
+        </div>
+    </body>
+</html>

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -112,7 +112,7 @@ class Page
         opts = Arachni::Options.instance
         require opts.dir['lib'] + 'component_manager'
 
-        lib = opts.dir['pwd'] + 'path_extractors/'
+        lib = opts.dir['root'] + 'path_extractors/'
 
 
         begin
@@ -164,6 +164,9 @@ class Page
     # Nokogiri document for the HTML body
     #
     def doc
+      type = Arachni::HTTP.content_type( @headers )
+      return if type.is_a?( String) && !type.substring?( 'text' )
+
       return @doc if @doc
       @doc = Nokogiri::HTML( @body ) if @body rescue nil
     end

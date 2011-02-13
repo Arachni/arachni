@@ -3,6 +3,9 @@ require 'openssl'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+require Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
@@ -25,7 +28,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 class XMLRPC
 
@@ -35,6 +38,12 @@ class XMLRPC
     def initialize( opts )
 
         @opts = opts
+
+        # if we have a load profile load it and merge it with the
+        # user supplied options
+        if( @opts.load_profile )
+            load_profile( @opts.load_profile )
+        end
 
         debug! if @opts.debug
 
@@ -57,6 +66,17 @@ class XMLRPC
             exit
         end
 
+        if opts.show_profile
+            print_profile( )
+            exit 0
+        end
+
+        if opts.save_profile
+            exception_jail{ save_profile( opts.save_profile ) }
+            exit 0
+        end
+
+
         # Check for missing url
         if( !@opts.url && !@opts.lsmod )
             print_error( "Missing url argument." )
@@ -64,34 +84,37 @@ class XMLRPC
         end
 
         begin
+
+            @dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.server )
+
+            # get a new instance and assign the url we're going to audit as the
+            # 'owner'
+            @instance = @dispatcher.dispatch( @opts.url.to_s )
+
+            instance_url = URI( @opts.server.to_s )
+            instance_url.port = @instance['port']
+
             # start the XMLRPC client
-            @server = ::XMLRPC::Client.new2( @opts.server )
+            @server = Arachni::RPC::XML::Client::Instance.new( @opts, instance_url.to_s )
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
+            exit 0
         end
-
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
-        @server.timeout = 9999999
-
-        # a little black magic to disable cert verification
-        @server.instance_variable_get( :@http ).
-            instance_variable_set( :@verify_mode, OpenSSL::SSL::VERIFY_NONE )
 
         # if the user wants to see the available reports, output them and exit
         if !opts.lsplug.empty?
-            lsplug( @server.call( "framework.lsplug" ) )
+            lsplug( @server.framework.lsplug )
+            shutdown
             exit
         end
 
         # if the user wants to see the available modules
-        # grab them from the server, output them, exit and reset the server.
-        # not 100% sure that we need to reset but better to be safe than sorry.
+        # grab them from the server, output them, exit and shutdown the server.
         if !opts.lsmod.empty?
-            lsmod( @server.call( "framework.lsmod" ) )
-            reset
+            lsmod( @server.framework.lsmod )
+            shutdown
             exit
         end
 
@@ -108,7 +131,7 @@ class XMLRPC
             print_error( 'Error: ' + e.to_s )
             print_debug_backtrace( e )
             begin
-                reset
+                shutdown
             rescue
             end
             exit
@@ -119,12 +142,12 @@ class XMLRPC
 
         exception_jail {
             print_status 'Running framework...'
-            @server.call( "framework.run" )
+            @server.framework.run
 
             print_line
 
             # grab the XMLRPC server output while a scan is running
-            while( @server.call( "framework.busy?" ) )
+            while( @server.framework.busy? )
                 output
 
                 pause if @pause
@@ -135,20 +158,53 @@ class XMLRPC
             end
 
             puts
-            report
         }
 
-        # ensure that the framework will be reset
-        reset
+        report
+        shutdown
     end
 
     private
 
     #
+    # Loads an Arachni Framework Profile file and merges it with the
+    # user supplied options.
+    #
+    # @param    [String]    filename    the file to load
+    #
+    def load_profile( profiles )
+        exception_jail{
+            @opts.load_profile = nil
+            profiles.each {
+                |filename|
+                @opts.merge!( YAML::load( IO.read( filename ) ) )
+            }
+        }
+    end
+
+    #
+    # Saves options to an Arachni Framework Profile file.<br/>
+    # The file will be appended with the {PROFILE_EXT} extension.
+    #
+    # @param    [String]    filename
+    #
+    def save_profile( filename )
+
+        if filename = @opts.save( filename )
+            print_status( "Saved profile in '#{filename}'." )
+            print_line( )
+        else
+            banner( )
+            print_error( 'Could not save profile.' )
+            exit 0
+        end
+    end
+
+    #
     # Grabs the output from the XMLRPC server and routes it to the proper output method.
     #
     def output
-        @server.call( "service.output" ).each {
+        @server.service.output.each {
             |out|
             type = out.keys[0]
             msg  = out.values[0]
@@ -172,7 +228,7 @@ class XMLRPC
     def pause( )
 
         print_status( 'Paused...' )
-        @server.call( "framework.pause!" )
+        @server.framework.pause!
 
         print_line
         print_info( 'Results thus far:' )
@@ -182,7 +238,7 @@ class XMLRPC
         # to show him while the scan is paused.
         #
         begin
-            print_vulns( @server.call( "framework.report" ) )
+            print_issues( YAML.load( @server.framework.report ) )
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
@@ -195,36 +251,37 @@ class XMLRPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.call( "framework.abort!" )
-            reset
+            @server.framework.abort!
+            report
+            shutdown
             print_info( 'Exiting...' )
             exit 0
         end
 
         @pause = false
-        @server.call( "framework.resume!" )
+        @server.framework.resume!
 
     end
 
     #
-    # Laconically output the discovered vulnerabilties/
+    # Laconically output the discovered issues
     #
     # This method is used during a pause.
     #
-    def print_vulns( audit_store )
+    def print_issues( audit_store )
 
         print_line( )
-        print_info( audit_store['vulns'].size.to_s +
-          ' vulnerabilities were detected.' )
+        print_info( audit_store['issues'].size.to_s +
+          ' issues have been detected.' )
 
         print_line( )
-        audit_store['vulns'].each {
-            |vuln|
+        audit_store['issues'].each {
+            |issue|
 
-            print_ok( "#{vuln['name']} (In #{vuln['elem']} variable '#{vuln['var']}'" +
-              " - Severity: #{vuln['severity']} - Variations: #{vuln['variations'].size.to_s})" )
+            print_ok( "#{issue['name']} (In #{issue['elem']} variable '#{issue['var']}'" +
+              " - Severity: #{issue['severity']} - Variations: #{issue['variations'].size.to_s})" )
 
-            print_info( vuln['variations'][0]['url'] )
+            print_info( issue['variations'][0]['url'] )
 
             print_line( )
         }
@@ -286,6 +343,13 @@ class XMLRPC
             'cookies'
         ]
 
+        @server.plugins.load(
+            {
+                'content_types' => {},
+                'healthmap'     => {},
+                'metamodules'   => {},
+            }
+        )
         @opts.to_h.each {
             |opt, arg|
 
@@ -297,7 +361,7 @@ class XMLRPC
             when "arachni_verbose"
                 print_status "Enabling verbosity."
                 verbose!
-                @server.call( "framework.verbose_on" )
+                @server.framework.verbose_on
 
             when 'redundant'
                 print_status 'Setting redundancy rules.'
@@ -308,7 +372,7 @@ class XMLRPC
                     rule['regexp'] = rule['regexp'].to_s
                     redundant << rule
                 }
-                @server.call( "opts.redundant=", redundant )
+                @server.opts.redundant( redundant )
 
             when 'exclude', 'include'
                 print_status "Setting #{opt} rules."
@@ -319,14 +383,14 @@ class XMLRPC
 
             when 'cookie_jar'
                 print_status 'Setting cookies:'
-                @server.call( "opts.cookies=", parse_cookie_jar( arg ) ).each_pair {
+                @server.opts.cookies( parse_cookie_jar( arg ) ).each_pair {
                     |k, v|
                     print_info ' * ' + k + ' => ' + v
                 }
 
             when 'mods'
                 print_status 'Loading modules:'
-                @server.call( "modules.load", arg ).each {
+                @server.modules.load( arg ).each {
                     |mod|
                     print_info ' * ' + mod
                 }
@@ -334,16 +398,16 @@ class XMLRPC
             when 'plugins'
                 next if arg.empty?
 
+                ap arg
                 print_status 'Loading plug-ins:'
-                @server.call( "plugins.load", arg ).each {
+                @server.plugins.load( arg ).each {
                     |mod|
                     print_info ' * ' + mod
                 }
 
-
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +
-                    @server.call( "opts.http_req_limit=", arg ).to_s
+                    @server.opts.http_req_limit( arg ).to_s
 
             when 'reports'
                 arg['stdout'] = {}
@@ -363,15 +427,7 @@ class XMLRPC
     #
     def shutdown
         print_status "Shutting down the server..."
-        @server.call( "service.shutdown" )
-    end
-
-    #
-    # Resets the server preparing it for re-use.
-    #
-    def reset
-        print_status "Resetting the server..."
-        @server.call( "service.reset" )
+        @server.service.shutdown
     end
 
     #
@@ -384,14 +440,14 @@ class XMLRPC
         # ap @server.call( "framework.report" )
 
         # this will return the AuditStore as a string in YAML format
-        audit_store = YAML.load( @server.call( "framework.auditstore" ) )
+        audit_store = YAML.load( @server.framework.auditstore )
 
         # run the loaded reports and get the generated filename
         @framework.reports.run( audit_store )
 
         print_status "Grabbing stats..."
 
-        stats = @server.call( "framework.stats" )
+        stats = @server.framework.stats
         print_line
         print_info( "Sent #{stats['requests']} requests." )
         print_info( "Received and analyzed #{stats['responses']} responses." )
@@ -446,10 +502,12 @@ class XMLRPC
             print_line( "Version:\t"      + info['version'] )
 
             print_line( "References:" )
-            info['references'].keys.each {
-                |key|
-                print_info( key + "\t\t" + info['references'][key] )
-            }
+            if info['references'].is_a?( Hash )
+                info['references'].keys.each {
+                    |key|
+                    print_info( key + "\t\t" + info['references'][key] )
+                }
+            end
 
             print_line( "Targets:" )
             info['targets'].keys.each {
@@ -457,8 +515,8 @@ class XMLRPC
                 print_info( key + "\t\t" + info['targets'][key] )
             }
 
-            if( info['vulnerability'] &&
-                ( sploit = info['vulnerability']['metasploitable'] ) )
+            if( info['issue'] &&
+                ( sploit = info['issue']['metasploitable'] ) )
                 print_line( "Metasploitable:\t" + sploit )
             end
 
@@ -591,6 +649,11 @@ class XMLRPC
 
     end
 
+    def print_profile( )
+        print_info( 'Running profile:' )
+        print_info( @opts.to_args )
+    end
+
     #
     # Outputs help/usage information.<br/>
     # Displays supported options and parameters.
@@ -599,9 +662,26 @@ class XMLRPC
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni --server http[s]://host:port/ \[options\] url
+  Usage:  arachni_xmlrpc --server http[s]://host:port/ \[options\] url
 
   Supported options:
+
+
+    SSL --------------------------
+    (Do *not* use encrypted keys!)
+
+    --ssl                       use SSL?
+                                   (If you want encryption without authentication
+                                    you can skip rest of the SSL options.)
+
+    --ssl-pkey   <file>         location of the SSL private key (.pem)
+                                    (Used to verify the the client to the servers.)
+
+    --ssl-cert   <file>         location of the SSL certificate (.pem)
+                                    (Used to verify the the client to the servers.)
+
+    --ssl-ca     <file>         location of the CA certificate (.pem)
+                                    (Used to verify the servers to the client.)
 
 
     General ----------------------
@@ -642,6 +722,20 @@ class XMLRPC
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
 
+
+    Profiles -----------------------
+
+    --save-profile=<file>       save the current run profile/options to <file>
+
+    --load-profile=<file>       load a run profile from <file>
+                                  (Can be used multiple times.)
+                                  (You can complement it with more options, except for:
+                                      * --mods
+                                      * --redundant)
+
+    --show-profile              will output the running profile as CLI arguments
+
+
     Crawler -----------------------
 
     -e <regex>
@@ -667,6 +761,8 @@ class XMLRPC
     --link-count=<number>       how many links to follow (default: inf)
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
+
+    --spider-first              spider first, audit later
 
 
     Auditor ------------------------
@@ -702,10 +798,18 @@ class XMLRPC
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' to deploy all modules)
-                                  (You can exclude modules by prefixing their name with a dash:
+                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                      xss_*   to load all xss modules
+                                      sqli_*  to load all sql injection modules
+                                      etc.
+
+                                   You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
+
+                                   Or mix and match:
+                                      -xss_*   to unload all xss modules. )
+
 
     Reports ------------------------
 

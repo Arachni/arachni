@@ -2,7 +2,7 @@
   $Id$
 
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -40,10 +40,10 @@ class XPathInjection < Arachni::Module::Base
         # we make this a class variable and populate it only once
         # to reduce file IO
         #
-        @@__regexps ||= []
+        @@__errors ||= []
 
-        if @@__regexps.empty?
-            read_file( 'regexps.txt' ) { |regexp| @@__regexps << regexp }
+        if @@__errors.empty?
+            read_file( 'errors.txt' ) { |error| @@__errors << error }
         end
 
         # prepare the strings that will hopefully cause the webapp
@@ -55,7 +55,7 @@ class XPathInjection < Arachni::Module::Base
 
         @__opts = {
             :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :substring => @@__errors
         }
 
     end
@@ -73,9 +73,10 @@ class XPathInjection < Arachni::Module::Base
             :name           => 'XPathInjection',
             :description    => %q{XPath injection module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
@@ -83,13 +84,15 @@ class XPathInjection < Arachni::Module::Base
                 'OWASP'      => 'http://www.owasp.org/index.php/XPATH_Injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{XPath Injection},
                 :description => %q{XPath queries can be injected into the web application.},
+                :tags        => [ 'xpath', 'database', 'error', 'injection', 'regexp' ],
                 :cwe         => '91',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being included in database queries.',
                 :remedy_code => ''
             }
 

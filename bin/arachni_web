@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+=begin
+                  Arachni
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
+require 'getoptlong'
+require 'pp'
+require 'ap'
+
+cwd = File.expand_path( File.dirname( __FILE__ ) )
+$:.unshift( cwd )
+
+require cwd + '/../lib/options'
+options = Arachni::Options.instance
+
+options.dir            = Hash.new
+options.dir['root']    = File.expand_path( cwd + '/../' ) + '/'
+options.dir['modules'] = options.dir['root'] + 'modules/'
+options.dir['reports'] = options.dir['root'] + 'reports/'
+options.dir['plugins'] = options.dir['root'] + 'plugins/'
+options.dir['lib']     = options.dir['root'] + 'lib/'
+
+def print_help( root )
+        puts <<USAGE
+  Usage:  arachni_web \[options\]
+
+  Supported options:
+
+    -h
+    --help                      output this
+
+    --port                      specify port
+
+    --host                      specify host
+
+    For SSL options refer to "webui.yaml" and "README.webui.yaml.txt" under "#{root}conf/".
+
+USAGE
+end
+
+
+# Construct getops struct
+opts = GetoptLong.new(
+    [ '--help', '-h',             GetoptLong::NO_ARGUMENT ],
+    [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
+)
+
+begin
+    opts.each {
+        |opt, arg|
+
+        case opt
+
+            when '--help'
+                print_help( options.dir['root'] )
+                exit
+
+            when '--port'
+                # not really used for RPC this time but by create another attr
+                options.rpc_port = arg.to_i
+
+            when '--host'
+                # not really used for RPC this time but by create another attr
+                options.server = arg.to_s
+        end
+    }
+end
+
+# Sinatra will run automatically
+require options.dir['lib'] + 'ui/web/server'

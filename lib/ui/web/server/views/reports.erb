@@ -1,0 +1,55 @@
+
+        <div id="page-intro">
+            <h2>Reports</h2>
+            <p>This page allows you to review the results of the scans you have performed and export them in various formats.
+            <br/><br/>
+            </p>
+
+            <% if report_count > 0 %>
+                <form action="/reports/formats" method="get">
+                    <input type="submit" value="View formats" />
+                </form>
+
+                <form action="/reports/delete" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Delete all" />
+                </form>
+            <% end %>
+
+        </div>
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !reports.empty? %>
+        <table>
+            <tr>
+                <th>Host</th>
+                <th>Audit date</th>
+                <th>Report formats</th>
+            </tr>
+        <% reports.each do |report| %>
+            <tr>
+
+
+                <td><%=report['host']%></td>
+                <td><%=report['date']%></td>
+
+                <td>
+                    <ul class="reports">
+                    <% available.each do |avail| %>
+                    <li><a href="/report/<%=CGI.escape(report['name'])%>.<%=avail['rep_name']%>"><%=escape(avail['name'])%></a></li>
+                    <%end%>
+                    </ul>
+                </td>
+
+                <td>
+                    <form action="/report/<%=CGI.escape(report['name'])%>/delete" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <span class="notice"> There are no available reports at the moment.</span>
+        <% end %>

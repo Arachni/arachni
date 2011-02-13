@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -14,12 +14,12 @@ require 'rubygems'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
 opts = Arachni::Options.instance
 
+require opts.dir['lib'] + 'arachni'
 require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'
 require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'audit_store'
-require opts.dir['lib'] + 'vulnerability'
 require opts.dir['lib'] + 'module'
 require opts.dir['lib'] + 'plugin'
 require opts.dir['lib'] + 'http'
@@ -69,9 +69,6 @@ class Framework
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
-    # the universal system version
-    VERSION      = '0.2.1'
-
     # the version of *this* class
     REVISION     = '0.2'
 
@@ -106,6 +103,9 @@ class Framework
     # @return   [Arachni::HTTP]
     #
     attr_reader :http
+
+    attr_reader :sitemap
+    attr_reader :auditmap
 
     #
     # Holds candidate pages to be audited.
@@ -148,6 +148,9 @@ class Framework
         @running = false
         @paused  = []
 
+        @plugin_store = {}
+
+        @current_url = ''
     end
 
     def http
@@ -159,7 +162,10 @@ class Framework
     #
     # It parses the instanse options and runs the audit
     #
-    def run
+    # @param   [Block]     &block  a block to call after the audit has finished
+    #                                   but before running the reports
+    #
+    def run( &block )
         @running = true
 
         @opts.start_datetime = Time.now
@@ -174,25 +180,13 @@ class Framework
             # start the audit
             audit( )
         rescue Exception
-
         end
 
-        @opts.finish_datetime = Time.now
-        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
-
-        # make sure this is disabled or it'll break report output
-        @@only_positives = false
-
-        @running = false
-
-        # wait for the plugins to finish
-        @plugins.block!
-
-        # a plug-in may have updated the page queue, rock it!
-        audit_queue
-
-        # refresh the audit store
-        audit_store( true )
+        clean_up!
+        begin
+            block.call if block
+        rescue Exception
+        end
 
         # run reports
         if( @opts.reports && !@opts.reports.empty? )
@@ -202,15 +196,36 @@ class Framework
         return true
     end
 
-    def stats( )
+    def stats( refresh_time = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
+
+        @auditmap ||= []
+        @sitemap  ||= []
+        if !refresh_time || @auditmap.size == @sitemap.size
+            @opts.delta_time ||= Time.now - @opts.start_datetime
+        else
+            @opts.delta_time = Time.now - @opts.start_datetime
+        end
+
+        curr_avg = 0
+        if http.curr_res_cnt > 0
+            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
+        end
 
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
             :time       => audit_store.delta_time,
-            :avg        => ( req_cnt / @opts.delta_time ).to_i.to_s
+            :avg        => ( res_cnt / @opts.delta_time ).to_i.to_s,
+            :sitemap_size  => @sitemap.size,
+            :auditmap_size => @auditmap.size,
+            :curr_res_time => http.curr_res_time,
+            :curr_res_cnt  => http.curr_res_cnt,
+            :curr_avg      => curr_avg,
+            :average_res_time => http.average_res_time,
+            :max_concurrency => http.max_concurrency,
+            :current_page    => @current_url
         }
     end
 
@@ -226,14 +241,20 @@ class Framework
 
         @spider = Arachni::Spider.new( @opts )
 
-        # initiates the crawl
-        @sitemap = @spider.run {
-            | page |
+        @sitemap  ||= []
+        @auditmap ||= []
 
-            exception_jail{
-                run_mods( page )
-            }
+        # initiates the crawl
+        @spider.run {
+            |page|
+
+            @sitemap |= @spider.pages
+
+            @page_queue << page
+            audit_queue if !@opts.spider_first
         }
+
+        audit_queue
 
         if( @opts.http_harvest_last )
             harvest_http_responses( )
@@ -247,7 +268,7 @@ class Framework
         while( !@page_queue.empty? && page = @page_queue.pop )
 
             # audit the page
-            run_mods( page )
+            exception_jail{ run_mods( page ) }
 
             # run all the queued HTTP requests and harvest the responses
             http.run
@@ -279,15 +300,31 @@ class Framework
             return @store
         else
             return @store = AuditStore.new( {
-                :version  => VERSION,
+                :version  => version( ),
                 :revision => REVISION,
                 :options  => opts,
                 :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
-                :vulns    => @modules.results( ).deep_clone
-            } )
+                :issues   => @modules.results( ).deep_clone,
+                :plugins  => @plugin_store
+            }, self )
          end
     end
 
+    def plugin_store( plugin, obj )
+        name = ''
+        @plugins.each_pair {
+            |k, v|
+
+            if plugin.class.name == v.name
+                name = k
+                break
+            end
+        }
+
+        @plugin_store[name] = {
+            :results => obj
+        }.merge( plugin.class.info )
+    end
 
     #
     # Returns an array of hashes with information
@@ -402,7 +439,7 @@ class Framework
     # @return    [String]
     #
     def version
-        VERSION
+        Arachni::VERSION
     end
 
     #
@@ -415,6 +452,27 @@ class Framework
     end
 
     private
+
+    def clean_up!
+        @opts.finish_datetime = Time.now
+        @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
+
+        # make sure this is disabled or it'll break report output
+        @@only_positives = false
+
+        @running = false
+
+        # wait for the plugins to finish
+        @plugins.block!
+
+        # a plug-in may have updated the page queue, rock it!
+        audit_queue
+
+        # refresh the audit store
+        audit_store( true )
+
+        return true
+    end
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
@@ -434,7 +492,7 @@ class Framework
     #
     def prepare_user_agent
         if( !@opts.user_agent )
-            @opts.user_agent = 'Arachni/' + VERSION
+            @opts.user_agent = 'Arachni/' + version( )
         end
 
         if( @opts.authed_by )
@@ -451,8 +509,6 @@ class Framework
         if !File.exist?( @opts.cookie_jar )
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
-        else
-            @opts.cookies = http.class.parse_cookiejar( @opts.cookie_jar )
         end
 
     end
@@ -475,12 +531,20 @@ class Framework
     def run_mods( page )
         return if !page
 
+        @current_url = page.url.to_s
+
         @modules.each_pair {
             |name, mod|
 
             wait_if_paused
             run_mod( mod, page.deep_clone )
         }
+
+        @auditmap << page.url
+        @auditmap.uniq!
+        @sitemap |= @auditmap
+        @sitemap.uniq!
+
 
         if( !@opts.http_harvest_last )
             harvest_http_responses( )
@@ -545,10 +609,10 @@ class Framework
         return true if( !mod.info[:elements] || mod.info[:elements].empty? )
 
         elems = {
-            Vulnerability::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
-            Vulnerability::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
-            Vulnerability::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
-            Vulnerability::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
+            Issue::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
+            Issue::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
+            Issue::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
+            Issue::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
         }
 
         elems.each_pair {

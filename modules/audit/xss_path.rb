@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -67,19 +67,20 @@ class XSSPath < Arachni::Module::Base
             :name           => 'XSSPath',
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Scripting (XSS) in path},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
+                :tags        => [ 'xss', 'path', 'injection', 'regexp' ],
                 :cwe         => '79',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -90,19 +91,18 @@ class XSSPath < Arachni::Module::Base
 
     def __log_results( res, id )
 
-        if ( id && res.body.scan( Regexp.escape( id ) )[0] == id ) ||
-           ( !id && res.body.scan( Regexp.escape( id ) )[0].size > 0 )
+        if res.body.substring?( id )
 
             url = res.effective_url
             # append the result to the results hash
-            @results << Vulnerability.new( {
+            @results << Issue.new( {
                 :var          => 'n/a',
                 :url          => url,
                 :injected     => id,
                 :id           => id,
                 :regexp       => 'n/a',
                 :regexp_match => 'n/a',
-                :elem         => Vulnerability::Element::LINK,
+                :elem         => Issue::Element::LINK,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,

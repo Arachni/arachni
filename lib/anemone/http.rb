@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -116,33 +116,14 @@ class HTTP
     def get_response(url, referer = nil)
         opts = {}
         opts['Referer'] = referer.to_s if referer
-        opts['cookie'] = @cookie_store.to_s unless @cookie_store.empty? || (!accept_cookies? && @opts[:cookies].nil?)
 
-        # response = Arachni::Module::HTTP.instance.get( url.to_s,
-        #     :headers         => opts,
-        #     :follow_location => true,
-        #     :async           => false,
-        #     :remove_id       => true
-        # ).response
+        response = Arachni::HTTP.instance.get( url.to_s,
+            :headers         => opts,
+            :follow_location => true,
+            :async           => false,
+            :remove_id       => true
+        ).response
 
-        response = Typhoeus::Request.get( url.to_s,
-            :headers                       => opts,
-            :disable_ssl_peer_verification => true,
-            :username                      => Arachni::Options.instance.url.user,
-            :password                      => Arachni::Options.instance.url.password,
-            :method                        => :auto,
-            :user_agent                    => Arachni::Options.instance.user_agent,
-            :follow_location               => true,
-            :proxy                         => "#{Arachni::Options.instance.proxy_addr}:#{Arachni::Options.instance.proxy_port}",
-            :proxy_username                => Arachni::Options.instance.proxy_user,
-            :proxy_password                => Arachni::Options.instance.proxy_pass,
-            :proxy_type                    => Arachni::Options.instance.proxy_type,
-        )
-
-        # pp response.headers_hash['Set-Cookie']
-        # pp @cookie_store
-
-        @cookie_store.merge!(response.headers_hash['Set-Cookie']) if accept_cookies?
         return response
     end
 

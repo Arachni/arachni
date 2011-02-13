@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -10,15 +10,18 @@
 
 
 module Arachni
+
 module Reports
 
 #
 # Creates a plain text report of the audit.
 #
+# It redirects stdout to an outfile and runs the default (stdout.rb) report.
+#
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class Text < Arachni::Report::Base
 
@@ -30,8 +33,10 @@ class Text < Arachni::Report::Base
         @audit_store = audit_store
         @outfile     = options['outfile']
 
-        # text buffer
-        @__buffer = ''
+        require Options.instance.dir['reports'] + 'stdout'
+
+        # get an instance of the stdout report
+        @__stdout_rep = Arachni::Reports::Stdout.new( audit_store, options )
     end
 
     def run( )
@@ -39,148 +44,31 @@ class Text < Arachni::Report::Base
         print_line( )
         print_status( 'Creating text report...' )
 
+        # redirect output streams to the outfile
+        stdout = $stdout.dup
+        stderr = $stderr.dup
+        $stderr = $stdout = File.new( @outfile, 'w' )
 
-        __buffer( 'Web Application Security Report - Arachni Framework' )
-        __buffer
-        __buffer( 'Report generated on: ' + Time.now.to_s )
-        __buffer
-        __buffer( 'Report false positives: ' + REPORT_FP )
-        __buffer
-        __buffer( 'System settings:' )
-        __buffer( '---------------' )
-        __buffer( 'Version:  ' + @audit_store.version )
-        __buffer( 'Revision: '+ @audit_store.revision )
-        __buffer( 'Audit started on:  ' + @audit_store.start_datetime )
-        __buffer( 'Audit finished on: ' + @audit_store.finish_datetime )
-        __buffer( 'Runtime: ' + @audit_store.delta_time )
-        __buffer
-        __buffer( 'URL: ' + @audit_store.options['url'] )
-        __buffer( 'User agent: ' + @audit_store.options['user_agent'] )
-        __buffer
-        __buffer( 'Audited elements: ' )
-        __buffer( '* Links' ) if @audit_store.options['audit_links']
-        __buffer( '* Forms' ) if @audit_store.options['audit_forms']
-        __buffer( '* Cookies' ) if @audit_store.options['audit_cookies']
-        __buffer( '* Headers' ) if @audit_store.options['audit_headers']
-        __buffer
-        __buffer( 'Modules: ' + @audit_store.options['mods'].join( ', ' ) )
-        __buffer
-        __buffer( 'Filters: ' )
+        @__stdout_rep.run( )
 
-        if @audit_store.options['exclude']
-            __buffer( "  Exclude:" )
-            @audit_store.options['exclude'].each {
-                |ex|
-                __buffer( '    ' + ex )
-            }
-        end
-
-        if @audit_store.options['include']
-            __buffer( "  Include:" )
-            @audit_store.options['include'].each {
-                |inc|
-                __buffer( "    " + inc )
-            }
-        end
-
-        if @audit_store.options['redundant']
-            __buffer( "  Redundant:" )
-            @audit_store.options['redundant'].each {
-                |red|
-                __buffer( "    " + red['regexp'] + ':' + red['count'].to_s )
-            }
-        end
-
-        __buffer
-        __buffer( 'Cookies: ' )
-        if( @audit_store.options['cookies'] )
-            @audit_store.options['cookies'].each {
-                |cookie|
-                __buffer( "  #{cookie[0]} = #{cookie[1]}" )
-            }
-        end
-
-        __buffer
-        __buffer( '===========================' )
-        __buffer
-        __buffer( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
-        __buffer
-
-        @audit_store.vulns.each {
-            |vuln|
-
-            __buffer( vuln.name )
-            __buffer( '~~~~~~~~~~~~~~~~~~~~' )
-
-            __buffer( 'URL:      ' + vuln.url )
-            __buffer( 'Elements: ' + vuln.elem )
-            __buffer( 'Variable: ' + vuln.var )
-            __buffer( 'Description: ' )
-            __buffer( vuln.description )
-            __buffer
-            __buffer( 'Requires manual verification?: ' + vuln.verification.to_s )
-            __buffer
-            __buffer( 'References:' )
-            vuln.references.each{
-                |ref|
-                __buffer( '  ' + ref[0] + ' - ' + ref[1] )
-            }
-
-            __buffer_variations( vuln )
-
-            __buffer
-        }
-
-        __buffer( "\n" )
-
-        __buffer_write( )
+        $stdout.close
+        $stdout = stdout.dup
+        $stderr = stderr.dup
 
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Text report',
             :description    => %q{Exports a report as a plain text file.},
-            :author         => 'zapotek',
-            :version        => '0.1',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.2',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
                     Time.now.to_s + '.txt' ] ),
             ]
         }
-    end
-
-    def __buffer_variations( vuln )
-        __buffer
-        __buffer( 'Variations' )
-        __buffer( '----------' )
-        vuln.variations.each_with_index {
-            |var, i|
-            __buffer( "Variation #{i+1}:" )
-            __buffer( 'URL: ' + var['url'] )
-            __buffer( 'ID:  ' + var['id'] )
-            __buffer( 'Injected value:     ' + var['injected'] )
-            __buffer( 'Regular expression: ' + var['regexp'].to_s )
-            __buffer( 'Matched string:     ' + var['regexp_match'] )
-
-            __buffer
-        }
-    end
-
-    def __buffer( str = '' )
-        @__buffer += str + "\n"
-    end
-
-    def __buffer_write( )
-        file = File.new( @outfile, 'w' )
-        file.write( @__buffer )
-        file.close
     end
 
 end

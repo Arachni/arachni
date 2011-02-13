@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -40,6 +40,8 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::Module::Utilities
 
+    ALWAYS_ON = [ 'metamodules', 'content_types', 'healthmap' ]
+
     #
     # @param    [Arachni::Framework]    framework   framework instance
     #
@@ -48,6 +50,10 @@ class Manager < Arachni::ComponentManager
         @framework = framework
 
         @jobs = []
+    end
+
+    def load_defaults!
+        load( ALWAYS_ON )
     end
 
     #

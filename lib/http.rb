@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -12,9 +12,8 @@ require 'typhoeus'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'typhoeus/easy'
-require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
+require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 
@@ -34,7 +33,7 @@ require Options.instance.dir['lib'] + 'module/trainer'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 class HTTP
 
@@ -65,6 +64,9 @@ class HTTP
     attr_reader :request_count
     attr_reader :response_count
 
+    attr_reader :curr_res_time
+    attr_reader :curr_res_cnt
+
     attr_reader :trainer
 
     def initialize( )
@@ -91,7 +93,7 @@ class HTTP
         }
 
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
-        @hydra_sync = Typhoeus::Hydra.new( hydra_opts )
+        @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( :max_concurrency => 1 ) )
 
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
@@ -106,16 +108,25 @@ class HTTP
             'User-Agent'    => opts.user_agent
         }
 
-        @opts = {
-            :user_agent      => opts.user_agent,
-            :follow_location => false,
+        cookies = {}
+        cookies.merge!( self.class.parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
+        cookies.merge!( opts.cookies ) if opts.cookies
+
+        set_cookies( cookies ) if !cookies.empty?
+
+        proxy_opts = {}
+        proxy_opts = {
             :proxy           => "#{opts.proxy_addr}:#{opts.proxy_port}",
             :proxy_username  => opts.proxy_user,
             :proxy_password  => opts.proxy_pass,
             :proxy_type      => opts.proxy_type
-        }
+        } if opts.proxy_addr
 
-        @__not_found  = nil
+        @opts = {
+            :user_agent      => opts.user_agent,
+            :follow_location => false,
+            # :timeout         => 8000
+        }.merge( proxy_opts )
 
         @request_count  = 0
         @response_count = 0
@@ -123,7 +134,14 @@ class HTTP
         # we'll use it to identify our requests
         @rand_seed = seed( )
 
+        @curr_res_time = 0
+        @curr_res_cnt  = 0
 
+        @on_complete = []
+        @on_queue    = []
+
+        @after_run = []
+        @after_run_persistent = []
     end
 
     #
@@ -133,9 +151,49 @@ class HTTP
     # after all module threads have beed joined!
     #
     def run
-      exception_jail {
-          @hydra.run
-      }
+        exception_jail {
+            @hydra.run
+
+            @after_run.each {
+                |block|
+                block.call
+            }
+
+            @after_run.clear
+
+            @after_run_persistent.each {
+                |block|
+                block.call
+            }
+
+            @curr_res_time = 0
+            @curr_res_cnt  = 0
+        }
+    end
+
+    def fire_and_forget
+        exception_jail {
+            @hydra.fire_and_forget
+        }
+    end
+
+    def abort
+        exception_jail {
+            @hydra.abort
+        }
+    end
+
+    def average_res_time
+        return 0 if @curr_res_cnt == 0
+        return @curr_res_time / @curr_res_cnt
+    end
+
+    def max_concurrency!( max_concurrency )
+        @hydra.max_concurrency = max_concurrency
+    end
+
+    def max_concurrency
+        @hydra.max_concurrency
     end
 
     #
@@ -148,7 +206,11 @@ class HTTP
     def queue( req, async = true )
 
         req.id = @request_count
-        @last_url = req.url
+
+        @on_queue.each {
+            |block|
+            exception_jail{ block.call( req, async ) }
+        }
 
         if( !async )
             @hydra_sync.queue( req )
@@ -172,6 +234,16 @@ class HTTP
             |res|
 
             @response_count += 1
+            @curr_res_cnt   += 1
+            @curr_res_time  += res.start_transfer_time
+
+            @on_complete.each {
+                |block|
+                exception_jail{ block.call( res ) }
+            }
+
+            parse_and_set_cookies( res )
+
             print_debug( '------------' )
             print_debug( 'Got response.' )
             print_debug( 'Request ID#: ' + res.request.id.to_s )
@@ -202,6 +274,33 @@ class HTTP
     end
 
     #
+    # Gets called each time a hydra run finishes
+    #
+    def after_run( &block )
+        @after_run << block
+    end
+
+    def after_run_persistent( &block )
+        @after_run_persistent << block
+    end
+
+    #
+    # Gets called each time a request completes and passes the response
+    # to the block
+    #
+    def on_complete( &block )
+        @on_complete << block
+    end
+
+    #
+    # Gets called each time a request is queued and passes the request
+    # to the block
+    #
+    def on_queue( &block )
+        @on_queue << block
+    end
+
+    #
     # Makes a generic request
     #
     # @param  [URI]  url
@@ -219,7 +318,7 @@ class HTTP
 
         exception_jail {
 
-            req = Typhoeus::Request.new( URI.escape( url ), opts.merge( @opts ) )
+            req = Typhoeus::Request.new( normalize_url( url ), opts.merge( @opts ) )
             req.train! if train
 
             queue( req, async )
@@ -287,7 +386,8 @@ class HTTP
             opts = {
                 :headers       => headers,
                 :params        => cparams.empty? ? nil : cparams,
-                :follow_location => follow_location
+                :follow_location => follow_location,
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
             req = Typhoeus::Request.new( curl, opts )
@@ -328,10 +428,11 @@ class HTTP
                 :method        => :post,
                 :headers       => headers,
                 :params        => params,
-                :follow_location => false
+                :follow_location => false,
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -371,7 +472,7 @@ class HTTP
                 :follow_location => false
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -413,9 +514,10 @@ class HTTP
                 :headers         => headers,
                 :follow_location => false,
                 # :params          => params
+                :timeout       => opts[:timeout]
             }.merge( @opts )
 
-            req = Typhoeus::Request.new( url, opts )
+            req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
 
             queue( req, async )
@@ -450,11 +552,12 @@ class HTTP
             orig_headers  = @init_headers.clone
             @init_headers = @init_headers.merge( headers )
 
-            req = Typhoeus::Request.new( url,
+            req = Typhoeus::Request.new( normalize_url( url ),
                 :headers       => @init_headers.dup,
                 :user_agent    => @init_headers['User-Agent'],
                 :follow_location => false,
                 # :params        => params
+                :timeout       => opts[:timeout]
             )
             req.train! if train
 
@@ -484,6 +587,14 @@ class HTTP
         return params
     end
 
+    def current_cookies
+        parse_cookie_str( @init_headers['cookie'] )
+    end
+
+    def update_cookies( cookies )
+        set_cookies( current_cookies.merge( cookies ) )
+    end
+
     #
     # Sets cookies for the HTTP session
     #
@@ -499,6 +610,56 @@ class HTTP
         }
     end
 
+    def parse_and_set_cookies( res )
+        cookie_hash = {}
+
+        # extract cookies from the header field
+        begin
+            [res.headers_hash['Set-Cookie']].flatten.each {
+                |set_cookie_str|
+
+                break if !set_cookie_str.is_a?( String )
+                cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
+                    hash[cookie.name] = cookie.value if !!cookie
+                    hash
+                end
+                )
+            }
+        rescue Exception => e
+            print_debug( e.to_s )
+            print_debug_backtrace( e )
+        end
+
+        # extract cookies from the META tags
+        begin
+
+            # get get the head in order to check if it has an http-equiv for set-cookie
+            head = res.body.match( /<head(.*)<\/head>/imx )
+
+            # if it does feed the head to the parser in order to extract the cookies
+            if head && head.to_s.substring?( 'set-cookie' )
+                Nokogiri::HTML( head.to_s ).search( "//meta[@http-equiv]" ).each {
+                    |elem|
+
+                    next if elem['http-equiv'].downcase != 'set-cookie'
+                    k, v = elem['content'].split( ';' )[0].split( '=', 2 )
+                    cookie_hash[k] = v
+                }
+            end
+        rescue Exception => e
+            print_debug( e.to_s )
+            print_debug_backtrace( e )
+        end
+
+        return if cookie_hash.empty?
+
+        # update framework cookies
+        Arachni::Options.instance.cookies = cookie_hash
+
+        current = parse_cookie_str( @init_headers['cookie'] )
+        set_cookies( current.merge( cookie_hash ) )
+    end
+
     #
     # Returns a hash of cookies as a string (merged with the cookie-jar)
     #
@@ -509,12 +670,6 @@ class HTTP
     def get_cookies_str( cookies = { } )
 
         jar = parse_cookie_str( @init_headers['cookie'] )
-
-        cookies.reject! {
-            |cookie|
-            Options.instance.exclude_cookies.include?( cookie['name'] )
-        }
-
         cookies = jar.merge( cookies )
 
         str = ''
@@ -552,7 +707,7 @@ class HTTP
     #
     # @return   [Hash]    cookies     in name=>value pairs
     #
-    def HTTP.parse_cookiejar( cookie_jar )
+    def self.parse_cookiejar( cookie_jar )
 
         cookies = Hash.new
 
@@ -574,6 +729,17 @@ class HTTP
         cookies
     end
 
+    def self.content_type( headers_hash )
+        return if !headers_hash.is_a?( Hash )
+
+        headers_hash.each_pair {
+            |key, val|
+            return val if key.to_s.downcase == 'content-type'
+        }
+
+        return
+    end
+
     #
     # Encodes and parses a URL String
     #
@@ -586,43 +752,44 @@ class HTTP
     end
 
     #
-    # Checks whether or not the provided HTML code is a custom 404 page
+    # Checks whether or not the provided response is a custom 404 page
     #
-    # @param  [String]  html  the HTML code to check
+    # @param  [Typhoeus::Response]  res  the response to check
     #
     # @param  [Bool]
     #
-    def custom_404?( html )
+    def custom_404?( res )
 
-        if( !@__not_found )
+        @_404 ||= {}
+        path  = get_path( res.effective_url )
+        @_404[path] ||= {}
 
-            path = get_path( @last_url.to_s )
+        if( !@_404[path]['file'] )
 
             # force a 404 and grab the html body
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            @__not_found = Typhoeus::Request.get( force_404 ).body
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+            @_404[path]['file'] = Typhoeus::Request.get( force_404 ).body
 
             # force another 404 and grab the html body
+            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+            not_found2  = Typhoeus::Request.get( force_404 ).body
+
+            @_404[path]['file_rdiff'] = @_404[path]['file'].rdiff( not_found2 )
+        end
+
+        if( !@_404[path]['dir'] )
+
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
+            @_404[path]['dir'] = Typhoeus::Request.get( force_404 ).body
+
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
             not_found2  = Typhoeus::Request.get( force_404 ).body
 
-            #
-            # some websites may have dynamic 404 pages or simply include
-            # the query that caused the 404 in the 404 page causing the 404 pages to change.
-            #
-            # so get rid of the differences between the 2 404s (if there are any)
-            # and store what *doesn't* change into @__404
-            #
-            @__404 = @__not_found.rdiff( not_found2 )
+            @_404[path]['dir_rdiff'] = @_404[path]['dir'].rdiff( not_found2 )
         end
 
-        #
-        # get the rdiff between 'html' and an actual 404
-        #
-        # if this rdiff matches the rdiff in @__404 then by extension
-        # the 'html' is a 404
-        #
-        return @__not_found.rdiff( html ) == @__404
+        return @_404[path]['dir'].rdiff( res.body ) == @_404[path]['dir_rdiff'] ||
+            @_404[path]['file'].rdiff( res.body ) == @_404[path]['file_rdiff']
     end
 
     private

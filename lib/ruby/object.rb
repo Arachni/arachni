@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -22,7 +22,11 @@ class Object
     # Deep-clones self using a Marshal dump-load.
     #
     def deep_clone
-        return Marshal.load( Marshal.dump( self  ) )
+        begin
+            return Marshal.load( Marshal.dump( self  ) )
+        rescue Exception
+            return self
+        end
     end
 
 end

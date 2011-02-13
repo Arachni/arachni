@@ -1,12 +1,13 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
   (See LICENSE file for details)
 
 =end
+
 require 'getoptlong'
 
 # Construct getops struct
@@ -21,6 +22,7 @@ opts = GetoptLong.new(
     [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
     [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
     [ '--audit-headers',           GetoptLong::NO_ARGUMENT ],
+    [ '--spider-first',            GetoptLong::NO_ARGUMENT ],
     [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
     [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
@@ -43,12 +45,15 @@ opts = GetoptLong.new(
     [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
     [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
-    [ '--http-harvest-last',  '-s', GetoptLong::NO_ARGUMENT ],
+    [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
     [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
-    [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
     [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
     [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
+    [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
+    [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--ssl-ca',                  GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 $:.unshift( File.expand_path( File.dirname( __FILE__ ) ) )
@@ -57,11 +62,11 @@ require 'lib/options'
 options = Arachni::Options.instance
 
 options.dir            = Hash.new
-options.dir['pwd']     = File.dirname( File.expand_path(__FILE__) ) + '/'
-options.dir['modules'] = options.dir['pwd'] + 'modules/'
-options.dir['reports'] = options.dir['pwd'] + 'reports/'
-options.dir['plugins'] = options.dir['pwd'] + 'plugins/'
-options.dir['lib']     = options.dir['pwd'] + 'lib/'
+options.dir['root']    = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['modules'] = options.dir['root'] + 'modules/'
+options.dir['reports'] = options.dir['root'] + 'reports/'
+options.dir['plugins'] = options.dir['root'] + 'plugins/'
+options.dir['lib']     = options.dir['root'] + 'lib/'
 
 opts.quiet = true
 
@@ -82,6 +87,9 @@ begin
 
             when '--debug'
                 options.debug = true
+
+            when '--spider-first'
+                options.spider_first = true
 
             when '--plugin'
                 plugin, opt_str = arg.split( ':', 2 )
@@ -210,6 +218,15 @@ begin
 
             when '--ssl'
                 options.ssl = true
+
+            when '--ssl-pkey'
+                options.ssl_pkey = arg.to_s
+
+            when '--ssl-cert'
+                options.ssl_cert = arg.to_s
+
+            when '--ssl-ca'
+                options.ssl_ca = arg.to_s
 
             when '--server'
                 options.server = arg.to_s

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -127,13 +127,14 @@ class Link < Base
         Arachni::Module::Auditor::Element::LINK
     end
 
-    def audit_id( injection_str )
+    def audit_id( injection_str, opts = {} )
         vars = auditable.keys.sort.to_s
         url = URI( @auditor.page.url ).merge( URI( @action ).path ).to_s
 
+        timeout = opts[:timeout] || ''
         return "#{@auditor.class.info[:name]}:" +
           "#{url}:" + "#{self.type}:" +
-          "#{vars}=#{injection_str.to_s}"
+          "#{vars}=#{injection_str.to_s}:timeout=#{timeout}"
     end
 
 
@@ -141,6 +142,8 @@ end
 
 
 class Form < Base
+
+    include Arachni::Module::Utilities
 
     FORM_VALUES_ORIGINAL  = '__original_values__'
     FORM_VALUES_SAMPLE    = '__sample_values__'
@@ -198,10 +201,9 @@ class Form < Base
         id = simple['attrs'].to_s
 
         auditable.map {
-            |item|
-            citem = item.clone
-            citem.delete( 'value' )
-            id +=  citem.to_s
+            |name, value|
+            next if name.substring?( seed )
+            id +=  name
         }
 
         return id
@@ -241,6 +243,11 @@ class Cookie < Base
         @method = 'cookie'
 
         @auditable = { @raw['name'] => @raw['value'] }
+        @simple = @auditable.dup
+        @auditable.reject! {
+            |cookie|
+            Options.instance.exclude_cookies.include?( cookie )
+        }
     end
 
     def http_request( url, opts )
@@ -248,7 +255,7 @@ class Cookie < Base
     end
 
     def simple
-        return @auditable.dup
+        return @simple
     end
 
     def type

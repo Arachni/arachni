@@ -2,7 +2,7 @@
   $Id$
 
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -62,19 +62,21 @@ class SQLInjection < Arachni::Module::Base
 
         # prepare the string that will hopefully cause the webapp
         # to output SQL error messages
-        @__injection_str = '\'--;`'
+        @__injection_str = [
+            '\'`--',
+            ')'
+            ]
 
         @__opts = {
             :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :regexp => @@__regexps,
+            :param_flip => true
         }
 
     end
 
     def run( )
-        # send the bad characters in @__injection_strs via the page forms
-        # and pass a block that will check for a positive result
-        audit( @__injection_str, @__opts )
+        @__injection_str.each { |str| audit( str, @__opts ) }
     end
 
 
@@ -83,11 +85,12 @@ class SQLInjection < Arachni::Module::Base
             :name           => 'SQLInjection',
             :description    => %q{SQL injection recon module},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.4',
             :references     => {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
@@ -96,13 +99,15 @@ class SQLInjection < Arachni::Module::Base
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{SQL Injection},
                 :description => %q{SQL code can be injected into the web application.},
+                :tags        => [ 'sql','injection', 'regexp', 'database', 'error' ],
                 :cwe         => '89',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
-                :remedy_guidance    => '',
+                :remedy_guidance    => 'User inputs must be validated and filtered
+                    before being included in database queries.',
                 :remedy_code => '',
                 :metasploitable => 'unix/webapp/arachni_sqlmap'
             }

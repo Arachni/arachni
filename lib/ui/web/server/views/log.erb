@@ -1,0 +1,40 @@
+
+        <div id="page-intro">
+            <h2>Log</h2>
+            <p>
+                This page provides information about all actions (performed using and/or by this WebUI) that are worth knowing.
+                <br/>
+                To clear the log entries you will need to delete this file: <%=settings.db%>/log.db
+                <br/>
+            </p>
+        </div>
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !entries.empty? %>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Owner</th>
+                <th>Action</th>
+                <th>Object</th>
+                <th>Client IP address</th>
+                <th>Client hostname</th>
+                <th>Datestamp</th>
+            </tr>
+        <% entries.each do |entry| %>
+            <tr>
+
+
+                <td><%=entry.id%></td>
+                <td><%=entry.owner%></td>
+                <td><%=entry.action%></td>
+                <td><%=entry.object%></td>
+                <td><%=entry.client_addr%></td>
+                <td><%=entry.client_host%></td>
+                <td><%=entry.datestamp%></td>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <span class="notice"> The log is empty.</span>
+        <% end %>

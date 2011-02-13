@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -21,7 +21,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -53,9 +53,14 @@ class ResponseSplitting < Arachni::Module::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( @__header ) {
-            |res, var, opts|
-            __log_results( opts, var, res )
+        audit( @__header, :param_flip => true ) {
+            |res, opts|
+            if res.headers_hash['X-CRLF-Safe'] &&
+               !res.headers_hash['X-CRLF-Safe'].empty?
+
+                opts[:injected] = URI.encode( opts[:injected] )
+                log( opts, res )
+            end
         }
     end
 
@@ -66,24 +71,26 @@ class ResponseSplitting < Arachni::Module::Base
             :description    => %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
-            :author         => 'zapotek',
-            :version        => '0.1.3',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            :version        => '0.1.5',
             :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
             :targets        => { 'Generic' => 'all' },
 
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Response splitting},
                 :description => %q{The web application includes user input
                      in the response HTTP header.},
+                :tags        => [ 'response', 'splitting', 'injection', 'header' ],
                 :cwe         => '20',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '5.0',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being included as part of the HTTP response headers.},
@@ -91,35 +98,6 @@ class ResponseSplitting < Arachni::Module::Base
             }
 
         }
-    end
-
-    private
-
-    def __log_results( opts, var, res )
-        if res.headers_hash['X-CRLF-Safe'] && !res.headers_hash['X-CRLF-Safe'].empty?
-
-            url = res.effective_url
-            @results << Vulnerability.new( {
-                    :var          => var,
-                    :url          => url,
-                    :injected     => URI.encode( @__header ),
-                    :id           => 'x-crlf-safe',
-                    :regexp       => 'n/a',
-                    :regexp_match => 'n/a',
-                    :elem         => opts[:element],
-                    :response     => res.body,
-                    :headers      => {
-                        :request    => res.request.headers,
-                        :response   => res.headers,
-                    }
-                }.merge( self.class.info )
-            )
-
-            print_ok( "In #{opts[:element]} var '#{var}' ( #{url} )" )
-
-            # register our results with the system
-            register_results( @results )
-        end
     end
 
 end

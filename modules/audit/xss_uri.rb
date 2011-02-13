@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -34,7 +34,7 @@ class XSSURI < Arachni::Module::Base
         @results    = []
 
         # since we'll bypass the Auditor we need to keep track of our audits
-        @@__audited  ||= []
+        @@__audited  ||= Set.new
     end
 
     def prepare( )
@@ -43,7 +43,7 @@ class XSSURI < Arachni::Module::Base
 
     def run( )
 
-    uri  = URI( @page.url )
+    uri  = URI( normalize_url( @page.url ) )
     url  = uri.scheme + '://' + uri.host + uri.path  + @str
 
     if @@__audited.include?( url )
@@ -68,19 +68,20 @@ class XSSURI < Arachni::Module::Base
             :name           => 'XSSURI',
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1.3',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Cross-Site Scripting (XSS) in URI},
                 :description => %q{Client-side code, like JavaScript, can
                     be injected into the web application.},
+                :tags        => [ 'xss', 'uri', 'path', 'regexp', 'injection', 'script' ],
                 :cwe         => '79',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '9.0',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -91,20 +92,17 @@ class XSSURI < Arachni::Module::Base
 
     def __log_results( res )
 
-        regexp = Regexp.new( Regexp.escape( @str ) )
-
-        if ( res.body.scan( regexp )[0] == @str )
+        if res.body.substring?( @str )
 
             url = res.effective_url
             # append the result to the results hash
-            @results << Vulnerability.new( {
-                :var          => 'n/a',
+            @results << Issue.new( {
                 :url          => url,
                 :injected     => @str,
                 :id           => @str,
-                :regexp       => regexp,
+                :regexp       => @str,
                 :regexp_match => @str,
-                :elem         => Vulnerability::Element::PATH,
+                :elem         => Issue::Element::PATH,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,

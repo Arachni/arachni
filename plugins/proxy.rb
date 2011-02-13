@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -48,13 +48,20 @@ class Proxy < Arachni::Plugin::Base
 
         # don't let the framework run just yet
         @framework.pause!
+        print_info( "System paused." )
     end
 
     def prepare
         require @framework.opts.dir['plugins'] + '/proxy/server.rb'
 
-        # we'll need this to parse server responses into Arachni::Parser::Page objects
-        @parser = Arachni::Parser.new( @framework.opts )
+        # foo initialization, we just need it to verify URLs
+        @parser = Arachni::Parser.new( @framework.opts,
+            Typhoeus::Response.new(
+                :effective_url => @framework.opts.url.to_s,
+                :body          => '',
+                :headers_hash  => {}
+            )
+        )
 
         @server = Server.new(
             :BindAddress    => @options['bind_address'],
@@ -72,6 +79,7 @@ class Proxy < Arachni::Plugin::Base
             "http://#{@server[:BindAddress]}:#{@server[:Port]}" )
 
         print_status( "Shutdown URL: #{SHUTDOWN_URL}" )
+        print_info( "The scan will resume once you visit the shutdown URL." )
         @server.start
     end
 
@@ -89,7 +97,16 @@ class Proxy < Arachni::Plugin::Base
         headers.merge( res.header.dup )     if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
-        page = @parser.run( req.unparsed_uri, res.body, headers )
+        # proper initialization in order to parse the response into a page
+        @parser = Arachni::Parser.new( @framework.opts,
+            Typhoeus::Response.new(
+                :effective_url => req.unparsed_uri,
+                :body          => res.body,
+                :headers_hash  => headers
+            )
+        )
+
+        page = @parser.run
         page = update_forms( page, req ) if req.body
         page.method = res.request_method
         page.code   = res.status
@@ -110,11 +127,13 @@ class Proxy < Arachni::Plugin::Base
 
         cookies = {}
 
-        req['Cookie'].split( ';' ).each{
-            |cookie|
-            k, v = cookie.split( '=', 2 )
-            cookies[k.strip] = v.strip
-        }
+        if req['Cookie']
+            req['Cookie'].split( ';' ).each{
+                |cookie|
+                k, v = cookie.split( '=', 2 )
+                cookies[k.strip] = v.strip
+            }
+        end
 
         page.cookies.each {
             |cookie|
@@ -132,8 +151,7 @@ class Proxy < Arachni::Plugin::Base
             }
         end
 
-        # set the cookies system-wide so that the spider can use it
-        @framework.opts.cookies = cookies
+        @framework.http.update_cookies( cookies )
 
     end
 

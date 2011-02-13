@@ -2,7 +2,7 @@
   $Id$
 
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -40,10 +40,10 @@ class LDAPInjection < Arachni::Module::Base
         # we make this a class variable and populate it only once
         # to reduce file IO
         #
-        @@__regexps ||= []
+        @@__errors ||= []
 
-        if @@__regexps.empty?
-            read_file( 'regexps.txt' ) { |regexp| @@__regexps << regexp }
+        if @@__errors.empty?
+            read_file( 'errors.txt' ) { |error| @@__errors << error }
         end
 
 
@@ -52,8 +52,8 @@ class LDAPInjection < Arachni::Module::Base
         @__injection_str = "#^($!@$)(()))******"
 
         @__opts = {
-            :format => [ Format::APPEND ],
-            :regexp => @@__regexps
+            :format    => [ Format::APPEND ],
+            :substring => @@__errors
         }
 
     end
@@ -70,9 +70,10 @@ class LDAPInjection < Arachni::Module::Base
                 return LDAP error messages in order to discover failures
                 in user input validation.},
             :elements       => [
-                Vulnerability::Element::FORM,
-                Vulnerability::Element::LINK,
-                Vulnerability::Element::COOKIE
+                Issue::Element::FORM,
+                Issue::Element::LINK,
+                Issue::Element::COOKIE,
+                Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
@@ -81,12 +82,13 @@ class LDAPInjection < Arachni::Module::Base
                 'OWASP'     => 'http://www.owasp.org/index.php/LDAP_injection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{LDAP Injection},
                 :description => %q{LDAP queries can be injected into the web application
                     which can be used to disclose sensitive data of affect the execution flow.},
+                :tags        => [ 'ldap', 'injection', 'regexp' ],
                 :cwe         => '90',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => %q{User inputs must be validated and filtered
                     before being used in an LDAP query.},

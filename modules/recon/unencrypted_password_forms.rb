@@ -2,7 +2,7 @@
   $Id$
 
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -33,7 +33,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         @page = page
 
         @results    = []
-        @@__audited ||= []
+        @@__audited ||= Set.new
     end
 
     def run( )
@@ -71,22 +71,15 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             return
         end
 
-        @@__audited << input['name']
+        name = input['name'] || input['id'] || 'n/a'
+        @@__audited << name
 
         # append the result to the results array
-        @results << Vulnerability.new( {
-            :var          => input['name'],
+        @results << Issue.new( {
+            :var          => name,
             :url          => url,
-            :injected     => 'n/a',
-            :id           => 'n/a',
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::FORM,
+            :elem         => Issue::Element::FORM,
             :response     => @page.html,
-            :headers      => {
-                :request    => 'n/a',
-                :response   => 'n/a',
-            }
         }.merge( self.class.info ) )
 
         print_ok( "Found unprotected password field '#{input['name']}' at #{url}" )
@@ -99,19 +92,20 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             :description    => %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
             :elements       => [
-                Vulnerability::Element::FORM
+                Issue::Element::FORM
             ],
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Unencrypted password form.},
                 :description => %q{Transmission of password does not use an encrypted channel.},
+                :tags        => [ 'unencrypted', 'password', 'form' ],
                 :cwe         => '319',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',

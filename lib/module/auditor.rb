@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -56,13 +56,13 @@ module Auditor
     # Holds constants that describe the HTML elements to be audited.
     #
     module Element
-        LINK    = Vulnerability::Element::LINK
-        FORM    = Vulnerability::Element::FORM
-        COOKIE  = Vulnerability::Element::COOKIE
-        HEADER  = Vulnerability::Element::HEADER
-        BODY    = Vulnerability::Element::BODY
-        PATH    = Vulnerability::Element::PATH
-        SERVER  = Vulnerability::Element::SERVER
+        LINK    = Issue::Element::LINK
+        FORM    = Issue::Element::FORM
+        COOKIE  = Issue::Element::COOKIE
+        HEADER  = Issue::Element::HEADER
+        BODY    = Issue::Element::BODY
+        PATH    = Issue::Element::PATH
+        SERVER  = Issue::Element::SERVER
     end
 
     #
@@ -79,7 +79,7 @@ module Auditor
         #
         :elements => [ Element::LINK, Element::FORM,
                        Element::COOKIE, Element::HEADER,
-                       Vulnerability::Element::BODY ],
+                       Issue::Element::BODY ],
 
         #
         # The regular expression to match against the response body.
@@ -131,10 +131,11 @@ module Auditor
     # and logs the results.
     #
     # @param    [Array<Regexp>]     regexps
+    # @param    [String]            string
     # @param    [Block]             block       block to verify matches before logging
     #                                               must return true/false
     #
-    def match_and_log( regexps, &block )
+    def match_and_log( regexps, string = @page.html, &block )
 
         # make sure that we're working with an array
         regexps = [regexps].flatten
@@ -145,18 +146,20 @@ module Auditor
         regexps.each {
             |regexp|
 
-            @page.html.scan( regexp ).flatten.uniq.each {
+            string.scan( regexp ).flatten.uniq.each {
                 |match|
 
                 next if !match
                 next if block && !block.call( match )
 
-                log_match(
+                log(
                     :regexp  => regexp,
                     :match   => match,
-                    :element => Vulnerability::Element::BODY
+                    :element => Issue::Element::BODY
                 )
-            } if elems.include? Vulnerability::Element::BODY
+            } if elems.include? Issue::Element::BODY
+
+            next if string == @page.html
 
             @page.response_headers.each {
                 |k,v|
@@ -168,14 +171,14 @@ module Auditor
                     next if !match
                     next if block && !block.call( match )
 
-                    log_match(
+                    log(
                         :var => k,
                         :regexp  => regexp,
                         :match   => match,
-                        :element => Vulnerability::Element::HEADER
+                        :element => Issue::Element::HEADER
                     )
                 }
-            } if elems.include? Vulnerability::Element::HEADER
+            } if elems.include? Issue::Element::HEADER
 
         }
     end
@@ -186,31 +189,54 @@ module Auditor
     # @param    [Regexp]    regexp
     # @param    [String]    match
     #
-    def log_match( opts, res = nil )
+    def log( opts, res = nil )
 
-        request_headers  = '<n/a>'
+        method = nil
+
+        request_headers  = nil
         response_headers = @page.response_headers
         response         = @page.html
         url              = @page.url
+        method           = @page.method.to_s.upcase if @page.method
 
         if( res )
             request_headers  = res.request.headers
             response_headers = res.headers
             response         = res.body
             url              = res.effective_url
+            method           = res.request.method.to_s.upcase
         end
+
+        if response_headers['content-type'] &&
+           !response_headers['content-type'].substring?( 'text' )
+            response = nil
+        end
+
+        begin
+            print_ok( "In #{opts[:element]} var '#{opts[:altered]}' ( #{url} )" )
+        rescue
+        end
+
+        print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
+        print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
+        print_verbose( "Matched regular expression: " + opts[:regexp].to_s )
+        print_debug( 'Request ID: ' + res.request.id.to_s ) if res
+        print_verbose( '---------' ) if only_positives?
 
         # Instantiate a new Vulnerability class and
         # append it to the results array
-        vuln = Vulnerability.new( {
-            :var          => opts[:var] || '<n/a>',
+        vuln = Issue.new( {
+            :var          => opts[:altered],
             :url          => url,
-            :injected     => 'n/a',
-            :id           => 'n/a',
+            :injected     => opts[:injected],
+            :id           => opts[:id],
             :regexp       => opts[:regexp],
-            :regexp_match => opts[:match] || '<n/a>',
+            :regexp_match => opts[:match],
             :elem         => opts[:element],
+            :verification => opts[:verification] || false,
+            :method       => method,
             :response     => response,
+            :opts         => opts,
             :headers      => {
                 :request    => request_headers,
                 :response   => response_headers,
@@ -273,6 +299,99 @@ module Auditor
         }
     end
 
+
+    #
+    # Audits elements using a 2 phase timing attack and logs results.
+    #
+    # 'opts' needs to contain a :timeout value in milliseconds.</br>
+    # Optionally, you can add a :timeout_divider.
+    #
+    # Phase 1 uses the timeout value passed in opts, phase 2 uses (timeout * 2). </br>
+    # If phase 1 fails, phase 2 is aborted. </br>
+    # If we have a result in phase 1, phase 2 verifies that result with the higher timeout.
+    #
+    # @param   [Array]     strings     injection strings
+    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    # @param  [Hash]        opts        options as described in {OPTIONS}
+    #
+    def audit_timeout( strings, opts )
+        logged = Set.new
+
+        delay = opts[:timeout]
+
+        audit_timeout_debug_msg( 1, delay )
+        timing_attack( strings, opts ) {
+            |res, opts, elem|
+
+            if !logged.include?( opts[:altered] )
+                logged << opts[:altered]
+                audit_timeout_phase_2( elem )
+            end
+        }
+    end
+
+    #
+    # Runs phase 2 of the timing attack auditng an individual element
+    # (which passed phase 1) with a higher delay and timeout
+    #
+    def audit_timeout_phase_2( elem )
+
+        opts = elem.opts
+        opts[:timeout] *= 2
+
+        audit_timeout_debug_msg( 2, opts[:timeout] )
+
+        str = opts[:timing_string].gsub( '__TIME__',
+            ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+
+        elem.auditor( self )
+        elem.audit( str, opts ) {
+            |res, opts|
+
+            if res.timed_out?
+
+                # all issues logged by timing attacks need manual verification.
+                # end of story.
+                opts[:verification] = true
+                log( opts, res)
+            end
+        }
+    end
+
+    def audit_timeout_debug_msg( phase, delay )
+        print_debug( '---------------------------------------------' )
+        print_debug( "Running phase #{phase.to_s} of timing attack." )
+        print_debug( "Delay set to: #{delay.to_s} milliseconds" )
+        print_debug( '---------------------------------------------' )
+    end
+
+    #
+    # Audits elements using a timing attack.
+    #
+    # 'opts' needs to contain a :timeout value in milliseconds.</br>
+    # Optionally, you can add a :timeout_divider.
+    #
+    # @param   [Array]     strings     injection strings
+    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    # @param    [Hash]      opts        options as described in {OPTIONS}
+    # @param    [Block]     &block      block to call if a timeout occurs,
+    #                                       it will be passed the response and opts
+    #
+    def timing_attack( strings, opts, &block )
+
+        opts[:timeout_divider] ||= 1
+        [strings].flatten.each {
+            |str|
+
+            opts[:timing_string] = str
+            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+            audit( str, opts ) {
+                |res, opts, elem|
+                block.call( res, opts, elem ) if block && res.timed_out?
+            }
+        }
+    end
+
     #
     # Provides the following methods:
     # * audit_links()
@@ -319,7 +438,6 @@ module Auditor
     def audit_elems( elements, injection_str, opts = { }, &block )
 
         opts            = OPTIONS.merge( opts )
-        opts[:element]  = Element::HEADER
         url             = @page.url
 
         opts[:injected_orig] = injection_str

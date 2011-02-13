@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -30,30 +30,30 @@ module ElementDB
     #
     # page forms
     #
-    @@forms    ||= []
+    @@forms    ||= Set.new
 
     #
     # page links
     #
-    @@links    ||= []
+    @@links    ||= Set.new
 
     #
     # page cookies
     #
-    @@cookies  ||= []
+    @@cookies  ||= Set.new
 
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
     def init_forms( forms )
-      @@forms = forms
+      @@forms |= forms.map { |form| form.id }
     end
 
     #
     # Initializes @@links with the links found during the crawl/analysis
     #
     def init_links( links )
-      @@links = links
+      @@links |= links.map { |link| link.id }
     end
 
     #
@@ -61,11 +61,6 @@ module ElementDB
     #
     def init_cookies( cookies )
       @@cookies = cookies
-
-      cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-      cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
-      @http.set_cookies( cookie_jar )
-
     end
 
     #
@@ -79,7 +74,7 @@ module ElementDB
         return [], 0 if forms.size == 0
 
         form_cnt = 0
-        @new_forms ||= []
+        new_forms ||= []
 
         forms.each {
             |form|
@@ -87,15 +82,14 @@ module ElementDB
             next if form.action.include?( seed )
             next if form.auditable.size == 0
 
-            if !(index = forms_include?( form ) )
-                @@forms << form
-                @new_forms << form
+            if !@@forms.include?( form.id )
+                @@forms << form.id
+                new_forms << form
                 form_cnt += 1
             end
         }
 
-        return @new_forms, form_cnt
-
+        return new_forms, form_cnt
     end
 
     #
@@ -108,21 +102,21 @@ module ElementDB
       return [], 0 if links.size == 0
 
       link_cnt = 0
-      @new_links ||= []
+      new_links ||= []
       links.each {
           |link|
 
           next if !link
           next if link.action.include?( seed )
 
-          if !(index = links_include?( link ) )
-              @@links    << link
-              @new_links << link
+          if !@@links.include?( link.id )
+              @@links    << link.id
+              new_links << link
               link_cnt += 1
           end
       }
 
-      return @new_links, link_cnt
+      return new_links, link_cnt
     end
 
     #
@@ -153,56 +147,10 @@ module ElementDB
         }
 
         @@cookies.flatten!
-
         @@cookies |= @new_cookies
 
-        cookie_jar = @http.parse_cookie_str( @http.init_headers['cookie'] )
-        cookie_jar = get_cookies_simple( @@cookies ).merge( cookie_jar )
-
-        @http.set_cookies( cookie_jar )
         return [ @@cookies, cookie_cnt ]
     end
-
-    private
-
-    def forms_include?( form )
-        @@forms.each_with_index {
-            |page_form, i|
-            return i if( form.id == page_form.id )
-
-        }
-        return false
-    end
-
-    def links_include?( link )
-        @@links.each_with_index {
-            |page_link, i|
-            return i if( link.id == page_link.id )
-
-        }
-        return false
-    end
-
-
-    #
-    # Returns cookies as a name=>value hash
-    #
-    # @return    [Hash]    the cookie attributes, values, etc
-    #
-    def get_cookies_simple( incookies = nil )
-        cookies = Hash.new( )
-
-        incookies = get_cookies( ) if !incookies
-
-        incookies.each {
-            |cookie|
-            cookies[cookie.raw['name']] = cookie.raw['value']
-        }
-
-        return cookies if !@page.cookiejar
-        @page.cookiejar.merge( cookies )
-    end
-
 
 end
 

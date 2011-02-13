@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -30,11 +30,6 @@ class AFR < Arachni::Report::Base
         @options       = options
     end
 
-    #
-    # REQUIRED
-    #
-    # Use it to run your report.
-    #
     def run( )
 
         print_line( )
@@ -45,16 +40,11 @@ class AFR < Arachni::Report::Base
         print_status( 'Done!' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Arachni Framework Report',
             :description    => %q{Saves the file in the default Arachni Framework Report (.afr) format.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',

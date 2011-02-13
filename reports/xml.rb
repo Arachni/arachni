@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -10,8 +10,10 @@
 
 require 'base64'
 
-
 module Arachni
+
+require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+
 module Reports
 
 #
@@ -20,9 +22,11 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class XML < Arachni::Report::Base
+
+    include Arachni::Reports::Buffer
 
     #
     # @param [AuditStore]  audit_store
@@ -41,118 +45,135 @@ class XML < Arachni::Report::Base
         print_line( )
         print_status( 'Creating XML report...' )
 
-        __start_tag( 'arachni_report' )
+        start_tag( 'arachni_report' )
 
-        __simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
-        __simple_tag( 'generated_on', Time.now.to_s )
-        __simple_tag( 'report_false_positives', REPORT_FP )
+        simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
+        simple_tag( 'generated_on', Time.now.to_s )
+        simple_tag( 'report_false_positives', REPORT_FP )
 
-        __start_tag( 'system' )
-        __simple_tag( 'version', @audit_store.version )
-        __simple_tag( 'revision', @audit_store.revision )
-        __simple_tag( 'start_datetime', @audit_store.start_datetime )
-        __simple_tag( 'finish_datetime', @audit_store.finish_datetime )
-        __simple_tag( 'delta_time', @audit_store.delta_time )
+        start_tag( 'system' )
+        simple_tag( 'version', @audit_store.version )
+        simple_tag( 'revision', @audit_store.revision )
+        simple_tag( 'start_datetime', @audit_store.start_datetime )
+        simple_tag( 'finish_datetime', @audit_store.finish_datetime )
+        simple_tag( 'delta_time', @audit_store.delta_time )
 
-        __simple_tag( 'url', @audit_store.options['url'] )
-        __simple_tag( 'user_agent', @audit_store.options['user_agent'] )
+        simple_tag( 'url', @audit_store.options['url'] )
+        simple_tag( 'user_agent', @audit_store.options['user_agent'] )
 
-        __start_tag( 'audited_elements' )
-        __simple_tag( 'element', 'links' ) if @audit_store.options['audit_links']
-        __simple_tag( 'element', 'forms' ) if @audit_store.options['audit_forms']
-        __simple_tag( 'element', 'cookies' ) if @audit_store.options['audit_cookies']
-        __simple_tag( 'element', 'headers' ) if @audit_store.options['audit_headers']
-        __end_tag( 'audited_elements' )
+        start_tag( 'audited_elements' )
+        simple_tag( 'element', 'links' ) if @audit_store.options['audit_links']
+        simple_tag( 'element', 'forms' ) if @audit_store.options['audit_forms']
+        simple_tag( 'element', 'cookies' ) if @audit_store.options['audit_cookies']
+        simple_tag( 'element', 'headers' ) if @audit_store.options['audit_headers']
+        end_tag( 'audited_elements' )
 
-        __simple_tag( 'modules', @audit_store.options['mods'].join( ', ' ) )
+        start_tag( 'modules')
+        @audit_store.options['mods'].each { |mod| add_mod( mod ) }
+        end_tag( 'modules' )
 
-        __start_tag( 'filters' )
+        start_tag( 'filters' )
         if @audit_store.options['exclude']
-            __start_tag( "exclude" )
+            start_tag( "exclude" )
             @audit_store.options['exclude'].each {
                 |ex|
-                __simple_tag( 'filter', ex )
+                simple_tag( 'regexp', ex )
             }
-            __end_tag( "exclude" )
+            end_tag( "exclude" )
         end
+
 
         if @audit_store.options['include']
-            __start_tag( "include" )
+            start_tag( "include" )
             @audit_store.options['include'].each {
                 |inc|
-                __simple_tag( 'filter', inc )
+                simple_tag( 'regexp', inc )
             }
-            __end_tag( "include" )
+            end_tag( "include" )
         end
+
 
         if @audit_store.options['redundant']
-            __start_tag( "redundant" )
+            start_tag( "redundant" )
             @audit_store.options['redundant'].each {
                 |red|
-                __simple_tag( 'filter', red['regexp'] + ':' + red['count'].to_s )
+                simple_tag( 'filter', red['regexp'] + ':' + red['count'].to_s )
             }
-            __end_tag( "redundant" )
+            end_tag( "redundant" )
         end
-        __end_tag( 'filters' )
+        end_tag( 'filters' )
 
-        __start_tag( 'cookies' )
+
+        start_tag( 'cookies' )
         if( @audit_store.options['cookies'] )
             @audit_store.options['cookies'].each {
-                |cookie|
-                __simple_tag( cookie[0], cookie[1] )
+                |name, value|
+                add_cookie( name, value )
             }
         end
-        __end_tag( 'cookies' )
+        end_tag( 'cookies' )
 
-        __end_tag( 'system' )
 
-        __simple_tag( 'vulnerability_cnt', @audit_store.vulns.size.to_s )
+        end_tag( 'system' )
 
-        __start_tag( 'vulnerabilities' )
-        @audit_store.vulns.each {
-            |vuln|
 
-            __start_tag( 'vulnerability' )
-            __simple_tag( 'name', vuln.name )
+        start_tag( 'issues' )
+        @audit_store.issues.each {
+            |issue|
 
-            __simple_tag( 'url', vuln.url )
-            __simple_tag( 'element', vuln.elem )
-            __simple_tag( 'variable', vuln.var )
-            __simple_tag( 'escription', vuln.description )
-            __simple_tag( 'manual_verification', vuln.verification.to_s )
+            start_tag( 'issue' )
+            simple_tag( 'name', issue.name )
 
-            __start_tag( 'references' )
-            vuln.references.each{
-                |ref|
-                __simple_tag( ref[0], ref[1] )
+            simple_tag( 'url', issue.url )
+            simple_tag( 'element', issue.elem )
+            simple_tag( 'method', issue.method ) if issue.method
+            add_tags( issue.tags ) if issue.tags.is_a?( Array )
+            simple_tag( 'variable', issue.var ) if issue.var
+            simple_tag( 'description', issue.description )
+            simple_tag( 'manual_verification', issue.verification.to_s )
+
+
+            start_tag( 'references' )
+            issue.references.each{
+                |name, url|
+                add_reference( name, url )
             }
-            __end_tag( 'references' )
+            end_tag( 'references' )
 
-            __buffer_variations( vuln )
 
-            __end_tag( 'vulnerability' )
+            add_variations( issue )
+
+            end_tag( 'issue' )
         }
 
-        __end_tag( 'vulnerabilities' )
+        end_tag( 'issues' )
 
-        __end_tag( 'arachni_report' )
+        start_tag( 'plugins' )
 
-        __xml_write( )
+        # get XML formatted plugin data and append them to the XML buffer
+        format_plugin_results( @audit_store.plugins ).values.compact.each { |xml| append( xml ) }
 
+        end_tag( 'plugins' )
+
+        end_tag( 'arachni_report' )
+
+        xml_write( )
         print_status( 'Saved in \'' + @outfile + '\'.' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
+    def xml_write( )
+        file = File.new( @outfile, 'w' )
+        file.write( @__buffer )
+        file.close
+    end
+
+
     def self.info
         {
             :name           => 'XML report',
             :description    => %q{Exports a report as an XML file.},
-            :author         => 'zapotek',
-            :version        => '0.1',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.2',
             :options        => [
                 Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
                     Time.now.to_s + '.xml' ] ),
@@ -160,60 +181,51 @@ class XML < Arachni::Report::Base
         }
     end
 
-    def __buffer_variations( vuln )
-        __start_tag( 'variations' )
-        vuln.variations.each_with_index {
+    def add_variations( issue )
+        start_tag( 'variations' )
+        issue.variations.each_with_index {
             |var|
-            __start_tag( 'variation' )
+            start_tag( 'variation' )
 
-            __simple_tag( 'url', var['url'] )
-            __simple_tag( 'id', var['id'] )
-            __simple_tag( 'injected', var['injected'] )
-            __simple_tag( 'regexp', var['regexp'].to_s )
-            __simple_tag( 'regexp_match', var['regexp_match'] )
+            simple_tag( 'url', var['url'] )
+            simple_tag( 'id', URI.encode( var['id'] ) ) if var['id']
+            simple_tag( 'injected', URI.encode( var['injected'] ) ) if var['injected']
+            simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
+            simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
 
-            __start_tag( 'headers' )
-            __simple_tag( 'request', var['headers']['request'].to_s )
-            __simple_tag( 'response', var['headers']['response'].to_s )
-            __end_tag( 'headers' )
+            start_tag( 'headers' )
 
-            __simple_tag( 'html', Base64.encode64( var['response'] ) )
+            if var['headers']['request'].is_a?( Hash )
+                add_headers( 'request', var['headers']['request'] )
+            end
 
-            __end_tag( 'variation' )
+            response = {}
+            if var['headers']['response'].is_a?( Hash )
+                response = var['headers']['response']
+            else
+                var['headers']['response'].split( "\n" ).each {
+                    |line|
+                    field, value = line.split( ':', 2 )
+                    next if !value
+                    response[field] = value
+                }
+            end
+
+            if response.is_a?( Hash )
+                add_headers( 'response', response )
+            end
+
+            end_tag( 'headers' )
+
+            if var['response'] && !var['response'].empty?
+                simple_tag( 'html', Base64.encode64( var['response'] ) )
+            end
+
+            end_tag( 'variation' )
         }
-        __end_tag( 'variations' )
-    end
-
-    def __buffer( str = '' )
-        @__buffer += str + "\n"
-    end
-
-    def __simple_tag( tag, text )
-        __start_tag( tag )
-        __add( text )
-        __end_tag( tag )
-    end
-
-    def __start_tag( tag )
-        __buffer( "<#{tag}>" )
-    end
-
-    def __add( text )
-        # __buffer( "<![CDATA[#{text}]]>" )
-        __buffer( "<![CDATA[#{URI.encode( text )}]]>" )
-    end
-
-    def __end_tag( tag )
-        __buffer( "</#{tag}>" )
-    end
-
-    def __xml_write( )
-        file = File.new( @outfile, 'w' )
-        file.write( @__buffer )
-        file.close
+        end_tag( 'variations' )
     end
 
 end
-
 end
 end

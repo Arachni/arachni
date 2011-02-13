@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -41,7 +41,7 @@ class AllowedMethods < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        @http.request( URI( @page.url ).host, :method => :options ).on_complete {
+        @http.request( URI( normalize_url( @page.url ) ).host, :method => :options ).on_complete {
             |res|
             __log_results( res )
         }
@@ -61,11 +61,12 @@ class AllowedMethods < Arachni::Module::Base
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Allowed HTTP methods},
-                :description => %q{},
+                :description => %q{The webserver claims that it supports the logged methods.},
+                :tags        => [ 'http', 'methods', 'options' ],
                 :cwe         => '',
-                :severity    => Vulnerability::Severity::INFORMATIONAL,
+                :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -79,15 +80,11 @@ class AllowedMethods < Arachni::Module::Base
 
         return if !methods || methods.empty?
 
-        vuln = Vulnerability.new( {
-            :var          => 'n/a',
+        issue = Issue.new( {
             :url          => res.effective_url,
-            :injected     => 'n/a',
             :method       => res.request.method.to_s.upcase,
-            :id           => 'n/a',
-            :regexp       => 'n/a',
             :regexp_match => methods,
-            :elem         => Vulnerability::Element::SERVER,
+            :elem         => Issue::Element::SERVER,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -96,7 +93,7 @@ class AllowedMethods < Arachni::Module::Base
         }.merge( self.class.info ) )
 
         # register our results with the system
-        register_results( [vuln] )
+        register_results( [issue] )
 
         # inform the user that we have a match
         print_ok( methods )

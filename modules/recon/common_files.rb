@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -13,14 +13,12 @@ module Arachni
 module Modules
 
 #
-# Backup file discovery module.
-#
 # Looks for sensitive common files on the server.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 #
 class CommonFiles < Arachni::Module::Base
@@ -29,23 +27,31 @@ class CommonFiles < Arachni::Module::Base
 
     def initialize( page )
         super( page )
+    end
 
-        @__common_files = 'filenames.txt'
-
+    def prepare
         # to keep track of the requests and not repeat them
-        @@__audited ||= []
+        @@__audited ||= Set.new
 
         # our results array
         @results = []
+
+        @@__filenames ||=[]
+        return if !@@__filenames.empty?
+
+        read_file( 'filenames.txt' ) {
+            |file|
+            @@__filenames << file
+        }
     end
 
     def run( )
 
-        print_status( "Scanning..." )
-
         path = get_path( @page.url )
+        return if @@__audited.include?( path )
 
-        read_file( @__common_files ) {
+        print_status( "Scanning..." )
+        @@__filenames.each {
             |file|
 
             #
@@ -57,11 +63,9 @@ class CommonFiles < Arachni::Module::Base
 
             url  = path + file
 
-            next if @@__audited.include?( url )
             print_status( "Checking for #{url}" )
 
             req  = @http.get( url, :train => true )
-            @@__audited << url
 
             req.on_complete {
                 |res|
@@ -70,6 +74,7 @@ class CommonFiles < Arachni::Module::Base
             }
         }
 
+        @@__audited << path
     end
 
 
@@ -78,15 +83,16 @@ class CommonFiles < Arachni::Module::Base
             :name           => 'CommonFiles',
             :description    => %q{Tries to find common sensitive files on the server.},
             :elements       => [ ],
-            :author         => 'zapotek',
-            :version        => '0.1.2',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            :version        => '0.1.3',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{A common sensitive file exists on the server.},
                 :description => %q{},
-                :cwe         => '530',
-                :severity    => Vulnerability::Severity::LOW,
+                :tags        => [ 'common', 'path', 'file' ],
+                :cwe         => '',
+                :severity    => Issue::Severity::LOW,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -96,27 +102,23 @@ class CommonFiles < Arachni::Module::Base
     end
 
     #
-    # Adds a vulnerability to the @results array<br/>
+    # Adds an issue to the @results array<br/>
     # and outputs an "OK" message with the filename and its url.
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
     # @param  [String]  filename   the discovered filename
-    # @param  [String]  url   the url of the discovered file
     #
     def __log_results( res, filename )
 
-        return if( res.code != 200 || @http.custom_404?( res.body ) )
+        return if( res.code != 200 || @http.custom_404?( res ) )
 
         url = res.effective_url
         # append the result to the results array
-        @results << Vulnerability.new( {
-            :var          => 'n/a',
+        @results << Issue.new( {
             :url          => url,
             :injected     => filename,
             :id           => filename,
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::PATH,
+            :elem         => Issue::Element::PATH,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,

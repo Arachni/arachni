@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -10,6 +10,28 @@
 
 module Arachni
 module Plugin
+
+#
+# Will be extended by plugin formatters which provide plugin data formatting
+# for the reports.
+#
+# Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
+#
+#
+class Formatter
+
+    # get the output interface
+    include Arachni::UI::Output
+
+    def initialize( plugin_data )
+
+    end
+
+    def run
+
+    end
+
+end
 
 #
 # Arachni::Plugin::Base class
@@ -27,6 +49,16 @@ class Base
 
     # get the output interface
     include Arachni::Module::Output
+
+    #
+    # @param    [Arachni::Framework]    framework
+    # @param    [Hash]        options    options passed to the plugin
+    #
+    def initialize( framework, options )
+        @framework = framework
+        @options   = options
+    end
+
 
     #
     # OPTIONAL
@@ -49,6 +81,9 @@ class Base
 
     end
 
+    def register_results( results )
+        @framework.plugin_store( self, results )
+    end
 
     #
     # REQUIRED

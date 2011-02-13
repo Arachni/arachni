@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -26,7 +26,7 @@ class CreditCards < Arachni::Module::Base
     end
 
     def run( )
-        ccNumber = /^(((4\d{3})|(5[1-5]\d{2})|(6011))-?\d{4}-?\d{4}-?\d{4}|3[4,7][\d\s-]{15})$/
+        ccNumber = /\b(((4\d{3})|(5[1-5]\d{2})|(6011))-?\d{4}-?\d{4}-?\d{4}|3[4,7][\d\s-]{15})\b/
 
         # match CC number candidates and verify matches before logging
         match_and_log( ccNumber ){
@@ -68,11 +68,11 @@ class CreditCards < Arachni::Module::Base
             :author         => 'morpheuslaw <msidagni@nopsec.com>',
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{Credit card number disclosure.},
                 :description => %q{A credit card number is disclosed in the body of the page.},
                 :cwe         => '200',
-                :severity    => Vulnerability::Severity::MEDIUM,
+                :severity    => Issue::Severity::MEDIUM,
                 :cvssv2      => '0',
                 :remedy_guidance    => %q{Remove credit card numbers from the body of the HTML pages.},
                 :remedy_code => '',

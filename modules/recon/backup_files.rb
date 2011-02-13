@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -21,7 +21,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.1.5
 #
 #
 class BackupFiles < Arachni::Module::Base
@@ -30,22 +30,32 @@ class BackupFiles < Arachni::Module::Base
 
     def initialize( page )
         super( page )
+    end
 
-        @__backup_ext_file = 'extensions.txt'
-
+    def prepare
         # to keep track of the requests and not repeat them
-        @@__audited ||= []
+        @@__audited ||= Set.new
 
         # our results array
         @results = []
+
+        @@__extensions ||=[]
+        return if !@@__extensions.empty?
+
+        read_file( 'extensions.txt' ) {
+            |file|
+            @@__extensions << file
+        }
     end
 
     def run( )
 
-        print_status( "Scanning..." )
-
-        filename = File.basename( URI( @page.url ).path )
+        filename = File.basename( URI( normalize_url( @page.url ) ).path )
         path     = get_path( @page.url )
+
+        return if @@__audited.include?( path )
+
+        print_status( "Scanning..." )
 
         if( !filename  )
             print_info( 'Backing out. ' +
@@ -53,7 +63,7 @@ class BackupFiles < Arachni::Module::Base
             return
         end
 
-        read_file( @__backup_ext_file ) {
+        @@__extensions.each {
             |ext|
 
             #
@@ -80,6 +90,7 @@ class BackupFiles < Arachni::Module::Base
             }
         }
 
+        @@__audited << path
     end
 
 
@@ -88,15 +99,16 @@ class BackupFiles < Arachni::Module::Base
             :name           => 'BackupFiles',
             :description    => %q{Tries to find sensitive backup files.},
             :elements       => [ ],
-            :author         => 'zapotek',
-            :version        => '0.1.4',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            :version        => '0.1.5',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
-            :vulnerability   => {
+            :issue   => {
                 :name        => %q{A backup file exists on the server.},
                 :description => %q{},
+                :tags        => [ 'path', 'backup', 'file' ],
                 :cew         => '530',
-                :severity    => Vulnerability::Severity::HIGH,
+                :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
                 :remedy_guidance    => '',
                 :remedy_code => '',
@@ -106,7 +118,7 @@ class BackupFiles < Arachni::Module::Base
     end
 
     #
-    # Adds a vulnerability to the @results array<br/>
+    # Adds an issue to the @results array<br/>
     # and outputs an "OK" message with the filename and its url.
     #
     # @param  [Net::HTTPResponse]  res   the HTTP response
@@ -118,18 +130,15 @@ class BackupFiles < Arachni::Module::Base
         # which will lead to false positives, take care of that.
         return if res.body == @page.html
 
-        return if( res.code != 200 || @http.custom_404?( res.body ) )
+        return if( res.code != 200 || @http.custom_404?( res ) )
 
         url = res.effective_url
         # append the result to the results array
-        @results << Vulnerability.new( {
-            :var          => 'n/a',
+        @results << Issue.new( {
             :url          => url,
             :injected     => filename,
             :id           => filename,
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Vulnerability::Element::PATH,
+            :elem         => Issue::Element::PATH,
             :response     => res.body,
             :headers      => {
                 :request    => res.request.headers,
@@ -155,13 +164,10 @@ class BackupFiles < Arachni::Module::Base
     #
     def __request_once( url )
 
-        return false if @@__audited.include?( url )
-
         print_status( "Checking for #{url}" )
 
         # force the Trainer to analyze it and if it's HTML it'll extract any new attack vectors.
         req  = @http.get( url, :train => true )
-        @@__audited << url
 
         return req
     end

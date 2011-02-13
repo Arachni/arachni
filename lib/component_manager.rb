@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -118,11 +118,19 @@ class ComponentManager < Hash
         unload = []
         load   = []
 
+        return load if components[0] == EXCLUDE
+
         components.each {
             |component|
             if component[0] == EXCLUDE
                 component[0] = ''
-                unload << component
+
+                if component[WILDCARD]
+                    unload |= wilcard_to_names( component )
+                else
+                    unload << component
+                end
+
             end
         }
 
@@ -132,18 +140,22 @@ class ComponentManager < Hash
 
             components.each {
                 |component|
-                if( !avail_components.include?( component ) )
-                      raise( Arachni::Exceptions::ComponentNotFound,
-                          "Error: Component #{component} wasn't found." )
-                end
-            }
 
-            # recon modules should be loaded before audit ones
-            # and ls_available() honors that
-            avail_components.map {
-                |component|
-                load << component if components.include?( component )
+                if component.substring?( WILDCARD )
+                    load |= wilcard_to_names( component )
+                else
+
+                    if( avail_components.include?( component ) )
+                        load << component
+                    else
+                        raise( Arachni::Exceptions::ComponentNotFound,
+                            "Error: Component #{component} wasn't found." )
+                    end
+                end
+
             }
+            load.flatten!
+
         else
             available(  ).map {
                 |component|
@@ -173,6 +185,17 @@ class ComponentManager < Hash
         }
 
         return fetch( name ) rescue nil
+    end
+
+    def wilcard_to_names( name )
+        if name[WILDCARD]
+            return paths.map {
+                |path|
+                path_to_name( path ) if path.match( Regexp.new( name ) )
+            }.compact
+        end
+
+        return
     end
 
     #

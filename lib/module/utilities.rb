@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -33,19 +33,31 @@ module Utilities
     #
     def get_path( url )
 
-        filename = File.basename( URI( URI.escape( url ) ).path )
-        regexp   = filename + '(.*)'
-        path     = url.gsub( Regexp.new( regexp ), '' )
+        uri  = URI( URI.escape( url ) )
+        path = uri.path
 
-        if( path == 'http:' || path == 'https:' )
-            path =  url
+        if !File.extname( path ).empty?
+            path = File.dirname( path )
         end
 
-        return path.chomp( '?' )
+        path << '/' if path[-1] != '/'
+        return uri.scheme + "://" + uri.host + path
     end
 
     def seed
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
+    end
+
+    def normalize_url( url )
+        begin
+            return URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+        rescue
+            begin
+                return URI.encode( URI.decode( url.to_s ) ).to_s
+            rescue
+                return url
+            end
+        end
     end
 
     #
@@ -90,6 +102,7 @@ module Utilities
         end
     end
 
+    extend self
 
 end
 

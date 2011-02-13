@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -14,7 +14,7 @@ module Reports
 #
 # Default report.
 #
-# Outputs the vulnerabilities to stdout, used with the CLI UI.<br/>
+# Outputs the issues to stdout, used with the CLI UI.<br/>
 # All UIs must have a default report.
 #
 #
@@ -33,11 +33,6 @@ class Stdout < Arachni::Report::Base
         @audit_store = audit_store
     end
 
-    #
-    # REQUIRED
-    #
-    # Use it to run your report.
-    #
     def run( )
 
         print_line( "\n" )
@@ -105,74 +100,77 @@ class Stdout < Arachni::Report::Base
         print_line
         print_info( '===========================' )
         print_line
-        print_ok( @audit_store.vulns.size.to_s + " vulnerabilities were detected." )
+        print_ok( @audit_store.issues.size.to_s + " issues were detected." )
         print_line
 
-        @audit_store.vulns.each {
-            |vuln|
+        @audit_store.issues.each_with_index {
+            |issue, i|
 
-            print_ok( vuln.name )
+            print_ok( "[#{i+1}] " + issue.name )
             print_info( '~~~~~~~~~~~~~~~~~~~~' )
 
-            print_info( 'Severity: ' + vuln.severity ) if vuln.severity
-            print_info( 'URL:      ' + vuln.url )
-            print_info( 'Elements: ' + vuln.elem )
-            print_info( 'Variable: ' + vuln.var )
+            print_info( 'ID Hash:  ' + issue._hash )
+            print_info( 'Severity: ' + issue.severity ) if issue.severity
+            print_info( 'URL:      ' + issue.url )
+            print_info( 'Element:  ' + issue.elem )
+            print_info( 'Method:   ' + issue.method ) if issue.method
+            print_info( 'Tags:     ' + issue.tags.join( ', ' ) ) if issue.tags.is_a?( Array )
+            print_info( 'Variable: ' + issue.var ) if issue.var
             print_info( 'Description: ' )
-            print_info( vuln.description )
+            print_info( issue.description )
 
-            if vuln.cwe && !vuln.cwe.empty?
+            if issue.cwe && !issue.cwe.empty?
                 print_line
-                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{vuln.cwe}.html" )
+                print_info( "CWE: http://cwe.mitre.org/data/definitions/#{issue.cwe}.html" )
             end
 
             print_line
-            print_info( 'Requires manual verification?: ' + vuln.verification.to_s )
+            print_info( 'Requires manual verification?: ' + issue.verification.to_s )
             print_line
 
-            if( vuln.references )
+            if( issue.references )
                 print_info( 'References:' )
-                vuln.references.each{
+                issue.references.each{
                     |ref|
                     print_info( '  ' + ref[0] + ' - ' + ref[1] )
                 }
             end
 
-            print_info_variations( vuln )
+            print_info_variations( issue )
 
             print_line
         }
 
-        print_line( "\n" )
+        print_line
+        print_ok( 'Plugin data:' )
+        print_info( '---------------' )
+        print_line
 
+        # let the plugin formatters to their thing and print their results
+        format_plugin_results( @audit_store.plugins )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
             :name           => 'Stdout',
             :description    => %q{Prints the results to standard output.},
-            :author         => 'zapotek',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.2.1',
         }
     end
 
-    def print_info_variations( vuln )
+    def print_info_variations( issue )
         print_line
         print_status( 'Variations' )
         print_info( '----------' )
-        vuln.variations.each_with_index {
+        issue.variations.each_with_index {
             |var, i|
             print_info( "Variation #{i+1}:" )
             print_info( 'URL: ' + var['url'] )
-            print_info( 'ID:  ' + var['id'] )
-            print_info( 'Injected value:     ' + var['injected'] )
-            print_info( 'Regular expression: ' + var['regexp'].to_s )
-            print_info( 'Matched string:     ' + var['regexp_match'] )
+            print_info( 'ID:  ' + var['id'].to_s ) if var['id']
+            print_info( 'Injected value:     ' + var['injected'].to_s ) if var['injected']
+            print_info( 'Regular expression: ' + var['regexp'].to_s ) if var['regexp']
+            print_info( 'Matched string:     ' + var['regexp_match'].to_s ) if var['regexp_match']
 
             print_line
         }

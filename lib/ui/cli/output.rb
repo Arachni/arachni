@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -39,6 +39,8 @@ module Output
     #
     # if it's on status messages will be disabled
     @@only_positives  = false
+
+    @@mute  = false
 
     # Prints an error message
     #
@@ -140,6 +142,11 @@ module Output
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
+    def print_error_backtrace( e = nil )
+        e.backtrace.each{ |line| print_error( line ) }
+    end
+
+
     # Prints a verbose message
     #
     # Obeys {@@verbose}
@@ -167,6 +174,7 @@ module Output
     #
     def print_line( str = '' )
         if @@only_positives then return end
+        return if muted?
         puts str
     end
 
@@ -230,6 +238,19 @@ module Output
         @@only_positives
     end
 
+    def mute!
+        @@mute = true
+    end
+
+    def unmute!
+        @@mute = false
+    end
+
+
+    def muted?
+        @@mute
+    end
+
     private
 
     # Prints a message prefixed with a colored sign.
@@ -243,7 +264,13 @@ module Output
     # @return    [void]
     #
     def print_color( sign, color, string, out = $stdout )
-        out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+        return if muted?
+
+        if out.tty?
+            out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+        else
+            out.print "#{sign} #{string}\n";
+        end
     end
 
 end

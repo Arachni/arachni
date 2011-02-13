@@ -1,0 +1,4 @@
+sleep(__TIME__);
+import time;time.sleep(__TIME__);
+Thread.sleep(__TIME__);
+Thread.Sleep(__TIME__);

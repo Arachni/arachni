@@ -1,54 +1,21 @@
 module Arachni
 
 require Arachni::Options.instance.dir['lib'] + 'module/output'
+require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
 
 module Element
 
 class Auditable
 
-    include Arachni::UI::Output
-
-    alias :o_print_error    :print_error
-    alias :o_print_status   :print_status
-    alias :o_print_info     :print_info
-    alias :o_print_ok       :print_ok
-    alias :o_print_debug    :print_debug
-    alias :o_print_verbose  :print_verbose
-    alias :o_print_line     :print_line
-
-    def print_error( str = '' )
-        o_print_error( info[:name] + ": " + str )
-    end
-
-    def print_status( str = '' )
-        o_print_status( info[:name] + ": " + str )
-    end
-
-    def print_info( str = '' )
-        o_print_info( info[:name] + ": " + str )
-    end
-
-    def print_ok( str = '' )
-        o_print_ok( info[:name] + ": " + str )
-    end
-
-    def print_debug( str = '' )
-        o_print_debug( info[:name] + ": " + str )
-    end
-
-    def print_verbose( str = '' )
-        o_print_verbose( info[:name] + ": " + str )
-    end
-
-    def print_line( str = '' )
-        o_print_line( info[:name] + ": " + str )
-    end
+    include Arachni::Module::Utilities
 
     def self.reset
-        @@audited = []
+        @@audited = Set.new
     end
 
+    attr_accessor :altered
+    attr_reader   :opts
 
     #
     # Holds constant bitfields that describe the preferred formatting
@@ -83,6 +50,27 @@ class Auditable
     end
 
     #
+    # Delegate output related methods to the auditor
+    #
+
+    def debug?
+        @auditor.debug? rescue false
+    end
+
+    def print_error( str = '' )
+        @auditor.print_error( str )
+    end
+
+    def print_status( str = '' )
+        @auditor.print_status( str )
+    end
+
+    def print_debug( str = '' )
+        @auditor.print_debug( str )
+    end
+
+
+    #
     # Callback invoked by {Arachni::Element::Auditable#audit} to submit
     # the object via {Arachni::Module::HTTP}.
     #
@@ -97,10 +85,6 @@ class Auditable
 
     end
 
-    def auditable
-
-    end
-
     #
     # Submits self using {#http_request}.
     #
@@ -111,7 +95,8 @@ class Auditable
     def submit( opts = {} )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
-        opts[:params]  = auditable( )
+        opts[:params]  = @auditable.dup
+        @opts = opts
 
         return http_request( @action, opts )
     end
@@ -134,7 +119,7 @@ class Auditable
         audit_opt = "@audit_#{self.type}s"
         return if !Arachni::Options.instance.instance_variable_get( audit_opt )
 
-        @@audited ||= []
+        @@audited ||= Set.new
 
         opts            = Arachni::Module::Auditor::OPTIONS.merge( opts )
         opts[:element]  = self.type
@@ -144,28 +129,26 @@ class Auditable
         # if we don't have any auditable elements just return
         return if auditable.empty?
 
-        audit_id = audit_id( injection_str )
+        audit_id = audit_id( injection_str, opts )
         return if !opts[:redundant] && audited?( audit_id )
 
         results = []
         # iterate through all variation and audit each one
         injection_sets( injection_str, opts ).each {
-            |variation|
+            |elem|
 
-            altered = variation.keys[0]
-            elem    = variation.values[0]
+            opts[:altered] = elem.altered.dup
+
+            return if skip?( elem )
 
             # inform the user about what we're auditing
-            print_status( get_status_str( altered ) )
-
-            opts[:altered] = altered.dup
+            print_status( get_status_str( opts[:altered] ) )
 
             # submit the element with the injection values
             req = elem.submit( opts )
             return if !req
 
-            injected = elem.auditable[altered]
-            on_complete( req, injection_str, variation, opts, &block )
+            on_complete( req, elem, &block )
             req.after_complete {
                 |result|
                 results << result.flatten[1] if result.flatten[1]
@@ -173,6 +156,10 @@ class Auditable
         }
 
         audited( audit_id )
+    end
+
+    def skip?( elem )
+        return @auditor.skip?( elem )
     end
 
     #
@@ -197,20 +184,26 @@ class Auditable
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
                 # this is the original hash, in case the default values
                 # are valid and present us with new attack vectors
-                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL => self.dup }
+                elem = self.dup
+                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
+                var_combo << elem
             end
 
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE ) )
                 duphash = hash.dup
                 elem = self.dup
                 elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
-                var_combo << { Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE => elem }
+                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
+                var_combo << elem
             end
         end
 
         chash = hash.dup
         hash.keys.each {
             |k|
+
+            # don't audit parameter flips
+            next if hash[k] == seed
 
             chash = Arachni::Module::KeyFiller.fill( chash )
             opts[:format].each {
@@ -219,11 +212,19 @@ class Auditable
                 str  = format_str( injection_str, chash[k], format )
 
                 elem = self.dup
+                elem.altered = k.dup
                 elem.auditable = chash.merge( { k => str } )
-                var_combo << { k => elem }
+                var_combo << elem
             }
 
         }
+
+        if opts[:param_flip]
+            elem = self.dup
+            elem.altered = 'Parameter flip'
+            elem.auditable[injection_str] = seed
+            var_combo << elem
+        end
 
         print_debug_injection_set( var_combo, opts )
 
@@ -262,8 +263,7 @@ class Auditable
     # If no &block has been provided {#get_matches} will be called instead.
     #
     # @param  [Typhoeus::Request]  req
-    # @param  [String]  injected_str
-    # @param  [Hash]    variation
+    # @param  [Arachni::Element::Auditable]    auditable element
     # @param  [Hash]    opts           an updated hash of options
     # @param  [Block]   &block         block to be passed the:
     #                                   * HTTP response
@@ -272,15 +272,16 @@ class Auditable
     #                                    The block will be called as soon as the
     #                                    HTTP response is received.
     #
-    def on_complete( req, injected_str, variation, opts, &block )
+    def on_complete( req, elem, &block )
 
-        altered = variation.keys[0]
-        combo   = variation.values[0].auditable
+        elem.opts[:injected] = elem.auditable[elem.altered].to_s
+        elem.opts[:combo]    = elem.auditable
+        elem.opts[:action]   = elem.action
 
-        if( !opts[:async] )
+        if( !elem.opts[:async] )
 
             if( req && req.response )
-                block.call( req.response, altered, opts )
+                block.call( req.response, elem.opts, elem )
             end
 
             return
@@ -297,44 +298,56 @@ class Auditable
                 print_status( 'Analyzing response #' + res.request.id.to_s + '...' )
             end
 
-            opts[:injected] = injected_str.to_s
-            opts[:combo]    = combo
-
             # call the block, if there's one
             if block_given?
-                block.call( res, altered, opts )
+                block.call( res, elem.opts, elem )
                 next
             end
 
             next if !res.body
 
             # get matches
-            get_matches( altered, res.dup, opts )
+            get_matches( res.dup, elem.opts )
         }
     end
 
     #
-    # Tries to identify a vulnerability through regexp pattern matching.
+    # Tries to identify an issue through regexp pattern matching.
     #
-    # If a vulnerability is found a message will be printed and a hash
+    # If a issue is found a message will be printed and a hash
     # will be returned describing the conditions under which
-    # the vulnerability was discovered.
+    # the issue was discovered.
     #
-    # @param  [String]  var  the name of the vulnerable input vector
     # @param  [Typhoeus::Response]
     # @param  [Hash]  opts
     #
     # @return  [Hash]
     #
-    def get_matches( var, res, opts )
-        regexps    = [opts[:regexp]].flatten
-        regexps.each{ |regexp| match_and_log( regexp, var, res, opts ) }
+    def get_matches( res, opts )
+        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
+        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
     end
 
-    def match_and_log( regexp, var, res, opts )
+    def match_substring_and_log( substring, res, opts )
 
-        elem       = opts[:element]
-        match      = opts[:match]
+        verification = false
+
+        # an annoying encoding exception may be thrown by scan()
+        # the sob started occuring again....
+        begin
+            if( @auditor.page.html.substring?( substring ) )
+                verification = true
+            end
+        rescue
+        end
+
+        if res.body.substring?( substring )
+           opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
+           @auditor.log( opts, res )
+        end
+    end
+
+    def match_regexp_and_log( regexp, res, opts )
 
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
@@ -345,47 +358,19 @@ class Auditable
         # the sob started occuring again....
         begin
             if( @auditor.page.html.scan( regexp )[0] )
-                verification = true
+                opts[:verification] = true
             end
         rescue
         end
 
         # fairly obscure condition...pardon me...
-        if ( match && match_data == match ) ||
-           ( !match && match_data && match_data.size > 0 )
+        if ( opts[:match] && match_data == opts[:match] ) ||
+           ( !opts[:match] && match_data && match_data.size > 0 )
 
-            url = res.effective_url
-            print_ok( "In #{elem} var '#{var}' " + ' ( ' + url + ' )' )
+           opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
+           opts[:regexp] = regexp
 
-            verified = match ? match : match_data
-            injected = opts[:combo][var] ? opts[:combo][var] : '<n/a>'
-            print_verbose( "Injected string:\t" + injected )
-            print_verbose( "Verified string:\t" + verified )
-            print_verbose( "Matched regular expression: " + regexp.to_s )
-            print_debug( 'Request ID: ' + res.request.id.to_s )
-            print_verbose( '---------' ) if only_positives?
-
-            res = {
-                :var          => var,
-                :url          => url,
-                :injected     => injected,
-                :id           => match.to_s,
-                :regexp       => regexp.to_s,
-                :regexp_match => match_data,
-                :response     => res.body,
-                :elem         => elem,
-                :method       => res.request.method.to_s,
-                :verification => verification,
-                :opts         => opts.dup,
-                :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            }
-
-            @results ||= []
-            @results << Vulnerability.new( res.merge( @auditor.class.info ) )
-            Arachni::Module::Manager.register_results( @results.uniq )
+           @auditor.log( opts, res )
         end
     end
 
@@ -397,12 +382,13 @@ class Auditable
     #
     # @return  [String]
     #
-    def audit_id( injection_str )
+    def audit_id( injection_str, opts = {} )
         vars = auditable.keys.sort.to_s
 
+        timeout = opts[:timeout] || ''
         return "#{@auditor.class.info[:name]}:" +
           "#{@action}:" + "#{self.type}:" +
-          "#{vars}=#{injection_str.to_s}"
+          "#{vars}=#{injection_str.to_s}:timeout=#{timeout}"
     end
 
     #
@@ -502,10 +488,10 @@ class Auditable
         print_debug('|' )
 
         combos.each{
-          |set|
+          |elem|
 
-          altered = set.keys[0]
-          combo   = set.values[0].auditable
+          altered = elem.altered
+          combo   = elem.auditable
 
 
           print_debug( '|' )

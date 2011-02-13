@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -37,13 +37,6 @@ class CLI
     # @return    [Options]
     #
     attr_reader :opts
-
-    #
-    # The extension of the profile files.
-    #
-    # @return    [String]
-    #
-    PROFILE_EXT = '.afp'
 
     # the output interface for CLI
     include Arachni::UI::Output
@@ -90,7 +83,6 @@ class CLI
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
-
     end
 
     #
@@ -102,7 +94,9 @@ class CLI
 
         begin
             # start the show!
-            @arachni.run( )
+            @arachni.run( ){
+                @interrupt_handler.join if @interrupt_handler
+            }
             print_stats
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
@@ -123,9 +117,16 @@ class CLI
 
     private
 
-    def print_stats
-        stats   = @arachni.stats
+    def print_stats( refresh_time = false )
 
+        stats   = @arachni.stats( refresh_time )
+
+        audited = stats[:auditmap_size]
+        mapped  = stats[:sitemap_size]
+        progress = ( Float( audited ) / mapped ) * 100
+
+        print_line
+        print_info( "Audit progress: #{progress.to_s[0...5]}% ( #{audited}/#{mapped} pages )" )
         print_line
         print_info( "Sent #{stats[:requests]} requests." )
         print_info( "Received and analyzed #{stats[:responses]} responses." )
@@ -133,6 +134,15 @@ class CLI
 
         avg = 'Average: ' + stats[:avg] + ' requests/second.'
         print_info( avg )
+
+        print_line
+        print_info( "Currently auditing           #{stats[:current_page]}" )
+        print_info( "Burst response time total    #{stats[:curr_res_time]}" )
+        print_info( "Burst response count total   #{stats[:curr_res_cnt]} " )
+        print_info( "Burst average response time  #{stats[:average_res_time]}" )
+        print_info( "Burst average                #{stats[:curr_avg]} requests/second" )
+        print_info( "Original max concurrency     #{@opts.http_req_limit}" )
+        print_info( "Throttled max concurrency    #{stats[:max_concurrency]}" )
 
         print_line
 
@@ -149,43 +159,72 @@ class CLI
     # The interrupt will be handled after a module has finished.
     #
     def handle_interrupt( )
+        return if @interrupt_handler && @interrupt_handler.alive?
 
-        print_line
-        print_info( 'Results thus far:' )
+        only_positives_opt = only_positives?
+        @@only_positives = false
+        @interrupt_handler = Thread.new {
 
-        begin
-            print_vulns( @arachni.audit_store( true ) )
-        rescue Exception => e
-            exception_jail{ raise e }
-            exit 0
-        end
+             Thread.new {
+                if gets[0] == 'e'
+                    @@only_positives = false
+                    unmute!
+                    @interrupt_handler.kill
 
-        print_info( 'Arachni was interrupted,' +
-            ' do you want to continue?' )
+                     print_info( 'Exiting...' )
+                     exit 0
+                end
 
-        print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+                @@only_positives = only_positives_opt
+                unmute!
+                @interrupt_handler.kill
+                Thread.kill
+            }
 
-        if gets[0] == 'e'
-            print_info( 'Exiting...' )
-            exit 0
-        end
+            while( 1 )
+
+                unmute!
+                print_line
+                clear_screen
+                print_info( 'Results thus far:' )
+
+                begin
+                    print_issues( @arachni.audit_store( true ) )
+                    print_stats( true )
+                rescue Exception => e
+                    exception_jail{ raise e }
+                    exit 0
+                end
+
+                print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+                mute!
+
+                ::IO::select( nil, nil, nil, 1 )
+            end
+
+            unmute!
+        }
 
     end
 
-    def print_vulns( audit_store )
+    def clear_screen
+        puts "\e[H\e[2J"
+    end
+
+    def print_issues( audit_store )
 
         print_line( )
-        print_info( audit_store.vulns.size.to_s +
-          ' vulnerabilities were detected.' )
+        print_info( audit_store.issues.size.to_s +
+          ' issues have been detected.' )
 
         print_line( )
-        audit_store.vulns.each {
-            |vuln|
+        audit_store.issues.each {
+            |issue|
 
-            print_ok( "#{vuln.name} (In #{vuln.elem} variable '#{vuln.var}'" +
-              " - Severity: #{vuln.severity} - Variations: #{vuln.variations.size.to_s})" )
+            print_ok( "#{issue.name} (In #{issue.elem} variable '#{issue.var}'" +
+              " - Severity: #{issue.severity} - Variations: #{issue.variations.size.to_s})" )
 
-            print_info( vuln.variations[0]['url'] )
+            print_info( issue.variations[0]['url'] )
 
             print_line( )
         }
@@ -226,6 +265,7 @@ class CLI
 
         end
 
+        @arachni.plugins.load_defaults!
         @opts.to_h.each {
             |opt, arg|
 
@@ -348,8 +388,8 @@ class CLI
                 print_info( key + "\t\t" + info[:targets][key] )
             }
 
-            if( info[:vulnerability] &&
-                ( sploit = info[:vulnerability][:metasploitable] ) )
+            if( info[:issue] &&
+                ( sploit = info[:issue][:metasploitable] ) )
                 print_line( "Metasploitable:\t" + sploit )
             end
 
@@ -481,24 +521,15 @@ class CLI
     # @param    [String]    filename
     #
     def save_profile( filename )
-        profile = @opts
 
-        profile.dir          = nil
-        profile.load_profile = nil
-        profile.save_profile = nil
-        profile.authed_by    = nil
-
-        begin
-            f = File.open( filename + PROFILE_EXT, 'w' )
-            YAML.dump( profile, f )
-            print_status( "Saved profile in '#{f.path}'." )
+        if filename = @opts.save( filename )
+            print_status( "Saved profile in '#{filename}'." )
             print_line( )
-        rescue Exception => e
+        else
             banner( )
-            exception_jail{ raise e }
+            print_error( 'Could not save profile.' )
             exit 0
         end
-
     end
 
     def print_profile( )
@@ -585,7 +616,6 @@ class CLI
     Profiles -----------------------
 
     --save-profile=<file>       save the current run profile/options to <file>
-                                  (The file will be saved with an extention of: #{PROFILE_EXT})
 
     --load-profile=<file>       load a run profile from <file>
                                   (Can be used multiple times.)
@@ -622,6 +652,8 @@ class CLI
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
 
+    --spider-first              spider first, audit later
+
 
     Auditor ------------------------
 
@@ -656,10 +688,17 @@ class CLI
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' to deploy all modules)
-                                  (You can exclude modules by prefixing their name with a dash:
+                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                      xss_*   to load all xss modules
+                                      sqli_*  to load all sql injection modules
+                                      etc.
+
+                                   You can exclude modules by prefixing their name with a dash:
                                       --mods=*,-backup_files,-xss
-                                   The above will load all modules except for the 'backup_files' and 'xss' modules. )
+                                   The above will load all modules except for the 'backup_files' and 'xss' modules.
+
+                                   Or mix and match:
+                                      -xss_*   to unload all xss modules. )
 
 
     Reports ------------------------

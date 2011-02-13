@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -26,6 +26,13 @@ module Arachni
 class Options
 
     include Singleton
+
+    #
+    # The extension of the profile files.
+    #
+    # @return    [String]
+    #
+    PROFILE_EXT = '.afp'
 
     #
     # Holds absolute paths for the directory structure of the framework
@@ -308,6 +315,8 @@ class Options
     attr_accessor :lsplug
     attr_accessor :plugins
 
+    attr_accessor :spider_first
+
     attr_accessor :rpc_port
     attr_accessor :ssl
     attr_accessor :ssl_pkey
@@ -315,6 +324,10 @@ class Options
     attr_accessor :ssl_ca
 
     attr_accessor :server
+
+    attr_accessor :reroute_to_logfile
+    attr_accessor :pool_size
+
 
     def initialize( )
 
@@ -344,17 +357,53 @@ class Options
 
         # relatively low but will give good performance without bottleneck
         # on low bandwidth conections
-        @http_req_limit = 60
+        @http_req_limit = 20
 
+    end
+
+    #
+    # Saves 'self' to file
+    #
+    # @param    [String]    file
+    #
+    def save( file )
+
+        dir           = @dir.clone
+        load_profile  = @load_profile.clone if @load_profile
+        save_profile  = @save_profile.clone if @save_profile
+        authed_by     = @authed_by.clone if @authed_by
+
+        @dir          = nil
+        @load_profile = nil
+        @save_profile = nil
+        @authed_by    = nil
+
+        begin
+            f = File.open( file + PROFILE_EXT, 'w' )
+            YAML.dump( self, f )
+        rescue
+            return
+        ensure
+            f.close
+
+            @dir          = dir
+            @load_profile = load_profile
+            @save_profile = save_profile
+            @authed_by    = authed_by
+        end
+
+        return f.path
     end
 
     def url=( str )
         return if !str
 
         require 'uri'
+        require self.dir['lib'] + 'exceptions'
+        require self.dir['lib'] + 'module/utilities'
 
         begin
-            @url = URI( str.to_s )
+            @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
         rescue
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
