@@ -1,7 +1,7 @@
 
 # ChangeLog
 
-## Version 0.2.2 _(Under development)_
+## Version 0.2.2 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
    - Basically a front-end to the XMLRPC client
    - Support for parallel scans
