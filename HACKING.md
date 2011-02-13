@@ -95,11 +95,6 @@ Each plug-in is passed the instance of the running framework to do with it what 
 Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.
 Plug-ins run in parallel to the framework and are executed right before the scan process starts.
 
-Have a look the following demo plug-ins:<br/>
-- {Arachni::Plugins::ClearStdout}<br/>
-- {Arachni::Plugins::Sample}
-
-
 ## Licensing
 All code must be contributed with a GPL v2 compatible license.<br/>
 Do place licensing information in your code files.
