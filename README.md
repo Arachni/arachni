@@ -306,19 +306,13 @@ _If you installed the Gem then you'll have to look for the "profiles" directory 
 
 ## Installation
 
-### CDE packages
+To install the Gem or work with the source code you'll also need the following system libraries:
+    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
-Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for 32bit and 64bit architectures.<br/>
-CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed.<br/>
-You can choose the CDE package that suits you best from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
-If you decide to go the CDE route you can skip the rest, you're done.
-
-_The CDE packages are for Linux **only** and do not include the XMLRPC server components for security reasons._
+You will also need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
+The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
 ### Gem
-
-In order to use Arachni you will need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
-The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
 To install Arachni:
     $ gem install arachni
@@ -328,9 +322,6 @@ To install Arachni:
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
     $ rake install
 
-### _Notice_
-To install the Gem or work with the source code you'll also need the following system libraries:
-    $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
 ## Supported platforms
 
