@@ -1,6 +1,16 @@
 
 # ChangeLog
 
+## Version 0.2.2.2 _(Under development)_
+- Resolved issue #19
+   - WebUI
+      - Plug-in options are preserved
+      - Report info is stored in a database
+      - Reports are now displayed in descending order based on scan completion datetime
+      - Any existing reports will be migrated into the new database
+   - HTTP
+      - Disabled peer verification on SSL
+
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
    - Basically a front-end to the XMLRPC client
