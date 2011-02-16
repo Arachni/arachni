@@ -86,7 +86,6 @@ class HTTP
 
         hydra_opts = {
             :max_concurrency               => req_limit,
-            :disable_ssl_peer_verification => true,
             :username                      => opts.url.user,
             :password                      => opts.url.password,
             :method                        => :auto,
@@ -125,6 +124,7 @@ class HTTP
         @opts = {
             :user_agent      => opts.user_agent,
             :follow_location => false,
+            :disable_ssl_peer_verification => true,
             # :timeout         => 8000
         }.merge( proxy_opts )
 
