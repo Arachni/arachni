@@ -188,7 +188,16 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to a running XMLRPC Dispatch server.
 
-Thus, you first need to start a Dispatcher like so:
+#### Autostart
+
+There's an autostart script to start all systems that are required by the WebUI:
+    $ arachni_web_autostart
+
+**Note:**: _The "arachni_xmlrpcd" and "arachni_web" executables will need to be in your PATH._
+
+#### Manually
+
+You first need to start a Dispatcher like so:
     $ arachni_xmlrpcd &
 
 Then start the WebUI by running:
