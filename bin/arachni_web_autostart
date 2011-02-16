@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#
+# Simple shell script to start all systems required for the WebUI.
+#
+# Requires all arachni executables to be in PATH.
+#
+# Original by: Brandon Potter <bpotter8705@gmail.com>
+# Modified by: Tasos Laskos <tasos.laskos@gmail.com>
+#
+
+export xterm="xterm -geometry 80X10 -hold"
+
+echo "[>] Starting the Arachni Dispatch server..."
+xterm -T "Arachni Dispatch server" -e "arachni_xmlrpcd" &
+sleep 5
+
+echo "[>] Starting the Arachni WebUI server..."
+xterm -T "Arachni WebUI server" -e "arachni_web" &
+sleep 3
+
+echo "[>] Opening browser..."
+xdg-open http://127.0.0.1:4567
+
+echo "[>] Hit Ctrl+C to shut everything down."
+
+while :
+do
+    sleep 1
+done
+
+exit
