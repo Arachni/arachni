@@ -1,13 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-#
-# Simple shell script to start all systems required for the WebUI.
-#
-# Requires all arachni executables to be in PATH.
-#
-# Original by: Brandon Potter <bpotter8705@gmail.com>
-# Modified by: Tasos Laskos <tasos.laskos@gmail.com>
-#
+=begin
+                  Arachni
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+
+  Simple shell script to start all systems required for the WebUI.
+  Requires all arachni executables to be in PATH.
+
+    Original by: Brandon Potter <bpotter8705@gmail.com>
+    Modified by: Tasos Laskos <tasos.laskos@gmail.com>
+
+=end
+
+# the gemspec doesn't seem to able to handle shell scripts
+# so we hack around it
+exec  <<END
 
 export xterm="xterm -geometry 80X10 -hold"
 
@@ -30,3 +42,5 @@ do
 done
 
 exit
+
+END

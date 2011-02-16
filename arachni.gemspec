@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("plugins/**/**")
       s.files            += Dir.glob("profiles/**/**")
       s.files            += Dir.glob("reports/**/**")
-      s.executables       = [ "arachni", "arachni_xmlrpcd_monitor", "arachni_xmlrpcd", "arachni_xmlrpc", "arachni_web" ]
+      s.executables       = [ "arachni", "arachni_xmlrpcd_monitor", "arachni_xmlrpcd", "arachni_xmlrpc", "arachni_web", "arachni_web_autostart", ]
 
       s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.rdoc_options      = ["--charset=UTF-8"]
