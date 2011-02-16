@@ -8,6 +8,8 @@
 
 =end
 
+require 'datamapper'
+
 module Arachni
 module UI
 module Web
@@ -20,18 +22,55 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class ReportManager
 
     FOLDERNAME = "reports"
     EXTENSION  = '.afr'
 
-   def initialize( opts, settings )
+    class Report
+        include DataMapper::Resource
+
+        property :id,           Serial
+        property :host,         String
+        property :issue_count,  Integer
+        property :filename,     String
+        property :datestamp,    DateTime
+    end
+
+
+    def initialize( opts, settings )
         @opts     = opts
         @settings = settings
         populate_available
-   end
+
+        DataMapper::setup( :default, "sqlite3://#{@settings.db}/default.db" )
+        DataMapper.finalize
+
+        Report.auto_upgrade!
+
+        migrate_files
+    end
+
+    #
+    # Migrates AFR reports from the savedir folder into the DB
+    # so that users will be able to manage them via the WebUI
+    #
+    def migrate_files
+        Dir.glob( "#{savedir}*" + EXTENSION ).each {
+            |file|
+            next if Report.first( :filename => File.basename( file, EXTENSION ) )
+
+            data = File.read( file )
+            Report.create(
+                :issue_count => get_issue_count( data ),
+                :host        => get_host( data ),
+                :filename    => File.basename( file, EXTENSION ),
+                :datestamp   => get_finish_datetime( data )
+            )
+        }
+    end
 
     #
     # @return    [String]    save directory
@@ -87,19 +126,22 @@ class ReportManager
     #
     # @return    [Array]
     #
-    def all
-        Dir.glob( savedir + "*#{EXTENSION}" )
+    def all( *args )
+        Report.all( *args )
     end
 
     def delete_all
         all.each {
             |report|
-            delete( report )
+            delete( report.id )
         }
+        all.destroy
     end
 
-    def delete( report )
-        FileUtils.rm( savedir + File.basename( report, '.afr' ) + '.afr' )
+    def delete( id )
+        report = Report.get( id )
+        FileUtils.rm( savedir + Report.get( id ).filename + EXTENSION )
+        report.destroy
     end
 
     #
@@ -112,22 +154,34 @@ class ReportManager
     # @return   [String]        host:audit_date
     #
     def get_filename( report )
-        rep = YAML::load( report )
+        rep = unserialize( report )
         filename = "#{URI(rep.options['url']).host}:#{rep.start_datetime}"
+    end
+
+    def get_issue_count( report )
+        unserialize( report ).issues.size
+    end
+
+    def get_host( report )
+        return URI(unserialize( report ).options['url']).host
+    end
+
+    def get_finish_datetime( report )
+        return unserialize( report ).finish_datetime
     end
 
     #
     # Returns a stored report as a <type> file. Basically a convertion/export method.
     #
-    # @param    [String]    type            html, txt, xml, etc
-    # @param    [String]    report_file     path to the report
+    # @param    [String]    type      html, txt, xml, etc
+    # @param    [Integer]   id        report id
     #
     # @return   [String]    the converted report
     #
-    def get( type, report_file )
+    def get( type, id )
         return if !valid_class?( type )
 
-        location = savedir + report_file + EXTENSION
+        location = savedir + Report.get( id ).filename + EXTENSION
         convert( type, File.read( location ) )
     end
 
@@ -151,10 +205,25 @@ class ReportManager
 
     private
 
+    def unserialize( data )
+        begin
+            YAML::load( data )
+        rescue
+            Marshal::load( data )
+        end
+    end
+
     def save_to_file( data, file )
         f = File.new( file, 'w' )
         f.write( data )
         f.close
+
+        Report.create(
+            :issue_count => get_issue_count( data ),
+            :host        => get_host( data ),
+            :filename    => File.basename( f.path, EXTENSION ),
+            :datestamp   => Time.now.asctime
+        )
 
         return f.path
     end

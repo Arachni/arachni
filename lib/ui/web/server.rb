@@ -457,7 +457,7 @@ class Server < Sinatra::Base
     #
     def save_shutdown_and_show( arachni )
         report = save_and_shutdown( arachni )
-        settings.reports.get( 'html', File.basename( report, '.afr' ) )
+        settings.reports.get( 'html', settings.reports.all.last.id )
     end
 
     #
@@ -786,20 +786,7 @@ class Server < Sinatra::Base
     end
 
     get "/reports" do
-
-        reports = []
-        settings.reports.all.each {
-            |report|
-            name = File.basename( report, '.afr' )
-            host, date = name.split( ':', 2 )
-            reports << {
-                'host'  => host,
-                'date'  => date,
-                'name'  => name
-            }
-        }
-
-        erb :reports, { :layout => true }, :reports => reports,
+        erb :reports, { :layout => true }, :reports => settings.reports.all( :order => :datestamp.desc ),
             :available => settings.reports.available
     end
 
@@ -814,17 +801,17 @@ class Server < Sinatra::Base
         redirect '/reports'
     end
 
-    post '/report/:name/delete' do
-        settings.reports.delete( params[:name] )
-        settings.log.report_deleted( env, params[:name] )
+    post '/report/:id/delete' do
+        settings.reports.delete( params[:id] )
+        settings.log.report_deleted( env, params[:id] )
 
         redirect '/reports'
     end
 
-    get '/report/:name.:type' do
-        settings.log.report_converted( env, params[:name] + '.' + params[:type] )
+    get '/report/:id.:type' do
+        settings.log.report_converted( env, params[:id] + '.' + params[:type] )
         content_type( params[:type], :default => 'application/octet-stream' )
-        settings.reports.get( params[:type], params[:name] )
+        settings.reports.get( params[:type], params[:id] )
     end
 
     get '/log' do

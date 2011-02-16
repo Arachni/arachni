@@ -22,7 +22,9 @@
         <% if !reports.empty? %>
         <table>
             <tr>
+                <th>ID</th>
                 <th>Host</th>
+                <th>Issue count</th>
                 <th>Audit date</th>
                 <th>Report formats</th>
             </tr>
@@ -30,19 +32,21 @@
             <tr>
 
 
-                <td><%=report['host']%></td>
-                <td><%=report['date']%></td>
+                <td><%=report.id%></td>
+                <td><%=report.host%></td>
+                <td><%=report.issue_count%></td>
+                <td><%=report.datestamp%></td>
 
                 <td>
                     <ul class="reports">
                     <% available.each do |avail| %>
-                    <li><a href="/report/<%=CGI.escape(report['name'])%>.<%=avail['rep_name']%>"><%=escape(avail['name'])%></a></li>
+                    <li><a href="/report/<%=report.id%>.<%=avail['rep_name']%>"><%=escape(avail['name'])%></a></li>
                     <%end%>
                     </ul>
                 </td>
 
                 <td>
-                    <form action="/report/<%=CGI.escape(report['name'])%>/delete" method="post">
+                    <form action="/report/<%=report.id%>/delete" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Delete" />
                     </form>

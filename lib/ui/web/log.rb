@@ -20,12 +20,16 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Log
 
     class Entry
         include DataMapper::Resource
+
+       def self.default_repository_name
+         :log
+       end
 
         property :id,           Serial
         property :action,       String
@@ -42,14 +46,15 @@ class Log
         @opts     = opts
         @settings = settings
 
-        DataMapper::setup( :default, "sqlite3://#{@settings.db}/log.db" )
-        DataMapper.finalize
-
-        Entry.auto_upgrade!
+        DataMapper::setup( :log, "sqlite3://#{@settings.db}/log.db" )
+        DataMapper.repository( :log ) {
+            DataMapper.finalize
+            Entry.auto_upgrade!
+        }
     end
 
     def entry
-        Entry
+        DataMapper.repository( :log ) { Entry }
     end
 
     def method_missing( sym, *args, &block )
@@ -65,14 +70,16 @@ class Log
             host = env['REMOTE_HOST']
         end
 
-        Entry.create(
-            :action => action,
-            :owner  => owner,
-            :object => object,
-            :client_addr => addr,
-            :client_host => host,
-            :datestamp   => Time.now
-        )
+        DataMapper.repository( :log ) {
+            Entry.create(
+                :action => action,
+                :owner  => owner,
+                :object => object,
+                :client_addr => addr,
+                :client_host => host,
+                :datestamp   => Time.now.asctime
+            )
+        }
     end
 
 end
