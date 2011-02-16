@@ -140,8 +140,15 @@ class ReportManager
 
     def delete( id )
         report = Report.get( id )
-        FileUtils.rm( savedir + Report.get( id ).filename + EXTENSION )
-        report.destroy
+        begin
+            FileUtils.rm( savedir + Report.get( id ).filename + EXTENSION )
+        rescue
+        end
+
+        begin
+            report.destroy
+        rescue
+        end
     end
 
     #
@@ -214,6 +221,8 @@ class ReportManager
     end
 
     def save_to_file( data, file )
+        return file if File.exists?( file )
+
         f = File.new( file, 'w' )
         f.write( data )
         f.close
