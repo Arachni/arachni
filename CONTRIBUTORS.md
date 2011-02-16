@@ -4,6 +4,7 @@ These are the people that helped improve Arachni either by submitting code, sugg
 
 - [Matías Aereal Aeón](http://mfsec.com.ar/), **Arachni's official tester**.
 - [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the new HTML report template.
+- [Brandon Potter](mailto:bpotter8705@gmail.com) for the original "arachni_web_autostart" script
 - [Steve Pinkham](http://github.com/spinkham) for beta testing and patches.
 - [Aung Khant](mailto:aungkhant@yehg.net) for general suggestions.
 

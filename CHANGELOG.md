@@ -2,6 +2,7 @@
 # ChangeLog
 
 ## Version 0.2.2.2 _(Under development)_
+- Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
 - Resolved issue #19
    - WebUI
       - Plug-in options are preserved
