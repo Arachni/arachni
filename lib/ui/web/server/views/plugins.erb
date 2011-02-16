@@ -30,7 +30,7 @@
                 <h5>Description</h5>
                 <pre class="notice"> <%=prep_description( escape( plugin['description'] ) )%></pre>
 
-                <%= erb :options, { :layout => false }, :component => plugin%>
+                <%= erb :options, { :layout => false }, :component => plugin, :session_options => session_options%>
 
                 <p>
                     <strong>Version:</strong> <%=plugin['version']%><br/>

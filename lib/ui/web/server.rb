@@ -641,7 +641,7 @@ class Server < Sinatra::Base
     get "/plugins" do
         fill_component_cache
         prep_session
-        erb :plugins, { :layout => true }
+        erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )
     end
 
     #
@@ -650,7 +650,7 @@ class Server < Sinatra::Base
     post "/plugins" do
         session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
         flash.now[:ok] = "Plugins updated."
-        show :plugins, true
+        erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )
     end
 
     get "/settings" do

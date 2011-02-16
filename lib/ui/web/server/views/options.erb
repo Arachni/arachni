@@ -10,9 +10,17 @@
                 <% if opt['type'] == 'path' %>
                 disabled="disabled" type="file" value="<%=opt['default']%>"
                 <% elsif opt['type'] == 'bool' %>
-                type="checkbox" <% if opt['default']%> checked="checked" <%end%>
+                type="checkbox"
+                    <% if session_options[component['plug_name']] && !(val = session_options[component['plug_name']][opt['name']]).nil? %>
+
+                    <%=val ? 'checked="checked"' : '' %>
+
+                    <% elsif opt['default'] %>
+                    checked="checked"
+                    <%end%>
+
                 <% else %>
-                 value="<%=opt['default']%>"
+                 value="<%=( session_options[component['plug_name']] && (val = session_options[component['plug_name']][opt['name']]) ) ? val : opt['default']%>"
                 <%end%>
 
                 />
