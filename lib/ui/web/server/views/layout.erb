@@ -12,7 +12,7 @@
 
     <script type="text/javascript">
         function checkAll( type ) {
-            $( "." + type ).attr( "checked", true )
+            $( "." + type + ':not(:disabled)' ).attr( "checked", true )
         }
 
         function uncheckAll( type ) {
