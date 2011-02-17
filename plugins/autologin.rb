@@ -27,6 +27,10 @@ class AutoLogin < Arachni::Plugin::Base
 
     attr_accessor :http
 
+    MSG_SUCCESS     = 'Form submitted successfully.'
+    MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
+    MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
+
     #
     # @param    [Arachni::Framework]    framework
     # @param    [Hash]        options    options passed to the plugin
@@ -64,8 +68,8 @@ class AutoLogin < Arachni::Plugin::Base
         }
 
         if !login_form
-            print_error( 'Could not find a form suiting the provided params at: ' +
-            @options['url'] )
+            register_results( { :code => 0, :msg => MSG_FAILURE + @options['url'] } )
+            print_error( MSG_FAILURE + @options['url'] )
             return
         end
 
@@ -80,10 +84,17 @@ class AutoLogin < Arachni::Plugin::Base
         res = login_form.submit( :async => false ).response
 
         if !res
-            print_error( 'Form submitted but no response was returned.' )
+            register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
+            print_error( MSG_NO_RESPONSE )
             return
         else
-            print_ok( 'Form submitted successfully.' )
+            register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => @http.current_cookies.dup } )
+            print_ok( MSG_SUCCESS )
+            print_info( 'Cookies set to:' )
+            @http.current_cookies.each_pair {
+                |name, val|
+                print_info( '    * ' + name + ' = ' + val )
+            }
         end
 
     end
