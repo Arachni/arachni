@@ -17,7 +17,7 @@ module MetaModules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class AutoThrottle < Base
 
@@ -40,7 +40,7 @@ class AutoThrottle < Base
     def prepare
 
         # run for each response as it arrives
-        @http.on_complete {
+        @http.add_on_complete {
 
             # adjust only after finished bursts
             next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0

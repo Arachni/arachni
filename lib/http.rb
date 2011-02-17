@@ -16,6 +16,7 @@ require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
+require Options.instance.dir['lib'] + 'mixins/observable'
 
 #
 # Arachni::Module::HTTP class
@@ -33,13 +34,14 @@ require Options.instance.dir['lib'] + 'module/trainer'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.4
+# @version: 0.2.5
 #
 class HTTP
 
     include Arachni::UI::Output
     include Singleton
     include Arachni::Module::Utilities
+    include Arachni::Mixins::Observable
 
     #
     # @return [URI]
@@ -137,11 +139,7 @@ class HTTP
         @curr_res_time = 0
         @curr_res_cnt  = 0
 
-        @on_complete = []
-        @on_queue    = []
-
         @after_run = []
-        @after_run_persistent = []
     end
 
     #
@@ -158,13 +156,9 @@ class HTTP
                 |block|
                 block.call
             }
-
             @after_run.clear
 
-            @after_run_persistent.each {
-                |block|
-                block.call
-            }
+            call_after_run_persistent( )
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
@@ -207,10 +201,7 @@ class HTTP
 
         req.id = @request_count
 
-        @on_queue.each {
-            |block|
-            exception_jail{ block.call( req, async ) }
-        }
+        call_on_queue( req, async )
 
         if( !async )
             @hydra_sync.queue( req )
@@ -237,10 +228,7 @@ class HTTP
             @curr_res_cnt   += 1
             @curr_res_time  += res.start_transfer_time
 
-            @on_complete.each {
-                |block|
-                exception_jail{ block.call( res ) }
-            }
+            call_on_complete( res )
 
             parse_and_set_cookies( res )
 
@@ -278,26 +266,6 @@ class HTTP
     #
     def after_run( &block )
         @after_run << block
-    end
-
-    def after_run_persistent( &block )
-        @after_run_persistent << block
-    end
-
-    #
-    # Gets called each time a request completes and passes the response
-    # to the block
-    #
-    def on_complete( &block )
-        @on_complete << block
-    end
-
-    #
-    # Gets called each time a request is queued and passes the request
-    # to the block
-    #
-    def on_queue( &block )
-        @on_queue << block
     end
 
     #

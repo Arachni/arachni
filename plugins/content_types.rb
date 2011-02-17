@@ -17,7 +17,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class ContentTypes < Arachni::Plugin::Base
 
@@ -38,7 +38,7 @@ class ContentTypes < Arachni::Plugin::Base
     end
 
     def run( )
-        @framework.http.on_complete {
+        @framework.http.add_on_complete {
             |res|
 
             next if @logged.include?( res.request.method.to_s.upcase + res.effective_url )

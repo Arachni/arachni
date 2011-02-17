@@ -250,7 +250,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                 Issue::Element::LINK
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version         => '0.2.2',
+            :version         => '0.3',
             :references      => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'

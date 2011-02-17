@@ -16,7 +16,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class CookieCollector < Arachni::Plugin::Base
 
@@ -33,7 +33,7 @@ class CookieCollector < Arachni::Plugin::Base
     end
 
     def run( )
-        @framework.http.on_complete {
+        @framework.http.add_on_complete {
             |res|
             update( extract_cookies( res ), res )
         }

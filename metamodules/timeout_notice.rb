@@ -41,7 +41,7 @@ class TimeoutNotice < Base
 
     def prepare
         # run for each response as it arrives
-        @http.on_complete {
+        @http.add_on_complete {
             |res|
 
             # we don't care about non OK responses

@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 #
 class InterestingResponses < Arachni::Module::Base
@@ -45,7 +45,7 @@ class InterestingResponses < Arachni::Module::Base
         print_status( "Listening..." )
 
         # tell the HTTP interface to cal this block every-time a request completes
-        @http.on_complete {
+        @http.add_on_complete {
             |res|
             __log_results( res ) if !IGNORE_CODES.include?( res.code ) && !res.body.empty?
         }
@@ -62,7 +62,7 @@ class InterestingResponses < Arachni::Module::Base
             :description    => %q{Logs all non 200 (OK) server responses.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Interesting server response.},
