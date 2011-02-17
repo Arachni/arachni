@@ -3,14 +3,15 @@
 
 ## Version 0.2.2.2 _(Under development)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
-- Resolved issue #19
-   - WebUI
-      - Plug-in options are preserved
-      - Report info is stored in a database
-      - Reports are now displayed in descending order based on scan completion datetime
-      - Any existing reports will be migrated into the new database
-   - HTTP
-      - Disabled peer verification on SSL
+- HTTP
+   - Disabled peer verification on SSL [Issue #19]
+   - Replaced callbacks with the new _Observable_ mixin (also updated components to use the new conventions)
+- WebUI
+   - Plug-in options are preserved [Issue #19]
+   - Check-all now skips disabled checkboxes
+   - Report info is stored in a database [Issue #19]
+   - Reports are now displayed in descending order based on scan completion datetime [Issue #19]
+   - Any existing reports will be migrated into the new database [Issue #19]
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
