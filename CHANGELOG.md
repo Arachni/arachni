@@ -14,6 +14,10 @@
    - Any existing reports will be migrated into the new database [Issue #19]
 - XMLRPC service
    - Fixed segfault on forced shutdown when spider-first was enabled
+- Plug-ins
+   - AutoLogin now registers its results
+- Reports -- Added formatters for the AutoLogin plug-in [Issue #19]
+   - HMTL -- Fixed exception on empty issue list
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
