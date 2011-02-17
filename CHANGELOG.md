@@ -12,6 +12,8 @@
    - Report info is stored in a database [Issue #19]
    - Reports are now displayed in descending order based on scan completion datetime [Issue #19]
    - Any existing reports will be migrated into the new database [Issue #19]
+- XMLRPC service
+   - Fixed segfault on forced shutdown when spider-first was enabled
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)

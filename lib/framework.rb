@@ -453,7 +453,7 @@ class Framework
 
     private
 
-    def clean_up!
+    def clean_up!( skip_audit_queue = false )
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
@@ -466,7 +466,7 @@ class Framework
         @plugins.block!
 
         # a plug-in may have updated the page queue, rock it!
-        audit_queue
+        audit_queue if !skip_audit_queue
 
         # refresh the audit store
         audit_store( true )
