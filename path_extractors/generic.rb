@@ -32,7 +32,11 @@ class Generic < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        URI.extract( doc.to_s )
+        begin
+            URI.extract( doc.to_s )
+        rescue
+            return []
+        end
     end
 
 end

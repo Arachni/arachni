@@ -19,6 +19,8 @@
 - Reports -- Added formatters for the AutoLogin plug-in [Issue #19]
    - HMTL -- Fixed exception on empty issue list
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
+- Path extractors
+   - Generic -- fixed error on invalid encoding sequences
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
