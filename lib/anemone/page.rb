@@ -9,6 +9,7 @@
 =end
 
 require 'nokogiri'
+require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
 require 'ostruct'
 require 'webrick/cookie'
 
