@@ -17,7 +17,9 @@
 - Plug-ins
    - AutoLogin now registers its results
 - Reports -- Added formatters for the AutoLogin plug-in [Issue #19]
-   - HMTL -- Fixed exception on empty issue list
+   - HMTL
+      - Fixed exception on empty issue list
+      - Fixed encoding exceptions (cheers to Chris Weber <chris@casaba.com>)
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
 - Path extractors
    - Generic -- fixed error on invalid encoding sequences
