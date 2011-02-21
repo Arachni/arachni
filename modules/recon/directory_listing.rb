@@ -46,6 +46,7 @@ class DirectoryListing < Arachni::Module::Base
 
     def run( )
 
+        return if @page.code != 200
         path = get_path( @page.url )
 
         return if !URI( path ).path || URI( path ).path.gsub( '/', '' ).empty?
