@@ -23,6 +23,9 @@
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
 - Path extractors
    - Generic -- fixed error on invalid encoding sequences
+- Modules
+   - Recon
+       - Directory listing -- Now skips non-200 pages because it used to log false positives on redirections
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)
