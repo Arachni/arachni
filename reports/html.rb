@@ -137,6 +137,9 @@ class HTML < Arachni::Report::Base
                 |variation, j|
 
                 if( variation['response'] && !variation['response'].empty? )
+
+                    variation['response'] = variation['response'].force_encoding( 'utf-8' )
+
                     @audit_store.issues[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
                 end
