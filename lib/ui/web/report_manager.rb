@@ -62,13 +62,16 @@ class ReportManager
             |file|
             next if Report.first( :filename => File.basename( file, EXTENSION ) )
 
-            data = File.read( file )
-            Report.create(
-                :issue_count => get_issue_count( data ),
-                :host        => get_host( data ),
-                :filename    => File.basename( file, EXTENSION ),
-                :datestamp   => get_finish_datetime( data )
-            )
+            begin
+                data = File.read( file )
+                Report.create(
+                    :issue_count => get_issue_count( data ),
+                    :host        => get_host( data ),
+                    :filename    => File.basename( file, EXTENSION ),
+                    :datestamp   => get_finish_datetime( data )
+                )
+            rescue
+            end
         }
     end
 
@@ -213,11 +216,11 @@ class ReportManager
     private
 
     def unserialize( data )
-        begin
-            YAML::load( data )
-        rescue
-            Marshal::load( data )
-        end
+         begin
+            Marshal.load( data )
+         rescue
+             YAML.load( data )
+         end
     end
 
     def save_to_file( data, file )
@@ -246,7 +249,7 @@ class ReportManager
         }
         opts['outfile'] = get_tmp_outfile_name( type, report )
 
-        classes[type].new( YAML::load( report ), opts ).run
+        classes[type].new( unserialize( report ), opts ).run
 
         content = File.read( opts['outfile'] )
         FileUtils.rm( opts['outfile'] )
