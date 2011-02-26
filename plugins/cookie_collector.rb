@@ -12,11 +12,12 @@ module Arachni
 module Plugins
 
 #
+# Simple cookie collector
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class CookieCollector < Arachni::Plugin::Base
 
@@ -33,18 +34,21 @@ class CookieCollector < Arachni::Plugin::Base
     end
 
     def run( )
-        @framework.http.add_on_complete {
-            |res|
-            update( extract_cookies( res ), res )
+        @framework.http.add_on_new_cookies {
+            |cookies, res|
+            update( cookies, res )
         }
     end
 
     def update( cookies, res )
         return if cookies.empty? || !update?( cookies )
 
+        res_hash = res.to_hash
+        res_hash.delete( 'body' )
+
         @cookies << {
             :time       => Time.now,
-            :res        => res.to_hash,
+            :res        => res_hash,
             :cookies    => cookies
         }
     end
@@ -58,17 +62,6 @@ class CookieCollector < Arachni::Plugin::Base
         }
 
         return false
-    end
-
-    def extract_cookies( res )
-        cookies = {}
-
-        Arachni::Parser.new( @framework.opts, res ).run.cookies.each {
-            |cookie|
-            cookies.merge!( cookie.simple )
-        }
-
-        return cookies
     end
 
     def clean_up
