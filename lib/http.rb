@@ -624,6 +624,8 @@ class HTTP
         # update framework cookies
         Arachni::Options.instance.cookies = cookie_hash
 
+        call_on_new_cookies( cookie_hash, res )
+
         current = parse_cookie_str( @init_headers['cookie'] )
         set_cookies( current.merge( cookie_hash ) )
     end
