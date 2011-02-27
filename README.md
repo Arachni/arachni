@@ -159,15 +159,15 @@ The analyzer can graciously handle badly written HTML code due to a combination 
  - Plug-ins are framework demi-gods, they have direct access to the framework instance.
  - Can be used to add any functionality to Arachni.
  - Currently available plugins:
-    - Passive Proxy
+    - Passive Proxy -- Analyzes requests and responses between the web app and the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
     - Form based AutoLogin
     - Dictionary attacker for HTTP Auth
     - Dictionary attacker for form based authentication
     - Profiler -- Performs taint analysis (with benign inputs) and response time analysis
-    - Cookie collector
+    - Cookie collector -- Keeps track of cookies while establishing a timeline of changes
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
     - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
-    - WAF (Web Application Firewall) Detector
+    - WAF (Web Application Firewall) Detector -- Establishes a baseline of normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
     - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
        - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
        - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
