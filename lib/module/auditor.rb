@@ -299,6 +299,20 @@ module Auditor
         }
     end
 
+    #
+    # ABSTRACT - OPTIONAL
+    #
+    # This is called right before an [Arachni::Parser::Element]
+    # is submitted/auditted and is used to determine whether to skip it or not.
+    #
+    # Implementation details are left up to the running module.
+    #
+    # @param    [Arachni::Parser::Element]  elem
+    #
+    def skip?( elem )
+        return false
+    end
+
 
     #
     # Audits elements using a 2 phase timing attack and logs results.
