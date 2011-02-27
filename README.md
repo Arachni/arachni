@@ -163,6 +163,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Form based AutoLogin
     - Dictionary attacker for HTTP Auth
     - Dictionary attacker for form based authentication
+    - Profiler -- Performs taint analysis (with benign inputs) and response time analysis
     - Cookie collector
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
     - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
