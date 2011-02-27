@@ -227,10 +227,7 @@ class Profiler < Arachni::Plugin::Base
 
                 It's does not perform any vulnerability assesment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [
-                Arachni::OptInt.new( 'precision', [ false, 'Stage precision (how many times to perform each detection stage).', 5 ] )
-            ]
+            :version        => '0.1'
         }
     end
 
