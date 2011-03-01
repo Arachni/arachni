@@ -1,7 +1,8 @@
 # Arachni - Web Application Security Scanner Framework
 **Version**:     0.2.2.2<br/>
-**Homepage**:     [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
-**News**:     [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
+**Homepage**:     [http://arachni.segfault.gr](http://arachni.segfault.gr)<br/>
+**Blog**:         [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
+**Github page**:  [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
 **Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
 **Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
 **Google Group**: [http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)<br/>
