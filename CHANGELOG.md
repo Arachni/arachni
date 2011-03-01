@@ -16,7 +16,7 @@
    - Fixed segfault on forced shutdown when spider-first was enabled
 - Plug-ins
    - AutoLogin now registers its results
-- Reports -- Added formatters for the AutoLogin plug-in [Issue #19]
+- Reports -- Added formatters for the AutoLogin [Issue #19] and Profiler plug-ins
    - HMTL
       - Fixed exception on empty issue list
       - Fixed encoding exceptions (cheers to Chris Weber <chris@casaba.com>)
@@ -26,6 +26,8 @@
 - Modules
    - Recon
        - Directory listing -- Now skips non-200 pages because it used to log false positives on redirections
+- Plug-ins
+   - Added Profiler -- Performs taint analysis (with benign inputs) and response time analysis
 
 ## Version 0.2.2.1 _(February 13, 2011)_
 - Web UI v0.1-pre (Utilizing the Client - Dispatch-server XMLRPC architecture) (**New**)

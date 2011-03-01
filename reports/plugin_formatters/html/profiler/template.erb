@@ -1,0 +1,177 @@
+<h3>Profiler</h3>
+<blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
+
+<script type="text/javascript">
+
+    var tooltip_data = <%=@results['times'].to_json%>;
+    var chart;
+    $(document).ready(function() {
+       chart = new Highcharts.Chart({
+          chart: {
+             renderTo: 'chart-response-times',
+             zoomType: 'x',
+             spacingRight: 20,
+             backgroundColor: '#ccc'
+          },
+           title: {
+             text: 'Response times exceeding the average (<%=times.size%> out of <%=@results['times'].size%> responses)'
+          },
+           subtitle: {
+             text: document.ontouchstart === undefined ?
+                'Click and drag in the plot area to zoom in' :
+                'Drag your finger over the plot to zoom in'
+          },
+          xAxis: {
+             title: {
+                text: null
+             }
+          },
+          yAxis: {
+             title: {
+                text: 'Seconds'
+             },
+             min: <%=times.min%>,
+             startOnTick: false,
+             showFirstLabel: false
+          },
+          tooltip: {
+             formatter: function() {
+                return 'URL: <b>' + tooltip_data[this.x]['url'] + '</b><br/>' +
+                    'Response time: <b>' + this.y +'</b> seconds<br/>';
+             }
+          },
+          legend: {
+             enabled: false
+          },
+          plotOptions: {
+             area: {
+                fillColor: {
+                   linearGradient: [0, 0, 0, 300],
+                   stops: [
+                      [0, 'rgba(0,0,0,0)'],
+                      [1, 'rgba(2,0,0,0)']
+                   ]
+                },
+                lineWidth: 1,
+                marker: {
+                   enabled: false,
+                   states: {
+                      hover: {
+                         enabled: true,
+                         radius: 5
+                      }
+                   }
+                },
+                shadow: false,
+                states: {
+                   hover: {
+                      lineWidth: 1
+                   }
+                }
+             }
+          },
+
+          series: [{
+             type: 'area',
+             pointInterval: 1,
+             data: <%=times.to_s%>
+          }]
+       });
+
+
+    });
+</script>
+
+
+<h4>Response time analysis</h4>
+
+<strong>Average response time</strong>: <%=avg_time%> seconds <br/>
+<strong>Max</strong>: <%=times.max%> seconds <br/>
+<strong>Min</strong>: <%=@results['times'].map{ |item| item['time'] }.min%> seconds <br/>
+<strong>Sample size</strong>: <%=@results['times'].size%> responses <br/>
+
+<div id="chart-response-times" style="width: 1000px"></div>
+
+<p>&nbsp;</p>
+
+<h4>Inputs that affect output (Taint analysis)</h4>
+<% @results['inputs'].each_with_index do |item, idx| %>
+
+    <h5>
+        <%=item['element']['type'].capitalize%>
+
+        <%if item['element']['name']%>
+        named '<%=item['element']['name']%>'
+        <%end%>
+
+        <%if item['element']['altered']%>
+        using the '<%=item['element']['altered']%>' input
+        <%end%>
+
+        <%if item['element']['owner']%>
+        at <a href="<%=CGI.escapeHTML( item['element']['owner'] )%>"> <%=item['element']['owner']%> </a>
+        <%end%>
+
+        <%if item['element']['action']%>
+        pointing to <a href="<%=CGI.escapeHTML( item['element']['action'] )%>"> <%=item['element']['action']%>  </a>
+        <%end%>
+
+        <%if item['element']['method']%>
+        using <%=item['request']['method']%>
+        <%end%>
+    </h5>
+
+    <p>
+        It was submitted using the following parameters:
+        <ul>
+        <%item['element']['auditable'].each_pair do |k, v| %>
+            <li><%=k%> = <%=v%></li>
+        <%end%>
+        </ul>
+
+        The taint landed in the following elements at <a href="<%=CGI.escapeHTML( item['request']['url'] )%>"> <%=item['request']['url']%> </a>:
+            <ul>
+            <%item['landed'].each do |elem| %>
+                <li>
+                <%=elem['type'].capitalize%>
+
+                <%if elem['name']%>
+                named '<%=elem['name']%>'
+                <%end%>
+
+                <%if elem['altered']%>
+                using the '<%=elem['altered']%>' input
+                <%end%>
+
+                <%if elem['auditable']%>
+                <ul>
+                    <%elem['auditable'].each_pair do |k, v| %>
+                        <li><%=k%> = <%=v%></li>
+                    <%end%>
+                </ul>
+                <%end%>
+                </li>
+            <%end%>
+            </ul>
+
+            <div class="hidden" id="inspection-dialog_<%=idx%>" title="Relevant content is shown in red.">
+              <% match = CGI.escapeHTML( item['response']['body'] )%>
+              <pre> <%=CGI.escapeHTML( item['response']['body'] ).gsub( item['taint'], '<strong style="color: red">' + item['taint'] + '</strong>' ) %> </pre>
+            </div>
+
+            <form style="display:inline" action="#">
+              <input onclick="javascript:inspect( '#inspection-dialog_<%=idx%>')" type="button" value="Inspect" />
+            </form>
+
+            <form style="display:inline" action="<%=item['request']['url']%>" target="_blank" method="<%=item['request']['method']%>">
+              <% item['request']['params'].each_pair do |name, value|%>
+              <input type="hidden" name="<%=CGI.escapeHTML(name)%>" value="<%=CGI.escapeHTML( value )%>" />
+              <%end%>
+              <input type="submit" value="Replay" />
+            </form>
+
+    </p>
+
+    <p>&nbsp;</p>
+
+<%end%>

@@ -57,7 +57,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class Framework
 
@@ -68,6 +68,7 @@ class Framework
     #
     include Arachni::UI::Output
     include Arachni::Module::Utilities
+    include Arachni::Mixins::Observable
 
     # the version of *this* class
     REVISION     = '0.2.1'
@@ -530,6 +531,8 @@ class Framework
     #
     def run_mods( page )
         return if !page
+
+        call_on_run_mods( page.deep_clone )
 
         @current_url = page.url.to_s
 

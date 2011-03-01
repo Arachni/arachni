@@ -642,7 +642,7 @@ class XMLRPC
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://github.com/Zapotek/arachni
+       Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
        Documentation: http://github.com/Zapotek/arachni/wiki'
         print_line
         print_line
