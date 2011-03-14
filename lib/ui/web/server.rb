@@ -467,7 +467,6 @@ class Server < Sinatra::Base
     #
     def save_and_shutdown( arachni )
         arachni.framework.clean_up!( true )
-        pp arachni.framework.auditstore
         report_path = settings.reports.save( arachni.framework.auditstore )
         arachni.service.shutdown!
         return report_path
