@@ -34,6 +34,11 @@ class HTML
 
             def run
 
+                @results['times'].each_with_index {
+                    |itm, i|
+                    @results['times'][i] = escape_hash( itm )
+                }
+
                 times      = @results['times'].map{ |item| item['time'] }
                 total_time = 0
                 times.each {
@@ -45,6 +50,16 @@ class HTML
                 times.reject!{ |time| time < avg_time }
 
                 return ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
+            end
+
+            def escape_hash( hash )
+                hash.each_pair {
+                    |k, v|
+                    hash[k] = CGI.escape( hash[k] ) if hash[k].is_a?( String )
+                    hash[k] = escape_hash( v ) if v.is_a? Hash
+                }
+
+                return hash
             end
 
         end
