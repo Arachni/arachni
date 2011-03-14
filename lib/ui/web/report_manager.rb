@@ -191,8 +191,12 @@ class ReportManager
     def get( type, id )
         return if !valid_class?( type )
 
-        location = savedir + Report.get( id ).filename + EXTENSION
-        convert( type, File.read( location ) )
+        begin
+            location = savedir + Report.get( id ).filename + EXTENSION
+            convert( type, File.read( location ) )
+        rescue
+            return nil
+        end
     end
 
     #
