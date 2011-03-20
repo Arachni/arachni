@@ -55,7 +55,7 @@ class HTML
             def escape_hash( hash )
                 hash.each_pair {
                     |k, v|
-                    hash[k] = CGI.escape( hash[k] ) if hash[k].is_a?( String )
+                    hash[k] = CGI.escape( v ) if v.is_a?( String )
                     hash[k] = escape_hash( v ) if v.is_a? Hash
                 }
 
