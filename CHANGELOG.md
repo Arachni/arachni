@@ -5,6 +5,7 @@
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
 - Dependency versions are now defined explicitly [Issue #23]
+- Updated to Sinatra v1.2.1
 - HTTP
    - Disabled peer verification on SSL [Issue #19]
    - Replaced callbacks with the new _Observable_ mixin (also updated components to use the new conventions)
