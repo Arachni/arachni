@@ -697,12 +697,16 @@ class Server < Sinatra::Base
                 { 'data' => OutputStream.new( arachni, 38 ).data }.to_json
             else
                 settings.log.instance_shutdown( env, port_to_url( params[:port] ) )
-                {
-                    'report' => '"data:text/html;base64, ' +
-                        Base64.encode64( save_shutdown_and_show( arachni ) ) + '"'
-                }.to_json
+                save_and_shutdown( arachni )
+
+                # {
+                #     'report' => '"data:text/html;base64, ' +
+                #         Base64.encode64( save_shutdown_and_show( arachni ) ) + '"'
+                # }.to_json
+
+                { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
             end
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
         end
     end
@@ -715,7 +719,7 @@ class Server < Sinatra::Base
                 out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues)
                 { 'data' => out }.to_json
             end
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'data' => "The server has been shut down." }.to_json
         end
     end
@@ -727,7 +731,7 @@ class Server < Sinatra::Base
             stats = arachni.framework.stats
             stats['current_page'] = escape( stats['current_page'] )
             { 'refresh' => true, 'stats' => stats }.to_json
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'refresh' => false }.to_json
         end
     end
