@@ -41,14 +41,14 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1-pre
+# @version: 0.1.1-pre
 #
 # @see Arachni::RPC::XML::Client::Instance
 # @see Arachni::RPC::XML::Client::Dispatcher
 #
 module Web
 
-    VERSION = '0.1-pre'
+    VERSION = '0.1.1-pre'
 
 class Server < Sinatra::Base
 
@@ -467,7 +467,6 @@ class Server < Sinatra::Base
     #
     def save_and_shutdown( arachni )
         arachni.framework.clean_up!( true )
-        pp arachni.framework.auditstore
         report_path = settings.reports.save( arachni.framework.auditstore )
         arachni.service.shutdown!
         return report_path
@@ -698,12 +697,16 @@ class Server < Sinatra::Base
                 { 'data' => OutputStream.new( arachni, 38 ).data }.to_json
             else
                 settings.log.instance_shutdown( env, port_to_url( params[:port] ) )
-                {
-                    'report' => '"data:text/html;base64, ' +
-                        Base64.encode64( save_shutdown_and_show( arachni ) ) + '"'
-                }.to_json
+                save_and_shutdown( arachni )
+
+                # {
+                #     'report' => '"data:text/html;base64, ' +
+                #         Base64.encode64( save_shutdown_and_show( arachni ) ) + '"'
+                # }.to_json
+
+                { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
             end
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
         end
     end
@@ -716,7 +719,7 @@ class Server < Sinatra::Base
                 out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues)
                 { 'data' => out }.to_json
             end
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'data' => "The server has been shut down." }.to_json
         end
     end
@@ -728,7 +731,7 @@ class Server < Sinatra::Base
             stats = arachni.framework.stats
             stats['current_page'] = escape( stats['current_page'] )
             { 'refresh' => true, 'stats' => stats }.to_json
-        rescue Errno::ECONNREFUSED
+        rescue
             { 'refresh' => false }.to_json
         end
     end

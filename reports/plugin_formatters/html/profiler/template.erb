@@ -36,7 +36,7 @@
           },
           tooltip: {
              formatter: function() {
-                return 'URL: <b>' + tooltip_data[this.x]['url'] + '</b><br/>' +
+                return 'URL: <b>' + unescape( tooltip_data[this.x]['url'] ) + '</b><br/>' +
                     'Response time: <b>' + this.y +'</b> seconds<br/>';
              }
           },

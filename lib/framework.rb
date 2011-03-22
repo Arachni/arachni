@@ -322,6 +322,8 @@ class Framework
             end
         }
 
+        return if @plugin_store[name]
+
         @plugin_store[name] = {
             :results => obj
         }.merge( plugin.class.info )

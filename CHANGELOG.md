@@ -1,8 +1,11 @@
 
 # ChangeLog
 
-## Version 0.2.2.2 _(Under development)_
+## Version 0.2.2.2 _(March 22, 2011)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
+- Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
+- Dependency versions are now defined explicitly [Issue #23]
+- Updated to Sinatra v1.2.1
 - HTTP
    - Disabled peer verification on SSL [Issue #19]
    - Replaced callbacks with the new _Observable_ mixin (also updated components to use the new conventions)
@@ -20,7 +23,6 @@
    - HMTL
       - Fixed exception on empty issue list
       - Fixed encoding exceptions (cheers to Chris Weber <chris@casaba.com>)
-- Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions
 - Path extractors
    - Generic -- fixed error on invalid encoding sequences
 - Modules
