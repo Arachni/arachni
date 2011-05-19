@@ -95,7 +95,7 @@ class XMLRPC
             instance_url.port = @instance['port']
 
             # start the XMLRPC client
-            @server = Arachni::RPC::XML::Client::Instance.new( @opts, instance_url.to_s )
+            @server = Arachni::RPC::XML::Client::Instance.new( @opts, instance_url.to_s, @instance['token'] )
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
@@ -662,17 +662,13 @@ class XMLRPC
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_xmlrpc --server http[s]://host:port/ \[options\] url
+  Usage:  arachni_xmlrpc --server https://host:port \[options\] url
 
   Supported options:
 
 
     SSL --------------------------
     (Do *not* use encrypted keys!)
-
-    --ssl                       use SSL?
-                                   (If you want encryption without authentication
-                                    you can skip rest of the SSL options.)
 
     --ssl-pkey   <file>         location of the SSL private key (.pem)
                                     (Used to verify the the client to the servers.)

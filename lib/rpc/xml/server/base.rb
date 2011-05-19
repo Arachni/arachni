@@ -10,6 +10,8 @@
 
 require 'socket'
 require 'sys/proctable'
+require 'webrick'
+require 'cgi'
 
 module Arachni
 module RPC
@@ -22,11 +24,30 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Base
 
-    def initialize( opts )
+    #
+    # This one doesn't add much new functionality,
+    # it just checks for a cookie token before processing each request.
+    #
+    # If it can't find a valid token then it returns nothing.
+    #
+    class WebServ < ::WEBrick::HTTPServer
+
+        def service( req, res )
+
+            if @config[:Token]
+                return if @config[:Token] != ::CGI.parse( req.cookies.join )['token'][0]
+            end
+
+            super( req, res )
+        end
+
+    end
+
+    def initialize( opts, token = nil )
 
         pkey = ::OpenSSL::PKey::RSA.new( File.read( opts.ssl_pkey ) )         if opts.ssl_pkey
         cert = ::OpenSSL::X509::Certificate.new( File.read( opts.ssl_cert ) ) if opts.ssl_cert
@@ -37,14 +58,15 @@ class Base
             verification = ::OpenSSL::SSL::VERIFY_NONE
         end
 
-        @server = ::WEBrick::HTTPServer.new(
+        @server = WebServ.new(
             :Port            => opts.rpc_port,
-            :SSLEnable       => opts.ssl  || false,
+            :SSLEnable       => true,
             :SSLVerifyClient => verification,
             :SSLCertName     => [ [ "CN", ::WEBrick::Utils::getservername ] ],
             :SSLCertificate  => cert,
             :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => opts.ssl_ca
+            :SSLCACertificateFile => opts.ssl_ca,
+            :Token           => token
         )
 
         print_status( 'Initing XMLRPC Server...' )

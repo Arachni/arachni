@@ -35,7 +35,7 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 class Instance < Base
 
@@ -52,13 +52,13 @@ class Instance < Base
     #
     # @param    [Options]    opts
     #
-    def initialize( opts )
+    def initialize( opts, token )
 
         prep_framework
         banner
 
         @opts = opts
-        super( @opts )
+        super( @opts, token )
 
         if @opts.debug
             debug!

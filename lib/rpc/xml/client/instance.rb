@@ -25,7 +25,7 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Instance < Base
 
@@ -70,8 +70,8 @@ class Instance < Base
 
     end
 
-    def initialize( opts, url )
-        super( opts, url )
+    def initialize( opts, url, token = nil )
+        super( opts, url, token )
 
         @opts      = OptsMapper.new( @server, 'opts' )
         @framework = Mapper.new( @server, 'framework' )

@@ -39,7 +39,7 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Dispatcher < Base
 
@@ -221,10 +221,6 @@ class Dispatcher < Base
     (All SSL options will be honored by the dispatched XMLRPC instances as well.)
     (Do *not* use encrypted keys!)
 
-    --ssl                       use SSL?
-                                   (If you want encryption without authentication
-                                    you can skip rest of the SSL options.)
-
     --ssl-pkey   <file>         location of the SSL private key (.pem)
                                     (Used to verify the server to the clients.)
 
@@ -252,10 +248,11 @@ USAGE
 
                 # get an available port for the child
                 @opts.rpc_port = avail_port( )
+                @token         = secret()
 
                 pid = Kernel.fork {
                     exception_jail {
-                        server = Arachni::RPC::XML::Server::Instance.new( @opts )
+                        server = Arachni::RPC::XML::Server::Instance.new( @opts, @token )
                         trap( "INT", "IGNORE" )
                         server.run
                     }
@@ -271,6 +268,7 @@ USAGE
                     "Port: #{@opts.rpc_port} - Owner: #{owner}" )
 
                 @pool << {
+                    'token' => @token,
                     'pid'   => pid,
                     'port'  => @opts.rpc_port,
                     'owner' => owner,
@@ -279,6 +277,7 @@ USAGE
 
                 # let the child go about his business
                 Process.detach( pid )
+                @token = nil
             }
         }
 
@@ -329,6 +328,15 @@ USAGE
     def rand_port
         range = (1025..65535).to_a
         range[ rand( 65535 - 1025 ) ]
+    end
+
+    def secret
+      secret = ''
+      1000.times {
+          secret += rand( 1000 ).to_s
+      }
+
+      return Digest::MD5.hexdigest( secret )
     end
 
     #

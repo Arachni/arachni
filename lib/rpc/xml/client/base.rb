@@ -22,16 +22,21 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Base
 
-    def initialize( opts, url )
+    def initialize( opts, url, token = nil )
 
         @opts = opts
 
+        url        = URI( url )
+        url.scheme = 'https'
+
         # start the XMLRPC client
-        @server = ::XMLRPC::Client.new2( url )
+        @server = ::XMLRPC::Client.new2( url.to_s )
+
+        @server.cookie = 'token=' + token + ';' if token
 
         # there'll be a HELL of lot of output so things might get..laggy.
         # a big timeout is required to avoid Timeout exceptions...

@@ -176,16 +176,12 @@ class DispatcherMonitor
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_xmlrpcd_monitor  [server address]
+  Usage:  arachni_xmlrpcd_monitor  https://host:port
 
   Supported options:
 
 
     SSL --------------------------
-
-    --ssl                       use SSL?
-                                   (If you want encryption without authentication
-                                    you can skip rest of the SSL options.)
 
     --ssl-pkey   <file>         location of the SSL private key (.pem)
                                     (Used to verify the the client to the servers.)
