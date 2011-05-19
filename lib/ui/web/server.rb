@@ -41,7 +41,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1-pre
+# @version: 0.1.2-pre
 #
 # @see Arachni::RPC::XML::Client::Instance
 # @see Arachni::RPC::XML::Client::Dispatcher
