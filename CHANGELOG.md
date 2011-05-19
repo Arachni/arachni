@@ -1,6 +1,11 @@
 
 # ChangeLog
 
+## Version 0.2.3 _(Under development)_
+ - XMLRPC Client->Dispatch Server
+   - Updated to always use SSL [Issue #28]
+   - Added per instance authentication tokens [Issue #28]
+
 ## Version 0.2.2.2 _(March 22, 2011)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions

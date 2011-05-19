@@ -1,5 +1,5 @@
 # Arachni - Web Application Security Scanner Framework
-**Version**:     0.2.2.2<br/>
+**Version**:     0.2.3<br/>
 **Homepage**:     [http://arachni.segfault.gr](http://arachni.segfault.gr)<br/>
 **Blog**:         [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
 **Github page**:  [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
