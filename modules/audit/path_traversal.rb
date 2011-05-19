@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -48,7 +48,12 @@ class PathTraversal < Arachni::Module::Base
         #
 
 
-        @__trv =  '../../../../../../../../../../../../../../../../'
+        @__trv =  [
+          '../../../../../../../../../../../../../../../../',
+          '//%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/' +
+          '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/' +
+          '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/'
+        ]
         @__ext = [
             "",
             "\0.htm",
@@ -91,9 +96,11 @@ class PathTraversal < Arachni::Module::Base
             @__opts[:regexp] = param['regexp']
             @__ext.each {
                 |ext|
-
-                injection_str = @__trv + param['value'] + ext
-                audit( injection_str, @__opts )
+                @__trv.each {
+                    |trv|
+                    injection_str = trv + param['value'] + ext
+                    audit( injection_str, @__opts )
+                }
             }
         }
     end
@@ -112,7 +119,7 @@ class PathTraversal < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.1',
+            :version        => '0.2.2',
             :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
