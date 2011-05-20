@@ -8,6 +8,8 @@
 - Modules
    - Audit
       - Path traversal: added double encoded traversals [Issue #29]
+- Reports
+   - HMTL: fixed "invalid byte sequence in UTF-8" using iconv [Issue #27]
 
 ## Version 0.2.2.2 _(March 22, 2011)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
