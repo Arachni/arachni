@@ -14,6 +14,8 @@ require 'cgi'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'crypto/rsa_aes_cbc'
+
 module Reports
 
 #
@@ -26,6 +28,8 @@ module Reports
 #
 class HTML < Arachni::Report::Base
 
+    REPORT_FP_URL = "http://arachni.segfault.gr/false_positive"
+
     #
     # @param [AuditStore]  audit_store
     # @param [Hash]   options    options passed to the report
@@ -33,6 +37,8 @@ class HTML < Arachni::Report::Base
     def initialize( audit_store, options )
         @audit_store   = audit_store
         @options       = options
+
+        @crypto = RSA_AES_CBC.new( Options.instance.dir['data'] + 'crypto/public.pem' )
     end
 
     #
@@ -48,6 +54,12 @@ class HTML < Arachni::Report::Base
         __prepare_data
 
         @plugins = format_plugin_results( @audit_store.plugins )
+
+        conf = {}
+        conf['options']  = @audit_store.options
+        conf['version']  = @audit_store.version
+        conf['revision'] = @audit_store.revision
+        conf = @crypto.encrypt( conf.to_yaml )
 
         __save( @options['outfile'], report.result( binding ) )
 
@@ -70,6 +82,10 @@ class HTML < Arachni::Report::Base
     end
 
     private
+
+    def js_multiline( str )
+      "\"" + str.gsub( "\n", '\n' ) + "\"";
+    end
 
     def escapeHTML( str )
         # carefully escapes HTML and converts to UTF-8
@@ -125,8 +141,12 @@ class HTML < Arachni::Report::Base
         @total_severities = 0
         @total_elements   = 0
         @total_verifications = 0
+
+        @crypto_issues = []
         @audit_store.issues.each_with_index {
             |issue, i|
+
+            @crypto_issues << @crypto.encrypt( issue.to_yaml )
 
             @graph_data[:severities][issue.severity] ||= 0
             @graph_data[:severities][issue.severity] += 1

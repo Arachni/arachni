@@ -22,6 +22,9 @@
   <script type="text/javascript">
   //<![CDATA[
 
+      var configuration = <%=js_multiline( conf )%>
+      var email_address;
+
       if( typeof jQuery == 'undefined' ) {
           alert( "Could not load the necessary JavaScript libraries -- the presentation and functionality of the report will be crippled.\n" +
             "Make sure that your internet connection is working and try refreshing the page." );
@@ -29,6 +32,41 @@
 
       function getElem( id ){
           return document.getElementById(id)
+      }
+
+      function report_fp( i ) {
+
+          if( !email_address ) {
+              email_address = prompt( "Please enter your e-mail address:", "")
+          }
+
+          // get some values from elements on the page:
+          var $form = $( "#false_positive_" + i ),
+              issue = $form.find( 'input[name="issue"]' ).val();
+
+          // Send the data using post and put the results in a div
+         $.post( "<%=REPORT_FP_URL%>",
+              { email_address: email_address, issue: issue, configuration: configuration } ,
+              function( ) {
+                  $( "#fp_report_msg" ).html( "Done!" )
+              }
+          );
+
+          $(function() {
+                var fp_txt = '<p>Plase wait while the data is being transfered...</p>';
+				$( "#fp_report_msg" ).html( fp_txt );
+
+          	    $( "#fp_report_msg" ).dialog({
+			    modal: true,
+			    buttons: {
+				    Ok: function() {
+					    $( this ).dialog( "close" );
+                        $( "#fp_report_msg" ).html( fp_txt );
+				    }
+			    }
+		      });
+	      });
+
       }
 
       function toggleElem( id ){
@@ -568,6 +606,8 @@
 
 <body>
 
+<div id="fp_report_msg" class="hidden" title="Reporting a false positive."></div>
+
     <div id="contentreport">
         <header>
             <h1>Report for <%=escapeHTML(@audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
@@ -774,6 +814,15 @@
                 <h3 id="issue_<%=idx%>">
                     <a href="#issue_<%=idx%>">[<%=idx%>] <%=escapeHTML(issue.name)%></a>
                 </h3>
+
+                <p>
+                    <form name="false_positive_<%=j%>" id="false_positive_<%=i%>">
+
+                        <input type="hidden" name="issue" value="<%=@crypto_issues[i]%>" />
+                        <input onclick="javascript:report_fp( <%=i%> );" type="button" value="Report false positive" />
+                    </form>
+                </p>
+
 
                 <div class="left">
                     <ul>
