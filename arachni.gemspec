@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
       s.authors           = [ "Tasos Laskos" ]
 
       s.files             = %w( README.md ACKNOWLEDGMENTS.md Rakefile getoptslong.rb LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
+      s.files            += Dir.glob("data/**/**")
       s.files            += Dir.glob("lib/**/**")
       s.files            += Dir.glob("conf/**/**")
       s.files            += Dir.glob("metamodules/**/**")
