@@ -28,7 +28,7 @@ module Reports
 #
 class HTML < Arachni::Report::Base
 
-    REPORT_FP_URL = "http://arachni.segfault.gr/false_positive"
+    REPORT_FP_URL = "https://arachni.segfault.gr/false_positive"
 
     #
     # @param [AuditStore]  audit_store
@@ -94,7 +94,7 @@ class HTML < Arachni::Report::Base
             return CGI.escapeHTML( str )
         rescue
             ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
-            return CGI.escapeHTML( ic.iconv( untrusted_string + ' ' )[0..-2] )
+            return CGI.escapeHTML( ic.iconv( str + ' ' )[0..-2] )
         end
     end
 
