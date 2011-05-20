@@ -11,7 +11,7 @@
 - Reports
    - HTML
       - Fixed "invalid byte sequence in UTF-8" using iconv [Issue #27]
-      - Added false positive reporting [Issue #30]
+      - Added false positive reporting. Data are encrypted using 256bit AES (with AES primitives encrypted using RSA) and sent over HTTPS. [Issue #30]
 
 ## Version 0.2.2.2 _(March 22, 2011)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
