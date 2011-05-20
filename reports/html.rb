@@ -22,7 +22,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class HTML < Arachni::Report::Base
 
@@ -70,6 +70,17 @@ class HTML < Arachni::Report::Base
     end
 
     private
+
+    def escapeHTML( str )
+        # carefully escapes HTML and converts to UTF-8
+        # while removing invalid character sequences
+        begin
+            return CGI.escapeHTML( str )
+        rescue
+            ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
+            return CGI.escapeHTML( ic.iconv( untrusted_string + ' ' )[0..-2] )
+        end
+    end
 
     def self.prep_description( str )
         placeholder =  '--' + rand( 1000 ).to_s + '--'
