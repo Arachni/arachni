@@ -210,11 +210,20 @@ class Server < Sinatra::Base
         prep_session
 
         begin
+            if @@connections[ instance['port'] ] && @@connections[ instance['port'] ].alive?
+              return @@connections[ instance['port'] ]
+            end
+        end
+
+        begin
 
             @@tokens ||= {}
             @@tokens[ instance['port'] ] = instance['token']
 
-            return Arachni::RPC::XML::Client::Instance.new( options,
+            @@connections ||= {}
+
+            return @@connections[ instance['port'] ] =
+                Arachni::RPC::XML::Client::Instance.new( options,
                 port_to_url( instance['port'] ), instance['token'] )
         rescue Exception
             raise "Instance on port #{instance['port']} has shutdown."
@@ -223,6 +232,13 @@ class Server < Sinatra::Base
 
     def connect_to_instance_by_port( port )
         prep_session
+
+        begin
+            if @@connections[ port ] && @@connections[ port ].alive?
+              return @@connections[ port ]
+            end
+        end
+
 
         begin
             return Arachni::RPC::XML::Client::Instance.new( options,
