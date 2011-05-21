@@ -41,14 +41,14 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2-pre
+# @version: 0.1.3
 #
 # @see Arachni::RPC::XML::Client::Instance
 # @see Arachni::RPC::XML::Client::Dispatcher
 #
 module Web
 
-    VERSION = '0.1.1-pre'
+    VERSION = '0.1.3'
 
 class Server < Sinatra::Base
 
