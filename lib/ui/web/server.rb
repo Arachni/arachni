@@ -209,18 +209,19 @@ class Server < Sinatra::Base
     def connect_to_instance( instance )
         prep_session
 
+        @@connections ||= {}
+
         begin
             if @@connections[ instance['port'] ] && @@connections[ instance['port'] ].alive?
               return @@connections[ instance['port'] ]
             end
+        rescue
         end
 
         begin
 
             @@tokens ||= {}
             @@tokens[ instance['port'] ] = instance['token']
-
-            @@connections ||= {}
 
             return @@connections[ instance['port'] ] =
                 Arachni::RPC::XML::Client::Instance.new( options,
