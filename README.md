@@ -6,34 +6,34 @@
     </tr>
     <tr>
         <th>Homepage</th>
-        <td>[http://arachni.segfault.gr](http://arachni.segfault.gr)</td>
+        <td><a href="http://arachni.segfault.gr">http://arachni.segfault.gr</a></td>
     </tr>
     <tr>
         <th>Blog</th>
-        <td>[http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)</td>
+        <td><a href="http://trainofthought.segfault.gr/category/projects/arachni/">http://trainofthought.segfault.gr/category/projects/arachni/</a></td>
     <tr>
         <th>Github page</th>
-        <td>[http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)</td>
+        <td><a href="http://github.com/zapotek/arachni">http://github.com/zapotek/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
-        <td>[http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)</td>
+        <td><a href="http://github.com/Zapotek/arachni/wiki">http://github.com/Zapotek/arachni/wiki</a></td>
     </tr>
     <tr>
         <th>Code Documentation</th>
-        <td>[http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)</td>
+        <td><a href="http://zapotek.github.com/arachni/">http://zapotek.github.com/arachni/</a></td>
     </tr>
     <tr>
         <th>Google Group</th>
-        <td>[http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)</td>
+        <td><a href="http://groups.google.com/group/arachni">http://groups.google.com/group/arachni</a></td>
     </tr>
     <tr>
        <th>Author</th>
-       <td>[Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)</td>
+       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> <a href="mailto:zapotek@segfault.gr">Zapotek</a> <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
     </tr>
     <tr>
         <th>Twitter</th>
-        <td>[http://twitter.com/Zap0tek](http://twitter.com/Zap0tek)</td>
+        <td><a href="http://twitter.com/Zap0tek">@Zap0tek</a></td>
     </tr>
     <tr>
         <th>Copyright</th>
@@ -41,7 +41,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td>[GNU General Public License v2](file.LICENSE.html)</td>
+        <td><a href="file.LICENSE.html">GNU General Public License v2</a></td>
     </tr>
 </table>
 
