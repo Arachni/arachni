@@ -40,6 +40,9 @@
               email_address = prompt( "Please enter your e-mail address:", "")
           }
 
+          if( !email_address )
+              return false;
+
           // get some values from elements on the page:
           var $form = $( "#false_positive_" + i ),
               issue = $form.find( 'input[name="issue"]' ).val(),
