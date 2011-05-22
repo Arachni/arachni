@@ -1,0 +1,42 @@
+
+
+        <div id="page-intro">
+            <h2>Edit Dispatchers</h2>
+            <p>
+                This screen allows you to add, remove and edit the available dispatchers.
+            </p>
+        </div>
+
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !dispatchers.all.empty? %>
+        <table>
+            <tr>
+                <th>Location</th>
+                <th>Alive?</th>
+                <th>Action</th>
+            </tr>
+            <% dispatchers.all.each do |dispatcher| %>
+            <tr>
+                <td><%=dispatcher['url']%></td>
+                <td><%=dispatchers.alive?( dispatcher['url'] ).to_s.capitalize%></td>
+                <td>
+                    <form action="/dispatchers/<%=dispatcher['id']%>/delete" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+            <%end%>
+        </table>
+        <%else%>
+        <span class="notice"> There are no available Dispatchers at the moment. Add one if you want to start a scan.</span>
+        <br/><br/>
+        <%end%>
+
+        <form action="/dispatchers/add" method="post">
+            <%= csrf_tag %>
+            <label>URL:</label>
+            <input name="url" value="" />
+            <input type="submit" value="Add" />
+        </form>

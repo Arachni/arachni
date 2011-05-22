@@ -2,10 +2,18 @@
         <form action="/scan" method="post">
 
             <%= csrf_tag %>
+
             <input type="submit" value="Launch Scan" />
 
             <div id="page-intro">
-                <p> No need to configure anything, all you need to do is insert a URL and hit "Launch Scan"; Arachni will take care of the rest.</p>
+                Select a Dispatcher:
+                <select name="dispatcher">
+                <% dispatchers.all.each do |dispatcher| %>
+                    <% next if !dispatchers.alive?( dispatcher['url'] ) %>
+                    <option><%=dispatcher['url']%></option>
+                <%end%>
+                </select>
+
                 <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
             </div>
 

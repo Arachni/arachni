@@ -4,6 +4,7 @@
 ## Version 0.2.3 _(Under development)_
 - WebUI
    - Added connection cache for XMLRPC server instances to remove HTTPS handshake overhead and take advantage of keep-alive support.
+   - Added initial support for management of multiple Dispatchers.
 - XMLRPC Client->Dispatch Server
    - Updated to always use SSL [Issue #28]
    - Added per instance authentication tokens [Issue #28]
