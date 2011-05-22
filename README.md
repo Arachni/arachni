@@ -1,46 +1,46 @@
 # Arachni - Web Application Security Scanner Framework
 <table>
     <tr>
-        <td>**Version**</td>
+        <th>Version</th>
         <td>0.2.3</td>
     </tr>
     <tr>
-        <td>**Homepage**</td>
+        <th>Homepage</th>
         <td>[http://arachni.segfault.gr](http://arachni.segfault.gr)</td>
     </tr>
     <tr>
-        <td>**Blog**</td>
+        <th>Blog</th>
         <td>[http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)</td>
     <tr>
-        <td>**Github page**</td>
+        <th>Github page</th>
         <td>[http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)</td>
      <tr/>
     <tr>
-        <td>**Documentation**</td>
+        <th>Documentation</th>
         <td>[http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)</td>
     </tr>
     <tr>
-        <td>**Code Documentation**</td>
+        <th>Code Documentation</th>
         <td>[http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)</td>
     </tr>
     <tr>
-        <td>**Google Group**</td>
+        <th>Google Group</th>
         <td>[http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)</td>
     </tr>
     <tr>
-       <td>**Author**</td>
+       <th>Author</th>
        <td>[Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)</td>
     </tr>
     <tr>
-        <td>**Twitter**</td>
+        <th>Twitter</th>
         <td>[http://twitter.com/Zap0tek](http://twitter.com/Zap0tek)</td>
     </tr>
     <tr>
-        <td>**Copyright**</td>
+        <th>Copyright</th>
         <td>2010-2011</td>
     </tr>
     <tr>
-        <td>**License**</td>
+        <th>License</th>
         <td>[GNU General Public License v2](file.LICENSE.html)</td>
     </tr>
 </table>
