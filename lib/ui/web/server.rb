@@ -68,6 +68,21 @@ class Server < Sinatra::Base
 
     helpers do
 
+        def title
+            main = 'Arachni - Web Application Security Scanner Framework'
+
+            sub = env['PATH_INFO'].split( '/' ).map {
+                |part|
+                normalize_section_name( part )
+            }.reject { |part| part.empty? }.join( ' &rarr; ' )
+
+            return sub.empty? ? main : sub + ' :: ' + main
+        end
+
+        def normalize_section_name( name )
+            name.gsub( '_', ' ' ).capitalize
+        end
+
         def report_count
             settings.reports.all.size
         end
