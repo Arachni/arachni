@@ -1,6 +1,6 @@
 
         <div id="page-intro">
-            <h2 id="page_header">Attached to instance on port <%=params['port']%></h2>
+            <h2 id="page_header">Attached to instance @<%=sanitize_url( params['url'] )%></h2>
             <p id="page_description">
                 This page allows you to see what's going on at the other end of the wire (i.e. get status messages directly from the remote scanner).
                 <br/>
@@ -11,20 +11,20 @@
                 <%if !shutdown %>
 
                 <%if !paused %>
-                    <form action="/instance/<%=escape( params['url'].to_s )%>/pause" method="post">
+                    <form action="/instance/<%=sanitize_url( params['url'] )%>/pause" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Pause" />
                     </form>
                 <%end%>
 
                 <%if paused %>
-                <form action="/instance/<%=escape( params['url'].to_s )%>/resume" method="post">
+                <form action="/instance/<%=sanitize_url( params['url'] )%>/resume" method="post">
                     <%= csrf_tag %>
                     <input type="submit" value="Resume" />
                 </form>
                 <%end%>
 
-                <form action="/instance/<%=escape( params['url'].to_s )%>/shutdown" method="post" target="_blank">
+                <form action="/instance/<%=sanitize_url( params['url'] )%>/shutdown" method="post">
                     <%= csrf_tag %>
                     <input type="submit" value="Shutdown" />
                 </form>

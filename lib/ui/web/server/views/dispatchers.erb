@@ -15,7 +15,18 @@
         <%= erb :flash, {:layout => false} %>
 
         <% stats.each_pair do |d_url, dispatcher_stats| %>
-        <h2>@<%=escape( d_url )%></h2>
+        <h2>
+            @<%=escape( d_url )%> - <%=dispatcher_stats['running_jobs'].size%> running scans,
+             <%=i=0;dispatcher_stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
+        </h2>
+
+        <%if !dispatcher_stats['running_jobs'].empty? %>
+        <form action="/dispatchers/<%=sanitize_url( d_url.dup )%>/shutdown" method="post">
+            <%= csrf_tag %>
+            <input type="submit" value="Shutdown all" />
+        </form>
+        <%end%>
+
 
         <% if !dispatcher_stats['running_jobs'].empty? %>
         <table>
@@ -47,7 +58,7 @@
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
                 <td><%=secs_to_hms( job['runtime'] )%></td>
-                <td><%=proc_mem( job['proc']['rss'] )%></td>
+                <td><%=proc_mem( job['proc']['rss'] )%> MB</td>
 
                 <td>
                     <% if !( job['owner'] =~/WebUI helper/ ) %>

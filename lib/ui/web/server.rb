@@ -132,7 +132,7 @@ class Server < Sinatra::Base
 
         def proc_mem( rss )
             # we assume a page size of 4096
-            (rss.to_i * 4096 / 1024 / 1024).to_s + 'MB'
+            rss.to_i * 4096 / 1024 / 1024
         end
 
         def secs_to_hms( secs )
@@ -498,23 +498,31 @@ class Server < Sinatra::Base
     #
     # Kills all running instances
     #
-    def shutdown_all
-        settings.log.dispatcher_global_shutdown( env )
+    def shutdown_all( url )
+        settings.log.dispatcher_global_shutdown( env, url )
 
-        dispatcher.stats['running_jobs'].each {
-            |job|
-            begin
-                save_and_shutdown( connect_to_instance( job ) )
-            rescue
+        dispatcher_stats.each_pair {
+            |d_url, stats|
+
+            next if !d_url=~ Regexp.new( url )
+
+            stats['running_jobs'].each {
+                |job|
+
+                instance_url = port_to_url( job['port'], d_url )
                 begin
-                    connect_to_instance( job ).service.shutdown!
+                    save_and_shutdown( connect_to_instance( instance_url ) )
                 rescue
-                    settings.log.instance_fucker_wont_die( env, port_to_url( job['port'] ) )
-                    next
+                    begin
+                        connect_to_instance( instance_url ).service.shutdown!
+                    rescue
+                        settings.log.instance_fucker_wont_die( env, instance_url )
+                        next
+                    end
                 end
-            end
 
-            settings.log.instance_shutdown( env, port_to_url( job['port'] ) )
+                settings.log.instance_shutdown( env, instance_url )
+            }
         }
 
     end
@@ -535,7 +543,7 @@ class Server < Sinatra::Base
 
                 begin
                     instance_url = port_to_url( job['port'], url )
-                    arachni = connect_to_instance(  )
+                    arachni = connect_to_instance( instance_url )
 
                     begin
                         if !arachni.framework.busy? && !job['owner'] != HELPER_OWNER
@@ -556,7 +564,7 @@ class Server < Sinatra::Base
 
     def sanitize_url( url )
         url.gsub!( 'http://', '' )
-        url.gsub( 'https://', '' )
+        escape( url.gsub( 'https://', '' ) )
     end
 
     get "/" do
@@ -622,8 +630,8 @@ class Server < Sinatra::Base
     #
     # shuts down all instances
     #
-    post "/dispatchers/shutdown" do
-        shutdown_all
+    post "/dispatchers/:url/shutdown" do
+        shutdown_all( params[:url] )
         redirect '/dispatchers'
     end
 
