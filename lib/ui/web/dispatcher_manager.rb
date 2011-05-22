@@ -49,16 +49,16 @@ class DispatcherManager
     end
 
     def connect( url )
-        @cache ||= {}
+        @@cache ||= {}
 
         begin
-            if @cache[url] && @cache[url].alive?
-                return @cache[url]
+            if @@cache[url] && @@cache[url].alive?
+                return @@cache[url]
             elsif ( tmp = Arachni::RPC::XML::Client::Dispatcher.new( @opts, url ) ) &&
                   tmp.alive?
-                return @cache[url] = tmp
+                return @@cache[url] = tmp
             end
-        rescue
+        rescue Exception => e
           return nil
         end
     end
