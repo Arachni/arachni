@@ -224,11 +224,24 @@ class Server < Sinatra::Base
 
         begin
 
+            #
+            # Sync up the session authentication tokens with the ones in the
+            # class variables.
+            #
+            # This will allow users to still connect to instances even if they
+            # shutdown the WebUI or removed their cookies.
+            #
+
             @@tokens ||= {}
+            session['tokens'] ||= {}
             @@tokens[url] = token if token
 
+            session['tokens'].merge!( @@tokens )
+            @@tokens.merge!( session['tokens'] )
+            session['tokens'].merge!( @@tokens )
+
             return @@connections[url] =
-                Arachni::RPC::XML::Client::Instance.new( options, url, @@tokens[url] )
+                Arachni::RPC::XML::Client::Instance.new( options, url, session['tokens'][url] )
         rescue Exception => e
             raise "Instance at #{url} has shutdown."
         end

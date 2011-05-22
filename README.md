@@ -224,8 +224,8 @@ This inconvenience is by design; it guarantees that Arachni instances will be av
 As you might have guessed by the use of the word _pool_ in the previous paragraph, the WebUI allows you to run as many scans as you wish at the same time.
 Of course, the amount of parallel scans you'll be able to perform will be limited by your available resources (Network bandwidth/RAM/CPU).
 
-Should you shutdown the WebUI while a scan is running you will *NOT* be able to re-attach to the running process because the authentication tokens will have been lost.
-If you leave a scan unattended (i.e. shutdown your browser), you won't even need to re-attach to a process in order to get the report of the finished scan, the WebUI's zombie reaper will grab and save the report for you.
+Should you shutdown the WebUI while a scan is running you'll be able to re-attach to the running process and view its progress or (if the scan has already finished) grab the report the next time you visit the WebUI.
+In most cases, you won't even need to re-attach to a process in order to get the report of the finished scan, the WebUI's zombie reaper will grab and save the report for you.
 
 #### General
 In cases where the Dispatcher is started with its default settings on localhost (like the above example) the WebUI will connect to it automatically.
