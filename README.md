@@ -41,7 +41,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="https://github.com/Zapotek/arachni/blob/experimental/LICENSE.md">GNU General Public License v2</a></td>
+        <td><a href="file.LICENSE.html">GNU General Public License v2</a></td>
     </tr>
 </table>
 
