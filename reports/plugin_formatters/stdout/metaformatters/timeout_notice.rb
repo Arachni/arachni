@@ -43,6 +43,8 @@ module MetaFormatters
                 |issue|
                 print_ok( "[\##{issue['index']}] #{issue['name']} at #{issue['url']} in #{issue['elem']} variable '#{issue['var']}' using #{issue['method']}." )
             }
+
+            print_line
         end
 
     end

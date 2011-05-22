@@ -63,6 +63,7 @@ options = Arachni::Options.instance
 
 options.dir            = Hash.new
 options.dir['root']    = File.dirname( File.expand_path(__FILE__) ) + '/'
+options.dir['data']    = options.dir['root'] + 'data/'
 options.dir['modules'] = options.dir['root'] + 'modules/'
 options.dir['reports'] = options.dir['root'] + 'reports/'
 options.dir['plugins'] = options.dir['root'] + 'plugins/'

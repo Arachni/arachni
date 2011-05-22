@@ -13,7 +13,8 @@ This form is vulnerable to Cross-Site Scripting.
     <form method="post" action="{$_SERVER['PHP_SELF']}" name="xss_form">
     <p>
       <label>XSS</label>
-      <input type="text" name="xss" value="">
+      <input type="text" name="xss" value="{$_POST['xss']}">
+      <input type="text" name="xss2" value="">
       <input type="submit">
     </p>
 

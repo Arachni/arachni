@@ -1,23 +1,34 @@
 
         <div id="page-intro">
-            <h2>Dispatcher</h2>
-            <p>The dispatcher is the central magement system.
-                It spawns an XMLRPC server per scan and provides statistics for all running server instances.<br/>
+            <h2>Dispatchers</h2>
+            <p>The dispatchers spawn an XMLRPC server per scan and provide statistics for all running server instances.<br/>
                 This interface allows you to "Attach" to (see the output of), pause, resume and shutdown instances.
             </p>
 
-            <% if !stats['running_jobs'].empty? %>
-                <form action="/dispatcher/shutdown" method="post">
-                    <%= csrf_tag %>
-                    <input type="submit" value="Shut all down" />
-                </form>
-            <% end %>
+            <form action="/dispatchers/edit" method="get">
+                <input type="submit" value="Edit dispatchers" />
+            </form>
+
 
 
         </div>
         <%= erb :flash, {:layout => false} %>
 
-        <% if !stats['running_jobs'].empty? %>
+        <% stats.each_pair do |d_url, dispatcher_stats| %>
+        <h2>
+            @<%=escape( d_url )%> - <%=dispatcher_stats['running_jobs'].size%> running scans,
+             <%=i=0;dispatcher_stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
+        </h2>
+
+        <%if !dispatcher_stats['running_jobs'].empty? %>
+        <form action="/dispatchers/<%=sanitize_url( d_url.dup )%>/shutdown" method="post">
+            <%= csrf_tag %>
+            <input type="submit" value="Shutdown all" />
+        </form>
+        <%end%>
+
+
+        <% if !dispatcher_stats['running_jobs'].empty? %>
         <table>
             <tr>
                 <th>PID</th>
@@ -30,7 +41,7 @@
                 <th>Memory consumption</th>
                 <th>Action</th>
             </tr>
-        <% stats['running_jobs'].each do |job| %>
+        <% dispatcher_stats['running_jobs'].each do |job| %>
             <tr>
 
 
@@ -47,24 +58,24 @@
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
                 <td><%=secs_to_hms( job['runtime'] )%></td>
-                <td><%=proc_mem( job['proc']['rss'] )%></td>
+                <td><%=proc_mem( job['proc']['rss'] )%> MB</td>
 
                 <td>
                     <% if !( job['owner'] =~/WebUI helper/ ) %>
 
-                    <form action="/instance/<%=job['port']%>" method="get" target="_blank">
+                    <form action="/instance/<%=port_to_url( job['port'], d_url, true )%>" method="get" target="_blank">
                         <input type="submit" value="Attach" />
                     </form>
 
                     <%if !job['paused'] %>
-                    <form action="/dispatcher/<%=job['port']%>/pause" method="post">
+                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/pause" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Pause" />
                     </form>
                     <%end%>
 
                     <%if job['paused'] %>
-                    <form action="/dispatcher/<%=job['port']%>/resume" method="post">
+                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/resume" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Resume" />
                     </form>
@@ -72,7 +83,7 @@
 
                     <% end %>
 
-                    <form action="/dispatcher/<%=job['port']%>/shutdown" method="post" <% if !( job['owner'] =~/WebUI helper/ ) %> target="_blank" <%end%> >
+                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/shutdown" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Shutdown" />
                     </form>
@@ -82,4 +93,8 @@
         </table>
         <% else %>
         <span class="notice"> There are no running scans at the moment.</span>
+        <% end %>
+
+        <br/><br/>
+
         <% end %>

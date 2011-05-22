@@ -1,6 +1,23 @@
 
 # ChangeLog
 
+## Version 0.2.3 _(Under development)_
+- WebUI
+   - Added connection cache for XMLRPC server instances to remove HTTPS handshake overhead and take advantage of keep-alive support.
+   - Added initial support for management of multiple Dispatchers.
+- XMLRPC Client->Dispatch Server
+   - Updated to always use SSL [Issue #28]
+   - Added per instance authentication tokens [Issue #28]
+- Modules
+   - Audit
+      - Path traversal: added double encoded traversals [Issue #29]
+- Reports
+   - HTML
+      - Fixed "invalid byte sequence in UTF-8" using iconv [Issue #27]
+      - Added false positive reporting. Data are encrypted using 256bit AES (with AES primitives encrypted using RSA) and sent over HTTPS. [Issue #30]
+   - Metareport
+      - Fixed bug caused by not explicitly closed file handle.
+
 ## Version 0.2.2.2 _(March 22, 2011)_
 - Added "arachni_web_autostart" under bin -- Automatically starts all systems required by the WebUI and makes shutting down everything easier too (Original by: Brandon Potter <bpotter8705@gmail.com>)
 - Overrided Nokogiri to revert to UTF-8 when it comes across an unknown charset instead of throwing exceptions

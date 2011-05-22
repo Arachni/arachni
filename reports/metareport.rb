@@ -99,6 +99,7 @@ class Metareport < Arachni::Report::Base
 
         outfile = File.new( @options['outfile'], 'w')
         YAML.dump( msf, outfile )
+        outfile.close
 
         print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
     end
