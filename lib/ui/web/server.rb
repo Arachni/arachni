@@ -504,7 +504,7 @@ class Server < Sinatra::Base
         dispatcher_stats.each_pair {
             |d_url, stats|
 
-            next if !d_url=~ Regexp.new( url )
+            next if sanitize_url( d_url.dup ) != url
 
             stats['running_jobs'].each {
                 |job|
