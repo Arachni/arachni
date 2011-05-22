@@ -1,15 +1,49 @@
 # Arachni - Web Application Security Scanner Framework
-**Version**::     0.2.3<br/>
-**Homepage**::     [http://arachni.segfault.gr](http://arachni.segfault.gr)<br/>
-**Blog**:         [http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)<br/>
-**Github page**:  [http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)<br/>
-**Documentation**:     [http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)<br/>
-**Code Documentation**:     [http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)<br/>
-**Google Group**: [http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)<br/>
-**Author**:       [Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)<br/>
-**Twitter**:      [http://twitter.com/Zap0tek](http://twitter.com/Zap0tek)<br/>
-**Copyright**:    2010-2011<br/>
-**License**:      [GNU General Public License v2](file.LICENSE.html)
+<table>
+    <tr>
+        <td>**Version**</td>
+        <td>0.2.3</td>
+    </tr>
+    <tr>
+        <td>**Homepage**</td>
+        <td>[http://arachni.segfault.gr](http://arachni.segfault.gr)</td>
+    </tr>
+    <tr>
+        <td>**Blog**</td>
+        <td>[http://trainofthought.segfault.gr/category/projects/arachni/](http://trainofthought.segfault.gr/category/projects/arachni/)</td>
+    <tr>
+        <td>**Github page**</td>
+        <td>[http://github.com/zapotek/arachni](http://github.com/zapotek/arachni)</td>
+     <tr/>
+    <tr>
+        <td>**Documentation**</td>
+        <td>[http://github.com/Zapotek/arachni/wiki](http://github.com/Zapotek/arachni/wiki)</td>
+    </tr>
+    <tr>
+        <td>**Code Documentation**</td>
+        <td>[http://zapotek.github.com/arachni/](http://zapotek.github.com/arachni/)</td>
+    </tr>
+    <tr>
+        <td>**Google Group**</td>
+        <td>[http://groups.google.com/group/arachni](http://groups.google.com/group/arachni)</td>
+    </tr>
+    <tr>
+       <td>**Author**</td>
+       <td>[Tasos](mailto:tasos.laskos@gmail.com) "[Zapotek](mailto:zapotek@segfault.gr)" [Laskos](mailto:tasos.laskos@gmail.com)</td>
+    </tr>
+    <tr>
+        <td>**Twitter**</td>
+        <td>[http://twitter.com/Zap0tek](http://twitter.com/Zap0tek)</td>
+    </tr>
+    <tr>
+        <td>**Copyright**</td>
+        <td>2010-2011</td>
+    </tr>
+    <tr>
+        <td>**License**</td>
+        <td>[GNU General Public License v2](file.LICENSE.html)</td>
+    </tr>
+</table>
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
