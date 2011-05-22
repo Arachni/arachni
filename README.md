@@ -186,70 +186,8 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
-### WebUI
+### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
 
-The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to running XMLRPC Dispatch servers.
-
-#### Autostart
-
-There's an autostart script to start all systems that are required by the WebUI:
-    $ arachni_web_autostart
-
-**Note:**: _The "arachni_xmlrpcd" and "arachni_web" executables will need to be in your PATH._
-
-#### Manually
-
-You first need to start a Dispatcher like so:
-    $ arachni_xmlrpcd &
-
-Then start the WebUI by running:
-    $ arachni_web
-
-_If you get any permission errors then you probably installed the Gem using 'sudo', so use 'sudo' to start the servers too._
-
-And finally open up a browser window and visit: http://localhost:4567/
-
-#### Options
-
-You can see all available options using:
-    $ arachni_web -h
-
-#### Shutdown
-You can kill the WebUI by sending _Ctrl+C_ to the console from which you started it.
-
-However, in order to kill the Dispatcher (and all the processes in its pool) you will need to _killall -9 arachni_xmlrpcd_ (or _killall -9 ruby_ depending on your setup) or hunt them down manually.
-This inconvenience is by design; it guarantees that Arachni instances will be available (and usable) instantly and that running scans will continue unaffected even if the dispatcher has (for some reason) died.
-
-#### Parallel scans
-As you might have guessed by the use of the word _pool_ in the previous paragraph, the WebUI allows you to run as many scans as you wish at the same time.
-Of course, the amount of parallel scans you'll be able to perform will be limited by your available resources (Network bandwidth/RAM/CPU).
-
-Should you shutdown the WebUI while a scan is running you'll be able to re-attach to the running process and view its progress or (if the scan has already finished) grab the report the next time you visit the WebUI.
-In most cases, you won't even need to re-attach to a process in order to get the report of the finished scan, the WebUI's zombie reaper will grab and save the report for you.
-
-#### General
-In cases where the Dispatcher is started with its default settings on localhost (like the above example) the WebUI will connect to it automatically.
-
-However, if you see an error message informing you that the WebUI could not find a dispatcher to connect to then you probably visited the WebUI before it had a chance to connect to the Dispatcher, you can just click on the "Dispatcher" tab to force it to try again; if the error does not re-appear then it connected successfully.
-
-If you get a scary "Broken pipe" exception a simple refresh will solve the problem.
-
-#### Remote deployment
-As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start Dispatchers on a remote hosts and manage them via the WebUI.
-Building an Arachni grid is simple as that really.
-
-#### Encryption & Authentication
-WebUI-client (browser) and XMLRPC Client-Dispatch server authentication takes place using SSL certificate/key pairs.
-
-These are the 3 basic models:
-
- - No encryption & no authentication -- Default behavior
- - Encryption & no authentication    -- Just enable SSL in the WebUI configuration file (_conf/webui.yaml_) and the Dispatcher and all components will generate their own certificate/key pairs and disable peer verification.
- - Encryption & authentication       -- Enable SSL and use your own cert/key pairs to authenticate clients to the WebUI and vice verse, and authenticate the XMLRPC clients controlled by the WebUI to the Dispatcher and vice versa.
-
-However, you can go even further and create combinations specific to each component.
-
-*Beware:* This interface is brand new so if you encounter any issues please do report them.
 
 ### Command line interface
 
