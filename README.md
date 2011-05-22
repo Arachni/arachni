@@ -222,15 +222,19 @@ or any other report type as shown by:
 #### You can make module loading easier by using wildcards (*) and exclusions (-).
 
 To load all _xss_ modules using a wildcard:
+
     $ arachni http://example.net --mods=xss_*
 
 To load all _audit_ modules using a wildcard:
+
     $ arachni http://example.net --mods=audit*
 
 To exclude only the _csrf_ module:
+
     $ arachni http://example.net --mods=*,-csrf
 
 Or you can mix and match; to run everything but the _xss_ modules:
+
     $ arachni http://example.net --mods=*,-xss_*
 
 For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
@@ -241,6 +245,7 @@ Arachni comes with a preconfigured profile (_profiles/comprehensive.afp_) for a 
 This profile loads all modules, audits links/forms/cookies and loads the HealthMap and Content-Types plugins.
 
 You can use it like so:
+
     $ arachni --load-profile=profiles/comprehensive.afp http://example.net
 
 #### Performing a full scan quickly
@@ -250,6 +255,7 @@ The _full_ profile adds header auditing to the _comprehensive_ profile.
 _NOTICE: Auditing headers can increase scan time by an order of magnitude (depending on the website) and may be considered over-the-top in most scenarios._
 
 You can use it like so:
+
     $ arachni --load-profile=profiles/full.afp http://example.net
 
 
