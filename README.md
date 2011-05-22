@@ -188,7 +188,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ### WebUI
 
-The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to a running XMLRPC Dispatch server.
+The Web User Interface is basically a Sinatra app which acts as an Arachni XMLRPC client and connects to running XMLRPC Dispatch servers.
 
 #### Autostart
 
@@ -235,8 +235,8 @@ However, if you see an error message informing you that the WebUI could not find
 If you get a scary "Broken pipe" exception a simple refresh will solve the problem.
 
 #### Remote deployment
-As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start a Dispatcher on a remote host and manage it via the WebUI.
-Simple as that really.
+As noted above, the WebUI is, in essence, a user-friendly Arachni XMLRPC client, this means that you can start Dispatchers on a remote hosts and manage them via the WebUI.
+Building an Arachni grid is simple as that really.
 
 #### Encryption & Authentication
 WebUI-client (browser) and XMLRPC Client-Dispatch server authentication takes place using SSL certificate/key pairs.
