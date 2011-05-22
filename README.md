@@ -189,77 +189,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 ### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
 
 
-### Command line interface
-
-The command-line interface is the oldest, most tested and thus more reliable.
-
-#### Help
-In order to see everything Arachni has to offer execute:
-    $ arachni -h
-
-Or visit the Wiki.
-
-#### Examples
-You can simply run Arachni like so:
-
-    $ arachni http://test.com
-
-which will load all modules and audit all forms, links and cookies.
-
-In the following example all modules will be run against <i>http://test.com</i>, auditing links/forms/cookies and following subdomains --with verbose output enabled.<br/>
-The results of the audit will be saved in the the file <i>test.com.afr</i>.
-
-    $ arachni -fv http://test.com --report=afr:outfile=test.com.afr
-
-The Arachni Framework Report (.afr) file can later be loaded by Arachni to create a report, like so:
-
-    $ arachni --repload=test.com.afr --report=html:outfile=my_report.html
-
-or any other report type as shown by:
-
-    $ arachni --lsrep
-
-#### You can make module loading easier by using wildcards (*) and exclusions (-).
-
-To load all _xss_ modules using a wildcard:
-
-    $ arachni http://example.net --mods=xss_*
-
-To load all _audit_ modules using a wildcard:
-
-    $ arachni http://example.net --mods=audit*
-
-To exclude only the _csrf_ module:
-
-    $ arachni http://example.net --mods=*,-csrf
-
-Or you can mix and match; to run everything but the _xss_ modules:
-
-    $ arachni http://example.net --mods=*,-xss_*
-
-For a full explanation of all available options you can consult the [User Guide](http://github.com/Zapotek/arachni/wiki/User-guide).
-
-#### Performing a comprehensive scan quickly
-
-Arachni comes with a preconfigured profile (_profiles/comprehensive.afp_) for a comprehensive audit.
-This profile loads all modules, audits links/forms/cookies and loads the HealthMap and Content-Types plugins.
-
-You can use it like so:
-
-    $ arachni --load-profile=profiles/comprehensive.afp http://example.net
-
-#### Performing a full scan quickly
-
-The _full_ profile adds header auditing to the _comprehensive_ profile.
-
-_NOTICE: Auditing headers can increase scan time by an order of magnitude (depending on the website) and may be considered over-the-top in most scenarios._
-
-You can use it like so:
-
-    $ arachni --load-profile=profiles/full.afp http://example.net
-
-
-_If you installed the Gem then you'll have to look for the "profiles" directory in your gems path._
+### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
 
 ## Installation
 
