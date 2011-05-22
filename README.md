@@ -229,11 +229,12 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ### CDE packages for Linux
 
-Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
+<strike>Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
 You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
-If you decide to go the CDE route you can skip the rest, you're done.
+If you decide to go the CDE route you can skip the rest, you're done.</strike>
 
+Due to some incompatibility this release does not have a CDE package yet.
 
 ### Gem
 
