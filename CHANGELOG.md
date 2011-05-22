@@ -1,7 +1,7 @@
 
 # ChangeLog
 
-## Version 0.2.3 _(Under development)_
+## Version 0.2.3 _(May 22, 2011)_
 - WebUI
    - Added connection cache for XMLRPC server instances to remove HTTPS handshake overhead and take advantage of keep-alive support.
    - Added initial support for management of multiple Dispatchers.
