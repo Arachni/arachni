@@ -238,6 +238,7 @@ If you decide to go the CDE route you can skip the rest, you're done.
 ### Gem
 
 To install the Gem or work with the source code you'll also need the following system libraries:
+
     $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
 You will also need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
@@ -245,11 +246,13 @@ The prefered ways to accomplish this is by either using [RVM](http://rvm.beginre
 
 
 To install Arachni:
+
     $ gem install arachni
 
 ### Source
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
+
     $ rake install
 
 
