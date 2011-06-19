@@ -24,7 +24,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class HTML < Arachni::Report::Base
 
@@ -87,15 +87,15 @@ class HTML < Arachni::Report::Base
       "\"" + str.gsub( "\n", '\n' ) + "\"";
     end
 
+    def normalize( str )
+        ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
+        ic.iconv( str + ' ' )[0..-2]
+    end
+
     def escapeHTML( str )
         # carefully escapes HTML and converts to UTF-8
         # while removing invalid character sequences
-        begin
-            return CGI.escapeHTML( str )
-        rescue
-            ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
-            return CGI.escapeHTML( ic.iconv( str + ' ' )[0..-2] )
-        end
+        return CGI.escapeHTML( normalize( str ) )
     end
 
     def self.prep_description( str )
