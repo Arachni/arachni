@@ -166,13 +166,20 @@ class CLI
         @interrupt_handler = Thread.new {
 
              Thread.new {
-                if gets[0] == 'e'
-                    @@only_positives = false
-                    unmute!
-                    @interrupt_handler.kill
 
-                     print_info( 'Exiting...' )
-                     exit 0
+                case gets[0]
+
+                    when 'e'
+                        @@only_positives = false
+                        unmute!
+                        @interrupt_handler.kill
+
+                        print_info( 'Exiting...' )
+                        exit 0
+
+                    when 'r'
+                        unmute!
+                        @arachni.reports.run( @arachni.audit_store( ) )
                 end
 
                 @@only_positives = only_positives_opt
@@ -196,7 +203,7 @@ class CLI
                     exit 0
                 end
 
-                print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
+                print_info( 'Continue? (hit \'enter\' to continue, \'r\' to generate reports and \'e\' to exit)' )
                 mute!
 
                 ::IO::select( nil, nil, nil, 1 )
