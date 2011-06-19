@@ -658,7 +658,7 @@ class Server < Sinatra::Base
     #
     # shuts down all instances
     #
-    post "/dispatchers/:url/shutdown" do
+    post "/dispatchers/:url/shutdown_all" do
         shutdown_all( params[:url] )
         redirect '/dispatchers'
     end
@@ -873,7 +873,7 @@ class Server < Sinatra::Base
                 arachni.service.shutdown!
             end
         rescue
-            flash.now[:notice] = "Instance at #{params[:url]} has already been shutdown."
+            flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
             erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
         end
     end
