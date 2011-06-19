@@ -33,7 +33,7 @@
 
                  <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
                        ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
-                    <form style="display:inline" action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
+                    <form style="display:inline" action="<%=issue.variations[0]['url']%>" target="_blank" method="<%=issue.method.downcase%>">
                         <% if issue.variations[0]['opts'][:combo]%>
                             <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
                                 <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
