@@ -11,6 +11,7 @@
 require 'erb'
 require 'base64'
 require 'cgi'
+require 'iconv'
 
 module Arachni
 
@@ -88,7 +89,7 @@ class HTML < Arachni::Report::Base
     end
 
     def normalize( str )
-        ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
+        ic = ::Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
         ic.iconv( str + ' ' )[0..-2]
     end
 
