@@ -42,14 +42,14 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see Arachni::RPC::XML::Client::Instance
 # @see Arachni::RPC::XML::Client::Dispatcher
 #
 module Web
 
-    VERSION = '0.1.3'
+    VERSION = '0.1.4'
 
 class Server < Sinatra::Base
 
@@ -789,7 +789,9 @@ class Server < Sinatra::Base
         begin
             arachni = connect_to_instance( params[:url] )
             if arachni.framework.busy?
-                { 'data' => OutputStream.new( arachni, 38 ).data }.to_json
+                @@output_streams ||= {}
+                @@output_streams[params[:url]] ||= OutputStream.new( arachni, 38 )
+                { 'data' => @@output_streams[params[:url]].data }.to_json
             else
                 settings.log.instance_shutdown( env, params[:url] )
                 save_and_shutdown( arachni )

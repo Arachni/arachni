@@ -62,13 +62,13 @@ module Web
 
             self << @instance.service.output
 
-            @@last_output ||= ''
+            @last_output ||= ''
             cnt = 0
 
             if @buffer.empty?
-                yield @@last_output
+                yield @last_output
             else
-                @@last_output = ''
+                @last_output = ''
             end
 
             while( ( out = @buffer.pop ) && ( ( cnt += 1 ) < @lines ) )
@@ -80,7 +80,7 @@ module Web
 
                 icon = @icon_whitelist[type] || ''
                 str = icon + CGI.escapeHTML( " #{out.values[0]}" ) + "<br/>"
-                @@last_output << str
+                @last_output << str
                 yield str
 
             end
