@@ -66,6 +66,8 @@ class HTTP
     attr_reader :request_count
     attr_reader :response_count
 
+    attr_reader :time_out_count
+
     attr_reader :curr_res_time
     attr_reader :curr_res_cnt
 
@@ -127,11 +129,12 @@ class HTTP
             :user_agent      => opts.user_agent,
             :follow_location => false,
             :disable_ssl_peer_verification => true,
-            # :timeout         => 8000
+            :timeout         => 10000
         }.merge( proxy_opts )
 
         @request_count  = 0
         @response_count = 0
+        @time_out_count = 0
 
         # we'll use it to identify our requests
         @rand_seed = seed( )
@@ -241,6 +244,11 @@ class HTTP
             print_debug( 'Headers: ' + res.request.headers.to_s  )
             print_debug( 'Train?: ' + res.request.train?.to_s  )
             print_debug( '------------' )
+
+            if res.timed_out?
+                print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                @time_out_count += 1
+            end
 
             if( req.train? )
                 # handle redirections

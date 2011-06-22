@@ -48,6 +48,7 @@
                 <ul>
                     <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
                     <li>Average response time: <span id="average_res_time">0</span> ms</li>
+                    <li>Timed-out requests: <span id="time_out_count">0</span></li>
                     <li>Current page: <span id="current_page">0</span></li>
                 </ul>
 
@@ -123,6 +124,7 @@
                     document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
                     document.getElementById( 'current_page' ).innerHTML = stats.current_page;
                     document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;
+                    document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
                     percentage = (stats.auditmap_size / stats.sitemap_size) * 100

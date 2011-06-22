@@ -2,17 +2,24 @@
 # ChangeLog
 
 ## Version 0.2.4 _(Under development)_
+- HTTP
+   - Implemented a 10s time-out [Issue #40]
 - Command Line Interface
    - The interrupt handler (Ctrl+C) now presents the option to generate reports mid-scan. [Issue #41]
+   - Added a counter of timed-out requests in the stats.
 - WebUI
    - The "Replay" form's action attribute now contains the full URL, including params. [Issue #38]
    - Fixed path clash that caused the "shutdown" button in the Dispatchers screen not to work. [Issue #39]
+   - Fixed mix-up of output messages from different instances. [Issue #36]
+   - Added a counter of timed-out requests in "Instance" screens.
 - External
     - Metasploit
        - Updated SQL injection exploit module to work with SQLmap 0.9. [Issue #37]
 - Reports
    - HTML
       - Fixed yet another error condition occuring with broken encodings. [Issue #31]
+- Auditor
+   - Timing attacks now have a "control" to verify that the server is indeed alive i.e. requests won't time-out by default.
 
 ## Version 0.2.3 _(May 22, 2011)_
 - WebUI

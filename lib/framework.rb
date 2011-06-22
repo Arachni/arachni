@@ -57,7 +57,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 class Framework
 
@@ -217,6 +217,7 @@ class Framework
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
+            :time_out_count  => http.time_out_count,
             :time       => audit_store.delta_time,
             :avg        => ( res_cnt / @opts.delta_time ).to_i.to_s,
             :sitemap_size  => @sitemap.size,

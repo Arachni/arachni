@@ -26,7 +26,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.6
+# @version: 0.1.7
 # @see Arachni::Framework
 #
 class CLI
@@ -141,6 +141,7 @@ class CLI
         print_info( "Burst response count total   #{stats[:curr_res_cnt]} " )
         print_info( "Burst average response time  #{stats[:average_res_time]}" )
         print_info( "Burst average                #{stats[:curr_avg]} requests/second" )
+        print_info( "Timed-out requests           #{stats[:time_out_count]}" )
         print_info( "Original max concurrency     #{@opts.http_req_limit}" )
         print_info( "Throttled max concurrency    #{stats[:max_concurrency]}" )
 

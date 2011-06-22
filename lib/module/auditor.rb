@@ -20,7 +20,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 module Auditor
 
@@ -359,17 +359,28 @@ module Auditor
             ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
 
         elem.auditor( self )
-        elem.audit( str, opts ) {
+
+        # this is the control; audit the element with an empty seed to make sure
+        # that the web page is alive i.e won't time-out by default
+        elem.audit( '' , opts ) {
             |res, opts|
+            if !res.timed_out?
 
-            if res.timed_out?
+                elem.audit( str, opts ) {
+                    |res, opts|
 
-                # all issues logged by timing attacks need manual verification.
-                # end of story.
-                opts[:verification] = true
-                log( opts, res)
+                    if res.timed_out?
+
+                        # all issues logged by timing attacks need manual verification.
+                        # end of story.
+                        opts[:verification] = true
+                        log( opts, res)
+                    end
+                }
+
             end
         }
+
     end
 
     def audit_timeout_debug_msg( phase, delay )
