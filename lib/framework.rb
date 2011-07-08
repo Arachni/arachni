@@ -250,7 +250,7 @@ class Framework
         @spider.run {
             |page|
 
-            @sitemap |= @spider.pages
+            @sitemap |= @spider.sitemap
 
             @page_queue << page
             audit_queue if !@opts.spider_first

@@ -39,7 +39,6 @@ Gem::Specification.new do |s|
       s.add_dependency "arachni-typhoeus","~> 0.2.0.2"
       s.add_dependency "nokogiri",        "~> 1.4.4"
       s.add_dependency "awesome_print",   "~> 0.3.1"
-      s.add_dependency "robots",          "~> 0.10.0"
       s.add_dependency "sys-proctable",   "~> 0.8.1"
       s.add_dependency "terminal-table",  "~> 1.4.2"
       s.add_dependency "sinatra",         "~> 1.2.1"

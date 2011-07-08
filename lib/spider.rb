@@ -8,8 +8,9 @@
 
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'anemone'
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
+require 'nokogiri'
+require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
 
 module Arachni
 
@@ -21,7 +22,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class Spider
 
@@ -59,32 +60,8 @@ class Spider
     def initialize( opts )
         @opts = opts
 
-        @anemone_opts = {
-            :threads              =>  1,
-            :discard_page_bodies  =>  false,
-            :delay                =>  0,
-            :obey_robots_txt      =>  false,
-            :depth_limit          =>  false,
-            :link_count_limit     =>  false,
-            :redirect_limit       =>  false,
-            :storage              =>  nil,
-            :cookies              =>  nil,
-            :accept_cookies       =>  true,
-            :proxy_addr           =>  nil,
-            :proxy_port           =>  nil,
-            :proxy_user           =>  nil,
-            :proxy_pass           =>  nil
-        }
-
-        hash_opts = @opts.to_h
-        @anemone_opts.each_pair {
-            |k, v|
-            @anemone_opts[k] = hash_opts[k.to_s] if hash_opts[k.to_s]
-        }
-
-        @anemone_opts = @anemone_opts.merge( hash_opts )
-
         @sitemap = []
+        @pages   = []
         @on_every_page_blocks = []
 
         # if we have no 'include' patterns create one that will match
@@ -101,74 +78,107 @@ class Spider
     #
     def run( &block )
         return if @opts.link_count_limit == 0
-
-        i = 1
-        # start the crawl
-        Anemone.crawl( @opts.url, @anemone_opts ) {
-            |anemone|
-
-            # apply 'exclude' patterns
-            anemone.skip_links_like( @opts.exclude ) if @opts.exclude
-
-            # apply 'include' patterns and grab matching pages
-            # as they are discovered
-            anemone.on_pages_like( @opts.include ) {
-                |page|
-
-                @pages = anemone.pages.keys || []
-
-                url = url_sanitize( page.url.to_s )
-
-                # something went kaboom, tell the user and skip the page
-                if page.error
-                    print_error( "[Error: " + (page.error.to_s) + "] " + url )
-                    print_debug_backtrace( page.error )
-                    next
-                end
-
-                # push the url in the sitemap
-                @sitemap.push( url )
-
-                print_line
-                print_status( "[HTTP: #{page.code}] " + url )
-
-                # call the block...if we have one
-                if block
-                    exception_jail{
-                        new_page = Arachni::Parser.new( @opts,
-                            Typhoeus::Response.new(
-                                :effective_url => url,
-                                :body          => page.body,
-                                :headers_hash  => page.headers
-                            )
-                        ).run
-                        new_page.code   = page.code
-                        new_page.method = 'GET'
-                        block.call( new_page.clone )
-                    }
-                end
-
-                # run blocks specified later
-                @on_every_page_blocks.each {
-                    |block|
-                    block.call( page )
+        
+        paths = []
+        paths << @opts.url.to_s
+        
+        visited = []
+        
+        # while( !paths.empty? )
+            while( !paths.empty? && url = paths.pop )
+                url = url_sanitize( url )
+                next if skip?( url )
+                
+                visited << url
+                
+                opts = {
+                    :timeout => nil,
+                    :remove_id => true
                 }
+                
+                Arachni::HTTP.instance.get( url, opts ).on_complete {
+                    |res|
+                        
+                    print_line
+                    print_status( "[HTTP: #{res.code}] " + res.effective_url )
+                        
+                    page = Arachni::Parser.new( @opts, res ).run
+                    page.url = url 
+                    
+                    @sitemap |= page.paths.map { |path| url_sanitize( path ) }
+                    paths    |= @sitemap - visited
 
-                # we don't need the HTML doc anymore
-                page.discard_doc!( )
+
+                    # call the block...if we have one
+                    if block
+                        exception_jail{
+                            block.call( page.clone )
+                        }
+                    end
+    
+                    # run blocks specified later
+                    @on_every_page_blocks.each {
+                        |block|
+                        block.call( page )
+                    }
+    
+                }
+                
+                Arachni::HTTP.instance.run
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
-                    @opts.link_count_limit <= i )
+                    @opts.link_count_limit <= visited.size )
+                    # Arachni::HTTP.instance.run
                     return @sitemap.uniq
                 end
 
-                i+=1
-            }
-        }
+                
+            end
+            
+            # Arachni::HTTP.instance.run
+        # end
 
         return @sitemap.uniq
+    end
+    
+    def skip?( url )
+        @opts.exclude.each {
+            |regexp|
+            return true if regexp =~ url
+        }
+
+        @opts.redundant.each_with_index {
+            |redundant, i|
+
+            if( url =~ redundant['regexp'] )
+
+                if( @opts.redundant[i]['count'] == 0 )
+                    print_verbose( 'Discarding redundant page: \'' + url + '\'' )
+                    return true
+                end
+
+                print_info( 'Matched redundancy rule: ' +
+                redundant['regexp'].to_s + ' for page \'' +
+                url + '\'' )
+
+                print_info( 'Count-down: ' + @opts.redundant[i]['count'].to_s )
+
+                @opts.redundant[i]['count'] -= 1
+            end
+        }
+
+        
+        skip_cnt = 0
+        @opts.include.each {
+            |regexp|
+            skip_cnt += 1 if !(regexp =~ url)
+        }
+        
+        return false if skip_cnt > 1
+
+        return false
     end
 
     #

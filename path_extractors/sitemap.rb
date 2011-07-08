@@ -8,7 +8,7 @@
 
 =end
 
-module Anemone::Extractors
+module Arachni::Parser::Extractors
 
 #
 # @author: Tasos "Zapotek" Laskos

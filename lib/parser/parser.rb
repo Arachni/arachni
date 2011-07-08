@@ -10,9 +10,11 @@
 module Arachni
 
 opts = Arachni::Options.instance
+require 'webrick'
 require opts.dir['lib'] + 'parser/elements'
 require opts.dir['lib'] + 'parser/page'
 require opts.dir['lib'] + 'module/utilities'
+require opts.dir['lib'] + 'component_manager'
 
 #
 # Analyzer class
@@ -41,11 +43,41 @@ require opts.dir['lib'] + 'module/utilities'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Parser
+    include Arachni::UI::Output
 
     include Arachni::Module::Utilities
+
+    module Extractors
+    #
+    # Base Spider parser class for modules.
+    #
+    # The aim of such modules is to extract paths from a webpage for the Spider to follow.
+    #
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    # @abstract
+    #
+    class Paths
+    
+        #
+        # This method must be implemented by all modules and must return an array
+        # of paths as plain strings
+        #
+        # @param    [Nokogiri]  Nokogiri document
+        #
+        # @return   [Array<String>]  paths
+        #
+        def run( doc )
+    
+        end
+    end
+    end
 
     #
     # @return    [String]    the url of the page
@@ -89,6 +121,7 @@ class Parser
                 :html        => @html,
                 :headers     => [],
                 :response_headers     => @response_headers,
+                :paths       => [],
                 :forms       => [],
                 :links       => [],
                 :cookies     => [],
@@ -114,6 +147,7 @@ class Parser
             :html        => @html,
             :headers     => headers(),
             :response_headers     => @response_headers,
+            :paths       => paths(),
             :forms       => @opts.audit_forms ? forms() : [],
             :links       => @opts.audit_links ? links() : [],
             :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
@@ -356,11 +390,12 @@ class Parser
         rescue
         end
 
+
         # don't ask me why....
         if @response_headers.to_s.substring?( 'set-cookie' )
             begin
-                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
-                cookies << WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
+                cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
+                cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
             rescue
                 return cookies_arr
             end
@@ -388,6 +423,32 @@ class Parser
         }
         cookies_arr.flatten!
         return cookies_arr
+    end
+
+    def dir( url )
+        URI( File.dirname( URI( url.to_s ).path ) + '/' )
+    end
+
+    #
+    # Array of distinct links to follow
+    #
+    # @return   [Array<URI>]
+    #
+    def paths
+      return @paths unless @paths.nil?
+      @paths = []
+      return @paths if !doc
+
+      run_extractors( ).each {
+          |path|
+          next if path.nil? or path.empty?
+          abs = to_absolute( URI( path ) ) rescue next
+
+          @paths << abs if in_domain?( abs )
+      }
+
+      @paths.uniq!
+      return @paths
     end
 
     #
@@ -507,6 +568,29 @@ class Parser
 
 
     private
+
+    #
+    # Runs all Spider (path extraction) modules and returns an array of paths
+    #
+    # @return   [Array]   paths
+    #
+    def run_extractors
+        lib = @opts.dir['root'] + 'path_extractors/'
+
+
+        begin
+            @@manager ||= ::Arachni::ComponentManager.new( lib, Extractors )
+            
+            return @@manager.available.map {
+                |name|
+                @@manager[name].new.run( doc )
+            }.flatten.uniq
+
+        rescue ::Exception => e
+            print_error( e.to_s )
+            print_debug_backtrace( e )
+        end
+    end
 
     #
     # Merges an array of form inputs with an array of form selects

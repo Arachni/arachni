@@ -8,7 +8,7 @@
 
 =end
 
-module Anemone::Extractors
+module Arachni::Parser::Extractors
 
 #
 # Extracts paths from "script" HTML elements.<br/>

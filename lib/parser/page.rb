@@ -19,7 +19,7 @@ class Parser
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Page
 
@@ -59,6 +59,8 @@ class Page
     # @return    [Hash]
     #
     attr_accessor :response_headers
+
+    attr_accessor :paths
 
     #
     # @see Parser#links
