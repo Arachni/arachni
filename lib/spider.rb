@@ -187,7 +187,6 @@ class Spider
     end
 
     def wait_if_paused
-        ap paused?
         while( paused? )
             ::IO::select( nil, nil, nil, 1 )
         end
