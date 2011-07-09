@@ -71,7 +71,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.1'
+    REVISION     = '0.2.3'
 
     #
     # Instance options
