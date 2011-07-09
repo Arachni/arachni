@@ -87,7 +87,7 @@ class Spider
         # while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
-                next if skip?( url )
+                next if skip?( url ) || !in_domain?( url )
                 
                 visited << url
                 
@@ -180,6 +180,44 @@ class Spider
 
         return false
     end
+
+    #
+    # Checks if the uri is in the same domain
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def in_domain?( uri )
+        
+        uri_1 = URI( uri.to_s )
+        uri_2 = URI( @opts.url.to_s )
+        
+        if( @opts.follow_subdomains )
+            return extract_domain( uri_1 ) ==  extract_domain( uri_2 )
+        end
+
+        uri_1.host == uri_2.host
+    end
+
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+
+        if !url.host then return false end
+
+        splits = url.host.split( /\./ )
+
+        if splits.length == 1 then return true end
+
+        splits[-2] + "." + splits[-1]
+    end
+
 
     #
     # Decodes URLs to reverse multiple encodes and removes NULL characters
