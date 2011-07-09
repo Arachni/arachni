@@ -35,8 +35,6 @@ class Spider
     #
     attr_reader :opts
 
-    attr_reader :pages
-
     #
     # Sitemap, array of links
     #
@@ -61,7 +59,6 @@ class Spider
         @opts = opts
 
         @sitemap = []
-        @pages   = []
         @on_every_page_blocks = []
 
         # if we have no 'include' patterns create one that will match
