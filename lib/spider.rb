@@ -86,6 +86,8 @@ class Spider
                 url = url_sanitize( url )
                 next if skip?( url ) || !in_domain?( url )
                 
+                wait_if_paused
+                
                 visited << url
                 
                 opts = {
@@ -182,6 +184,26 @@ class Spider
         return false if skip_cnt > 1
 
         return false
+    end
+
+    def wait_if_paused
+        ap paused?
+        while( paused? )
+            ::IO::select( nil, nil, nil, 1 )
+        end
+    end
+
+    def pause!
+        @pause = true
+    end
+    
+    def resume!
+        @pause = false
+    end
+    
+    def paused?
+        @pause ||= false
+        return @pause
     end
 
     #

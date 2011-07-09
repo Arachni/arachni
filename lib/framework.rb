@@ -428,12 +428,14 @@ class Framework
     end
 
     def pause!
+        @spider.pause! if @spider
         @paused << caller
         return true
     end
 
     def resume!
         @paused.delete( caller )
+        @spider.resume! if @spider
         return true
     end
 
