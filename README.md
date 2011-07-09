@@ -2,7 +2,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>0.2.4</td>
+        <td>0.3</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -107,13 +107,10 @@ From a user's or a component developer's point of view everything appears simple
 
 ### Website Crawler
 
-The crawler is provided by a modified version of [Anemone](http://anemone.rubyforge.org/).
-
  - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
  - URL exclusion filter based on regular expressions.
  - URL inclusion filter based on regular expressions.
  - Can optionally follow subdomains.
- - Adjustable depth limit.
  - Adjustable link count limit.
  - Adjustable redirect limit.
  - Modular path extraction via "Path Extractor" components.
@@ -125,6 +122,7 @@ Can extract and analyze:
  - Forms
  - Links
  - Cookies
+ - Headers
 
 The analyzer can graciously handle badly written HTML code due to a combination of regular expression analysis and the [Nokogiri](http://nokogiri.org/) HTML parser.
 

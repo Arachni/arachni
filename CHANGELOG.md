@@ -1,6 +1,9 @@
 
 # ChangeLog
 
+## Version 0.3 _(Under development)_
+- Replaced Anemone with a lightwight custom written spider.
+
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
    - Implemented a 10s time-out [Issue #40]
