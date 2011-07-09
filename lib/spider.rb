@@ -81,7 +81,7 @@ class Spider
         
         visited = []
         
-        # while( !paths.empty? )
+        while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
                 next if skip?( url ) || !in_domain?( url )
@@ -90,7 +90,8 @@ class Spider
                 
                 opts = {
                     :timeout => nil,
-                    :remove_id => true
+                    :remove_id => true,
+                    :async => @opts.spider_first
                 }
                 
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
@@ -100,7 +101,7 @@ class Spider
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
                         
                     page = Arachni::Parser.new( @opts, res ).run
-                    page.url = url 
+                    page.url = url_sanitize( res.effective_url )
                     
                     @sitemap |= page.paths.map { |path| url_sanitize( path ) }
                     paths    |= @sitemap - visited
@@ -121,21 +122,26 @@ class Spider
     
                 }
                 
-                Arachni::HTTP.instance.run
+                Arachni::HTTP.instance.run if !@opts.spider_first
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
                     @opts.link_count_limit <= visited.size )
-                    # Arachni::HTTP.instance.run
+                    Arachni::HTTP.instance.run if @opts.spider_first
                     return @sitemap.uniq
                 end
 
                 
             end
             
-            # Arachni::HTTP.instance.run
-        # end
+            if @opts.spider_first
+                Arachni::HTTP.instance.run
+            else
+                break
+            end
+            
+        end
 
         return @sitemap.uniq
     end
