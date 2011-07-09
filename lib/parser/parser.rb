@@ -442,7 +442,7 @@ class Parser
       run_extractors( ).each {
           |path|
           next if path.nil? or path.empty?
-          abs = to_absolute( URI( path ) ) rescue next
+          abs = to_absolute( path ) rescue next
 
           @paths << abs if in_domain?( abs )
       }
@@ -495,25 +495,35 @@ class Parser
             end
         rescue Exception => e
             return nil if link.nil?
-            #      return link
         end
 
         # remove anchor
-        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/, '' ) )
+        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
 
-        begin
-            relative = URI(link)
-            url = URI.parse( @url )
-
-            absolute = url.merge(relative)
-
-            absolute.path = '/' if absolute.path.empty?
-        rescue Exception => e
-            return
+        if url = base
+            base_url = URI( url )
+        else
+            base_url = URI( @url )
         end
 
+        relative = URI( link )
+        absolute = base_url.merge( relative )
+      
+        absolute.path = '/' if absolute.path && absolute.path.empty?
+      
         return absolute.to_s
     end
+
+    
+    def base
+        begin
+            tmp = doc.search( '//base[@href]' )
+            return tmp[0]['href'].dup
+        rescue
+            return
+        end
+    end
+
 
     #
     # Returns +true+ if *uri* is in the same domain as the page, returns
