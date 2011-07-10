@@ -9,6 +9,7 @@
 
     <script type="text/javascript" src="/js/jquery-1.4.4.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui-1.8.9.custom.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-timepicker.js"></script>
 
     <script type="text/javascript">
         function checkAll( type ) {
@@ -37,6 +38,7 @@
                     <li <% if selected_tab?( 'plugins' )%>class="selected" <%end%>><a href="/plugins">Plugins</a></li>
                     <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
                     <li <% if selected_tab?( 'reports' )%>class="selected" <%end%>><a href="/reports">Reports [<%=report_count%>]</a></li>
+                    <li <% if selected_tab?( 'scheduler' )%>class="selected" <%end%>><a href="/scheduler">Scheduler [<%=scheduler.jobs.size%>]</a></li>
                     <li <% if selected_tab?( 'dispatchers' )%>class="selected" <%end%>><a href="/dispatchers">Dispatchers</a></li>
                     <li <% if selected_tab?( 'log' )%>class="selected" <%end%>><a href="/log">Log</a></li>
                 </ul>

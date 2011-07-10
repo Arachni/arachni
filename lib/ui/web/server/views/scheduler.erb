@@ -1,0 +1,49 @@
+
+        <div id="page-intro">
+            <h2>Scheduler</h2>
+            <p>This page allows you to review scheduled scans.
+            <br/><br/>
+            </p>
+
+            <% if !jobs.empty? %>
+                <form action="/scheduler/delete" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Delete all" />
+                </form>
+            <% end %>
+
+        </div>
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !jobs.empty? %>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Dispatcher</th>
+                <th>URL</th>
+                <th>Starts at</th>
+                <th>Created by</th>
+                <th>Created at</th>
+            </tr>
+        <% jobs.each do |job| %>
+            <tr>
+
+
+                <td><%=job.id%></td>
+                <td><%=job.dispatcher%></td>
+                <td><%=job.url%></td>
+                <td><%=job.datetime%></td>
+                <td><%=job.owner_host%> (<%=job.owner_addr%>)</td>
+                <td><%=job.created_at%></td>
+                <td>
+                    <form action="/scheduler/<%=job.id%>/delete" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <span class="notice"> There are no scheduled jobs at the moment.</span>
+        <% end %>

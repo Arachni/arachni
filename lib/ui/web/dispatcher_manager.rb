@@ -15,9 +15,7 @@ module UI
 module Web
 
 #
-#
-# Provides nice little wrapper for the Arachni::Report::Manager while also handling<br/>
-# conversions, storing etc.
+# Provides methods for dispatcher management.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -44,10 +42,23 @@ class DispatcherManager
         Dispatcher.auto_upgrade!
     end
 
-    def new( opts )
-        Dispatcher.create( :url => opts[:url] )
+    #
+    # Puts a new dispatcher in the DB.
+    #
+    # @param    [String]    url     URL of the dispatcher
+    #
+    def new( url )
+        Dispatcher.create( :url => url )
     end
 
+    #
+    # Provides an easy way to connect to a dispatcher and caches connections
+    # to reduce overhead.
+    #
+    # @param    [String]   url
+    #
+    # @return   [Arachni::RPC::XML::Client::Dispatcher]
+    #
     def connect( url )
         @@cache ||= {}
 
@@ -63,6 +74,11 @@ class DispatcherManager
         end
     end
 
+    #
+    # Checks wether the dispatcher is alive.
+    #
+    # @param    [String]    url     URL of the dispatcher
+    #
     def alive?( url )
         begin
             return connect( url ).alive?
@@ -72,7 +88,34 @@ class DispatcherManager
     end
 
     #
-    # Returns the paths of all saved report files as an array
+    # Provides statistics about running jobs etc using the dispatcher
+    #
+    # @return   [Hash]
+    #
+    def stats
+        stats_h = {}
+        all.each {
+            |dispatcher|
+
+            begin
+                stats_h[dispatcher['url']] = connect( dispatcher['url'] ).stats
+                stats_h[dispatcher['url']]['running_jobs'].each {
+                    |job|
+                    begin
+                        instance = @settings.instances.port_to_url( job['port'], dispatcher['url'] )
+                        job['paused'] = @settings.instances.connect( instance ).framework.paused?
+                    rescue
+                    end
+                }
+            rescue
+            end
+        }
+
+        return stats_h
+    end
+
+    #
+    # Returns all dispatchers stored in the DB.
     #
     # @return    [Array]
     #
@@ -80,6 +123,9 @@ class DispatcherManager
         Dispatcher.all( *args )
     end
 
+    #
+    # Removed all dispatchers from the DB.
+    #
     def delete_all
         all.each {
             |report|
@@ -88,6 +134,11 @@ class DispatcherManager
         all.destroy
     end
 
+    #
+    # Removed a dispatcher from the DB.
+    #
+    # @param    [Integer]   id
+    #
     def delete( id )
         Dispatcher.get( id ).destroy
     end

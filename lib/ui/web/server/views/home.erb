@@ -6,20 +6,32 @@
             <input type="submit" value="Launch Scan" />
 
             <div id="page-intro">
-                Select a Dispatcher:
-                <select name="dispatcher">
-                <% dispatcher_stats.each_pair do |d_url, stats| %>
-                    <% next if !dispatchers.alive?( d_url ) %>
-                    <option value="<%=d_url%>">
-                        @<%=escape( d_url )%> - <%=stats['running_jobs'].size%> running scans,
-                         <%=i=0;stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
-                    </option>
-                <%end%>
-                </select>
-
-                <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
+                <div class="left">
+                    Select a Dispatcher:
+                    <select name="dispatcher">
+                    <% dispatcher_stats.each_pair do |d_url, stats| %>
+                        <% next if !dispatchers.alive?( d_url ) %>
+                        <option value="<%=d_url%>">
+                            @<%=escape( d_url )%> - <%=stats['running_jobs'].size%> running scans,
+                             <%=i=0;stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
+                        </option>
+                    <%end%>
+                    </select>
+    
+                    <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
+                </div>
+                
+                <div class="right">
+                    Schedule for: 
+                    <input id="datetime" name="datetime" /><br/>
+                    (Leave empty to scan right away.)
+                </div>
             </div>
 
         </form>
+        
+        <script type="text/javascript">
+            $('#datetime').datetimepicker();
+        </script>
 
         <%= erb :flash, {:layout => false} %>

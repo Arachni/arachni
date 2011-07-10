@@ -21,7 +21,7 @@
         </h2>
 
         <%if !dispatcher_stats['running_jobs'].empty? %>
-        <form action="/dispatchers/<%=sanitize_url( d_url.dup )%>/shutdown_all" method="post">
+        <form action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
             <%= csrf_tag %>
             <input type="submit" value="Shutdown all" />
         </form>
