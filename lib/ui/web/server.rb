@@ -600,6 +600,8 @@ class Server < Sinatra::Base
             show :home
         else
 
+            session['opts']['settings']['url'] = params[:url]
+
             unescape_hash( session['opts'] )
             session['opts']['settings']['audit_links']   = true if session['opts']['settings']['audit_links']
             session['opts']['settings']['audit_forms']   = true if session['opts']['settings']['audit_forms']
@@ -722,7 +724,10 @@ class Server < Sinatra::Base
                 save_and_shutdown( arachni )
                 { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
             end
-        rescue
+        rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
+               Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+            { 'data' => "<strong>Connection error, retrying...</strong>" }.to_json
+        rescue Exception => e
             { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
         end
     end
@@ -735,7 +740,10 @@ class Server < Sinatra::Base
                 out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues )
                 { 'data' => out }.to_json
             end
-        rescue
+        rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
+               Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+            { 'data' => "<strong>Connection error, retrying...</strong>" }.to_json
+        rescue Exception => e
             { 'data' => "The server has been shut down." }.to_json
         end
     end
