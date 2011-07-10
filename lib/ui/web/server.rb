@@ -36,6 +36,8 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/scheduler'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/log'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/output_stream'
 
+require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
+
 #
 #
 # Provides a web user interface for the Arachni Framework using Sinatra.<br/>
@@ -177,10 +179,21 @@ class Server < Sinatra::Base
     set :dispatchers, DispatcherManager.new( Arachni::Options.instance, settings )
     set :instances,   InstanceManager.new( Arachni::Options.instance, settings )
     set :scheduler,   Scheduler.new( Arachni::Options.instance, settings )
+    set :addons,     AddonManager.new( Arachni::Options.instance, settings )
 
     configure do
         # shit's on!
         log.webui_started
+
+        @@addons ||= []
+    end
+
+    def selected_addons
+        @@addons
+    end
+
+    def addons
+        settings.addons
     end
 
     def log
@@ -864,6 +877,20 @@ class Server < Sinatra::Base
     get '/log' do
         erb :log, { :layout => true }, :entries => log.entry.all.reverse
     end
+
+    get '/addons' do
+        erb :addons
+    end
+
+    post '/addons' do
+        params['addons'] ||= {}
+        @@addons = params['addons'].keys
+
+        settings.addons.run( @@addons ) unless @@addons.empty?
+
+        erb :addons
+    end
+
 
     # override run! using this patch: https://github.com/sinatra/sinatra/pull/132
     def self.run!( options = {} )

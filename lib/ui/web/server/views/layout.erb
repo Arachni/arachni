@@ -39,6 +39,17 @@
                     <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
                     <li <% if selected_tab?( 'reports' )%>class="selected" <%end%>><a href="/reports">Reports [<%=report_count%>]</a></li>
                     <li <% if selected_tab?( 'scheduler' )%>class="selected" <%end%>><a href="/scheduler">Scheduler [<%=scheduler.jobs.size%>]</a></li>
+                    <li <% if selected_tab?( 'addons' )%>class="selected" <%end%>><a href="/addons">Addons</a>
+
+                        <% if !selected_addons.empty?%>
+                        <ul>
+                            <% selected_addons.each do |name| %>
+                            <li><a href="/addons/<%=name%>/"><%= escape( addons.by_name( name )[:name] ) %></a></li>
+                            <%end%>
+                        </ul>
+                        <%end%>
+
+                    </li>
                     <li <% if selected_tab?( 'dispatchers' )%>class="selected" <%end%>><a href="/dispatchers">Dispatchers</a></li>
                     <li <% if selected_tab?( 'log' )%>class="selected" <%end%>><a href="/log">Log</a></li>
                 </ul>

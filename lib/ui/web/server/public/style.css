@@ -307,6 +307,48 @@ li ol, li ul {
     text-decoration: none;
 }
 
+#nav ul ul {
+    position:absolute;
+    display: none; /* Hide off-screen when not needed (this is more accessible than display:none;) */
+    background: none;
+    margin-left: -6px
+}
+
+#nav ul li:hover ul li{
+    list-style: none;
+    margin: 0;
+    height: 50px;
+    background: none;
+}
+
+#nav li:hover ul { /* Display the dropdown on hover */
+    display: block; /* Bring back on-screen when needed */
+    background: none;
+
+    -moz-border-radius-bottomleft: 10px;
+    -moz-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomleft: 10px;
+}
+
+#nav li:hover a{ /* These create persistent hover states, meaning the top-most link stays 'hovered' even when your cursor has moved down the list. */
+}
+
+#nav li:hover ul a{ /* The persistent hover state does however create a global style for links even before they're hovered. Here we undo these effects. */
+    text-decoration: none;
+    background: #202020;
+    -moz-border-radius-bottomleft: 10px;
+    -moz-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomleft: 10px;
+    height: 10px
+}
+
+#nav li:hover ul li a:hover{ /* Here we define the most explicit hover states--what happens when you hover each individual link. */
+    background: #333;
+}
+
+
 #page-intro {
     height: 150px;
     padding: 50px 20px 0;
