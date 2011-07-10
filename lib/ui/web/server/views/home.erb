@@ -17,19 +17,19 @@
                         </option>
                     <%end%>
                     </select>
-    
+
                     <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
                 </div>
-                
+
                 <div class="right">
-                    Schedule for: 
+                    Schedule for:
                     <input id="datetime" name="datetime" /><br/>
                     (Leave empty to scan right away.)
                 </div>
             </div>
 
         </form>
-        
+
         <script type="text/javascript">
             $('#datetime').datetimepicker();
         </script>
