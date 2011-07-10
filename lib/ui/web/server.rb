@@ -184,15 +184,15 @@ class Server < Sinatra::Base
     end
 
     def log
-        log
+        settings.log
     end
 
     def reports
-        reports
+        settings.reports
     end
 
     def dispatchers
-        dispatchers
+        settings.dispatchers
     end
 
     #
@@ -203,11 +203,11 @@ class Server < Sinatra::Base
     end
 
     def scheduler
-        scheduler
+        settings.scheduler
     end
 
     def instances
-        instances
+        settings.instances
     end
 
     def exception_jail( &block )
