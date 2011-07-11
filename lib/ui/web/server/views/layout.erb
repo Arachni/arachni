@@ -39,7 +39,7 @@
                     <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
                     <li <% if selected_tab?( 'reports' )%>class="selected" <%end%>><a href="/reports">Reports [<%=report_count%>]</a></li>
                     <li <% if selected_tab?( 'scheduler' )%>class="selected" <%end%>><a href="/scheduler">Scheduler [<%=scheduler.jobs.size%>]</a></li>
-                    <li <% if selected_tab?( 'addons' )%>class="selected" <%end%>><a href="/addons">Addons [<%=selected_addons.size%>/<%=addons.available.size%>]</a>
+                    <li <% if selected_tab?( 'addons' )%>class="selected" <%end%>><a href="/addons">Add-ons <%if !selected_addons.empty? %>&darr;<%end%> [<%=selected_addons.size%>/<%=addons.available.size%>]</a>
 
                         <% if !selected_addons.empty?%>
                         <ul>
