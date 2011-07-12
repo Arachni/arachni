@@ -33,18 +33,18 @@ module Addons
             @settings.helpers do
 
                 def present( tpl, args )
-                    views = addons.running[current_addon].path_views
+                    views = current_addon.path_views
                     trv = ( '../' * views.split( '/' ).size ) + views + tpl.to_s
 
                     erb_args = []
                     erb_args << { :layout => true }
-                    erb_args << { :tpl => trv.to_sym, :addon => addons.by_name( current_addon ), :tpl_args => args }
+                    erb_args << { :tpl => trv.to_sym, :addon => addons.by_name( current_addon_name ), :tpl_args => args }
 
                     erb :addon, *erb_args
                 end
 
                 def partial( tpl, args )
-                    views = addons.running[current_addon].path_views
+                    views = current_addon.path_views
                     trv = ( '../' * views.split( '/' ).size ) + views + tpl.to_s
 
                     erb_args = []
@@ -54,8 +54,12 @@ module Addons
                     erb trv.to_sym, *erb_args
                 end
 
-                def current_addon
+                def current_addon_name
                     env['PATH_INFO'].scan( /\/addons\/(.*)\// ).flatten[0]
+                end
+
+                def current_addon
+                    addons.running[current_addon_name]
                 end
 
             end

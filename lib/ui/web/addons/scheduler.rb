@@ -32,7 +32,7 @@ class Scheduler < Base
                 :jobs => scheduler.jobs( :order => :created_at.desc ),
                 # we need to get our context via "addons.running['scheduler']"
                 # which is, essentially, this class.
-                :root => addons.running['scheduler'].path_root
+                :root => current_addon.path_root
         end
 
         post '/' do
@@ -94,7 +94,7 @@ class Scheduler < Base
                 :jobs => scheduler.jobs( :order => :created_at.desc ),
                 # we need to get our context via "addons.running['scheduler']"
                 # which is, essentially, this class.
-                :root => addons.running['scheduler'].path_root
+                :root => current_addon.path_root
 
 
         end
