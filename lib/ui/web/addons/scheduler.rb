@@ -25,9 +25,6 @@ module Addons
 #
 class Scheduler < Base
 
-    #
-    # This method gets fired when the plugin is loaded.
-    #
     def run
 
         get "/" do
@@ -124,10 +121,6 @@ class Scheduler < Base
 
     end
 
-    #
-    # This optional method allows you to specify the title which will be
-    # used for the menu (in case you want it to be dynamic).
-    #
     def title
         "Scheduler [#{settings.scheduler.jobs.size}]"
     end
