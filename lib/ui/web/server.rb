@@ -881,8 +881,6 @@ class Server < Sinatra::Base
         addon_names = params['addons'].keys
 
         addons.enable!( addon_names )
-        addons.run( addon_names ) unless addon_names.empty?
-
         erb :addons
     end
 

@@ -14,6 +14,16 @@ module UI
 module Web
 
 module Addons
+
+    #
+    # Base class for all add-ons.
+    #
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
     class Base
 
         def initialize( settings, route )
@@ -22,14 +32,21 @@ module Addons
 
             @settings.helpers do
 
-                def present( *args )
+                def present( tpl, args )
                     file = ::Kernel.caller[0].split( ':' )[0]
                     splits = file.split( '.' )
                     splits.pop
                     file   = splits.join( '.' ) + '/views/'
 
-                    trv = ( '../' * file.split( '/' ).size ) + file + args.shift.to_s
-                    erb trv.to_sym, *args
+                    trv = ( '../' * file.split( '/' ).size ) + file + tpl.to_s
+                    ap trv
+                    ap addons.by_name( file )[0]
+
+                    erb_args = []
+                    erb_args << { :layout => true }
+                    erb_args << { :tpl => trv.to_sym, :addon => addons.by_name( file )[0], :tpl_args => args }
+
+                    erb :addon, *erb_args
                 end
 
             end
@@ -39,6 +56,24 @@ module Addons
         def run
 
         end
+
+        #
+        # This optional method allows you to specify the title which will be
+        # used for the menu (in case you want it to be dynamic).
+        #
+        # @return   [String]
+        #
+        def title
+            ''
+        end
+
+
+        #
+        #
+        # *DO NOT MESS WITH THE FOLLOWING METHODS*
+        #
+        #
+
 
         def settings
            @settings
@@ -92,18 +127,28 @@ class AddonManager
         lib = @opts.dir['lib'] + 'ui/web/addons/'
         @@manager ||= ::Arachni::ComponentManager.new( lib, Addons )
 
+        @@running ||= {}
+
         DataMapper::setup( :default, "sqlite3://#{@settings.db}/default.db" )
         DataMapper.finalize
 
         Addon.auto_upgrade!
+
+        run( enabled )
     end
 
+    #
+    # Runs addons.
+    #
+    # @param    [Array]     addons  array holding the names of the addons
+    #
     def run( addons )
 
         begin
             addons.each {
                 |name|
-                @@manager[name].new( @settings, name ).run
+                @@running[name] = @@manager[name].new( @settings, name )
+                @@running[name].run
             }
 
         rescue ::Exception => e
@@ -112,19 +157,53 @@ class AddonManager
         end
     end
 
+    #
+    # Gets add-on info by name.
+    #
+    # @param    [String]    name
+    #
+    # @return   [Hash]
+    #
     def by_name( name )
-        @@manager[name].info
+        available.each { |addon| return addon if addon['filename'] == name }
     end
 
+    #
+    # Gets all available add-ons.
+    #
+    # @return   [Array]
+    #
     def available
         @@available ||= populate_available
+
+        @@available.each {
+            |addon|
+
+            if @@running[addon['filename']] && !@@running[addon['filename']].title.empty?
+                addon['title'] = @@running[addon['filename']].title
+            else
+                addon['title'] = addon['name']
+            end
+        }
+
+        return @@available
     end
 
+    #
+    # Enables and runs add-ons.
+    #
+    # @param    [Array]     addons  array holding the names of the addons
+    #
     def enable!( addons )
         Addon.all.destroy
-        addons.each { |addon| Addon.create( :name => addon ) }
+        addons.each { |addon| Addon.create( :name => addon ); run( [addon] ) }
     end
 
+    #
+    # Gets all enabled add-ons.
+    #
+    # @return   [Array]
+    #
     def enabled
         Addon.all.map { |addon| addon.name }
     end

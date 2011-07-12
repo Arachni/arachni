@@ -44,7 +44,7 @@
                         <% if !addons.enabled.empty?%>
                         <ul>
                             <% addons.enabled.each do |name| %>
-                            <li><a href="/addons/<%=escape( name )%>/"><%= escape( addons.by_name( name )[:name] ) %></a></li>
+                            <li><a href="/addons/<%=escape( name )%>/"><%= escape( addons.by_name( name )['title'] ) %></a></li>
                             <%end%>
                         </ul>
                         <%end%>

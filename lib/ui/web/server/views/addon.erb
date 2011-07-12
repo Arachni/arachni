@@ -1,0 +1,11 @@
+
+            <div id="page-intro">
+                <h2><%=addon['name']%></h2>
+                <p>
+                    <%=addon['description']%>
+                </p>
+            </div>
+
+            <%= erb tpl, {:layout => false}, tpl_args %>
+
+            <%= erb :flash, {:layout => false} %>
