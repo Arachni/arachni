@@ -46,12 +46,6 @@ class Scheduler < Base
 
             if !params['url'] || params['url'].empty? || !valid
                 flash[:err] = "Invalid URL."
-
-                present :index,
-                    :jobs => scheduler.jobs( :order => :created_at.desc ),
-                    # we need to get our context via "addons.running['scheduler']"
-                    # which is, essentially, this class.
-                    :root => addons.running['scheduler'].path_root
             else
 
                 session['opts']['settings']['url'] = params[:url]
