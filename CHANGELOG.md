@@ -7,8 +7,9 @@
 - WebUI
    - Major refactoring.
    - Improved handling of connection errors during scan progress updates.
-   - Added support for scheduling scans.
    - Added support for add-ons.
+   - Add-ons (**New**)
+      - Scan scheduler
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
