@@ -6,6 +6,8 @@
                 </p>
             </div>
 
+            <%= erb :flash, {:layout => false} %>
+
+
             <%= erb tpl, {:layout => false}, tpl_args %>
 
-            <%= erb :flash, {:layout => false} %>

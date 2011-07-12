@@ -1,68 +1,7 @@
 
-        <div id="page-intro">
-            <h2>Scheduler</h2>
-            <p>This page allows you to review scheduled scans.
-            <br/><br/>
-            </p>
 
-            <% if !jobs.empty? %>
-                <form action="/scheduler/delete" method="post">
-                    <%= csrf_tag %>
-                    <input type="submit" value="Delete all" />
-                </form>
-            <% end %>
+        <div style="display: none" id="dialog_options_<%=job.id%>" title="Options">
 
-        </div>
-        <%= erb :flash, {:layout => false} %>
-
-        <% if !jobs.empty? %>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Dispatcher</th>
-                <th>Target</th>
-                <th>Starts at</th>
-                <th>Created by</th>
-                <th>Created at</th>
-            </tr>
-        <% jobs.each do |job| %>
-            <tr>
-
-
-                <td><%=job.id%></td>
-                <td><%=job.dispatcher%></td>
-                <td><%=job.url%></td>
-                <td><%=job.datetime%></td>
-                <td><%=job.owner_host%> (<%=job.owner_addr%>)</td>
-                <td><%=job.created_at%></td>
-                <td>
-                    <form action="/scheduler/<%=job.id%>/delete" method="post">
-                        <%= csrf_tag %>
-                        <input type="submit" value="Delete" />
-                    </form>
-
-                    <form action="#" onsubmit="showDialog( '#dialog_options_<%=job.id%>' ); return;" >
-                        <input type="submit" value="Options" />
-                    </form>
-
-                    <form action="#" onsubmit="showDialog( '#dialog_modules_<%=job.id%>' ); return;" >
-                        <input type="submit" value="Modules" />
-                    </form>
-
-                    <form action="#" onsubmit="showDialog( '#dialog_plugins_<%=job.id%>' ); return;" >
-                        <input type="submit" value="Plugins" />
-                    </form>
-
-                </td>
-            </tr>
-            <tr>
-
-                <div style="display: none" id="dialog_options_<%=job.id%>" title="Options">
-
-
-
-
-            <% stored_opts = YAML::load( job.opts ); opts = stored_opts['settings'] %>
             <div class="left options">
                 <fieldset>
                     <legend>Auditor</legend>
@@ -150,64 +89,5 @@
 
             </div>
 
+        </div>
 
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-                <div style="display: none" id="dialog_modules_<%=job.id%>" title="Modules">
-                    <p>
-                        <ul>
-                            <% stored_opts['modules'].each do |name| %>
-                            <li><%=name%></li>
-                            <%end%>
-                        </ul>
-                    </p>
-
-                </div>
-
-
-
-                <div style="display: none" id="dialog_plugins_<%=job.id%>" title="Plugins">
-                    <p>
-                        <ul>
-                            <% stored_opts['plugins'].each do |plugin| %>
-                            <li><%=plugin[0]%></li>
-                            <%end%>
-                        </ul>
-                    </p>
-
-                </div>
-
-
-
-
-
-            </tr>
-        <% end %>
-        </table>
-        <% else %>
-        <span class="notice"> There are no scheduled jobs at the moment.</span>
-        <% end %>
-
-            <script type="text/javascript">
-                //<![CDATA[
-
-                function showDialog( id ){
-                    $( id ).dialog({
-                        height: 500,
-                        width: 1000,
-                        modal: true
-                    });
-                }
-             //]]>
-            </script>

@@ -629,27 +629,9 @@ class Server < Sinatra::Base
                 :created_at  => Time.now
             )
 
-            if !params[:datetime] || params[:datetime].empty?
-                instance_url = scheduler.run( job, env, session )
-                redirect '/instance/' + instance_url.to_s.gsub( 'https://', '' )
-            else
-                begin
-                    job.datetime = parse_datetime( params[:datetime] )
-
-                    if !job.valid?
-                        flash[:err] = 'Job holds invalid data, skipping...'
-                    else
-                        job.save
-                        flash[:ok] = "Job saved."
-                    end
-                rescue Exception => e
-                    flash[:err] = 'Could not parse date (' + e.to_s + ').'
-                end
-
-                show :home
-            end
+            instance_url = scheduler.run( job, env, session )
+            redirect '/instance/' + instance_url.to_s.gsub( 'https://', '' )
         end
-
     end
 
     get "/modules" do
@@ -819,25 +801,6 @@ class Server < Sinatra::Base
             erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
         end
     end
-
-    get "/scheduler" do
-        erb :scheduler, { :layout => true }, :jobs => scheduler.jobs( :order => :created_at.desc )
-    end
-
-    post '/scheduler/delete' do
-        scheduler.delete_all
-        log.scheduler_jobs_deleted( env )
-
-        redirect '/scheduler'
-    end
-
-    post '/scheduler/:id/delete' do
-        scheduler.delete( params[:id] )
-        log.scheduler_job_deleted( env, params[:id] )
-
-        redirect '/scheduler'
-    end
-
 
     get "/reports" do
         erb :reports, { :layout => true }, :reports => reports.all( :order => :datestamp.desc ),

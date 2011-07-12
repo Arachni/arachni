@@ -33,22 +33,41 @@ module Addons
             @settings.helpers do
 
                 def present( tpl, args )
-                    file = ::Kernel.caller[0].split( ':' )[0]
-                    splits = file.split( '.' )
-                    splits.pop
-                    file   = splits.join( '.' ) + '/views/'
-
-                    trv = ( '../' * file.split( '/' ).size ) + file + tpl.to_s
+                    views = addons.running[current_addon].path_views
+                    trv = ( '../' * views.split( '/' ).size ) + views + tpl.to_s
 
                     erb_args = []
                     erb_args << { :layout => true }
-                    erb_args << { :tpl => trv.to_sym, :addon => addons.by_name( file )[0], :tpl_args => args }
+                    erb_args << { :tpl => trv.to_sym, :addon => addons.by_name( current_addon ), :tpl_args => args }
 
                     erb :addon, *erb_args
                 end
 
+                def partial( tpl, args )
+                    views = addons.running[current_addon].path_views
+                    trv = ( '../' * views.split( '/' ).size ) + views + tpl.to_s
+
+                    erb_args = []
+                    erb_args << { :layout => false }
+                    erb_args << args
+
+                    erb trv.to_sym, *erb_args
+                end
+
+                def current_addon
+                    env['PATH_INFO'].scan( /\/addons\/(.*)\// ).flatten[0]
+                end
+
             end
 
+        end
+
+        def path_root
+            @route
+        end
+
+        def path_views
+            Options.instance.dir['lib'] + 'ui/web' + path_root + '/views/'
         end
 
         def run
@@ -81,15 +100,15 @@ module Addons
             settings.get( @route + path, &block )
         end
 
-        def post
+        def post( path, &block )
             settings.post( @route + path, &block )
         end
 
-        def put
+        def put( path, &block )
             settings.put( @route + path, &block )
         end
 
-        def delete
+        def delete( path, &block )
             settings.delete( @route + path, &block )
         end
 
@@ -155,6 +174,10 @@ class AddonManager
         end
     end
 
+    def running
+        @@running
+    end
+
     #
     # Gets add-on info by name.
     #
@@ -164,6 +187,7 @@ class AddonManager
     #
     def by_name( name )
         available.each { |addon| return addon if addon['filename'] == name }
+        return nil
     end
 
     #
