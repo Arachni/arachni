@@ -39,8 +39,6 @@ module Addons
                     file   = splits.join( '.' ) + '/views/'
 
                     trv = ( '../' * file.split( '/' ).size ) + file + tpl.to_s
-                    ap trv
-                    ap addons.by_name( file )[0]
 
                     erb_args = []
                     erb_args << { :layout => true }
