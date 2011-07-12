@@ -77,12 +77,25 @@ class AddonManager
 
     include Utilities
 
+    class Addon
+        include DataMapper::Resource
+
+        property :id,   Serial
+        property :name, String
+    end
+
+
     def initialize( opts, settings )
         @opts     = opts
         @settings = settings
 
         lib = @opts.dir['lib'] + 'ui/web/addons/'
         @@manager ||= ::Arachni::ComponentManager.new( lib, Addons )
+
+        DataMapper::setup( :default, "sqlite3://#{@settings.db}/default.db" )
+        DataMapper.finalize
+
+        Addon.auto_upgrade!
     end
 
     def run( addons )
@@ -105,6 +118,15 @@ class AddonManager
 
     def available
         @@available ||= populate_available
+    end
+
+    def enable!( addons )
+        Addon.all.destroy
+        addons.each { |addon| Addon.create( :name => addon ) }
+    end
+
+    def enabled
+        Addon.all.map { |addon| addon.name }
     end
 
     private

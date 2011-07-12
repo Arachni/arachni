@@ -184,12 +184,6 @@ class Server < Sinatra::Base
     configure do
         # shit's on!
         log.webui_started
-
-        @@addons ||= []
-    end
-
-    def selected_addons
-        @@addons
     end
 
     def addons
@@ -884,9 +878,10 @@ class Server < Sinatra::Base
 
     post '/addons' do
         params['addons'] ||= {}
-        @@addons = params['addons'].keys
+        addon_names = params['addons'].keys
 
-        settings.addons.run( @@addons ) unless @@addons.empty?
+        addons.enable!( addon_names )
+        addons.run( addon_names ) unless addon_names.empty?
 
         erb :addons
     end
