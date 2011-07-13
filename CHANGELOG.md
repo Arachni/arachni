@@ -10,6 +10,7 @@
    - Added support for add-ons.
    - Add-ons (**New**)
       - Scan scheduler
+   - Fixed bug when IP addresses are used, instead of hostnames,s for the Dispatchers.
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
