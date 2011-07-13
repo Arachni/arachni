@@ -43,7 +43,7 @@ class InstanceManager
     # @return   [Arachni::RPC::XML::Client::Instance]
     #
     def connect( url, session = nil, token = nil )
-        url = 'https://' + url if URI( url ).scheme != 'https'
+        url = 'https://' + url if !url.include?( 'https' )
 
         @@connections ||= {}
 
