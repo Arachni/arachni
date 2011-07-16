@@ -344,7 +344,15 @@ class Server < Sinatra::Base
             @@arachni ||= nil
             if !@@arachni
 
-                d_url    = dispatchers.all.first['url']
+                d_url = ''
+                dispatchers.all.each {
+                    |dispatcher|
+                    if dispatchers.alive?( dispatcher['url'] )
+                        d_url = dispatcher['url']
+                        break
+                    end
+                }
+
                 instance = dispatchers.connect( d_url ).dispatch( HELPER_OWNER )
                 instance_url = instances.port_to_url( instance['port'], d_url )
 
@@ -352,7 +360,9 @@ class Server < Sinatra::Base
             end
 
             return @@arachni
-        rescue
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
             redirect '/dispatchers/edit'
         end
     end
