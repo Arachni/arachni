@@ -537,11 +537,9 @@ class Server < Sinatra::Base
             flash[:err] = "URL cannot be empty."
             show :dispatchers_edit
         else
-
-            session[:dispatcher_url] = params['url']
             log.dispatcher_selected( env, params['url'] )
             begin
-                dispatcher.jobs
+                dispatchers.connect( url ).jobs
                 log.dispatcher_verified( env, params['url'] )
                 redirect '/'
             rescue
@@ -558,10 +556,9 @@ class Server < Sinatra::Base
 
     post '/dispatchers/add' do
 
-        begin
-            dispatchers.alive?( params[:url] )
+        if dispatchers.alive?( params[:url] )
             dispatchers.new( params[:url] )
-        rescue
+        else
             flash[:err] = "Couldn't find a dispatcher at \"#{escape( params['url'] )}\"."
         end
 
@@ -694,7 +691,7 @@ class Server < Sinatra::Base
             erb :instance, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false
         rescue Exception => e
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            erb :instance, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
+            erb :instance, { :layout => true }, :shutdown => true
         end
 
     end
