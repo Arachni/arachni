@@ -55,7 +55,7 @@ module Addons
                 end
 
                 def current_addon_name
-                    env['PATH_INFO'].scan( /\/addons\/(.*)\// ).flatten[0]
+                    env['PATH_INFO'].scan( /\/addons\/(.*?)\// ).flatten[0]
                 end
 
                 def current_addon
@@ -71,7 +71,11 @@ module Addons
         end
 
         def path_views
-            Options.instance.dir['lib'] + 'ui/web' + path_root + '/views/'
+            path_addon + '/views/'
+        end
+
+        def path_addon
+            Options.instance.dir['lib'] + 'ui/web' + path_root
         end
 
         def run
@@ -140,13 +144,19 @@ class AddonManager
         property :name, String
     end
 
+    class RestrictedComponentManager < Arachni::ComponentManager
+        def paths
+            cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
+            return paths.reject { |path| helper?( path ) }
+        end
+    end
 
     def initialize( opts, settings )
         @opts     = opts
         @settings = settings
 
         lib = @opts.dir['lib'] + 'ui/web/addons/'
-        @@manager ||= ::Arachni::ComponentManager.new( lib, Addons )
+        @@manager ||= RestrictedComponentManager.new( lib, Addons )
 
         @@running ||= {}
 
