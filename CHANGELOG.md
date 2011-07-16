@@ -10,6 +10,7 @@
    - Added support for add-ons.
    - Add-ons (**New**)
       - Scan scheduler
+      - Auto-deploy -- Automatically converts any SSH enabled Linux box into an Arachni Dispatcher.
    - Fixed bug when IP addresses are used, instead of hostnames, for the Dispatchers.
 
 ## Version 0.2.4 _(July 1, 2011)_
