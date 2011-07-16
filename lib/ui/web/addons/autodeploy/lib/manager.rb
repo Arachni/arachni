@@ -70,27 +70,65 @@ class Manager
              }
          end
 
+        Thread.new {
 
-        out = wget = 'wget --output-document=' + ARCHIVE_NAME + ARCHIVE_EXT +
-            ' ' + ARCHIVE_PATH + ARCHIVE_NAME + ARCHIVE_EXT
-        ret = ssh_exec!( session, wget )
-        out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
+            @@setup ||= {}
+            url = get_url( deployment )
+            @@setup[url] ||= {}
 
-        return { :out => out, :code => ret[:code] } if ret[:code] != 0
+            @@setup[url][:deployment] ||= deployment
+            @@setup[url][:status] = 'working'
 
-        out += tar = 'tar xvf ' + ARCHIVE_NAME + ARCHIVE_EXT
-        ret = ssh_exec!( session,  tar )
-        out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
+            wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.port +
+                ARCHIVE_EXT + ' ' + ARCHIVE_PATH + ARCHIVE_NAME + ARCHIVE_EXT
+            ret = ssh_exec!( deployment, session, wget )
 
-        return { :out => out, :code => ret[:code] } if ret[:code] != 0
+            if ret[:code] != 0
+                @@setup[url][:status] = 'failed'
+                return
+            end
 
-        out += "\n" + chmod = 'chmod +x ' + ARCHIVE_NAME + '/' + EXEC
-        ret = ssh_exec!( session, chmod )
-        out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
+            mkdir = 'mkdir ' + ARCHIVE_NAME + '-' + deployment.port
+            ret = ssh_exec!( deployment, session,  mkdir )
 
-        return { :out => out, :code => ret[:code] } if ret[:code] != 0
+            if ret[:code] != 0
+                @@setup[url][:status] = 'failed'
+                return
+            end
 
-        return { :out => out }
+
+            tar = 'tar xvf ' + ARCHIVE_NAME + '-' + deployment.port + ARCHIVE_EXT +
+                ' -C ' + ARCHIVE_NAME + '-' + deployment.port
+            ret = ssh_exec!( deployment, session,  tar )
+
+            if ret[:code] != 0
+                @@setup[url][:status] = 'failed'
+                return
+            end
+
+
+            chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.port + '/' +
+                ARCHIVE_NAME + '/' + EXEC
+            ret = ssh_exec!( deployment, session, chmod )
+
+            if ret[:code] != 0
+                @@setup[url][:status] = 'failed'
+                return
+            end
+
+            @@setup[url][:status] = 'finished'
+        }
+
+        return get_url( deployment )
+    end
+
+    def output( channel )
+        return @@setup[channel]
+    end
+
+    def finalize_setup( channel )
+        @@setup[channel][:deployment].save
+        return @@setup[channel][:deployment]
     end
 
     def uninstall( deployment, password )
@@ -104,8 +142,8 @@ class Manager
              }
          end
 
-        out = "\n" + rm = "rm -rf #{ARCHIVE_NAME}*"
-        ret = ssh_exec!( session, rm )
+        out = "\n" + rm = "rm -rf #{ARCHIVE_NAME}-#{deployment.port}*"
+        ret = ssh_exec!( deployment, session, rm )
         out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
 
         return { :out => out, :code => ret[:code] } if ret[:code] != 0
@@ -115,8 +153,10 @@ class Manager
 
     def run( deployment, password )
         session = ssh( deployment.host, deployment.user, password )
-        session.exec!( 'nohup ./' + ARCHIVE_NAME + '/' + EXEC +
-            ' --port=' + deployment.port + ' > arachni-xmlrpcd-startup.log 2>&1 &' )
+        session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.port + '/' +
+                ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.port +
+            ' > arachni-xmlrpcd-startup.log 2>&1 &' )
+
         sleep( 5 )
     end
 
@@ -141,13 +181,26 @@ class Manager
         @@ssh[user + '@' + host] ||= Net::SSH.start( host, user, :password => password )
     end
 
-    def ssh_exec!( ssh, command )
+    def get_url( deployment )
+        deployment.user + '@' + deployment.host + ':' + deployment.port
+    end
+
+    def ssh_exec!( deployment, ssh, command )
 
         stdout_data = ""
         stderr_data = ""
 
         exit_code   = nil
         exit_signal = nil
+
+        @@setup ||= {}
+
+        url = get_url( deployment )
+
+        @@setup[url] ||= {}
+        @@setup[url][:code]   = 0
+        @@setup[url][:output] ||= ''
+        @@setup[url][:output] += "\n" + command + "\n"
 
         ssh.open_channel do |channel|
             channel.exec(command) do |ch, success|
@@ -158,16 +211,19 @@ class Manager
                 channel.on_data {
                     |ch, data|
                     stdout_data += data
+                    @@setup[url][:output] += data
                 }
 
                 channel.on_extended_data {
                     |ch, type, data|
                     stderr_data += data
+                    @@setup[url][:output] += data
                 }
 
                 channel.on_request( "exit-status" ) {
                     |ch, data|
                     exit_code = data.read_long
+                    @@setup[url][:code] = data.read_long
                 }
 
                 channel.on_request( "exit-signal" ) {

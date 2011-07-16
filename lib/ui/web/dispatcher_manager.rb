@@ -70,8 +70,8 @@ class DispatcherManager
                 return @@cache[url] = tmp
             end
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
             return nil
         end
     end
@@ -86,8 +86,8 @@ class DispatcherManager
             begin
                 return connect( url ).alive?
             rescue Exception => e
-                ap e
-                ap e.backtrace
+                # ap e
+                # ap e.backtrace
             end
         }
 

@@ -39,53 +39,48 @@ class AutoDeploy < Base
         end
 
         get "/" do
-            ret = {}
             present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :ret => ret
+                :root => current_addon.path_root, :show_output => false
 
         end
 
         post "/" do
 
-            ret = {}
             if !params[:host] || params[:host].empty? || !params[:username] ||
                 params[:username].empty? || !params[:password] || params[:password].empty? ||
                 !params[:port] || params[:port].empty?
 
                 flash[:err] = "Please fill in all the fields."
+
+                present :index, :deployments => autodeploy.list,
+                    :root => current_addon.path_root, :show_output => false
             else
                 deployment = Manager::Deployment.new( :host => params[:host],
                     :port => params[:port], :user => params[:username] )
 
-                ret = autodeploy.setup( deployment, params[:password] )
+                channel = autodeploy.setup( deployment, params[:password] )
 
-                if ret[:code]
-                    flash[:err] = "Setup was aborted because the last command failed."
-                else
-                    deployment.save
-                    log.autodeploy_deployment_saved( env, deployment.id )
-                    flash[:ok] = "Deployment was successful."
-
-                    if params[:run]
-                        autodeploy.run( deployment, params[:password] )
-
-                        url = 'https://' + deployment.host + ':' + deployment.port
-
-                        if settings.dispatchers.alive?( url )
-                            flash[:ok] += "<br/>Dispatcher is up and running."
-                            DispatcherManager::Dispatcher.first_or_create( :url => url )
-                        else
-                            flash[:err] = "Could not run the Dispatcher."
-                        end
-                    end
-
-                end
-
+                present :index, :deployments => autodeploy.list,
+                    :root => current_addon.path_root, :channel => channel,
+                    :show_output => true
             end
 
-            present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :ret => ret
         end
+
+        get '/channel/:channel' do
+            content_type :json
+            autodeploy.output( params[:channel] ).to_json
+        end
+
+        get '/channel/:channel/finalize' do
+            deployment = autodeploy.finalize_setup( params[:channel] )
+            log.autodeploy_deployment_saved( env, deployment.id )
+            flash[:ok] = "Deployment was successful."
+
+            present :index, :deployments => autodeploy.list,
+                :root => current_addon.path_root, :show_output => false
+        end
+
 
         post '/:id' do
             ret = {}
@@ -120,7 +115,7 @@ class AutoDeploy < Base
             end
 
             present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :ret => ret
+                :root => current_addon.path_root, :show_output => false
         end
 
 

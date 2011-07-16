@@ -9,18 +9,18 @@
                 Port: <input name="port" value="7331" />
                 Username: <input name="username" />
                 Password (will not be stored): <input name="password" type="password" />
-                Run and append to Dispatchers? <input name="run" type="checkbox" />
-
 
                 <%= csrf_tag %>
                 <input type="submit" value="Add" />
 
             </form>
 
-            <% if !ret.empty? %>
+            <% if show_output %>
             <br/>
             <h3>Output</h3>
-            <pre style="max-height: 400px; overflow: scroll"><%=ret[:out]%></pre>
+            <b>Status: <span id="status"></span></b>
+            <br/>
+            <pre id="output" style="max-height: 400px; overflow: scroll"></pre>
             <% end %>
 
         </div>
@@ -69,3 +69,40 @@
         <p class="notice">There are no deployments at the moment.</p>
         <% end %>
 
+        <% if show_output%>
+        <script type="text/javascript">
+            //<![CDATA[
+
+            function updateOutput() {
+                if( !document.getElementById( 'output' ) ) return;
+
+                var output_url = "<%=root%>/channel/<%=channel%>";
+                $.getJSON( output_url, function(data) {
+                    if( data.status == 'finished' ) {
+                        window.location.replace( "<%=root%>/channel/<%=channel%>/finalize" );
+                    } if( data.status == 'failed' ) {
+                        document.getElementById( 'status' ).innerHTML = data.status;
+                        obj = document.getElementById( 'output' );
+                        obj.innerHTML = data.output;
+                    } else {
+
+                        document.getElementById( 'status' ).innerHTML = data.status;
+
+                        obj = document.getElementById( 'output' );
+                        obj.innerHTML = data.output;
+                        obj.scrollTop = obj.scrollHeight;
+                    }
+                });
+            }
+
+            $( document ).ready(function() {
+
+                updateOutput( );
+                setInterval( function() {
+                      updateOutput( );
+                }, 1500 );
+
+            })
+             //]]>
+        </script>
+        <%end%>
