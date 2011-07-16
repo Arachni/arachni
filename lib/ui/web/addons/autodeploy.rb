@@ -59,6 +59,7 @@ class AutoDeploy < Base
                 deployment = Manager::Deployment.new( :host => params[:host],
                     :port => params[:port], :user => params[:username] )
 
+                settings.log.autodeploy_setup_started( env, autodeploy.get_url( deployment ) )
                 channel = autodeploy.setup( deployment, params[:password] )
 
                 present :index, :deployments => autodeploy.list,
@@ -76,7 +77,9 @@ class AutoDeploy < Base
         get '/channel/:channel/finalize' do
 
             deployment = autodeploy.finalize_setup( params[:channel] )
-            log.autodeploy_deployment_saved( env, deployment.id )
+            log.autodeploy_deployment_saved( env,
+                "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
+
             flash[:ok] = "Deployment was successful."
 
             present :index, :deployments => autodeploy.list, :ret => {},
@@ -111,6 +114,8 @@ class AutoDeploy < Base
                     if settings.dispatchers.alive?( url )
                         flash[:ok] = "<br/>Dispatcher is up and running."
                         DispatcherManager::Dispatcher.first_or_create( :url => url )
+                        settings.log.autodeploy_dispatcher_enabled( env,
+                            "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
                     else
                         flash[:err] = "Could not run the Dispatcher."
                     end
