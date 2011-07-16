@@ -34,7 +34,7 @@
 
                 <td>
                     <input type="checkbox" class="audit" name="addons[<%=addon['filename']%>]"
-                        <% if session['addons'] && addons.enabled.include?( addon['filename'] ) %>
+                        <% if addons.enabled.include?( addon['filename'] ) %>
                         checked="checked" <% end %> />
                 </td>
             </tr>
