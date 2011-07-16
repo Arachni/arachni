@@ -1,8 +1,10 @@
 
             <div id="page-intro">
-                <h2><%=addon['name']%></h2>
+                <h2><%=escape( addon['name'] )%> v<%=escape( addon['version'] )%></h2>
                 <p>
-                    <%=addon['description']%>
+                    <%=escape( addon['description'] )%>
+                    <br/>
+                    <i>By <%=escape( addon['author'] )%></i>
                 </p>
             </div>
 
