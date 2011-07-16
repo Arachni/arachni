@@ -40,7 +40,7 @@ class AutoDeploy < Base
 
         get "/" do
             present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :show_output => false
+                :root => current_addon.path_root, :show_output => false,  :ret => {}
 
         end
 
@@ -53,7 +53,8 @@ class AutoDeploy < Base
                 flash[:err] = "Please fill in all the fields."
 
                 present :index, :deployments => autodeploy.list,
-                    :root => current_addon.path_root, :show_output => false
+                    :root => current_addon.path_root, :show_output => false,
+                    :ret => {}
             else
                 deployment = Manager::Deployment.new( :host => params[:host],
                     :port => params[:port], :user => params[:username] )
@@ -62,7 +63,7 @@ class AutoDeploy < Base
 
                 present :index, :deployments => autodeploy.list,
                     :root => current_addon.path_root, :channel => channel,
-                    :show_output => true
+                    :show_output => true,  :ret => {}
             end
 
         end
@@ -73,18 +74,19 @@ class AutoDeploy < Base
         end
 
         get '/channel/:channel/finalize' do
+
             deployment = autodeploy.finalize_setup( params[:channel] )
             log.autodeploy_deployment_saved( env, deployment.id )
             flash[:ok] = "Deployment was successful."
 
-            present :index, :deployments => autodeploy.list,
+            present :index, :deployments => autodeploy.list, :ret => {},
                 :root => current_addon.path_root, :show_output => false
         end
 
 
         post '/:id' do
-            ret = {}
 
+            ret = {}
             if !params[:password] || params[:password].empty?
                 flash[:err] = "The password field is required."
             else
@@ -93,7 +95,8 @@ class AutoDeploy < Base
                     ret = autodeploy.delete( params[:id], params[:password] )
 
                     if ret[:code]
-                        flash[:err] = "Uninstall process aborted because the last command failed."
+                        flash[:err] = "Uninstall process aborted because the last command failed.<br/>" +
+                            " Please ensure that the password is correct and the network is up."
                     else
                         log.autodeploy_deployment_deleted( env, params[:id] )
                         flash[:ok] = "Uninstall process was successful."
@@ -115,7 +118,7 @@ class AutoDeploy < Base
             end
 
             present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :show_output => false
+                :root => current_addon.path_root, :ret => ret, :show_output => false
         end
 
 

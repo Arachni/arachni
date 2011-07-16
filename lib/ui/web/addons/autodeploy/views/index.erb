@@ -15,12 +15,12 @@
 
             </form>
 
-            <% if show_output %>
+            <% if show_output || !ret.empty? %>
             <br/>
             <h3>Output</h3>
-            <b>Status: <span id="status"></span></b>
+            <b>Status: <span id="status"><%=ret[:status]%></span></b>
             <br/>
-            <pre id="output" style="max-height: 400px; overflow: scroll"></pre>
+            <pre id="output" style="max-height: 400px; overflow: scroll"><%=ret[:output]%></pre>
             <% end %>
 
         </div>

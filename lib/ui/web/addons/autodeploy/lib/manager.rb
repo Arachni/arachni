@@ -61,23 +61,23 @@ class Manager
 
     def setup( deployment, password )
 
-        begin
-            session = ssh( deployment.host, deployment.user, password )
-        rescue Exception => e
-            return {
-                :out => e.to_s + "\n" + e.backtrace.join( "\n" ),
-                :code => 1
-             }
-         end
+        @@setup ||= {}
+        url = get_url( deployment )
+        @@setup[url] ||= {}
 
         Thread.new {
-
-            @@setup ||= {}
-            url = get_url( deployment )
-            @@setup[url] ||= {}
-
             @@setup[url][:deployment] ||= deployment
             @@setup[url][:status] = 'working'
+
+            begin
+                session = ssh( deployment.host, deployment.user, password )
+            rescue Exception => e
+                @@setup[url][:status] = 'failed'
+                @@setup[url][:output] = e.to_s + "\n" + e.backtrace.join( "\n" )
+                @@setup[url][:code]   = 1
+                return
+             end
+
 
             wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.port +
                 ARCHIVE_EXT + ' ' + ARCHIVE_PATH + ARCHIVE_NAME + ARCHIVE_EXT
@@ -137,8 +137,9 @@ class Manager
             session = ssh( deployment.host, deployment.user, password )
         rescue Exception => e
             return {
-                :out => e.to_s + "\n" + e.backtrace.join( "\n" ),
-                :code => 1
+                :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+                :status => 'failed',
+                :code   => 1
              }
          end
 
@@ -146,9 +147,9 @@ class Manager
         ret = ssh_exec!( deployment, session, rm )
         out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
 
-        return { :out => out, :code => ret[:code] } if ret[:code] != 0
+        return { :output => out, :code => ret[:code], :status => 'failed', } if ret[:code] != 0
 
-        return { :out => out }
+        return { :output => out }
     end
 
     def run( deployment, password )
@@ -172,6 +173,7 @@ class Manager
     def delete( id, password )
         deployment = get( id )
         ret = uninstall( deployment, password )
+        return ret if ret[:code]
         deployment.destroy
         return ret
     end
