@@ -1,0 +1,71 @@
+
+        <div>
+
+            <form action="<%=root%>/" method="post">
+                <h2>Add a new deployment</h2>
+                <br/>
+
+                Host: <input name="host" />
+                Port: <input name="port" value="7331" />
+                Username: <input name="username" />
+                Password (will not be stored): <input name="password" type="password" />
+                Run and append to Dispatchers? <input name="run" type="checkbox" />
+
+
+                <%= csrf_tag %>
+                <input type="submit" value="Add" />
+
+            </form>
+
+            <% if !ret.empty? %>
+            <br/>
+            <h3>Output</h3>
+            <pre style="max-height: 400px; overflow: scroll"><%=ret[:out]%></pre>
+            <% end %>
+
+        </div>
+
+
+        <% if !deployments.empty? %>
+        <br/>
+        <br/>
+
+        <i>The "Uninstall and Delete" option will not shutdown running servers.</i>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Running?</th>
+                <th>Created at</th>
+            </tr>
+        <% deployments.each do |dep| %>
+            <tr>
+
+                <form action="<%=root%>/<%=dep.id%>" method="post">
+                    <td><%=dep.id%></td>
+                    <td><%=dep.host%></td>
+                    <td><%=dep.port%></td>
+                    <td><%=dep.user%></td>
+                    <td><input name="password" type="password" /></td>
+                    <td><%=is_alive = dispatchers.alive?( 'https://' + dep.host + ':' + dep.port )%></td>
+                    <td><%=dep.created_at%></td>
+                    <td>
+                        <%= csrf_tag %>
+                        <input type="hidden" name="id" value="<%=dep.id%>">
+
+                        <% if !is_alive%><input type="radio" name="action" value="run"> Run <br/><%end%>
+                        <input type="radio" name="action" value="delete"> Uninstall & Delete <br/>
+
+                        <input type="submit" value="Submit">
+                    </td>
+                </form>
+            </tr>
+        <% end %>
+        </table>
+        <% else %>
+        <p class="notice">There are no deployments at the moment.</p>
+        <% end %>
+

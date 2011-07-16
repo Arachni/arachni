@@ -47,6 +47,7 @@ Gem::Specification.new do |s|
       s.add_dependency "rack-flash",      "~> 0.1.1"
       s.add_dependency "json",            "~> 1.4.6"
       s.add_dependency "dm-sqlite-adapter", "~> 1.0.2"
+      s.add_dependency "net-ssh",         "~> 2.1.4"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
