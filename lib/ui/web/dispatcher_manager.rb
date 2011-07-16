@@ -48,7 +48,7 @@ class DispatcherManager
     # @param    [String]    url     URL of the dispatcher
     #
     def new( url )
-        Dispatcher.create( :url => url )
+        Dispatcher.first_or_create( :url => url )
     end
 
     #
@@ -70,7 +70,9 @@ class DispatcherManager
                 return @@cache[url] = tmp
             end
         rescue Exception => e
-          return nil
+            ap e
+            ap e.backtrace
+            return nil
         end
     end
 
@@ -79,12 +81,17 @@ class DispatcherManager
     #
     # @param    [String]    url     URL of the dispatcher
     #
-    def alive?( url )
-        begin
-            return connect( url ).alive?
-        rescue
-            return false
-        end
+    def alive?( url, tries = 5 )
+        tries.times {
+            begin
+                return connect( url ).alive?
+            rescue Exception => e
+                ap e
+                ap e.backtrace
+            end
+        }
+
+        return false
     end
 
     #
