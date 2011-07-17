@@ -612,6 +612,9 @@ class Server < Sinatra::Base
         elsif !valid
             flash[:err] = "Invalid URL."
             show :home
+        elsif !params['dispatcher'] || params['dispatcher'].empty?
+            flash[:err] = "Please select a Dispatcher."
+            show :home
         else
 
             session['opts']['settings']['url'] = params[:url]

@@ -46,6 +46,8 @@ class Scheduler < Base
 
             if !params['url'] || params['url'].empty? || !valid
                 flash[:err] = "Invalid URL."
+            elsif !params['dispatcher'] || params['dispatcher'].empty?
+                flash[:err] = "Please select a Dispatcher."
             else
 
                 session['opts']['settings']['url'] = params[:url]
