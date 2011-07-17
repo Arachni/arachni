@@ -178,6 +178,10 @@ class Dispatcher < Base
         }
     end
 
+    def proc_info
+        unnil( proc( Process.pid ) )
+    end
+
     #
     # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
@@ -234,6 +238,23 @@ USAGE
 
 
     private
+
+    #
+    # Recursively removes nils.
+    #
+    # @param    [Hash]  hash
+    #
+    # @return   [Hash]
+    #
+    def unnil( hash )
+        hash.each_pair {
+            |k, v|
+            hash[k] = '' if v.nil?
+            hash[k] = unnil( v ) if v.is_a? Hash
+        }
+
+        return hash
+    end
 
     #
     # Initializes and updates the pool making sure that the number of
