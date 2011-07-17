@@ -31,7 +31,7 @@ class Manager
 
     include Utilities
 
-    ARCHIVE_PATH = 'http://localhost/~zapotek/'
+    ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
     ARCHIVE_NAME = 'arachni-v0.3-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
