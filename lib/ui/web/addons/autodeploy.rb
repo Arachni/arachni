@@ -111,7 +111,7 @@ class AutoDeploy < Base
 
                     url = 'https://' + deployment.host + ':' + deployment.port
 
-                    if ret[:code] == 0 && settings.dispatchers.alive?( url )
+                    if settings.dispatchers.alive?( url )
                         flash[:ok] = "<br/>Dispatcher is up and running."
                         DispatcherManager::Dispatcher.first_or_create( :url => url )
                         settings.log.autodeploy_dispatcher_enabled( env,
