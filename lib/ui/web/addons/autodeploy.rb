@@ -107,7 +107,7 @@ class AutoDeploy < Base
 
                 elsif params[:action] == 'run'
                     deployment = autodeploy.get( params[:id] )
-                    ap ret = autodeploy.run( deployment, params[:password] )
+                    ret = autodeploy.run( deployment, params[:password] )
 
                     url = 'https://' + deployment.host + ':' + deployment.port
 
