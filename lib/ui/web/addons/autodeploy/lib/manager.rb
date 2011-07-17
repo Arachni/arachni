@@ -10,6 +10,8 @@
 
 require 'datamapper'
 require 'net/ssh'
+require 'digest/md5'
+
 
 module Arachni
 module UI
@@ -29,7 +31,7 @@ class Manager
 
     include Utilities
 
-    ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
+    ARCHIVE_PATH = 'http://localhost/~zapotek/'
     ARCHIVE_NAME = 'arachni-v0.3-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
@@ -153,12 +155,40 @@ class Manager
     end
 
     def run( deployment, password )
-        session = ssh( deployment.host, deployment.user, password )
-        session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.port + '/' +
-                ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.port +
-            ' > arachni-xmlrpcd-startup.log 2>&1 &' )
+       begin
+           session = ssh( deployment.host, deployment.user, password )
+       rescue Exception => e
+           return {
+               :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+               :status => 'failed',
+               :code   => 1
+           }
+       end
 
-        sleep( 5 )
+       session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.port + '/' +
+               ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.port +
+           ' > arachni-xmlrpcd-startup.log 2>&1 &' )
+
+       sleep( 5 )
+       { :code   => 0 }
+    end
+
+    def shutdown( deployment, password )
+
+       url =  "https://#{deployment.host}:#{deployment.port}"
+       proc = @settings.dispatchers.connect( url ).proc_info
+
+       begin
+           session = ssh( deployment.host, deployment.user, password )
+       rescue Exception => e
+           return {
+               :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+               :status => 'failed',
+               :code   => 1
+           }
+       end
+
+        ssh_exec!( deployment, session, 'kill -9 -' + proc['pgrp'] )
     end
 
 
@@ -180,7 +210,8 @@ class Manager
 
     def ssh( host, user, password )
         @@ssh ||= {}
-        @@ssh[user + '@' + host] ||= Net::SSH.start( host, user, :password => password )
+        @@ssh[user + '@' + host + '$' + Digest::MD5.hexdigest( password ) ] ||=
+            Net::SSH.start( host, user, :password => password )
     end
 
     def get_url( deployment )

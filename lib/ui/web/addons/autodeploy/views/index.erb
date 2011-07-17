@@ -30,7 +30,7 @@
         <br/>
         <br/>
 
-        <i>The "Uninstall and Delete" option will not shutdown running servers.</i>
+        <i>(Shutting down a Dispatcher will terminate all its running scans.)</i>
         <table>
             <tr>
                 <th>ID</th>
@@ -56,7 +56,11 @@
                         <%= csrf_tag %>
                         <input type="hidden" name="id" value="<%=dep.id%>">
 
-                        <% if !is_alive%><input type="radio" name="action" value="run"> Run <br/><%end%>
+                        <% if !is_alive%>
+                            <input type="radio" name="action" value="run"> Run <br/>
+                        <%else%>
+                            <input type="radio" name="action" value="shutdown"> Shutdown <br/>
+                        <%end%>
                         <input type="radio" name="action" value="delete"> Uninstall & Delete <br/>
 
                         <input type="submit" value="Submit">

@@ -107,18 +107,37 @@ class AutoDeploy < Base
 
                 elsif params[:action] == 'run'
                     deployment = autodeploy.get( params[:id] )
-                    autodeploy.run( deployment, params[:password] )
+                    ap ret = autodeploy.run( deployment, params[:password] )
 
                     url = 'https://' + deployment.host + ':' + deployment.port
 
-                    if settings.dispatchers.alive?( url )
+                    if ret[:code] == 0 && settings.dispatchers.alive?( url )
                         flash[:ok] = "<br/>Dispatcher is up and running."
                         DispatcherManager::Dispatcher.first_or_create( :url => url )
                         settings.log.autodeploy_dispatcher_enabled( env,
                             "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
+
+                        ret = {}
                     else
-                        flash[:err] = "Could not run the Dispatcher."
+                        flash[:err] = "Could not run the Dispatcher.<br/>" +
+                            " Please ensure that the password is correct and the network is up."
                     end
+                elsif params[:action] == 'shutdown'
+                    deployment = autodeploy.get( params[:id] )
+                    ret = autodeploy.shutdown( deployment, params[:password] )
+
+                    if ret[:code] == 0 && !settings.dispatchers.alive?( url )
+                        flash[:ok] = "<br/>Dispatcher has been shutdown."
+                        settings.log.autodeploy_dispatcher_shutdown( env,
+                            "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
+
+                        ret = {}
+                    else
+                        flash[:err] = "Could not shutdown the Dispatcher.<br/>" +
+                            " Please ensure that the password is correct and the network is up."
+                    end
+
+
                 end
             end
 
