@@ -112,7 +112,7 @@ class AutoDeploy < Base
                     url = 'https://' + deployment.host + ':' + deployment.port
 
                     if settings.dispatchers.alive?( url )
-                        flash[:ok] = "<br/>Dispatcher is up and running."
+                        flash[:ok] = "Dispatcher is up and running."
                         DispatcherManager::Dispatcher.first_or_create( :url => url )
                         settings.log.autodeploy_dispatcher_enabled( env,
                             "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
@@ -127,7 +127,7 @@ class AutoDeploy < Base
                     ret = autodeploy.shutdown( deployment, params[:password] )
 
                     if ret[:code] == 0 && !settings.dispatchers.alive?( url )
-                        flash[:ok] = "<br/>Dispatcher has been shutdown."
+                        flash[:ok] = "Dispatcher has been shutdown."
                         settings.log.autodeploy_dispatcher_shutdown( env,
                             "ID: #{deployment.id} - URL: #{autodeploy.get_url( deployment )}" )
 
