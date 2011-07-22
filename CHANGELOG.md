@@ -7,7 +7,7 @@
 - WebUI
    - Major refactoring.
    - Improved handling of connection errors during scan progress updates.
-   - Added support for add-ons.
+   - Added support for add-ons. (**New**)
    - Add-ons (**New**)
       - Scan scheduler
       - Auto-deploy -- Automatically converts any SSH enabled Linux box into an Arachni Dispatcher.
