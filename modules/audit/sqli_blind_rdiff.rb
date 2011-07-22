@@ -100,6 +100,8 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         @http.get( @page.url, :params => @page.query_vars ).on_complete {
             |res|
 
+            next if res.code != 200
+
             # eliminate dynamic content that's context-irrelevant
             # ie. changing with every refresh
             @responses[:orig] = @page.html.rdiff( res.body )
@@ -143,12 +145,13 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                 # submit the link and get the response
                 link.submit( @__opts ).on_complete {
                     |res|
+                    if res.code == 200
+                        @responses[:bad][altered] ||= res.body.clone
 
-                    @responses[:bad][altered] ||= res.body.clone
-
-                    # remove context-irrelevant dynamic content like banners and such
-                    # from the error page
-                    @responses[:bad][altered] = @responses[:bad][altered].rdiff( res.body.clone )
+                        # remove context-irrelevant dynamic content like banners and such
+                        # from the error page
+                        @responses[:bad][altered] = @responses[:bad][altered].rdiff( res.body.clone )
+                    end
                 }
             }
         }
@@ -218,7 +221,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         # original page then a blind SQL injection exists
         check = res.body.rdiff( @page.html )
 
-        if( check == @responses[:orig] && @responses[:bad][var] != check &&
+        if( check == @responses[:orig] && !@responses[:bad][var].nil? && @responses[:bad][var] != check &&
             !@http.custom_404?( res ) && res.code == 200 )
             __log_results( var, res, str )
         end
