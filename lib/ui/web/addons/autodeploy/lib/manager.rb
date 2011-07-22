@@ -75,14 +75,9 @@ class Manager
             begin
                 session = ssh( deployment, password )
             rescue Exception => e
-                ap url
-                ap e
-                ap e.backtrace
-
                 @@setup[url][:status] = 'failed'
-                @@setup[url][:output] = e.to_s + "\n" + e.backtrace.join( "\n" )
+                @@setup[url][:output] = e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" )
                 @@setup[url][:code]   = 1
-
                 return
             end
 
@@ -145,7 +140,7 @@ class Manager
             session = ssh( deployment, password )
         rescue Exception => e
             return {
-                :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+                :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
                 :status => 'failed',
                 :code   => 1
              }
@@ -164,11 +159,8 @@ class Manager
        begin
            session = ssh( deployment, password )
        rescue Exception => e
-           ap e
-           ap e.backtrace
-
            return {
-               :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+               :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
                :status => 'failed',
                :code   => 1
            }
@@ -191,7 +183,7 @@ class Manager
            session = ssh( deployment, password )
        rescue Exception => e
            return {
-               :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
+               :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
                :status => 'failed',
                :code   => 1
            }
