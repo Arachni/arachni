@@ -2,7 +2,7 @@
 # ChangeLog
 
 ## Version 0.3 _(Under development)_
-- Spider
+- Spider (**New**)
    - Replaced Anemone with a lightweight custom-written spider.
 - WebUI
    - Major refactoring.
@@ -12,6 +12,9 @@
       - Scan scheduler
       - Auto-deploy -- Automatically converts any SSH enabled Linux box into an Arachni Dispatcher.
    - Fixed bug when IP addresses are used, instead of hostnames, for the Dispatchers.
+- Parser
+   - Form action attributes are now sanitized using iterative URI decoding.
+   - The link variables of any current page's URL are now pushed to 'page.links'.
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
