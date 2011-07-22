@@ -5,14 +5,20 @@
                 <h2>Perform a new deployment</h2>
                 <br/>
 
-                Host: <input name="host" />
-                Port: <input name="port" value="7331" />
-                Username: <input name="username" />
-                Password (will not be stored): <input name="password" type="password" />
+                <fieldset>
+                    <legend>SSH options:</legend>
+                    Host: <input name="host" />
+                    Username: <input name="username" />
+                    Password (will not be stored): <input name="password" type="password" />
+                <fieldset>
+
+                <fieldset>
+                    <legend>Dispatcher options:</legend>
+                    Port: <input name="port" value="7331" />
+                <fieldset>
 
                 <%= csrf_tag %>
                 <input type="submit" value="Add" />
-
             </form>
 
             <% if show_output || !ret.empty? %>
