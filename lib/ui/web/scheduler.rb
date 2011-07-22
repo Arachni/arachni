@@ -144,10 +144,16 @@ class Scheduler
             while( true )
                 jobs.each {
                     |job|
-                    if job.datetime <= Time.now
-                        run_and_destroy( job )
+
+                    begin
+                        run_and_destroy( job ) if job.datetime <= Time.now
+                    rescue Exception => e
+                        ap e
+                        ap e.backtrace
                     end
+
                 }
+
                 ::IO::select( nil, nil, nil, 5 )
             end
         }
