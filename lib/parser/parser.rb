@@ -47,7 +47,6 @@ require opts.dir['lib'] + 'component_manager'
 #
 class Parser
     include Arachni::UI::Output
-
     include Arachni::Module::Utilities
 
     module Extractors
@@ -100,7 +99,7 @@ class Parser
     def initialize( opts, res )
         @opts = opts
 
-        @url  = res.effective_url
+        @url  = url_sanitize( res.effective_url )
         @html = res.body
         @response_headers = res.headers_hash
     end
@@ -302,7 +301,7 @@ class Parser
             if( !elements[i]['attrs'] || !elements[i]['attrs']['action'] )
                 action = @url.to_s
             else
-                action = elements[i]['attrs']['action']
+                action = url_sanitize( elements[i]['attrs']['action'] )
             end
             action = URI.escape( action ).to_s
 
@@ -359,7 +358,7 @@ class Parser
         elements_by_name( 'a' ).each_with_index {
             |link|
 
-            link['href'] = to_absolute( link['href'] )
+            link['href'] = url_sanitize( to_absolute( link['href'] ) )
 
             if !link['href'] then next end
             if( exclude?( link['href'] ) ) then next end

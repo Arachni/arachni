@@ -75,36 +75,36 @@ class Spider
     #
     def run( &block )
         return if @opts.link_count_limit == 0
-        
+
         paths = []
         paths << @opts.url.to_s
-        
+
         visited = []
-        
+
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
                 next if skip?( url ) || !in_domain?( url )
-                
+
                 wait_if_paused
-                
+
                 visited << url
-                
+
                 opts = {
                     :timeout => nil,
                     :remove_id => true,
                     :async => @opts.spider_first
                 }
-                
+
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
                     |res|
-                        
+
                     print_line
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
-                        
+
                     page = Arachni::Parser.new( @opts, res ).run
                     page.url = url_sanitize( res.effective_url )
-                    
+
                     @sitemap |= page.paths.map { |path| url_sanitize( path ) }
                     paths    |= @sitemap - visited
 
@@ -115,15 +115,15 @@ class Spider
                             block.call( page.clone )
                         }
                     end
-    
+
                     # run blocks specified later
                     @on_every_page_blocks.each {
                         |block|
                         block.call( page )
                     }
-    
+
                 }
-                
+
                 Arachni::HTTP.instance.run if !@opts.spider_first
 
                 # make sure we obey the link count limit and
@@ -134,20 +134,20 @@ class Spider
                     return @sitemap.uniq
                 end
 
-                
+
             end
-            
+
             if @opts.spider_first
                 Arachni::HTTP.instance.run
             else
                 break
             end
-            
+
         end
 
         return @sitemap.uniq
     end
-    
+
     def skip?( url )
         @opts.exclude.each {
             |regexp|
@@ -174,13 +174,13 @@ class Spider
             end
         }
 
-        
+
         skip_cnt = 0
         @opts.include.each {
             |regexp|
             skip_cnt += 1 if !(regexp =~ url)
         }
-        
+
         return false if skip_cnt > 1
 
         return false
@@ -195,11 +195,11 @@ class Spider
     def pause!
         @pause = true
     end
-    
+
     def resume!
         @pause = false
     end
-    
+
     def paused?
         @pause ||= false
         return @pause
@@ -213,10 +213,10 @@ class Spider
     # @return [String]
     #
     def in_domain?( uri )
-        
+
         uri_1 = URI( uri.to_s )
         uri_2 = URI( @opts.url.to_s )
-        
+
         if( @opts.follow_subdomains )
             return extract_domain( uri_1 ) ==  extract_domain( uri_2 )
         end
@@ -240,19 +240,6 @@ class Spider
         if splits.length == 1 then return true end
 
         splits[-2] + "." + splits[-1]
-    end
-
-
-    #
-    # Decodes URLs to reverse multiple encodes and removes NULL characters
-    #
-    def url_sanitize( url )
-
-        while( url =~ /%/ )
-            url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
-        end
-
-        return url
     end
 
 

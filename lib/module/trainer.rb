@@ -27,6 +27,7 @@ class Trainer
 
     include Output
     include ElementDB
+    include Utilities
 
     attr_writer   :page
     attr_accessor :http
@@ -68,18 +69,6 @@ class Trainer
             raise e
         end
 
-    end
-
-    #
-    # Decodes URLs to reverse multiple encodes and removes NULL characters
-    #
-    def url_sanitize( url )
-
-        while( url =~ /%/ )
-            url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
-        end
-
-        return URI.encode( url )
     end
 
     def follow?( url )
