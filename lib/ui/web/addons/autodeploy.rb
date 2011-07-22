@@ -157,7 +157,7 @@ class AutoDeploy < Base
     def self.info
         {
             :name           => 'Auto-deploy',
-            :description    => %q{Allows you to automatically convert any SSH enabled Linux box into an Arachni Dispatcher.},
+            :description    => %q{Enables you to automatically convert any SSH enabled Linux box into an Arachni Dispatcher.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1'
         }
