@@ -344,14 +344,7 @@ class Server < Sinatra::Base
             @@arachni ||= nil
             if !@@arachni
 
-                d_url = ''
-                dispatchers.all.each {
-                    |dispatcher|
-                    if dispatchers.alive?( dispatcher['url'] )
-                        d_url = dispatcher['url']
-                        break
-                    end
-                }
+                d_url = dispatchers.first_alive.url
 
                 instance = dispatchers.connect( d_url ).dispatch( HELPER_OWNER )
                 instance_url = instances.port_to_url( instance['port'], d_url )
@@ -431,7 +424,7 @@ class Server < Sinatra::Base
     # @return   [Bool]  true if alive, redirect if not
     #
     def ensure_dispatcher
-        redirect '/dispatchers/edit' if dispatchers.all.empty?
+        redirect '/dispatchers/edit' if !dispatchers.first_alive
     end
 
     #

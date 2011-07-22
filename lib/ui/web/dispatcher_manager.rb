@@ -94,6 +94,15 @@ class DispatcherManager
         return false
     end
 
+    def first_alive
+        all.each {
+            |dispatcher|
+            return dispatcher if alive?( dispatcher.url )
+        }
+
+        return nil
+    end
+
     #
     # Provides statistics about running jobs etc using the dispatcher
     #
