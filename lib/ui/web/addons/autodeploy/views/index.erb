@@ -8,13 +8,14 @@
                 <fieldset>
                     <legend>SSH options:</legend>
                     Host: <input name="host" />
+                    Port: <input name="port" value="22" size="4" />
                     Username: <input name="username" />
                     Password (will not be stored): <input name="password" type="password" />
                 <fieldset>
 
                 <fieldset>
                     <legend>Dispatcher options:</legend>
-                    Port: <input name="port" value="7331" />
+                    Port: <input name="dispatcher_port" value="7331" />
                 <fieldset>
 
                 <%= csrf_tag %>
@@ -41,7 +42,8 @@
             <tr>
                 <th>ID</th>
                 <th>Host</th>
-                <th>Port</th>
+                <th>SSH Port</th>
+                <th>Dispatcher port</th>
                 <th>Username</th>
                 <th>Password</th>
                 <th>Running?</th>
@@ -55,9 +57,10 @@
                     <td><%=dep.id%></td>
                     <td><%=dep.host%></td>
                     <td><%=dep.port%></td>
+                    <td><%=dep.dispatcher_port%></td>
                     <td><%=dep.user%></td>
                     <td><input name="password" type="password" /></td>
-                    <td><%=is_alive = dispatchers.alive?( 'https://' + dep.host + ':' + dep.port )%></td>
+                    <td><%=is_alive = dispatchers.alive?( 'https://' + dep.host + ':' + dep.dispatcher_port )%></td>
                     <td><%=dep.created_at%></td>
                     <td>
                         <%= csrf_tag %>

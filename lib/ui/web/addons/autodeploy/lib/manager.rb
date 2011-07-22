@@ -40,11 +40,12 @@ class Manager
     class Deployment
         include DataMapper::Resource
 
-        property :id,           Serial
-        property :host,         String
-        property :port,         String
-        property :user,         String
-        property :created_at,   DateTime, :default => Time.now
+        property :id,               Serial
+        property :host,             String
+        property :port,             String
+        property :dispatcher_port,  String
+        property :user,             String
+        property :created_at,       DateTime, :default => Time.now
     end
 
     #
@@ -72,16 +73,21 @@ class Manager
             @@setup[url][:status] = 'working'
 
             begin
-                session = ssh( deployment.host, deployment.user, password )
+                session = ssh( deployment, password )
             rescue Exception => e
+                ap url
+                ap e
+                ap e.backtrace
+
                 @@setup[url][:status] = 'failed'
                 @@setup[url][:output] = e.to_s + "\n" + e.backtrace.join( "\n" )
                 @@setup[url][:code]   = 1
+
                 return
-             end
+            end
 
 
-            wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.port +
+            wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.dispatcher_port +
                 ARCHIVE_EXT + ' ' + ARCHIVE_PATH + ARCHIVE_NAME + ARCHIVE_EXT
             ret = ssh_exec!( deployment, session, wget )
 
@@ -90,7 +96,7 @@ class Manager
                 return
             end
 
-            mkdir = 'mkdir ' + ARCHIVE_NAME + '-' + deployment.port
+            mkdir = 'mkdir ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port
             ret = ssh_exec!( deployment, session,  mkdir )
 
             if ret[:code] != 0
@@ -99,8 +105,8 @@ class Manager
             end
 
 
-            tar = 'tar xvf ' + ARCHIVE_NAME + '-' + deployment.port + ARCHIVE_EXT +
-                ' -C ' + ARCHIVE_NAME + '-' + deployment.port
+            tar = 'tar xvf ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + ARCHIVE_EXT +
+                ' -C ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port
             ret = ssh_exec!( deployment, session,  tar )
 
             if ret[:code] != 0
@@ -109,7 +115,7 @@ class Manager
             end
 
 
-            chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.port + '/' +
+            chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + '/' +
                 ARCHIVE_NAME + '/' + EXEC
             ret = ssh_exec!( deployment, session, chmod )
 
@@ -136,7 +142,7 @@ class Manager
     def uninstall( deployment, password )
 
         begin
-            session = ssh( deployment.host, deployment.user, password )
+            session = ssh( deployment, password )
         rescue Exception => e
             return {
                 :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
@@ -145,7 +151,7 @@ class Manager
              }
          end
 
-        out = "\n" + rm = "rm -rf #{ARCHIVE_NAME}-#{deployment.port}*"
+        out = "\n" + rm = "rm -rf #{ARCHIVE_NAME}-#{deployment.dispatcher_port}*"
         ret = ssh_exec!( deployment, session, rm )
         out += "\n" + ret[:stdout] + "\n" + ret[:stderr]
 
@@ -156,8 +162,11 @@ class Manager
 
     def run( deployment, password )
        begin
-           session = ssh( deployment.host, deployment.user, password )
+           session = ssh( deployment, password )
        rescue Exception => e
+           ap e
+           ap e.backtrace
+
            return {
                :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
                :status => 'failed',
@@ -165,8 +174,8 @@ class Manager
            }
        end
 
-       session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.port + '/' +
-               ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.port +
+       session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + '/' +
+               ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.dispatcher_port +
            ' > arachni-xmlrpcd-startup.log 2>&1 &' )
 
        sleep( 5 )
@@ -175,11 +184,11 @@ class Manager
 
     def shutdown( deployment, password )
 
-       url =  "https://#{deployment.host}:#{deployment.port}"
+       url =  "https://#{deployment.host}:#{deployment.dispatcher_port}"
        proc = @settings.dispatchers.connect( url ).proc_info
 
        begin
-           session = ssh( deployment.host, deployment.user, password )
+           session = ssh( deployment, password )
        rescue Exception => e
            return {
                :output => e.to_s + "\n" + e.backtrace.join( "\n" ),
@@ -208,14 +217,20 @@ class Manager
         return ret
     end
 
-    def ssh( host, user, password )
+    def ssh( deployment, password )
         @@ssh ||= {}
-        @@ssh[user + '@' + host + '$' + Digest::MD5.hexdigest( password ) ] ||=
-            Net::SSH.start( host, user, :password => password )
+        @@ssh[get_url( deployment ) + '$' + Digest::MD5.hexdigest( password ) ] ||=
+            Net::SSH.start( deployment.host, deployment.user,
+                {
+                  :port     => deployment.port,
+                  :password => password
+                }
+            )
     end
 
     def get_url( deployment )
-        deployment.user + '@' + deployment.host + ':' + deployment.port
+        deployment.user + '@' + deployment.host + ':' + deployment.port.to_s +
+            '$' + deployment.dispatcher_port.to_s
     end
 
     def ssh_exec!( deployment, ssh, command )
