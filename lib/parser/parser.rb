@@ -64,7 +64,7 @@ class Parser
     # @abstract
     #
     class Paths
-    
+
         #
         # This method must be implemented by all modules and must return an array
         # of paths as plain strings
@@ -74,7 +74,7 @@ class Parser
         # @return   [Array<String>]  paths
         #
         def run( doc )
-    
+
         end
     end
     end
@@ -141,6 +141,16 @@ class Parser
 
         jar = preped.merge( jar )
 
+        c_links = links
+
+        if !( vars = link_vars( @url ) ).empty?
+            url = to_absolute( @url )
+            c_links << Arachni::Parser::Element::Link.new( url, {
+                'href' => url,
+                'vars' => vars
+            } )
+        end
+
         return Page.new( {
             :url         => @url,
             :query_vars  => link_vars( @url ),
@@ -149,7 +159,7 @@ class Parser
             :response_headers     => @response_headers,
             :paths       => paths(),
             :forms       => @opts.audit_forms ? forms() : [],
-            :links       => @opts.audit_links ? links() : [],
+            :links       => @opts.audit_links ? c_links : [],
             :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
             :cookiejar   => jar
         } )
@@ -508,13 +518,13 @@ class Parser
 
         relative = URI( link )
         absolute = base_url.merge( relative )
-      
+
         absolute.path = '/' if absolute.path && absolute.path.empty?
-      
+
         return absolute.to_s
     end
 
-    
+
     def base
         begin
             tmp = doc.search( '//base[@href]' )
@@ -590,7 +600,7 @@ class Parser
 
         begin
             @@manager ||= ::Arachni::ComponentManager.new( lib, Extractors )
-            
+
             return @@manager.available.map {
                 |name|
                 @@manager[name].new.run( doc )
