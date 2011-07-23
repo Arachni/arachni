@@ -40,7 +40,9 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 
 #
 #
-# Provides a web user interface for the Arachni Framework using Sinatra.<br/>
+# Provides a web user interface for the Arachni Framework using Sinatra.
+#
+# It's basically an XMLRPC client for Dispatchers and Instances wearing a pretty frock.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

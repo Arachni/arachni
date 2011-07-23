@@ -23,12 +23,24 @@ module Web
 module Utilities
 
     #
+    # Escapes HTML chars.
+    #
+    # @param    [String]    str
+    #
+    # @return   [String]
+    #
     # @see CGI.escapeHTML
     #
     def escape( str )
         CGI.escapeHTML( str )
     end
 
+    #
+    # Unescapes HTML chars.
+    #
+    # @param    [String]    str
+    #
+    # @return   [String]
     #
     # @see CGI.unescapeHTML
     #
@@ -70,6 +82,13 @@ module Utilities
         return hash
     end
 
+    #
+    # Parses datetime strings such as 07/23/2011 15:34 into Time objects.
+    #
+    # @param    [String]    datetime
+    #
+    # @return   [Time]
+    #
     def parse_datetime( datetime )
         date, time = datetime.split( ' ' )
 
@@ -80,9 +99,13 @@ module Utilities
     end
 
     #
-    # Converts a port to a URL instance.
+    # Constructs an instance URL by port using its dispatcher's url.
     #
     # @param    [Integer]   port
+    # @param    [String]   dispatcher_url   URL of the dispatcher
+    # @param    [Bool]     no_scheme        include scheme in the URL?
+    #
+    # @return   [String]
     #
     def port_to_url( port, dispatcher_url, no_scheme = nil )
         uri = URI( dispatcher_url )
