@@ -17,11 +17,10 @@ module Module
 # Included by {Module::Base} and provides abstract audit methods.
 #
 # There are 3 main types of audit techniques available:
-#  * Pattern matching -- audit()
-#  * Timing attacks -- audit_timeout()
-#  * Differential analysis attacks -- audit_rdiff()
+# * Pattern matching -- {#audit}
+# * Timing attacks -- {#audit_timeout}
+# * Differential analysis attacks -- {#audit_rdiff}
 #
-# audit() and audit_timeout()
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -252,7 +251,11 @@ module Auditor
     end
 
     #
-    # Provides easy access to element auditing.
+    # Provides easy access to element auditing using simple injection and pattern
+    # matching.
+    #
+    # If a block has been provided analysis and logging will be delegated to it,
+    # otherwise, if a match is found it will be automatically logged.
     #
     # If no elements have been specified in 'opts' it will
     # use the elements from the module's "self.info()" hash. <br/>
@@ -262,12 +265,12 @@ module Auditor
     #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
+    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
+    #                                  * HTTP response
+    #                                  * options
+    #                                  * element
+    #                                  The block will be called as soon as the
+    #                                  HTTP response is received.
     #
     def audit( injection_str, opts = { }, &block )
 
@@ -331,7 +334,7 @@ module Auditor
     # If we have a result in phase 1, phase 2 verifies that result with the higher timeout.
     #
     # @param   [Array]     strings     injection strings
-    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    #                                       __TIME__ will be substituded with (timeout / timeout_divider)
     # @param  [Hash]        opts        options as described in {OPTIONS}
     #
     def audit_timeout( strings, opts )
@@ -423,6 +426,41 @@ module Auditor
         }
     end
 
+    #
+    # Audits all elements types in opts[:elements] (or self.class.info[:elements]
+    # if there are none in opts) using differential analysis attacks.
+    #
+    #    opts = {
+    #        :precision => 3,
+    #        :faults    => [ 'fault injections' ],
+    #        :bools     => [ 'boolean injections' ]
+    #    }
+    #
+    #    audit_rdiff( opts )
+    #
+    # Here's how it goes:
+    #   let default be the default/original response
+    #   let fault   be the response of the fault injection
+    #   let bool    be the response of the boolean injection
+    #
+    #   a vulnerability is logged if default == bool AND bool.code == 200 AND fault != bool
+    #
+    # If a block has been provided analysis and logging will be delegated to it.
+    #
+    # @param    [Hash]      opts        available options:
+    #                                   * :format -- as seen in {OPTIONS}
+    #                                   * :elements -- as seen in {OPTIONS}
+    #                                   * :train -- as seen in {OPTIONS}
+    #                                   * :precision -- amount of rdiff iterations
+    #                                   * :faults -- array of fault injection strings (these are supposed to force erroneous conditions when interpreted)
+    #                                   * :bools -- array of boolean injection strings (these are supposed to not alter the webapp behavior when interpreted)
+    # @param    [Block]     &block      block to be used for custom analysis of responses; will be passed the following:
+    #                                   * injected string
+    #                                   * audited element
+    #                                   * default response body
+    #                                   * boolean response
+    #                                   * fault injection response body
+    #
     def audit_rdiff( opts = {}, &block )
 
         if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
@@ -483,12 +521,11 @@ module Auditor
     end
 
     #
-    # Audits an element using an rdiff attack.
+    # Audits a single element using an rdiff attack.
     #
     # @param   [Arachni::Element::Auditable]     elem     the element to audit
-    # @param    [Hash]      opts        options as described in {OPTIONS}
-    # @param    [Block]     &block      block to call with the injected string,
-    #                                       original response, boolean response and fault injection response
+    # @param    [Hash]      opts        same as for {#audit_rdiff}
+    # @param    [Block]     &block      same as for {#audit_rdiff}
     #
     def audit_rdiff_elem( elem, opts = {}, &block )
 
@@ -685,15 +722,10 @@ module Auditor
     #
     # Audits Auditalble HTML/HTTP elements
     #
-    # @param  [Array<Arachni::Element::Auditable>]  elements    auditable elements to audit
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
+    # @param  [Array<Arachni::Element::Auditable>]  elements    elements to audit
+    # @param  [String]  injection_str  same as for {#audit}
+    # @param  [Hash]    opts           same as for {#audit}
+    # @param  [Block]   &block         same as for {#audit}
     #
     # @see #method_missing
     #
