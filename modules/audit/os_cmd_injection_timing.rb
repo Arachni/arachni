@@ -50,7 +50,7 @@ class OSCmdInjectionTiming < Arachni::Module::Base
 
         @__opts = {
             :format  => [ Format::STRAIGHT ],
-            :timeout => 4000,
+            :timeout => 10000,
             :timeout_divider => 1000
         }
 
