@@ -14,8 +14,14 @@ module Module
 #
 # Auditor module
 #
-# Included by {Module::Base}.<br/>
-# Includes audit methods.
+# Included by {Module::Base} and provides abstract audit methods.
+#
+# There are 3 main types of audit techniques available:
+#  * Pattern matching -- audit()
+#  * Timing attacks -- audit_timeout()
+#  * Differential analysis attacks -- audit_rdiff()
+#
+# audit() and audit_timeout()
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -417,21 +423,15 @@ module Auditor
         }
     end
 
-    #
-    # Audits an element using an rdiff attack.
-    #
-    # @param   [Arachni::Element::Auditable]     elem     the element to audit
-    # @param    [Hash]      opts        options as described in {OPTIONS}
-    # @param    [Block]     &block      block to call with the injected string,
-    #                                       original response, boolean response and fault injection response
-    #
-    def audit_rdiff( elem, opts = {}, &block )
+    def audit_rdiff( opts = {}, &block )
 
-        # don't continue if there's a missing value
-        elem.auditable.values.each {
-            |val|
-            return if !val || val.empty?
-        }
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = self.class.info[:elements]
+        end
+
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = OPTIONS[:elements]
+        end
 
         opts = {
             # append our seeds to the default values
@@ -441,6 +441,65 @@ module Auditor
             # amound of rdiff iterations
             :precision   => 2
         }.merge( opts )
+
+        opts[:elements].each {
+            |elem|
+
+            case elem
+
+                when  Element::LINK
+                    next if !Options.instance.audit_links
+                    @page.links.each {
+                        |elem|
+                        audit_rdiff_elem( elem, opts, &block )
+                    }
+
+                when  Element::FORM
+                    next if !Options.instance.audit_forms
+                    @page.forms.each {
+                        |elem|
+                        audit_rdiff_elem( elem, opts, &block )
+                    }
+
+                when  Element::COOKIE
+                    next if !Options.instance.audit_cookies
+                    @page.cookies.each {
+                        |elem|
+                        audit_rdiff_elem( elem, opts, &block )
+                    }
+
+                when  Element::HEADER
+                    next if !Options.instance.audit_headers
+                    @page.headers.each {
+                        |elem|
+                        audit_rdiff_elem( elem, opts, &block )
+                    }
+                else
+                    raise( 'Unknown element to audit:  ' + elem.to_s )
+
+            end
+
+        }
+    end
+
+    #
+    # Audits an element using an rdiff attack.
+    #
+    # @param   [Arachni::Element::Auditable]     elem     the element to audit
+    # @param    [Hash]      opts        options as described in {OPTIONS}
+    # @param    [Block]     &block      block to call with the injected string,
+    #                                       original response, boolean response and fault injection response
+    #
+    def audit_rdiff_elem( elem, opts = {}, &block )
+
+        # don't continue if there's a missing value
+        elem.auditable.values.each {
+            |val|
+            return if !val || val.empty?
+        }
+
+        return if __rdiff_audited?( elem )
+        __rdiff_audited!( elem )
 
         responses = {
             :orig => nil,
@@ -535,7 +594,7 @@ module Auditor
                     |res|
 
                     if block
-                        block.call( res['str'], responses[:orig], res['res'], responses[:bad][key] )
+                        block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
                     elsif( responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
                         !@http.custom_404?( res['res'] ) && res['res'].code == 200 )
@@ -579,6 +638,20 @@ module Auditor
                 }
             }
         }
+    end
+
+    def __rdiff_audited!( elem )
+        @@__audited_rdiff ||= Set.new
+        @@__audited_rdiff << __rdiff_audit_id( elem )
+    end
+
+    def __rdiff_audited?( elem )
+        @@__audited_rdiff ||= Set.new
+        @@__audited_rdiff.include?( __rdiff_audit_id( elem ) )
+    end
+
+    def __rdiff_audit_id( elem )
+        elem.action + elem.auditable.keys.to_s
     end
 
     #

@@ -35,45 +35,22 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         super( page )
     end
 
-    def prepare( )
-        # used for redundancy checks
-        @@__audited ||= Set.new
-    end
-
     def run( )
 
         opts = {}
 
+        # fault injection seeds
         opts[:faults] = [ '\'"`' ]
 
+        # boolean injection seeds
         opts[:bools] = []
         [ '\'', '"', '' ].each {
             |str|
             opts[:bools] << '%s and %s1' % [str, str]
         }
 
-
-        [ @page.links | @page.forms ].flatten.each {
-            |elem|
-            next if __audited?( elem )
-            audit_rdiff( elem, opts )
-            __auditted!( elem )
-        }
-
+        audit_rdiff( opts )
     end
-
-    def __auditted!( elem )
-        @@__audited << __audit_id( elem )
-    end
-
-    def __audited?( elem )
-        @@__audited.include?( __audit_id( elem ) )
-    end
-
-    def __audit_id( elem )
-        elem.action + elem.auditable.keys.to_s
-    end
-
 
     def self.info
         {
@@ -85,7 +62,8 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                     If this module returns a positive result you should investigate nonetheless.)},
             :elements       => [
                 Issue::Element::LINK,
-                Issue::Element::FORM
+                Issue::Element::FORM,
+                Issue::Element::COOKIE
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version         => '0.3',
