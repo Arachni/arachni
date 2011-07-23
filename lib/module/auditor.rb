@@ -20,7 +20,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.3
+# @version: 0.3
 #
 module Auditor
 
@@ -413,6 +413,170 @@ module Auditor
             audit( str, opts ) {
                 |res, opts, elem|
                 block.call( res, opts, elem ) if block && res.timed_out?
+            }
+        }
+    end
+
+    #
+    # Audits an element using an rdiff attack.
+    #
+    # @param   [Arachni::Element::Auditable]     elem     the element to audit
+    # @param    [Hash]      opts        options as described in {OPTIONS}
+    # @param    [Block]     &block      block to call with the injected string,
+    #                                       original response, boolean response and fault injection response
+    #
+    def audit_rdiff( elem, opts = {}, &block )
+
+        # don't continue if there's a missing value
+        elem.auditable.values.each {
+            |val|
+            return if !val || val.empty?
+        }
+
+        opts = {
+            # append our seeds to the default values
+            :format      => [ Format::APPEND ],
+            # allow duplicate requests
+            :redundant   => true,
+            # amound of rdiff iterations
+            :precision   => 2
+        }.merge( opts )
+
+        responses = {
+            :orig => nil,
+            :good => {},
+            :bad  => {},
+            :bad_total  => 0,
+            :good_total => 0
+        }
+
+        elem.auditor( self )
+        opts[:precision].times {
+            elem.audit( '', opts ) {
+                |res|
+                responses[:orig] ||= res.body
+                # remove context-irrelevant dynamic content like banners and such
+                # from the error page
+                responses[:orig] = responses[:orig].rdiff( res.body )
+            }
+        }
+
+        opts[:precision].times {
+            opts[:faults].each {
+                |str|
+
+                # get injection variations that will hopefully cause an internal/silent
+                # SQL error
+                variations = elem.injection_sets( str, opts )
+
+                responses[:bad_total] =  variations.size
+
+                variations.each {
+                    |c_elem|
+
+                    print_status( c_elem.get_status_str( c_elem.altered ) )
+
+                    # register us as the auditor
+                    c_elem.auditor( self )
+                    # submit the link and get the response
+                    c_elem.submit( opts ).on_complete {
+                        |res|
+
+                        responses[:bad][c_elem.altered] ||= res.body.clone
+
+                        # remove context-irrelevant dynamic content like banners and such
+                        # from the error page
+                        responses[:bad][c_elem.altered] =
+                            responses[:bad][c_elem.altered].rdiff( res.body.clone )
+                    }
+                }
+            }
+        }
+
+        opts[:bools].each {
+            |str|
+
+            # get injection variations that will hopefully cause an internal/silent
+            # SQL error
+            variations = elem.injection_sets( str, opts )
+
+            responses[:good_total] =  variations.size
+
+            variations.each {
+                |c_elem|
+
+                print_status( c_elem.get_status_str( c_elem.altered ) )
+
+                # register us as the auditor
+                c_elem.auditor( self )
+                # submit the link and get the response
+                c_elem.submit( opts ).on_complete {
+                    |res|
+
+                    responses[:good][c_elem.altered] ||= []
+
+                    # save the response for later analysis
+                    responses[:good][c_elem.altered] << {
+                        'str'  => str,
+                        'res'  => res,
+                        'elem' => c_elem
+                    }
+                }
+            }
+        }
+
+
+        @http.after_run {
+
+            responses[:good].keys.each {
+                |key|
+
+                responses[:good][key].each {
+                    |res|
+
+                    if block
+                        block.call( res['str'], responses[:orig], res['res'], responses[:bad][key] )
+                    elsif( responses[:orig] == res['res'].body &&
+                        responses[:bad][key] != res['res'].body &&
+                        !@http.custom_404?( res['res'] ) && res['res'].code == 200 )
+
+                        url = res['res'].effective_url
+
+                        # since we bypassed the auditor completely we need to create
+                        # our own opts hash and pass it to the Vulnerability class.
+                        #
+                        # this is only required for Metasploitable vulnerabilities
+                        opts = {
+                            :injected_orig => res['str'],
+                            :combo         => res['elem'].auditable
+                        }
+
+                        issue = Issue.new( {
+                                :var          => key,
+                                :url          => url,
+                                :method       => res['res'].request.method.to_s,
+                                :opts         => opts,
+                                :injected     => res['str'],
+                                :id           => res['str'],
+                                :regexp       => 'n/a',
+                                :regexp_match => 'n/a',
+                                :elem         => res['elem'].type,
+                                :response     => res['res'].body,
+                                :verification => true,
+                                :headers      => {
+                                    :request    => res['res'].request.headers,
+                                    :response   => res['res'].headers,
+                                }
+                            }.merge( self.class.info )
+                        )
+
+                        print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
+
+                        # register our results with the system
+                        register_results( [ issue ] )
+                    end
+
+                }
             }
         }
     end

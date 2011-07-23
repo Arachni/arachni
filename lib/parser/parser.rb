@@ -358,13 +358,14 @@ class Parser
         elements_by_name( 'a' ).each_with_index {
             |link|
 
-            link['href'] = url_sanitize( to_absolute( link['href'] ) )
+            link['href'] = to_absolute( link['href'] )
 
             if !link['href'] then next end
             if( exclude?( link['href'] ) ) then next end
             if( !include?( link['href'] ) ) then next end
             if !in_domain?( URI.parse( link['href'] ) ) then next end
 
+            link['href'] = url_sanitize( link['href'] )
             link['vars'] = link_vars( link['href'] )
 
 
