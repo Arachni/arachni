@@ -14,6 +14,7 @@
    - Fixed bug when IP addresses are used, instead of hostnames, for the Dispatchers.
 - Parser
    - Form action attributes are now sanitized using iterative URI decoding.
+   - Link variables are extracted before URL sanitization takes place in order to keep values with URL-encoded characters intact.
    - The link variables of any current page's URL are now pushed to 'page.links'.
 - Auditor
    - Abstracted the rDiff audit methods from the "Blind (rDiff) SQL Injection" module and moved them in the Auditor.

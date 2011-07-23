@@ -365,9 +365,13 @@ class Parser
             if( !include?( link['href'] ) ) then next end
             if !in_domain?( URI.parse( link['href'] ) ) then next end
 
-            link['href'] = url_sanitize( link['href'] )
-            link['vars'] = link_vars( link['href'] )
+            link['vars'] = {}
+            link_vars( link['href'] ).each_pair {
+                |key, val|
+                link['vars'][key] = url_sanitize( val )
+            }
 
+            link['href'] = url_sanitize( link['href'] )
 
             link_arr << Element::Link.new( @url, link )
 
