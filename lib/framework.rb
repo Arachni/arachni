@@ -256,6 +256,15 @@ class Framework
             audit_queue if !@opts.spider_first
         }
 
+        exception_jail {
+            if !Arachni::Module::Auditor.timeout_audit_queue.empty?
+                print_line
+                print_status( 'Verifying timing-attack candidates.' )
+                print_info( '---------------------------------------' )
+                Arachni::Module::Auditor.audit_timeout_queue
+            end
+        }
+
         audit_queue
 
         if( @opts.http_harvest_last )

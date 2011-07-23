@@ -49,6 +49,11 @@ class Auditable
         @auditor = auditor
     end
 
+    def get_auditor
+        @auditor
+    end
+
+
     #
     # Delegate output related methods to the auditor
     #

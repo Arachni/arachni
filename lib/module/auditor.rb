@@ -338,7 +338,8 @@ module Auditor
     # @param  [Hash]        opts        options as described in {OPTIONS}
     #
     def audit_timeout( strings, opts )
-        logged = Set.new
+        @@__timeout_audited     ||= Set.new
+        @@__timeout_audit_queue ||= Queue.new
 
         delay = opts[:timeout]
 
@@ -346,38 +347,57 @@ module Auditor
         timing_attack( strings, opts ) {
             |res, opts, elem|
 
-            if !logged.include?( opts[:altered] )
-                logged << opts[:altered]
-                audit_timeout_phase_2( elem )
+            if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+                elem.auditor( self )
+                @@__timeout_audited << __rdiff_audit_id( elem )
+                print_info( 'Found a candidate.' )
+                @@__timeout_audit_queue << elem
             end
         }
+    end
+
+    def self.timeout_audit_queue
+        @@__timeout_audit_queue ||= Queue.new
+    end
+
+
+    def self.audit_timeout_queue
+        @@__timeout_audit_queue ||= Queue.new
+
+        while( !@@__timeout_audit_queue.empty? )
+            elem = @@__timeout_audit_queue.pop
+            self.audit_timeout_phase_2( elem )
+            elem.get_auditor.http.run
+        end
     end
 
     #
     # Runs phase 2 of the timing attack auditng an individual element
     # (which passed phase 1) with a higher delay and timeout
     #
-    def audit_timeout_phase_2( elem )
+    def self.audit_timeout_phase_2( elem )
 
         opts = elem.opts
         opts[:timeout] *= 2
-
-        audit_timeout_debug_msg( 2, opts[:timeout] )
+        # self.audit_timeout_debug_msg( 2, opts[:timeout] )
 
         str = opts[:timing_string].gsub( '__TIME__',
-            (( opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
+            ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-        elem.auditor( self )
+        # elem.auditor( self )
 
         elem.auditable = elem.orig
+        c_opts = opts.merge( :format  => [ Format::APPEND ], :redundant => true,
+            :timeout => (opts[:timeout] * 0.7).ceil )
+
         # this is the control; submit the element with an empty seed to make sure
         # that the web page is alive i.e won't time-out by default
-        elem.audit( '', opts.merge( :format  => [ Format::APPEND ], :redundant => true ) ) {
+        elem.audit( '', c_opts ) {
             |res|
 
             if !res.timed_out?
 
-                print_info( 'Liveness check was successful, progressing to verification...' )
+                elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
 
                 elem.audit( str, opts ) {
                     |res, opts|
@@ -387,13 +407,13 @@ module Auditor
                         # all issues logged by timing attacks need manual verification.
                         # end of story.
                         opts[:verification] = true
-                        log( opts, res)
+                        elem.get_auditor.log( opts, res)
                     else
-                        print_info( 'Verification failed.' )
+                        elem.get_auditor.print_info( 'Verification failed.' )
                     end
                 }
             else
-                print_info( 'Liveness check failed, bailing out...' )
+                elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
             end
         }
 
