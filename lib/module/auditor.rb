@@ -452,6 +452,7 @@ module Auditor
 
         elem.auditor( self )
         opts[:precision].times {
+            # get the default responses
             elem.audit( '', opts ) {
                 |res|
                 responses[:orig] ||= res.body
@@ -496,8 +497,7 @@ module Auditor
         opts[:bools].each {
             |str|
 
-            # get injection variations that will hopefully cause an internal/silent
-            # SQL error
+            # get injection variations that will not affect the outcome of the query
             variations = elem.injection_sets( str, opts )
 
             responses[:good_total] =  variations.size
@@ -525,7 +525,7 @@ module Auditor
             }
         }
 
-
+        # when this runs the 'responses' hash will have been populated
         @http.after_run {
 
             responses[:good].keys.each {
