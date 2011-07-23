@@ -34,7 +34,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.5
+# @version: 0.2.6
 #
 class HTTP
 
@@ -129,7 +129,7 @@ class HTTP
             :user_agent      => opts.user_agent,
             :follow_location => false,
             :disable_ssl_peer_verification => true,
-            :timeout         => 10000
+            :timeout         => 50000
         }.merge( proxy_opts )
 
         @request_count  = 0
@@ -320,6 +320,7 @@ class HTTP
         params    = opts[:params]    || {}
         remove_id = opts[:remove_id]
         train     = opts[:train]
+        timeout   = opts[:timeout]
 
         follow_location    = opts[:follow_location]    || false
 
@@ -363,8 +364,9 @@ class HTTP
                 :headers       => headers,
                 :params        => cparams.empty? ? nil : cparams,
                 :follow_location => follow_location,
-                :timeout       => opts[:timeout]
             }.merge( @opts )
+
+            opts[:timeout] = timeout if timeout
 
             req = Typhoeus::Request.new( curl, opts )
             req.train! if train
@@ -391,6 +393,8 @@ class HTTP
 
         params    = opts[:params]
         train     = opts[:train]
+        timeout   = opts[:timeout]
+
 
         async     = opts[:async]
         async     = true if async == nil
@@ -407,6 +411,8 @@ class HTTP
                 :follow_location => false,
                 :timeout       => opts[:timeout]
             }.merge( @opts )
+
+            opts[:timeout] = timeout if timeout
 
             req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
@@ -474,6 +480,8 @@ class HTTP
         cookies   = opts[:params] || {}
         # params    = opts[:params]
         train     = opts[:train]
+        timeout   = opts[:timeout]
+
 
         async     = opts[:async]
         async     = true if async == nil
@@ -492,6 +500,8 @@ class HTTP
                 # :params          => params
                 :timeout       => opts[:timeout]
             }.merge( @opts )
+            opts[:timeout] = timeout if timeout
+
 
             req = Typhoeus::Request.new( normalize_url( url ), opts )
             req.train! if train
