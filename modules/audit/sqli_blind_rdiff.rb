@@ -35,19 +35,28 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         super( page )
     end
 
+    def prepare
+        @@__bools ||= []
+
+        if @@__bools.empty?
+            read_file( 'payloads.txt' ) {
+                |str|
+
+                [ '\'', '"', '' ].each {
+                    |quote|
+                    @@__bools << str.gsub( '%q%', quote )
+                }
+            }
+        end
+    end
+
     def run( )
 
         opts = {}
-
         # fault injection seeds
         opts[:faults] = [ '\'"`' ]
-
         # boolean injection seeds
-        opts[:bools] = []
-        [ '\'', '"', '' ].each {
-            |str|
-            opts[:bools] << '%s and %s1' % [str, str]
-        }
+        opts[:bools] = @@__bools
 
         audit_rdiff( opts )
     end
