@@ -15,6 +15,11 @@
 - Parser
    - Form action attributes are now sanitized using iterative URI decoding.
    - The link variables of any current page's URL are now pushed to 'page.links'.
+- Auditor
+   - Abstracted the rDiff audit methods from the "Blind (rDiff) SQL Injection" module and moved them in the Auditor.
+- Modules
+   - Audit
+      - Blind (rDiff) SQL Injection: Updated to also audit forms.
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
