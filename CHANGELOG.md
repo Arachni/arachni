@@ -2,6 +2,8 @@
 # ChangeLog
 
 ## Version 0.3 _(Under development)_
+- HTTP client
+   - Fixed race condition in timeout options.
 - Spider (**New**)
    - Replaced Anemone with a lightweight custom-written spider.
 - WebUI
