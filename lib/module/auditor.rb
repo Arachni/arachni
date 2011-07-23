@@ -365,15 +365,19 @@ module Auditor
         audit_timeout_debug_msg( 2, opts[:timeout] )
 
         str = opts[:timing_string].gsub( '__TIME__',
-            ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+            ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
         elem.auditor( self )
 
-        # this is the control; audit the element with an empty seed to make sure
+        elem.auditable = elem.orig
+        # this is the control; submit the element with an empty seed to make sure
         # that the web page is alive i.e won't time-out by default
-        elem.audit( '' , opts ) {
-            |res, opts|
+        elem.audit( '', opts.merge( :format  => [ Format::APPEND ], :redundant => true ) ) {
+            |res|
+
             if !res.timed_out?
+
+                print_info( 'Liveness check was successful, progressing to verification...' )
 
                 elem.audit( str, opts ) {
                     |res, opts|
@@ -384,9 +388,12 @@ module Auditor
                         # end of story.
                         opts[:verification] = true
                         log( opts, res)
+                    else
+                        print_info( 'Verification failed.' )
                     end
                 }
-
+            else
+                print_info( 'Liveness check failed, bailing out...' )
             end
         }
 

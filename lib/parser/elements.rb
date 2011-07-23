@@ -48,6 +48,8 @@ class Base < Arachni::Element::Auditable
 
     attr_accessor :auditable
 
+    attr_accessor :orig
+
     #
     # Relatively 'raw' hash holding the element's attributes, values, etc.
     #
@@ -113,6 +115,8 @@ class Link < Base
         @method = 'get'
 
         @auditable = @raw['vars']
+        @orig      = @auditable.deep_clone
+        @orig.freeze
     end
 
     def http_request( url, opts )
@@ -155,6 +159,8 @@ class Form < Base
         @method = @raw['attrs']['method']
 
         @auditable = simple['auditable'] || {}
+        @orig      = @auditable.deep_clone
+        @orig.freeze
     end
 
     def http_request( url, opts )
@@ -248,6 +254,9 @@ class Cookie < Base
             |cookie|
             Options.instance.exclude_cookies.include?( cookie )
         }
+
+        @orig      = @auditable.deep_clone
+        @orig.freeze
     end
 
     def http_request( url, opts )
@@ -274,6 +283,8 @@ class Header < Base
         @method = 'header'
 
         @auditable = @raw
+        @orig      = @auditable.deep_clone
+        @orig.freeze
     end
 
     def http_request( url, opts )
