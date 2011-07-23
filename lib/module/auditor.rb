@@ -365,7 +365,7 @@ module Auditor
         audit_timeout_debug_msg( 2, opts[:timeout] )
 
         str = opts[:timing_string].gsub( '__TIME__',
-            ( opts[:timeout] / opts[:timeout_divider] ).to_s )
+            (( opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
 
         elem.auditor( self )
 
@@ -425,7 +425,7 @@ module Auditor
             |str|
 
             opts[:timing_string] = str
-            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3000) / opts[:timeout_divider] ).to_s )
+            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
             audit( str, opts ) {
                 |res, opts, elem|
                 block.call( res, opts, elem ) if block && res.timed_out?
