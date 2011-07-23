@@ -19,7 +19,7 @@
    - Abstracted the rDiff audit methods from the "Blind (rDiff) SQL Injection" module and moved them in the Auditor.
 - Modules
    - Audit
-      - Blind (rDiff) SQL Injection: Updated to also audit forms.
+      - Blind (rDiff) SQL Injection: Updated to support all element types (Links, Forms, Cookies, Headers).
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
