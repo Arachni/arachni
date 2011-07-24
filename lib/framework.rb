@@ -257,11 +257,11 @@ class Framework
         }
 
         exception_jail {
-            if !Arachni::Module::Auditor.timeout_audit_queue.empty?
+            if !Arachni::Module::Auditor.timeout_audit_blocks.empty?
                 print_line
-                print_status( 'Verifying timing-attack candidates.' )
+                print_status( 'Running timing attacks.' )
                 print_info( '---------------------------------------' )
-                Arachni::Module::Auditor.audit_timeout_queue
+                Arachni::Module::Auditor.run_timeout_audit
             end
         }
 

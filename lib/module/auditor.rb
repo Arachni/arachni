@@ -348,28 +348,36 @@ module Auditor
         @@__timeout_audited     ||= Set.new
         @@__timeout_audit_queue ||= Queue.new
 
-        delay = opts[:timeout]
+        @@__timeout_audit_blocks ||= Queue.new
 
-        audit_timeout_debug_msg( 1, delay )
-        timing_attack( strings, opts ) {
-            |res, opts, elem|
+        @@__timeout_audit_blocks << Proc.new {
+            delay = opts[:timeout]
 
-            if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
-                elem.auditor( self )
-                @@__timeout_audited << __rdiff_audit_id( elem )
-                print_info( 'Found a candidate.' )
-                @@__timeout_audit_queue << elem
-            end
+            audit_timeout_debug_msg( 1, delay )
+            timing_attack( strings, opts ) {
+                |res, opts, elem|
+
+                if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+                    elem.auditor( self )
+                    @@__timeout_audited << __rdiff_audit_id( elem )
+                    print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
+                    @@__timeout_audit_queue << elem
+                end
+            }
         }
     end
 
-    def self.timeout_audit_queue
-        @@__timeout_audit_queue ||= Queue.new
+    def self.timeout_audit_blocks
+        @@__timeout_audit_blocks ||= Queue.new
     end
 
 
-    def self.audit_timeout_queue
+    def self.run_timeout_audit
         @@__timeout_audit_queue ||= Queue.new
+
+        while( !@@__timeout_audit_blocks.empty? )
+            @@__timeout_audit_blocks.pop.call
+        end
 
         while( !@@__timeout_audit_queue.empty? )
             elem = @@__timeout_audit_queue.pop

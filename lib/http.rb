@@ -129,7 +129,7 @@ class HTTP
             :user_agent      => opts.user_agent,
             :follow_location => false,
             :disable_ssl_peer_verification => true,
-            :timeout         => 10000
+            :timeout         => 20000
         }.merge( proxy_opts )
 
         @request_count  = 0
