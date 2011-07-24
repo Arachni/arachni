@@ -22,8 +22,14 @@
    - Abstracted the rDiff audit methods from the "Blind (rDiff) SQL Injection" module and moved them in the Auditor.
    - Timing attack technique has been greatly improved and all timing attacks are now scheduled to run at the end of the scan.
 - Modules
+   - API
+      - Added the "redundant()" method -- Allows a module to prevents itself from auditting elements that have been previously logged by other modules.
+      - Modules are now passed an instance of the framework.
    - Audit
-      - Blind (rDiff) SQL Injection: Updated to support all element types (Links, Forms, Cookies, Headers).
+      - Blind (rDiff) SQL Injection
+         - Updated to support all element types (Links, Forms, Cookies, Headers).
+         - Optimized using the new "redundant()" method -- It will no longer log elements that have been previously logged by the 'sqli' or 'sqli_blind_rdiff' modules.
+
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
