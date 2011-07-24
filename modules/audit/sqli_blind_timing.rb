@@ -55,6 +55,10 @@ class BlindTimingSQLInjection < Arachni::Module::Base
         audit_timeout( @@__injection_str, @__opts )
     end
 
+    def redundant
+        [ 'sqli', 'sqli_blind_rdiff' ]
+    end
+
     def self.info
         {
             :name           => 'Blind (timing) SQL injection',

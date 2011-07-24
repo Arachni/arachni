@@ -319,8 +319,20 @@ module Auditor
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
-
         @@__timeout_audited ||= Set.new
+
+        redundant_names = redundant.map { |mod| @framework.modules[mod].info[:name] }
+
+        @framework.modules.results.each {
+            |issue|
+            next if !redundant_names.include?( issue.mod_name )
+
+            if issue.elem == elem.type && issue.var == elem.altered &&
+               issue.url == elem.action
+               return true
+            end
+        }
+
 
         if !@@__timeout_audited.empty?
             return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
