@@ -320,7 +320,7 @@ module Auditor
     #
     def skip?( elem )
 
-        @@__timeout_audited     ||= Set.new
+        @@__timeout_audited ||= Set.new
 
         if !@@__timeout_audited.empty?
             return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
@@ -331,18 +331,32 @@ module Auditor
 
 
     #
-    # Audits elements using a 2 phase timing attack and logs results.
+    # Audits elements using timing attacks and automatically logs results.
     #
-    # 'opts' needs to contain a :timeout value in milliseconds.</br>
-    # Optionally, you can add a :timeout_divider.
+    # Here's how it works:
+    # * Loop 1 -- Populating the candidate queue.
+    #   - Initial probing for candidates -- Any element that times out is added to a queue.
+    #   - Stabilization -- The candidate is submited with its default values in
+    #     order to wait until the effects of the timing attack have wore off.
+    # * Loop 2 -- Verifying the candidates.
+    #   - Liveness test -- Ensures that stabilization was successful before moving on.
+    #   - Verification using an increased timeout -- Any elements that time out again are logged.
+    #   - Stabilization
     #
-    # Phase 1 uses the timeout value passed in opts, phase 2 uses (timeout * 2). </br>
-    # If phase 1 fails, phase 2 is aborted. </br>
-    # If we have a result in phase 1, phase 2 verifies that result with the higher timeout.
+    #    opts = {
+    #        :format  => [ Format::STRAIGHT ],
+    #        :timeout => 4000,
+    #        :timeout_divider => 1000
+    #    }
+    #
+    #    audit_timeout( [ 'sleep( __TIME__ );' ], opts )
+    #
     #
     # @param   [Array]     strings     injection strings
     #                                       __TIME__ will be substituded with (timeout / timeout_divider)
-    # @param  [Hash]        opts        options as described in {OPTIONS}
+    # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
+    #                                   * :timeout -- milliseconds to wait for the request to complete
+    #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
     def audit_timeout( strings, opts )
         @@__timeout_audited     ||= Set.new
@@ -358,9 +372,14 @@ module Auditor
                 |res, opts, elem|
 
                 if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+
                     elem.auditor( self )
                     @@__timeout_audited << __rdiff_audit_id( elem )
+
                     print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
+
+                    Arachni::Module::Auditor.audit_timeout_stabilize( elem )
+
                     @@__timeout_audit_queue << elem
                 end
             }
@@ -382,7 +401,6 @@ module Auditor
         while( !@@__timeout_audit_queue.empty? )
             elem = @@__timeout_audit_queue.pop
             self.audit_timeout_phase_2( elem )
-            elem.get_auditor.http.run
         end
     end
 
@@ -397,44 +415,70 @@ module Auditor
 
         opts = elem.opts
         opts[:timeout] *= 2
+        opts[:async]    = false
         # self.audit_timeout_debug_msg( 2, opts[:timeout] )
 
         str = opts[:timing_string].gsub( '__TIME__',
             ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-        # elem.auditor( self )
-
         elem.auditable = elem.orig
-        c_opts = opts.merge( :format  => [ Format::APPEND ], :redundant => true,
-            :timeout => (opts[:timeout] * 0.7).ceil )
+        c_opts = opts.merge( :format  => [ Format::STRAIGHT ], :redundant => true )
 
-        # this is the control; submit the element with an empty seed to make sure
+        # this is the control; request the URL of the element to make sure
         # that the web page is alive i.e won't time-out by default
-        elem.audit( '', c_opts ) {
-            |res|
+        res = elem.get_auditor.http.get( elem.action, :async => false ).response
 
-            if !res.timed_out?
+        if !res.timed_out?
 
-                elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
+            elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
 
-                elem.audit( str, opts ) {
-                    |res, opts|
+            elem.audit( str, opts ) {
+                |res, opts|
 
-                    if res.timed_out?
+                if res.timed_out?
 
-                        # all issues logged by timing attacks need manual verification.
-                        # end of story.
-                        opts[:verification] = true
-                        elem.get_auditor.log( opts, res)
-                    else
-                        elem.get_auditor.print_info( 'Verification failed.' )
-                    end
-                }
-            else
-                elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
-            end
+                    # all issues logged by timing attacks need manual verification.
+                    # end of story.
+                    opts[:verification] = true
+                    elem.get_auditor.log( opts, res)
+
+                    self.audit_timeout_stabilize( elem )
+
+                else
+                    elem.get_auditor.print_info( 'Verification failed.' )
+                end
+            }
+        else
+            elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
+        end
+    end
+
+
+    def self.audit_timeout_stabilize( elem )
+
+        d_opts = {
+            :skip_orig => true,
+            :redundant => true,
+            :timeout   => 120000,
+            :silent    => true,
+            :async     => false
         }
 
+        orig_opts = elem.opts
+
+        elem.get_auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
+        elem.get_auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
+
+        elem.auditable = elem.orig
+        res = elem.submit( d_opts ).response
+
+        if !res.timed_out?
+            elem.get_auditor.print_info( 'Server seems responsive again.' )
+        else
+            elem.get_auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
+        end
+
+        elem.opts.merge!( orig_opts )
     end
 
     def audit_timeout_debug_msg( phase, delay )
@@ -466,6 +510,7 @@ module Auditor
 
             opts[:timing_string] = str
             str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
+            opts[:skip_orig] = true
 
             audit( str, opts ) {
                 |res, opts, elem|
