@@ -319,6 +319,13 @@ module Auditor
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
+
+        @@__timeout_audited     ||= Set.new
+
+        if !@@__timeout_audited.empty?
+            return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+        end
+
         return false
     end
 
@@ -376,6 +383,9 @@ module Auditor
     # (which passed phase 1) with a higher delay and timeout
     #
     def self.audit_timeout_phase_2( elem )
+
+        # reset the audited list since we're going to re-audit the elements
+        @@__timeout_audited = Set.new
 
         opts = elem.opts
         opts[:timeout] *= 2
@@ -441,11 +451,14 @@ module Auditor
     def timing_attack( strings, opts, &block )
 
         opts[:timeout_divider] ||= 1
+        opts[:async] = false
+
         [strings].flatten.each {
             |str|
 
             opts[:timing_string] = str
             str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
+
             audit( str, opts ) {
                 |res, opts, elem|
                 block.call( res, opts, elem ) if block && res.timed_out?

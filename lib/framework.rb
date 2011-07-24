@@ -606,6 +606,8 @@ class Framework
             mod_new.prepare
             mod_new.run
             mod_new.clean_up
+        rescue SystemExit
+            raise
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )
