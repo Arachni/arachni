@@ -20,6 +20,7 @@
    - The link variables of any current page's URL are now pushed to 'page.links'.
 - Auditor
    - Abstracted the rDiff audit methods from the "Blind (rDiff) SQL Injection" module and moved them in the Auditor.
+   - Timing attack technique has been greatly improved and all timing attacks are now scheduled to run at the end of the scan.
 - Modules
    - Audit
       - Blind (rDiff) SQL Injection: Updated to support all element types (Links, Forms, Cookies, Headers).

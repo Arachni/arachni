@@ -49,6 +49,11 @@ class Auditable
         @auditor = auditor
     end
 
+    def get_auditor
+        @auditor
+    end
+
+
     #
     # Delegate output related methods to the auditor
     #
@@ -142,7 +147,7 @@ class Auditable
             return if skip?( elem )
 
             # inform the user about what we're auditing
-            print_status( get_status_str( opts[:altered] ) )
+            print_status( get_status_str( opts[:altered] ) )  if !opts[:silent]
 
             # submit the element with the injection values
             req = elem.submit( opts )
@@ -179,7 +184,7 @@ class Auditable
         var_combo = []
         if( !hash || hash.size == 0 ) then return [] end
 
-        if( self.is_a?( Arachni::Parser::Element::Form ) )
+        if( self.is_a?( Arachni::Parser::Element::Form ) && !opts[:skip_orig] )
 
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
                 # this is the original hash, in case the default values
@@ -295,7 +300,7 @@ class Auditable
                 print_error( 'Failed to get responses, backing out... ' )
                 next
             else
-                print_status( 'Analyzing response #' + res.request.id.to_s + '...' )
+                print_status( 'Analyzing response #' + res.request.id.to_s + '...' )  if elem.opts && !elem.opts[:silent]
             end
 
             # call the block, if there's one

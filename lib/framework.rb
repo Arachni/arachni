@@ -256,6 +256,15 @@ class Framework
             audit_queue if !@opts.spider_first
         }
 
+        exception_jail {
+            if !Arachni::Module::Auditor.timeout_audit_blocks.empty?
+                print_line
+                print_status( 'Running timing attacks.' )
+                print_info( '---------------------------------------' )
+                Arachni::Module::Auditor.run_timeout_audit
+            end
+        }
+
         audit_queue
 
         if( @opts.http_harvest_last )
@@ -597,6 +606,8 @@ class Framework
             mod_new.prepare
             mod_new.run
             mod_new.clean_up
+        rescue SystemExit
+            raise
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
             print_debug_backtrace( e )

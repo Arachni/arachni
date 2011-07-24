@@ -246,7 +246,7 @@ class HTTP
             print_debug( '------------' )
 
             if res.timed_out?
-                print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                # print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
                 @time_out_count += 1
             end
 
@@ -395,7 +395,6 @@ class HTTP
         train     = opts[:train]
         timeout   = opts[:timeout]
 
-
         async     = opts[:async]
         async     = true if async == nil
 
@@ -409,9 +408,7 @@ class HTTP
                 :headers       => headers,
                 :params        => params,
                 :follow_location => false,
-                :timeout       => opts[:timeout]
             }.merge( @opts )
-
             opts[:timeout] = timeout if timeout
 
             req = Typhoeus::Request.new( normalize_url( url ), opts )
