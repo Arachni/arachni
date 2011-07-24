@@ -321,24 +321,13 @@ module Auditor
     def skip?( elem )
         @@__timeout_audited ||= Set.new
 
-        redundant_names = redundant.map { |mod| @framework.modules[mod].info[:name] }
+        redundant.map {
+            |mod|
 
-        @framework.modules.results.each {
-            |issue|
-            next if !redundant_names.include?( issue.mod_name )
+            mod_name = @framework.modules[mod].info[:name]
 
-            exception_jail {
-                issue_url = URI( issue.url )
-                elem_url  = URI( elem.action )
-
-                issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
-                elem_url_str  = elem_url.scheme + "://" + elem_url.host + elem_url.path
-
-                if issue.elem == elem.type && issue.var == elem.altered &&
-                    issue_url_str == elem_url_str
-                    return true
-                end
-            }
+            set_id = @framework.modules.class.issue_set_id_from_elem( mod_name, elem )
+            return true if @framework.modules.issue_set.include?( set_id )
         }
 
 

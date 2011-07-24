@@ -36,7 +36,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Manager < Arachni::ComponentManager
 
@@ -48,7 +48,8 @@ class Manager < Arachni::ComponentManager
     def initialize( opts )
         super( opts.dir['modules'], Arachni::Modules )
         @opts = opts
-        @@results  = []
+        @@results    = []
+        @@issue_set  = Set.new
     end
 
     #
@@ -60,7 +61,30 @@ class Manager < Arachni::ComponentManager
     #
     def self.register_results( results )
         @@results |= results
+        results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
     end
+
+    def self.issue_set_id_from_issue( issue )
+        issue_url = URI( issue.url )
+        issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
+        return "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
+    end
+
+    def self.issue_set_id_from_elem( mod_name, elem )
+        elem_url  = URI( elem.action )
+        elem_url_str  = elem_url.scheme + "://" + elem_url.host + elem_url.path
+
+        return "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
+    end
+
+    def self.issue_set
+        @@issue_set
+    end
+
+    def issue_set
+        @@issue_set
+    end
+
 
     #
     # Class method
