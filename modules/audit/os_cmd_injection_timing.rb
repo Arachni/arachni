@@ -60,6 +60,10 @@ class OSCmdInjectionTiming < Arachni::Module::Base
         audit_timeout( @@__injection_str, @__opts )
     end
 
+    def redundant
+        [ 'os_cmd_injection' ]
+    end
+
     def self.info
         {
             :name           => 'OS command injection (timing)',

@@ -327,10 +327,18 @@ module Auditor
             |issue|
             next if !redundant_names.include?( issue.mod_name )
 
-            if issue.elem == elem.type && issue.var == elem.altered &&
-               issue.url == elem.action
-               return true
-            end
+            exception_jail {
+                issue_url = URI( issue.url )
+                elem_url  = URI( elem.action )
+
+                issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
+                elem_url_str  = elem_url.scheme + "://" + elem_url.host + elem_url.path
+
+                if issue.elem == elem.type && issue.var == elem.altered &&
+                    issue_url_str == elem_url_str
+                    return true
+                end
+            }
         }
 
 
@@ -433,8 +441,9 @@ module Auditor
         str = opts[:timing_string].gsub( '__TIME__',
             ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
+        opts[:timeout] *= 0.7
+
         elem.auditable = elem.orig
-        c_opts = opts.merge( :format  => [ Format::STRAIGHT ], :redundant => true )
 
         # this is the control; request the URL of the element to make sure
         # that the web page is alive i.e won't time-out by default

@@ -63,6 +63,10 @@ class CodeInjectionTiming < Arachni::Module::Base
         audit_timeout( @@__injection_str, @__opts )
     end
 
+    def redundant
+        [ 'code_injection' ]
+    end
+
     def self.info
         {
             :name           => 'Code injection (timing)',

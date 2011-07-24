@@ -28,8 +28,11 @@
    - Audit
       - Blind (rDiff) SQL Injection
          - Updated to support all element types (Links, Forms, Cookies, Headers).
-         - Optimized using the new "redundant()" method -- It will no longer log elements that have been previously logged by the 'sqli' or 'sqli_blind_rdiff' modules.
-
+         - Optimized using the new "redundant()" method -- It will no longer audit elements that have been previously logged by the 'sqli' or 'sqli_blind_rdiff' modules.
+      - OS command injection (timing)
+         - Optimized using the new "redundant()" method -- It will no longer audit elements that have been previously logged by the 'os_cmd_injection' module.
+      - Code injection (timing)
+         - Optimized using the new "redundant()" method -- It will no longer audit elements that have been previously logged by the 'code_injection' module.
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP

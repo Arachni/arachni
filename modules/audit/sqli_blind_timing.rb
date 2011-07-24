@@ -72,7 +72,7 @@ class BlindTimingSQLInjection < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1',
+            :version        => '0.2',
             :references     => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
