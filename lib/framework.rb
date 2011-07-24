@@ -602,6 +602,7 @@ class Framework
 
             # instantiate the module
             mod_new = mod.new( page )
+            mod_new.set_framework( self )
 
             mod_new.prepare
             mod_new.run

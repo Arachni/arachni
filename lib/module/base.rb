@@ -116,6 +116,19 @@ class Base
     end
 
     #
+    # ABSTRACT - OPTIONAL
+    #
+    # Prevents auditting elements that have been previously
+    # logged by any of the modules returned by this method.
+    #
+    # @return   [Array]     module names
+    #
+    def redundant
+        # [ 'sqli', 'sqli_blind_rdiff' ]
+        []
+    end
+
+    #
     # ABSTRACT - REQUIRED
     #
     # Provides information about the module.
@@ -167,6 +180,10 @@ class Base
 
     def register_results( results )
         Arachni::Module::Manager.register_results( results )
+    end
+
+    def set_framework( framework )
+        @framework = framework
     end
 
 end
