@@ -41,6 +41,7 @@
                 <ul>
                     <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
+                    <li>Runtime: <span id="runtime">00:00:00</span></li>
                 </ul>
             </div>
             <div>
@@ -125,6 +126,7 @@
                     document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
+                    document.getElementById( 'runtime' ).innerHTML = stats.time;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
                 }
 

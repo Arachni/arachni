@@ -746,7 +746,7 @@ class Server < Sinatra::Base
         content_type :json
         begin
             arachni = instances.connect( params[:url], session )
-            stats = arachni.framework.stats
+            stats = arachni.framework.stats( true )
             stats['current_page'] = escape( stats['current_page'] )
             { 'refresh' => true, 'stats' => stats }.to_json
         rescue
