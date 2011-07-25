@@ -29,6 +29,27 @@ module Module
 #
 module Auditor
 
+    def self.included( mod )
+        # @@__timeout_audited      ||= Set.new
+
+        # holds timing-attack performing Procs to be run after all
+        # non-tming-attack modules have finished.
+        @@__timeout_audit_blocks   ||= Queue.new
+
+        # populated by timing attack phase 1 with
+        # candidate elements to be verified by phase 2
+        @@__timeout_candidates     ||= Queue.new
+
+        # modules which have called the timing attack audit mthod (audit_timeout)
+        # we're interested in the amount, not the names, and is used to
+        # determine scan progress
+        @@__timeout_loaded_modules ||= Set.new
+
+        # the rdiff attack performs it own redundancy checks so we need this to
+        # keep track audited elements
+        @@__rdiff_audited ||= Set.new
+    end
+
     #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
@@ -319,8 +340,6 @@ module Auditor
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
-        @@__timeout_audited ||= Set.new
-
         redundant.map {
             |mod|
 
@@ -331,9 +350,9 @@ module Auditor
         }
 
 
-        if !@@__timeout_audited.empty?
-            return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
-        end
+        # if !@@__timeout_audited.empty?
+            # return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+        # end
 
         return false
     end
@@ -374,13 +393,7 @@ module Auditor
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
     def audit_timeout( strings, opts )
-        @@__timeout_audited     ||= Set.new
-        @@__timeout_audit_queue ||= Queue.new
-
-        @@__loaded_timeout_modules ||= Set.new
-        @@__loaded_timeout_modules << self.class.info[:name]
-
-        @@__timeout_audit_blocks ||= Queue.new
+        @@__timeout_loaded_modules << self.class.info[:name]
 
         @@__timeout_audit_blocks << Proc.new {
             delay = opts[:timeout]
@@ -394,37 +407,35 @@ module Auditor
                 # if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
 
                     elem.auditor( self )
-                    @@__timeout_audited << __rdiff_audit_id( elem )
+                    # @@__timeout_audited << __rdiff_audit_id( elem )
 
                     print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
                     Arachni::Module::Auditor.audit_timeout_stabilize( elem )
 
-                    @@__timeout_audit_queue << elem
+                    @@__timeout_candidates << elem
                 # end
             }
         }
     end
 
-    def self.loaded_timeout_modules
-        @@__loaded_timeout_modules ||= Set.new
+    def self.timeout_loaded_modules
+        @@__timeout_loaded_modules
     end
 
     def self.timeout_audit_blocks
-        @@__timeout_audit_blocks ||= Queue.new
+        @@__timeout_audit_blocks
     end
 
 
     def self.run_timeout_audit
-        @@__timeout_audit_queue ||= Queue.new
 
         while( !@@__timeout_audit_blocks.empty? )
             @@__timeout_audit_blocks.pop.call
         end
 
-        while( !@@__timeout_audit_queue.empty? )
-            elem = @@__timeout_audit_queue.pop
-            self.audit_timeout_phase_2( elem )
+        while( !@@__timeout_candidates.empty? )
+            self.audit_timeout_phase_2( @@__timeout_candidates.pop )
         end
     end
 
@@ -435,7 +446,7 @@ module Auditor
     def self.audit_timeout_phase_2( elem )
 
         # reset the audited list since we're going to re-audit the elements
-        @@__timeout_audited = Set.new
+        # @@__timeout_audited = Set.new
 
         opts = elem.opts
         opts[:timeout] *= 2
@@ -802,13 +813,11 @@ module Auditor
     end
 
     def __rdiff_audited!( elem )
-        @@__audited_rdiff ||= Set.new
-        @@__audited_rdiff << __rdiff_audit_id( elem )
+        @@__rdiff_audited << __rdiff_audit_id( elem )
     end
 
     def __rdiff_audited?( elem )
-        @@__audited_rdiff ||= Set.new
-        @@__audited_rdiff.include?( __rdiff_audit_id( elem ) )
+        @@__rdiff_audited.include?( __rdiff_audit_id( elem ) )
     end
 
     def __rdiff_audit_id( elem )

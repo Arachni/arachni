@@ -221,11 +221,11 @@ class Framework
 
         progress = (Float( @auditmap.size ) / @sitemap.size) * 100
 
-        if Arachni::Module::Auditor.loaded_timeout_modules.size > 0 &&
+        if Arachni::Module::Auditor.timeout_loaded_modules.size > 0 &&
             Arachni::Module::Auditor.timeout_audit_blocks.size > 0
 
             progress /= 2
-            progress += ( Float( Arachni::Module::Auditor.loaded_timeout_modules.size ) /
+            progress += ( Float( Arachni::Module::Auditor.timeout_loaded_modules.size ) /
                 Arachni::Module::Auditor.timeout_audit_blocks.size ) * 50
         end
 
