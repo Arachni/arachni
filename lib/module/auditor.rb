@@ -343,14 +343,17 @@ module Auditor
     # Audits elements using timing attacks and automatically logs results.
     #
     # Here's how it works:
-    # * Loop 1 -- Populating the candidate queue.
+    # * Loop 1 -- Populating the candidate queue. We're picking the low hanging fruit here so it can run async.
     #   - Initial probing for candidates -- Any element that times out is added to a queue.
     #   - Stabilization -- The candidate is submited with its default values in
     #     order to wait until the effects of the timing attack have wore off.
-    # * Loop 2 -- Verifying the candidates.
+    # * Loop 2 -- Verifying the candidates. This is much more delicate so it needs to run in sync mode.
     #   - Liveness test -- Ensures that stabilization was successful before moving on.
     #   - Verification using an increased timeout -- Any elements that time out again are logged.
     #   - Stabilization
+    #
+    # Ideally, all requests involved with timing attacks would be run in sync mode
+    # but the performance penalties are too high, thus we compromise and make the best of it.
     #
     #    opts = {
     #        :format  => [ Format::STRAIGHT ],
@@ -513,7 +516,7 @@ module Auditor
     def timing_attack( strings, opts, &block )
 
         opts[:timeout_divider] ||= 1
-        opts[:async] = false
+        # opts[:async] = false
 
         [strings].flatten.each {
             |str|
@@ -527,6 +530,8 @@ module Auditor
                 block.call( res, opts, elem ) if block && res.timed_out?
             }
         }
+
+        @http.run
     end
 
     #
