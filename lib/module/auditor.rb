@@ -343,17 +343,20 @@ module Auditor
     # Audits elements using timing attacks and automatically logs results.
     #
     # Here's how it works:
-    # * Loop 1 -- Populating the candidate queue. We're picking the low hanging fruit here so it can run async.
+    # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
+    #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
     #   - Initial probing for candidates -- Any element that times out is added to a queue.
     #   - Stabilization -- The candidate is submited with its default values in
-    #     order to wait until the effects of the timing attack have wore off.
-    # * Loop 2 -- Verifying the candidates. This is much more delicate so it needs to run in sync mode.
+    #     order to wait until the effects of the timing attack have worn off.
+    # * Loop 2 -- Verifies the candidates. This is much more delicate so the
+    #   concurrent requests are lowered to pairs.
     #   - Liveness test -- Ensures that stabilization was successful before moving on.
     #   - Verification using an increased timeout -- Any elements that time out again are logged.
     #   - Stabilization
     #
     # Ideally, all requests involved with timing attacks would be run in sync mode
-    # but the performance penalties are too high, thus we compromise and make the best of it.
+    # but the performance penalties are too high, thus we compromise and make the best of it
+    # by running as little an amount of concurrent requests as possible for any given phase.
     #
     #    opts = {
     #        :format  => [ Format::STRAIGHT ],
@@ -383,7 +386,9 @@ module Auditor
             timing_attack( strings, opts ) {
                 |res, opts, elem|
 
-                if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+                # maybe this should be removed to take care of accidental timeouts
+                # and let phase 2 clean up the mess
+                # if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
 
                     elem.auditor( self )
                     @@__timeout_audited << __rdiff_audit_id( elem )
@@ -393,7 +398,7 @@ module Auditor
                     Arachni::Module::Auditor.audit_timeout_stabilize( elem )
 
                     @@__timeout_audit_queue << elem
-                end
+                # end
             }
         }
     end
@@ -427,7 +432,7 @@ module Auditor
 
         opts = elem.opts
         opts[:timeout] *= 2
-        opts[:async]    = false
+        # opts[:async]    = false
         # self.audit_timeout_debug_msg( 2, opts[:timeout] )
 
         str = opts[:timing_string].gsub( '__TIME__',
@@ -439,31 +444,35 @@ module Auditor
 
         # this is the control; request the URL of the element to make sure
         # that the web page is alive i.e won't time-out by default
-        res = elem.get_auditor.http.get( elem.action, :async => false ).response
+        elem.get_auditor.http.get( elem.action ).on_complete {
+            |res|
 
-        if !res.timed_out?
+            if !res.timed_out?
 
-            elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
+                elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
 
-            elem.audit( str, opts ) {
-                |res, opts|
+                elem.audit( str, opts ) {
+                    |res, opts|
 
-                if res.timed_out?
+                    if res.timed_out?
 
-                    # all issues logged by timing attacks need manual verification.
-                    # end of story.
-                    opts[:verification] = true
-                    elem.get_auditor.log( opts, res)
+                        # all issues logged by timing attacks need manual verification.
+                        # end of story.
+                        opts[:verification] = true
+                        elem.get_auditor.log( opts, res)
 
-                    self.audit_timeout_stabilize( elem )
+                        self.audit_timeout_stabilize( elem )
 
-                else
-                    elem.get_auditor.print_info( 'Verification failed.' )
-                end
-            }
-        else
-            elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
-        end
+                    else
+                        elem.get_auditor.print_info( 'Verification failed.' )
+                    end
+                }
+            else
+                elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
+            end
+        }
+
+        elem.get_auditor.http.run
     end
 
 
