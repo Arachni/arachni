@@ -599,6 +599,8 @@ module Auditor
     #
     #   a vulnerability is logged if default == bool AND bool.code == 200 AND fault != bool
     #
+    # The "bool" response is also checked in order to determine if it's a custom 404, if it is it'll be skipped.
+    #
     # If a block has been provided analysis and logging will be delegated to it.
     #
     # @param    [Hash]      opts        available options:
