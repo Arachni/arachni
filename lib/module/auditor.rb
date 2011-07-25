@@ -377,6 +377,9 @@ module Auditor
         @@__timeout_audited     ||= Set.new
         @@__timeout_audit_queue ||= Queue.new
 
+        @@__loaded_timeout_modules ||= Set.new
+        @@__loaded_timeout_modules << self.class.info[:name]
+
         @@__timeout_audit_blocks ||= Queue.new
 
         @@__timeout_audit_blocks << Proc.new {
@@ -401,6 +404,10 @@ module Auditor
                 # end
             }
         }
+    end
+
+    def self.loaded_timeout_modules
+        @@__loaded_timeout_modules ||= Set.new
     end
 
     def self.timeout_audit_blocks

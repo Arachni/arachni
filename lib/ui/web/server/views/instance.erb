@@ -127,8 +127,7 @@
                     document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
-                    percentage = (stats.auditmap_size / stats.sitemap_size) * 100
-                    document.getElementById( 'percentage' ).innerHTML = parseInt( percentage );
+                    document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
                 }
 
                 function updateProgressBar(){
@@ -136,8 +135,7 @@
                     $.getJSON( stats_url, function(data) {
                         if( data.stats == undefined ){ return }
                         setStats( data.stats );
-                        percentage = (data.stats.auditmap_size / data.stats.sitemap_size) * 100
-                        setProgressBar( percentage );
+                        setProgressBar( parseInt( data.stats.progress ) );
                     });
                 }
 

@@ -214,6 +214,13 @@ class Framework
             curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
         end
 
+        progress = (Float( @auditmap.size ) / @sitemap.size) * 100
+
+        if Arachni::Module::Auditor.loaded_timeout_modules.size > 0
+            progress -= Arachni::Module::Auditor.timeout_audit_blocks.size /
+                Arachni::Module::Auditor.loaded_timeout_modules.size
+        end
+
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
@@ -222,12 +229,13 @@ class Framework
             :avg        => ( res_cnt / @opts.delta_time ).to_i.to_s,
             :sitemap_size  => @sitemap.size,
             :auditmap_size => @auditmap.size,
+            :progress      => progress.to_s[0...5],
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
             :curr_avg      => curr_avg,
             :average_res_time => http.average_res_time,
-            :max_concurrency => http.max_concurrency,
-            :current_page    => @current_url
+            :max_concurrency  => http.max_concurrency,
+            :current_page     => @current_url
         }
     end
 
