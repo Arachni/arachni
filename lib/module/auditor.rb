@@ -153,13 +153,15 @@ module Auditor
     }
 
     #
-    # Matches the HTML in @page.html to an array of regular expressions
-    # and logs the results.
+    # Matches the "string" (default string is the HTML code in @page.html) to
+    # an array of regular expressions and logs the results.
     #
-    # @param    [Array<Regexp>]     regexps
-    # @param    [String]            string
-    # @param    [Block]             block       block to verify matches before logging
-    #                                               must return true/false
+    # For good measure, regexps will also be run against the page headers (@page.response_headers).
+    #
+    # @param    [Array<Regexp>]     regexps     array of regular expressions to be tested
+    # @param    [String]            string      string to
+    # @param    [Block]             block       block to verify matches before logging,
+    #                                           must return true/false
     #
     def match_and_log( regexps, string = @page.html, &block )
 
@@ -210,10 +212,10 @@ module Auditor
     end
 
     #
-    # Logs a vulnerability based on a regular expression and it's matched string
+    # Populates and logs an {Arachni::Issue} based on data from "opts" and "res".
     #
-    # @param    [Regexp]    regexp
-    # @param    [String]    match
+    # @param    [Hash]                  opts    as passed to blocks by audit methods
+    # @param    [Typhoeus::Response]    res     defaults to @page data
     #
     def log( opts, res = nil )
 
@@ -330,12 +332,10 @@ module Auditor
     end
 
     #
-    # ABSTRACT - OPTIONAL
-    #
     # This is called right before an [Arachni::Parser::Element]
     # is submitted/auditted and is used to determine whether to skip it or not.
     #
-    # Implementation details are left up to the running module.
+    # Running modules can override this as they wish *but* at their own peril.
     #
     # @param    [Arachni::Parser::Element]  elem
     #
@@ -419,17 +419,30 @@ module Auditor
         }
     end
 
+    #
+    # Returns the names of all loaded modules that use timing attacks.
+    #
+    # @return   [Set]
+    #
     def self.timeout_loaded_modules
         @@__timeout_loaded_modules
     end
 
+    #
+    # Holds timing-attack performing Procs to be run after all
+    # non-tming-attack modules have finished.
+    #
+    # @return   [Queue]
+    #
     def self.timeout_audit_blocks
         @@__timeout_audit_blocks
     end
 
-
-    def self.run_timeout_audit
-
+    #
+    # Runs all blocks in {timeout_audit_blocks} and verifies
+    # and logs the candidate elements.
+    #
+    def self.timeout_audit_run
         while( !@@__timeout_audit_blocks.empty? )
             @@__timeout_audit_blocks.pop.call
         end
@@ -493,7 +506,13 @@ module Auditor
         elem.get_auditor.http.run
     end
 
-
+    #
+    # Submits an element which has just been audited using a timing attack
+    # with a high timeout in order to determine when the effects of a timing
+    # attack has worn off in order to safely continue the audit.
+    #
+    # @param    [Arachni::Element::Auditable]   elem
+    #
     def self.audit_timeout_stabilize( elem )
 
         d_opts = {

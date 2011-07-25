@@ -277,7 +277,7 @@ class Framework
                 print_line
                 print_status( 'Running timing attacks.' )
                 print_info( '---------------------------------------' )
-                Arachni::Module::Auditor.run_timeout_audit
+                Arachni::Module::Auditor.timeout_audit_run
             end
         }
 

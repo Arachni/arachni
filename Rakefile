@@ -54,6 +54,7 @@ desc "Cleaning report and log files."
 task :clean do
 
     sh "rm *.afr || true"
+    sh "rm *.gem || true"
     sh "rm logs/XMLRPC* || true"
     sh "rm lib/ui/web/server/db/log.db || true"
     sh "rm lib/ui/web/server/db/default.db || true"
@@ -62,14 +63,25 @@ end
 
 
 #
-# Installing
+# Building
 #
-desc "Build and install the arachni gem."
-task :install do
+desc "Build the arachni gem."
+task :build  => [ :clean ] do
 
     require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
 
     sh "gem build arachni.gemspec"
+end
+
+
+#
+# Installing
+#
+desc "Build and install the arachni gem."
+task :install  => [ :build ] do
+
+    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
+
     sh "gem install arachni-#{Arachni::VERSION}.gem"
 end
 
@@ -78,10 +90,9 @@ end
 # Publishing
 #
 desc "Push a new version to Gemcutter"
-task :publish do
+task :publish => [ :build ] do
 
     require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
 
-    sh "gem build arachni.gemspec"
     sh "gem push arachni-#{Arachni::VERSION}.gem"
 end
