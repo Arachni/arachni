@@ -39,8 +39,7 @@
             <h3>Scan statisics</h3>
             <div class="left">
                 <ul>
-                    <li>Pages audited: <span id="audited">0</span></li>
-                    <li>Pages crawled: <span id="crawled">0</span></li>
+                    <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
                 </ul>
             </div>
@@ -120,7 +119,6 @@
                 function setStats( stats ){
                     if( stats == undefined ){ return }
 
-                    document.getElementById( 'audited' ).innerHTML = stats.auditmap_size;
                     document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
                     document.getElementById( 'current_page' ).innerHTML = stats.current_page;
                     document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;

@@ -125,7 +125,7 @@ class CLI
         mapped  = stats[:sitemap_size]
 
         print_line
-        print_info( "Audit progress: #{stats[:progress]}% ( #{audited}/#{mapped} pages )" )
+        print_info( "Audit progress: #{stats[:progress]}% ( Discovered #{mapped} pages )" )
         print_line
         print_info( "Sent #{stats[:requests]} requests." )
         print_info( "Received and analyzed #{stats[:responses]} responses." )
