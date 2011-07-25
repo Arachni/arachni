@@ -368,7 +368,11 @@ class Parser
             link['vars'] = {}
             link_vars( link['href'] ).each_pair {
                 |key, val|
-                link['vars'][key] = url_sanitize( val )
+                begin
+                    link['vars'][key] = url_sanitize( val )
+                rescue
+                    link['vars'][key] = val
+                end
             }
 
             link['href'] = url_sanitize( link['href'] )
