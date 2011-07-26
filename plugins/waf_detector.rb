@@ -126,7 +126,6 @@ class WAFDetector < Arachni::Plugin::Base
 
     def queue_original
         @precision.times {
-            # grab the page containing the login form
             @framework.http.get( @url.to_s ).on_complete {
                 |res|
                 @responses[:original] ||= res.body
@@ -137,7 +136,6 @@ class WAFDetector < Arachni::Plugin::Base
 
     def queue_vanilla( )
         @precision.times {
-            # grab the page containing the login form
             @framework.http.get( @url.to_s, :params => @safe ).on_complete {
                 |res|
                 @responses[:vanilla] ||= res.body
@@ -148,7 +146,6 @@ class WAFDetector < Arachni::Plugin::Base
 
     def queue_spicy( )
         @precision.times {
-            # grab the page containing the login form
             @framework.http.get( @url.to_s, :params => @unsafe ).on_complete {
                 |res|
                 @responses[:spicy] ||= res.body
