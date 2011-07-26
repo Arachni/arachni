@@ -25,7 +25,7 @@ class Proxy
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class Server < WEBrick::HTTPProxyServer
 
@@ -57,7 +57,8 @@ class Proxy
             res.header['content-type'] = 'text/plain'
             res.header.delete( 'content-encoding' )
 
-            res.body << reasons.map{ |msg| " *  #{msg}" }.join( "\n" )
+            res.body << reasons.pop + "\n"
+            res.body << reasons.map{ |msg| "  *  #{msg}" }.join( "\n" )
         end
     end
 end
