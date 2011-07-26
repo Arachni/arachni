@@ -1,7 +1,7 @@
 
 # ChangeLog
 
-## Version 0.3 _(Under development)_
+## Version 0.3 _(July 26, 2011)_
 - HTTP client
    - Fixed race condition in timeout options.
 - Spider (**New**)
