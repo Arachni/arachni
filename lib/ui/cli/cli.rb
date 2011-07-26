@@ -131,7 +131,7 @@ class CLI
         print_info( "Received and analyzed #{stats[:responses]} responses." )
         print_info( 'In ' + stats[:time] )
 
-        avg = 'Average: ' + stats[:avg] + ' requests/second.'
+        avg = 'Average: ' + stats[:avg].to_s + ' requests/second.'
         print_info( avg )
 
         print_line
