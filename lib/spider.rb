@@ -22,7 +22,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class Spider
 
@@ -61,6 +61,10 @@ class Spider
         @sitemap = []
         @on_every_page_blocks = []
 
+        @opts.datastore[:focus_scan_on] = []
+        @opts.datastore[:focus_scan_on] << 'http://testfire.net'
+        @opts.datastore[:focus_scan_on] << 'http://testfire.net/test'
+
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
         @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
@@ -76,15 +80,23 @@ class Spider
     def run( &block )
         return if @opts.link_count_limit == 0
 
-        paths = []
-        paths << @opts.url.to_s
+        do_spider = true
+        if @opts.datastore[:focus_scan_on] && !@opts.datastore[:focus_scan_on].empty?
+            paths = @opts.datastore[:focus_scan_on]
+            do_spider = false
+        else
+            paths = []
+            paths << @opts.url.to_s
+        end
+
+        ap paths
 
         visited = []
 
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
-                next if skip?( url ) || !in_domain?( url )
+                next if (skip?( url ) || !in_domain?( url )) && do_spider
 
                 wait_if_paused
 
@@ -93,7 +105,7 @@ class Spider
                 opts = {
                     :timeout => nil,
                     :remove_id => true,
-                    :async => @opts.spider_first
+                    # :async => @opts.spider_first && do_spider
                 }
 
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
@@ -105,8 +117,10 @@ class Spider
                     page = Arachni::Parser.new( @opts, res ).run
                     page.url = url_sanitize( res.effective_url )
 
-                    @sitemap |= page.paths.map { |path| url_sanitize( path ) }
-                    paths    |= @sitemap - visited
+                    if do_spider
+                        @sitemap |= page.paths.map { |path| url_sanitize( path ) }
+                        paths    |= @sitemap - visited
+                    end
 
 
                     # call the block...if we have one
@@ -124,7 +138,7 @@ class Spider
 
                 }
 
-                Arachni::HTTP.instance.run if !@opts.spider_first
+                Arachni::HTTP.instance.run if !@opts.spider_first && do_spider
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
@@ -137,7 +151,7 @@ class Spider
 
             end
 
-            if @opts.spider_first
+            if @opts.spider_first ||  !do_spider
                 Arachni::HTTP.instance.run
             else
                 break
