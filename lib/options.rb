@@ -21,7 +21,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Options
 
@@ -33,6 +33,17 @@ class Options
     # @return    [String]
     #
     PROFILE_EXT = '.afp'
+
+    #
+    # General purpose datastore.
+    #
+    # Since this class is a Singleton and is passed
+    # to pretty much everything it's a good candidate for message passing
+    # or obscure options that the user doesn't need to know.
+    #
+    # @return    [Hash]
+    #
+    attr_accessor   :datastore
 
     #
     # Holds absolute paths for the directory structure of the framework
@@ -351,6 +362,8 @@ class Options
 
         @plugins = {}
         @lsplug  = []
+
+        @datastore = {}
 
         # set some defaults
         @redirect_limit = 20
