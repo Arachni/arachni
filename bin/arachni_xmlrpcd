@@ -29,10 +29,16 @@ options.dir['lib']     = options.dir['root'] + 'lib/'
 # Construct getops struct
 opts = GetoptLong.new(
     [ '--help',             '-h', GetoptLong::NO_ARGUMENT ],
+    [ '--address',                GetoptLong::REQUIRED_ARGUMENT ],
     [ '--port',                   GetoptLong::OPTIONAL_ARGUMENT ],
     [ '--debug',                  GetoptLong::NO_ARGUMENT ],
     [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
     [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--neighbour',              GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--weight',                 GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--cost',                   GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--pipe-id',                GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--nickname',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
     [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
     [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -57,8 +63,26 @@ begin
             when '--port'
                 options.rpc_port = arg.to_i
 
+            when '--address'
+                options.rpc_address = arg.to_s
+
             when '--pool-size'
                 options.pool_size = arg.to_i
+
+            when '--neighbour'
+                options.neighbour = arg.to_s
+
+            when '--cost'
+                options.cost = arg.to_s
+
+            when '--weight'
+                options.weight = arg.to_s
+
+            when '--pipe-id'
+                options.pipe_id = arg.to_s
+
+            when '--nickname'
+                options.nickname = arg.to_s
 
             when '--ssl'
                 options.ssl = true

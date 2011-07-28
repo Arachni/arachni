@@ -43,7 +43,32 @@ class Options
     #
     # @return    [Hash]
     #
-    attr_accessor   :datastore
+    attr_reader   :datastore
+
+    #
+    # @return   [String]    the URL of a neighbouring Dispatcher
+    #
+    attr_accessor :neighbour
+
+    #
+    # @return   [Float]    cost of using the Dispatcher
+    #
+    attr_accessor :cost
+
+    #
+    # @return   [String]    a string identifying this bandwidth pipe
+    #
+    attr_accessor :pipe_id
+
+    #
+    # @return   [Float]    Dispatcher weight
+    #
+    attr_accessor :weight
+
+    #
+    # @return   [String]    Dispatcher nickname
+    #
+    attr_accessor :nickname
 
     #
     # Holds absolute paths for the directory structure of the framework
@@ -329,6 +354,8 @@ class Options
     attr_accessor :spider_first
 
     attr_accessor :rpc_port
+    attr_accessor :rpc_address
+
     attr_accessor :ssl
     attr_accessor :ssl_pkey
     attr_accessor :ssl_cert

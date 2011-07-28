@@ -60,6 +60,8 @@ class Options
         @lsmod      = []
         @exclude_cookies    = []
 
+        @datastore = {}
+
         # set some defaults
         @redirect_limit = 20
 
