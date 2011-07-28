@@ -25,12 +25,16 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class Dispatcher < Base
 
+    attr_reader :node
+
     def initialize( opts, url )
         super( opts, url )
+
+        @node = Mapper.new( @server, 'node' )
     end
 
     private

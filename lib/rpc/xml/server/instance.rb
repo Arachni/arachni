@@ -15,6 +15,9 @@ require 'openssl'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+
 require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 require Options.instance.dir['lib'] + 'rpc/xml/server/framework'
@@ -35,7 +38,7 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.1.5
 #
 class Instance < Base
 
@@ -77,7 +80,6 @@ class Instance < Base
         # trap interupts and exit cleanly when required
         trap( 'HUP' ) { shutdown }
         trap( 'INT' ) { shutdown }
-
     end
 
     #
@@ -127,7 +129,7 @@ class Instance < Base
     alias :shutdown! :shutdown
 
     #
-    # Starts the HTTP(S) server and the XML-RPC service.
+    # Starts the HTTPS server and the XML-RPC service.
     #
     def run
 
@@ -142,6 +144,11 @@ class Instance < Base
     end
 
     private
+
+    def dispatcher
+        @dispatcher ||=
+            Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+    end
 
     #
     # Initialises the RPC framework.

@@ -13,9 +13,14 @@ require 'sys/proctable'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+
 require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
+
+# require Options.instance.dir['lib'] + 'ui/cli/output'
+
 
 module RPC
 module XML
@@ -39,9 +44,11 @@ module Server
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
 class Dispatcher < Base
+
+    require Options.instance.dir['lib'] + 'rpc/xml/server/node'
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
@@ -55,15 +62,21 @@ class Dispatcher < Base
         banner
 
         @opts = opts
-        @opts.rpc_port  ||= 7331
-        @opts.pool_size ||= 5
 
-        if opts.help
+        @opts.rpc_port     ||= 7331
+        @opts.rpc_address  ||= 'localhost'
+        @opts.pool_size    ||= 5
+
+        if @opts.help
             print_help
             exit 0
         end
 
         super( @opts )
+
+        # let the instances in the pool know who to ask for routing instructions
+        # when we're in grid mode.
+        @opts.datastore[:dispatcher_url] = "https://#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
 
         prep_logging
 
@@ -78,12 +91,14 @@ class Dispatcher < Base
         @jobs = []
         @pool = Queue.new
 
+        @node = Node.new( @opts, @logfile )
+        add_handler( "node", @node )
+
         print_status( 'Warming up the pool...' )
         prep_pool
         print_status( 'Done.' )
 
         print_status( 'Initialization complete.' )
-
     end
 
     # Starts the dispatcher's server
@@ -209,13 +224,26 @@ class Dispatcher < Base
     -h
     --help                      output this
 
-    --port                      specify port to listen to
+    --address=<host>            specify address to bind to
+                                    (Default: #{@opts.rpc_address})
+
+    --port=<num>                specify port to listen to
                                     (Default: #{@opts.rpc_port})
 
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
-    --pool-size                 how many server workers/processes should be available
+    --pool-size=<num>           how many server workers/processes should be available
                                   at any given moment (Default: #{@opts.pool_size})
+
+    --neighbour=<URL>           URL of a neighbouring Dispatcher (used to build a grid)
+
+    --weight=<float>            weight of the Dispatcher
+
+    --cost=<float>              cost of using this Dispatcher
+
+    --pipe-id=<string>          bandwidth pipe identification
+
+    --nickname=<string>         nickname of the Dispatcher
 
     --debug
 
