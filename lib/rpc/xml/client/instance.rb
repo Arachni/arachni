@@ -36,27 +36,6 @@ class Instance < Base
     attr_reader :service
 
     #
-    # Maps the methods of remote objects to local ones
-    #
-    class Mapper
-
-        def initialize( server, remote )
-            @server = server
-            @remote = remote
-        end
-
-        private
-        #
-        # Used to provide the illusion of locality for remote methods
-        #
-        def method_missing( sym, *args, &block )
-            call = "#{@remote}.#{sym.to_s}"
-            @server.call( call, *args )
-        end
-
-    end
-
-    #
     # Used to make remote option attributes look like setter methods
     #
     class OptsMapper < Mapper
