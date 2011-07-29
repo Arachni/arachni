@@ -61,10 +61,6 @@ class Spider
         @sitemap = []
         @on_every_page_blocks = []
 
-        @opts.datastore[:focus_scan_on] = []
-        @opts.datastore[:focus_scan_on] << 'http://testfire.net'
-        @opts.datastore[:focus_scan_on] << 'http://testfire.net/test'
-
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
         @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
@@ -88,8 +84,6 @@ class Spider
             paths = []
             paths << @opts.url.to_s
         end
-
-        ap paths
 
         visited = []
 
