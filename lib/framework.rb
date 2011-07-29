@@ -259,14 +259,6 @@ class Framework
 
         wait_if_paused
 
-        hp_grid_mode = false
-        # if we're in HP Grid mode we need to first spider and then split
-        # the URLs in batches of sitemap/nodes to be audited in parallel
-        if @opts.datastore[:grid] && @opts.datastore[:grid][:mode] == 'high_performance'
-            @opts.spider_first = true
-            hp_grid_mode       = true
-        end
-
         @spider = Arachni::Spider.new( @opts )
 
         @sitemap  ||= []
@@ -281,16 +273,6 @@ class Framework
             @page_queue << page
             audit_queue if !@opts.spider_first
         }
-
-        paths_to_focus_on = []
-        (@page_queue.size / 2).times {
-            |i|
-            paths_to_focus_on[i] ||= []
-            paths_to_focus_on[i] << @page_queue.pop
-        }
-
-        ap paths_to_focus_on
-        return
 
         audit_queue
 
