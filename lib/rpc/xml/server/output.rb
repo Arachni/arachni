@@ -70,6 +70,7 @@ module Output
             }
         else
             @@buffer << msg
+            @@buffer.slice!( (@@buffer.size - 100)..@@buffer.size  )
         end
     end
 

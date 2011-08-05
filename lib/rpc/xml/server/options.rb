@@ -70,6 +70,10 @@ class Options
         @http_req_limit = 20
     end
 
+    def datastore=( hash )
+        @datastore = hash
+    end
+
     #
     # Sets the URL include filter.
     #

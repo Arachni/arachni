@@ -45,6 +45,10 @@ class Options
     #
     attr_reader   :datastore
 
+    attr_accessor :grid_mode
+
+    attr_accessor :focus_scan_on
+
     #
     # @return   [String]    the URL of a neighbouring Dispatcher
     #
@@ -378,6 +382,8 @@ class Options
         @exclude    = []
         @include    = []
         @redundant  = []
+
+        @focus_scan_on    = []
 
         @reports    = {}
         @lsrep      = []

@@ -77,8 +77,8 @@ class Spider
         return if @opts.link_count_limit == 0
 
         do_spider = true
-        if @opts.datastore[:focus_scan_on] && !@opts.datastore[:focus_scan_on].empty?
-            paths = @opts.datastore[:focus_scan_on]
+        if @opts.focus_scan_on && !@opts.focus_scan_on.empty?
+            paths = @opts.focus_scan_on
             do_spider = false
         else
             paths = []
@@ -186,6 +186,7 @@ class Spider
         skip_cnt = 0
         @opts.include.each {
             |regexp|
+            regexp = Regexp.new( regexp ) if regexp.is_a?( String )
             skip_cnt += 1 if !(regexp =~ url)
         }
 

@@ -89,6 +89,7 @@ class Scheduler
         arachni  = @settings.instances.connect( instance_url, session, instance['token'] )
 
         opts = YAML::load( job.opts )
+        opts['settings']['grid_mode'] = 'high_performance'
 
         arachni.opts.set( opts['settings'] )
         arachni.modules.load( opts['modules'] )

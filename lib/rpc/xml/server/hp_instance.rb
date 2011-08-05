@@ -21,28 +21,21 @@ require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 require Options.instance.dir['lib'] + 'rpc/xml/server/framework'
-require Options.instance.dir['lib'] + 'rpc/xml/server/options'
-
 require Options.instance.dir['lib'] + 'rpc/xml/server/hp_instance/framework'
+require Options.instance.dir['lib'] + 'rpc/xml/server/options'
 
 module RPC
 module XML
 module Server
 
 #
-# XMLRPC Server class
-#
-# Provides an XML-RPC server to assist with general integration and UI development.
-#
-# Only instantiated by the Dispatcher to provide support for multiple
-# and concurent XMLRPC clients/scans.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @version: 0.1
 #
-class Instance < Base
+class HPInstance < Base
 
     # the output interface for XML-RPC
     include Arachni::UI::Output
@@ -50,7 +43,6 @@ class Instance < Base
 
     private :shutdown, :alive?
     public  :shutdown, :alive?
-
 
     #
     # Initializes the XML-RPC interface, the HTTP(S) server and the framework.
@@ -92,7 +84,7 @@ class Instance < Base
     # @return   [Array<Hash>]
     #
     def output
-        @framework.output | flush_buffer( )
+        flush_buffer( )
     end
 
     #
@@ -132,9 +124,8 @@ class Instance < Base
     # Initialises the RPC framework.
     #
     def prep_framework
-        @framework = nil
+        pp @opts
         @framework = Arachni::RPC::XML::Server::HighPerformance::Framework.new( Options.instance )
-        # @framework = Arachni::RPC::XML::Server::Framework.new( Options.instance )
     end
 
     #
@@ -164,7 +155,7 @@ class Instance < Base
         @service.clear_handlers
         add_handler( "service",   self )
         add_handler( "framework", @framework )
-        add_handler( "opts",      @framework.opts )
+        add_handler( "opts",      @framework.framework.opts )
         add_handler( "modules",   @framework.modules )
         add_handler( "plugins",   @framework.plugins )
     end

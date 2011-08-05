@@ -39,9 +39,10 @@ class Manager < ::Arachni::Plugin::Manager
     end
 
     def load( plugins )
-
         @plugin_opts.merge!( plugins )
         super( plugins.keys )
+
+        @framework.opts.plugins = plugins
     end
 
     def create( name )

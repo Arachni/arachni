@@ -589,6 +589,7 @@ class Parser
 
         @opts.include.each {
             |pattern|
+            pattern = Regexp.new( pattern ) if pattern.is_a?( String )
             return true if url.to_s =~ pattern
         }
         return false

@@ -213,12 +213,12 @@ class Framework
 
         curr_avg = 0
         if http.curr_res_cnt > 0 && http.curr_res_time > 0
-            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
+            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i
         end
 
         avg = 0
         if res_cnt > 0
-            avg = ( res_cnt / @opts.delta_time ).to_i.to_s
+            avg = ( res_cnt / @opts.delta_time ).to_i
         end
 
         progress = (Float( @auditmap.size ) / @sitemap.size) * 100
@@ -239,7 +239,7 @@ class Framework
             :avg        => avg,
             :sitemap_size  => @sitemap.size,
             :auditmap_size => @auditmap.size,
-            :progress      => progress.to_s[0...5],
+            :progress      => Float( progress.to_s[0...5] ),
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
             :curr_avg      => curr_avg,

@@ -37,6 +37,11 @@ class Manager < ::Arachni::Module::Manager
         super( opts )
     end
 
+    def load( mods )
+        super( mods )
+        @opts.mods = mods
+    end
+
 end
 
 end

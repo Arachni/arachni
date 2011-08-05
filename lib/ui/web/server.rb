@@ -738,6 +738,8 @@ class Server < Sinatra::Base
                Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
             { 'data' => "<strong>Connection error, retrying...</strong>" }.to_json
         rescue Exception => e
+            ap e
+            ap e.backtrace
             { 'data' => "The server has been shut down." }.to_json
         end
     end
