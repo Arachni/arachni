@@ -512,7 +512,7 @@ class Parser
                 return link
             end
         rescue Exception => e
-            return nil if link.nil?
+            return nil
         end
 
         # remove anchor
