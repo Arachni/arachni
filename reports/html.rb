@@ -89,6 +89,8 @@ class HTML < Arachni::Report::Base
     end
 
     def normalize( str )
+        return str if !str || str.empty?
+
         ic = ::Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
         ic.iconv( str + ' ' )[0..-2]
     end
