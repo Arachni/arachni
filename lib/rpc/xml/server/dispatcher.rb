@@ -19,8 +19,7 @@ require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
 
-# require Options.instance.dir['lib'] + 'rpc/xml/server/hp_instance'
-require Options.instance.dir['lib'] + 'rpc/xml/server/hp_instance/framework'
+# require Options.instance.dir['lib'] + 'rpc/xml/server/high_perfrormanc/framework'
 # require Options.instance.dir['lib'] + 'ui/cli/output'
 
 

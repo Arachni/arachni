@@ -10,6 +10,7 @@
 
 module Arachni
 
+
 #
 # The namespace under which all modules exist
 #
@@ -49,7 +50,18 @@ class Manager < Arachni::ComponentManager
         super( opts.dir['modules'], Arachni::Modules )
         @opts = opts
         @@results    = []
+        @@on_register_results = []
         @@issue_set  = Set.new
+
+        @@do_not_store = false
+    end
+
+    def self.on_register_results( &block )
+        @@on_register_results << block
+    end
+
+    def self.do_not_store!
+        @@do_not_store = true
     end
 
     #
@@ -60,6 +72,10 @@ class Manager < Arachni::ComponentManager
     # @param    [Array]
     #
     def self.register_results( results )
+
+        @@on_register_results.each { |block| block.call( results ) }
+        return if @@do_not_store
+
         @@results |= results
         results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
     end

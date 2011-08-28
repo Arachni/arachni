@@ -64,11 +64,11 @@ class Node
 
             get_peers( neighbour ).each {
                 |url|
-                @neighbours << url if url != @opts.datastore[:dispatcher_url]
+                @neighbours << url if url != @opts.datastore[:self_url]
             }
 
             peer = connect_to_peer( neighbour )
-            peer.node.add_neighbour( opts.datastore[:dispatcher_url], true )
+            peer.node.add_neighbour( opts.datastore[:self_url], true )
 
         end
 
@@ -91,7 +91,7 @@ class Node
     #
     def add_neighbour( node_url, propagate = false )
         # we don't want ourselves in the Set
-        return false if node_url == @opts.datastore[:dispatcher_url]
+        return false if node_url == @opts.datastore[:self_url]
 
         print_status 'Adding neighbour: ' + node_url
 

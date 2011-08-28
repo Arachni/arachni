@@ -41,6 +41,7 @@
                 <ul>
                     <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
+                    <li>Requests/second: <span id="avg">0</span></li>
                     <li>Runtime: <span id="runtime">00:00:00</span></li>
                 </ul>
             </div>
@@ -123,6 +124,7 @@
                     document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
                     document.getElementById( 'current_page' ).innerHTML = stats.current_page;
                     document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;
+                    document.getElementById( 'avg' ).innerHTML = stats.avg;
                     document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
@@ -130,42 +132,22 @@
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
                 }
 
-                function updateProgressBar(){
-                    var stats_url = "/instance/<%= escape( params['url'].to_s ) %>/stats.json";
-                    $.getJSON( stats_url, function(data) {
-                        if( data.stats == undefined ){ return }
-                        setStats( data.stats );
-                        setProgressBar( parseInt( data.stats.progress ) );
-                    });
-                }
-
                 function updateOutput() {
-                    if( !document.getElementById( 'output' ) ) return;
-
                     var output_url = "/instance/<%= escape( params['url'].to_s ) %>/output.json";
                     $.getJSON( output_url, function(data) {
 
-                        if( data.status == 'finished' ){
+                        if( data.messages.status == 'finished' ){
                             showShutdownDialog( );
                         } else {
-                            if( data.report == undefined ) {
-                                document.getElementById( 'output' ).innerHTML = data.data;
-                            } else {
-                                showReportLoadingDialog();
-                                showReport( data.report );
-                                $( "#dialog-loading" ).dialog('close')
+
+                            document.getElementById( 'output' ).innerHTML = data.messages.data;
+                            document.getElementById( 'output_results' ).innerHTML = data.issues.data;
+
+                            if( data.stats.avg != undefined ){
+                                setStats( data.stats );
+                                setProgressBar( parseInt( data.stats.progress ) );
                             }
                         }
-
-                    });
-                }
-
-                function updateResults() {
-                    if( !document.getElementById( 'output_results' ) ) return;
-
-                    var output_results_url = "/instance/<%= escape( params['url'].to_s ) %>/output_results.json";
-                    $.getJSON( output_results_url, function(data) {
-                        document.getElementById( 'output_results' ).innerHTML = data.data;
                     });
                 }
 
@@ -189,21 +171,10 @@
 
                     setProgressBar( 0 );
 
-                    updateProgressBar();
-                    setInterval( function() {
-                        updateProgressBar();
-                    }, 3000 );
-
                     updateOutput( );
                     setInterval( function() {
                           updateOutput( );
-                    }, 1500 );
-
-
-                    updateResults( )
-                    setInterval( function() {
-                          updateResults( );
-                    }, 5000 );
+                    }, 3000 );
 
                 })
 

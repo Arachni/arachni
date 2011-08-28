@@ -446,9 +446,16 @@ class Server < Sinatra::Base
     # @param    [Arachni::RPC::XML::Client::Instance]   arachni
     #
     def save_and_shutdown( arachni )
-        arachni.framework.clean_up!( true )
-        report_path = reports.save( arachni.framework.auditstore )
-        arachni.service.shutdown!
+        begin
+            arachni.framework.clean_up!( true )
+            report_path = reports.save( arachni.framework.auditstore )
+            arachni.service.shutdown!
+        rescue Exception => e
+            ap e
+            ap e.faultCode
+            ap e.faultString
+            ap e.backtrace
+        end
         return report_path
     end
 
@@ -707,53 +714,58 @@ class Server < Sinatra::Base
     get "/instance/:url/output.json" do
         content_type :json
 
+        output = {
+            'messages' => {},
+            'issues'   => {},
+            'stats'    => {}
+        }
+
         begin
             arachni = instances.connect( params[:url], session )
             if arachni.framework.busy?
                 @@output_streams ||= {}
                 @@output_streams[params[:url]] ||= OutputStream.new( arachni, 38 )
-                { 'data' => @@output_streams[params[:url]].data }.to_json
+                output['messages'] = { 'data' => @@output_streams[params[:url]].data }
             else
                 log.instance_shutdown( env, params[:url] )
                 save_and_shutdown( arachni )
-                { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
+                output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
             end
         rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
                Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
-            { 'data' => "<strong>Connection error, retrying...</strong>" }.to_json
+            output['messages'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
         rescue Exception => e
-            { 'status' => 'finished', 'data' => "The server has been shut down." }.to_json
+            ap e
+            # ap e.faultCode
+            # ap e.faultString
+            ap e.backtrace
+            output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
         end
-    end
 
-    get "/instance/:url/output_results.json" do
-        content_type :json
+
         begin
             arachni = instances.connect( params[:url], session )
             if !arachni.framework.paused? && arachni.framework.busy?
                 out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues )
-                { 'data' => out }.to_json
+                output['issues'] = { 'data' => out }
             end
         rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
                Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
-            { 'data' => "<strong>Connection error, retrying...</strong>" }.to_json
+            output['issues'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
         rescue Exception => e
-            ap e
-            ap e.backtrace
-            { 'data' => "The server has been shut down." }.to_json
+            output['issues'] = { 'data' => "The server has been shut down." }
         end
-    end
 
-    get "/instance/:url/stats.json" do
-        content_type :json
+
         begin
             arachni = instances.connect( params[:url], session )
             stats = arachni.framework.stats( true )
             stats['current_page'] = escape( stats['current_page'] )
-            { 'refresh' => true, 'stats' => stats }.to_json
+            output['stats'] = stats
         rescue
-            { 'refresh' => false }.to_json
         end
+
+        output.to_json
     end
 
 

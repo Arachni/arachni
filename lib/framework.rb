@@ -199,13 +199,13 @@ class Framework
         return true
     end
 
-    def stats( refresh_time = false )
+    def stats( refresh_time = false, overide_refresh = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
 
         @auditmap ||= []
         @sitemap  ||= []
-        if !refresh_time || @auditmap.size == @sitemap.size
+        if (!refresh_time || @auditmap.size == @sitemap.size) && !overide_refresh
             @opts.delta_time ||= Time.now - @opts.start_datetime
         else
             @opts.delta_time = Time.now - @opts.start_datetime

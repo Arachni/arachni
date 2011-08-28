@@ -20,10 +20,9 @@ require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 
 require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
-require Options.instance.dir['lib'] + 'rpc/xml/server/framework'
 require Options.instance.dir['lib'] + 'rpc/xml/server/options'
 
-require Options.instance.dir['lib'] + 'rpc/xml/server/hp_instance/framework'
+require Options.instance.dir['lib'] + 'rpc/xml/server/high_performance/framework'
 
 module RPC
 module XML
@@ -62,15 +61,18 @@ class Instance < Base
         prep_framework
         banner
 
-        @opts = opts
+        @opts  = opts
+        @token = token
         super( @opts, token )
+
+        @opts.datastore[:token] = token
 
         if @opts.debug
             debug!
         end
 
 
-        if @opts.reroute_to_logfile
+        if logfile = @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['root'] +
                 "logs/XMLRPC-Server - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
         else
@@ -99,6 +101,22 @@ class Instance < Base
     # Makes the HTTP(S) server go bye-bye...Lights out!
     #
     def shutdown
+        @framework.instances.each {
+            |instance|
+
+            3.times {
+                begin
+                    instance.service.shutdown!
+                    break
+                rescue Exception => e
+                    ap e
+                    ap e.backtrace
+
+                    instance.service.shutdown!
+                end
+            }
+        }
+
         print_status( 'Shutting down...' )
         super
         print_status( 'Done.' )
@@ -134,7 +152,6 @@ class Instance < Base
     def prep_framework
         @framework = nil
         @framework = Arachni::RPC::XML::Server::HighPerformance::Framework.new( Options.instance )
-        # @framework = Arachni::RPC::XML::Server::Framework.new( Options.instance )
     end
 
     #

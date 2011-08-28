@@ -139,6 +139,14 @@ class Framework < Arachni::Framework
         return true
     end
 
+    def get_plugin_store
+        @plugin_store
+    end
+
+    def set_plugin_store( plugin_store )
+        @plugin_store = plugin_store
+    end
+
     #
     # Returns the results of the audit.
     #
