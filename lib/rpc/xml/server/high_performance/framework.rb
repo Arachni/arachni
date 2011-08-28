@@ -216,7 +216,7 @@ class Framework
         return true
     end
 
-    def pause!( skip_audit_queue = false )
+    def pause!
         @framework.pause!
         @instances.each {
             |instance|
@@ -225,7 +225,7 @@ class Framework
         return true
     end
 
-    def resume!( skip_audit_queue = false )
+    def resume!
         @framework.resume!
         @instances.each {
             |instance|
