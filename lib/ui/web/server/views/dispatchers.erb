@@ -15,7 +15,9 @@
         <%= erb :flash, {:layout => false} %>
 
         <% stats.each_pair do |d_url, dispatcher_stats| %>
-        <h2><%=show_dispatcher_line( d_url, dispatcher_stats )%></h2>
+        <h2><%=show_dispatcher_line( dispatcher_stats )%></h2>
+        <span class="notice"> <%=show_dispatcher_node_line( dispatcher_stats ) %></span>
+        <br/><br/>
 
         <%if !dispatcher_stats['running_jobs'].empty? %>
         <form action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
@@ -40,12 +42,12 @@
                 <th>Action</th>
             </tr>
         <% dispatcher_stats['running_jobs'].each do |job| %>
-            <tr>
+            <tr <%if job_is_slave?( job )%> style='background-color: #ccc'<%end%> >
 
 
                 <td><%=job['pid']%></td>
                 <td><%=job['port']%></td>
-                <td><%=job['owner']%></td>
+                <td><%=escape( job['owner'] )%></td>
 
                 <%if !job['paused'] %>
                     <td>Running</td>
@@ -60,32 +62,40 @@
                 <td><%=job['proc']['pctcpu']%>%</td>
 
                 <td>
-                    <% if !( job['owner'] =~/WebUI helper/ ) %>
+                    <% if !( job['owner'] =~/WebUI helper/ )%>
 
-                    <form action="/instance/<%=port_to_url( job['port'], d_url, true )%>" method="get" target="_blank">
-                        <input type="submit" value="Attach" />
-                    </form>
+                        <% if !job_is_slave?( job ) %>
 
-                    <%if !job['paused'] %>
-                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/pause" method="post">
-                        <%= csrf_tag %>
-                        <input type="submit" value="Pause" />
-                    </form>
-                    <%end%>
+                            <form action="/instance/<%=port_to_url( job['port'], d_url, true )%>" method="get" target="_blank">
+                                <input type="submit" value="Attach" />
+                            </form>
 
-                    <%if job['paused'] %>
-                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/resume" method="post">
-                        <%= csrf_tag %>
-                        <input type="submit" value="Resume" />
-                    </form>
+                            <%if !job['paused'] %>
+                            <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/pause" method="post">
+                                <%= csrf_tag %>
+                                <input type="submit" value="Pause" />
+                            </form>
+                            <%end%>
+
+                            <%if job['paused'] %>
+                            <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/resume" method="post">
+                                <%= csrf_tag %>
+                                <input type="submit" value="Resume" />
+                            </form>
+                            <% end %>
+
+                            <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/shutdown" method="post">
+                                <%= csrf_tag %>
+                                <input type="submit" value="Shutdown" />
+                            </form>
+
+                        <% else %>
+
+                            This is <%=escape( job['owner'] )%>'s slave and is sharing the workload for the <%=escape( job['helpers']['target'] )%> scan.
+
+                        <% end %>
+
                     <% end %>
-
-                    <% end %>
-
-                    <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/shutdown" method="post">
-                        <%= csrf_tag %>
-                        <input type="submit" value="Shutdown" />
-                    </form>
                 </td>
             </tr>
         <% end %>
