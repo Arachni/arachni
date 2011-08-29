@@ -278,7 +278,32 @@ class Framework
 
         self_token = @opts.datastore[:token]
 
-        instance = connect_to_instance( dispatcher.dispatch( self_url ) )
+        dispatchers = nil
+        3.times{
+            begin
+                dispatchers   = dispatcher.node.neighbours_with_info
+                break
+            rescue Exception => e
+                ap e
+                ap e.backtrace
+                retry
+            end
+        }
+        local_pipe_id = dispatcher.node.info['pipe_id']
+
+        pref_dispatcher_url = nil
+        dispatchers.each {
+            |node|
+            pref_dispatcher_url = node['url'] if local_pipe_id != node['pipe_id']
+        }
+
+        pref_dispatcher = connect_to_dispatcher( pref_dispatcher_url )
+
+        instance = connect_to_instance( pref_dispatcher.dispatch( self_url, {
+            'rank'   => 'slave',
+            'target' => @opts.url.to_s
+            })
+        )
 
         begin
             opts['url'] = opts['url'].to_s
@@ -343,6 +368,13 @@ class Framework
         @instance_cache[instance['url']] ||=
             Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], instance['token'] )
     end
+
+    def connect_to_dispatcher( url )
+        @dispatcher_cache ||= {}
+        @dispatcher_cache[url] ||=
+            Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
+    end
+
 
     def stats( fresh )
         final_stats = @framework.stats( fresh, true )
