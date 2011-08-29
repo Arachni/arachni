@@ -11,7 +11,7 @@
                 <% dispatcher_stats.each_pair do |d_url, stats| %>
                     <% next if !dispatchers.alive?( d_url ) %>
                     <option value="<%=d_url%>">
-                        <%=show_dispatcher_line( d_url, stats )%>
+                        <%=show_dispatcher_line( stats )%>
                     </option>
                 <%end%>
                 </select>
