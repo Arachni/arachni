@@ -20,7 +20,7 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class DispatcherManager
 
@@ -43,12 +43,25 @@ class DispatcherManager
     end
 
     #
-    # Puts a new dispatcher in the DB.
+    # Puts a new dispatcher (and it's neighbours) in the DB.
     #
-    # @param    [String]    url     URL of the dispatcher
+    # @param    [String]    url          URL of the dispatcher
+    # @param    [Bool]      neighbours   add its neighbouring dispatchers too?
     #
-    def new( url )
+    def new( url, neighbours = true )
         Dispatcher.first_or_create( :url => url )
+
+        return if !neighbours
+
+        begin
+            connect( url ).node.neighbours_with_info.each {
+                |node|
+                Dispatcher.first_or_create( :url => node['url'] )
+            }
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
     end
 
     #
