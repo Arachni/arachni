@@ -90,6 +90,10 @@ class Server < Sinatra::Base
             name.gsub( '_', ' ' ).capitalize
         end
 
+        def job_is_slave?( job )
+            job['helpers']['rank'] == 'slave'
+        end
+
         def report_count
             reports.all.size
         end
@@ -236,9 +240,9 @@ class Server < Sinatra::Base
         end
     end
 
-    def show_dispatcher_line( url, stats )
+    def show_dispatcher_line( stats )
 
-        str = "@#{escape( url )} - #{stats['running_jobs'].size} running scans, "
+        str = "@#{escape( stats['node']['url'] )} - #{stats['running_jobs'].size} running scans, "
 
         i=0
         stats['running_jobs'].each {
@@ -260,6 +264,13 @@ class Server < Sinatra::Base
             i+= Float( job['proc']['pctcpu'] )
         }
         str += i.to_s[0..4] + '% CPU usage'
+    end
+
+    def show_dispatcher_node_line( stats )
+        str = "Nickname: #{stats['node']['nickname']} - "
+        str += "Pipe ID: #{stats['node']['pipe_id']} - "
+        str += "Weight: #{stats['node']['weight']} - "
+        str += "Cost: #{stats['node']['cost']} "
     end
 
     def welcomed?
