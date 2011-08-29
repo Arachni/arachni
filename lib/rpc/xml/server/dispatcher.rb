@@ -119,17 +119,19 @@ class Dispatcher < Base
     #
     # Dispatches an XMLRPC server instance from the pool
     #
-    # @param    [String]    owner   an owner assign to the dispatched XMLRPC server
+    # @param    [String]  owner     an owner assign to the dispatched XMLRPC server
+    # @param    [Hash]    helpers   hash of helper data to be added to the job
     #
     # @return   [Hash]      includes port number, owner, clock info and proc info
     #
-    def dispatch( owner = 'unknown' )
+    def dispatch( owner = 'unknown', helpers = {} )
 
         # just to make sure...
         owner = owner.to_s
         cjob  = @pool.pop
         cjob['owner']     = owner
         cjob['starttime'] = Time.now
+        cjob['helpers']   = helpers
 
         print_status( "Server dispatched -- PID: #{cjob['pid']} - " +
             "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
@@ -193,11 +195,11 @@ class Dispatcher < Base
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
             'curr_pool_size'  => @pool.size
-        }
+        }.merge( 'node' => @node.info )
     end
 
     def proc_info
-        unnil( proc( Process.pid ) )
+        unnil( proc( Process.pid ).merge( 'node' => @node.info ) )
     end
 
     #
