@@ -236,6 +236,32 @@ class Server < Sinatra::Base
         end
     end
 
+    def show_dispatcher_line( url, stats )
+
+        str = "@#{escape( url )} - #{stats['running_jobs'].size} running scans, "
+
+        i=0
+        stats['running_jobs'].each {
+            |job|
+            i+= proc_mem( job['proc']['rss'] ).to_i
+        }
+        str += i.to_s + 'MB RAM usage '
+
+        i=0
+        stats['running_jobs'].each {
+            |job|
+            i+= Float( job['proc']['pctmem'] )
+        }
+        str += '(' + i.to_s[0..4] + '%), '
+
+        i=0
+        stats['running_jobs'].each {
+            |job|
+            i+= Float( job['proc']['pctcpu'] )
+        }
+        str += i.to_s[0..4] + '% CPU usage'
+    end
+
     def welcomed?
         File.exist?( settings.db + '/welcomed' )
     end

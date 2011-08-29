@@ -11,8 +11,7 @@
                 <% dispatcher_stats.each_pair do |d_url, stats| %>
                     <% next if !dispatchers.alive?( d_url ) %>
                     <option value="<%=d_url%>">
-                        @<%=escape( d_url )%> - <%=stats['running_jobs'].size%> running scans,
-                         <%=i=0;stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
+                        <%=show_dispatcher_line( d_url, stats )%>
                     </option>
                 <%end%>
                 </select>

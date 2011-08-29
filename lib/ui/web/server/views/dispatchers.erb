@@ -15,10 +15,7 @@
         <%= erb :flash, {:layout => false} %>
 
         <% stats.each_pair do |d_url, dispatcher_stats| %>
-        <h2>
-            @<%=escape( d_url )%> - <%=dispatcher_stats['running_jobs'].size%> running scans,
-             <%=i=0;dispatcher_stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
-        </h2>
+        <h2><%=show_dispatcher_line( d_url, dispatcher_stats )%></h2>
 
         <%if !dispatcher_stats['running_jobs'].empty? %>
         <form action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
@@ -38,7 +35,8 @@
                 <th>Start time (Server-side)</th>
                 <th>Current time (Server-side)</th>
                 <th>Runtime</th>
-                <th>Memory consumption</th>
+                <th>Memory usage (%)</th>
+                <th>CPU usage</th>
                 <th>Action</th>
             </tr>
         <% dispatcher_stats['running_jobs'].each do |job| %>
@@ -58,7 +56,8 @@
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
                 <td><%=secs_to_hms( job['runtime'] )%></td>
-                <td><%=proc_mem( job['proc']['rss'] )%> MB</td>
+                <td><%=proc_mem( job['proc']['rss'] )%> MB (<%=job['proc']['pctmem']%>%)</td>
+                <td><%=job['proc']['pctcpu']%>%</td>
 
                 <td>
                     <% if !( job['owner'] =~/WebUI helper/ ) %>
