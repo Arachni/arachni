@@ -18,6 +18,7 @@ require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
 require Options.instance.dir['lib'] + 'rpc/xml/server/base'
 require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
+require Options.instance.dir['lib'] + 'rpc/xml/server/utilities'
 
 # require Options.instance.dir['lib'] + 'rpc/xml/server/high_perfrormanc/framework'
 # require Options.instance.dir['lib'] + 'ui/cli/output'
@@ -52,6 +53,7 @@ class Dispatcher < Base
     require Options.instance.dir['lib'] + 'rpc/xml/server/node'
 
     include Arachni::Module::Utilities
+    include Arachni::RPC::XML::Server::Utilities
     include Arachni::UI::Output
     include ::Sys
 
@@ -267,23 +269,6 @@ USAGE
 
 
     private
-
-    #
-    # Recursively removes nils.
-    #
-    # @param    [Hash]  hash
-    #
-    # @return   [Hash]
-    #
-    def unnil( hash )
-        hash.each_pair {
-            |k, v|
-            hash[k] = '' if v.nil?
-            hash[k] = unnil( v ) if v.is_a? Hash
-        }
-
-        return hash
-    end
 
     #
     # Initializes and updates the pool making sure that the number of
