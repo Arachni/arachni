@@ -12,6 +12,7 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'rpc/xml/server/output'
+require Options.instance.dir['lib'] + 'rpc/xml/server/utilities'
 
 module RPC
 module XML
@@ -39,6 +40,7 @@ class Dispatcher
 class Node
 
     include Arachni::UI::Output
+    include Arachni::RPC::XML::Server::Utilities
 
     #
     # Initializes the node by:
@@ -80,6 +82,7 @@ class Node
             print_info( '---- ' + node )
         }
 
+        @nodes_info_cache = []
     end
 
     #
@@ -117,6 +120,16 @@ class Node
         @neighbours.to_a
     end
 
+    def neighbours_with_info
+        @neighbours_cmp = ''
+        if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
+            @neighbours_cmp = neighbours.to_s
+            return @nodes_info_cache = neighbours.map { |neighbour| connect_to_peer( neighbour ).node.info }
+        else
+            return @nodes_info_cache
+        end
+    end
+
     #
     # Returns node specific info:
     # * Bandwidth Pipe ID
@@ -126,8 +139,9 @@ class Node
     #
     # @return    [Hash]
     #
-    def node_info
+    def info
         return unnil({
+            :url        => @opts.datastore[:dispatcher_url],
             :pipe_id    => @opts.pipe_id,
             :weight     => @opts.weight,
             :nickname   => @opts.nickname,
