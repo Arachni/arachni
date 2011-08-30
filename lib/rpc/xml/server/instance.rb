@@ -106,13 +106,13 @@ class Instance < Base
 
             3.times {
                 begin
-                    instance.service.shutdown!
+                    @framework.connect_to_instance( instance ).service.shutdown!
                     break
                 rescue Exception => e
                     ap e
                     ap e.backtrace
 
-                    instance.service.shutdown!
+                    @framework.connect_to_instance( instance ).service.shutdown!
                 end
             }
         }
