@@ -59,7 +59,6 @@ class Node
         print_status( 'Initing grid node...' )
 
         @neighbours = Set.new
-        @peer_conn_cache = {}
 
         if neighbour = @opts.neighbour
             add_neighbour( neighbour )
@@ -177,8 +176,7 @@ class Node
     end
 
     def connect_to_peer( url )
-        @peer_conn_cache[url] ||=
-            Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
+        Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
     end
 
 end
