@@ -19,15 +19,12 @@ module Web
     class OutputStream
 
         #
-        #
-        # @param    [Arachni::RPC::XML::Client::Instance]   instance
         # @param    [Integer]   lines   number of lines to output between refreshes
         #
-        def initialize( instance, lines, &block )
-
-            @lines    = lines
-            @instance = instance
-            @buffer  = []
+        def initialize( output, lines, &block )
+            @lines  = lines
+            @output = output
+            @buffer = []
 
             @icon_whitelist = {}
             [ 'status', 'ok', 'error', 'info' ].each {
@@ -60,7 +57,7 @@ module Web
         #
         def each
 
-            self << @instance.service.output
+            self << @output
 
             @last_output ||= ''
             cnt = 0
@@ -85,7 +82,24 @@ module Web
 
             end
 
-            self << @instance.service.output
+            # self << @output
+        end
+
+        def format
+            str = ''
+            cnt = 0
+            while( ( out = @output.pop ) && ( ( cnt += 1 ) < @lines ) )
+
+                type = out.keys[0]
+                msg  = out.values[0]
+
+                next if out.values[0].empty?
+
+                icon = @icon_whitelist[type] || ''
+                str += icon + CGI.escapeHTML( " #{out.values[0]}" ) + "<br/>"
+            end
+
+            return str
         end
 
     end
