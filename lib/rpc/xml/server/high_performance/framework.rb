@@ -156,21 +156,36 @@ class Framework
                 }
 
                 @sitemap = paths_to_focus_on
-                chunks = paths_to_focus_on.chunk( 2 )
-                @framework.opts.focus_scan_on = chunks[0]
 
-                @instances << spawn( chunks[1] )
-                @instances.each {
-                    |instance|
+                chunk_cnt = 3
+
+                chunks = paths_to_focus_on.chunk( chunk_cnt )
+                @framework.opts.focus_scan_on = chunks.pop
+
+                chunks.each {
+                    |chunk|
+                    begin
+                        @instances << spawn( chunk )
+                    rescue Exception => e
+                        ap e
+                        ap e.backtrace
+                    end
+                }
+
+                @instances.each_with_index {
+                    |instance, i|
+
+                    instance_conn = connect_to_instance( instance )
+
                     jobs << Thread.new {
-                        instance.framework.run
+                        instance_conn.framework.run
 
                         break_loop = false
                         while( !break_loop )
                             begin
-                                ap 'RUNNING'
-                                sleep( 3 )
-                                break_loop = !instance.framework.busy?
+                                ap 'RUNNING SLAVE'
+                                sleep( 10 )
+                                break_loop = instance_conn.framework.busy?
                             rescue Exception => e
                                 ap e
                                 ap e.backtrace
@@ -185,9 +200,15 @@ class Framework
             jobs.each { |job| job.join }
 
             while( @framework.busy? )
-                sleep( 3 )
+                sleep( 10 )
+                ap 'RUNNING MASTER'
                 # ap output
             end
+
+            ap '----------------------------'
+            ap 'FINISHED'
+            ap '----------------------------'
+
         }
 
         return true
@@ -203,16 +224,23 @@ class Framework
 
     def clean_up!( skip_audit_queue = false )
 
+        begin
         @framework.clean_up!( skip_audit_queue )
         plugin_results = @framework.get_plugin_store
 
         @instances.each {
             |instance|
-            instance.framework.clean_up!( skip_audit_queue )
-            plugin_results.merge!( YAML::load( instance.framework.get_plugin_store ) )
+            instance_conn = connect_to_instance( instance )
+            instance_conn.framework.clean_up!( skip_audit_queue )
+            plugin_results.merge!( YAML::load( instance_conn.framework.get_plugin_store ) )
         }
 
         @framework.set_plugin_store( plugin_results )
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
+        end
+
         return true
     end
 
@@ -220,7 +248,7 @@ class Framework
         @framework.pause!
         @instances.each {
             |instance|
-            instance.framework.pause!
+            connect_to_instance( instance ).framework.pause!
         }
         return true
     end
@@ -229,7 +257,7 @@ class Framework
         @framework.resume!
         @instances.each {
             |instance|
-            instance.framework.resume!
+            connect_to_instance( instance ).framework.resume!
         }
         return true
     end
@@ -252,15 +280,17 @@ class Framework
     end
 
     def report_issue_to_master( results )
-        3.times {
-            begin
-                @master.framework.register_issue( results.to_yaml )
-                return
-            rescue Exception => e
-                ap e
-                ap e.backtrace
-            end
-        }
+        tries = 0
+        begin
+            @master.framework.register_issue( results.to_yaml )
+        rescue Errno::EPIPE, Timeout::Error
+            ap 'RETRYING: '+ tries.to_s
+            tries += 1
+            retry if tries < 4
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
     end
 
     def register_issue( results )
@@ -270,7 +300,7 @@ class Framework
 
     def spawn( urls )
 
-        opts = @framework.opts.to_h.dup
+        opts = @framework.opts.to_h.deep_clone
 
         self_url = URI( opts['datastore'][:dispatcher_url] )
         self_url.port = @framework.opts.rpc_port
@@ -289,21 +319,28 @@ class Framework
                 retry
             end
         }
-        local_pipe_id = dispatcher.node.info['pipe_id']
+
+        @used_pipe_ids ||= []
+        @used_pipe_ids << dispatcher.node.info['pipe_id']
 
         pref_dispatcher_url = nil
         dispatchers.each {
             |node|
-            pref_dispatcher_url = node['url'] if local_pipe_id != node['pipe_id']
+            if !@used_pipe_ids.include?( node['pipe_id'] )
+                pref_dispatcher_url = node['url']
+                @used_pipe_ids << node['pipe_id']
+                break
+            end
         }
 
         pref_dispatcher = connect_to_dispatcher( pref_dispatcher_url )
 
-        instance = connect_to_instance( pref_dispatcher.dispatch( self_url, {
+        instance_hash = pref_dispatcher.dispatch( self_url, {
             'rank'   => 'slave',
             'target' => @opts.url.to_s
-            })
-        )
+        })
+
+        instance = connect_to_instance( instance_hash )
 
         begin
             opts['url'] = opts['url'].to_s
@@ -331,7 +368,7 @@ class Framework
             instance.framework.set_master( self_url, self_token )
             instance.modules.load( opts['mods'] )
             instance.plugins.load( opts['plugins'] )
-            return instance
+            return { 'url' => instance_hash['url'], 'token' => instance_hash['token'] }
         rescue Exception => e
             ap e
             ap e.backtrace
@@ -344,7 +381,7 @@ class Framework
         begin
             @instances.each_with_index {
                 |instance, i|
-                buffer |= instance.service.output.map {
+                buffer |= connect_to_instance( instance ).service.output.map {
                     |msg|
                     { msg.keys[0] => "Spawn #{i}: " + msg.values[0] }
 
@@ -358,26 +395,72 @@ class Framework
         return buffer.flatten
     end
 
+    def progress_data
+        data = {
+            'messages' => @framework.flush_buffer,
+            'issues'   => YAML::load( issues ),
+            'stats'    => {}
+        }
+
+        stats = []
+        begin
+            stat_hash = {}
+            @framework.stats( true, true ).each {
+                |k, v|
+                stat_hash[k.to_s] = v
+            }
+            stats << stat_hash
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+
+        ins_data = []
+        begin
+            @instances.each_with_index {
+                |instance, i|
+                ins_data << connect_to_instance( instance ).framework.progress_data
+            }
+
+            ins_data.each {
+                |prog_data|
+                data['messages'] |= prog_data['messages']
+                data['issues'] |= YAML::load( prog_data['issues'] )
+                stats << prog_data['stats']
+            }
+
+            data['stats'] = merge_stats( stats )
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+
+        data['issues'] = YAML.dump( data['issues'] )
+
+        return data
+    end
+
     def dispatcher
-        @dispatcher ||=
-            Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+        Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
     end
 
     def connect_to_instance( instance )
-        @instance_cache ||= {}
-        @instance_cache[instance['url']] ||=
-            Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], instance['token'] )
+        @tokens ||= {}
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        return Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
     def connect_to_dispatcher( url )
-        @dispatcher_cache ||= {}
-        @dispatcher_cache[url] ||=
-            Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
+        Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
     end
 
+    def merge_stats( stats )
 
-    def stats( fresh )
-        final_stats = @framework.stats( fresh, true )
+        final_stats = stats.pop
+        return {} if !final_stats || final_stats.empty?
+
+        final_stats['current_pages'] = [ ]
+        final_stats['current_pages'] << final_stats['current_page'] if final_stats['current_page']
 
         total = [
             :requests,
@@ -398,30 +481,54 @@ class Framework
         ]
 
         begin
-            @instances.each {
-                |instance|
-
-                instats = instance.framework.stats( fresh )
+            stats.each {
+                |instats|
 
                 ( avg | total ).each {
                     |k|
-                    final_stats[k] += Float( instats[k.to_s] )
+                    final_stats[k.to_s] += Float( instats[k.to_s] )
                 }
+
+                final_stats['current_pages'] << instats['current_page'] if instats['current_page']
             }
 
             avg.each {
                 |k|
-                final_stats[k] /= @instances.size + 1
+                final_stats[k.to_s] /= stats.size + 1
             }
-
         rescue Exception => e
             ap e
-            # ap e.faultCode
-            # ap e.faultString
             ap e.backtrace
         end
 
-        final_stats[:sitemap_size] = @sitemap.size if @sitemap
+        final_stats['sitemap_size'] = @sitemap.size if @sitemap
+
+        return final_stats
+    end
+
+    def stats( fresh )
+
+        stats = []
+        begin
+            stats << @framework.stats( fresh, true )
+        rescue
+            return {}
+        end
+
+        begin
+            stats = @instances.map { |instance| connect_to_instance( instance ).framework.stats( fresh ) }
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+
+        final_stats = {}
+        begin
+            final_stats = merge_stats( stats )
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
 
         return final_stats
     end
@@ -453,11 +560,38 @@ class Framework
             store.framework = nil
             return YAML.dump( store )
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
 
         return false
+    end
+
+    def issues
+        begin
+            data = []
+
+            @framework.audit_store( true ).issues.each {
+                |issue|
+
+                tmp_issue = issue.deep_clone
+
+                if !issue.variations[0]['regexp_match']
+                    tmp_issue.variations = []
+                else
+                    tmp_issue.variations = [tmp_issue.variations.pop]
+                end
+
+                data << tmp_issue
+            }
+
+            return YAML.dump( data )
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
+        end
+
+        return YAML.dump( [] )
     end
 
     def version
