@@ -205,6 +205,9 @@ class Framework
 
         @auditmap ||= []
         @sitemap  ||= []
+
+        @opts.start_datetime = Time.now if !@opts.start_datetime
+
         if (!refresh_time || @auditmap.size == @sitemap.size) && !overide_refresh
             @opts.delta_time ||= Time.now - @opts.start_datetime
         else
@@ -231,6 +234,12 @@ class Framework
                 Arachni::Module::Auditor.timeout_audit_blocks.size ) * 50
         end
 
+        begin
+            progress = Float( progress.to_s[0...5] )
+        rescue
+            progress = 0.0
+        end
+
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
@@ -239,7 +248,7 @@ class Framework
             :avg        => avg,
             :sitemap_size  => @sitemap.size,
             :auditmap_size => @auditmap.size,
-            :progress      => Float( progress.to_s[0...5] ),
+            :progress      => progress,
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
             :curr_avg      => curr_avg,
