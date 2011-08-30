@@ -59,7 +59,7 @@ class Base
 
         @server.cookie = 'token=' + token + ';' if token
 
-        @server.timeout = 5
+        @server.timeout = 50
 
 
         if @opts.ssl_ca || @opts.ssl_pkey || @opts.ssl_cert
