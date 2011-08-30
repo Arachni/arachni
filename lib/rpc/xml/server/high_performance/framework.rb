@@ -214,10 +214,6 @@ class Framework
             jobs.each { |job| job.join }
 
 
-            ap '----------------------------'
-            ap 'ALL FINISHED'
-            ap '----------------------------'
-
         }
 
         return true
@@ -292,10 +288,10 @@ class Framework
         tries = 0
         begin
             @master.framework.register_issue( results.to_yaml )
-        rescue Errno::EPIPE, Timeout::Error
+        rescue Errno::EPIPE, Timeout::Error, EOFError:
             ap 'RETRYING: '+ tries.to_s
             tries += 1
-            retry if tries < 4
+            retry if tries < 5
         rescue Exception => e
             ap e
             ap e.backtrace
