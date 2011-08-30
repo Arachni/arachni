@@ -515,21 +515,25 @@ class Parser
             return nil if link.nil?
         end
 
-        # remove anchor
-        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
+        begin
+            # remove anchor
+            link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
 
-        if url = base
-            base_url = URI( url )
-        else
-            base_url = URI( @url )
+            if url = base
+                base_url = URI( url )
+            else
+                base_url = URI( @url )
+            end
+
+            relative = URI( link )
+            absolute = base_url.merge( relative )
+
+            absolute.path = '/' if absolute.path && absolute.path.empty?
+
+            return absolute.to_s
+        rescue
+            return nil
         end
-
-        relative = URI( link )
-        absolute = base_url.merge( relative )
-
-        absolute.path = '/' if absolute.path && absolute.path.empty?
-
-        return absolute.to_s
     end
 
 
