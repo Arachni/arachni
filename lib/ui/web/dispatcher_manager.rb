@@ -65,8 +65,7 @@ class DispatcherManager
     end
 
     #
-    # Provides an easy way to connect to a dispatcher and caches connections
-    # to reduce overhead.
+    # Provides an easy way to connect to a dispatcher.
     #
     # @param    [String]   url
     #
