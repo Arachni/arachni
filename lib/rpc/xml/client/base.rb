@@ -59,8 +59,6 @@ class Base
 
         @server.cookie = 'token=' + token + ';' if token
 
-        # there'll be a HELL of lot of output so things might get..laggy.
-        # a big timeout is required to avoid Timeout exceptions...
         @server.timeout = 5
 
 
