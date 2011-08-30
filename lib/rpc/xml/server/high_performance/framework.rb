@@ -225,17 +225,17 @@ class Framework
     def clean_up!( skip_audit_queue = false )
 
         begin
-        @framework.clean_up!( skip_audit_queue )
-        plugin_results = @framework.get_plugin_store
+            @framework.clean_up!( skip_audit_queue )
+            plugin_results = @framework.get_plugin_store
 
-        @instances.each {
-            |instance|
-            instance_conn = connect_to_instance( instance )
-            instance_conn.framework.clean_up!( skip_audit_queue )
-            plugin_results.merge!( YAML::load( instance_conn.framework.get_plugin_store ) )
-        }
+            @instances.each {
+                |instance|
+                instance_conn = connect_to_instance( instance )
+                instance_conn.framework.clean_up!( skip_audit_queue )
+                plugin_results.merge!( YAML::load( instance_conn.framework.get_plugin_store ) )
+            }
 
-        @framework.set_plugin_store( plugin_results )
+            @framework.set_plugin_store( plugin_results )
         rescue Exception => e
             # ap e
             # ap e.backtrace
