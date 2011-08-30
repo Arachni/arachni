@@ -50,16 +50,24 @@
                     <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
                     <li>Average response time: <span id="average_res_time">0</span> ms</li>
                     <li>Timed-out requests: <span id="time_out_count">0</span></li>
-                    <li>Current page: <span id="current_page">0</span></li>
                 </ul>
 
             </div>
 
-            <p><em>
-                (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
-                you may see some backwards progress or other weird progress behavior.)
-            </em></p>
-            <div id="progressbar"></div>
+            <br/><br/>
+            <div style="display: none" id="currently_auditing">
+                <h3>Currently auditing</h3>
+                <div style="padding-left: 35px;" id="current_pages"></div>
+            </div>
+
+            <div>
+                <br/>
+                <p><em>
+                    (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
+                    you may see some backwards progress or other weird progress behavior.)
+                </em></p>
+                <div id="progressbar"></div>
+            </div>
 
             <div class="left">
                 <h3>Scanner output:</h3>
@@ -122,7 +130,6 @@
                     if( stats == undefined ){ return }
 
                     document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
-                    document.getElementById( 'current_page' ).innerHTML = stats.current_page;
                     document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;
                     document.getElementById( 'avg' ).innerHTML = stats.avg;
                     document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
@@ -130,6 +137,13 @@
 
                     document.getElementById( 'runtime' ).innerHTML = stats.time;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
+
+                    document.getElementById( 'currently_auditing').style.display = 'block';
+                    document.getElementById( 'current_pages' ).innerHTML = '<ul>' ;
+                    for( i in stats.current_pages ) {
+                        document.getElementById( 'current_pages' ).innerHTML += '<li>' + stats.current_pages[i] + '</li>';
+                    }
+                    document.getElementById( 'current_pages' ).innerHTML += '</ul';
                 }
 
                 function updateOutput() {
@@ -174,7 +188,7 @@
                     updateOutput( );
                     setInterval( function() {
                           updateOutput( );
-                    }, 3000 );
+                    }, 5000 );
 
                 })
 
