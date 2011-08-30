@@ -52,7 +52,7 @@ class Base
         @opts = opts
 
         url        = URI( url )
-        url.scheme = 'http'
+        url.scheme = 'https'
 
         # start the XMLRPC client
         @server = ::XMLRPC::Client.new2( url.to_s )
