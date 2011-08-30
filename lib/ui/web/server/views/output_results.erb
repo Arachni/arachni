@@ -17,7 +17,7 @@
                      at <a href="<%= issue.url %>"><%= issue.url %></a>.
                      <br/>
 
-                 <% if (issue.variations[0]['response'] && !issue.variations[0]['response'].empty?) && issue.variations[0]['regexp_match'] %>
+                 <% if (issue.variations[0] && issue.variations[0]['response'] && !issue.variations[0]['response'].empty?) && issue.variations[0]['regexp_match'] %>
 
                  <div style="display: none" id="inspection-dialog_<%=i%>" title="Relevant content is shown in red.">
                      <% match = CGI.escapeHTML( issue.variations[0]['regexp_match'] )%>
@@ -27,9 +27,6 @@
                  <form style="display:inline" action="#">
                      <input onclick="javascript:inspect( '#inspection-dialog_<%=i%>')" type="button" value="Inspect" />
                  </form>
-
-                 <%end%>
-
 
                  <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
                        ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
@@ -41,6 +38,9 @@
                         <%end%>
                         <input type="submit" value="Replay" />
                     </form>
+                 <%end%>
+
+
                  <%end%>
 
             </p>
