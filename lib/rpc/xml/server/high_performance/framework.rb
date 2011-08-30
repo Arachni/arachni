@@ -288,7 +288,7 @@ class Framework
         tries = 0
         begin
             @master.framework.register_issue( results.to_yaml )
-        rescue Errno::EPIPE, Timeout::Error, EOFError:
+        rescue Errno::EPIPE, Timeout::Error, EOFError
             ap 'RETRYING: '+ tries.to_s
             tries += 1
             retry if tries < 5
