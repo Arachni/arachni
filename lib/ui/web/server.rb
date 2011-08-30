@@ -54,7 +54,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 module Web
 
-    VERSION = '0.2'
+    VERSION = '0.2.1'
 
 class Server < Sinatra::Base
 
@@ -486,7 +486,13 @@ class Server < Sinatra::Base
         begin
             arachni.framework.clean_up!( true )
             report_path = reports.save( arachni.framework.auditstore )
-            arachni.service.shutdown!
+            3.times {
+                begin
+                    arachni.service.shutdown!
+                    break
+                rescue Timeout::Error
+                end
+            }
         rescue Exception => e
             ap e
             # ap e.faultCode
