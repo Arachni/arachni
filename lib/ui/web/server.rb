@@ -489,8 +489,8 @@ class Server < Sinatra::Base
             arachni.service.shutdown!
         rescue Exception => e
             ap e
-            ap e.faultCode
-            ap e.faultString
+            # ap e.faultCode
+            # ap e.faultString
             ap e.backtrace
         end
         return report_path
@@ -509,6 +509,7 @@ class Server < Sinatra::Base
 
             stats['running_jobs'].each {
                 |job|
+                next if job['helpers']['rank'] == 'slave'
 
                 instance_url = instances.port_to_url( job['port'], d_url )
                 begin
@@ -541,6 +542,7 @@ class Server < Sinatra::Base
 
             stats['running_jobs'].each {
                 |job|
+                next if job['helpers']['rank'] == 'slave'
 
                 begin
                     instance_url = instances.port_to_url( job['port'], url )
@@ -757,12 +759,26 @@ class Server < Sinatra::Base
             'stats'    => {}
         }
 
+        arachni = instances.connect( params[:url], session )
         begin
-            arachni = instances.connect( params[:url], session )
             if arachni.framework.busy?
+
+                prog = arachni.framework.progress_data
+
                 @@output_streams ||= {}
-                @@output_streams[params[:url]] ||= OutputStream.new( arachni, 38 )
-                output['messages'] = { 'data' => @@output_streams[params[:url]].data }
+                @@output_streams[params[:url]] = OutputStream.new( prog['messages'], 38 )
+                output['messages'] = { 'data' => @@output_streams[params[:url]].format }
+                output['issues'] = { 'data' => erb( :output_results, { :layout => false }, :issues => YAML.load( prog['issues'] ) ) }
+
+                output['stats'] = prog['stats'].dup
+
+                output['stats']['current_pages'] = []
+                if prog['stats']['current_pages']
+                    prog['stats']['current_pages'].each {
+                        |url|
+                        output['stats']['current_pages'] << escape( url )
+                    }
+                end
             else
                 log.instance_shutdown( env, params[:url] )
                 save_and_shutdown( arachni )
@@ -771,6 +787,7 @@ class Server < Sinatra::Base
         rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
                Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
             output['messages'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
+            output['issues']   = { 'data' => "<strong>Connection error, retrying...</strong>" }
         rescue Exception => e
             ap e
             # ap e.faultCode
@@ -780,27 +797,29 @@ class Server < Sinatra::Base
         end
 
 
-        begin
-            arachni = instances.connect( params[:url], session )
-            if !arachni.framework.paused? && arachni.framework.busy?
-                out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.auditstore ).issues )
-                output['issues'] = { 'data' => out }
-            end
-        rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
-               Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
-            output['issues'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
-        rescue Exception => e
-            output['issues'] = { 'data' => "The server has been shut down." }
-        end
+        # begin
+            # # arachni = instances.connect( params[:url], session )
+            # if !arachni.framework.paused? && arachni.framework.busy?
+                # out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.issues ) )
+                # output['issues'] = { 'data' => out }
+            # end
+        # rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
+               # Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+            # output['issues'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
+        # rescue Exception => e
+            # ap e
+            # ap e.backtrace
+            # output['issues'] = { 'data' => "The server has been shut down." }
+        # end
 
 
-        begin
-            arachni = instances.connect( params[:url], session )
-            stats = arachni.framework.stats( true )
-            stats['current_page'] = escape( stats['current_page'] )
-            output['stats'] = stats
-        rescue
-        end
+        # begin
+            # # arachni = instances.connect( params[:url], session )
+            # stats = arachni.framework.stats( true )
+            # stats['current_page'] = escape( stats['current_page'] )
+            # output['stats'] = stats
+        # rescue
+        # end
 
         output.to_json
     end
