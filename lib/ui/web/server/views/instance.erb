@@ -36,32 +36,29 @@
         <%= erb :flash, {:layout => false} %>
 
         <div id="scan_data">
-            <h3>Scan statisics</h3>
             <div class="left">
+                <h3>Scan statisics</h3>
                 <ul>
                     <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
                     <li>Requests/second: <span id="avg">0</span></li>
                     <li>Runtime: <span id="runtime">00:00:00</span></li>
-                </ul>
-            </div>
-            <div>
-                <ul>
                     <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
                     <li>Average response time: <span id="average_res_time">0</span> ms</li>
                     <li>Timed-out requests: <span id="time_out_count">0</span></li>
-                </ul>
 
+                </ul>
             </div>
 
-            <br/><br/>
-            <div style="display: none" id="currently_auditing">
-                <h3>Currently auditing</h3>
-                <div style="padding-left: 35px;" id="current_pages"></div>
+            <div class="right">
+                <h3>Instances</h3>
+                <div style="height: 245px; overflow-y: scroll" id="currently_auditing">
+                    <!-- <h3>Currently auditing</h3>
+                    <div style="padding-left: 35px;" id="current_pages"></div> -->
+                </div>
             </div>
 
             <div>
-                <br/>
                 <p><em>
                     (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
                     you may see some backwards progress or other weird progress behavior.)
@@ -138,12 +135,34 @@
                     document.getElementById( 'runtime' ).innerHTML = stats.time;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
 
-                    document.getElementById( 'currently_auditing').style.display = 'block';
-                    document.getElementById( 'current_pages' ).innerHTML = '<ul>' ;
-                    for( i in stats.current_pages ) {
-                        document.getElementById( 'current_pages' ).innerHTML += '<li>' + stats.current_pages[i] + '</li>';
+                    //document.getElementById( 'currently_auditing').style.display = 'block';
+                    //document.getElementById( 'current_pages' ).innerHTML = '<ul>' ;
+                    //for( i in stats.current_pages ) {
+                        //document.getElementById( 'current_pages' ).innerHTML += '<li>' + stats.current_pages[i] + '</li>';
+                    //}
+                    //document.getElementById( 'current_pages' ).innerHTML += '</ul';
+
+                    //document.getElementById( 'currently_auditing').style.display = 'block';
+                    elem = document.getElementById( 'currently_auditing');
+                    elem.innerHTML = '';
+                    for( i in stats.instances ) {
+
+                        elem.innerHTML += '<strong>' + stats.instances[i].url + '</strong> <br/>';
+
+                        if( stats.instances[i].busy ) {
+                            elem.innerHTML += 'Currently auditing: ' + stats.instances[i].current_page;
+                        } else {
+                            elem.innerHTML += 'Done';
+                        }
+
+                         elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
+
+                        $( "#progressbar_" + i ).progressbar({
+                            value: stats.instances[i].progress
+                        });
+
                     }
-                    document.getElementById( 'current_pages' ).innerHTML += '</ul';
+
                 }
 
                 function updateOutput() {

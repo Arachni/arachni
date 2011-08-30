@@ -785,6 +785,8 @@ class Server < Sinatra::Base
                         output['stats']['current_pages'] << escape( url )
                     }
                 end
+
+                output['stats']['instances'] = prog['instances'].dup
             else
                 log.instance_shutdown( env, params[:url] )
                 save_and_shutdown( arachni )

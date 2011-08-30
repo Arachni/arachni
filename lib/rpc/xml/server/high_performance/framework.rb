@@ -65,6 +65,7 @@ class Framework
         @plugins = @framework.plugins
 
         @instances = []
+        @instance_busyness  = {}
     end
 
     #
@@ -183,30 +184,38 @@ class Framework
                         break_loop = false
                         while( !break_loop )
                             begin
-                                ap 'RUNNING SLAVE'
+                                ap 'RUNNING SLAVE: ' + instance['url']
                                 sleep( 10 )
-                                break_loop = instance_conn.framework.busy?
+                                @instance_busyness[instance['url']] = instance_conn.framework.busy?
+                                break_loop = !@instance_busyness[instance['url']]
                             rescue Exception => e
                                 ap e
                                 ap e.backtrace
                             end
                         end
+                        ap 'FINISHED SLAVE: ' + instance['url']
                     }
                 }
 
             end
 
-            @framework.run
+            jobs << Thread.new {
+                @framework.run
+                sleep( 10 )
+
+                while( @framework.busy? )
+                    ap 'RUNNING MASTER'
+                    sleep( 10 )
+                end
+
+                ap 'FINISHED MASTER'
+            }
+
             jobs.each { |job| job.join }
 
-            while( @framework.busy? )
-                sleep( 10 )
-                ap 'RUNNING MASTER'
-                # ap output
-            end
 
             ap '----------------------------'
-            ap 'FINISHED'
+            ap 'ALL FINISHED'
             ap '----------------------------'
 
         }
@@ -397,9 +406,10 @@ class Framework
 
     def progress_data
         data = {
-            'messages' => @framework.flush_buffer,
-            'issues'   => YAML::load( issues ),
-            'stats'    => {}
+            'messages'  => @framework.flush_buffer,
+            'issues'    => YAML::load( issues ),
+            'stats'     => {},
+            'instances' => {}
         }
 
         stats = []
@@ -409,6 +419,16 @@ class Framework
                 |k, v|
                 stat_hash[k.to_s] = v
             }
+
+            if @framework.opts.datastore[:dispatcher_url]
+                self_url = URI( @framework.opts.datastore[:dispatcher_url] )
+                self_url.port = @framework.opts.rpc_port
+
+                data['instances'][0] = stat_hash.dup
+                data['instances'][0]['url'] = self_url.to_s.gsub( 'https://', '@' )
+                data['instances'][0]['busy'] = @framework.busy? || false
+            end
+
             stats << stat_hash
         rescue Exception => e
             ap e
@@ -419,7 +439,11 @@ class Framework
         begin
             @instances.each_with_index {
                 |instance, i|
-                ins_data << connect_to_instance( instance ).framework.progress_data
+                tmp = connect_to_instance( instance ).framework.progress_data
+                data['instances'][i+1] = tmp['stats']
+                data['instances'][i+1]['url'] = instance['url'].gsub( 'https://', '@' )
+                data['instances'][i+1]['busy'] = @instance_busyness[instance['url']] || false
+                ins_data << tmp.deep_clone
             }
 
             ins_data.each {
