@@ -33,8 +33,7 @@ class InstanceManager
     end
 
     #
-    # Provides an easy way to connect to an instance and caches connections
-    # to reduce overhead.
+    # Provides an easy way to connect to an instance
     #
     # @param    [String]   url
     # @param    [Hash]     session  session of the current user (optional)
@@ -44,15 +43,6 @@ class InstanceManager
     #
     def connect( url, session = nil, token = nil )
         url = 'https://' + url if !url.include?( 'https' )
-
-        @@connections ||= {}
-
-        begin
-            if @@connections[url] && @@connections[url].alive?
-              return @@connections[url]
-            end
-        rescue
-        end
 
         begin
 
@@ -74,8 +64,7 @@ class InstanceManager
 
             tmp_token = session ? session['tokens'][url] : @@tokens[url]
 
-            return @@connections[url] =
-                Arachni::RPC::XML::Client::Instance.new( @opts, url, tmp_token )
+            return Arachni::RPC::XML::Client::Instance.new( @opts, url, tmp_token )
         rescue Exception => e
             raise "Instance at #{url} has shutdown."
         end
