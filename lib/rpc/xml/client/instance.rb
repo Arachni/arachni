@@ -25,7 +25,7 @@ module Client
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class Instance < Base
 
@@ -49,11 +49,31 @@ class Instance < Base
 
     end
 
+    class Framework < Mapper
+
+        def method_missing( sym, *args, &block )
+
+            if sym == :clean_up!
+                timeout = @server.timeout
+                @server.timeout = 15
+            end
+
+            res = super( sym, *args, &block )
+
+            if sym == :clean_up!
+                @server.timeout = timeout
+            end
+
+            return res
+        end
+
+    end
+
     def initialize( opts, url, token = nil )
         super( opts, url, token )
 
         @opts      = OptsMapper.new( @server, 'opts' )
-        @framework = Mapper.new( @server, 'framework' )
+        @framework = Framework.new( @server, 'framework' )
         @modules   = Mapper.new( @server, 'modules' )
         @plugins   = Mapper.new( @server, 'plugins' )
         @service   = Mapper.new( @server, 'service' )
