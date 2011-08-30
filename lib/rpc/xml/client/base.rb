@@ -52,7 +52,7 @@ class Base
         @opts = opts
 
         url        = URI( url )
-        url.scheme = 'https'
+        url.scheme = 'http'
 
         # start the XMLRPC client
         @server = ::XMLRPC::Client.new2( url.to_s )
@@ -61,7 +61,7 @@ class Base
 
         # there'll be a HELL of lot of output so things might get..laggy.
         # a big timeout is required to avoid Timeout exceptions...
-        @server.timeout = 9999999
+        @server.timeout = 5
 
 
         if @opts.ssl_ca || @opts.ssl_pkey || @opts.ssl_cert
@@ -86,7 +86,26 @@ class Base
     # Used to make old school XMLRPC calls
     #
     def call( method, *args )
-        @server.call( method, *args )
+        tries = 0
+        begin
+            @server.call( method, *args )
+        rescue Errno::EPIPE => e
+            ap 'RETRYING: ' + tries.to_s
+            ap e
+            tries += 1
+            retry if tries < 4
+        rescue Exception => e
+            ap '--------------------'
+            puts 'Method: ' + method.to_s
+            puts 'Args:'
+            ap args
+
+            ap e
+            ap e.faultCode
+            ap e.faultString
+            ap e.backtrace
+            ap '--------------------'
+        end
     end
 
 end
