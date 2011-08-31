@@ -541,6 +541,8 @@ class Framework
         final_stats = stats.pop
         return {} if !final_stats || final_stats.empty?
 
+        return final_stats if stats.empty?
+
         final_stats['current_pages'] = [ ]
         final_stats['current_pages'] << final_stats['current_page'] if final_stats['current_page']
 
