@@ -14,18 +14,36 @@
         </div>
         <%= erb :flash, {:layout => false} %>
 
+        <% i = 0 %>
         <% stats.each_pair do |d_url, dispatcher_stats| %>
         <h2><%=show_dispatcher_line( dispatcher_stats )%></h2>
         <span class="notice"> <%=show_dispatcher_node_line( dispatcher_stats ) %></span>
+
         <br/><br/>
 
+
+        <% if !dispatcher_stats['neighbours'].empty? %>
+        <div style="display: none" id="dialog_neighbours_<%=i%>" title="Neighbours">
+            <ul>
+            <% dispatcher_stats['neighbours'].each do |neighbour| %>
+            <li><%=neighbour%></li>
+            <%end%>
+            </ul>
+        </div>
+
+        <form style='display: inline' action="#" onsubmit="showDialog( '#dialog_neighbours_<%=i%>' ); return;" >
+            <input type="submit" value="Show neighbours" />
+        </form>
+        <%end%>
+
+        <% i += 1 %>
+
         <%if !dispatcher_stats['running_jobs'].empty? %>
-        <form action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
+        <form style='display: inline' action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
             <%= csrf_tag %>
             <input type="submit" value="Shutdown all" />
         </form>
         <%end%>
-
 
         <% if !dispatcher_stats['running_jobs'].empty? %>
         <table>
@@ -49,11 +67,7 @@
                 <td><%=job['port']%></td>
                 <td><%=escape( job['owner'] )%></td>
 
-                <%if !job['paused'] %>
-                    <td>Running</td>
-                <% else %>
-                    <td>Paused</td>
-                <% end %>
+                <td><%=job['status']%></td>
 
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
@@ -70,14 +84,14 @@
                                 <input type="submit" value="Attach" />
                             </form>
 
-                            <%if !job['paused'] %>
+                            <%if job['status'].downcase == 'busy' %>
                             <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/pause" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Pause" />
                             </form>
                             <%end%>
 
-                            <%if job['paused'] %>
+                            <%if job['status'].downcase == 'paused' %>
                             <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/resume" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Resume" />
@@ -101,9 +115,23 @@
         <% end %>
         </table>
         <% else %>
+        <br/><br/>
         <span class="notice"> There are no running scans at the moment.</span>
         <% end %>
 
         <br/><br/>
 
         <% end %>
+
+            <script type="text/javascript">
+                //<![CDATA[
+
+                function showDialog( id ){
+                    $( id ).dialog({
+                        height: 350,
+                        width: 300,
+                        modal: true
+                    });
+                }
+             //]]>
+            </script>
