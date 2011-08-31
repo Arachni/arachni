@@ -134,7 +134,18 @@ class DispatcherManager
                         i_jobs << Thread.new {
                             begin
                                 instance = @settings.instances.port_to_url( job['port'], dispatcher['url'] )
-                                job['paused'] = @settings.instances.connect( instance ).framework.paused?
+                                if job['helpers']['rank'] != 'slave'
+                                    job['status'] = @settings.instances.connect( instance ).framework.status
+                                else
+                                    prog_data = @settings.instances.connect( job['helpers']['master'] ).framework.progress_data
+                                    prog_data['instances'].each {
+                                        |insdat|
+                                        if insdat['url'] == job['url'].gsub( 'https://', '@' )
+                                            job['status'] = insdat['status']
+                                        end
+                                    }
+                                end
+                                job['status'].capitalize!
                             rescue
                             end
                         }
