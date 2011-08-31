@@ -54,7 +54,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 module Web
 
-    VERSION = '0.2.1'
+    VERSION = '0.3'
 
 class Server < Sinatra::Base
 
@@ -662,6 +662,12 @@ class Server < Sinatra::Base
         elsif !params['dispatcher'] || params['dispatcher'].empty?
             flash[:err] = "Please select a Dispatcher."
             show :home
+        elsif params['high_performance'] &&
+            dispatchers.connect( params['dispatcher'] ).node.neighbours.empty?
+            flash[:err] = "The selected Dispatcher can't be used " +
+                "in High Performance mode because it has no neighbours " +
+                "(i.e. is not pat of any Grid)."
+            show :home
         else
 
             session['opts']['settings']['url'] = params[:url]
@@ -676,6 +682,11 @@ class Server < Sinatra::Base
             opts['settings'] = prep_opts( session['opts']['settings'] )
             opts['plugins']  = YAML::load( session['opts']['plugins'] )
             opts['modules']  = session['opts']['modules']
+
+            if params['high_performance']
+                opts['settings']['grid_mode'] = 'high_performance'
+            end
+
 
             job = Scheduler::Job.new(
                 :dispatcher  => params[:dispatcher],

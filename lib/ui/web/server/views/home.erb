@@ -5,6 +5,8 @@
 
             <input type="submit" value="Launch Scan" />
 
+            <% show_hp = false %>
+
             <div id="page-intro">
                 Select a Dispatcher:
                 <select name="dispatcher">
@@ -12,9 +14,19 @@
                     <% next if !dispatchers.alive?( d_url ) %>
                     <option value="<%=d_url%>">
                         <%=show_dispatcher_line( stats )%>
+                        <% if !stats['neighbours'].empty? %>
+                            [HP]
+                            <% show_hp = true %>
+                        <%end%>
                     </option>
                 <%end%>
                 </select>
+
+                <br/>
+                <% if show_hp %>
+                    Use High Performance mode <input type="checkbox" name="high_performance" />
+                    (Dispatchers marked with "[HP]" are part of a Grid and can be used in High Performance mode.)
+                <%end%>
 
                 <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
             </div>
