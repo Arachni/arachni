@@ -162,15 +162,16 @@ class Framework
                 }
                 @crawling_done = true
 
-                chunk_cnt = 3
+                pref_dispatchers = prefered_dispatchers()
+                chunk_cnt = pref_dispatchers.size + 1
 
                 chunks = @sitemap.chunk( chunk_cnt )
                 @framework.opts.focus_scan_on = chunks.pop
 
-                chunks.each {
-                    |chunk|
+                chunks.each_with_index {
+                    |chunk, i|
                     begin
-                        @instances << spawn( chunk )
+                        @instances << spawn( chunk, pref_dispatchers[i] )
                     rescue Exception => e
                         ap e
                         ap e.backtrace
@@ -332,15 +333,9 @@ class Framework
         return true
     end
 
-    def spawn( urls )
-
-        opts = @framework.opts.to_h.deep_clone
-
-        self_url = URI( opts['datastore'][:dispatcher_url] )
-        self_url.port = @framework.opts.rpc_port
-        self_url = self_url.to_s
-
-        self_token = @opts.datastore[:token]
+    def prefered_dispatchers
+        @used_pipe_ids ||= []
+        @used_pipe_ids << dispatcher.node.info['pipe_id']
 
         dispatchers = nil
         3.times{
@@ -354,20 +349,29 @@ class Framework
             end
         }
 
-        @used_pipe_ids ||= []
-        @used_pipe_ids << dispatcher.node.info['pipe_id']
-
-        pref_dispatcher_url = nil
+        pref_dispatcher_urls = []
         dispatchers.each {
             |node|
             if !@used_pipe_ids.include?( node['pipe_id'] )
-                pref_dispatcher_url = node['url']
                 @used_pipe_ids << node['pipe_id']
-                break
+                pref_dispatcher_urls << node['url']
             end
         }
 
-        pref_dispatcher = connect_to_dispatcher( pref_dispatcher_url )
+        return pref_dispatcher_urls
+    end
+
+    def spawn( urls, prefered_dispatcher )
+
+        opts = @framework.opts.to_h.deep_clone
+
+        self_url = URI( opts['datastore'][:dispatcher_url] )
+        self_url.port = @framework.opts.rpc_port
+        self_url = self_url.to_s
+
+        self_token = @opts.datastore[:token]
+
+        pref_dispatcher = connect_to_dispatcher( prefered_dispatcher )
 
         instance_hash = pref_dispatcher.dispatch( self_url, {
             'rank'   => 'slave',
