@@ -67,7 +67,8 @@ class Framework
         @instances = []
         @instance_busyness  = {}
         @sitemap = []
-        @crawling_done = false
+        @crawling_done = nil
+        @master_url = ''
     end
 
     #
@@ -136,6 +137,9 @@ class Framework
         return plug_info
     end
 
+    def high_performance?
+        @framework.opts.grid_mode == 'high_performance'
+    end
 
     #
     # Starts the audit.
@@ -148,7 +152,7 @@ class Framework
         @job = Thread.new {
 
             jobs = []
-            if @framework.opts.grid_mode == 'high_performance'
+            if high_performance?
 
                 @framework.opts.spider_first = true
 
@@ -293,6 +297,7 @@ class Framework
 
 
     def set_master( url, token )
+        @master_url = url
         @master = connect_to_instance( { 'url' => url, 'token' => token } )
 
         @framework.modules.class.do_not_store!
@@ -302,6 +307,10 @@ class Framework
         }
 
         return true
+    end
+
+    def master
+        @master_url
     end
 
     def report_issue_to_master( results )
@@ -362,7 +371,8 @@ class Framework
 
         instance_hash = pref_dispatcher.dispatch( self_url, {
             'rank'   => 'slave',
-            'target' => @opts.url.to_s
+            'target' => @opts.url.to_s,
+            'master' => self_url
         })
 
         instance = connect_to_instance( instance_hash )
@@ -409,18 +419,11 @@ class Framework
             @instances.each_with_index {
                 |instance, i|
                 jobs << Thread.new {
-                    output_q << connect_to_instance( instance ).service.output
+                    buffer |= connect_to_instance( instance ).service.output
                 }
             }
 
             jobs.each { |job| job.join }
-
-            while( !output_q.empty? && out = output_q.pop )
-                buffer |= out.map {
-                    |msg|
-                    { msg.keys[0] => "Spawn #{i}: " + msg.values[0] }
-                }
-            end
         rescue Exception => e
             ap e
             ap e.backtrace
@@ -429,11 +432,24 @@ class Framework
         return buffer.flatten
     end
 
+    def status
+        if !@crawling_done && master.empty? && high_performance?
+            return 'crawling'
+        elsif @framework.paused?
+            return 'paused'
+        elsif !@framework.busy?
+            return 'done'
+        else
+            return 'busy'
+        end
+    end
+
     def progress_data
         data = {
             'messages'  => @framework.flush_buffer,
             'issues'    => YAML::load( issues ),
             'stats'     => {},
+            'status'    => status,
             'instances' => {}
         }
 
@@ -452,14 +468,7 @@ class Framework
 
                 data['instances'][self_url] = stat_hash.dup
                 data['instances'][self_url]['url'] = self_url
-
-                if !@crawling_done
-                    data['instances'][self_url]['status'] = 'crawling'
-                elsif !@framework.busy?
-                    data['instances'][self_url]['status'] = 'done'
-                else
-                    data['instances'][self_url]['status'] = 'busy'
-                end
+                data['instances'][self_url]['status'] = status
             end
 
             stats << stat_hash
@@ -474,18 +483,13 @@ class Framework
             @instances.each_with_index {
                 |instance, i|
                 jobs << Thread.new {
+
                     tmp = connect_to_instance( instance ).framework.progress_data
                     url = instance['url'].gsub( 'https://', '@' )
+
                     data['instances'][url] = tmp['stats']
                     data['instances'][url]['url'] = url
-
-                    if @instance_busyness[instance['url']].nil?
-                        data['instances'][url]['status'] = 'init'
-                    elsif @instance_busyness[instance['url']] == false
-                        data['instances'][url]['status'] = 'done'
-                    else
-                        data['instances'][url]['status'] = 'busy'
-                    end
+                    data['instances'][url]['status'] = tmp['status']
 
                     ins_data << tmp.deep_clone
                 }
