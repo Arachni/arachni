@@ -149,22 +149,11 @@
 
                         elem.innerHTML += '<strong>' + stats.instances[i].url + '</strong> <br/>';
 
-                        switch( stats.instances[i].status ) {
-                            case 'init':
-                              elem.innerHTML += 'Initializing...';
-                              break;
-
-                            case 'done':
-                              elem.innerHTML += 'Done';
-                              break;
-
-                            case 'crawling':
-                              elem.innerHTML += 'Crawling...';
-                              break;
-
-                            case 'busy':
-                              elem.innerHTML += 'Currently auditing: ' + stats.instances[i].current_page;
-                              break;
+                        status = stats.instances[i].status
+                        if( status == 'busy' ) {
+                            elem.innerHTML += 'Currently auditing: ' + stats.instances[i].current_page;
+                        } else {
+                            elem.innerHTML += status.charAt(0).toUpperCase() + status.slice(1);
                         }
 
                          elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
