@@ -157,12 +157,18 @@ class Node
     #
     def announce( node )
         print_status 'Advertising: ' + node
+
+        jobs = []
         neighbours.each {
             |peer|
             next if peer == node
-            print_info '---- to: ' + peer
-            connect_to_peer( peer ).node.add_neighbour( node )
+            jobs << Thread.new {
+                print_info '---- to: ' + peer
+                connect_to_peer( peer ).node.add_neighbour( node )
+            }
         }
+
+        jobs.each { |job| job.join }
         print_status 'Done advertising.'
     end
 
