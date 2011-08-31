@@ -80,6 +80,14 @@ class Base
 
     end
 
+    def timeout=( secs )
+        @server.timeout = secs
+    end
+
+    def timeout
+        @server.timeout
+    end
+
     #
     # Used to make old school XMLRPC calls
     #
@@ -99,10 +107,12 @@ class Base
             ap args
 
             ap e
-            ap e.faultCode
-            ap e.faultString
+            ap e.faultCode if e.respond_to?( :faultCode )
+            ap e.faultString if e.respond_to?( :faultString )
             ap e.backtrace
             ap '--------------------'
+
+            raise e
         end
     end
 
