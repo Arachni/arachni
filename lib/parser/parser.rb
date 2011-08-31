@@ -543,6 +543,10 @@ class Parser
     end
 
 
+    def too_deep?( url )
+        return true if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+    end
+
     #
     # Returns +true+ if *uri* is in the same domain as the page, returns
     # +false+ otherwise

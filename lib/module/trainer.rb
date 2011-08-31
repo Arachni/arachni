@@ -74,9 +74,10 @@ class Trainer
     def follow?( url )
         @parser.url = @page.url
 
-        return false if !@parser.in_domain?( url )
-        return false if @parser.exclude?( url )
-        return false if !@parser.include?( url )
+        return false if @parser.too_deep?( @page.url )
+        return false if !@parser.in_domain?( @page.url )
+        return false if @parser.exclude?( @page.url )
+        return false if !@parser.include?( @page.url )
         return true
     end
 

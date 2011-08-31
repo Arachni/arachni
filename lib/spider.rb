@@ -149,6 +149,9 @@ class Spider
     end
 
     def skip?( url )
+
+        return true if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+
         @opts.exclude.each {
             |regexp|
             return true if regexp =~ url
