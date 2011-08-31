@@ -118,24 +118,42 @@ class DispatcherManager
     #
     def stats
         stats_h = {}
+
+        d_jobs = []
         all.each {
             |dispatcher|
 
-            begin
-                stats_h[dispatcher['url']] = connect( dispatcher['url'] ).stats
-                stats_h[dispatcher['url']]['running_jobs'].each {
-                    |job|
-                    begin
-                        instance = @settings.instances.port_to_url( job['port'], dispatcher['url'] )
-                        job['paused'] = @settings.instances.connect( instance ).framework.paused?
-                    rescue
-                    end
-                }
-            rescue
-            end
+            d_jobs << Thread.new {
+                begin
+                    stats_h[dispatcher['url']] = connect( dispatcher['url'] ).stats
+
+                    i_jobs = []
+                    stats_h[dispatcher['url']]['running_jobs'].each {
+                        |job|
+
+                        i_jobs << Thread.new {
+                            begin
+                                instance = @settings.instances.port_to_url( job['port'], dispatcher['url'] )
+                                job['paused'] = @settings.instances.connect( instance ).framework.paused?
+                            rescue
+                            end
+                        }
+                    }
+                    i_jobs.each { |job| job.join }
+                rescue
+                end
+            }
         }
 
-        return stats_h
+        d_jobs.each { |job| job.join }
+
+        sorted_stats = {}
+        stats_h.keys.sort.each {
+            |url|
+            sorted_stats[url] = stats_h[url]
+        }
+
+        return sorted_stats
     end
 
     #

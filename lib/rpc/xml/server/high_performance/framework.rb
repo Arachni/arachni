@@ -66,6 +66,8 @@ class Framework
 
         @instances = []
         @instance_busyness  = {}
+        @sitemap = []
+        @crawling_done = false
     end
 
     #
@@ -150,17 +152,15 @@ class Framework
 
                 @framework.opts.spider_first = true
 
-                paths_to_focus_on = []
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
-                    paths_to_focus_on << page.url
+                    @sitemap << page.url
                 }
-
-                @sitemap = paths_to_focus_on
+                @crawling_done = true
 
                 chunk_cnt = 3
 
-                chunks = paths_to_focus_on.chunk( chunk_cnt )
+                chunks = @sitemap.chunk( chunk_cnt )
                 @framework.opts.focus_scan_on = chunks.pop
 
                 chunks.each {
@@ -176,9 +176,8 @@ class Framework
                 @instances.each_with_index {
                     |instance, i|
 
-                    instance_conn = connect_to_instance( instance )
-
                     jobs << Thread.new {
+                        instance_conn = connect_to_instance( instance )
                         instance_conn.framework.run
 
                         break_loop = false
@@ -233,12 +232,23 @@ class Framework
             @framework.clean_up!( skip_audit_queue )
             plugin_results = @framework.get_plugin_store
 
+            jobs = []
+            results_queue = Queue.new
             @instances.each {
                 |instance|
-                instance_conn = connect_to_instance( instance )
-                instance_conn.framework.clean_up!( skip_audit_queue )
-                plugin_results.merge!( YAML::load( instance_conn.framework.get_plugin_store ) )
+                jobs << Thread.new {
+                    instance_conn = connect_to_instance( instance )
+                    instance_conn.framework.clean_up!( skip_audit_queue )
+                    results_queue << instance_conn.framework.get_plugin_store
+                }
             }
+
+            jobs.each { |job| job.join }
+
+            while( !results_queue.empty? && result = results_queue.pop )
+                plugin_results.merge!( YAML::load( result ) )
+            end
+
 
             @framework.set_plugin_store( plugin_results )
         rescue Exception => e
@@ -251,19 +261,29 @@ class Framework
 
     def pause!
         @framework.pause!
+
+        jobs = []
         @instances.each {
             |instance|
-            connect_to_instance( instance ).framework.pause!
+            jobs << Thread.new {
+                connect_to_instance( instance ).framework.pause!
+            }
         }
+        jobs.each { |job| job.join }
         return true
     end
 
     def resume!
         @framework.resume!
+
+        jobs = []
         @instances.each {
             |instance|
-            connect_to_instance( instance ).framework.resume!
+            jobs << Thread.new {
+                connect_to_instance( instance ).framework.resume!
+            }
         }
+        jobs.each { |job| job.join }
         return true
     end
 
@@ -384,14 +404,23 @@ class Framework
 
         buffer = @framework.flush_buffer
         begin
+            jobs = []
+            output_q = Queue.new
             @instances.each_with_index {
                 |instance, i|
-                buffer |= connect_to_instance( instance ).service.output.map {
-                    |msg|
-                    { msg.keys[0] => "Spawn #{i}: " + msg.values[0] }
-
+                jobs << Thread.new {
+                    output_q << connect_to_instance( instance ).service.output
                 }
             }
+
+            jobs.each { |job| job.join }
+
+            while( !output_q.empty? && out = output_q.pop )
+                buffer |= out.map {
+                    |msg|
+                    { msg.keys[0] => "Spawn #{i}: " + msg.values[0] }
+                }
+            end
         rescue Exception => e
             ap e
             ap e.backtrace
@@ -419,10 +448,18 @@ class Framework
             if @framework.opts.datastore[:dispatcher_url]
                 self_url = URI( @framework.opts.datastore[:dispatcher_url] )
                 self_url.port = @framework.opts.rpc_port
+                self_url = self_url.to_s.gsub( 'https://', '@' )
 
-                data['instances'][0] = stat_hash.dup
-                data['instances'][0]['url'] = self_url.to_s.gsub( 'https://', '@' )
-                data['instances'][0]['busy'] = @framework.busy? || false
+                data['instances'][self_url] = stat_hash.dup
+                data['instances'][self_url]['url'] = self_url
+
+                if !@crawling_done
+                    data['instances'][self_url]['status'] = 'crawling'
+                elsif !@framework.busy?
+                    data['instances'][self_url]['status'] = 'done'
+                else
+                    data['instances'][self_url]['status'] = 'busy'
+                end
             end
 
             stats << stat_hash
@@ -433,14 +470,35 @@ class Framework
 
         ins_data = []
         begin
+            jobs = []
             @instances.each_with_index {
                 |instance, i|
-                tmp = connect_to_instance( instance ).framework.progress_data
-                data['instances'][i+1] = tmp['stats']
-                data['instances'][i+1]['url'] = instance['url'].gsub( 'https://', '@' )
-                data['instances'][i+1]['busy'] = @instance_busyness[instance['url']] || false
-                ins_data << tmp.deep_clone
+                jobs << Thread.new {
+                    tmp = connect_to_instance( instance ).framework.progress_data
+                    url = instance['url'].gsub( 'https://', '@' )
+                    data['instances'][url] = tmp['stats']
+                    data['instances'][url]['url'] = url
+
+                    if @instance_busyness[instance['url']].nil?
+                        data['instances'][url]['status'] = 'init'
+                    elsif @instance_busyness[instance['url']] == false
+                        data['instances'][url]['status'] = 'done'
+                    else
+                        data['instances'][url]['status'] = 'busy'
+                    end
+
+                    ins_data << tmp.deep_clone
+                }
             }
+
+            jobs.each { |job| job.join }
+
+            sorted_data_instances = {}
+            data['instances'].keys.sort.each {
+                |url|
+                sorted_data_instances[url] = data['instances'][url]
+            }
+            data['instances'] = sorted_data_instances.values
 
             ins_data.each {
                 |prog_data|
