@@ -72,11 +72,11 @@ class Instance < Base
     def initialize( opts, url, token = nil )
         super( opts, url, token )
 
-        @opts      = OptsMapper.new( @server, 'opts' )
-        @framework = Framework.new( @server, 'framework' )
-        @modules   = Mapper.new( @server, 'modules' )
-        @plugins   = Mapper.new( @server, 'plugins' )
-        @service   = Mapper.new( @server, 'service' )
+        @opts      = OptsMapper.new( self, 'opts' )
+        @framework = Framework.new( self, 'framework' )
+        @modules   = Mapper.new( self, 'modules' )
+        @plugins   = Mapper.new( self, 'plugins' )
+        @service   = Mapper.new( self, 'service' )
     end
 
 end
