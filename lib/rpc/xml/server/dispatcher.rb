@@ -195,7 +195,7 @@ class Dispatcher < Base
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
             'curr_pool_size'  => @pool.size
-        }.merge( 'node' => @node.info )
+        }.merge( 'node' => @node.info, 'neighbours' => @node.neighbours )
     end
 
     def proc_info
