@@ -99,7 +99,7 @@ class AuditStore
             @finish_datetime = Time.now.asctime
         end
 
-        @delta_time      = secs_to_hms( @options['delta_time'] )
+        @delta_time = secs_to_hms( @options['delta_time'] )
 
     end
 
