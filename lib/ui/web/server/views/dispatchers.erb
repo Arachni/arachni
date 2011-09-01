@@ -151,7 +151,14 @@
                     });
 
                     $.getJSON( log_url, function(data) {
-                        document.getElementById( 'log' ).innerHTML = data.log;
+                        elem = document.getElementById( 'log' )
+                        if ( data.error ) {
+                            elem.innerHTML = "Error: " + data.error + "\n\n"
+                            elem.innerHTML += "Backtrace: " + data.backtrace
+                        } else {
+                            elem.innerHTML = data.log;
+                        }
+
                         document.getElementById( "log_progress" ).style.display = 'none';
                     });
                 }

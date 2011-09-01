@@ -630,7 +630,12 @@ class Server < Sinatra::Base
 
     get '/dispatchers/:url/log.json' do
         content_type :json
-        { 'log' => dispatchers.connect( 'https://' + params[:url] ).log }.to_json
+        begin
+            return { 'log' => dispatchers.connect( 'https://' + params[:url] ).log }.to_json
+        rescue Exception, XMLRPC::FaultException => e
+            err_str = e.respond_to?( :faultString ) ? e.faultString : e.to_s
+            return { 'error' => err_str, 'backtrace' => e.backtrace.join( "\n" ),  }.to_json
+        end
     end
 
     #
