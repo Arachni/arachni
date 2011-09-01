@@ -315,25 +315,39 @@ class Framework
         @used_pipe_ids << dispatcher.node.info['pipe_id']
 
         dispatchers = nil
-        3.times{
+        3.times {
             begin
-                dispatchers   = dispatcher.node.neighbours_with_info
+                dispatchers = dispatcher.node.neighbours_with_info
                 break
             rescue Exception => e
                 ap e
                 ap e.backtrace
-                retry
             end
         }
 
-        pref_dispatcher_urls = []
+        node_q = Queue.new
+        jobs = []
         dispatchers.each {
             |node|
+            jobs << Thread.new {
+                begin
+                    node_q << node if connect_to_dispatcher( node['url'] ).alive?
+                rescue Exception => e
+                    ap e
+                    ap e.backtrace
+                end
+            }
+        }
+
+        jobs.each { |job| job.join }
+
+        pref_dispatcher_urls = []
+        while( !node_q.empty? && node = node_q.pop )
             if !@used_pipe_ids.include?( node['pipe_id'] )
                 @used_pipe_ids << node['pipe_id']
                 pref_dispatcher_urls << node['url']
             end
-        }
+        end
 
         return pref_dispatcher_urls
     end
