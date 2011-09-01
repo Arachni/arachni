@@ -48,7 +48,7 @@
         <% i += 1 %>
 
         <%if !dispatcher_stats['running_jobs'].empty? %>
-        <form style='display: inline' action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
+        <form style='display: inline' onsubmit="return confirm( 'Are you sure that you want to kill all running instances?' )" action="/dispatchers/<%=remove_proto( d_url.dup )%>/shutdown_all" method="post">
             <%= csrf_tag %>
             <input type="submit" value="Shutdown all" />
         </form>
