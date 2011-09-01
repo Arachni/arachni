@@ -20,7 +20,9 @@ module Server
 module HighPerformance
 
 #
-# Extends the Framework adding XML-RPC specific functionality
+# Wraps the framework of the local instance and the frameworks of all
+# remote slaves (when in High Performance Grid mode) into a neat, little,
+# easy to handle package.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -30,31 +32,6 @@ module HighPerformance
 class Framework
 
     attr_reader :instances
-
-    # #
-    # # Our run() method needs to run the parent's run() method in
-    # # a separate thread.
-    # #
-    # alias :old_run :run
-#
-    # # make this inherited methods visible again
-    # private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
-    # public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
-
-    #
-    # some XMLRPC libraries of other languages map remote objects to local objects
-    # creating an invalid syntax situation since the aforementioned languages
-    # may not allow "?" or "!" in method names.
-    #
-    # so we alias these methods to make it easier on 3rd party developers.
-    #
-    # alias :pause :pause!
-    # alias :is_paused :paused?
-    # alias :resume :resume!
-    # alias :clean_up :clean_up!
-    # alias :is_busy :busy?
-    # alias :is_debug :debug?
-    # alias :is_verbose :verbose?
 
     def initialize( opts )
         # this is the local framework
@@ -733,6 +710,22 @@ class Framework
     def verbose_off
         @@verbose = false
     end
+
+    #
+    # some XMLRPC libraries of other languages map remote objects to local objects
+    # creating an invalid syntax situation since the aforementioned languages
+    # may not allow "?" or "!" in method names.
+    #
+    # so we alias these methods to make it easier on 3rd party developers.
+    #
+    alias :pause :pause!
+    alias :is_paused :paused?
+    alias :resume :resume!
+    alias :clean_up :clean_up!
+    alias :is_busy :busy?
+    alias :is_debug :debug?
+    alias :is_verbose :verbose?
+
 
 end
 
