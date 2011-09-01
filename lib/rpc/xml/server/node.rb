@@ -68,20 +68,27 @@ class Node
                 @neighbours << url if url != @opts.datastore[:dispatcher_url]
             }
 
-            peer = connect_to_peer( neighbour )
-            peer.node.add_neighbour( opts.datastore[:dispatcher_url], true )
-
+            begin
+                peer = connect_to_peer( neighbour )
+                peer.node.add_neighbour( opts.datastore[:dispatcher_url], true )
+            rescue Errno::ECONNREFUSED
+                print_info( 'Neighbour seems dead: ' + neighbour )
+                remove_neighbour( neighbour )
+                log_updated_neighbours
+            end
         end
 
         print_status( 'Node ready.' )
 
-        print_info 'Initial neighbours:'
-        neighbours.each {
-            |node|
-            print_info( '---- ' + node )
-        }
-
+        log_updated_neighbours
         @nodes_info_cache = []
+
+        Thread.new {
+            while( true )
+                ping
+                sleep( 60 )
+            end
+        }
     end
 
     #
@@ -98,17 +105,12 @@ class Node
         print_status 'Adding neighbour: ' + node_url
 
         @neighbours << node_url
-
-        print_info 'Updated neighbours:'
-        neighbours.each {
-            |node|
-            print_info( '---- ' + node )
-        }
-
+        log_updated_neighbours
         announce( node_url ) if propagate
 
         return true
     end
+
 
     #
     # Returns all neighbour/node/peer URLs
@@ -117,6 +119,10 @@ class Node
     #
     def neighbours
         @neighbours.to_a
+    end
+
+    def remove_neighbour( node_url )
+        @neighbours -= [node_url]
     end
 
     def neighbours_with_info
@@ -150,6 +156,42 @@ class Node
 
     private
 
+    def log_updated_neighbours
+        print_info 'Updated neighbours:'
+        neighbours.each {
+            |node|
+            print_info( '---- ' + node )
+        }
+    end
+
+    def ping
+        dead = []
+        jobs = []
+        neighbours.each {
+            |neighbour|
+            jobs << Thread.new {
+                begin
+                    connect_to_peer( neighbour ).alive?
+                rescue Exception
+                    dead << neighbour
+                end
+            }
+        }
+
+        jobs.each { |job| job.join }
+
+        if dead.size > 0
+            print_status( "Found #{dead.size} dead neighbours:" )
+            dead.each {
+                |stiff|
+                remove_neighbour( stiff )
+                print_info( '---- ' + stiff )
+            }
+
+            log_updated_neighbours
+        end
+    end
+
     #
     # Announces the node to the ones in the peer list
     #
@@ -163,8 +205,12 @@ class Node
             |peer|
             next if peer == node
             jobs << Thread.new {
-                print_info '---- to: ' + peer
-                connect_to_peer( peer ).node.add_neighbour( node )
+                begin
+                    print_info '---- to: ' + peer
+                    connect_to_peer( peer ).node.add_neighbour( node )
+                rescue Errno::ECONNREFUSED
+                    remove_neighbour( peer )
+                end
             }
         }
 
