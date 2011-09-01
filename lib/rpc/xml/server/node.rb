@@ -128,8 +128,20 @@ class Node
     def neighbours_with_info
         @neighbours_cmp = ''
         if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
+
             @neighbours_cmp = neighbours.to_s
-            return @nodes_info_cache = neighbours.map { |neighbour| connect_to_peer( neighbour ).node.info }
+
+            return @nodes_info_cache = neighbours.map {
+                |neighbour|
+                begin
+                    connect_to_peer( neighbour ).node.info
+                rescue Errno::ECONNREFUSED
+                    print_info( 'Neighbour seems dead: ' + neighbour )
+                    remove_neighbour( neighbour )
+                    log_updated_neighbours
+                    nil
+                end
+            }.compact
         else
             return @nodes_info_cache
         end
