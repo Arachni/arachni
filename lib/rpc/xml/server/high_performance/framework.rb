@@ -478,15 +478,17 @@ class Framework
             @instances.each_with_index {
                 |instance, i|
                 jobs << Thread.new {
+                    begin
+                        tmp = connect_to_instance( instance ).framework.progress_data
+                        url = instance['url'].gsub( 'https://', '@' )
 
-                    tmp = connect_to_instance( instance ).framework.progress_data
-                    url = instance['url'].gsub( 'https://', '@' )
+                        data['instances'][url] = tmp['stats']
+                        data['instances'][url]['url'] = url
+                        data['instances'][url]['status'] = tmp['status']
 
-                    data['instances'][url] = tmp['stats']
-                    data['instances'][url]['url'] = url
-                    data['instances'][url]['status'] = tmp['status']
-
-                    ins_data << tmp.deep_clone
+                        ins_data << tmp.deep_clone
+                    rescue
+                    end
                 }
             }
 
