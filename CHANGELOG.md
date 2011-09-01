@@ -6,7 +6,19 @@
    - Dispatchers can now be connected to form a High Performance Grid and share scan workloads. (**New**)
    - Optimized to perform less requests and use significantly less network resources.
 - WebUI
-   - Updated to provide access to HPG (High Performance Grid) features.
+   - Updated screens to provide access to HPG (High Performance Grid) features.
+      - Home
+         - Added option to enable HPG mode on a per scan basis
+      - Dispatchers
+         - Added node information (Nickname, Pipe ID, Weight, Cost).
+         - Added neighbour inspection per dispatcher.
+         - Added log inspection per dispatcher.
+         - Improved accuracy of instance statuses.
+         - Added percentages for memory and CPU usage per instance.
+      - Instance (scan management)
+         - Provides an average of all stats of scanner instances.
+         - Added per instance progress bars.
+         - Added per instance statuses.
    - Fixed small typo in "Settings" screen. [Issue #62]
 - Spider
    - Added "--depth" parameter. (**New**)
