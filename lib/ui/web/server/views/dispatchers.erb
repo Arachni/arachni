@@ -89,18 +89,19 @@
 
                         <% if !job_is_slave?( job ) %>
 
+                            <% status = job['status'].downcase || '' %>
                             <form action="/instance/<%=port_to_url( job['port'], d_url, true )%>" method="get" target="_blank">
                                 <input type="submit" value="Attach" />
                             </form>
 
-                            <%if job['status'].downcase == 'busy' %>
+                            <%if status == 'busy' %>
                             <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/pause" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Pause" />
                             </form>
                             <%end%>
 
-                            <%if job['status'].downcase == 'paused' %>
+                            <%if status == 'paused' %>
                             <form action="/dispatchers/<%=port_to_url( job['port'], d_url, true )%>/resume" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Resume" />
