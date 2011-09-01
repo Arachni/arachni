@@ -198,6 +198,10 @@ class Dispatcher < Base
         }.merge( 'node' => @node.info, 'neighbours' => @node.neighbours )
     end
 
+    def log
+        IO.read( prep_logging )
+    end
+
     def proc_info
         unnil( proc( Process.pid ).merge( 'node' => @node.info ) )
     end

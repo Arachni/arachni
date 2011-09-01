@@ -242,7 +242,8 @@ class Server < Sinatra::Base
 
     def show_dispatcher_line( stats )
 
-        str = "@#{escape( stats['node']['url'] )} - #{stats['running_jobs'].size} running scans, "
+        str = "#{escape( stats['node']['url'].gsub( 'https://', '@' ) )}" +
+            " - #{stats['running_jobs'].size} running scans, "
 
         i=0
         stats['running_jobs'].each {
@@ -627,6 +628,10 @@ class Server < Sinatra::Base
         show :dispatchers_edit
     end
 
+    get '/dispatchers/:url/log.json' do
+        content_type :json
+        { 'log' => dispatchers.connect( 'https://' + params[:url] ).log }.to_json
+    end
 
     #
     # shuts down all instances

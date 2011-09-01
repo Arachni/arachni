@@ -14,6 +14,11 @@
         </div>
         <%= erb :flash, {:layout => false} %>
 
+        <div style="display: none" id="dialog_log" title="Log">
+            <div id="log_progress"></div>
+            <pre id="log"></pre>
+        </div>
+
         <% i = 0 %>
         <% stats.each_pair do |d_url, dispatcher_stats| %>
         <h2><%=show_dispatcher_line( dispatcher_stats )%></h2>
@@ -35,6 +40,10 @@
             <input type="submit" value="Show neighbours" />
         </form>
         <%end%>
+
+        <form style='display: inline' action="#" onsubmit="showLog( '<%=d_url.gsub( 'https://', '' )%>' ); return;" >
+            <input type="submit" value="Show log" />
+        </form>
 
         <% i += 1 %>
 
@@ -125,6 +134,27 @@
 
             <script type="text/javascript">
                 //<![CDATA[
+
+                function showLog( url ) {
+                    var log_url = "/dispatchers/" + url + "/log.json";
+
+                    document.getElementById( 'log' ).innerHTML = 'Loading...';
+                    $( '#dialog_log' ).dialog({
+                        height: 500,
+                        width: 800,
+                        modal: true
+                    });
+
+                    document.getElementById( "log_progress" ).style.display = 'block';
+                    $( "#log_progress" ).progressbar({
+                        value: 100
+                    });
+
+                    $.getJSON( log_url, function(data) {
+                        document.getElementById( 'log' ).innerHTML = data.log;
+                        document.getElementById( "log_progress" ).style.display = 'none';
+                    });
+                }
 
                 function showDialog( id ){
                     $( id ).dialog({
