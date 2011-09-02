@@ -405,16 +405,20 @@ class Parser
                 k, v = elem['content'].split( ';' )[0].split( '=', 2 )
                 cookies_arr << Element::Cookie.new( @url, { 'name' => k, 'value' => v } )
             }
-        rescue
+        rescue Exception => e
+            ap e
+            ap e.backtrace
         end
 
 
         # don't ask me why....
-        if @response_headers.to_s.substring?( 'set-cookie' )
+        if @response_headers.to_s.downcase.substring?( 'set-cookie' )
             begin
                 cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
                 cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
-            rescue
+            rescue Exception => e
+                ap e
+                ap e.backtrace
                 return cookies_arr
             end
         end
