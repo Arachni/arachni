@@ -497,6 +497,13 @@ class Framework
         return YAML.dump( [] )
     end
 
+    def connect_to_instance( instance )
+        @tokens ||= {}
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        return Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+    end
+
+
     def version
         @framework.version
     end
@@ -680,12 +687,6 @@ class Framework
 
     def dispatcher
         Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
-    end
-
-    def connect_to_instance( instance )
-        @tokens ||= {}
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        return Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
     def connect_to_dispatcher( url )
