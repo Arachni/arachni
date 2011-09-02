@@ -34,7 +34,7 @@ class Proxy
             src.each{|key, value|
                 key = key.downcase
                 if HopByHop.member?(key)          || # RFC2616: 13.5.1
-                   connections.member?(key)       || # RFC2616: 14.10
+                   connections.member?(key)       #|| # RFC2616: 14.10
                    # ShouldNotTransfer.member?(key)    # pragmatics
                   @logger.debug("choose_header: `#{key}: #{value}'")
                   next
