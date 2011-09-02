@@ -53,6 +53,8 @@ etc.
 After that you simply start the WebUI as usual and when it asks you to specify a Dispatcher you pick one, enter it and the WebUI will grab the rest of them automatically.
 
 
+You can find some more technical stuff here: http://trainofthought.segfault.gr/2011/07/29/arachni-grid-draft-design/
+
 # Arachni - Web Application Security Scanner Framework
 <table>
     <tr>
