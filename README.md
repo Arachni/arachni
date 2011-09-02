@@ -25,13 +25,17 @@ After that they will build their network themselves.
 Here's how it's done:
 
 Firing up the first one:
+
     arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher" --address=192.168.0.1
 
 Adding more to make a Grid:
+
     arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --address=192.168.0.2 --neighbour=https://192.168.0.1:7331
 
 Lather, rinse, repeat:
+
     arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --address=192.168.0.3 --neighbour=https://192.168.0.2:7331
+
     arachni_xmlrpcd --pipe-id="Pipe 4" --nickname="My forth Dispatcher" --address=192.168.0.4 --neighbour=https://192.168.0.3:7331
 
 That sort of setup assumes that each Dispatcher is on a machine with independent bandwidth lines (to the target website at least).
@@ -39,7 +43,9 @@ That sort of setup assumes that each Dispatcher is on a machine with independent
 If you want to, out of curiosity, start a few Dispatchers on localhost you will need to specify the ports:
 
     arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher"
+
     arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --port=1111 --neighbour=https://localhost:7331
+
     arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --port=2222 --neighbour=https://localhost:1111
 
 etc.
