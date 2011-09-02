@@ -54,6 +54,7 @@ After that you simply start the WebUI as usual and when it asks you to specify a
 
 
 You can find some more technical stuff here: http://trainofthought.segfault.gr/2011/07/29/arachni-grid-draft-design/
+
 And some screenshots here: http://trainofthought.segfault.gr/2011/09/02/arachni-a-sneak-peek-at-the-grid-with-screenshots/
 
 # Arachni - Web Application Security Scanner Framework
