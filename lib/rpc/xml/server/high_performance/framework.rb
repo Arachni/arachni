@@ -273,7 +273,6 @@ class Framework
         @framework.get_plugin_store.to_yaml
     end
 
-
     def set_master( url, token )
         @master_url = url
         @master = connect_to_instance( { 'url' => url, 'token' => token } )
@@ -291,118 +290,9 @@ class Framework
         @master_url
     end
 
-    def report_issue_to_master( results )
-        tries = 0
-        begin
-            @master.framework.register_issue( results.to_yaml )
-        rescue Errno::EPIPE, Timeout::Error, EOFError
-            ap 'RETRYING: '+ tries.to_s
-            tries += 1
-            retry if tries < 5
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
-    end
-
     def register_issue( results )
         @framework.modules.class.register_results( YAML::load( results ) )
         return true
-    end
-
-    def prefered_dispatchers
-        @used_pipe_ids ||= []
-        @used_pipe_ids << dispatcher.node.info['pipe_id']
-
-        dispatchers = nil
-        3.times {
-            begin
-                dispatchers = dispatcher.node.neighbours_with_info
-                break
-            rescue Exception => e
-                ap e
-                ap e.backtrace
-            end
-        }
-
-        node_q = Queue.new
-        jobs = []
-        dispatchers.each {
-            |node|
-            jobs << Thread.new {
-                begin
-                    node_q << node if connect_to_dispatcher( node['url'] ).alive?
-                rescue Exception => e
-                    ap e
-                    ap e.backtrace
-                end
-            }
-        }
-
-        jobs.each { |job| job.join }
-
-        pref_dispatcher_urls = []
-        while( !node_q.empty? && node = node_q.pop )
-            if !@used_pipe_ids.include?( node['pipe_id'] )
-                @used_pipe_ids << node['pipe_id']
-                pref_dispatcher_urls << node['url']
-            end
-        end
-
-        return pref_dispatcher_urls
-    end
-
-    def spawn( urls, prefered_dispatcher )
-
-        opts = @framework.opts.to_h.deep_clone
-
-        self_url = URI( opts['datastore'][:dispatcher_url] )
-        self_url.port = @framework.opts.rpc_port
-        self_url = self_url.to_s
-
-        self_token = @opts.datastore[:token]
-
-        pref_dispatcher = connect_to_dispatcher( prefered_dispatcher )
-
-        instance_hash = pref_dispatcher.dispatch( self_url, {
-            'rank'   => 'slave',
-            'target' => @opts.url.to_s,
-            'master' => self_url
-        })
-
-        instance = connect_to_instance( instance_hash )
-
-        begin
-            opts['url'] = opts['url'].to_s
-            opts['focus_scan_on'] = urls
-
-            opts['grid_mode'] = ''
-
-            opts.delete( 'dir' )
-            opts.delete( 'rpc_port' )
-            opts.delete( 'rpc_address' )
-            opts['datastore'].delete( :dispatcher_url )
-            opts['datastore'].delete( :token )
-
-            opts['exclude'].each_with_index {
-                |v, i|
-                opts['exclude'][i] = v.source
-            }
-
-            opts['include'].each_with_index {
-                |v, i|
-                opts['include'][i] = v.source
-            }
-
-            instance.opts.set( opts )
-            instance.framework.set_master( self_url, self_token )
-            instance.modules.load( opts['mods'] )
-            instance.plugins.load( opts['plugins'] )
-            return { 'url' => instance_hash['url'], 'token' => instance_hash['token'] }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
     end
 
     def output
@@ -517,74 +407,6 @@ class Framework
         data['issues'] = YAML.dump( data['issues'] )
 
         return data
-    end
-
-    def dispatcher
-        Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
-    end
-
-    def connect_to_instance( instance )
-        @tokens ||= {}
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        return Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
-    end
-
-    def connect_to_dispatcher( url )
-        Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
-    end
-
-    def merge_stats( stats )
-
-        final_stats = stats.pop
-        return {} if !final_stats || final_stats.empty?
-
-        return final_stats if stats.empty?
-
-        final_stats['current_pages'] = [ ]
-        final_stats['current_pages'] << final_stats['current_page'] if final_stats['current_page']
-
-        total = [
-            :requests,
-            :responses,
-            :time_out_count,
-            :avg,
-            :sitemap_size,
-            :auditmap_size,
-            :max_concurrency
-        ]
-
-        avg = [
-            :progress,
-            :curr_res_time,
-            :curr_res_cnt,
-            :curr_avg,
-            :average_res_time
-        ]
-
-        begin
-            stats.each {
-                |instats|
-
-                ( avg | total ).each {
-                    |k|
-                    final_stats[k.to_s] += Float( instats[k.to_s] )
-                }
-
-                final_stats['current_pages'] << instats['current_page'] if instats['current_page']
-            }
-
-            avg.each {
-                |k|
-                final_stats[k.to_s] /= stats.size + 1
-            }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
-
-        final_stats['sitemap_size'] = @sitemap.size if @sitemap
-
-        return final_stats
     end
 
     def stats( fresh )
@@ -741,6 +563,189 @@ class Framework
     alias :is_busy :busy?
     alias :is_debug :debug?
     alias :is_verbose :verbose?
+
+
+    private
+
+    def report_issue_to_master( results )
+        tries = 0
+        begin
+            @master.framework.register_issue( results.to_yaml )
+        rescue Errno::EPIPE, Timeout::Error, EOFError
+            ap 'RETRYING: '+ tries.to_s
+            tries += 1
+            retry if tries < 5
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+    end
+
+    def prefered_dispatchers
+        @used_pipe_ids ||= []
+        @used_pipe_ids << dispatcher.node.info['pipe_id']
+
+        dispatchers = nil
+        3.times {
+            begin
+                dispatchers = dispatcher.node.neighbours_with_info
+                break
+            rescue Exception => e
+                ap e
+                ap e.backtrace
+            end
+        }
+
+        node_q = Queue.new
+        jobs = []
+        dispatchers.each {
+            |node|
+            jobs << Thread.new {
+                begin
+                    node_q << node if connect_to_dispatcher( node['url'] ).alive?
+                rescue Exception => e
+                    ap e
+                    ap e.backtrace
+                end
+            }
+        }
+
+        jobs.each { |job| job.join }
+
+        pref_dispatcher_urls = []
+        while( !node_q.empty? && node = node_q.pop )
+            if !@used_pipe_ids.include?( node['pipe_id'] )
+                @used_pipe_ids << node['pipe_id']
+                pref_dispatcher_urls << node['url']
+            end
+        end
+
+        return pref_dispatcher_urls
+    end
+
+    def spawn( urls, prefered_dispatcher )
+
+        opts = @framework.opts.to_h.deep_clone
+
+        self_url = URI( opts['datastore'][:dispatcher_url] )
+        self_url.port = @framework.opts.rpc_port
+        self_url = self_url.to_s
+
+        self_token = @opts.datastore[:token]
+
+        pref_dispatcher = connect_to_dispatcher( prefered_dispatcher )
+
+        instance_hash = pref_dispatcher.dispatch( self_url, {
+            'rank'   => 'slave',
+            'target' => @opts.url.to_s,
+            'master' => self_url
+        })
+
+        instance = connect_to_instance( instance_hash )
+
+        begin
+            opts['url'] = opts['url'].to_s
+            opts['focus_scan_on'] = urls
+
+            opts['grid_mode'] = ''
+
+            opts.delete( 'dir' )
+            opts.delete( 'rpc_port' )
+            opts.delete( 'rpc_address' )
+            opts['datastore'].delete( :dispatcher_url )
+            opts['datastore'].delete( :token )
+
+            opts['exclude'].each_with_index {
+                |v, i|
+                opts['exclude'][i] = v.source
+            }
+
+            opts['include'].each_with_index {
+                |v, i|
+                opts['include'][i] = v.source
+            }
+
+            instance.opts.set( opts )
+            instance.framework.set_master( self_url, self_token )
+            instance.modules.load( opts['mods'] )
+            instance.plugins.load( opts['plugins'] )
+            return { 'url' => instance_hash['url'], 'token' => instance_hash['token'] }
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+    end
+
+
+
+    def dispatcher
+        Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+    end
+
+    def connect_to_instance( instance )
+        @tokens ||= {}
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        return Arachni::RPC::XML::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+    end
+
+    def connect_to_dispatcher( url )
+        Arachni::RPC::XML::Client::Dispatcher.new( @opts, url )
+    end
+
+    def merge_stats( stats )
+
+        final_stats = stats.pop
+        return {} if !final_stats || final_stats.empty?
+
+        return final_stats if stats.empty?
+
+        final_stats['current_pages'] = [ ]
+        final_stats['current_pages'] << final_stats['current_page'] if final_stats['current_page']
+
+        total = [
+            :requests,
+            :responses,
+            :time_out_count,
+            :avg,
+            :sitemap_size,
+            :auditmap_size,
+            :max_concurrency
+        ]
+
+        avg = [
+            :progress,
+            :curr_res_time,
+            :curr_res_cnt,
+            :curr_avg,
+            :average_res_time
+        ]
+
+        begin
+            stats.each {
+                |instats|
+
+                ( avg | total ).each {
+                    |k|
+                    final_stats[k.to_s] += Float( instats[k.to_s] )
+                }
+
+                final_stats['current_pages'] << instats['current_page'] if instats['current_page']
+            }
+
+            avg.each {
+                |k|
+                final_stats[k.to_s] /= stats.size + 1
+            }
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+        end
+
+        final_stats['sitemap_size'] = @sitemap.size if @sitemap
+
+        return final_stats
+    end
+
 
 
 end
