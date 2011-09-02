@@ -221,7 +221,10 @@ class Node
 
                     neighbours.each {
                         |node|
-                        neighbour.node.add_neighbour( node )
+                        begin
+                            neighbour.node.add_neighbour( node )
+                        rescue
+                        end
                     }
 
                     add_neighbour( url )
