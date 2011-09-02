@@ -1,3 +1,52 @@
+# High Performance Grid (HPG) dev branch.
+
+The Grid is highly experimental and far from properly tested, however if you're feeling brave keep reading.
+
+## Installation
+
+As usual:
+
+ - clone the repository -- 'git clone git://github.com/Zapotek/arachni.git'
+ - switch to the 'grid' branch -- 'git co grid'
+ - run 'rake install'
+
+## Setting up the High Performance Grid (HPG)
+
+Pretty much the same as setting up the WebUI but instead of running only one Dispatcher you can run as many as you can handle.
+
+In order to connect the Dispatchers into a grid you'll need to:
+
+ - specify an IP address or hostname on which the Dispatcher will be accessible by the rest of the Grid nodes (i.e. other Dispatchers)
+ - specify a neighbouring Dispatcher when running a new one
+ - use different Pipe IDs -- these are used to identify independent bandwidth lines to the target in order to split the workload in a way that will aggregate the collective bandwidth
+
+After that they will build their network themselves.
+
+Here's how it's done:
+
+Firing up the first one:
+    arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher" --address=192.168.0.1
+
+Adding more to make a Grid:
+    arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --address=192.168.0.2 --neighbour=https://192.168.0.1:7331
+
+Lather, rinse, repeat:
+    arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --address=192.168.0.3 --neighbour=https://192.168.0.2:7331
+    arachni_xmlrpcd --pipe-id="Pipe 4" --nickname="My forth Dispatcher" --address=192.168.0.4 --neighbour=https://192.168.0.3:7331
+
+That sort of setup assumes that each Dispatcher is on a machine with independent bandwidth lines (to the target website at least).
+
+If you want to, out of curiosity, start a few Dispatchers on localhost you will need to specify the ports:
+
+    arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher"
+    arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --port=1111 --neighbour=https://localhost:7331
+    arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --port=2222 --neighbour=https://localhost:1111
+
+etc.
+
+After that you simply start the WebUI as usual and when it asks you to specify a Dispatcher you pick one, enter it and the WebUI will grab the rest of them automatically.
+
+
 # Arachni - Web Application Security Scanner Framework
 <table>
     <tr>
