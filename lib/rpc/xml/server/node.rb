@@ -83,9 +83,12 @@ class Node
         log_updated_neighbours
         @nodes_info_cache = []
 
+        @dead_nodes = []
+
         Thread.new {
             while( true )
                 ping
+                check_for_comebacks
                 sleep( 60 )
             end
         }
@@ -123,6 +126,7 @@ class Node
 
     def remove_neighbour( node_url )
         @neighbours -= [node_url]
+        @dead_nodes << node_url
     end
 
     def neighbours_with_info
@@ -202,6 +206,34 @@ class Node
 
             log_updated_neighbours
         end
+    end
+
+    def check_for_comebacks
+        alive = []
+        jobs = []
+        @dead_nodes.each {
+            |url|
+            jobs << Thread.new {
+                begin
+                    neighbour = connect_to_peer( url )
+                    neighbour.alive?
+                    print_status( 'Dispatcher came back to life: ' + url )
+
+                    neighbours.each {
+                        |node|
+                        neighbour.node.add_neighbour( node )
+                    }
+
+                    add_neighbour( url )
+                    alive << url
+                rescue
+                end
+            }
+        }
+
+        jobs.each { |job| job.join }
+
+        @dead_nodes -= alive
     end
 
     #
