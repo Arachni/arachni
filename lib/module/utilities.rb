@@ -61,15 +61,31 @@ module Utilities
     end
 
     def normalize_url( url )
+
+        # make sure we're working with the pure form of the URL
+        url = url_sanitize( url )
+
         begin
-            return URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+            normalized = URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
         rescue
             begin
-                return URI.encode( URI.decode( url.to_s ) ).to_s
+                normalized = URI.encode( URI.decode( url.to_s ) ).to_s
             rescue
-                return url
+                normalized = url
             end
         end
+
+        #
+        # prevent this: http://example.com#fragment
+        # from becoming this: http://example.com%23fragment
+        #
+        begin
+            normalized.gsub!( '%23', '#' )
+        rescue
+
+        end
+
+        return normalized
     end
 
     #
