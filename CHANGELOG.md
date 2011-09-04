@@ -33,6 +33,10 @@
          - Optimized using the new "redundant()" method -- It will no longer audit elements that have been previously logged by the 'os_cmd_injection' module.
       - Code injection (timing)
          - Optimized using the new "redundant()" method -- It will no longer audit elements that have been previously logged by the 'code_injection' module.
+ - Parser
+   - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
+ - Plugins
+   - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
 
 ## Version 0.2.4 _(July 1, 2011)_
 - HTTP
