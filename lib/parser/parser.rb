@@ -512,10 +512,13 @@ class Parser
     def to_absolute( link )
 
         begin
+            link = url_sanitize( url )
             if URI.parse( link ).host
                 return link
             end
         rescue Exception => e
+            ap e
+            ap e.backtrace
             return nil
         end
 
@@ -535,7 +538,9 @@ class Parser
             absolute.path = '/' if absolute.path && absolute.path.empty?
 
             return absolute.to_s
-        rescue
+        rescue Exception => e
+            ap e
+            ap e.backtrace
             return nil
         end
     end
