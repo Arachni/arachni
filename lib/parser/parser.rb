@@ -512,28 +512,37 @@ class Parser
     def to_absolute( link )
 
         begin
+            link = url_sanitize( url )
             if URI.parse( link ).host
                 return link
             end
         rescue Exception => e
+            ap e
+            ap e.backtrace
             return nil
         end
 
-        # remove anchor
-        link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
+        begin
+            # remove anchor
+            link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
 
-        if url = base
-            base_url = URI( url )
-        else
-            base_url = URI( @url )
+            if url = base
+                base_url = URI( url )
+            else
+                base_url = URI( @url )
+            end
+
+            relative = URI( link )
+            absolute = base_url.merge( relative )
+
+            absolute.path = '/' if absolute.path && absolute.path.empty?
+
+            return absolute.to_s
+        rescue Exception => e
+            ap e
+            ap e.backtrace
+            return nil
         end
-
-        relative = URI( link )
-        absolute = base_url.merge( relative )
-
-        absolute.path = '/' if absolute.path && absolute.path.empty?
-
-        return absolute.to_s
     end
 
 
