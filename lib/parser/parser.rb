@@ -314,8 +314,7 @@ class Parser
                     elements[i]['attrs']['method'].downcase
             end
 
-            url = URI.parse( URI.escape( elements[i]['attrs']['action'] ) )
-            if !in_domain?( url )
+            if !in_domain?( elements[i]['attrs']['action'] )
                 next
             end
 
@@ -512,13 +511,13 @@ class Parser
     def to_absolute( link )
 
         begin
-            link = url_sanitize( url )
+            link = normalize_url( link )
             if URI.parse( link ).host
                 return link
             end
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
             return nil
         end
 
@@ -539,8 +538,8 @@ class Parser
 
             return absolute.to_s
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
             return nil
         end
     end

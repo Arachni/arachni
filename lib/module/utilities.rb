@@ -20,7 +20,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 module Utilities
 
@@ -29,7 +29,7 @@ module Utilities
     #
     def url_sanitize( url )
 
-        while( url =~ /%/ )
+        while( url =~ /%[a-fA-F0-9]{2}/ )
             url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
         end
 
@@ -67,10 +67,14 @@ module Utilities
 
         begin
             normalized = URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
-        rescue
+        rescue Excepion => e
+            # ap e
+            # ap e.backtrace
             begin
                 normalized = URI.encode( URI.decode( url.to_s ) ).to_s
-            rescue
+            rescue Excepion => e
+                # ap e
+                # ap e.backtrace
                 normalized = url
             end
         end
