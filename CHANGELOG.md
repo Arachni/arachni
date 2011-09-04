@@ -23,9 +23,9 @@
    - Fixed small typo in "Settings" screen. [Issue #62]
 - Spider
    - Added "--depth" parameter.
- - Parser
+- Parser
    - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
- - Plugins
+- Plugins
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
 
 ## Version 0.3 _(July 26, 2011)_
