@@ -80,16 +80,26 @@ class Base
 
     end
 
+    #
+    # Set timeout in seconds
+    #
+    # @param    [Integer]   timeout
+    #
     def timeout=( secs )
         @server.timeout = secs
     end
 
+    #
+    # Get timeout in seconds
+    #
+    # @return    [Integer]
+    #
     def timeout
         @server.timeout
     end
 
     #
-    # Used to make old school XMLRPC calls
+    # Used to make old school XMLRPC calls and retries on Broken pipe exceptions.
     #
     def call( method, *args )
         tries = 0

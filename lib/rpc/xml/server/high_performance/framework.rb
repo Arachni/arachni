@@ -41,15 +41,21 @@ class Framework
         @modules = @framework.modules
         @plugins = @framework.plugins
 
+        # holds all running instances
         @instances = []
+
+        # since we're gonna block and poll while remote instances are running
+        # why not store their state too...
         @instance_busyness  = {}
         @sitemap = []
         @crawling_done = nil
+
+        # if we're a slave this var will hold the URL of our master
         @master_url = ''
     end
 
     #
-    # Aborts the running audit.
+    # @see Arachni::RPC::XML::Server::Framework#abort!
     #
     def abort!
         @job.kill
@@ -57,9 +63,7 @@ class Framework
     end
 
     #
-    # Checks to see if an audit is running.
-    #
-    # @return   [Bool]
+    # @see Arachni::RPC::XML::Server::Framework#busy?
     #
     def busy?
         return false if !@job
@@ -67,24 +71,21 @@ class Framework
     end
 
     #
-    # Checks whether the framework is in debug mode
+    # @see Arachni::RPC::XML::Server::Framework#debug?
     #
     def debug?
         @@debug
     end
 
     #
-    # Checks whether the framework is in debug mode
+    # @see Arachni::RPC::XML::Server::Framework#verbose?
     #
     def verbose?
         @@verbose
     end
 
     #
-    # Returns an array of hashes with information
-    # about all available reports
-    #
-    # @return    [Array<Hash>]
+    # @see Arachni::RPC::XML::Server::Framework#lsplug
     #
     def lsplug
 
@@ -114,6 +115,11 @@ class Framework
         return plug_info
     end
 
+    #
+    # Returns true if running in HPG (High Performance Grid) mode, false otherwise.
+    #
+    # @return   [Bool]
+    #
     def high_performance?
         @framework.opts.grid_mode == 'high_performance'
     end
@@ -121,33 +127,49 @@ class Framework
     #
     # Starts the audit.
     #
-    # The audit is started in a new thread to avoid service blocking.
-    #
     def run
         Thread.abort_on_exception = true
 
+        # main thread, while this is alive the audit is in progress
         @job = Thread.new {
 
+            # holds the threads of all instances individually
             jobs = []
             if high_performance?
 
+                #
+                # We're in HPG (High Perfrmance Grid) mode,
+                # things are going to get weird...
+                #
+
+                # since the scan is distributed by way of assigning
+                # a list of URLs to each instance we are required to
+                # crawl first.
                 @framework.opts.spider_first = true
 
+                # start the crawl and store the URLs in the sitemap
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
                     @sitemap << page.url
                 }
                 @crawling_done = true
 
+                # get the Dispatchers with unique Pipe IDs
+                # in order to take advantage of line aggregation
                 pref_dispatchers = prefered_dispatchers()
+
+                # decide in how many chunks to split the sitemap
                 chunk_cnt = pref_dispatchers.size + 1
 
                 chunks = @sitemap.chunk( chunk_cnt )
+
+                # set the URLs to be audited by the local instance
                 @framework.opts.focus_scan_on = chunks.pop
 
                 chunks.each_with_index {
                     |chunk, i|
                     begin
+                        # spawn a remote instance and assign a chunk of URLs to it
                         @instances << spawn( chunk, pref_dispatchers[i] )
                     rescue Exception => e
                         ap e
@@ -162,6 +184,8 @@ class Framework
                         instance_conn = connect_to_instance( instance )
                         instance_conn.framework.run
 
+                        # we need to check up on remote instances regularly
+                        # and block in the thread while it is running/busy.
                         break_loop = false
                         while( !break_loop )
                             begin
@@ -180,6 +204,7 @@ class Framework
 
             end
 
+            # add the local instances in the jobs too and block while it's running
             jobs << Thread.new {
                 @framework.run
                 sleep( 10 )
@@ -192,6 +217,7 @@ class Framework
                 ap 'FINISHED MASTER'
             }
 
+            # block until all jobs have exited
             jobs.each { |job| job.join }
 
 
@@ -200,18 +226,27 @@ class Framework
         return true
     end
 
+    #
+    # @see Arachni::RPC::XML::Server::Framework#lsmod
+    #
     def lsmod
         @framework.lsmod
     end
 
+    #
+    # @see Arachni::RPC::XML::Server::Framework#lsplug
+    #
     def lsplug
         @framework.lsplug
     end
 
-    def clean_up!( skip_audit_queue = false )
-
+    #
+    # If the scan needs to be aborted abruptly this method takes care of
+    # any unfinished business (like running plug-ins).
+    #
+    def clean_up!
         begin
-            @framework.clean_up!( skip_audit_queue )
+            @framework.clean_up!
             plugin_results = @framework.get_plugin_store
 
             jobs = []
@@ -220,7 +255,7 @@ class Framework
                 |instance|
                 jobs << Thread.new {
                     instance_conn = connect_to_instance( instance )
-                    instance_conn.framework.clean_up!( skip_audit_queue )
+                    instance_conn.framework.clean_up!
                     results_queue << instance_conn.framework.get_plugin_store
                 }
             }
@@ -241,6 +276,9 @@ class Framework
         return true
     end
 
+    #
+    # @see Arachni::RPC::XML::Server::Framework#pause!
+    #
     def pause!
         @framework.pause!
 
@@ -255,6 +293,9 @@ class Framework
         return true
     end
 
+    #
+    # @see Arachni::RPC::XML::Server::Framework#resume!
+    #
     def resume!
         @framework.resume!
 
@@ -273,6 +314,12 @@ class Framework
         @framework.get_plugin_store.to_yaml
     end
 
+    #
+    # Set the URL and authentication token required to connect to our master.
+    #
+    # @param    [String]    url     master's URL in 'https://hostname:port' form
+    # @param    [String]    token   master's autentication token
+    #
     def set_master( url, token )
         @master_url = url
         @master = connect_to_instance( { 'url' => url, 'token' => token } )
@@ -286,15 +333,37 @@ class Framework
         return true
     end
 
+    #
+    # Returns the master's URL
+    #
+    # @return   [String]
+    #
     def master
         @master_url
     end
 
+    #
+    # Registers a YAML serialized array holding [Arachni::Issue] objects with the local instance.
+    #
+    # Primarily used by slaves to register any issue they find on the spot.
+    #
+    # @param    [String]    results     YAML dump of an array with YAML serialized [Arachni::Issue] objects
+    #
     def register_issue( results )
         @framework.modules.class.register_results( YAML::load( results ) )
         return true
     end
 
+    #
+    # Returns the merged output of all running instances.
+    #
+    # This is going probably to be wildly out of sync and lack A LOT of messages.
+    #
+    # It's here to give the notion of scan progress to the end-user rather than
+    # provide an accurate depiction of the actual progress.
+    #
+    # @return   [Array]
+    #
     def output
 
         buffer = @framework.flush_buffer
@@ -317,6 +386,17 @@ class Framework
         return buffer.flatten
     end
 
+    #
+    # Returns the status of the instance as a string.
+    #
+    # Possible values are:
+    #  o crawling
+    #  o paused
+    #  o done
+    #  o busy
+    #
+    # @return   [String]
+    #
     def status
         if !@crawling_done && master.empty? && high_performance?
             return 'crawling'
@@ -329,6 +409,17 @@ class Framework
         end
     end
 
+    #
+    # Returns aggregated progress data and helps to limit the amount of calls
+    # required in order to get an accurate depiction of a scan's progress and includes:
+    #  o output messages
+    #  o discovered issues
+    #  o overall statistics
+    #  o overall scan status
+    #  o statistics of all instances individually
+    #
+    # @return   [Hash]
+    #
     def progress_data
         data = {
             'messages'  => @framework.flush_buffer,
@@ -409,7 +500,12 @@ class Framework
         return data
     end
 
-    def stats( fresh )
+    #
+    # Scan statistics
+    #
+    # @return   [Hash]
+    #
+    def stats( fresh = true )
 
         stats = []
         begin
@@ -470,6 +566,11 @@ class Framework
         return false
     end
 
+    #
+    # Returns a YAML dump of all discovered [Arachni::Issue]s.
+    #
+    # @return   [String]
+    #
     def issues
         begin
             data = []
@@ -497,6 +598,12 @@ class Framework
         return YAML.dump( [] )
     end
 
+    #
+    # Connects to a remote Instance.
+    #
+    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
+    #                                   In subsequent calls the 'token' can be omitted.
+    #
     def connect_to_instance( instance )
         @tokens ||= {}
         @tokens[instance['url']] = instance['token'] if instance['token']
