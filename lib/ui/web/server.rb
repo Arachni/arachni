@@ -65,11 +65,17 @@ class Server < Sinatra::Base
         use Rack::Session::Cookie
         use Rack::Csrf, :raise => true
 
-        @@conf = YAML::load_file( Arachni::Options.instance.dir['root'] + 'conf/webui.yaml' )
-        Arachni::Options.instance.ssl      = @@conf['ssl']['client']['enable']
-        Arachni::Options.instance.ssl_pkey = @@conf['ssl']['client']['key']
-        Arachni::Options.instance.ssl_cert = @@conf['ssl']['client']['cert']
-        Arachni::Options.instance.ssl_ca   = @@conf['ssl']['client']['ca']
+        opts = Arachni::Options.instance
+
+        use Rack::Auth::Basic, "Arachni WebUI v" + Arachni::UI::Web::VERSION + " requires authentication." do |username, password|
+            [username, password] == [ opts.webui_username, opts.webui_password ]
+        end
+
+        @@conf = YAML::load_file( opts.dir['root'] + 'conf/webui.yaml' )
+        opts.ssl      = @@conf['ssl']['client']['enable']
+        opts.ssl_pkey = @@conf['ssl']['client']['key']
+        opts.ssl_cert = @@conf['ssl']['client']['cert']
+        opts.ssl_ca   = @@conf['ssl']['client']['ca']
 
     end
 

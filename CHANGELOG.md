@@ -7,6 +7,7 @@
    - Optimized to perform less requests and use significantly less network resources.
    - Improved reliability.
 - WebUI
+   - Added support for HTTP Basic Auth
    - Updated screens to provide access to HPG (High Performance Grid) features:
       - Home
          - Added option to enable HPG mode on a per scan basis

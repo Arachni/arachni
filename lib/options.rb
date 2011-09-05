@@ -370,6 +370,9 @@ class Options
     attr_accessor :reroute_to_logfile
     attr_accessor :pool_size
 
+    attr_accessor :webui_username
+    attr_accessor :webui_password
+
 
     def initialize( )
 
