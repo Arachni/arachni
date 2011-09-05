@@ -67,8 +67,10 @@ class Server < Sinatra::Base
 
         opts = Arachni::Options.instance
 
-        use Rack::Auth::Basic, "Arachni WebUI v" + Arachni::UI::Web::VERSION + " requires authentication." do |username, password|
-            [username, password] == [ opts.webui_username, opts.webui_password ]
+        if opts.webui_username && opts.webui_password
+            use Rack::Auth::Basic, "Arachni WebUI v" + Arachni::UI::Web::VERSION + " requires authentication." do |username, password|
+                [username, password] == [ opts.webui_username, opts.webui_password ]
+            end
         end
 
         @@conf = YAML::load_file( opts.dir['root'] + 'conf/webui.yaml' )
