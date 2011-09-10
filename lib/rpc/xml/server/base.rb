@@ -19,7 +19,7 @@ module XML
 module Server
 
 #
-# Dispatcher class
+# Base XMLRPC server class
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
