@@ -119,6 +119,17 @@ module Utilities
 
     end
 
+    def hash_keys_to_str( hash )
+        nh = {}
+        hash.each_pair {
+            |k, v|
+            nh[k.to_s] = v
+            nh[k.to_s] = hash_keys_to_str( v ) if v.is_a? Hash
+        }
+
+        return nh
+    end
+
     #
     # Wraps the "block" in exception handling code and runs it.
     #

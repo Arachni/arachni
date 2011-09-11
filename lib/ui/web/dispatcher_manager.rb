@@ -9,6 +9,7 @@
 =end
 
 require 'datamapper'
+require Arachni::Options.instance.dir['lib'] + 'rpc/brb/client/dispatcher'
 
 module Arachni
 module UI
@@ -73,7 +74,7 @@ class DispatcherManager
     #
     def connect( url )
         begin
-            if( tmp = Arachni::RPC::XML::Client::Dispatcher.new( @opts, url ) ) &&
+            if( tmp = Arachni::RPC::BrB::Client::Dispatcher.new( @opts, url ) ) &&
                 tmp.alive?
                 return tmp
             end
@@ -94,8 +95,8 @@ class DispatcherManager
             begin
                 return connect( url ).alive?
             rescue Exception => e
-                # ap e
-                # ap e.backtrace
+                ap e
+                ap e.backtrace
             end
         }
 

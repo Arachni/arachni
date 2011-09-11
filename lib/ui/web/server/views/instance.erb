@@ -53,8 +53,6 @@
             <div class="right">
                 <h3>Instances</h3>
                 <div style="height: 245px; overflow-y: scroll" id="currently_auditing">
-                    <!-- <h3>Currently auditing</h3>
-                    <div style="padding-left: 35px;" id="current_pages"></div> -->
                 </div>
             </div>
 
@@ -135,14 +133,6 @@
                     document.getElementById( 'runtime' ).innerHTML = stats.time;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
 
-                    //document.getElementById( 'currently_auditing').style.display = 'block';
-                    //document.getElementById( 'current_pages' ).innerHTML = '<ul>' ;
-                    //for( i in stats.current_pages ) {
-                        //document.getElementById( 'current_pages' ).innerHTML += '<li>' + stats.current_pages[i] + '</li>';
-                    //}
-                    //document.getElementById( 'current_pages' ).innerHTML += '</ul';
-
-                    //document.getElementById( 'currently_auditing').style.display = 'block';
                     elem = document.getElementById( 'currently_auditing');
                     elem.innerHTML = '';
                     for( i in stats.instances ) {

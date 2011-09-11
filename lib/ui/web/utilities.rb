@@ -124,8 +124,9 @@ module Utilities
     # @return   [String]
     #
     def remove_proto( url )
-        url.gsub!( 'http://', '' )
-        escape( url.gsub( 'https://', '' ) )
+        url = URI.parse( url )
+        scheme = url.scheme + '://'
+        escape( url.to_s.gsub( scheme, '' ) )
     end
 
 end

@@ -10,6 +10,7 @@
 
 require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
+require Arachni::Options.instance.dir['lib'] + 'rpc/brb/client/instance'
 
 module Arachni
 module UI
@@ -42,7 +43,7 @@ class InstanceManager
     # @return   [Arachni::RPC::XML::Client::Instance]
     #
     def connect( url, session = nil, token = nil )
-        url = 'https://' + url if !url.include?( 'https' )
+        # url = 'https://' + url if !url.include?( 'https' )
 
         begin
 
@@ -64,7 +65,7 @@ class InstanceManager
 
             tmp_token = session ? session['tokens'][url] : @@tokens[url]
 
-            return Arachni::RPC::XML::Client::Instance.new( @opts, url, tmp_token )
+            return Arachni::RPC::BrB::Client::Instance.new( @opts, url, tmp_token )
         rescue Exception => e
             raise "Instance at #{url} has shutdown."
         end

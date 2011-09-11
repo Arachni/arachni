@@ -58,6 +58,7 @@ module Web
 
 class Server < Sinatra::Base
 
+    include Arachni::Module::Utilities
     include Utilities
 
     configure do
@@ -250,7 +251,8 @@ class Server < Sinatra::Base
 
     def show_dispatcher_line( stats )
 
-        str = "#{escape( stats['node']['url'].gsub( 'https://', '@' ) )}" +
+
+        str = "#{escape( '@' + remove_proto( stats['node']['url'] ) )}" +
             " - #{stats['running_jobs'].size} running scans, "
 
         i=0
@@ -395,15 +397,12 @@ class Server < Sinatra::Base
                 d_url = dispatchers.first_alive.url
 
                 instance = dispatchers.connect( d_url ).dispatch( HELPER_OWNER )
-                instance_url = instances.port_to_url( instance['port'], d_url )
 
-                @@arachni = instances.connect( instance_url, session, instance['token'] )
+                @@arachni = instances.connect( instance['url'], session, instance['token'] )
             end
 
             return @@arachni
         rescue Exception => e
-            # ap e
-            # ap e.backtrace
             redirect '/dispatchers/edit'
         end
     end
@@ -424,8 +423,14 @@ class Server < Sinatra::Base
             do_shutdown = false
         end
 
-        @@modules ||= helper_instance.framework.lsmod.dup
-        @@plugins ||= helper_instance.framework.lsplug.dup
+        @@modules ||= helper_instance.framework.lsmod.dup.map {
+            |mod|
+            hash_keys_to_str( mod )
+        }
+        @@plugins ||= helper_instance.framework.lsplug.dup.map {
+            |plug|
+            hash_keys_to_str( plug )
+        }
 
         # shutdown the helper instance, we got what we wanted
         helper_instance.service.shutdown! if do_shutdown
@@ -493,7 +498,7 @@ class Server < Sinatra::Base
     #
     def save_and_shutdown( arachni )
         begin
-            arachni.framework.clean_up!( true )
+            arachni.framework.clean_up!
             report_path = reports.save( arachni.framework.auditstore )
             3.times {
                 begin
@@ -639,7 +644,7 @@ class Server < Sinatra::Base
     get '/dispatchers/:url/log.json' do
         content_type :json
         begin
-            return { 'log' => dispatchers.connect( 'https://' + params[:url] ).log }.to_json
+            return { 'log' => dispatchers.connect( params[:url] ).log }.to_json
         rescue Exception, XMLRPC::FaultException => e
             err_str = e.respond_to?( :faultString ) ? e.faultString : e.to_s
             return { 'error' => err_str, 'backtrace' => e.backtrace.join( "\n" ),  }.to_json
@@ -716,7 +721,7 @@ class Server < Sinatra::Base
             )
 
             instance_url = scheduler.run( job, env, session )
-            redirect '/instance/' + instance_url.to_s.gsub( 'https://', '' )
+            redirect '/instance/' + remove_proto( instance_url )
         end
     end
 

@@ -41,7 +41,7 @@
         </form>
         <%end%>
 
-        <form style='display: inline' action="#" onsubmit="showLog( '<%=d_url.gsub( 'https://', '' )%>' ); return;" >
+        <form style='display: inline' action="#" onsubmit="showLog( '<%=remove_proto( d_url.dup )%>' ); return;" >
             <input type="submit" value="Show log" />
         </form>
 
