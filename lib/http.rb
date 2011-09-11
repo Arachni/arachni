@@ -285,38 +285,6 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def request( url, opts )
-        headers   = opts[:headers]   || {}
-        opts[:headers] = @init_headers.dup.merge( headers )
-
-        train     = opts[:train]
-        async     = opts[:async]
-        async     = true if async == nil
-
-        exception_jail {
-
-            req = Typhoeus::Request.new( normalize_url( url ), opts.merge( @opts ) )
-            req.train! if train
-
-            queue( req, async )
-            return req
-        }
-    end
-
-    #
-    # Gets a URL passing the provided query parameters
-    #
-    # @param  [URI]  url     URL to GET
-    # @param  [Hash] opts    request options
-    #                         * :params  => request parameters || {}
-    #                         * :train   => force Arachni to analyze the HTML code || false
-    #                         * :async   => make the request async? || true
-    #                         * :headers => HTTP request headers  || {}
-    #                         * :follow_location => follow redirects || false
-    #
-    # @return [Typhoeus::Request]
-    #
-    def get( url, opts = { } )
-
         params    = opts[:params]    || {}
         remove_id = opts[:remove_id]
         train     = opts[:train]
@@ -350,7 +318,7 @@ class HTTP
             # params of the url query and remove the latter from the url.
             #
             cparams = params.dup
-            curl    = URI.escape( url.dup )
+            curl    = normalize_url( url.dup )
 
             cparams = q_to_h( curl ).merge( cparams )
 
@@ -374,7 +342,23 @@ class HTTP
             queue( req, async )
             return req
         }
+    end
 
+    #
+    # Gets a URL passing the provided query parameters
+    #
+    # @param  [URI]  url     URL to GET
+    # @param  [Hash] opts    request options
+    #                         * :params  => request parameters || {}
+    #                         * :train   => force Arachni to analyze the HTML code || false
+    #                         * :async   => make the request async? || true
+    #                         * :headers => HTTP request headers  || {}
+    #                         * :follow_location => follow redirects || false
+    #
+    # @return [Typhoeus::Request]
+    #
+    def get( url, opts = { } )
+        request( url, opts )
     end
 
     #
@@ -390,33 +374,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def post( url, opts = { } )
-
-        params    = opts[:params]
-        train     = opts[:train]
-        timeout   = opts[:timeout]
-
-        async     = opts[:async]
-        async     = true if async == nil
-
-        headers   = opts[:headers] || {}
-        headers   = @init_headers.dup.merge( headers )
-
-        exception_jail {
-
-            opts = {
-                :method        => :post,
-                :headers       => headers,
-                :params        => params,
-                :follow_location => false,
-            }.merge( @opts )
-            opts[:timeout] = timeout if timeout
-
-            req = Typhoeus::Request.new( normalize_url( url ), opts )
-            req.train! if train
-
-            queue( req, async )
-            return req
-        }
+        request( url, opts.merge( :method => :post ) )
     end
 
     #
@@ -432,31 +390,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def trace( url, opts = { } )
-
-        params    = opts[:params]
-        train     = opts[:train]
-
-        async     = opts[:async]
-        async     = true if async == nil
-
-        headers   = opts[:headers] || {}
-        headers   = @init_headers.dup.merge( headers )
-
-        exception_jail {
-
-            opts = {
-                :method        => :trace,
-                :headers       => headers,
-                :params        => params,
-                :follow_location => false
-            }.merge( @opts )
-
-            req = Typhoeus::Request.new( normalize_url( url ), opts )
-            req.train! if train
-
-            queue( req, async )
-            return req
-        }
+        request( url, opts.merge( :method => :trace ) )
     end
 
 
@@ -475,37 +409,15 @@ class HTTP
     def cookie( url, opts = { } )
 
         cookies   = opts[:params] || {}
-        # params    = opts[:params]
-        train     = opts[:train]
-        timeout   = opts[:timeout]
 
+        opts[:headers] ||= {}
 
-        async     = opts[:async]
-        async     = true if async == nil
+        opts[:headers] = @init_headers.dup.
+          merge( { 'cookie' => get_cookies_str( cookies ) } ).merge( opts[:headers] )
 
-        headers   = opts[:headers] || {}
+        opts[:params] = nil
 
-        headers = @init_headers.dup.
-          merge( { 'cookie' => get_cookies_str( cookies ) } ).merge( headers )
-
-        # wrap the code in exception handling
-        exception_jail {
-
-            opts = {
-                :headers         => headers,
-                :follow_location => false,
-                # :params          => params
-                :timeout       => opts[:timeout]
-            }.merge( @opts )
-            opts[:timeout] = timeout if timeout
-
-
-            req = Typhoeus::Request.new( normalize_url( url ), opts )
-            req.train! if train
-
-            queue( req, async )
-            return req
-        }
+        request( url, opts )
     end
 
     #
@@ -522,34 +434,17 @@ class HTTP
     def header( url, opts = { } )
 
         headers   = opts[:params] || {}
-        # params    = opts[:params]
-        train     = opts[:train]
 
-        async     = opts[:async]
-        async     = true if async == nil
+        orig_headers      = @init_headers.clone
+        opts[:headers]    = @init_headers = @init_headers.merge( headers )
+        opts[:user_agent] = @init_headers['User-Agent']
 
+        opts[:params] = nil
 
-        # wrap the code in exception handling
-        exception_jail {
+        req = request( url, opts )
 
-            orig_headers  = @init_headers.clone
-            @init_headers = @init_headers.merge( headers )
-
-            req = Typhoeus::Request.new( normalize_url( url ),
-                :headers       => @init_headers.dup,
-                :user_agent    => @init_headers['User-Agent'],
-                :follow_location => false,
-                # :params        => params
-                :timeout       => opts[:timeout]
-            )
-            req.train! if train
-
-            @init_headers = orig_headers.clone
-
-            queue( req, async )
-            return req
-        }
-
+        @init_headers = orig_headers.clone
+        return req
     end
 
     def q_to_h( url )
