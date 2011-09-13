@@ -231,7 +231,7 @@ module Auditor
             request_headers  = res.request.headers
             response_headers = res.headers
             response         = res.body
-            url              = res.effective_url
+            url              = opts[:action]
             method           = res.request.method.to_s.upcase
         end
 

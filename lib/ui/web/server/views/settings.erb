@@ -70,6 +70,29 @@
                     <p>
                         Authorized by: <input name="authed_by" value="<%=session['opts']['settings']['authed_by']%>"/>
                     </p>
+                    <p>
+                        Proxy address: <input name="proxy_addr" value="<%=session['opts']['settings']['proxy_addr']%>"/>
+                    </p>
+                    <p>
+                        Proxy port: <input name="proxy_port" value="<%=session['opts']['settings']['proxy_port']%>"/>
+                    </p>
+                    <p>
+                        Proxy username: <input name="proxy_user" value="<%=session['opts']['settings']['proxy_user']%>"/>
+                    </p>
+                    <p>
+                        Proxy password: <input name="proxy_pass" value="<%=session['opts']['settings']['proxy_pass']%>"/>
+                    </p>
+                    <p>
+                        Proxy type:
+                        <select style="float: right" name="proxy_type">
+                            <option value="http">HTTP 1.1</option>
+                            <option value="http_1_0">HTTP 1.0</option>
+                            <option value="socks4">SOCKS v4</option>
+                            <option value="socks5">SOCKS v5</option>
+                            <option value="socks4a">SOCKS v4a</option>
+                        </select>
+
+                    </p>
 
                 </fieldset>
             </div>
