@@ -923,7 +923,7 @@
 
                     <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
                         ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
-                    <form style="display:inline" action="<%=issue.url%>" target="_blank" method="<%=issue.method.downcase%>">
+                    <form style="display:inline" action="<%=variation['opts'][:action]%>" target="_blank" method="<%=issue.method.downcase%>">
                     <% if variation['opts'][:combo]%>
                     <%variation['opts'][:combo].each_pair do |name, value|%>
                         <input type="hidden" name="<%=escapeHTML(name)%>" value="<%=escapeHTML( value )%>" />
