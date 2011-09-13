@@ -8,9 +8,9 @@
 
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
-require Arachni::Options.instance.dir['lib'] + 'rpc/brb/client/instance'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 
 module Arachni
 module UI
@@ -40,11 +40,9 @@ class InstanceManager
     # @param    [Hash]     session  session of the current user (optional)
     # @param    [String]   token    authentication token (optional)
     #
-    # @return   [Arachni::RPC::XML::Client::Instance]
+    # @return   [Arachni::RPC::Client::Instance]
     #
     def connect( url, session = nil, token = nil )
-        # url = 'https://' + url if !url.include?( 'https' )
-
         begin
 
             #
@@ -55,18 +53,21 @@ class InstanceManager
             # shutdown the WebUI or removed their cookies.
             #
 
+            k = remove_proto( url )
             @@tokens ||= {}
             session['tokens'] ||= {} if session
-            @@tokens[url] = token if token
+            @@tokens[k] = token if token
 
             session['tokens'].merge!( @@tokens ) if session
             @@tokens.merge!( session['tokens'] ) if session
             session['tokens'].merge!( @@tokens ) if session
 
-            tmp_token = session ? session['tokens'][url] : @@tokens[url]
+            tmp_token = session ? session['tokens'][k] : @@tokens[k]
 
-            return Arachni::RPC::BrB::Client::Instance.new( @opts, url, tmp_token )
+            return Arachni::RPC::Client::Instance.new( @opts, url, tmp_token )
         rescue Exception => e
+            ap e
+            ap e.backtrace
             raise "Instance at #{url} has shutdown."
         end
     end

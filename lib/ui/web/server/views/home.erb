@@ -10,8 +10,7 @@
             <div id="page-intro">
                 Select a Dispatcher:
                 <select name="dispatcher">
-                <% dispatcher_stats.each_pair do |d_url, stats| %>
-                    <% next if !dispatchers.alive?( d_url ) %>
+                <% stats.each_pair do |d_url, stats| %>
                     <option value="<%=d_url%>">
                         <%=show_dispatcher_line( stats )%>
                         <% if !stats['neighbours'].empty? %>

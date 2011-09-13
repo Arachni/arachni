@@ -10,7 +10,7 @@ echo <<<EOHTML
 This form is vulnerable to Cross-Site Scripting.
     </pre>
 
-    <form method="post" action="{$_SERVER['PHP_SELF']}" name="xss_form">
+    <form method="post" action="{$_SERVER['PHP_SELF']}?stinky=crap" name="xss_form">
     <p>
       <label>XSS</label>
       <input type="text" name="xss" value="{$_POST['xss']}">
@@ -23,7 +23,7 @@ This form is vulnerable to Cross-Site Scripting.
 EOHTML;
 
 
-if( $_POST['xss'] && $_POST['xss'] != 'xss'  ) {
+if( $_POST['xss'] && $_GET['stinky'] == 'crap'  ) {
     echo $_POST['xss'];
 }
 

@@ -8,11 +8,9 @@
 
 =end
 
-require 'webrick'
-require 'webrick/https'
-require 'openssl'
-
+require 'eventmachine'
 require 'sinatra/base'
+require 'sinatra/async'
 require "rack/csrf"
 require 'rack-flash'
 require 'json'
@@ -49,14 +47,16 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #                                      <zapotek@segfault.gr>
 # @version: 0.2
 #
-# @see Arachni::RPC::XML::Client::Instance
-# @see Arachni::RPC::XML::Client::Dispatcher
+# @see Arachni::RPC::Client::Instance
+# @see Arachni::RPC::Client::Dispatcher
 #
 module Web
 
     VERSION = '0.3'
 
 class Server < Sinatra::Base
+
+    register Sinatra::Async
 
     include Arachni::Module::Utilities
     include Utilities
@@ -251,7 +251,6 @@ class Server < Sinatra::Base
 
     def show_dispatcher_line( stats )
 
-
         str = "#{escape( '@' + remove_proto( stats['node']['url'] ) )}" +
             " - #{stats['running_jobs'].size} running scans, "
 
@@ -389,21 +388,21 @@ class Server < Sinatra::Base
         return plugins
     end
 
-    def helper_instance
+    def helper_instance( &block )
+        raise( "This method requires a block!" ) if !block_given?
         begin
-            @@arachni ||= nil
-            if !@@arachni
-
-                d_url = dispatchers.first_alive.url
-
-                instance = dispatchers.connect( d_url ).dispatch( HELPER_OWNER )
-
-                @@arachni = instances.connect( instance['url'], session, instance['token'] )
-            end
-
-            return @@arachni
+            dispatchers.first_alive{
+                |dispatcher|
+                dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
+                    |instance|
+                    @@arachni = instances.connect( instance['url'], session, instance['token'] )
+                    block.call( @@arachni )
+                }
+            }
         rescue Exception => e
-            redirect '/dispatchers/edit'
+            ap e
+            ap e.backtrace
+            async_redirect '/dispatchers/edit'
         end
     end
 
@@ -415,25 +414,34 @@ class Server < Sinatra::Base
         end
     end
 
-    def fill_component_cache
-
+    def fill_component_cache( &block )
         if !component_cache_filled?
-            do_shutdown = true
+
+
+            helper_instance{
+                |inst|
+
+                inst.framework.lsmod {
+                    |mods|
+
+                    @@modules = mods.map { |mod| hash_keys_to_str( mod ) }
+
+                    inst.framework.lsplug {
+                        |plugs|
+
+                        @@plugins = plugs.map { |plug| hash_keys_to_str( plug ) }
+
+                        # shutdown the helper instance, we got what we wanted
+                        inst.service.shutdown!{
+                            block.call
+                        }
+                    }
+                }
+            }
+
         else
-            do_shutdown = false
+            block.call
         end
-
-        @@modules ||= helper_instance.framework.lsmod.dup.map {
-            |mod|
-            hash_keys_to_str( mod )
-        }
-        @@plugins ||= helper_instance.framework.lsplug.dup.map {
-            |plug|
-            hash_keys_to_str( plug )
-        }
-
-        # shutdown the helper instance, we got what we wanted
-        helper_instance.service.shutdown! if do_shutdown
     end
 
     #
@@ -470,6 +478,12 @@ class Server < Sinatra::Base
 
     end
 
+    def async_redirect( location )
+        response.status = 302
+        response.headers['Location'] = location
+        body ''
+    end
+
     #
     # Makes sure that we have a dispatcher, if not it redirects the user to
     # an appropriate error page.
@@ -477,73 +491,72 @@ class Server < Sinatra::Base
     # @return   [Bool]  true if alive, redirect if not
     #
     def ensure_dispatcher
-        redirect '/dispatchers/edit' if !dispatchers.first_alive
-    end
-
-    #
-    # Saves the report, shuts down the instance and returns the content as HTML
-    # to be sent back to the user's browser.
-    #
-    # @param    [Arachni::RPC::XML::Client::Instance]   arachni
-    #
-    def save_shutdown_and_show( arachni )
-        report = save_and_shutdown( arachni )
-        reports.get( 'html', reports.all.last.id )
+        dispatchers.first_alive {
+            |dispatcher|
+            async_redirect '/dispatchers/edit' if !dispatcher
+        }
     end
 
     #
     # Saves the report and shuts down the instance
     #
-    # @param    [Arachni::RPC::XML::Client::Instance]   arachni
+    # @param    [Arachni::RPC::Client::Instance]   arachni
     #
-    def save_and_shutdown( arachni )
+    def save_and_shutdown( arachni, &block )
         begin
-            arachni.framework.clean_up!
-            report_path = reports.save( arachni.framework.auditstore )
-            3.times {
-                begin
-                    arachni.service.shutdown!
-                    break
-                rescue Timeout::Error
-                end
+            arachni.framework.clean_up!{
+                arachni.framework.auditstore {
+                    |auditstore|
+                    report_path = reports.save( auditstore )
+                    arachni.service.shutdown!{ block.call( report_path ) }
+                }
             }
         rescue Exception => e
             ap e
-            # ap e.faultCode
-            # ap e.faultString
             ap e.backtrace
         end
-        return report_path
     end
 
     #
     # Kills all running instances
     #
-    def shutdown_all( url )
+    def shutdown_all( url, &block )
         log.dispatcher_global_shutdown( env, url )
 
-        dispatcher_stats.each_pair {
-            |d_url, stats|
+        ap url
 
-            next if remove_proto( d_url.dup ) != url
+        dispatcher.stats {
+            |d_stats|
 
-            stats['running_jobs'].each {
-                |job|
-                next if job['helpers']['rank'] == 'slave'
+            d_stats.each_pair {
+                |d_url, stats|
 
-                instance_url = instances.port_to_url( job['port'], d_url )
-                begin
-                    save_and_shutdown( instances.connect( instance_url, session ) )
-                rescue
-                    begin
-                        instances.connect( instance_url, session ).service.shutdown!
-                    rescue
-                        log.instance_fucker_wont_die( env, instance_url )
-                        next
-                    end
+                next if d_url != url
+                EM.synchrony do
+
+                    EM::Synchrony::Iterator.new( stats['running_jobs'] ).each {
+                        |instance|
+
+                        next if job['helpers']['rank'] == 'slave'
+                        # begin
+                            save_and_shutdown( instances.connect( instance['url'], session ) ){
+                                log.instance_shutdown( env, instance['url'] )
+                                iter.next
+                            }
+                        # rescue
+                            # begin
+                                # instances.connect( instance['url'], session ).service.shutdown!{
+                                    # log.instance_shutdown( env, instance['url'] )
+                                # }
+                            # rescue
+                                # log.instance_fucker_wont_die( env, instance['url'] )
+                                # next
+                            # end
+                        # end
+                    }
+
+                    block.call
                 end
-
-                log.instance_shutdown( env, instance_url )
             }
         }
 
@@ -585,89 +598,85 @@ class Server < Sinatra::Base
         return i
     end
 
-    get "/" do
+    aget "/" do
         prep_session
         ensure_welcomed
-        show :home
+        dispatchers.stats {
+            |stats|
+            body erb :home, { :layout => true }, :stats => stats
+        }
     end
 
-    get "/welcome" do
-        erb :welcome, { :layout => true }
+    aget "/welcome" do
+        body erb :welcome, { :layout => true }
     end
 
-    get "/dispatchers" do
-        show :dispatchers
+    aget "/dispatchers" do
+        ensure_dispatcher
+        dispatchers.stats {
+            |stats|
+            body erb :dispatchers, { :layout => true }, :stats => stats
+        }
     end
 
-    #
-    # sets the dispatcher URL
-    #
-    post "/dispatchers" do
+    aget '/dispatchers/edit' do
+        dispatchers.all_with_liveness {
+            |dispatchers|
+            body erb :dispatchers_edit, { :layout => true }, :dispatchers => dispatchers
+      }
+    end
 
-        if !params['url'] || params['url'].empty?
-            flash[:err] = "URL cannot be empty."
-            show :dispatchers_edit
-        else
-            log.dispatcher_selected( env, params['url'] )
-            begin
-                dispatchers.connect( url ).jobs
-                log.dispatcher_verified( env, params['url'] )
-                redirect '/'
-            rescue
-                log.dispatcher_error( env, params['url'] )
+    apost '/dispatchers/add' do
+        dispatchers.alive?( params[:url] ) {
+            |a|
+            if a
+                dispatchers.new( params[:url] )
+            else
                 flash[:err] = "Couldn't find a dispatcher at \"#{escape( params['url'] )}\"."
-                show :dispatchers_edit
             end
-        end
+
+            dispatchers.all_with_liveness {
+                |dispatchers|
+                body erb :dispatchers_edit, { :layout => true }, :dispatchers => dispatchers
+            }
+        }
     end
 
-    get '/dispatchers/edit' do
-      show :dispatchers_edit
+    apost '/dispatchers/:url/delete' do |url|
+        dispatchers.delete( url )
+        redirect '/dispatchers/edit'
     end
 
-    post '/dispatchers/add' do
-
-        if dispatchers.alive?( params[:url] )
-            dispatchers.new( params[:url] )
-        else
-            flash[:err] = "Couldn't find a dispatcher at \"#{escape( params['url'] )}\"."
-        end
-
-        show :dispatchers_edit
-    end
-
-    post '/dispatchers/:url/delete' do
-        dispatchers.delete( params[:url] )
-        show :dispatchers_edit
-    end
-
-    get '/dispatchers/:url/log.json' do
+    aget '/dispatchers/:url/log.json' do |url|
         content_type :json
+
         begin
-            return { 'log' => dispatchers.connect( params[:url] ).log }.to_json
-        rescue Exception, XMLRPC::FaultException => e
-            err_str = e.respond_to?( :faultString ) ? e.faultString : e.to_s
-            return { 'error' => err_str, 'backtrace' => e.backtrace.join( "\n" ),  }.to_json
+            dispatchers.connect( url ).log {
+                |log|
+                json = { 'log' => log }.to_json
+                body json
+            }
+        rescue Exception => e
+            json = { 'error' => e.to_s, 'backtrace' => e.backtrace.join( "\n" ),  }.to_json
+            body json
         end
     end
 
     #
     # shuts down all instances
     #
-    post "/dispatchers/:url/shutdown_all" do
-        shutdown_all( params[:url] )
-        redirect '/dispatchers'
-    end
-
-
-    get '/dispatchers/error' do
-        show :dispatchers_edit
+    apost "/dispatchers/:url/shutdown_all" do |url|
+        ap 'shutdown_all'
+        shutdown_all( url ){
+            ap url
+            async_redirect '/dispatchers'
+        }
     end
 
     #
     # starts a scan
     #
-    post "/scan" do
+    apost "/scan" do
 
         valid = true
         begin
@@ -720,15 +729,18 @@ class Server < Sinatra::Base
                 :created_at  => Time.now
             )
 
-            instance_url = scheduler.run( job, env, session )
-            redirect '/instance/' + remove_proto( instance_url )
+            scheduler.run( job, env, session ){
+                |instance_url|
+                async_redirect '/instance/' + instance_url
+            }
         end
     end
 
-    get "/modules" do
-        fill_component_cache
+    aget "/modules" do
         prep_session
-        show :modules, true
+        fill_component_cache{
+            body show :modules, true
+        }
     end
 
     #
@@ -740,10 +752,12 @@ class Server < Sinatra::Base
         show :modules, true
     end
 
-    get "/plugins" do
-        fill_component_cache
+    aget "/plugins" do
         prep_session
-        erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )
+        fill_component_cache {
+            body erb :plugins, { :layout => true },
+                :session_options => YAML::load( session['opts']['plugins'] )
+        }
     end
 
     #
@@ -779,19 +793,27 @@ class Server < Sinatra::Base
         show :settings, true
     end
 
-    get "/instance/:url" do
+    aget "/instance/:url" do |url|
+        params['url'] = url
         begin
-            arachni = instances.connect( params[:url], session )
-            erb :instance, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false
+            instances.connect( params[:url], session ).framework.paused? {
+                |paused|
+                body erb :instance, { :layout => true }, :paused => paused,
+                    :shutdown => false, :params => params
+            }
         rescue Exception => e
-            flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            erb :instance, { :layout => true }, :shutdown => true
+            ap e
+            ap e.backtrace
+            flash.now[:notice] = "Instance at #{url} has been shutdown."
+            body erb :instance, { :layout => true }, :shutdown => true
         end
 
     end
 
-    get "/instance/:url/output.json" do
+    aget "/instance/:url/output.json" do |url|
         content_type :json
+
+        params['url'] = url
 
         output = {
             'messages' => {},
@@ -799,11 +821,9 @@ class Server < Sinatra::Base
             'stats'    => {}
         }
 
-        arachni = instances.connect( params[:url], session )
         begin
-            if arachni.framework.busy?
-
-                prog = arachni.framework.progress_data
+            instances.connect( params[:url], session ).framework.progress_data {
+                |prog|
 
                 @@output_streams ||= {}
                 @@output_streams[params[:url]] = OutputStream.new( prog['messages'], 38 )
@@ -821,21 +841,14 @@ class Server < Sinatra::Base
                 end
 
                 output['stats']['instances'] = prog['instances'].dup
-            else
-                log.instance_shutdown( env, params[:url] )
-                save_and_shutdown( arachni )
-                output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
-            end
-        rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
-               Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
-            output['messages'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
-            output['issues']   = { 'data' => "<strong>Connection error, retrying...</strong>" }
+
+                body output.to_json
+            }
         rescue Exception => e
             ap e
-            # ap e.faultCode
-            # ap e.faultString
             ap e.backtrace
             output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
+            body output.to_json
         end
 
 
@@ -862,61 +875,90 @@ class Server < Sinatra::Base
             # output['stats'] = stats
         # rescue
         # end
-
-        output.to_json
     end
 
 
-    post "/*/:url/pause" do
-        arachni = instances.connect( params[:url], session )
+    apost "/*/:url/pause" do |splat, url|
+        params['splat'] = [ splat ]
+        params['url']   = url
 
         begin
-            arachni.framework.pause!
-            log.instance_paused( env, params[:url] )
+            instances.connect( params[:url], session ).framework.pause!{
+                |paused|
+                log.instance_paused( env, params[:url] )
 
-            flash.now[:notice] = "Instance at #{params[:url]} will pause as soon as the current page is audited."
-            erb params[:splat][0].to_sym, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false, :stats => dispatcher_stats
+                flash.now[:notice] = "Instance at #{params[:url]} will pause as soon as the current page is audited."
+
+                dispatchers.stats {
+                    |stats|
+                    body erb params[:splat][0].to_sym, { :layout => true },
+                        :paused => true, :shutdown => false, :stats => stats,
+                        :params => params
+                }
+            }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
+            dispatchers.stats {
+                |stats|
+                body erb params[:splat][0].to_sym, { :layout => true },
+                    :shutdown => true, :stats => stats, :params => params
+            }
         end
 
     end
 
-    post "/*/:url/resume" do
-        arachni = instances.connect( params[:url], session )
+    apost "/*/:url/resume" do |splat, url|
+        params['splat'] = [ splat ]
+        params['url']   = url
 
         begin
-            arachni.framework.resume!
-            log.instance_resumed( env, params[:url] )
+            instances.connect( params[:url], session ).framework.resume!{
 
-            flash.now[:notice] = "Instance at #{params[:url]} resumes."
-            erb params[:splat][0].to_sym, { :layout => true }, :paused => arachni.framework.paused?, :shutdown => false, :stats => dispatcher_stats
+                log.instance_resumed( env, params[:url] )
+
+                flash.now[:notice] = "Instance at #{params[:url]} resumes."
+                dispatchers.stats {
+                    |stats|
+                    body erb params[:splat][0].to_sym, { :layout => true },
+                        :paused => false, :shutdown => false, :stats => stats,
+                        :params => params
+                }
+            }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
+            dispatchers.stats {
+                |stats|
+                body erb params[:splat][0].to_sym, { :layout => true },
+                    :shutdown => true, :stats => stats, :params => params
+            }
         end
     end
 
-    post "/*/:url/shutdown" do
-        arachni = instances.connect( params[:url], session )
+    apost "/*/:url/shutdown" do |splat, url|
+        params['splat'] = [ splat ]
+        params['url']   = url
 
         begin
-            arachni.framework.busy?
-            log.instance_shutdown( env, params[:url] )
+            save_and_shutdown( instances.connect( params[:url], session ) ){
+                log.instance_shutdown( env, params[:url] )
 
-            begin
-                save_shutdown_and_show( arachni )
-            rescue
                 flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-                show params[:splat][0].to_sym
-            ensure
-                arachni.service.shutdown!
-            end
+
+                dispatchers.stats {
+                    |stats|
+                    body erb params[:splat][0].to_sym, { :layout => true },
+                        :shutdown => true, :stats => stats
+                }
+            }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            erb params[:splat][0].to_sym, { :layout => true }, :shutdown => true, :stats => dispatcher_stats
+            dispatchers.stats {
+                |stats|
+                body erb params[:splat][0].to_sym, { :layout => true },
+                    :shutdown => true, :stats => stats, :params => params
+            }
         end
+
     end
 
     get "/reports" do
@@ -1014,8 +1056,8 @@ class Server < Sinatra::Base
 
     run! :host    => Arachni::Options.instance.server   || ::WEBrick::Utils::getservername,
          :port    => Arachni::Options.instance.rpc_port || 4567,
-         :server => %w[ webrick ],
-         :webrick => prep_webrick
+         :server => %w[ thin ]
+         # :webrick => prep_webrick
 
     at_exit do
 
