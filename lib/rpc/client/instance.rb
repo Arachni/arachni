@@ -25,8 +25,6 @@ class Client
 #
 class Instance
 
-    attr_accessor :timeout
-
     attr_reader :opts
     attr_reader :framework
     attr_reader :modules
@@ -47,31 +45,11 @@ class Instance
 
     end
 
-    class Framework < Mapper
-
-        def method_missing( sym, *args, &block )
-
-            if sym == :clean_up!
-                timeout = @server.timeout
-                @server.timeout = 15
-            end
-
-            res = super( sym, *args, &block )
-
-            if sym == :clean_up!
-                @server.timeout = timeout
-            end
-
-            return res
-        end
-
-    end
-
     def initialize( opts, url, token = nil )
         @client = Base.new( opts, url, token )
 
         @opts      = OptsMapper.new( @client, 'opts' )
-        @framework = Framework.new( @client, 'framework' )
+        @framework = Mapper.new( @client, 'framework' )
         @modules   = Mapper.new( @client, 'modules' )
         @plugins   = Mapper.new( @client, 'plugins' )
         @service   = Mapper.new( @client, 'service' )
