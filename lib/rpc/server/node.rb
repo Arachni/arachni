@@ -66,7 +66,7 @@ class Node
             }
 
             begin
-                pp peer = connect_to_peer( neighbour )
+                peer = connect_to_peer( neighbour )
                 peer.node.add_neighbour( opts.datastore[:dispatcher_url], true )
             rescue Exception => e
                 ap e
