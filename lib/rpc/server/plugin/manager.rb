@@ -13,7 +13,7 @@ module Arachni
 require Options.instance.dir['lib'] + 'plugin/manager'
 
 module RPC
-module Server
+class Server
 module Plugin
 
 #

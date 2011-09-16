@@ -15,7 +15,7 @@ require Options.instance.dir['lib'] + 'rpc/server/module/manager'
 require Options.instance.dir['lib'] + 'rpc/server/plugin/manager'
 
 module RPC
-module Server
+class Server
 module HighPerformance
 
 #

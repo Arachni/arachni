@@ -13,7 +13,7 @@ module Arachni
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
 
 module RPC
-module Client
+class Client
 
 #
 # BrBRPC client for remote instances spawned by a remote dispatcher
@@ -23,7 +23,7 @@ module Client
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3
 #
-class Instance < Base
+class Instance
 
     attr_accessor :timeout
 
@@ -68,13 +68,13 @@ class Instance < Base
     end
 
     def initialize( opts, url, token = nil )
-        super( opts, url, token )
+        @client = Base.new( opts, url, token )
 
-        @opts      = OptsMapper.new( self, 'opts' )
-        @framework = Framework.new( self, 'framework' )
-        @modules   = Mapper.new( self, 'modules' )
-        @plugins   = Mapper.new( self, 'plugins' )
-        @service   = Mapper.new( self, 'service' )
+        @opts      = OptsMapper.new( @client, 'opts' )
+        @framework = Framework.new( @client, 'framework' )
+        @modules   = Mapper.new( @client, 'modules' )
+        @plugins   = Mapper.new( @client, 'plugins' )
+        @service   = Mapper.new( @client, 'service' )
     end
 
 end

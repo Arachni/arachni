@@ -20,7 +20,7 @@ require Options.instance.dir['lib'] + 'rpc/server/instance'
 require Options.instance.dir['lib'] + 'rpc/server/output'
 
 module RPC
-module Server
+class Server
 
 #
 # Dispatcher class
@@ -42,16 +42,13 @@ module Server
 #                                      <zapotek@segfault.gr>
 # @version: 0.2
 #
-class Dispatcher < Base
+class Dispatcher
 
     require Options.instance.dir['lib'] + 'rpc/server/node'
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
     include ::Sys
-
-    private :shutdown, :alive?
-    public  :shutdown, :alive?
 
     def initialize( opts )
 
@@ -68,7 +65,7 @@ class Dispatcher < Base
             exit 0
         end
 
-        super( @opts )
+        @server = Base.new( @opts )
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
@@ -78,7 +75,7 @@ class Dispatcher < Base
 
         print_status( 'Initing RPC Server...' )
 
-        add_handler( "dispatcher", self )
+        @server.add_handler( "dispatcher", self )
 
         # trap interupts and exit cleanly when required
         trap( 'HUP' ) { shutdown }
@@ -88,7 +85,7 @@ class Dispatcher < Base
         @pool = Queue.new
 
         @node = Node.new( @opts, @logfile )
-        add_handler( "node", @node )
+        @server.add_handler( "node", @node )
 
         print_status( 'Warming up the pool...' )
         prep_pool
@@ -97,15 +94,19 @@ class Dispatcher < Base
         print_status( 'Initialization complete.' )
     end
 
+    def alive?
+        @server.alive?
+    end
+
     # Starts the dispatcher's server
     def run
         print_status( 'Starting the server...' )
-        super
+        @server.run
     end
 
     def shutdown
         print_status( 'Shutting down...' )
-        super
+        @server.shutdown
         print_status( 'Done.' )
     end
 

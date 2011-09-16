@@ -13,7 +13,7 @@ module Arachni
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
 
 module RPC
-module Client
+class Client
 
 #
 # BrBRPC Dispatcher client
@@ -23,12 +23,12 @@ module Client
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3
 #
-class Dispatcher < Base
+class Dispatcher
 
     attr_reader :node
 
     def initialize( opts, url )
-        super( opts, url )
+        @client = Base.new( opts, url )
 
         @node = Mapper.new( self, 'node' )
     end
@@ -38,7 +38,7 @@ class Dispatcher < Base
     # Used to provide the illusion of locality for remote methods
     #
     def method_missing( sym, *args, &block )
-        call( "dispatcher.#{sym.to_s}", *args, &block )
+        @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end
 
 end

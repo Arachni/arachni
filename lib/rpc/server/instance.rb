@@ -20,7 +20,7 @@ require Options.instance.dir['lib'] + 'rpc/server/options'
 require Options.instance.dir['lib'] + 'rpc/server/high_performance/framework'
 
 module RPC
-module Server
+class Server
 
 #
 # BrBRPC Server class
@@ -35,15 +35,11 @@ module Server
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.5
 #
-class Instance < Base
+class Instance
 
     # the output interface for BrB-RPC
     include Arachni::UI::Output
     include Arachni::Module::Utilities
-
-    private :shutdown, :alive?
-    public  :shutdown, :alive?
-
 
     #
     # Initializes the BrB-RPC interface, the HTTP(S) server and the framework.
@@ -57,7 +53,7 @@ class Instance < Base
 
         @opts  = opts
         @token = token
-        super( @opts, token )
+        @server = Base.new( @opts, token )
 
         @opts.datastore[:token] = token
 
@@ -112,7 +108,7 @@ class Instance < Base
         }
 
         print_status( 'Shutting down...' )
-        super
+        @server.shutdown
         print_status( 'Done.' )
         return true
     end
@@ -126,11 +122,15 @@ class Instance < Base
         begin
             print_status( 'Starting the server...' )
             # start the show!
-            super
+            @server.run
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
         end
+    end
+
+    def alive?
+        @server.alive?
     end
 
     private
@@ -172,12 +172,11 @@ class Instance < Base
     # It also prepares all the RPC handlers.
     #
     def set_handlers
-        clear_handlers
-        add_handler( "service",   self )
-        add_handler( "framework", @framework )
-        add_handler( "opts",      @framework.opts )
-        add_handler( "modules",   @framework.modules )
-        add_handler( "plugins",   @framework.plugins )
+        @server.add_handler( "service",   self )
+        @server.add_handler( "framework", @framework )
+        @server.add_handler( "opts",      @framework.opts )
+        @server.add_handler( "modules",   @framework.modules )
+        @server.add_handler( "plugins",   @framework.plugins )
     end
 
 end

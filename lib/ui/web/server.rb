@@ -251,7 +251,7 @@ class Server < Sinatra::Base
 
     def show_dispatcher_line( stats )
 
-        str = "#{escape( '@' + remove_proto( stats['node']['url'] ) )}" +
+        str = "#{escape( '@' + stats['node']['url'] )}" +
             " - #{stats['running_jobs'].size} running scans, "
 
         i=0

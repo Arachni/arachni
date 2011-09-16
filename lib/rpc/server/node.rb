@@ -14,7 +14,7 @@ module Arachni
 require Options.instance.dir['lib'] + 'rpc/server/output'
 
 module RPC
-module Server
+class Server
 
 class Dispatcher
 
