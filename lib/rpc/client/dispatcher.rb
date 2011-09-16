@@ -30,7 +30,7 @@ class Dispatcher
     def initialize( opts, url )
         @client = Base.new( opts, url )
 
-        @node = Mapper.new( self, 'node' )
+        @node = Mapper.new( @client, 'node' )
     end
 
     private
