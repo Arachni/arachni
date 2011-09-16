@@ -84,9 +84,6 @@ class Dispatcher
         @jobs = []
         @pool = Queue.new
 
-        @node = Node.new( @opts, @logfile )
-        @server.add_handler( "node", @node )
-
         print_status( 'Warming up the pool...' )
         prep_pool
         print_status( 'Done.' )
@@ -101,7 +98,11 @@ class Dispatcher
     # Starts the dispatcher's server
     def run
         print_status( 'Starting the server...' )
-        @server.run
+        t = Thread.new { @server.run }
+        sleep( 2 )
+        @node = Node.new( @opts, @logfile )
+        @server.add_handler( "node", @node )
+        t.join
     end
 
     def shutdown
