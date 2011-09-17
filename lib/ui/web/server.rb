@@ -851,31 +851,6 @@ class Server < Sinatra::Base
             output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
             body output.to_json
         end
-
-
-        # begin
-            # # arachni = instances.connect( params[:url], session )
-            # if !arachni.framework.paused? && arachni.framework.busy?
-                # out = erb( :output_results, { :layout => false }, :issues => YAML.load( arachni.framework.issues ) )
-                # output['issues'] = { 'data' => out }
-            # end
-        # rescue IOError, Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
-               # Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
-            # output['issues'] = { 'data' => "<strong>Connection error, retrying...</strong>" }
-        # rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            # output['issues'] = { 'data' => "The server has been shut down." }
-        # end
-
-
-        # begin
-            # # arachni = instances.connect( params[:url], session )
-            # stats = arachni.framework.stats( true )
-            # stats['current_page'] = escape( stats['current_page'] )
-            # output['stats'] = stats
-        # rescue
-        # end
     end
 
 
@@ -883,27 +858,18 @@ class Server < Sinatra::Base
         params['splat'] = [ splat ]
         params['url']   = url
 
+        redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
         begin
             instances.connect( params[:url], session ).framework.pause!{
                 |paused|
                 log.instance_paused( env, params[:url] )
-
                 flash.now[:notice] = "Instance at #{params[:url]} will pause as soon as the current page is audited."
 
-                dispatchers.stats {
-                    |stats|
-                    body erb params[:splat][0].to_sym, { :layout => true },
-                        :paused => true, :shutdown => false, :stats => stats,
-                        :params => params
-                }
+                async_redirect redir
             }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            dispatchers.stats {
-                |stats|
-                body erb params[:splat][0].to_sym, { :layout => true },
-                    :shutdown => true, :stats => stats, :params => params
-            }
+            async_redirect redir
         end
 
     end
@@ -912,26 +878,18 @@ class Server < Sinatra::Base
         params['splat'] = [ splat ]
         params['url']   = url
 
+        redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
         begin
             instances.connect( params[:url], session ).framework.resume!{
 
                 log.instance_resumed( env, params[:url] )
 
                 flash.now[:notice] = "Instance at #{params[:url]} resumes."
-                dispatchers.stats {
-                    |stats|
-                    body erb params[:splat][0].to_sym, { :layout => true },
-                        :paused => false, :shutdown => false, :stats => stats,
-                        :params => params
-                }
+                async_redirect redir
             }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            dispatchers.stats {
-                |stats|
-                body erb params[:splat][0].to_sym, { :layout => true },
-                    :shutdown => true, :stats => stats, :params => params
-            }
+            async_redirect redir
         end
     end
 
@@ -939,25 +897,18 @@ class Server < Sinatra::Base
         params['splat'] = [ splat ]
         params['url']   = url
 
+        redir = '/' + ( splat == 'instance' ? "reports" : splat )
         begin
             save_and_shutdown( instances.connect( params[:url], session ) ){
                 log.instance_shutdown( env, params[:url] )
 
                 flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
 
-                dispatchers.stats {
-                    |stats|
-                    body erb params[:splat][0].to_sym, { :layout => true },
-                        :shutdown => true, :stats => stats
-                }
+                async_redirect redir
             }
         rescue
             flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            dispatchers.stats {
-                |stats|
-                body erb params[:splat][0].to_sym, { :layout => true },
-                    :shutdown => true, :stats => stats, :params => params
-            }
+            async_redirect redir
         end
 
     end
