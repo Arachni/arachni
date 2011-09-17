@@ -83,12 +83,11 @@ class Node
 
         @dead_nodes = []
 
-        Thread.new {
-            while( true )
+        ::EM.add_periodic_timer( 60 ) {
+            ::EM.defer {
                 ping
                 check_for_comebacks
-                sleep( 60 )
-            end
+            }
         }
     end
 
