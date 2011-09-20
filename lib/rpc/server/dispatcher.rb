@@ -108,7 +108,6 @@ class Dispatcher
     def shutdown
         print_status( 'Shutting down...' )
         @server.shutdown
-        print_status( 'Done.' )
     end
 
     #
