@@ -141,7 +141,10 @@
 
                         status = stats.instances[i].status
                         if( status == 'busy' ) {
-                            elem.innerHTML += 'Currently auditing: ' + stats.instances[i].current_page;
+                            page = stats.instances[i].current_page;
+
+                            elem.innerHTML += 'Currently auditing: ' + '<a href="' +
+                            page + '">' + page + '</a>';
                         } else {
                             elem.innerHTML += status.charAt(0).toUpperCase() + status.slice(1);
                         }
