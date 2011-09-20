@@ -13,14 +13,10 @@ module UI
 module Web
 
     #
-    # Lame hack to make XMLRPC output appear stream-ish to Sinatra
-    # in order to send it back to the browser.
+    # This used to be a stream in the past, now it's just a compat class.
     #
     class OutputStream
 
-        #
-        # @param    [Integer]   lines   number of lines to output between refreshes
-        #
         def initialize( output, lines, &block )
             @lines  = lines
             @output = output
@@ -34,60 +30,10 @@ module Web
 
         end
 
-        #
-        # @param    [Array<Hash>]   output
-        #
-        def <<( output )
-            @buffer << output.reverse
-            @buffer.flatten!
-        end
-
-        def data
-            data = ''
-            each {
-                |line|
-                data << line
-            }
-
-            data
-        end
-
-        #
-        # Sinatra (or Rack, not sure) expects the output to respond to "each" so we oblige.
-        #
-        def each
-
-            self << @output
-
-            @last_output ||= ''
-            cnt = 0
-
-            if @buffer.empty?
-                yield @last_output
-            else
-                @last_output = ''
-            end
-
-            while( ( out = @buffer.pop ) && ( ( cnt += 1 ) < @lines ) )
-
-                type = out.keys[0]
-                msg  = out.values[0]
-
-                next if out.values[0].empty?
-
-                icon = @icon_whitelist[type] || ''
-                str = icon + CGI.escapeHTML( " #{out.values[0]}" ) + "<br/>"
-                @last_output << str
-                yield str
-
-            end
-
-            # self << @output
-        end
-
         def format
             str = ''
             cnt = 0
+
             while( ( out = @output.pop ) && ( ( cnt += 1 ) < @lines ) )
 
                 type = out.keys[0]
@@ -95,7 +41,7 @@ module Web
 
                 next if out.values[0].empty?
 
-                icon = @icon_whitelist[type] || ''
+                icon = @icon_whitelist[type.to_s] || ''
                 str += icon + CGI.escapeHTML( " #{out.values[0]}" ) + "<br/>"
             end
 
