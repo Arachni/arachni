@@ -78,13 +78,7 @@ class DispatcherManager
     # @return   [Arachni::RPC::Client::Dispatcher]
     #
     def connect( url )
-        begin
-            return Arachni::RPC::Client::Dispatcher.new( @opts, url )
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            return nil
-        end
+        Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
     #
@@ -114,6 +108,21 @@ class DispatcherManager
         end
     end
 
+    def jobs( &block )
+        ::EM::Iterator.new( all, 20 ).map( proc {
+            |dispatcher, iter|
+
+            connect( dispatcher.url ).stats {
+                |stats|
+                iter.return( stats['running_jobs'] )
+            }
+
+        }, proc {
+            |running|
+            block.call( running.flatten )
+        })
+    end
+
     #
     # Provides statistics about running jobs etc using the dispatcher
     #
@@ -122,11 +131,7 @@ class DispatcherManager
     def stats( &block )
         raise( "This method requires a block!" ) if !block_given?
 
-        ap block
-
         EM.synchrony do
-
-            ap '1'
 
             stats = EM::Synchrony::Iterator.new( all ).map {
                 |dispatcher, iter|
@@ -143,8 +148,6 @@ class DispatcherManager
                 sorted_stats.merge!( stat )
             }
 
-            ap '2'
-
             sorted_stats.each_pair {
                 |k, stats|
 
@@ -153,30 +156,34 @@ class DispatcherManager
                     |instance, iter|
 
                     if instance['helpers']['rank'] != 'slave'
-                        @settings.instances.connect( instance['url'] ).framework.status {
-                            |status|
-                            instance['status'] = status
-                            instance['status'].capitalize!
+                        @settings.instances.connect( instance['url'] ).framework.progress_data(
+                            :slaves   => false,
+                            :messages => false,
+                            :issues   => false
+                        ) {
+                            |prog_data|
+                            instance.merge!( prog_data['stats'] )
+                            instance['status']  = prog_data['status'].capitalize!
                             iter.return( instance )
                         }
                     else
-                        @settings.instances.connect( instance['helpers']['master'] ).framework.progress_data {
+                        @settings.instances.connect( instance['helpers']['master'] ).framework.progress_data(
+                            :messages => false,
+                            :issues   => false
+                        ) {
                             |prog_data|
                             prog_data['instances'].each {
                                 |insdat|
                                  if insdat['url'] == instance['url']
-                                    instance['status'] = insdat['status'] || ''
-                                    instance['status'].capitalize!
-                                    iter.return( instance )
+                                     instance.merge!( insdat )
+                                     instance['status'].capitalize!
+                                     iter.return( instance )
                                 end
                             }
                         }
                     end
                 }.compact
             }
-
-            ap '3'
-
 
             block.call( sorted_stats )
         end

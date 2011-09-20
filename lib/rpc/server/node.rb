@@ -60,9 +60,12 @@ class Node
         if neighbour = @opts.neighbour
             add_neighbour( neighbour )
 
-            get_peers( neighbour ).each {
-                |url|
-                @neighbours << url if url != @opts.datastore[:dispatcher_url]
+            get_peers( neighbour ) {
+                |urls|
+                urls.each {
+                    |url|
+                    @neighbours << url if url != @opts.datastore[:dispatcher_url]
+                }
             }
 
             begin
@@ -272,7 +275,8 @@ class Node
     end
 
     def connect_to_peer( url )
-        Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        @conns ||= {}
+        @conns[url] ||= Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
 end

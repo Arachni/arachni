@@ -43,33 +43,24 @@ class InstanceManager
     # @return   [Arachni::RPC::Client::Instance]
     #
     def connect( url, session = nil, token = nil )
-        begin
+        #
+        # Sync up the session authentication tokens with the ones in the
+        # class variables.
+        #
+        # This will allow users to still connect to instances even if they
+        # shutdown the WebUI or remove their cookies.
+        #
+        @@tokens ||= {}
+        session['tokens'] ||= {} if session
+        @@tokens[url] = token if token
 
-            #
-            # Sync up the session authentication tokens with the ones in the
-            # class variables.
-            #
-            # This will allow users to still connect to instances even if they
-            # shutdown the WebUI or removed their cookies.
-            #
+        session['tokens'].merge!( @@tokens ) if session
+        @@tokens.merge!( session['tokens'] ) if session
+        session['tokens'].merge!( @@tokens ) if session
 
-            k = remove_proto( url )
-            @@tokens ||= {}
-            session['tokens'] ||= {} if session
-            @@tokens[k] = token if token
+        tmp_token = session ? session['tokens'][url] : @@tokens[url]
 
-            session['tokens'].merge!( @@tokens ) if session
-            @@tokens.merge!( session['tokens'] ) if session
-            session['tokens'].merge!( @@tokens ) if session
-
-            tmp_token = session ? session['tokens'][k] : @@tokens[k]
-
-            return Arachni::RPC::Client::Instance.new( @opts, url, tmp_token )
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            raise "Instance at #{url} has shutdown."
-        end
+        Arachni::RPC::Client::Instance.new( @opts, url, tmp_token )
     end
 
 end

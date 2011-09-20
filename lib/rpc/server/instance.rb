@@ -91,25 +91,20 @@ class Instance
     # Makes the server go bye-bye...Lights out!
     #
     def shutdown
+        print_status( 'Shutting down...' )
+
+        t = []
         @framework.instances.each {
             |instance|
-
-            3.times {
-                begin
-                    @framework.connect_to_instance( instance ).service.shutdown!
-                    break
-                rescue Exception => e
-                    ap e
-                    ap e.backtrace
-
-                    @framework.connect_to_instance( instance ).service.shutdown!
-                end
+            # Don't know why but this works better than EM's stuff
+            t << Thread.new {
+                @framework.connect_to_instance( instance ).service.shutdown!
             }
         }
 
-        print_status( 'Shutting down...' )
+        t.join
+
         @server.shutdown
-        print_status( 'Done.' )
         return true
     end
     alias :shutdown! :shutdown
@@ -172,6 +167,12 @@ class Instance
     # It also prepares all the RPC handlers.
     #
     def set_handlers
+        @server.add_async_check {
+            |method|
+            # methods that expect a block are async
+            method.parameters.flatten.include?( :block )
+        }
+
         @server.add_handler( "service",   self )
         @server.add_handler( "framework", @framework )
         @server.add_handler( "opts",      @framework.opts )

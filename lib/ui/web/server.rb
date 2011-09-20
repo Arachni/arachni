@@ -242,11 +242,22 @@ class Server < Sinatra::Base
     end
 
     def show( page, layout = true )
-        if page == :dispatchers
-            ensure_dispatcher
-            erb :dispatchers, { :layout => true }, :stats => dispatcher_stats
-        else
-            erb page.to_sym, { :layout => layout }
+
+        case page
+            when :dispatchers
+                ensure_dispatcher
+                dispatcher.stats {
+                    |stats|
+                    erb :dispatchers
+                }
+
+            when :home
+                dispatchers.stats {
+                    |stats|
+                    body erb page, { :layout => true }, :stats => stats
+                }
+            else
+                erb page.to_sym, { :layout => layout }
         end
     end
 
@@ -449,6 +460,8 @@ class Server < Sinatra::Base
     # Makes sure that all systems are go and populates the session with default values
     #
     def prep_session
+        session[:flash] = {}
+
         ensure_dispatcher
 
         session['opts'] ||= {}
@@ -468,20 +481,20 @@ class Server < Sinatra::Base
 
 
         #
-        # Garbage collector, zombie killer. Reaps idle processes every 5 seconds.
+        # Garbage collector, zombie killer. Reaps idle processes every 60 seconds.
         #
-        @@reaper ||= Thread.new {
-            while( true )
-                shutdown_zombies
-                ::IO::select( nil, nil, nil, 5 )
-            end
-        }
-
+        ::EM.add_periodic_timer( 60 ){ ::EM.defer { shutdown_zombies } }
     end
 
-    def async_redirect( location )
+    def async_redirect( location, opts = {} )
         response.status = 302
+
+        if ( flash = opts[:flash] ) && !flash.empty?
+            location += "?#{flash.keys[0]}=#{URI.encode( flash.values[0] )}"
+        end
+
         response.headers['Location'] = location
+
         body ''
     end
 
@@ -504,18 +517,13 @@ class Server < Sinatra::Base
     # @param    [Arachni::RPC::Client::Instance]   arachni
     #
     def save_and_shutdown( arachni, &block )
-        begin
-            arachni.framework.clean_up!{
-                arachni.framework.auditstore {
-                    |auditstore|
-                    report_path = reports.save( auditstore )
-                    arachni.service.shutdown!{ block.call( report_path ) }
-                }
+        arachni.framework.clean_up!{
+            arachni.framework.auditstore {
+                |auditstore|
+                report_path = reports.save( auditstore )
+                arachni.service.shutdown!{ block.call( report_path ) }
             }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
+        }
     end
 
     #
@@ -524,43 +532,18 @@ class Server < Sinatra::Base
     def shutdown_all( url, &block )
         log.dispatcher_global_shutdown( env, url )
 
-        ap url
+        dispatchers.connect( url ).stats {
+            |stats|
+            stats['running_jobs'].each {
+                |instance|
 
-        dispatcher.stats {
-            |d_stats|
-
-            d_stats.each_pair {
-                |d_url, stats|
-
-                next if d_url != url
-                EM.synchrony do
-
-                    EM::Synchrony::Iterator.new( stats['running_jobs'] ).each {
-                        |instance|
-
-                        next if job['helpers']['rank'] == 'slave'
-                        # begin
-                            save_and_shutdown( instances.connect( instance['url'], session ) ){
-                                log.instance_shutdown( env, instance['url'] )
-                                iter.next
-                            }
-                        # rescue
-                            # begin
-                                # instances.connect( instance['url'], session ).service.shutdown!{
-                                    # log.instance_shutdown( env, instance['url'] )
-                                # }
-                            # rescue
-                                # log.instance_fucker_wont_die( env, instance['url'] )
-                                # next
-                            # end
-                        # end
-                    }
-
-                    block.call
-                end
+                next if instance['helpers']['rank'] == 'slave'
+                save_and_shutdown( instances.connect( instance['url'], session ) ){
+                    log.instance_shutdown( env, instance['url'] )
+                }
             }
+            block.call
         }
-
     end
 
     #
@@ -569,34 +552,24 @@ class Server < Sinatra::Base
     # @return    [Integer]  the number of reaped instances
     #
     def shutdown_zombies
-        i = 0
-
-        dispatcher_stats.each_pair {
-            |url, stats|
-
-            stats['running_jobs'].each {
+        dispatchers.jobs {
+            |jobs|
+            jobs.each {
                 |job|
-                next if job['helpers']['rank'] == 'slave'
+                next if job['helpers']['rank'] == 'slave' ||
+                    job['owner'] == HELPER_OWNER
 
-                begin
-                    instance_url = instances.port_to_url( job['port'], url )
-                    arachni = instances.connect( instance_url, session )
-
-                    begin
-                        if !arachni.framework.busy? && !job['owner'] != HELPER_OWNER
-                            save_and_shutdown( arachni )
-                            log.webui_zombie_cleanup( env, instance_url )
-                            i+=1
-                        end
-                    rescue
+                arachni = instances.connect( job['url'], session )
+                arachni.framework.busy? {
+                    |busy|
+                    if !busy
+                        save_and_shutdown( arachni ){
+                            log.webui_zombie_cleanup( env, job['url'] )
+                        }
                     end
-
-                rescue
-                end
+                }
             }
         }
-
-        return i
     end
 
     aget "/" do
@@ -667,9 +640,7 @@ class Server < Sinatra::Base
     # shuts down all instances
     #
     apost "/dispatchers/:url/shutdown_all" do |url|
-        ap 'shutdown_all'
         shutdown_all( url ){
-            ap url
             async_redirect '/dispatchers'
         }
     end
@@ -687,20 +658,16 @@ class Server < Sinatra::Base
         end
 
         if !params['url'] || params['url'].empty?
-            flash[:err] = "URL cannot be empty."
-            show :home
+            async_redirect '/', :flash => { :err => "URL cannot be empty." }
         elsif !valid
-            flash[:err] = "Invalid URL."
-            show :home
+            async_redirect '/', :flash => { :err => "Invalid URL." }
         elsif !params['dispatcher'] || params['dispatcher'].empty?
-            flash[:err] = "Please select a Dispatcher."
-            show :home
-        elsif params['high_performance'] &&
-            dispatchers.connect( params['dispatcher'] ).node.neighbours.empty?
-            flash[:err] = "The selected Dispatcher can't be used " +
-                "in High Performance mode because it has no neighbours " +
-                "(i.e. is not pat of any Grid)."
-            show :home
+            async_redirect '/', :flash => { :err => "Please select a Dispatcher." }
+        # elsif params['high_performance'] && neighbours.empty?
+            # msg = "The selected Dispatcher can't be used " +
+                # "in High Performance mode because it has no neighbours " +
+                # "(i.e. is not pat of any Grid)."
+            # async_redirect '/', :flash => { :err => msg }
         else
 
             session['opts']['settings']['url'] = params[:url]
@@ -829,7 +796,7 @@ class Server < Sinatra::Base
                 @@output_streams ||= {}
                 @@output_streams[params[:url]] = OutputStream.new( prog['messages'], 38 )
                 output['messages'] = { 'data' => @@output_streams[params[:url]].format }
-                output['issues'] = { 'data' => erb( :output_results, { :layout => false }, :issues => YAML.load( prog['issues'] ) ) }
+                output['issues'] = { 'data' => erb( :output_results, { :layout => false }, :issues => prog['issues'] ) }
 
                 output['stats'] = prog['stats'].dup
 
@@ -842,7 +809,6 @@ class Server < Sinatra::Base
                 end
 
                 output['stats']['instances'] = prog['instances'].dup
-
                 body output.to_json
             }
         rescue Exception => e
@@ -863,13 +829,13 @@ class Server < Sinatra::Base
             instances.connect( params[:url], session ).framework.pause!{
                 |paused|
                 log.instance_paused( env, params[:url] )
-                flash.now[:notice] = "Instance at #{params[:url]} will pause as soon as the current page is audited."
+                msg = "Instance at #{params[:url]} will pause as soon as the current page is audited."
 
-                async_redirect redir
+                async_redirect redir, :flash => { :notice => msg }
             }
         rescue
-            flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir
+            msg = "Instance at #{params[:url]} has been shutdown."
+            async_redirect redir, :flash => { :notice => msg }
         end
 
     end
@@ -884,12 +850,12 @@ class Server < Sinatra::Base
 
                 log.instance_resumed( env, params[:url] )
 
-                flash.now[:notice] = "Instance at #{params[:url]} resumes."
-                async_redirect redir
+                msg = "Instance at #{params[:url]} resumes."
+                async_redirect redir, :flash => { :notice => msg }
             }
         rescue
-            flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir
+            msg = "Instance at #{params[:url]} has been shutdown."
+            async_redirect redir, :flash => { :notice => msg }
         end
     end
 
@@ -902,13 +868,12 @@ class Server < Sinatra::Base
             save_and_shutdown( instances.connect( params[:url], session ) ){
                 log.instance_shutdown( env, params[:url] )
 
-                flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-
-                async_redirect redir
+                msg = "Instance at #{params[:url]} has been shutdown."
+                async_redirect redir, :flash => { :notice => msg }
             }
         rescue
-            flash.now[:notice] = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir
+            msg = "Instance at #{params[:url]} has been shutdown."
+            async_redirect redir, :flash => { :notice => msg }
         end
 
     end

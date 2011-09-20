@@ -61,6 +61,7 @@
                 <th>Port</th>
                 <th>Owner</th>
                 <th>State</th>
+                <th>Progress</th>
                 <th>Start time (Server-side)</th>
                 <th>Current time (Server-side)</th>
                 <th>Runtime</th>
@@ -77,6 +78,7 @@
                 <td><%=escape( job['owner'] )%></td>
 
                 <td><%=job['status']%></td>
+                <td><%=job['progress']%>%</td>
 
                 <td><%=job['starttime'].to_time%></td>
                 <td><%=job['currtime'].to_time%></td>
@@ -89,26 +91,26 @@
 
                         <% if !job_is_slave?( job ) %>
 
-                            <% status = job['status'].downcase || '' %>
-                            <form action="/instance/<%=job['url']%>" method="get" target="_blank">
+                            <% status = ( job['status'] ? job['status'].downcase : '' ) %>
+                            <form style="display: inline" action="/instance/<%=job['url']%>" method="get" target="_blank">
                                 <input type="submit" value="Attach" />
                             </form>
 
                             <%if status == 'busy' %>
-                            <form action="/dispatchers/<%=job['url']%>/pause" method="post">
+                            <form style="display: inline" action="/dispatchers/<%=job['url']%>/pause" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Pause" />
                             </form>
                             <%end%>
 
                             <%if status == 'paused' %>
-                            <form action="/dispatchers/<%=job['url']%>/resume" method="post">
+                            <form style="display: inline" action="/dispatchers/<%=job['url']%>/resume" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Resume" />
                             </form>
                             <% end %>
 
-                            <form action="/dispatchers/<%=job['url']%>/shutdown" method="post">
+                            <form style="display: inline" action="/dispatchers/<%=job['url']%>/shutdown" method="post">
                                 <%= csrf_tag %>
                                 <input type="submit" value="Shutdown" />
                             </form>

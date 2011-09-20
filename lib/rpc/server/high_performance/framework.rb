@@ -8,6 +8,8 @@
 
 =end
 
+require 'em-synchrony'
+
 module Arachni
 
 require Options.instance.dir['lib'] + 'rpc/server/framework'
@@ -38,16 +40,13 @@ class Framework
         # this is the local framework
         @framework = Arachni::RPC::Server::Framework.new( opts )
 
-        @opts = @framework.opts
+        @opts    = @framework.opts
         @modules = @framework.modules
         @plugins = @framework.plugins
 
         # holds all running instances
         @instances = []
 
-        # since we're gonna block and poll while remote instances are running
-        # why not store their state too...
-        @instance_busyness  = {}
         @sitemap = []
         @crawling_done = nil
 
@@ -56,19 +55,28 @@ class Framework
     end
 
     #
-    # @see Arachni::RPC::Server::Framework#abort!
-    #
-    def abort!
-        @job.kill
-        return true
-    end
-
-    #
     # @see Arachni::RPC::Server::Framework#busy?
     #
-    def busy?
-        return false if !@job
-        return @job.alive?
+    def busy?( include_slaves = true, &block )
+        busyness = [ @framework.busy? ]
+
+        if @instances.empty? || !include_slaves
+            block.call( busyness[0] )
+            return
+        end
+
+        ::EM::Iterator.new( @instances, @instances.size ).map( proc {
+            |instance, iter|
+            connect_to_instance( instance ).framework.busy? {
+                |res|
+                iter.return( res )
+            }
+        }, proc {
+            |res|
+            busyness << res
+            busyness.flatten!
+            block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
+        })
     end
 
     #
@@ -129,13 +137,13 @@ class Framework
     # Starts the audit.
     #
     def run
-        Thread.abort_on_exception = true
 
-        # main thread, while this is alive the audit is in progress
-        @job = Thread.new {
+        EventMachine.add_periodic_timer(5) do
+            print "EventMachine::Connection objects: "
+            puts ObjectSpace.each_object( EventMachine::Connection ) {}
+        end
 
-            # holds the threads of all instances individually
-            jobs = []
+        ::EM.defer {
             if high_performance?
 
                 #
@@ -169,59 +177,15 @@ class Framework
 
                 chunks.each_with_index {
                     |chunk, i|
-                    begin
-                        # spawn a remote instance and assign a chunk of URLs to it
-                        @instances << spawn( chunk, pref_dispatchers[i] )
-                    rescue Exception => e
-                        ap e
-                        ap e.backtrace
-                    end
-                }
-
-                @instances.each_with_index {
-                    |instance, i|
-
-                    jobs << Thread.new {
-                        instance_conn = connect_to_instance( instance )
-                        instance_conn.framework.run
-
-                        # we need to check up on remote instances regularly
-                        # and block in the thread while it is running/busy.
-                        break_loop = false
-                        while( !break_loop )
-                            begin
-                                ap 'RUNNING SLAVE: ' + instance['url']
-                                sleep( 10 )
-                                @instance_busyness[instance['url']] = instance_conn.framework.busy?
-                                # break_loop = !@instance_busyness[instance['url']]
-                            rescue Exception => e
-                                ap e
-                                ap e.backtrace
-                            end
-                        end
-                        ap 'FINISHED SLAVE: ' + instance['url']
+                    # spawn a remote instance and assign a chunk of URLs to it
+                    spawn( chunk, pref_dispatchers[i] ) {
+                        |inst|
+                        @instances << inst
                     }
                 }
-
             end
 
-            # add the local instances in the jobs too and block while it's running
-            jobs << Thread.new {
-                @framework.run
-                sleep( 10 )
-
-                while( @framework.busy? )
-                    ap 'RUNNING MASTER'
-                    sleep( 10 )
-                end
-
-                ap 'FINISHED MASTER'
-            }
-
-            # block until all jobs have exited
-            jobs.each { |job| job.join }
-
-
+            @framework.run
         }
 
         return true
@@ -230,51 +194,45 @@ class Framework
     #
     # @see Arachni::RPC::Server::Framework#lsmod
     #
-    def lsmod
-        @framework.lsmod
+    def lsmod( &block )
+        block.call( @framework.lsmod )
     end
 
     #
     # @see Arachni::RPC::Server::Framework#lsplug
     #
-    def lsplug
-        @framework.lsplug
+    def lsplug( &block )
+        block.call( @framework.lsplug )
     end
 
     #
     # If the scan needs to be aborted abruptly this method takes care of
     # any unfinished business (like running plug-ins).
     #
-    def clean_up!
-        begin
-            @framework.clean_up!
-            plugin_results = @framework.get_plugin_store
+    def clean_up!( &block )
+        @framework.clean_up!( true )
+        plugin_results = @framework.get_plugin_store
 
-            jobs = []
-            results_queue = Queue.new
-            @instances.each {
-                |instance|
-                jobs << Thread.new {
-                    instance_conn = connect_to_instance( instance )
-                    instance_conn.framework.clean_up!
-                    results_queue << instance_conn.framework.get_plugin_store
-                }
-            }
-
-            jobs.each { |job| job.join }
-
-            while( !results_queue.empty? && result = results_queue.pop )
-                plugin_results.merge!( YAML::load( result ) )
-            end
-
-
-            @framework.set_plugin_store( plugin_results )
-        rescue Exception => e
-            ap e
-            ap e.backtrace
+        if @instances.empty?
+            block.call if block_given?
+            return
         end
 
-        return true
+        ::EM::Iterator.new( @instances, @instances.size ).map( proc {
+            |instance, iter|
+            instance_conn = connect_to_instance( instance )
+
+            instance_conn.framework.clean_up! {
+                iter.return( instance_conn.framework.get_plugin_store )
+            }
+
+        }, proc {
+            |res|
+            while( result = res.pop )
+                plugin_results.merge!( result )
+            end
+            block.call
+        })
     end
 
     #
@@ -282,15 +240,10 @@ class Framework
     #
     def pause!
         @framework.pause!
-
-        jobs = []
-        @instances.each {
-            |instance|
-            jobs << Thread.new {
-                connect_to_instance( instance ).framework.pause!
-            }
+        ::EM::Iterator.new( @instances, @instances.size ).each {
+            |instance, iter|
+            connect_to_instance( instance ).framework.pause!{ iter.next }
         }
-        jobs.each { |job| job.join }
         return true
     end
 
@@ -299,20 +252,15 @@ class Framework
     #
     def resume!
         @framework.resume!
-
-        jobs = []
-        @instances.each {
-            |instance|
-            jobs << Thread.new {
-                connect_to_instance( instance ).framework.resume!
-            }
+        ::EM::Iterator.new( @instances, @instances.size ).each {
+            |instance, iter|
+            connect_to_instance( instance ).framework.resume!{ iter.next }
         }
-        jobs.each { |job| job.join }
         return true
     end
 
     def get_plugin_store
-        @framework.get_plugin_store.to_yaml
+        @framework.get_plugin_store
     end
 
     #
@@ -421,86 +369,96 @@ class Framework
     #
     # @return   [Hash]
     #
-    def progress_data( &block )
+    def progress_data( opts= {}, &block )
+
+        if opts[:messages].nil?
+            include_messages = true
+        else
+            include_messages = opts[:messages]
+        end
+
+        if opts[:slaves].nil?
+            include_slaves = true
+        else
+            include_slaves = opts[:slaves]
+        end
+
+        if opts[:issues].nil?
+            include_issues = true
+        else
+            include_issues = opts[:issues]
+        end
+
         data = {
-            'messages'  => @framework.flush_buffer,
-            'issues'    => YAML::load( issues ),
             'stats'     => {},
             'status'    => status,
-            'instances' => {}
+            'busy'      => @framework.busy?
         }
 
+        data['messages']  = @framework.flush_buffer if include_messages
+        data['issues']    = YAML::load( issues ) if include_issues
+        data['instances'] = {} if include_slaves
+
         stats = []
-        begin
-            stat_hash = {}
-            @framework.stats( true, true ).each {
-                |k, v|
-                stat_hash[k.to_s] = v
+        stat_hash = {}
+        @framework.stats( true, true ).each {
+            |k, v|
+            stat_hash[k.to_s] = v
+        }
+
+        if @framework.opts.datastore[:dispatcher_url] && include_slaves
+            data['instances'][self_url] = stat_hash.dup
+            data['instances'][self_url]['url'] = self_url
+            data['instances'][self_url]['status'] = status
+        end
+
+        stats << stat_hash
+
+        if @instances.empty? || !include_slaves
+            data['stats'] = merge_stats( stats )
+            data['instances'] = data['instances'].values if include_slaves
+            block.call( data )
+            return
+        end
+
+        ::EM::Iterator.new( @instances, 20 ).map( proc {
+            |instance, iter|
+            connect_to_instance( instance ).framework.progress_data( opts ) {
+                |tmp|
+                tmp['url'] = instance['url']
+                iter.return( tmp )
+            }
+        }, proc {
+            |slave_data|
+
+            stats = []
+            slave_data.each {
+                |slave|
+                data['messages']  |= slave['messages'] if include_messages
+                data['issues']    |= slave['issues'] if include_issues
+
+                if include_slaves
+                    url = slave['url']
+                    data['instances'][url]           = slave['stats']
+                    data['instances'][url]['url']    = url
+                    data['instances'][url]['status'] = slave['status']
+                end
+
+                stats << slave['stats']
             }
 
-            if @framework.opts.datastore[:dispatcher_url]
-                d_url = @framework.opts.datastore[:dispatcher_url]
-                d_port = d_url.split( ':', 2 )[1]
-                self_url = d_url.gsub( d_port, @framework.opts.rpc_port.to_s )
-
-                data['instances'][self_url] = stat_hash.dup
-                data['instances'][self_url]['url'] = self_url
-                data['instances'][self_url]['status'] = status
+            if include_slaves
+                sorted_data_instances = {}
+                data['instances'].keys.sort.each {
+                    |url|
+                    sorted_data_instances[url] = data['instances'][url]
+                }
+                data['instances'] = sorted_data_instances.values
             end
 
-            stats << stat_hash
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
-
-        ins_data = []
-        begin
-            jobs = []
-            @instances.each_with_index {
-                |instance, i|
-                jobs << Thread.new {
-                    begin
-                        tmp = connect_to_instance( instance ).framework.progress_data
-                        url = instance['url']
-
-                        data['instances'][url] = tmp['stats']
-                        data['instances'][url]['url'] = url
-                        data['instances'][url]['status'] = tmp['status']
-
-                        ins_data << tmp.deep_clone
-                    rescue Exception => e
-                        ap e
-                        ap e.backtrace
-                    end
-                }
-            }
-
-            jobs.each { |job| job.join }
-
-            sorted_data_instances = {}
-            data['instances'].keys.sort.each {
-                |url|
-                sorted_data_instances[url] = data['instances'][url]
-            }
-            data['instances'] = sorted_data_instances.values
-
-            ins_data.each {
-                |prog_data|
-                data['messages'] |= prog_data['messages']
-                data['issues'] |= YAML::load( prog_data['issues'] )
-                stats << prog_data['stats']
-            }
-
             data['stats'] = merge_stats( stats )
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
-
-        data['issues'] = YAML.dump( data['issues'] )
-
-        return data
+            block.call( data )
+        })
     end
 
     #
@@ -542,7 +500,6 @@ class Framework
     #
     def report
         exception_jail {
-            return false if !@job
             store =  @framework.audit_store( true )
             store.framework = ''
             return YAML.dump( store.to_h.dup )
@@ -557,7 +514,6 @@ class Framework
     #
     def auditstore
         begin
-            return false if !@job
             store =  @framework.audit_store( true )
             store.framework = nil
             return YAML.dump( store )
@@ -582,12 +538,7 @@ class Framework
                 |issue|
 
                 tmp_issue = issue.deep_clone
-
-                if !issue.variations[0]['regexp_match']
-                    tmp_issue.variations = []
-                else
-                    tmp_issue.variations = [tmp_issue.variations.pop]
-                end
+                tmp_issue.variations = []
 
                 data << tmp_issue
             }
@@ -608,9 +559,12 @@ class Framework
     #                                   In subsequent calls the 'token' can be omitted.
     #
     def connect_to_instance( instance )
-        @tokens ||= {}
+        @tokens  ||= {}
+        @i_conns ||= {}
+
         @tokens[instance['url']] = instance['token'] if instance['token']
-        return Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+        return @i_conns[instance['url']] ||=
+            Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
 
@@ -740,27 +694,23 @@ class Framework
         return pref_dispatcher_urls
     end
 
-    def spawn( urls, prefered_dispatcher )
+    def spawn( urls, prefered_dispatcher, &block )
 
         opts = @framework.opts.to_h.deep_clone
-
-        self_url = URI( opts['datastore'][:dispatcher_url] )
-        self_url.port = @framework.opts.rpc_port
-        self_url = self_url.to_s
 
         self_token = @opts.datastore[:token]
 
         pref_dispatcher = connect_to_dispatcher( prefered_dispatcher )
 
-        instance_hash = pref_dispatcher.dispatch( self_url, {
+        pref_dispatcher.dispatch( self_url, {
             'rank'   => 'slave',
             'target' => @opts.url.to_s,
             'master' => self_url
-        })
+        }) {
+            |instance_hash|
 
-        instance = connect_to_instance( instance_hash )
+            instance = connect_to_instance( instance_hash )
 
-        begin
             opts['url'] = opts['url'].to_s
             opts['focus_scan_on'] = urls
 
@@ -782,25 +732,39 @@ class Framework
                 opts['include'][i] = v.source
             }
 
-            instance.opts.set( opts )
-            instance.framework.set_master( self_url, self_token )
-            instance.modules.load( opts['mods'] )
-            instance.plugins.load( opts['plugins'] )
-            return { 'url' => instance_hash['url'], 'token' => instance_hash['token'] }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
+            instance.opts.set( opts ){
+                instance.framework.set_master( self_url, self_token ){
+                    instance.modules.load( opts['mods'] ) {
+                        instance.plugins.load( opts['plugins'] ) {
+                            instance.framework.run {
+                                block.call( {
+                                    'url' => instance_hash['url'],
+                                    'token' => instance_hash['token'] }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     end
 
+    def self_url
+        @self_url ||= nil
+        return @self_url if @self_url
 
+        port = @framework.opts.rpc_port
+        d_port = @framework.opts.datastore[:dispatcher_url].split( ':', 2 )[1]
+        @self_url = @framework.opts.datastore[:dispatcher_url].gsub( d_port, port.to_s )
+    end
 
     def dispatcher
-        Arachni::RPC::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+       connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 
     def connect_to_dispatcher( url )
-        Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        @d_conns ||= {}
+        @d_conns[url] ||= Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
     def merge_stats( stats )
