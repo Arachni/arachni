@@ -402,20 +402,19 @@ class Server < Sinatra::Base
 
     def helper_instance( &block )
         raise( "This method requires a block!" ) if !block_given?
-        begin
-            dispatchers.first_alive{
-                |dispatcher|
+
+        dispatchers.first_alive{
+            |dispatcher|
+            if !dispatcher
+                async_redirect '/dispatchers/edit'
+            else
                 dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
                     |instance|
                     @@arachni = instances.connect( instance['url'], session, instance['token'] )
                     block.call( @@arachni )
                 }
-            }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            async_redirect '/dispatchers/edit'
-        end
+            end
+        }
     end
 
     def component_cache_filled?
