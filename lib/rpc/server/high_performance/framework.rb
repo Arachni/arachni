@@ -138,10 +138,10 @@ class Framework
     #
     def run
 
-        EventMachine.add_periodic_timer(5) do
-            print "EventMachine::Connection objects: "
-            puts ObjectSpace.each_object( EventMachine::Connection ) {}
-        end
+        # EventMachine.add_periodic_timer(5) do
+            # print "EventMachine::Connection objects: "
+            # puts ObjectSpace.each_object( EventMachine::Connection ) {}
+        # end
 
         ::EM.defer {
             if high_performance?
