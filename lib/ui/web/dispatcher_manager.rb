@@ -97,14 +97,19 @@ class DispatcherManager
 
     def first_alive( &block )
         raise( "This method requires a block!" ) if !block_given?
-        EM.synchrony do
-            EM::Synchrony::Iterator.new( all ).map {
-                |dispatcher, iter|
-                alive?( dispatcher.url ){
-                    |bool|
-                    block.call( dispatcher ) if bool
+
+        if !all.empty?
+            EM.synchrony do
+                EM::Synchrony::Iterator.new( all ).map {
+                    |dispatcher, iter|
+                    alive?( dispatcher.url ){
+                        |bool|
+                        block.call( dispatcher ) if bool
+                    }
                 }
-            }
+            end
+        else
+            block.call( false )
         end
     end
 
