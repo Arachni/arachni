@@ -60,7 +60,7 @@ class DispatcherManager
             connect( url ).node.neighbours_with_info {
                 |neighbours|
                 neighbours.each {
-                |node|
+                    |node|
                     Dispatcher.first_or_create( :url => node['url'] )
                 }
             }
