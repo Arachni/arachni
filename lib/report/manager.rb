@@ -14,16 +14,6 @@ module Arachni
 # The namespace under which all modules exist
 #
 module Reports
-
-    #
-    # Resets the namespace unloading all module classes
-    #
-    def self.reset
-        constants.each {
-            |const|
-            remove_const( const )
-        }
-    end
 end
 
 module Report
@@ -77,10 +67,6 @@ class Manager < Arachni::ComponentManager
         return paths.reject { |path| helper?( path ) }
     end
 
-
-    def self.reset
-        Arachni::Reports.reset
-    end
 
     def extension
         return EXTENSION

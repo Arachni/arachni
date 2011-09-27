@@ -32,18 +32,6 @@ require 'pp'
 
 module Arachni
 
-    #
-    # Resets the Framework providing a clean slate.
-    #
-    # This is useful to user interfaces that require the framework to be reused.
-    #
-    def self.reset
-        Element::Auditable.reset
-        Module::Manager.reset
-        Report::Manager.reset
-        Arachni::HTTP.instance.reset
-    end
-
 #
 # Arachni::Framework class
 #

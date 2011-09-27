@@ -15,16 +15,6 @@ module Arachni
 # The namespace under which all modules exist
 #
 module Modules
-
-    #
-    # Resets the namespace unloading all module classes
-    #
-    def self.reset
-        constants.each {
-            |const|
-            remove_const( const )
-        }
-    end
 end
 
 module Module
@@ -115,11 +105,6 @@ class Manager < Arachni::ComponentManager
 
     def results
         @@results
-    end
-
-    def self.reset
-        @@results.clear
-        Arachni::Modules.reset
     end
 
 end

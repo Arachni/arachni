@@ -14,16 +14,6 @@ module Arachni
 # The namespace under which all plugins exist
 #
 module Plugins
-
-    #
-    # Resets the namespace unloading all module classes
-    #
-    def self.reset
-        constants.each {
-            |const|
-            remove_const( const )
-        }
-    end
 end
 
 module Plugin
