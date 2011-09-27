@@ -9,7 +9,7 @@
 =end
 
 require 'eventmachine'
-require 'sinatra/synchrony'
+require 'em-synchrony'
 require 'sinatra/base'
 require 'sinatra/async'
 require "rack/csrf"
