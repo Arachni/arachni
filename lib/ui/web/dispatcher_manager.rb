@@ -59,7 +59,7 @@ class DispatcherManager
             |neighbours|
             neighbours.each {
                 |node|
-                Dispatcher.first_or_create( :url => url )
+                Dispatcher.first_or_create( :url => node )
             }
         }
     end
