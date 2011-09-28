@@ -639,7 +639,7 @@ class Server < Sinatra::Base
         begin
             dispatchers.connect( url ).log {
                 |log|
-                json = { 'log' => log }.to_json
+                json = { 'log' => escape( log ) }.to_json
                 body json
             }
         rescue Exception => e
