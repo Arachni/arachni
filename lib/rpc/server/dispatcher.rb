@@ -67,6 +67,12 @@ class Dispatcher
 
         @server = Base.new( @opts )
 
+        @server.add_async_check {
+            |method|
+            # methods that expect a block are async
+            method.parameters.flatten.include?( :block )
+        }
+
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
         @opts.datastore[:dispatcher_url] = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
@@ -84,6 +90,8 @@ class Dispatcher
         @jobs = []
         @pool = Queue.new
 
+        @node = nil
+
         print_status( 'Warming up the pool...' )
         prep_pool
         print_status( 'Done.' )
@@ -99,7 +107,7 @@ class Dispatcher
     def run
         print_status( 'Starting the server...' )
         t = Thread.new { @server.run }
-        sleep( 2 )
+        # sleep( 2 )
         @node = Node.new( @opts, @logfile )
         @server.add_handler( "node", @node )
         t.join
@@ -184,12 +192,18 @@ class Dispatcher
         running  = cjobs.reject{ |job| job['proc'].empty? }
         finished = cjobs - running
 
-        return {
+        stats = {
             'running_jobs'    => running,
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
             'curr_pool_size'  => @pool.size
-        }.merge( 'node' => @node.info, 'neighbours' => @node.neighbours )
+        }
+
+        if @node
+            stats.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
+        end
+
+        return stats
     end
 
     def log
@@ -197,7 +211,13 @@ class Dispatcher
     end
 
     def proc_info
-        proc( Process.pid ).merge( 'node' => @node.info )
+        p = proc( Process.pid )
+
+        if @node
+            p.merge!( 'node' => @node.info )
+        end
+
+        return p
     end
 
     #
