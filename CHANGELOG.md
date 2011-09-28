@@ -46,7 +46,6 @@
       - Datamapper SQLite adapter => 1.1.0
       - Net-SSH => 2.2.1
    - Removed
-      - Awesome Print
       - JSON (Provided by DataMapper)
 
 ## Version 0.3 _(July 26, 2011)_
