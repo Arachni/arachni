@@ -32,6 +32,8 @@ module HighPerformance
 #
 class Framework
 
+    MAX_CONCURRENCY = 20
+
     attr_reader :instances
 
     include Arachni::Module::Utilities
@@ -165,22 +167,24 @@ class Framework
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
-                pref_dispatchers = prefered_dispatchers()
+                prefered_dispatchers {
+                    |pref_dispatchers|
 
-                # decide in how many chunks to split the sitemap
-                chunk_cnt = pref_dispatchers.size + 1
+                    # decide in how many chunks to split the sitemap
+                    chunk_cnt = pref_dispatchers.size + 1
 
-                chunks = @sitemap.chunk( chunk_cnt )
+                    chunks = @sitemap.chunk( chunk_cnt )
 
-                # set the URLs to be audited by the local instance
-                @framework.opts.focus_scan_on = chunks.pop
+                    # set the URLs to be audited by the local instance
+                    @framework.opts.focus_scan_on = chunks.pop
 
-                chunks.each_with_index {
-                    |chunk, i|
-                    # spawn a remote instance and assign a chunk of URLs to it
-                    spawn( chunk, pref_dispatchers[i] ) {
-                        |inst|
-                        @instances << inst
+                    chunks.each_with_index {
+                        |chunk, i|
+                        # spawn a remote instance and assign a chunk of URLs to it
+                        spawn( chunk, pref_dispatchers[i] ) {
+                            |inst|
+                            @instances << inst
+                        }
                     }
                 }
             end
@@ -322,7 +326,7 @@ class Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, 20 ).map( proc {
+        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
             |instance, iter|
             connect_to_instance( instance ).service.output {
                 |out|
@@ -420,7 +424,7 @@ class Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, 20 ).map( proc {
+        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
             |instance, iter|
             connect_to_instance( instance ).framework.progress_data( opts ) {
                 |tmp|
@@ -638,59 +642,45 @@ class Framework
     private
 
     def report_issue_to_master( results )
-        tries = 0
-        begin
-            @master.framework.register_issue( results.to_yaml )
-        rescue Errno::EPIPE, Timeout::Error, EOFError
-            ap 'RETRYING: '+ tries.to_s
-            tries += 1
-            retry if tries < 5
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
+        @master.framework.register_issue( results.to_yaml ){}
     end
 
-    def prefered_dispatchers
+    def prefered_dispatchers( &block )
         @used_pipe_ids ||= []
-        @used_pipe_ids << dispatcher.node.info['pipe_id']
 
-        dispatchers = nil
-        3.times {
-            begin
-                dispatchers = dispatcher.node.neighbours_with_info
-                break
-            rescue Exception => e
-                ap e
-                ap e.backtrace
-            end
-        }
+        dispatcher.node.info {
+            |info|
 
-        node_q = Queue.new
-        jobs = []
-        dispatchers.each {
-            |node|
-            jobs << Thread.new {
-                begin
-                    node_q << node if connect_to_dispatcher( node['url'] ).alive?
-                rescue Exception => e
-                    ap e
-                    ap e.backtrace
-                end
+            @used_pipe_ids << info['pipe_id']
+            dispatcher.node.neighbours_with_info {
+                |dispatchers|
+
+                ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map( proc {
+                    |dispatcher, iter|
+                    connect_to_dispatcher( dispatcher['url'] ).alive? {
+                        |res|
+                        if !res.rpc_exception?
+                            iter.return( dispatcher )
+                        else
+                            iter.return( nil )
+                        end
+                    }
+                }, proc {
+                    |nodes|
+
+                    pref_dispatcher_urls = []
+                    nodes.each {
+                        |node|
+                        if !@used_pipe_ids.include?( node['pipe_id'] )
+                            @used_pipe_ids << node['pipe_id']
+                            pref_dispatcher_urls << node['url']
+                        end
+                    }
+
+                    block.call( pref_dispatcher_urls )
+                })
             }
         }
-
-        jobs.each { |job| job.join }
-
-        pref_dispatcher_urls = []
-        while( !node_q.empty? && node = node_q.pop )
-            if !@used_pipe_ids.include?( node['pipe_id'] )
-                @used_pipe_ids << node['pipe_id']
-                pref_dispatcher_urls << node['url']
-            end
-        end
-
-        return pref_dispatcher_urls
     end
 
     def spawn( urls, prefered_dispatcher, &block )
