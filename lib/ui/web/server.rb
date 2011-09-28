@@ -403,9 +403,10 @@ class Server < Sinatra::Base
     def helper_instance( &block )
         raise( "This method requires a block!" ) if !block_given?
 
-        dispatchers.first_alive{
+        dispatchers.first_alive {
             |dispatcher|
             if !dispatcher
+                block.call
                 async_redirect '/dispatchers/edit'
             else
                 dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
@@ -428,26 +429,30 @@ class Server < Sinatra::Base
     def fill_component_cache( &block )
         if !component_cache_filled?
 
-
-            helper_instance{
+            helper_instance {
                 |inst|
 
-                inst.framework.lsmod {
-                    |mods|
+                if !inst
+                    block.call
+                else
 
-                    @@modules = mods.map { |mod| hash_keys_to_str( mod ) }
+                    inst.framework.lsmod {
+                        |mods|
 
-                    inst.framework.lsplug {
-                        |plugs|
+                        @@modules = mods.map { |mod| hash_keys_to_str( mod ) }
 
-                        @@plugins = plugs.map { |plug| hash_keys_to_str( plug ) }
+                        inst.framework.lsplug {
+                            |plugs|
 
-                        # shutdown the helper instance, we got what we wanted
-                        inst.service.shutdown!{
-                            block.call
+                            @@plugins = plugs.map { |plug| hash_keys_to_str( plug ) }
+
+                            # shutdown the helper instance, we got what we wanted
+                            inst.service.shutdown!{
+                                block.call
+                            }
                         }
                     }
-                }
+                end
             }
 
         else
@@ -504,10 +509,14 @@ class Server < Sinatra::Base
     # @return   [Bool]  true if alive, redirect if not
     #
     def ensure_dispatcher
-        dispatchers.first_alive {
-            |dispatcher|
-            async_redirect '/dispatchers/edit' if !dispatcher
-        }
+        if dispatchers.all.empty?
+            async_redirect '/dispatchers/edit'
+        else
+            dispatchers.first_alive {
+                |dispatcher|
+                async_redirect '/dispatchers/edit' if !dispatcher
+            }
+        end
     end
 
     #

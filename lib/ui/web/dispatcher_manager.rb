@@ -105,7 +105,11 @@ class DispatcherManager
                     |dispatcher, iter|
                     alive?( dispatcher.url ){
                         |bool|
-                        block.call( dispatcher ) if bool
+                        if bool
+                            block.call( dispatcher )
+                        else
+                            block.call( false )
+                        end
                     }
                 }
             end
