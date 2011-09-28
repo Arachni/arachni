@@ -97,25 +97,12 @@ class Dispatcher
         print_status( 'Done.' )
 
         print_status( 'Initialization complete.' )
+
+        run
     end
 
     def alive?
         @server.alive?
-    end
-
-    # Starts the dispatcher's server
-    def run
-        print_status( 'Starting the server...' )
-        t = Thread.new { @server.run }
-        # sleep( 2 )
-        @node = Node.new( @opts, @logfile )
-        @server.add_handler( "node", @node )
-        t.join
-    end
-
-    def shutdown
-        print_status( 'Shutting down...' )
-        @server.shutdown
     end
 
     #
@@ -289,6 +276,21 @@ USAGE
 
 
     private
+
+    # Starts the dispatcher's server
+    def run
+        print_status( 'Starting the server...' )
+        t = Thread.new { @server.run }
+        # sleep( 2 )
+        @node = Node.new( @opts, @logfile )
+        @server.add_handler( "node", @node )
+        t.join
+    end
+
+    def shutdown
+        print_status( 'Shutting down...' )
+        @server.shutdown
+    end
 
     #
     # Initializes and updates the pool making sure that the number of
