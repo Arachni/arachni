@@ -44,6 +44,8 @@ class Manager < Arachni::ComponentManager
         @@issue_set  = Set.new
 
         @@do_not_store = false
+
+        @@issue_mutex ||= Mutex.new
     end
 
     def self.on_register_results( &block )
@@ -66,8 +68,11 @@ class Manager < Arachni::ComponentManager
         @@on_register_results.each { |block| block.call( results ) }
         return if @@do_not_store
 
-        @@results |= results
-        results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
+
+        @@issue_mutex.synchronize {
+            @@results |= results
+            results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
+        }
     end
 
     def self.issue_set_id_from_issue( issue )
@@ -84,13 +89,14 @@ class Manager < Arachni::ComponentManager
     end
 
     def self.issue_set
-        @@issue_set
+        @@issue_mutex.synchronize {
+            @@issue_set
+        }
     end
 
     def issue_set
-        @@issue_set
+        self.class.issue_set
     end
-
 
     #
     # Class method
@@ -99,12 +105,14 @@ class Manager < Arachni::ComponentManager
     #
     # @param    [Array]
     #
-    def self.results( )
-        @@results
+    def self.results
+        @@issue_mutex.synchronize {
+            @@results
+        }
     end
 
     def results
-        @@results
+        self.class.results
     end
 
 end
