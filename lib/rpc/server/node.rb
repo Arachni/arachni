@@ -55,7 +55,9 @@ class Node
 
         print_status( 'Initing grid node...' )
 
+        @dead_nodes = []
         @neighbours = Set.new
+        @nodes_info_cache = []
 
         if neighbour = @opts.neighbour
             add_neighbour( neighbour )
@@ -68,23 +70,19 @@ class Node
                 }
             }
 
-            begin
-                peer = connect_to_peer( neighbour )
-                peer.node.add_neighbour( opts.datastore[:dispatcher_url], true )
-            rescue Exception => e
-                ap e
-                print_info( 'Neighbour seems dead: ' + neighbour )
-                remove_neighbour( neighbour )
-                log_updated_neighbours
-            end
+            peer = connect_to_peer( neighbour )
+            peer.node.add_neighbour( opts.datastore[:dispatcher_url], true ){
+                |res|
+                if res.rpc_exception?
+                    print_info( 'Neighbour seems dead: ' + neighbour )
+                    remove_neighbour( neighbour )
+                end
+            }
         end
 
         print_status( 'Node ready.' )
 
         log_updated_neighbours
-        @nodes_info_cache = []
-
-        @dead_nodes = []
 
         ::EM.add_periodic_timer( 60 ) {
             ::EM.defer {
@@ -129,25 +127,36 @@ class Node
         @dead_nodes << node_url
     end
 
-    def neighbours_with_info
+    def neighbours_with_info( &block )
+        raise( "This method requires a block!" ) if !block_given?
+
         @neighbours_cmp = ''
         if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
 
             @neighbours_cmp = neighbours.to_s
 
-            return @nodes_info_cache = neighbours.map {
-                |neighbour|
-                begin
-                    connect_to_peer( neighbour ).node.info
-                rescue Errno::ECONNREFUSED
-                    print_info( 'Neighbour seems dead: ' + neighbour )
-                    remove_neighbour( neighbour )
-                    log_updated_neighbours
-                    nil
-                end
-            }.compact
+            ::EM::Iterator.new( neighbours ).map( proc {
+                |neighbour, iter|
+                connect_to_peer( neighbour ).node.info {
+                    |info|
+
+                    if info.rpc_exception?
+                        print_info( 'Neighbour seems dead: ' + neighbour )
+                        remove_neighbour( neighbour )
+                        log_updated_neighbours
+
+                        iter.return( nil )
+                    else
+                        iter.return( info )
+                    end
+                }
+            }, proc {
+                |nodes|
+                @nodes_info_cache = nodes.compact
+                block.call( @nodes_info_cache )
+            })
         else
-            return @nodes_info_cache
+            block.call( @nodes_info_cache )
         end
     end
 
@@ -174,69 +183,50 @@ class Node
 
     def log_updated_neighbours
         print_info 'Updated neighbours:'
-        neighbours.each {
-            |node|
-            print_info( '---- ' + node )
-        }
-    end
 
-    def ping
-        dead = []
-        jobs = []
-        neighbours.each {
-            |neighbour|
-            jobs << Thread.new {
-                begin
-                    connect_to_peer( neighbour ).alive?
-                rescue Exception
-                    dead << neighbour
-                end
+        if !neighbours.empty?
+            neighbours.each {
+                |node|
+                print_info( '---- ' + node )
             }
-        }
-
-        jobs.each { |job| job.join }
-
-        if dead.size > 0
-            print_status( "Found #{dead.size} dead neighbours:" )
-            dead.each {
-                |stiff|
-                remove_neighbour( stiff )
-                print_info( '---- ' + stiff )
-            }
-
-            log_updated_neighbours
+        else
+            print_info( '<empty>' )
         end
     end
 
-    def check_for_comebacks
-        alive = []
-        jobs = []
-        @dead_nodes.each {
-            |url|
-            jobs << Thread.new {
-                begin
-                    neighbour = connect_to_peer( url )
-                    neighbour.alive?
-                    print_status( 'Dispatcher came back to life: ' + url )
-
-                    neighbours.each {
-                        |node|
-                        begin
-                            neighbour.node.add_neighbour( node )
-                        rescue
-                        end
-                    }
-
-                    add_neighbour( url )
-                    alive << url
-                rescue
+    def ping
+        neighbours.each {
+            |neighbour|
+            connect_to_peer( neighbour ).alive? {
+                |res|
+                if res.rpc_exception?
+                    remove_neighbour( neighbour )
+                    print_status( "Found dead neighbour: #{neighbour} " )
                 end
             }
         }
+    end
 
-        jobs.each { |job| job.join }
+    def check_for_comebacks
+        d_nodes = @dead_nodes.dup
+        d_nodes.each {
+            |url|
+            neighbour = connect_to_peer( url )
+            neighbour.alive? {
+                |res|
+                if !res.rpc_exception?
+                    print_status( 'Dispatcher came back to life: ' + url )
 
-        @dead_nodes -= alive
+                    ([@opts.datastore[:dispatcher_url]] | neighbours ).each {
+                        |node|
+                        neighbour.node.add_neighbour( node ){}
+                    }
+
+                    add_neighbour( url )
+                    @dead_nodes -= [url]
+                end
+            }
+        }
     end
 
     #
@@ -247,22 +237,19 @@ class Node
     def announce( node )
         print_status 'Advertising: ' + node
 
-        jobs = []
         neighbours.each {
             |peer|
             next if peer == node
-            jobs << Thread.new {
-                begin
-                    print_info '---- to: ' + peer
-                    connect_to_peer( peer ).node.add_neighbour( node )
-                rescue Errno::ECONNREFUSED
+
+            print_info '---- to: ' + peer
+            connect_to_peer( peer ).node.add_neighbour( node ) {
+                |res|
+                if res.rpc_exception?
                     remove_neighbour( peer )
                 end
             }
         }
 
-        jobs.each { |job| job.join }
-        print_status 'Done advertising.'
     end
 
     #
@@ -270,13 +257,15 @@ class Node
     #
     # @param    [String]    url     node URL
     #
-    def get_peers( url )
-        return connect_to_peer( url ).node.neighbours
+    def get_peers( url, &block )
+        connect_to_peer( url ).node.neighbours {
+            |urls|
+            block.call( urls )
+        }
     end
 
     def connect_to_peer( url )
-        @conns ||= {}
-        @conns[url] ||= Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
 end
