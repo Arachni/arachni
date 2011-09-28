@@ -55,19 +55,13 @@ class DispatcherManager
         Dispatcher.first_or_create( :url => url )
 
         return if !neighbours
-
-        begin
-            connect( url ).node.neighbours_with_info {
-                |neighbours|
-                neighbours.each {
-                    |node|
-                    Dispatcher.first_or_create( :url => node['url'] )
-                }
+        connect( url ).node.neighbours {
+            |neighbours|
+            neighbours.each {
+                |node|
+                Dispatcher.first_or_create( :url => url )
             }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-        end
+        }
     end
 
     #
@@ -101,17 +95,23 @@ class DispatcherManager
 
         if !all.empty?
             EM.synchrony do
-                EM::Synchrony::Iterator.new( all ).map {
+                dispatchers = EM::Synchrony::Iterator.new( all ).map {
                     |dispatcher, iter|
                     alive?( dispatcher.url ){
                         |bool|
                         if bool
                             block.call( dispatcher )
                         else
-                            block.call( false )
+                            iter.return( nil )
                         end
                     }
-                }
+                }.compact
+
+                if dispatchers.empty?
+                    block.call( false )
+                else
+                    block.call( dispatchers.pop )
+                end
             end
         else
             block.call( false )
