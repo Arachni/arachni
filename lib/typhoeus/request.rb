@@ -25,13 +25,7 @@ module Typhoeus
         alias :old_initialize :initialize
 
         def initialize( url, options = {} )
-
             old_initialize( url, options )
-
-            @proxy_type       = options[:proxy_type]
-            @proxy_username   = options[:proxy_username]
-            @proxy_password   = options[:proxy_password]
-            @proxy_auth_method = options[:proxy_auth_method]
 
             @on_complete        = []
             @handled_response   = []

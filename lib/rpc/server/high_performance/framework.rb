@@ -481,16 +481,16 @@ class Framework
         begin
             stats = @instances.map { |instance| connect_to_instance( instance ).framework.stats( fresh ) }
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
 
         final_stats = {}
         begin
             final_stats = merge_stats( stats )
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
 
         return final_stats
@@ -801,8 +801,8 @@ class Framework
                 final_stats[k.to_s] /= stats.size + 1
             }
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
 
         final_stats['sitemap_size'] = @sitemap.size if @sitemap

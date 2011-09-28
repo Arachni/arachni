@@ -18,7 +18,7 @@ module RPC
 class Server
 
 #
-# Extends the Framework adding BrB-RPC specific functionality
+# Extends the Framework adding RPC specific functionality
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -71,7 +71,7 @@ class Framework < Arachni::Framework
 
 
     #
-    # some BrBRPC libraries of other languages map remote objects to local objects
+    # some RPC libraries of other languages map remote objects to local objects
     # creating an invalid syntax situation since the aforementioned languages
     # may not allow "?" or "!" in method names.
     #

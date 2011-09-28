@@ -26,8 +26,6 @@ require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'component_manager'
 require 'yaml'
-require 'ap'
-require 'pp'
 
 
 module Arachni
@@ -165,8 +163,8 @@ class Framework
             # start the audit
             audit( )
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
 
         clean_up!

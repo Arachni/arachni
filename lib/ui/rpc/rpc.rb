@@ -13,14 +13,12 @@ require Options.instance.dir['lib'] + 'framework'
 module UI
 
 #
-# Arachni::UI:XMLRPC class
-#
-# Provides an self sufficient Arachni XML-RPC client.
+# Provides an self sufficient Arachni RPC client.
 #
 # It mimics the standard CLI interface's functionality
 # albeit in a client-server fashion.
 #
-# This should be your first stop when looking into creating your own XMLRPC client. <br/>
+# This should be your first stop when looking into creating your own RPC client. <br/>
 # Of course you don't need to instantiate the framework or any other Arachni related classes
 # in your own client, this is just to provide some other info to the user.
 #
@@ -456,7 +454,7 @@ class RPC
 
         print_status "Grabbing stats..."
 
-        ap stats = @server.framework.stats
+        stats = @server.framework.stats
         print_line
         print_info( "Sent #{stats['requests']} requests." )
         print_info( "Received and analyzed #{stats['responses']} responses." )

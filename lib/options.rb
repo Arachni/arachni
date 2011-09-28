@@ -8,9 +8,6 @@
 
 =end
 
-require 'pp'
-require 'ap'
-
 require 'singleton'
 require 'getoptlong'
 
@@ -738,8 +735,8 @@ class Options
         begin
             @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 

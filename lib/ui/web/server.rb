@@ -19,7 +19,6 @@ require 'erb'
 require 'yaml'
 require 'cgi'
 require 'fileutils'
-require 'ap'
 
 
 module Arachni

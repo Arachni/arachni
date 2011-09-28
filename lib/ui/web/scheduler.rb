@@ -60,8 +60,8 @@ class Scheduler
         begin
             ticktock!
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
     end
 
@@ -150,8 +150,8 @@ class Scheduler
                     begin
                         run_and_destroy( job ) if job.datetime <= Time.now
                     rescue Exception => e
-                        ap e
-                        ap e.backtrace
+                        # ap e
+                        # ap e.backtraces
                     end
 
                 }

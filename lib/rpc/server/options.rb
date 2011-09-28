@@ -28,8 +28,8 @@ class Options
             begin
                 send( "#{k.to_s}=", v )
             rescue Exception => e
-                ap e
-                ap e.backtrace
+                # ap e
+                # ap e.backtrace
             end
         }
         true
