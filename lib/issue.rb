@@ -20,7 +20,7 @@
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 module Arachni
 
@@ -112,7 +112,7 @@ class Issue
     #
     # @return    [String]
     #
-    attr_accessor :regexp
+    attr_reader   :regexp
 
     #
     # The data that was matched by the regexp
@@ -216,7 +216,7 @@ class Issue
     #
     attr_accessor :metasploitable
 
-    attr_accessor :opts
+    attr_reader   :opts
 
     attr_accessor :internal_modname
     attr_accessor :tags

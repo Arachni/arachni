@@ -20,7 +20,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Proxy < Arachni::Plugin::Base
 
@@ -158,7 +158,7 @@ class Proxy < Arachni::Plugin::Base
     def update_forms( page, req )
         params = {}
 
-        URI.decode( req.body ).split( '&' ).each {
+        uri_decode( req.body ).split( '&' ).each {
             |param|
             k,v = param.split( '=', 2 )
             params[k] = v
@@ -234,7 +234,7 @@ class Proxy < Arachni::Plugin::Base
                 It also updates the framework cookies with the cookies of the HTTP requests and
                 responses, thus it can also be used to login to a web application.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
                 Arachni::OptPort.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
                 Arachni::OptAddress.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )

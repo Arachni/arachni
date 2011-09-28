@@ -34,7 +34,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.6
+# @version: 0.2.7
 #
 class HTTP
 
@@ -557,7 +557,7 @@ class HTTP
         cookies.each_pair {
             |name, value|
             value = '' if !value
-            val = URI.escape( URI.escape( value ), '+;' )
+            val = uri_encode( uri_encode( value ), '+;' )
             str += "#{name}=#{val};"
         }
         return str

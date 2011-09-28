@@ -9,66 +9,10 @@
 
 =end
 
-require 'getoptlong'
-require 'pp'
-require 'ap'
+require_relative "../lib/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
+Arachni::Options.instance.parse!
 
-require cwd + '/../lib/options'
-options = Arachni::Options.instance
+require Arachni::Options.instance.dir['lib'] + 'ui/dispatcher_monitor'
 
-options.dir            = Hash.new
-options.dir['root']    = File.expand_path( cwd + '/../' ) + '/'
-options.dir['modules'] = options.dir['root'] + 'modules/'
-options.dir['reports'] = options.dir['root'] + 'reports/'
-options.dir['plugins'] = options.dir['root'] + 'plugins/'
-options.dir['lib']     = options.dir['root'] + 'lib/'
-
-# Construct getops struct
-opts = GetoptLong.new(
-    [ '--help',             '-h', GetoptLong::NO_ARGUMENT ],
-    [ '--port',                   GetoptLong::OPTIONAL_ARGUMENT ],
-    [ '--debug',                  GetoptLong::NO_ARGUMENT ],
-    [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
-    [ '--ssl',                    GetoptLong::NO_ARGUMENT ],
-    [ '--ssl-pkey',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-cert',               GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
-)
-
-begin
-    opts.each {
-        |opt, arg|
-
-        case opt
-
-            when '--help'
-                options.help = true
-
-            when '--debug'
-                options.debug = true
-
-            when '--ssl'
-                options.ssl = true
-
-            when '--ssl-pkey'
-                options.ssl_pkey = arg.to_s
-
-            when '--ssl-cert'
-                options.ssl_cert = arg.to_s
-
-            when '--ssl-ca'
-                options.ssl_ca = arg.to_s
-
-        end
-    }
-end
-
-options.url = ARGV.shift
-
-require options.dir['lib'] + 'ui/dispatcher_monitor'
-
-dispatcher = Arachni::UI::DispatcherMonitor.new( Arachni::Options.instance )
-dispatcher.run
+Arachni::UI::DispatcherMonitor.new( Arachni::Options.instance ).run

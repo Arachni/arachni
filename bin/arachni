@@ -9,14 +9,10 @@
 
 =end
 
-require 'pp'
-require 'ap'
+require_relative "../lib/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
-require cwd + '/../getoptslong.rb'
+Arachni::Options.instance.parse!
 
 require Arachni::Options.instance.dir['lib'] + 'ui/cli/cli'
 
-cli = Arachni::UI::CLI.new( Arachni::Options.instance )
-cli.run
+Arachni::UI::CLI.new( Arachni::Options.instance ).run

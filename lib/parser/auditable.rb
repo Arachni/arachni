@@ -504,8 +504,8 @@ class Auditable
           print_debug( "|--> Combo: " )
 
           combo.each {
-              |combo|
-              print_debug( "|------> " + combo.to_s )
+              |c_combo|
+              print_debug( "|------> " + c_combo.to_s )
           }
 
         }

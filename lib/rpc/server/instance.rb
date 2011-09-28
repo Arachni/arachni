@@ -83,8 +83,11 @@ class Instance
     #
     # @return   [Array<Hash>]
     #
-    def output
-        @framework.output | flush_buffer( )
+    def output( &block )
+        @framework.output {
+            |out|
+            block.call( out | flush_buffer )
+        }
     end
 
     #

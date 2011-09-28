@@ -517,11 +517,18 @@ class Server < Sinatra::Base
     #
     def save_and_shutdown( arachni, &block )
         arachni.framework.clean_up!{
-            arachni.framework.auditstore {
-                |auditstore|
-                report_path = reports.save( auditstore )
-                arachni.service.shutdown!{ block.call( report_path ) }
-            }
+            |res|
+            if !res.rpc_connection_error?
+                arachni.framework.auditstore {
+                    |auditstore|
+                    if !auditstore.rpc_connection_error?
+                        report_path = reports.save( auditstore )
+                        arachni.service.shutdown!{ block.call( report_path ) }
+                    end
+                }
+            else
+                block.call( res )
+            end
         }
     end
 
@@ -604,14 +611,11 @@ class Server < Sinatra::Base
             |a|
             if a
                 dispatchers.new( params[:url] )
+                async_redirect '/dispatchers/edit'
             else
-                flash[:err] = "Couldn't find a dispatcher at \"#{escape( params['url'] )}\"."
+                msg = "Couldn't find a dispatcher at \"#{escape( params['url'] )}\"."
+                async_redirect '/dispatchers/edit', :flash => { :err => msg }
             end
-
-            dispatchers.all_with_liveness {
-                |dispatchers|
-                body erb :dispatchers_edit, { :layout => true }, :dispatchers => dispatchers
-            }
         }
     end
 
@@ -762,18 +766,19 @@ class Server < Sinatra::Base
 
     aget "/instance/:url" do |url|
         params['url'] = url
-        begin
-            instances.connect( params[:url], session ).framework.paused? {
-                |paused|
+        instances.connect( params[:url], session ).framework.paused? {
+            |paused|
+
+            if !paused.rpc_connection_error?
                 body erb :instance, { :layout => true }, :paused => paused,
                     :shutdown => false, :params => params
-            }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            flash.now[:notice] = "Instance at #{url} has been shutdown."
-            body erb :instance, { :layout => true }, :shutdown => true
-        end
+            else
+                msg = "Instance at #{url} has been shutdown."
+                body erb :instance, { :layout => true }, :shutdown => true,
+                    :flash => { :notice => msg }
+            end
+
+        }
 
     end
 
@@ -788,9 +793,10 @@ class Server < Sinatra::Base
             'stats'    => {}
         }
 
-        begin
-            instances.connect( params[:url], session ).framework.progress_data {
-                |prog|
+        instances.connect( params[:url], session ).framework.progress_data {
+            |prog|
+
+            if !prog.rpc_connection_error?
 
                 @@output_streams ||= {}
                 @@output_streams[params[:url]] = OutputStream.new( prog['messages'], 38 )
@@ -809,13 +815,11 @@ class Server < Sinatra::Base
 
                 output['stats']['instances'] = prog['instances'].dup
                 body output.to_json
-            }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
-            body output.to_json
-        end
+            else
+                output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
+                body output.to_json
+            end
+        }
     end
 
 
@@ -824,19 +828,17 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        begin
-            instances.connect( params[:url], session ).framework.pause!{
-                |paused|
+        instances.connect( params[:url], session ).framework.pause!{
+            |paused|
+            if !paused.rpc_connection_error?
                 log.instance_paused( env, params[:url] )
                 msg = "Instance at #{params[:url]} will pause as soon as the current page is audited."
-
                 async_redirect redir, :flash => { :notice => msg }
-            }
-        rescue
-            msg = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir, :flash => { :notice => msg }
-        end
-
+            else
+                msg = "Instance at #{params[:url]} has been shutdown."
+                async_redirect redir, :flash => { :notice => msg }
+            end
+        }
     end
 
     apost "/*/:url/resume" do |splat, url|
@@ -844,18 +846,19 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        begin
-            instances.connect( params[:url], session ).framework.resume!{
+        instances.connect( params[:url], session ).framework.resume!{
+            |res|
 
+            if !res.rpc_connection_error?
                 log.instance_resumed( env, params[:url] )
 
                 msg = "Instance at #{params[:url]} resumes."
                 async_redirect redir, :flash => { :notice => msg }
-            }
-        rescue
-            msg = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir, :flash => { :notice => msg }
-        end
+            else
+                msg = "Instance at #{params[:url]} has been shutdown."
+                async_redirect redir, :flash => { :notice => msg }
+            end
+        }
     end
 
     apost "/*/:url/shutdown" do |splat, url|
@@ -863,17 +866,14 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + ( splat == 'instance' ? "reports" : splat )
-        begin
-            save_and_shutdown( instances.connect( params[:url], session ) ){
-                log.instance_shutdown( env, params[:url] )
+        save_and_shutdown( instances.connect( params[:url], session ) ){
+            |res|
 
-                msg = "Instance at #{params[:url]} has been shutdown."
-                async_redirect redir, :flash => { :notice => msg }
-            }
-        rescue
+            log.instance_shutdown( env, params[:url] ) if !res.rpc_connection_error?
+
             msg = "Instance at #{params[:url]} has been shutdown."
             async_redirect redir, :flash => { :notice => msg }
-        end
+        }
 
     end
 

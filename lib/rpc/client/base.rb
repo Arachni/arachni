@@ -33,10 +33,6 @@ class Base < ::Arachni::RPC::Client
         )
     end
 
-    def call( msg, *args, &block )
-        super( msg, *args, &block )
-    end
-
 end
 end
 end

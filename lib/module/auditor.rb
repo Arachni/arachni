@@ -25,7 +25,7 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.3
+# @version: 0.3.1
 #
 module Auditor
 
@@ -400,7 +400,7 @@ module Auditor
 
             audit_timeout_debug_msg( 1, delay )
             timing_attack( strings, opts ) {
-                |res, opts, elem|
+                |res, c_opts, elem|
 
                 # maybe this should be removed to take care of accidental timeouts
                 # and let phase 2 clean up the mess
@@ -483,14 +483,14 @@ module Auditor
                 elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
 
                 elem.audit( str, opts ) {
-                    |res, opts|
+                    |c_res, c_opts|
 
-                    if res.timed_out?
+                    if c_res.timed_out?
 
                         # all issues logged by timing attacks need manual verification.
                         # end of story.
-                        opts[:verification] = true
-                        elem.get_auditor.log( opts, res)
+                        c_opts[:verification] = true
+                        elem.get_auditor.log( c_opts, c_res )
 
                         self.audit_timeout_stabilize( elem )
 
@@ -572,8 +572,8 @@ module Auditor
             opts[:skip_orig] = true
 
             audit( str, opts ) {
-                |res, opts, elem|
-                block.call( res, opts, elem ) if block && res.timed_out?
+                |res, c_opts, elem|
+                block.call( res, c_opts, elem ) if block && res.timed_out?
             }
         }
 
@@ -644,29 +644,29 @@ module Auditor
                 when  Element::LINK
                     next if !Options.instance.audit_links
                     @page.links.each {
-                        |elem|
-                        audit_rdiff_elem( elem, opts, &block )
+                        |c_elem|
+                        audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::FORM
                     next if !Options.instance.audit_forms
                     @page.forms.each {
-                        |elem|
-                        audit_rdiff_elem( elem, opts, &block )
+                        |c_elem|
+                        audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::COOKIE
                     next if !Options.instance.audit_cookies
                     @page.cookies.each {
-                        |elem|
-                        audit_rdiff_elem( elem, opts, &block )
+                        |c_elem|
+                        audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::HEADER
                     next if !Options.instance.audit_headers
                     @page.headers.each {
-                        |elem|
-                        audit_rdiff_elem( elem, opts, &block )
+                        |c_elem|
+                        audit_rdiff_elem( c_elem, opts, &block )
                     }
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )

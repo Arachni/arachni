@@ -26,7 +26,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.7
+# @version: 0.1.8
 # @see Arachni::Framework
 #
 class CLI
@@ -80,6 +80,8 @@ class CLI
 
         # work on the user supplied arguments
         parse_opts( )
+
+        @interrupt_handler = nil
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
@@ -188,7 +190,7 @@ class CLI
                 Thread.kill
             }
 
-            while( 1 )
+            loop do
 
                 unmute!
                 print_line

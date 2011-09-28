@@ -313,26 +313,25 @@ class Framework
     #
     # @return   [Array]
     #
-    def output
+    def output( &block )
 
         buffer = @framework.flush_buffer
-        begin
-            jobs = []
-            output_q = Queue.new
-            @instances.each_with_index {
-                |instance, i|
-                jobs << Thread.new {
-                    buffer |= connect_to_instance( instance ).service.output
-                }
-            }
 
-            jobs.each { |job| job.join }
-        rescue Exception => e
-            ap e
-            ap e.backtrace
+        if @instances.empty?
+            block.call( buffer )
+            return
         end
 
-        return buffer.flatten
+        ::EM::Iterator.new( @instances, 20 ).map( proc {
+            |instance, iter|
+            connect_to_instance( instance ).service.output {
+                |out|
+                iter.return( out )
+            }
+        }, proc {
+            |out|
+            block.call( (buffer | out).flatten )
+        })
     end
 
     #

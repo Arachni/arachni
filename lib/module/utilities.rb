@@ -20,9 +20,21 @@ module Module
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 module Utilities
+
+    def uri_parser
+        @@uri_parser ||= URI::Parser.new
+    end
+
+    def uri_encode( *args )
+        uri_parser.escape( *args )
+    end
+
+    def uri_decode( *args )
+        uri_parser.unescape( *args )
+    end
 
     #
     # Decodes URLs to reverse multiple encodes and removes NULL characters
@@ -30,10 +42,10 @@ module Utilities
     def url_sanitize( url )
 
         while( url =~ /%[a-fA-F0-9]{2}/ )
-            url = ( URI.decode( url ).to_s.unpack( 'A*' )[0] )
+            url = ( uri_decode( url ).to_s.unpack( 'A*' )[0] )
         end
 
-        return URI.encode( url )
+        return uri_encode( url )
     end
 
     #
@@ -45,7 +57,7 @@ module Utilities
     #
     def get_path( url )
 
-        uri  = URI( URI.escape( url ) )
+        uri  = uri_parser.parse( uri_encode( url ) )
         path = uri.path
 
         if !File.extname( path ).empty?
@@ -66,13 +78,13 @@ module Utilities
         url = url_sanitize( url )
 
         begin
-            normalized = URI.encode( URI.decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
-        rescue Excepion => e
+            normalized = uri_encode( uri_decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+        rescue Exception => e
             # ap e
             # ap e.backtrace
             begin
-                normalized = URI.encode( URI.decode( url.to_s ) ).to_s
-            rescue Excepion => e
+                normalized = uri_encode( uri_decode( url.to_s ) ).to_s
+            rescue Exception => e
                 # ap e
                 # ap e.backtrace
                 normalized = url

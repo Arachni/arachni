@@ -91,14 +91,11 @@ class RPC
             # 'owner'
             @instance = @dispatcher.dispatch( @opts.url.to_s )
 
-            instance_url = URI( @opts.server.to_s )
-            instance_url.port = @instance['port']
-
             # start the XMLRPC client
-            @server = Arachni::RPC::Client::Instance.new( @opts, instance_url.to_s, @instance['token'] )
+            @server = Arachni::RPC::Client::Instance.new( @opts, @instance['url'], @instance['token'] )
         rescue Exception => e
             print_error( "Could not connect to server." )
-            print_error( "Error: #{e.to_s}." )
+            print_debug( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
             exit 0
         end
@@ -154,7 +151,7 @@ class RPC
 
                 # things will get crazy if we don't block a bit I think...
                 # we'll see...
-                ::IO::select( nil, nil, nil, 0.3 )
+                ::IO::select( nil, nil, nil, 2 )
             end
 
             puts
@@ -251,7 +248,7 @@ class RPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.framework.abort!
+            @server.framework.clean_up!
             report
             shutdown
             print_info( 'Exiting...' )
@@ -350,6 +347,24 @@ class RPC
                 'metamodules'   => {},
             }
         )
+
+        @server.plugins.load( @opts.plugins )
+
+
+        @server.modules.load( @opts.mods )
+
+        opts = @opts.to_h.dup
+
+        illegal.each {
+            |k|
+            opts.delete( k )
+        }
+
+        opts['url'] = opts['url'].to_s
+        @server.opts.set( opts )
+
+        return
+
         @opts.to_h.each {
             |opt, arg|
 
@@ -398,12 +413,6 @@ class RPC
             when 'plugins'
                 next if arg.empty?
 
-                ap arg
-                print_status 'Loading plug-ins:'
-                @server.plugins.load( arg ).each {
-                    |mod|
-                    print_info ' * ' + mod
-                }
 
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +
@@ -447,7 +456,7 @@ class RPC
 
         print_status "Grabbing stats..."
 
-        stats = @server.framework.stats
+        ap stats = @server.framework.stats
         print_line
         print_info( "Sent #{stats['requests']} requests." )
         print_info( "Received and analyzed #{stats['responses']} responses." )

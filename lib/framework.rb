@@ -45,7 +45,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.3
+# @version: 0.2.5
 #
 class Framework
 
@@ -59,7 +59,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.4'
+    REVISION     = '0.2.5'
 
     #
     # Instance options
@@ -87,11 +87,6 @@ class Framework
     # @return   [Arachni::Spider]   spider
     #
     attr_reader :spider
-
-    #
-    # @return   [Arachni::HTTP]
-    #
-    attr_reader :http
 
     attr_reader :sitemap
     attr_reader :auditmap
@@ -138,6 +133,7 @@ class Framework
         @paused  = []
 
         @plugin_store = {}
+        @store = nil
 
         @current_url = ''
     end

@@ -22,7 +22,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class Spider
 
@@ -126,8 +126,8 @@ class Spider
 
                     # run blocks specified later
                     @on_every_page_blocks.each {
-                        |block|
-                        block.call( page )
+                        |c_block|
+                        c_block.call( page )
                     }
 
                 }

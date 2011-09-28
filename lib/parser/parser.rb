@@ -102,6 +102,9 @@ class Parser
         @url  = url_sanitize( res.effective_url )
         @html = res.body
         @response_headers = res.headers_hash
+
+        @doc   = nil
+        @paths = nil
     end
 
     #
@@ -303,7 +306,7 @@ class Parser
             else
                 action = url_sanitize( elements[i]['attrs']['action'] )
             end
-            action = URI.escape( action ).to_s
+            action = uri_encode( action ).to_s
 
             elements[i]['attrs']['action'] = to_absolute( action.clone ).to_s
 
@@ -362,7 +365,7 @@ class Parser
             if !link['href'] then next end
             if( exclude?( link['href'] ) ) then next end
             if( !include?( link['href'] ) ) then next end
-            if !in_domain?( URI.parse( link['href'] ) ) then next end
+            if !in_domain?( uri_parser.parse( link['href'] ) ) then next end
 
             link['vars'] = {}
             link_vars( link['href'] ).each_pair {
@@ -512,7 +515,7 @@ class Parser
 
         begin
             link = normalize_url( link )
-            if URI.parse( link ).host
+            if uri_parser.parse( link ).host
                 return link
             end
         rescue Exception => e
@@ -523,15 +526,15 @@ class Parser
 
         begin
             # remove anchor
-            link = URI.encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
+            link = uri_encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
 
             if url = base
-                base_url = URI( url )
+                base_url = uri_parser.parse( url )
             else
-                base_url = URI( @url )
+                base_url = uri_parser.parse( @url )
             end
 
-            relative = URI( link )
+            relative = uri_parser.parse( link )
             absolute = base_url.merge( relative )
 
             absolute.path = '/' if absolute.path && absolute.path.empty?

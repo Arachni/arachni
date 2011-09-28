@@ -88,11 +88,12 @@ class DispatcherManager
     #
     def alive?( url, &block )
         raise( "This method requires a block!" ) if !block_given?
-        begin
-            return connect( url ).alive?( &block )
-        rescue
-            block.call( false )
-        end
+
+        connect( url ).alive? {
+            |ret|
+            ret = ( ret.rpc_connection_error? ) ? false : ret
+            block.call( ret )
+        }
     end
 
     def first_alive( &block )
@@ -119,7 +120,7 @@ class DispatcherManager
 
             connect( dispatcher.url ).stats {
                 |stats|
-                iter.return( stats['running_jobs'] )
+                iter.return( stats['running_jobs'] ) if !stats.rpc_connection_error?
             }
 
         }, proc {
@@ -141,11 +142,17 @@ class DispatcherManager
             stats = EM::Synchrony::Iterator.new( all ).map {
                 |dispatcher, iter|
 
-                connect( dispatcher.url ).stats {
-                    |stats|
-                    iter.return( { dispatcher.url => stats } )
-                }
-            }
+                if !dispatcher.rpc_connection_error?
+                    connect( dispatcher.url ).stats {
+                        |stats|
+                        if !stats.rpc_exception?
+                            iter.return( { dispatcher.url => stats } )
+                        else
+                            iter.return( nil )
+                        end
+                    }
+                end
+            }.compact
 
             sorted_stats = {}
             stats.sort{ |a, b| a.keys[0] <=> b.keys[0] }.each {
@@ -189,6 +196,7 @@ class DispatcherManager
                     end
                 }.compact
             }
+
 
             block.call( sorted_stats )
         end
