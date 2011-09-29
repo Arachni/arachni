@@ -55,6 +55,10 @@ class Instance
         @service   = Mapper.new( @client, 'service' )
     end
 
+    def close
+        @client.close
+    end
+
 end
 
 end
