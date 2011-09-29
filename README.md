@@ -10,12 +10,22 @@ You first need to install the Arachni-RPC system from source (it's still under d
     cd arachni-rpc
     rake install
 
-Then you'll have to do the same to get the latest Typhoeus code (still under dev, no gem yet as well):
+<br/><br/>
+
+Then you'll have to do the same to get the latest Typhoeus code (still under dev, no gem yet as well)
 
     git clone git://github.com/dbalatero/typhoeus.git
     cd typhoeus
     gem build typhoeus.gemspec
     gem install typhoeus-0.2.4.gem
+
+If when running Arachni you get a Typhoeus related error try:
+
+    gem uninstall arachni-typhoeus
+
+and then install Typhoeus as described here.
+
+<br/><br/>
 
 Then things go as usual:
 
