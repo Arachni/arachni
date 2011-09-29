@@ -182,16 +182,16 @@ From a user's or a component developer's point of view everything appears simple
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
-    - Web UI (Utilizing the Client - Dispatch-server XMLRPC architecture)
-    - XMLRPC Client/Dispatch server
-       - Centralised deployment
-       - Multiple clients
-       - Parallel scans
-       - SSL encryption
-       - SSL cert based client authentication
-       - Remote monitoring
+    - Web UI (Utilizing the Client - Dispatch-server RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
+ - Open RPC Infrastructure
+    - Distributed deployment
+    - Multiple clients
+    - Parallel scans
+    - SSL encryption (with peer authentication)
+    - Remote monitoring
+    - Support for High Performance Grid configuration, utilizing multiple nodes to perform single scans.
 
 ### Website Crawler
 
