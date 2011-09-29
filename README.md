@@ -4,11 +4,25 @@ The Grid is highly experimental and far from properly tested, however if you're 
 
 ## Installation
 
-As usual:
+You first need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
 
- - clone the repository -- 'git clone git://github.com/Zapotek/arachni.git'
- - switch to the 'grid' branch -- 'git co grid'
- - run 'rake install'
+    git clone git://github.com/Arachni/arachni-rpc.git
+    cd arachni-rpc
+    rake install
+
+Then you'll have to do the same to get the latest Typhoeus code (still under dev, no gem yet as well):
+
+    git clone git://github.com/dbalatero/typhoeus.git
+    cd typhoeus
+    gem build typhoeus.gemspec
+    gem install typhoeus-0.2.4.gem
+
+Then things go as usual:
+
+    git clone git://github.com/Zapotek/arachni.git
+    cd arachni
+    git co grid
+    rake install
 
 ## Setting up the High Performance Grid (HPG)
 
@@ -26,32 +40,37 @@ Here's how it's done:
 
 Firing up the first one:
 
-    arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher" --address=192.168.0.1
+    arachni_rpcd --pipe-id="Pipe 1" --nickname="My Dispatcher" --address=192.168.0.1
 
 Adding more to make a Grid:
 
-    arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --address=192.168.0.2 --neighbour=https://192.168.0.1:7331
+    arachni_rpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --address=192.168.0.2 --neighbour=192.168.0.1:7331
 
 Lather, rinse, repeat:
 
-    arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --address=192.168.0.3 --neighbour=https://192.168.0.2:7331
+    arachni_rpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --address=192.168.0.3 --neighbour=192.168.0.2:7331
 
-    arachni_xmlrpcd --pipe-id="Pipe 4" --nickname="My forth Dispatcher" --address=192.168.0.4 --neighbour=https://192.168.0.3:7331
+    arachni_rpcd --pipe-id="Pipe 4" --nickname="My forth Dispatcher" --address=192.168.0.4 --neighbour=192.168.0.3:7331
 
 That sort of setup assumes that each Dispatcher is on a machine with independent bandwidth lines (to the target website at least).
 
 If you want to, out of curiosity, start a few Dispatchers on localhost you will need to specify the ports:
 
-    arachni_xmlrpcd --pipe-id="Pipe 1" --nickname="My Dispatcher"
+    arachni_rpcd --pipe-id="Pipe 1" --nickname="My Dispatcher"
 
-    arachni_xmlrpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --port=1111 --neighbour=https://localhost:7331
+    arachni_rpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --port=1111 --neighbour=localhost:7331
 
-    arachni_xmlrpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --port=2222 --neighbour=https://localhost:1111
+    arachni_rpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --port=2222 --neighbour=localhost:1111
 
 etc.
 
-After that you simply start the WebUI as usual and when it asks you to specify a Dispatcher you pick one, enter it and the WebUI will grab the rest of them automatically.
+## Usage
 
+After setting everything up you simply start the WebUI as usual.<br/>
+When it asks you to specify a Dispatcher you pick one, enter it and the WebUI will grab its neighbours automatically.
+
+Despite the fact that there haven't been any dramatic changes to the front-end of the WebUI you'll immediatly notice a sizable<br/>
+performance increase, both when browsing around and when monitoring running scans.<br/>
 
 You can find some more technical stuff here: http://trainofthought.segfault.gr/2011/07/29/arachni-grid-draft-design/
 
@@ -88,7 +107,7 @@ And some screenshots here: http://trainofthought.segfault.gr/2011/09/02/arachni-
     </tr>
     <tr>
        <th>Author</th>
-       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> <a href="mailto:zapotek@segfault.gr">Zapotek</a> <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
+       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> "<a href="mailto:zapotek@segfault.gr">Zapotek</a>" <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
     </tr>
     <tr>
         <th>Twitter</th>
