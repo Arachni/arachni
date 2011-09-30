@@ -140,9 +140,15 @@ class Framework
     #
     def run
 
-        # EventMachine.add_periodic_timer(5) do
-            # print "EventMachine::Connection objects: "
-            # puts ObjectSpace.each_object( EventMachine::Connection ) {}
+        # EventMachine.add_periodic_timer( 1 ) do
+            # print "Arachni::RPC::Client::Handler objects: "
+            # puts ObjectSpace.each_object( Arachni::RPC::Client::Handler ) {}
+#
+            # print "Arachni::RPC::Server::Proxy objects: "
+            # puts ObjectSpace.each_object( Arachni::RPC::Server::Proxy ) {}
+#
+            # puts "Active connections: #{::EM.connection_count}"
+            # puts '--------------------------------------------'
         # end
 
         ::EM.defer {
