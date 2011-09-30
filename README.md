@@ -185,7 +185,7 @@ From a user's or a component developer's point of view everything appears simple
     - Web UI (Utilizing the Client - Dispatch-server RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
- - Open RPC Client/Dispatch-server Infrastructure
+ - Open RPC Infrastructure
     - Distributed deployment
     - Multiple clients
     - Parallel scans
