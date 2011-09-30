@@ -69,10 +69,8 @@ class Framework
 
         ::EM::Iterator.new( @instances, @instances.size ).map( proc {
             |instance, iter|
-            i_client = connect_to_instance( instance )
-            i_client.framework.busy? {
+            connect_to_instance( instance ).framework.busy? {
                 |res|
-                i_client.close
                 iter.return( res )
             }
         }, proc {
@@ -142,13 +140,10 @@ class Framework
     #
     def run
 
-        EventMachine.add_periodic_timer(5) do
-            print "EventMachine::Connection objects: "
-            puts ObjectSpace.each_object( EventMachine::Connection ) {}
-
-            print "Active connections: "
-            puts ::EventMachine::connection_count
-        end
+        # EventMachine.add_periodic_timer(5) do
+            # print "EventMachine::Connection objects: "
+            # puts ObjectSpace.each_object( EventMachine::Connection ) {}
+        # end
 
         ::EM.defer {
             if high_performance?
@@ -232,11 +227,7 @@ class Framework
             instance_conn = connect_to_instance( instance )
 
             instance_conn.framework.clean_up! {
-                instance_conn.framework.get_plugin_store {
-                    |plugin_store|
-                    instance_conn.close
-                    iter.return( plugin_store )
-                }
+                iter.return( instance_conn.framework.get_plugin_store )
             }
 
         }, proc {
@@ -255,8 +246,7 @@ class Framework
         @framework.pause!
         ::EM::Iterator.new( @instances, @instances.size ).each {
             |instance, iter|
-            i_client = connect_to_instance( instance )
-            i_client.framework.pause!{ i_client.close; iter.next }
+            connect_to_instance( instance ).framework.pause!{ iter.next }
         }
         return true
     end
@@ -268,8 +258,7 @@ class Framework
         @framework.resume!
         ::EM::Iterator.new( @instances, @instances.size ).each {
             |instance, iter|
-            i_client = connect_to_instance( instance )
-            i_client.framework.resume!{ i_client.close; iter.next }
+            connect_to_instance( instance ).framework.resume!{ iter.next }
         }
         return true
     end
@@ -339,10 +328,8 @@ class Framework
 
         ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
             |instance, iter|
-            i_client = connect_to_instance( instance )
-            i_client.service.output {
+            connect_to_instance( instance ).service.output {
                 |out|
-                i_client.close
                 iter.return( out )
             }
         }, proc {
@@ -439,11 +426,8 @@ class Framework
 
         ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
             |instance, iter|
-            i_client = connect_to_instance( instance )
-            i_client.framework.progress_data( opts ) {
+            connect_to_instance( instance ).framework.progress_data( opts ) {
                 |tmp|
-
-                i_client.close
                 tmp['url'] = instance['url']
                 iter.return( tmp )
             }
@@ -579,11 +563,11 @@ class Framework
     #
     def connect_to_instance( instance )
         @tokens  ||= {}
-        # @i_conns ||= {}
+        @i_conns ||= {}
 
         @tokens[instance['url']] = instance['token'] if instance['token']
-        # return @i_conns[instance['url']] ||=
-        return Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+        return @i_conns[instance['url']] ||=
+            Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
 
@@ -673,11 +657,8 @@ class Framework
 
                 ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map( proc {
                     |dispatcher, iter|
-                    d_client = connect_to_dispatcher( dispatcher['url'] )
-                    d_client.alive? {
+                    connect_to_dispatcher( dispatcher['url'] ).alive? {
                         |res|
-
-                        d_client.close
                         if !res.rpc_exception?
                             iter.return( dispatcher )
                         else
@@ -717,7 +698,6 @@ class Framework
         }) {
             |instance_hash|
 
-            pref_dispatcher.close
             instance = connect_to_instance( instance_hash )
 
             opts['url'] = opts['url'].to_s
@@ -746,8 +726,6 @@ class Framework
                     instance.modules.load( opts['mods'] ) {
                         instance.plugins.load( opts['plugins'] ) {
                             instance.framework.run {
-
-                                instance.close
                                 block.call( {
                                     'url' => instance_hash['url'],
                                     'token' => instance_hash['token'] }
@@ -774,9 +752,8 @@ class Framework
     end
 
     def connect_to_dispatcher( url )
-        # @d_conns ||= {}
-        # @d_conns[url] ||=
-        Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        @d_conns ||= {}
+        @d_conns[url] ||= Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
     def merge_stats( stats )

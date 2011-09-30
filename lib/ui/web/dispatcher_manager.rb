@@ -55,11 +55,8 @@ class DispatcherManager
         Dispatcher.first_or_create( :url => url )
 
         return if !neighbours
-        client = connect( url )
-        client.node.neighbours {
+        connect( url ).node.neighbours {
             |neighbours|
-            client.close
-
             neighbours.each {
                 |node|
                 Dispatcher.first_or_create( :url => node )
@@ -86,10 +83,8 @@ class DispatcherManager
     def alive?( url, &block )
         raise( "This method requires a block!" ) if !block_given?
 
-        client = connect( url )
-        client.alive? {
+        connect( url ).alive? {
             |ret|
-            client.close
             ret = ( ret.rpc_connection_error? ) ? false : ret
             block.call( ret )
         }
@@ -127,10 +122,8 @@ class DispatcherManager
         ::EM::Iterator.new( all, 20 ).map( proc {
             |dispatcher, iter|
 
-            client = connect( dispatcher.url )
-            client.stats {
+            connect( dispatcher.url ).stats {
                 |stats|
-                client.close
                 iter.return( stats['running_jobs'] ) if !stats.rpc_connection_error?
             }
 
@@ -154,11 +147,8 @@ class DispatcherManager
                 |dispatcher, iter|
 
                 if !dispatcher.rpc_connection_error?
-                    client = connect( dispatcher.url )
-                    client.stats {
+                    connect( dispatcher.url ).stats {
                         |stats|
-                        client.close
-
                         if !stats.rpc_exception?
                             iter.return( { dispatcher.url => stats } )
                         else
@@ -182,28 +172,22 @@ class DispatcherManager
                     |instance, iter|
 
                     if instance['helpers']['rank'] != 'slave'
-                        i_client = @settings.instances.connect( instance['url'] )
-                        i_client.framework.progress_data(
+                        @settings.instances.connect( instance['url'] ).framework.progress_data(
                             :slaves   => false,
                             :messages => false,
                             :issues   => false
                         ) {
                             |prog_data|
-                            i_client.close
-
                             instance.merge!( prog_data['stats'] )
                             instance['status']  = prog_data['status'].capitalize!
                             iter.return( instance )
                         }
                     else
-                        i_client = @settings.instances.connect( instance['helpers']['master'] )
-                        i_client.framework.progress_data(
+                        @settings.instances.connect( instance['helpers']['master'] ).framework.progress_data(
                             :messages => false,
                             :issues   => false
                         ) {
                             |prog_data|
-                            i_client.close
-
                             prog_data['instances'].each {
                                 |insdat|
                                  if insdat['url'] == instance['url']

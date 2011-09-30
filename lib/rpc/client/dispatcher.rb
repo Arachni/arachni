@@ -33,10 +33,6 @@ class Dispatcher
         @node = Mapper.new( @client, 'node' )
     end
 
-    def close
-        @client.close
-    end
-
     private
     #
     # Used to provide the illusion of locality for remote methods

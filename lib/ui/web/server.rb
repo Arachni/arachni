@@ -408,10 +408,8 @@ class Server < Sinatra::Base
                 block.call
                 async_redirect '/dispatchers/edit'
             else
-                d_client = dispatchers.connect( dispatcher.url )
-                d_client.dispatch( HELPER_OWNER ){
+                dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
                     |instance|
-                    d_client.close
                     @@arachni = instances.connect( instance['url'], session, instance['token'] )
                     block.call( @@arachni )
                 }
@@ -537,7 +535,6 @@ class Server < Sinatra::Base
                     end
                 }
             else
-                arachni.close
                 block.call( res )
             end
         }
@@ -549,8 +546,7 @@ class Server < Sinatra::Base
     def shutdown_all( url, &block )
         log.dispatcher_global_shutdown( env, url )
 
-        d_client = dispatchers.connect( url )
-        d_client.stats {
+        dispatchers.connect( url ).stats {
             |stats|
             stats['running_jobs'].each {
                 |instance|
@@ -560,7 +556,6 @@ class Server < Sinatra::Base
                     log.instance_shutdown( env, instance['url'] )
                 }
             }
-            d_client.close
             block.call
         }
     end
@@ -585,8 +580,6 @@ class Server < Sinatra::Base
                         save_and_shutdown( arachni ){
                             log.webui_zombie_cleanup( env, job['url'] )
                         }
-                    else
-                        arachni.close
                     end
                 }
             }
@@ -643,11 +636,8 @@ class Server < Sinatra::Base
         content_type :json
 
         begin
-            d_client = dispatchers.connect( url )
-            d_client.log {
+            dispatchers.connect( url ).log {
                 |log|
-                d_client.close
-
                 json = { 'log' => escape( log ) }.to_json
                 body json
             }
@@ -784,11 +774,8 @@ class Server < Sinatra::Base
 
     aget "/instance/:url" do |url|
         params['url'] = url
-        i_client = instances.connect( params[:url], session )
-        i_client.framework.paused? {
+        instances.connect( params[:url], session ).framework.paused? {
             |paused|
-
-            i_client.close
 
             if !paused.rpc_connection_error?
                 body erb :instance, { :layout => true }, :paused => paused,
@@ -814,11 +801,8 @@ class Server < Sinatra::Base
             'stats'    => {}
         }
 
-
-        i_client = instances.connect( params[:url], session )
-        i_client.framework.progress_data {
+        instances.connect( params[:url], session ).framework.progress_data {
             |prog|
-            i_client.close
 
             if !prog.rpc_connection_error?
 
@@ -852,12 +836,8 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-
-        i_client = instances.connect( params[:url], session )
-        i_client.framework.pause!{
+        instances.connect( params[:url], session ).framework.pause!{
             |paused|
-
-            i_client.close
             if !paused.rpc_connection_error?
                 log.instance_paused( env, params[:url] )
                 msg = "Instance at #{params[:url]} will pause as soon as the current page is audited."
@@ -874,12 +854,8 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-
-        i_client = instances.connect( params[:url], session )
-        i_client.framework.resume!{
+        instances.connect( params[:url], session ).framework.resume!{
             |res|
-
-            i_client.close
 
             if !res.rpc_connection_error?
                 log.instance_resumed( env, params[:url] )
@@ -898,9 +874,7 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + ( splat == 'instance' ? "reports" : splat )
-
-        i_client = instances.connect( params[:url], session )
-        save_and_shutdown( i_client ){
+        save_and_shutdown( instances.connect( params[:url], session ) ){
             |res|
 
             log.instance_shutdown( env, params[:url] ) if !res.rpc_connection_error?
