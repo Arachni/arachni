@@ -62,7 +62,8 @@ class Node
         if neighbour = @opts.neighbour
             add_neighbour( neighbour )
 
-            get_peers( neighbour ) {
+            peer = connect_to_peer( neighbour )
+            peer.node.neighbours {
                 |urls|
                 urls.each {
                     |url|
@@ -70,9 +71,9 @@ class Node
                 }
             }
 
-            peer = connect_to_peer( neighbour )
-            peer.node.add_neighbour( opts.datastore[:dispatcher_url], true ){
+            peer.node.add_neighbour( @opts.datastore[:dispatcher_url], true ){
                 |res|
+
                 if res.rpc_exception?
                     print_info( 'Neighbour seems dead: ' + neighbour )
                     remove_neighbour( neighbour )
@@ -137,6 +138,7 @@ class Node
 
             ::EM::Iterator.new( neighbours ).map( proc {
                 |neighbour, iter|
+
                 connect_to_peer( neighbour ).node.info {
                     |info|
 
@@ -250,18 +252,6 @@ class Node
             }
         }
 
-    end
-
-    #
-    # Grabs peers from the node in 'url'.
-    #
-    # @param    [String]    url     node URL
-    #
-    def get_peers( url, &block )
-        connect_to_peer( url ).node.neighbours {
-            |urls|
-            block.call( urls )
-        }
     end
 
     def connect_to_peer( url )
