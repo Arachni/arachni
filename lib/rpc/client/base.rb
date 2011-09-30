@@ -29,7 +29,11 @@ class Base < ::Arachni::RPC::Client
         super(
             :host  => host,
             :port  => port,
-            :token => token
+            :token => token,
+            :keep_alive => false,
+            :ssl_ca     => opts.ssl_ca,
+            :ssl_pkey   => opts.ssl_pkey,
+            :ssl_cert   => opts.ssl_cert
         )
     end
 
