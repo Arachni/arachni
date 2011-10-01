@@ -544,14 +544,18 @@ class Server < Sinatra::Base
     # Kills all running instances
     #
     def shutdown_all( url, &block )
-        log.dispatcher_global_shutdown( env, url )
-
         dispatchers.connect( url ).stats {
             |stats|
+            log.dispatcher_global_shutdown( env, url )
+
+            ap stats
+
             stats['running_jobs'].each {
                 |instance|
 
                 next if instance['helpers']['rank'] == 'slave'
+
+                ap instance
                 save_and_shutdown( instances.connect( instance['url'], session ) ){
                     log.instance_shutdown( env, instance['url'] )
                 }
@@ -652,7 +656,8 @@ class Server < Sinatra::Base
     #
     apost "/dispatchers/:url/shutdown_all" do |url|
         shutdown_all( url ){
-            async_redirect '/dispatchers'
+            msg = 'All instances will be shut down shortly, the reports will be download and saved automatically.'
+            async_redirect '/dispatchers', :flash => { :notice => msg }
         }
     end
 
@@ -861,7 +866,7 @@ class Server < Sinatra::Base
                 log.instance_resumed( env, params[:url] )
 
                 msg = "Instance at #{params[:url]} resumes."
-                async_redirect redir, :flash => { :notice => msg }
+                async_redirect redir, :flash => { :ok => msg }
             else
                 msg = "Instance at #{params[:url]} has been shutdown."
                 async_redirect redir, :flash => { :notice => msg }
@@ -880,7 +885,7 @@ class Server < Sinatra::Base
             log.instance_shutdown( env, params[:url] ) if !res.rpc_connection_error?
 
             msg = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir, :flash => { :notice => msg }
+            async_redirect redir, :flash => { :ok => msg }
         }
 
     end
