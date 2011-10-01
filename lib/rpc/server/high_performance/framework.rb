@@ -569,10 +569,10 @@ class Framework
     #
     def connect_to_instance( instance )
         @tokens  ||= {}
-        @i_conns ||= {}
+        # @i_conns ||= {}
 
         @tokens[instance['url']] = instance['token'] if instance['token']
-        return @i_conns[instance['url']] ||=
+        # return @i_conns[instance['url']] ||=
             Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
@@ -758,8 +758,9 @@ class Framework
     end
 
     def connect_to_dispatcher( url )
-        @d_conns ||= {}
-        @d_conns[url] ||= Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        # @d_conns ||= {}
+        # @d_conns[url] ||=
+        Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
     def merge_stats( stats )
