@@ -213,9 +213,9 @@ class Node
         d_nodes = @dead_nodes.dup
         d_nodes.each {
             |url|
-            neighbour = connect_to_peer( url )
-            neighbour.alive? {
+            connect_to_peer( url ).alive? {
                 |res|
+
                 if !res.rpc_exception?
                     print_status( 'Dispatcher came back to life: ' + url )
 
