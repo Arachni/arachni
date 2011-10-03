@@ -329,6 +329,7 @@ class Options
     attr_accessor :spider_first
 
     attr_accessor :rpc_port
+    attr_accessor :rpc_bind
     attr_accessor :ssl
     attr_accessor :ssl_pkey
     attr_accessor :ssl_cert
