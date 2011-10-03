@@ -56,6 +56,7 @@ class Dispatcher < Base
 
         @opts = opts
         @opts.rpc_port  ||= 7331
+        @opts.rpc_bind  ||= '0.0.0.0'
         @opts.pool_size ||= 5
 
         if opts.help
@@ -211,6 +212,9 @@ class Dispatcher < Base
 
     --port                      specify port to listen to
                                     (Default: #{@opts.rpc_port})
+
+    --bind                      specify bind address
+                                    (Default: #{@opts.rpc_bind})
 
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 

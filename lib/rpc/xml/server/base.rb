@@ -59,6 +59,7 @@ class Base
         end
 
         @server = WebServ.new(
+            :BindAddress     => opts.rpc_bind,
             :Port            => opts.rpc_port,
             :SSLEnable       => true,
             :SSLVerifyClient => verification,

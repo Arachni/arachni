@@ -57,6 +57,9 @@ begin
             when '--port'
                 options.rpc_port = arg.to_i
 
+            when '--bind'
+                options.rpc_bind = arg.to_s
+
             when '--pool-size'
                 options.pool_size = arg.to_i
 
