@@ -523,20 +523,9 @@ class Framework
     # @return   [YAML]  YAML dump of the AuditStore
     #
     def auditstore
-        ap 'IN AUDITSTORE'
-        ap Time.now.asctime
-
         store =  @framework.audit_store( true )
         store.framework = nil
-
-        ap "Size: #{store.to_yaml.size}"
-
         return store
-        # block.call( cstore )
-
-        # block.call( true )
-
-        # ap Time.now.asctime
     end
 
     #
