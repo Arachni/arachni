@@ -331,9 +331,10 @@ class HTTP
             opts = {
                 :headers       => headers,
                 :params        => cparams.empty? ? nil : cparams,
-                :follow_location => follow_location,
                 :method        => opts[:method]
             }.merge( @opts )
+
+            opts[:follow_location] = follow_location if follow_location
 
             opts[:timeout] = timeout if timeout
 
