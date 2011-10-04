@@ -84,7 +84,7 @@ class Spider
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
-                next if skip?( url ) || !in_domain?( url )
+                next if !in_domain?( url )
 
                 wait_if_paused
 
@@ -93,7 +93,8 @@ class Spider
                 opts = {
                     :timeout => nil,
                     :remove_id => true,
-                    :async => @opts.spider_first
+                    :async => @opts.spider_first,
+                    :follow_location => true
                 }
 
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
@@ -112,14 +113,18 @@ class Spider
                     # call the block...if we have one
                     if block
                         exception_jail{
-                            block.call( page.clone )
+                            if !skip?( page.url )
+                                block.call( page.clone )
+                            else
+                                print_info( 'Matched skip rule.' )
+                            end
                         }
                     end
 
                     # run blocks specified later
                     @on_every_page_blocks.each {
                         |block|
-                        block.call( page )
+                        block.call( page ) if !skip?( page.url )
                     }
 
                 }
@@ -177,14 +182,13 @@ class Spider
             end
         }
 
-
         skip_cnt = 0
         @opts.include.each {
             |regexp|
             skip_cnt += 1 if !(regexp =~ url)
         }
 
-        return false if skip_cnt > 1
+        return true if skip_cnt > 0
 
         return false
     end
