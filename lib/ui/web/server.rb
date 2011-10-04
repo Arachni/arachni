@@ -523,21 +523,53 @@ class Server < Sinatra::Base
     #
     # @param    [Arachni::RPC::Client::Instance]   arachni
     #
-    def save_and_shutdown( arachni, &block )
-        arachni.framework.clean_up!{
+    def save_and_shutdown( url, &block )
+        instance = instances.connect( url, session )
+        instance.framework.clean_up!{
             |res|
+
+            ap "SAVE AND SHUTDOWN: #{res.inspect}"
+
             if !res.rpc_connection_error?
-                arachni.framework.auditstore {
+                instance.framework.auditstore {
                     |auditstore|
+
+                    ap "SAVE AND SHUTDOWN -- auditstore: #{auditstore.class}"
+
                     if !auditstore.rpc_connection_error?
                         report_path = reports.save( auditstore )
-                        arachni.service.shutdown!{ block.call( report_path ) }
+                        instance.service.shutdown!{ block.call( report_path ) }
+                    else
+                        block.call( auditstore )
                     end
                 }
             else
                 block.call( res )
             end
         }
+        # ::Arachni::RPC::EM::Synchrony.run do
+            # instance = instances.connect( url, session )
+#
+            # begin
+                # res = instance.framework.clean_up!
+                # ap "SAVE AND SHUTDOWN #{res}"
+#
+                # begin
+                    # auditstore = instance.framework.auditstore
+                    # ap "SAVE AND SHUTDOWN -- auditstore: #{auditstore.class}"
+#
+                    # report_path = reports.save( auditstore )
+                    # instance.service.shutdown!
+                    # block.call( report_path )
+                # rescue Exception => e
+                    # ap e
+                    # block.call( e )
+                # end
+            # rescue Exception => e
+                # ap e
+                # block.call( e )
+            # end
+        # end
     end
 
     #
@@ -548,14 +580,11 @@ class Server < Sinatra::Base
             |stats|
             log.dispatcher_global_shutdown( env, url )
 
-            ap stats
-
             stats['running_jobs'].each {
                 |instance|
 
                 next if instance['helpers']['rank'] == 'slave'
 
-                ap instance
                 save_and_shutdown( instances.connect( instance['url'], session ) ){
                     log.instance_shutdown( env, instance['url'] )
                 }
@@ -577,11 +606,11 @@ class Server < Sinatra::Base
                 next if job['helpers']['rank'] == 'slave' ||
                     job['owner'] == HELPER_OWNER
 
-                arachni = instances.connect( job['url'], session )
-                arachni.framework.busy? {
+                instances.connect( job['url'], session ).framework.busy? {
                     |busy|
-                    if !busy
-                        save_and_shutdown( arachni ){
+
+                    if !busy.rpc_exception? && !busy
+                        save_and_shutdown( job['url'] ){
                             log.webui_zombie_cleanup( env, job['url'] )
                         }
                     end
@@ -702,7 +731,6 @@ class Server < Sinatra::Base
             if params['high_performance']
                 opts['settings']['grid_mode'] = 'high_performance'
             end
-
 
             job = Scheduler::Job.new(
                 :dispatcher  => params[:dispatcher],
@@ -827,11 +855,12 @@ class Server < Sinatra::Base
                 end
 
                 output['stats']['instances'] = prog['instances'].dup
-                body output.to_json
             else
-                output['messages'] = { 'status' => 'finished', 'data' => "The server has been shut down." }
-                body output.to_json
+                msg = "Connection error, retrying...."
+                output['messages'] = { 'data' => msg }
+                output['issues']   = { 'data' => msg }
             end
+            body output.to_json
         }
     end
 
@@ -879,13 +908,22 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + ( splat == 'instance' ? "reports" : splat )
-        save_and_shutdown( instances.connect( params[:url], session ) ){
+        save_and_shutdown( params[:url] ){
             |res|
 
-            log.instance_shutdown( env, params[:url] ) if !res.rpc_connection_error?
+            if !res.rpc_connection_error?
+                log.instance_shutdown( env, params[:url] )
+                msg = {
+                     :ok => "Instance at #{params[:url]} has been shutdown."
+                 }
+            else
+                redir = '/' + ( splat == 'instance' ? splat + '/' + url : splat )
+                msg = {
+                    :err => "Instance at #{params[:url]} could not be shutdown at the moment."
+                 }
+            end
 
-            msg = "Instance at #{params[:url]} has been shutdown."
-            async_redirect redir, :flash => { :ok => msg }
+            async_redirect redir, :flash => { msg.keys[0] => msg.values[0] }
         }
 
     end
@@ -949,7 +987,8 @@ class Server < Sinatra::Base
         puts "== Sinatra/#{Sinatra::VERSION} has taken the stage " +
             "on #{port} for #{environment} with backup from #{handler_name}" unless handler_name =~/cgi/i
 
-        handler.run self, handler_opts.merge( :Host => bind, :Port => port ) do |server|
+        handler.run self, handler_opts.merge( :Host => bind, :Port => port ) do
+            |server|
             [ :INT, :TERM ].each { |sig| trap( sig ) { quit!( server, handler_name ) } }
 
             set :running, true
@@ -958,7 +997,7 @@ class Server < Sinatra::Base
         puts "== Someone is already performing on port #{port}!"
     end
 
-    def self.prep_webrick
+    def self.prep_thin
         if @@conf['ssl']['server']['key']
             pkey = ::OpenSSL::PKey::RSA.new( File.read( @@conf['ssl']['server']['key'] ) )
         end
@@ -968,25 +1007,21 @@ class Server < Sinatra::Base
         end
 
         if @@conf['ssl']['key'] || @@conf['ssl']['cert'] || @@conf['ssl']['ca']
-            verification = OpenSSL::SSL::VERIFY_PEER | OpenSSL::SSL::VERIFY_FAIL_IF_NO_PEER_CERT
-        else
-            verification = ::OpenSSL::SSL::VERIFY_NONE
+            verification = true
         end
 
         return {
-            :SSLEnable       => @@conf['ssl']['server']['enable'] || false,
-            :SSLVerifyClient => verification,
-            :SSLCertName     => [ [ "CN", Arachni::Options.instance.server || ::WEBrick::Utils::getservername ] ],
-            :SSLCertificate  => cert,
-            :SSLPrivateKey   => pkey,
-            :SSLCACertificateFile => @@conf['ssl']['server']['ca']
+            :ssl        => true,
+            :ssl_verify => verification,
+            :ssl_cert_file  => cert,
+            :ssl_key_file   => pkey,
         }
     end
 
-    run! :host    => Arachni::Options.instance.server   || ::WEBrick::Utils::getservername,
+    run! :host    => Arachni::Options.instance.server   || '0.0.0.0',
          :port    => Arachni::Options.instance.rpc_port || 4567,
-         :server => %w[ thin ]
-         # :webrick => prep_webrick
+         :server  => %w[ thin ],
+         :thin    => prep_thin
 
     at_exit do
 
