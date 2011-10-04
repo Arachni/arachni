@@ -416,8 +416,8 @@ class Parser
                 cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
                 cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
             rescue Exception => e
-                ap e
-                ap e.backtrace
+                # ap e
+                # ap e.backtrace
                 return cookies_arr
             end
         end
