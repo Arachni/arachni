@@ -8,6 +8,7 @@
 
 =end
 
+require 'ap'
 require 'em-synchrony'
 
 module Arachni
@@ -309,7 +310,7 @@ class Framework
     # @param    [String]    results     YAML dump of an array with YAML serialized [Arachni::Issue] objects
     #
     def register_issue( results )
-        @framework.modules.class.register_results( YAML::load( results ) )
+        @framework.modules.class.register_results( results )
         return true
     end
 
@@ -522,16 +523,9 @@ class Framework
     # @return   [YAML]  YAML dump of the AuditStore
     #
     def auditstore
-        begin
-            store =  @framework.audit_store( true )
-            store.framework = nil
-            return YAML.dump( store )
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-        end
-
-        return false
+        store =  @framework.audit_store( true )
+        store.framework = nil
+        return store
     end
 
     #
@@ -648,7 +642,7 @@ class Framework
     private
 
     def report_issue_to_master( results )
-        @master.framework.register_issue( results.to_yaml ){}
+        @master.framework.register_issue( results ){}
     end
 
     def prefered_dispatchers( &block )

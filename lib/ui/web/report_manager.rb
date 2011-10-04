@@ -220,11 +220,12 @@ class ReportManager
     private
 
     def unserialize( data )
-         begin
-            Marshal.load( data )
-         rescue
-             YAML.load( data )
-         end
+        data
+         # begin
+            # Marshal.load( data )
+         # rescue
+             # YAML.load( data )
+         # end
     end
 
     def save_to_file( data, file )
