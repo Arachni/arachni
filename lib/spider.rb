@@ -22,7 +22,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 class Spider
 
@@ -76,21 +76,15 @@ class Spider
     def run( &block )
         return if @opts.link_count_limit == 0
 
-        do_spider = true
-        if @opts.focus_scan_on && !@opts.focus_scan_on.empty?
-            paths = @opts.focus_scan_on
-            do_spider = false
-        else
-            paths = []
-            paths << @opts.url.to_s
-        end
+        paths = []
+        paths << @opts.url.to_s
 
         visited = []
 
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 url = url_sanitize( url )
-                next if (skip?( url ) || !in_domain?( url )) && do_spider
+                next if !in_domain?( url )
 
                 wait_if_paused
 
@@ -99,7 +93,8 @@ class Spider
                 opts = {
                     :timeout => nil,
                     :remove_id => true,
-                    # :async => @opts.spider_first && do_spider
+                    :async => @opts.spider_first,
+                    :follow_location => true
                 }
 
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
@@ -111,28 +106,30 @@ class Spider
                     page = Arachni::Parser.new( @opts, res ).run
                     page.url = url_sanitize( res.effective_url )
 
-                    if do_spider
-                        @sitemap |= page.paths.map { |path| url_sanitize( path ) }
-                        paths    |= @sitemap - visited
-                    end
+                    @sitemap |= page.paths.map { |path| url_sanitize( path ) }
+                    paths    |= @sitemap - visited
 
 
                     # call the block...if we have one
                     if block
                         exception_jail{
-                            block.call( page.clone )
+                            if !skip?( page.url )
+                                block.call( page.clone )
+                            else
+                                print_info( 'Matched skip rule.' )
+                            end
                         }
                     end
 
                     # run blocks specified later
                     @on_every_page_blocks.each {
-                        |c_block|
-                        c_block.call( page )
+                        |block|
+                        block.call( page ) if !skip?( page.url )
                     }
 
                 }
 
-                Arachni::HTTP.instance.run if !@opts.spider_first && do_spider
+                Arachni::HTTP.instance.run if !@opts.spider_first
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
@@ -145,7 +142,7 @@ class Spider
 
             end
 
-            if @opts.spider_first ||  !do_spider
+            if @opts.spider_first
                 Arachni::HTTP.instance.run
             else
                 break
@@ -185,15 +182,13 @@ class Spider
             end
         }
 
-
         skip_cnt = 0
         @opts.include.each {
             |regexp|
-            regexp = Regexp.new( regexp ) if regexp.is_a?( String )
             skip_cnt += 1 if !(regexp =~ url)
         }
 
-        return false if skip_cnt > 1
+        return true if skip_cnt > 0
 
         return false
     end
