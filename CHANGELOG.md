@@ -26,6 +26,8 @@
    - Fixed small typo in "Settings" screen. [Issue #62]
 - Spider
    - Added "--depth" parameter.
+   - Fixed incorrect implementation of the inclusion filters.
+   - Now follows "Location" headers directly and bypasses the trainer.
 - Parser
    - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
 - Plugins
