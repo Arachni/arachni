@@ -44,6 +44,8 @@ class ContentTypes < Arachni::Plugin::Base
             next if @logged.include?( res.request.method.to_s.upcase + res.effective_url )
             next if !(type = res.headers_hash['Content-type'] ) || type.empty?
 
+            type = type.join( ' - ' ) if type.is_a?( Array )
+
             if( !@options['exclude'].empty? && !type.match( @exclude ) ) ||
                 @options['exclude'].empty?
                 @results[type] ||= []
