@@ -83,17 +83,16 @@ class Spider
 
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
-                url = url_sanitize( url )
-                next if !in_domain?( url )
+                next if skip?( url )
 
                 wait_if_paused
 
                 visited << url
 
                 opts = {
-                    :timeout => nil,
-                    :remove_id => true,
-                    :async => @opts.spider_first,
+                    :timeout    => nil,
+                    :remove_id  => true,
+                    :async      => @opts.spider_first,
                     :follow_location => true
                 }
 
@@ -106,7 +105,7 @@ class Spider
                     page = Arachni::Parser.new( @opts, res ).run
                     page.url = url_sanitize( res.effective_url )
 
-                    @sitemap |= page.paths.map { |path| url_sanitize( path ) }
+                    @sitemap |= page.paths
                     paths    |= @sitemap - visited
 
 
@@ -154,14 +153,10 @@ class Spider
     end
 
     def skip?( url )
+        redundant?( url )
+    end
 
-        return true if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
-
-        @opts.exclude.each {
-            |regexp|
-            return true if regexp =~ url
-        }
-
+    def redundant?( url )
         @opts.redundant.each_with_index {
             |redundant, i|
 
@@ -181,17 +176,9 @@ class Spider
                 @opts.redundant[i]['count'] -= 1
             end
         }
-
-        skip_cnt = 0
-        @opts.include.each {
-            |regexp|
-            skip_cnt += 1 if !(regexp =~ url)
-        }
-
-        return true if skip_cnt > 0
-
         return false
     end
+
 
     def wait_if_paused
         while( paused? )
@@ -211,44 +198,6 @@ class Spider
         @pause ||= false
         return @pause
     end
-
-    #
-    # Checks if the uri is in the same domain
-    #
-    # @param [URI] url
-    #
-    # @return [String]
-    #
-    def in_domain?( uri )
-
-        uri_1 = URI( uri.to_s )
-        uri_2 = URI( @opts.url.to_s )
-
-        if( @opts.follow_subdomains )
-            return extract_domain( uri_1 ) ==  extract_domain( uri_2 )
-        end
-
-        uri_1.host == uri_2.host
-    end
-
-    #
-    # Extracts the domain from a URI object
-    #
-    # @param [URI] url
-    #
-    # @return [String]
-    #
-    def extract_domain( url )
-
-        if !url.host then return false end
-
-        splits = url.host.split( /\./ )
-
-        if splits.length == 1 then return true end
-
-        splits[-2] + "." + splits[-1]
-    end
-
 
     #
     # Hook for further analysis of pages, statistics etc.
