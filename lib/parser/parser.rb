@@ -621,14 +621,15 @@ class Parser
     def run_extractors
         lib = @opts.dir['root'] + 'path_extractors/'
 
-
         begin
             @@manager ||= ::Arachni::ComponentManager.new( lib, Extractors )
 
             return @@manager.available.map {
                 |name|
                 @@manager[name].new.run( doc )
-            }.flatten.uniq
+            }.flatten.uniq.map{ |path| to_absolute( url_sanitize( path ) ) }.
+            reject { |path| !include?( path ) || exclude?( path ) }.
+            reject { |path| too_deep?( url ) || !in_domain?( url ) }
 
         rescue ::Exception => e
             print_error( e.to_s )
