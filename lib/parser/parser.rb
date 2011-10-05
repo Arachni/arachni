@@ -460,15 +460,7 @@ class Parser
       @paths = []
       return @paths if !doc
 
-      run_extractors( ).each {
-          |path|
-          next if path.nil? or path.empty?
-          abs = to_absolute( path ) rescue next
-
-          @paths << abs if in_domain?( abs )
-      }
-
-      @paths.uniq!
+      @paths = run_extractors
       return @paths
     end
 
@@ -627,9 +619,17 @@ class Parser
             return @@manager.available.map {
                 |name|
                 @@manager[name].new.run( doc )
-            }.flatten.uniq.map{ |path| to_absolute( url_sanitize( path ) ) }.
-            reject { |path| !include?( path ) || exclude?( path ) }.
-            reject { |path| too_deep?( url ) || !in_domain?( url ) }
+            }.flatten.uniq.collect.
+            map { |path| to_absolute( url_sanitize( path ) ) }.
+            reject {
+                |path|
+                begin
+                    ( !include?( path ) || exclude?( path ) ) ||
+                    ( too_deep?( path ) || !in_domain?( path ) )
+                rescue
+                    true
+                end
+            }
 
         rescue ::Exception => e
             print_error( e.to_s )
