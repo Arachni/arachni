@@ -77,7 +77,7 @@ class Backdoors < Arachni::Module::Base
             :issue   => {
                 :name        => %q{A backdoor file exists on the server.},
                 :description => %q{},
-                :tags        => [ 'path', 'backdoor', 'file' ],
+                :tags        => [ 'path', 'backdoor', 'file', 'discovery' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',

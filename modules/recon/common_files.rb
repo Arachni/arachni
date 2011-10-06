@@ -77,7 +77,7 @@ class CommonFiles < Arachni::Module::Base
             :issue   => {
                 :name        => %q{A common sensitive file exists on the server.},
                 :description => %q{},
-                :tags        => [ 'common', 'path', 'file' ],
+                :tags        => [ 'common', 'path', 'file', 'discovery' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::LOW,
                 :cvssv2       => '',
