@@ -50,32 +50,32 @@ class Parser
     include Arachni::Module::Utilities
 
     module Extractors
-    #
-    # Base Spider parser class for modules.
-    #
-    # The aim of such modules is to extract paths from a webpage for the Spider to follow.
-    #
-    #
-    # @author: Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
-    # @version: 0.1
-    # @abstract
-    #
-    class Paths
+        #
+        # Base Spider parser class for modules.
+        #
+        # The aim of such modules is to extract paths from a webpage for the Spider to follow.
+        #
+        #
+        # @author: Tasos "Zapotek" Laskos
+        #                                      <tasos.laskos@gmail.com>
+        #                                      <zapotek@segfault.gr>
+        # @version: 0.1
+        # @abstract
+        #
+        class Paths
 
-        #
-        # This method must be implemented by all modules and must return an array
-        # of paths as plain strings
-        #
-        # @param    [Nokogiri]  Nokogiri document
-        #
-        # @return   [Array<String>]  paths
-        #
-        def run( doc )
+            #
+            # This method must be implemented by all modules and must return an array
+            # of paths as plain strings
+            #
+            # @param    [Nokogiri]  Nokogiri document
+            #
+            # @return   [Array<String>]  paths
+            #
+            def run( doc )
+            end
 
         end
-    end
     end
 
     #
@@ -314,9 +314,7 @@ class Parser
                     elements[i]['attrs']['method'].downcase
             end
 
-            if !in_domain?( elements[i]['attrs']['action'] )
-                next
-            end
+            next if skip?( elements[i]['attrs']['action'] )
 
             elements[i]['textarea'] = form_textareas( form )
             elements[i]['select']   = form_selects( form )
@@ -360,9 +358,7 @@ class Parser
             link['href'] = to_absolute( link['href'] )
 
             if !link['href'] then next end
-            if( exclude?( link['href'] ) ) then next end
-            if( !include?( link['href'] ) ) then next end
-            if !in_domain?( URI.parse( link['href'] ) ) then next end
+            next if skip?( link['href'] )
 
             link['vars'] = {}
             link_vars( link['href'] ).each_pair {
@@ -548,7 +544,11 @@ class Parser
 
 
     def too_deep?( url )
-        return true if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+        if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+            return true
+        else
+            return false
+        end
     end
 
     #
@@ -556,6 +556,7 @@ class Parser
     # +false+ otherwise
     #
     def in_domain?( uri )
+
         curi = URI.parse( normalize_url( uri.to_s ) )
 
         if( @opts.follow_subdomains )
@@ -602,6 +603,18 @@ class Parser
         return false
     end
 
+    def skip?( path )
+        return true if !path
+
+        begin
+            return true if !include?( path )
+            return true if exclude?( path )
+            return true if too_deep?( path )
+            return true if !in_domain?( path )
+        rescue
+            true
+        end
+    end
 
     private
 
@@ -621,15 +634,7 @@ class Parser
                 @@manager[name].new.run( doc )
             }.flatten.uniq.collect.
             map { |path| to_absolute( url_sanitize( path ) ) }.
-            reject {
-                |path|
-                begin
-                    ( !include?( path ) || exclude?( path ) ) ||
-                    ( too_deep?( path ) || !in_domain?( path ) )
-                rescue
-                    true
-                end
-            }
+            reject { |path| skip?( path ) }
 
         rescue ::Exception => e
             print_error( e.to_s )
