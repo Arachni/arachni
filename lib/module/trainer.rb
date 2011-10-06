@@ -56,11 +56,9 @@ class Trainer
         @parser.url = @page.url
 
         begin
-            url = res.effective_url
-            url = URI( to_absolute( url ) )
+            url = @parser.to_absolute( res.effective_url )
 
-            return if !follow?(  url )
-            return if ( redir && !follow?(  url ) )
+            return if !follow?( url )
 
             analyze( [ res, redir ] )
 
@@ -72,13 +70,7 @@ class Trainer
     end
 
     def follow?( url )
-        @parser.url = @page.url
-
-        return false if @parser.too_deep?( @page.url )
-        return false if !@parser.in_domain?( @page.url )
-        return false if @parser.exclude?( @page.url )
-        return false if !@parser.include?( @page.url )
-        return true
+        !@parser.skip?( url )
     end
 
     #
@@ -106,7 +98,7 @@ class Trainer
         print_debug( 'Started for response with request ID: #' +
           res[0].request.id.to_s )
 
-        @parser.url = res[0].effective_url.clone
+        @parser.url = @parser.to_absolute( url_sanitize( res[0].effective_url ) )
 
         train_cookies( res[0] )
 
@@ -126,7 +118,7 @@ class Trainer
             begin
                 url           = res[0].request.url
                 # prepare the page url
-                @parser.url = to_absolute( url )
+                @parser.url = @parser.to_absolute( url )
             rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
                 # raise e
@@ -145,23 +137,9 @@ class Trainer
 
     private
 
-    def to_absolute( url )
-        effective_url = url_sanitize( url )
-        @page.url     = url_sanitize( @page.url )
-
-        begin
-            # prepare the page url
-            return (URI.parse( @page.url ).merge( URI( effective_url ) )).to_s.dup
-        rescue
-            # worst case scenario
-            return @page.url
-        end
-    end
-
     def train_forms( res )
         return [], 0 if !@opts.audit_forms
 
-        # @parser.url = res.effective_url.clone
         forms = @parser.forms( ).clone
         cforms, form_cnt = update_forms( forms )
 
@@ -179,12 +157,11 @@ class Trainer
     def train_links( res, redir = false )
         return [], 0  if !@opts.audit_links
 
-        # @parser.url = res.effective_url.clone
-
         links   = @parser.links.clone
 
         if( redir )
-            url = to_absolute( res.effective_url )
+
+            url = @parser.to_absolute( url_sanitize( res.effective_url ) )
             links << Arachni::Parser::Element::Link.new( url, {
                 'href' => url,
                 'vars' => @parser.link_vars( url )
@@ -219,7 +196,6 @@ class Trainer
         end
 
     end
-
 
     def self.info
       { :name  => 'Trainer' }

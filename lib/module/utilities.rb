@@ -8,6 +8,8 @@
 
 =end
 
+require 'cgi'
+
 module Arachni
 module Module
 
@@ -45,7 +47,7 @@ module Utilities
             url = ( uri_decode( url ).to_s.unpack( 'A*' )[0] )
         end
 
-        return uri_encode( url )
+        return uri_encode( CGI.unescapeHTML( url ) )
     end
 
     #
