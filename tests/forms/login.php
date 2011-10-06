@@ -36,7 +36,7 @@ if( !$_SESSION['logged_in'] ) {
     </p>
     <p>
       <label>Password:</label>
-      <input type="text" name="password" value=""> (pass)
+      <input type="password" name="password" value=""> (pass)
     </p>
     <p>
       <input type="submit" value="Login">
