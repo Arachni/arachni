@@ -234,7 +234,10 @@ class Framework
             instance_conn = connect_to_instance( instance )
 
             instance_conn.framework.clean_up! {
-                iter.return( instance_conn.framework.get_plugin_store )
+                instance_conn.framework.get_plugin_store {
+                    |res|
+                    iter.return( res )
+                }
             }
 
         }, proc {
