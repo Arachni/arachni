@@ -8,8 +8,6 @@
  * You should also exclude the logout url to keep Arachni logged in.
  *
  */
- 
-error_reporting( E_ALL );
 
 session_start();
 
@@ -70,14 +68,14 @@ EOHTML;
 
 if( $_REQUEST['vuln'] ) {
     echo "<pre>";
-    
+
     if( $_SESSION['__csrf'] != $_REQUEST['__csrf'] ) {
         echo 'Invalid CSRF token...';
         exit;
     }
 
     echo 'Ok...';
-    
+
     echo "</pre>";
 }
 
