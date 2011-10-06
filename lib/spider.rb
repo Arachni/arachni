@@ -81,6 +81,19 @@ class Spider
 
         visited = []
 
+        opts = {
+            :timeout    => nil,
+            :remove_id  => true,
+            :async      => @opts.spider_first,
+            :follow_location => true
+        }
+
+        # we need a parser in order to have access to skip() in case
+        # there's a redirect that shouldn't be followed
+        seed_page = Arachni::HTTP.instance.get( paths[0], opts.merge( :async => false ) ).response
+        parser = Parser.new( @opts, seed_page )
+        parser.url = paths[0]
+
         while( !paths.empty? )
             while( !paths.empty? && url = paths.pop )
                 next if skip?( url )
@@ -89,15 +102,10 @@ class Spider
 
                 visited << url
 
-                opts = {
-                    :timeout    => nil,
-                    :remove_id  => true,
-                    :async      => @opts.spider_first,
-                    :follow_location => true
-                }
-
                 Arachni::HTTP.instance.get( url, opts ).on_complete {
                     |res|
+
+                    next if parser.skip?( res.effective_url )
 
                     print_line
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
