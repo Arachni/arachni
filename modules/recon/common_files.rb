@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.2
 #
 #
 class CommonFiles < Arachni::Module::Base
@@ -32,9 +32,6 @@ class CommonFiles < Arachni::Module::Base
     def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= Set.new
-
-        # our results array
-        @results = []
 
         @@__filenames ||=[]
         return if !@@__filenames.empty?
@@ -54,23 +51,13 @@ class CommonFiles < Arachni::Module::Base
         @@__filenames.each {
             |file|
 
-            #
-            # Test for the existance of the file
-            #
-            # We're not worrying about its contents, the Trainer will
-            # analyze it and if it's HTML it'll extract any new attack vectors.
-            #
-
             url  = path + file
 
             print_status( "Checking for #{url}" )
 
-            req  = @http.get( url, :train => true )
-
-            req.on_complete {
+            log_remote_file_if_exists( url ) {
                 |res|
-                print_status( "Analyzing #{res.effective_url}" )
-                __log_results( res, file )
+                print_ok( "Found #{file} at " + res.effective_url )
             }
         }
 
@@ -84,7 +71,7 @@ class CommonFiles < Arachni::Module::Base
             :description    => %q{Tries to find common sensitive files on the server.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.2',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -99,38 +86,6 @@ class CommonFiles < Arachni::Module::Base
             }
 
         }
-    end
-
-    #
-    # Adds an issue to the @results array<br/>
-    # and outputs an "OK" message with the filename and its url.
-    #
-    # @param  [Net::HTTPResponse]  res   the HTTP response
-    # @param  [String]  filename   the discovered filename
-    #
-    def __log_results( res, filename )
-
-        return if( res.code != 200 || @http.custom_404?( res ) )
-
-        url = res.effective_url
-        # append the result to the results array
-        @results << Issue.new( {
-            :url          => url,
-            :injected     => filename,
-            :id           => filename,
-            :elem         => Issue::Element::PATH,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( @results )
-
-        # inform the user that we have a match
-        print_ok( "Found #{filename} at " + url )
     end
 
 end

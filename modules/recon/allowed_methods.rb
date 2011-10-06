@@ -80,7 +80,7 @@ class AllowedMethods < Arachni::Module::Base
 
         return if !methods || methods.empty?
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :regexp_match => methods,
@@ -90,10 +90,7 @@ class AllowedMethods < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( methods )

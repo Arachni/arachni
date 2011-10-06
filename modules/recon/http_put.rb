@@ -73,7 +73,7 @@ class HTTP_PUT < Arachni::Module::Base
 
     def __log_results( res )
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -82,10 +82,7 @@ class HTTP_PUT < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'File has been created: ' + res.effective_url )
     end

@@ -21,7 +21,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -77,7 +77,7 @@ class WebDav < Arachni::Module::Base
             :description    => %q{Checks for WebDAV enabled directories.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
@@ -103,7 +103,7 @@ class WebDav < Arachni::Module::Base
 
         @@__found = true
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -112,10 +112,7 @@ class WebDav < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( "Enabled for: #{res.effective_url}" )
