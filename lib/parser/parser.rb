@@ -99,6 +99,7 @@ class Parser
     def initialize( opts, res )
         @opts = opts
 
+        @code = res.code
         @url  = url_sanitize( res.effective_url )
         @html = res.body
         @response_headers = res.headers_hash
@@ -115,6 +116,7 @@ class Parser
         type = Arachni::HTTP.content_type( @response_headers )
         if type.is_a?( String) && !type.substring?( 'text' )
             return Page.new( {
+                :code        => @code,
                 :url         => @url,
                 :query_vars  => link_vars( @url ),
                 :html        => @html,
@@ -151,6 +153,7 @@ class Parser
         end
 
         return Page.new( {
+            :code        => @code,
             :url         => @url,
             :query_vars  => link_vars( @url ),
             :html        => @html,
