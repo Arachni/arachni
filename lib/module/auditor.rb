@@ -155,6 +155,9 @@ module Auditor
     #
     # Logs a remote file if it exists
     #
+    # @param    [String]    url
+    # @param    [Proc]      &block  called if the file exists, just before logging
+    #
     def log_remote_file_if_exists( url, &block )
         req  = @http.get( url, :train => true )
         req.on_complete {
@@ -168,10 +171,21 @@ module Auditor
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
+    #
+    # Checks that the response points to an existing file/page and not
+    # an error or custom 404 response
+    #
+    # @param    [Typhoeus::Response]    res
+    #
     def remote_file_exist?( res )
         res.code == 200 && !@http.custom_404?( res )
     end
 
+    #
+    # Logs the existence of a remote file.
+    #
+    # @param    [Typhoeus::Response]    res
+    #
     def log_remote_file( res )
         url = res.effective_url
         filename = File.basename( URI( res.effective_url ).path )
