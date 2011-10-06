@@ -41,7 +41,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -246,16 +246,14 @@ class CSRF < Arachni::Module::Base
 
         @@__audited << "#{url}::#{name}"
 
-        # append the result to the results array
-        issue = Issue.new( {
+        log_issue(
             :var          => name,
             :url          => url,
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-        }.merge( self.class.info ) )
+        )
 
         print_ok( "Found unprotected form with name '#{name}' at '#{url}'" )
-        register_results( [ issue ] )
     end
 
     def self.info
@@ -268,7 +266,7 @@ class CSRF < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

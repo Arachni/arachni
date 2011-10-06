@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -69,7 +69,7 @@ class XSSURI < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -95,8 +95,7 @@ class XSSURI < Arachni::Module::Base
         if res.body.substring?( @str )
 
             url = res.effective_url
-            # append the result to the results hash
-            @results << Issue.new( {
+            log_issue(
                 :url          => url,
                 :injected     => @str,
                 :id           => @str,
@@ -108,14 +107,10 @@ class XSSURI < Arachni::Module::Base
                     :request    => res.request.headers,
                     :response   => res.headers,
                 }
-            }.merge( self.class.info ) )
+            )
 
             # inform the user that we have a match
             print_ok( "In #{@page.url} at " + url )
-
-            # register our results with the system
-            register_results( @results )
-
         end
     end
 
