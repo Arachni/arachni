@@ -18,7 +18,7 @@ module MetaModules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class TimeoutNotice < Base
 
@@ -39,7 +39,7 @@ class TimeoutNotice < Base
         @counter = {}
     end
 
-    def prepare
+    def pre
         # run for each response as it arrives
         @http.add_on_complete {
             |res|
@@ -59,7 +59,7 @@ class TimeoutNotice < Base
         }
     end
 
-    def run
+    def mid
 
         avg = get_avg
 

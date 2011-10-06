@@ -42,7 +42,7 @@ class Uniformity < Base
         @framework = framework
     end
 
-    def run
+    def mid
 
         # will hold the hash IDs of inconclusive issues
         uniformals = {}

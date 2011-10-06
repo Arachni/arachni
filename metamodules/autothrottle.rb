@@ -17,7 +17,7 @@ module MetaModules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class AutoThrottle < Base
 
@@ -37,7 +37,7 @@ class AutoThrottle < Base
         @http      = framework.http
     end
 
-    def prepare
+    def pre
 
         # run for each response as it arrives
         @http.add_on_complete {
