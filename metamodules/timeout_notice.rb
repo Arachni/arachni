@@ -98,7 +98,7 @@ class TimeoutNotice < Base
     end
 
     def self.info
-        super.merge( {
+        {
             :description    => %q{These logged issues used timing attacks.
                 However, the affected web pages demonstrated an unusually high response time rendering
                 these results inconclusive or (possibly) false positives.
@@ -109,7 +109,7 @@ class TimeoutNotice < Base
                 Nomatter the case, please do look into the situation further.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
-        } )
+        }
     end
 
 end
