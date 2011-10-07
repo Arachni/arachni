@@ -71,8 +71,8 @@ class BackupFiles < Arachni::Module::Base
             file = ext % filename # Example: index.php.bak
             check!( path, file )
 
-            file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
-            check!( path, file )
+            cfile = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
+            check!( path, file ) if file != cfile
         }
 
         @@__audited << path
