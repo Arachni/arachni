@@ -22,14 +22,14 @@ class MetaModules
 module MetaFormatters
 
     #
-    # XML formatter for the results of the TimeoutNotice metamodule
+    # XML formatter for the results of the TimingAttacks metamodule
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class TimeoutNotice < Arachni::Plugin::Formatter
+    class TimingAttacks < Arachni::Plugin::Formatter
 
         include Arachni::Reports::Buffer
 
