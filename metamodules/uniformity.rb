@@ -84,6 +84,7 @@ class Uniformity < Base
 
     def self.info
         {
+            :name           => 'Uniformity (Lack of central sanitization)',
             :description    => %q{The same issue(s) persist(s) across different pages.
                 This is usually a sign for a lack of a central/single point of input
                 sanitization, a bad coding practise.},
