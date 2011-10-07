@@ -33,6 +33,15 @@
 - Plugins
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
 - Heeded Ruby's warnings (<em>ruby -w</em>).
+- Modules
+   - Added helper methods for checking the existence of remote files and directories
+   - Added helper methods for issue logging.
+   - Refactored modules replacing duplicate code with the new helper methods.
+- Meta-Modules
+   - Updated API method names to better fit their operation.
+   - New 'Discovery' metamodule (accompanied by appropriate report formatters) [Issue #81]
+      - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+   - Renamed 'TimeoutNotice' to 'TimingAttacks' and put under the 'anomaly_detection' directory.
 - Dependencies
    - Added
       - Arachni-RPC

@@ -13,3 +13,4 @@
 /logs/
 /private.pem
 generate-autodeploy.sh
+tests/fp_discover.php
