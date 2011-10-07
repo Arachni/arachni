@@ -36,9 +36,6 @@ class HTML
 
             def tpl
                 %q{
-                    <h3>Form dictionary attacker</h3>
-                    <blockquote><%=@description%></blockquote>
-
                     <h4>Credentials</h4>
                     <strong>Username</strong>: <%=CGI.escapeHTML(@results[:username])%> <br/>
                     <strong>Password</strong>: <%=CGI.escapeHTML(@results[:password])%>

@@ -38,9 +38,6 @@ module MetaFormatters
 
         def tpl
             %q{
-                    <h4>Uniformity (Lack of centralised sanitization)</h4>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
                     <ul>
                     <%@results['uniformals'].each_pair do |id, uniformal| %>
                         <% issue = uniformal['issue'] %>
@@ -51,7 +48,7 @@ module MetaFormatters
 
                             <%@results['pages'][id].each_with_index do |url, i|%>
                                 <li>
-                                    <a href="#issue_<%=uniformal['indices'][i]%>"><%=url%></a>
+                                    [<%=uniformal['indices'][i]%>] <a href="#issue_<%=uniformal['indices'][i]%>"><%=url%></a>
                                 </li>
                             <%end%>
 

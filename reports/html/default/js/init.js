@@ -120,8 +120,12 @@
         // as a parameter we are sending a selector. For this particular script we must select the unordered (or ordered) list item element
         tabs('nav ul');
 
+        $( "#summary-tabs" ).tabs();
         $( "#issue-tabs" ).tabs();
         $( "#untrusted-tabs" ).tabs();
+        $( "#plugin-tabs" ).tabs();
+        $( "#plugin-meta-tabs" ).tabs();
+
       });
 
 
@@ -210,7 +214,7 @@
                  backgroundColor: '#ccc'
               },
               title: {
-                 text: 'Issues which require manual verification'
+                 text: 'Requiring verification'
               },
               tooltip: {
                  formatter: function() {

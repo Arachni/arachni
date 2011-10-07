@@ -36,10 +36,6 @@ class HTML
 
             def tpl
                 %q{
-                    <h3>Content types</h3>
-                    <blockquote><%=@description%></blockquote>
-
-                    <h4>Results</h4>
                     <% @results.each_pair do |type, responses| %>
                         <ul>
 

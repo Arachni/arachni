@@ -1,0 +1,6 @@
+            <h2>Sitemap</h2>
+            <p> &nbsp; </p>
+            <h3><%=audit_store.sitemap.size%> pages</h3>
+            <% audit_store.sitemap.each do |url| %>
+              <a href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a><br/>
+            <%end%>

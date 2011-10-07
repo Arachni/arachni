@@ -1,0 +1,43 @@
+            <h2>Plugin results</h2>
+
+                <div id="plugin-tabs">
+                    <ul>
+                    <% plugins.each_pair do |name, html|%>
+                        <li><a href="#<%=name%>"><%=get_plugin_info( name )[:name]%></a></li>
+                    <% end %>
+                    </ul>
+
+                <% plugins.each_pair do |name, html|%>
+                    <div id="<%=name%>">
+                    <blockquote><%=get_plugin_info( name )[:description]%></blockquote>
+
+                    <% if html.is_a?( Hash )%>
+
+                    <div id="plugin-meta-tabs">
+
+                        <ul>
+                            <% html.each_pair do |meta, results|%>
+                                <li><a href="#<%=meta%>"><%=get_meta_info( meta )[:name]%></a></li>
+                            <%end%>
+                        </ul>
+
+                        <% html.each_pair do |meta, results|%>
+                        <div id="<%=meta%>">
+                            <blockquote><%=get_meta_info( meta )[:description]%></blockquote>
+                            <p><%=results.force_encoding( 'utf-8' )%></p>
+                        </div>
+                        <% end %>
+
+                    </div>
+
+
+                    <% else %>
+                        <p><%=html.force_encoding( 'utf-8' )%></p>
+                    <% end %>
+
+                    </div>
+
+                <% end %>
+                </div>
+
+        </section>

@@ -36,12 +36,6 @@ class HTML
 
             def tpl
                 %q{
-                    <h3>AutoLogin</h3>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
-                    <h4>Result</h4>
-                    <blockquote><%=@results[:msg]%></blockquote>
-
                     <% if @results[:cookies].is_a?( Hash )%>
                     <h5>Cookies were set to:</h5>
                     <ul>

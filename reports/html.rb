@@ -71,6 +71,30 @@ class HTML < Arachni::Report::Base
             self
         end
 
+        def format_issue( hash )
+            idx, issue = find_issue_by_hash( hash )
+            erb :issue, {
+                :idx   => idx,
+                :issue => issue
+            }
+        end
+
+        def find_issue_by_hash( hash )
+            @audit_store.issues.each_aith_index {
+                |issue, i|
+                return [i+1, issue] if issue._hash == hash
+            }
+            return nil
+        end
+
+        def get_meta_info( name )
+            @audit_store.plugins['metamodules'][:results][name]
+        end
+
+        def get_plugin_info( name )
+            @audit_store.plugins[name]
+        end
+
         def js_multiline( str )
           "\"" + str.gsub( "\n", '\n' ) + "\"";
         end
@@ -112,10 +136,8 @@ class HTML < Arachni::Report::Base
         print_line( )
         print_status( 'Creating HTML report...' )
 
-        # report = ERB.new( IO.read( @options['tpl'] ) )
-
-        @plugins   = format_plugin_results( @audit_store.plugins )
-        @base_path = File.dirname( @options['tpl'] ) + '/' +
+        plugins   = format_plugin_results( @audit_store.plugins )
+        base_path = File.dirname( @options['tpl'] ) + '/' +
             File.basename( @options['tpl'], '.erb' ) + '/'
 
         conf = {}
@@ -127,8 +149,8 @@ class HTML < Arachni::Report::Base
         params = __prepare_data.merge(
             :conf        => conf,
             :audit_store => @audit_store,
-            :plugins     => @plugins,
-            :base_path   => @base_path
+            :plugins     => plugins,
+            :base_path   => base_path
         )
 
         __save( @options['outfile'], erb( @options['tpl'], params ) )

@@ -1,0 +1,118 @@
+            <h2>Configuration</h2>
+
+            <strong>Version</strong>: <%=audit_store.version%><br />
+            <strong>Revision</strong>: <%=audit_store.revision%><br />
+            <strong>Audit started on</strong>: <%=audit_store.start_datetime%><br />
+            <strong>Audit finished on</strong>: <%=audit_store.finish_datetime%><br />
+            <strong>Runtime</strong>: <%=audit_store.delta_time%><br />
+
+            <p>&nbsp;</p>
+            <h3>Runtime options</h3>
+
+            <strong>URL:</strong> <%=audit_store.options['url']%><br />
+            <strong>User agent:</strong> <%=escapeHTML( audit_store.options['user_agent'] )%><br />
+
+            <p>&nbsp;</p>
+
+            <table>
+                <tr>
+                    <th>Audited elements</th>
+                    <th>Modules</th>
+                    <th>Filters</th>
+                    <th>Cookies</th>
+                </tr>
+              <tr>
+                  <td>
+                      <ul>
+
+                        <% if audit_store.options['audit_links']%>
+                        <li>Links</li>
+                        <%end%>
+
+                        <% if audit_store.options['audit_forms']%>
+                        <li>Forms</li>
+                        <%end%>
+
+                        <% if audit_store.options['audit_cookies']%>
+                        <li>Cookies</li>
+                        <%end%>
+
+                        <% if audit_store.options['audit_headers']%>
+                        <li>Headers</li>
+                        <%end%>
+
+                    </ul>
+                </td>
+
+                <td>
+                    <ul>
+                    <% audit_store.options['mods'].each do |mod|%>
+                        <li><%=mod%></li>
+                    <%end%>
+                    </ul>
+                </td>
+
+                <td>
+                    <ul>
+
+                        <li>Exclude:
+                            <ul>
+                            <% if !audit_store.options['exclude'].empty?%>
+                            <% audit_store.options['exclude'].each do |rule|%>
+
+                                <li><%=escapeHTML( rule )%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                            </ul>
+                        </li>
+
+                        <li>Include:
+
+                            <ul>
+                            <% if !audit_store.options['include'].empty?%>
+                            <% audit_store.options['include'].each do |rule|%>
+
+                                <li><%=escapeHTML( rule )%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                            </ul>
+                        </li>
+
+                        <li>Redundant:
+
+                            <ul>
+                            <% if !audit_store.options['redundant'].empty?%>
+                            <% audit_store.options['redundant'].each do |rule|%>
+
+                                <li><%=escapeHTML( rule['regexp'] )%> - Count: <%=rule['count']%></li>
+
+                            <%end%>
+                            <% else %>
+                                <li>N/A</li>
+                            <%end%>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </td>
+
+                    <td>
+                        <ul>
+                        <% if audit_store.options['cookies'] && !audit_store.options['cookies'].empty?%>
+                        <% audit_store.options['cookies'].each_pair do |name, val|%>
+                            <li><%=escapeHTML( name )%> = <%=escapeHTML( val )%></li>
+                        <%end%>
+                        <% else %>
+                            <li>N/A</li>
+                        <%end%>
+                      </ul>
+
+                    </td>
+                </tr>
+            </table>

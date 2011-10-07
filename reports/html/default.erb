@@ -4,311 +4,78 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en-US">
-<head>
-  <title>Web Application Security Report - Arachni Framework</title>
+    <head>
+      <title>Web Application Security Report - Arachni Framework</title>
 
-  <!--
-      Design by:
-        * Christos Chiotis <chris@survivetheinternet.com>
-        * Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+      <!--
+          Design by:
+            * Christos Chiotis <chris@survivetheinternet.com>
+            * Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
-      Copyright (c) Arachni 2011.
-       -->
+          Copyright (c) Arachni 2011.
+           -->
 
-  <style type="text/css">
-  /*<![CDATA[*/
-    <%=erb 'css/jquery-ui.css' %>
-  /*]]>*/
-  </style>
+      <style type="text/css">
+      /*<![CDATA[*/
+        <%=erb 'css/jquery-ui.css' %>
+      /*]]>*/
+      </style>
 
-  <script type="text/javascript">
-  //<![CDATA[
-    <%=erb 'init.js' %>
-  //]]>
-  </script>
+      <script type="text/javascript">
+      //<![CDATA[
+        <%=erb 'js/init.js' %>
+      //]]>
+      </script>
 
-  <style type="text/css">
-  /*<![CDATA[*/
-    <%=erb 'css/jquery-ui.css' %>
-    <%=erb 'css/main.css' %>
-  /*]]>*/
-  </style>
+      <style type="text/css">
+      /*<![CDATA[*/
+        <%=erb 'css/jquery-ui.css' %>
+        <%=erb 'css/main.css' %>
+      /*]]>*/
+      </style>
 
-</head>
+    </head>
 
-<body>
+    <body>
 
-<div id="fp_report_msg" class="hidden" title="Reporting a false positive."></div>
+        <div id="fp_report_msg" class="hidden" title="Reporting a false positive."></div>
 
-    <div id="contentreport">
-        <header>
-            <h1>Report for <%=escapeHTML(audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
-            <span style="float: right">Found a false positive? <a href="<%=escapeHTML(REPORT_FP_URL)%>">Report it here</a>.</span>
-        </header>
+        <div id="contentreport">
+            <header>
+                <h1>Report for <%=escapeHTML(audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
+                <span style="float: right">Found a false positive? <a href="<%=escapeHTML(REPORT_FP_URL)%>">Report it here</a>.</span>
+            </header>
 
-        <nav>
-            <ul>
-                <li><a href="#summary">Summary</a></li>
-                <li><a href="#issues">Issues</a></li>
-                <li><a href="#plugins">Plugin results</a></li>
-                <li><a href="#sitemap">Sitemap</a></li>
-                <li><a href="#configuration">Configuration</a></li>
-            </ul>
-        </nav>
-
-        <section class="tab" id="summary">
-            <h2>Summary</h2>
-
-            <h3>Charts</h3>
-
-            <div id="chart-issues" style="width: 1000px">
-            </div>
-
-            <p class="clear">&nbsp;</p>
-
-            <div id="chart-severities" style="width: 500px; float:left">
-            </div>
-
-            <div id="chart-elements" style="width: 450px">
-            </div>
-
-            <p class="clear">&nbsp;</p>
-
-            <div id="chart-verification" style="width: 333px">
-            </div>
-
-
-            <p class="clear">&nbsp;</p>
-            <p class="clear">&nbsp;</p>
-
-            <hr/>
-
-
-            <h3>Found <%=audit_store.issues.size%> issues</h3>
-
-            <% audit_store.issues.each_with_index do |issue, i| %>
-            <p>
-                <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
-                In <%= issue.elem %>
-
-                <% if issue.var%>
-                input <em><%= issue.var %></em>
-                <%end%>
-
-                <% if issue.method %>
-                using <%= issue.method %>
-                <%end%>
-
-                at <a href="<%= issue.url %>"><%= issue.url %></a>.
-            </p>
-            <%end%>
-
-        </section>
-
-        <section class="tab" id="configuration">
-            <h2>Configuration</h2>
-
-            <strong>Version</strong>: <%=audit_store.version%><br />
-            <strong>Revision</strong>: <%=audit_store.revision%><br />
-            <strong>Audit started on</strong>: <%=audit_store.start_datetime%><br />
-            <strong>Audit finished on</strong>: <%=audit_store.finish_datetime%><br />
-            <strong>Runtime</strong>: <%=audit_store.delta_time%><br />
-
-            <p>&nbsp;</p>
-            <h3>Runtime options</h3>
-
-            <strong>URL:</strong> <%=audit_store.options['url']%><br />
-            <strong>User agent:</strong> <%=escapeHTML( audit_store.options['user_agent'] )%><br />
-
-            <p>&nbsp;</p>
-
-            <table>
-                <tr>
-                    <th>Audited elements</th>
-                    <th>Modules</th>
-                    <th>Filters</th>
-                    <th>Cookies</th>
-                </tr>
-              <tr>
-                  <td>
-                      <ul>
-
-                        <% if audit_store.options['audit_links']%>
-                        <li>Links</li>
-                        <%end%>
-
-                        <% if audit_store.options['audit_forms']%>
-                        <li>Forms</li>
-                        <%end%>
-
-                        <% if audit_store.options['audit_cookies']%>
-                        <li>Cookies</li>
-                        <%end%>
-
-                        <% if audit_store.options['audit_headers']%>
-                        <li>Headers</li>
-                        <%end%>
-
-                    </ul>
-                </td>
-
-                <td>
-                    <ul>
-                    <% audit_store.options['mods'].each do |mod|%>
-                        <li><%=mod%></li>
-                    <%end%>
-                    </ul>
-                </td>
-
-                <td>
-                    <ul>
-
-                        <li>Exclude:
-                            <ul>
-                            <% if !audit_store.options['exclude'].empty?%>
-                            <% audit_store.options['exclude'].each do |rule|%>
-
-                                <li><%=escapeHTML( rule )%></li>
-
-                            <%end%>
-                            <% else %>
-                                <li>N/A</li>
-                            <%end%>
-                            </ul>
-                        </li>
-
-                        <li>Include:
-
-                            <ul>
-                            <% if !audit_store.options['include'].empty?%>
-                            <% audit_store.options['include'].each do |rule|%>
-
-                                <li><%=escapeHTML( rule )%></li>
-
-                            <%end%>
-                            <% else %>
-                                <li>N/A</li>
-                            <%end%>
-                            </ul>
-                        </li>
-
-                        <li>Redundant:
-
-                            <ul>
-                            <% if !audit_store.options['redundant'].empty?%>
-                            <% audit_store.options['redundant'].each do |rule|%>
-
-                                <li><%=escapeHTML( rule['regexp'] )%> - Count: <%=rule['count']%></li>
-
-                            <%end%>
-                            <% else %>
-                                <li>N/A</li>
-                            <%end%>
-                                </ul>
-                            </li>
-
-                        </ul>
-                    </td>
-
-                    <td>
-                        <ul>
-                        <% if audit_store.options['cookies'] && !audit_store.options['cookies'].empty?%>
-                        <% audit_store.options['cookies'].each_pair do |name, val|%>
-                            <li><%=escapeHTML( name )%> = <%=escapeHTML( val )%></li>
-                        <%end%>
-                        <% else %>
-                            <li>N/A</li>
-                        <%end%>
-                      </ul>
-
-                    </td>
-                </tr>
-            </table>
-        </section>
-
-        <section class="tab" id="issues">
-            <h2>Issues</h2>
-
-            <div id="issue-tabs">
+            <nav>
                 <ul>
-                    <li><a href="#trusted">Trusted</a></li>
-                    <li><a href="#untrusted">Untrusted</a></li>
+                    <li><a href="#summary">Summary</a></li>
+                    <li><a href="#issues">Issues</a></li>
+                    <li><a href="#plugins">Plugin results</a></li>
+                    <li><a href="#sitemap">Sitemap</a></li>
+                    <li><a href="#configuration">Configuration</a></li>
                 </ul>
+            </nav>
 
-                <div id="trusted">
-                    <h2>Trusted issues</h2>
-                    <blockquote>
-                        At the time these issues were logged there were no abnormal interferences or anomalous server behavior.<br/>
-                        Some of these issues may require manual verification but they are considered trusted and fairly accurate.
-                    </blockquote>
+            <section class="tab" id="summary">
+                <%= erb :summary %>
+            </section>
 
-                    <% if !filtered_hashes.empty? %>
-                        <% audit_store.issues.each_with_index do |issue, i|%>
-                            <% next if !filtered_hashes.include?( issue._hash ) %>
-                            <%= erb :issue, { :idx => i+1, :issue => issue } %>
-                        <% end %>
-                    <% else %>
-                        <p class="notice">No trusted issues have been logged.</p>
-                    <% end %>
-                </div>
+            <section class="tab" id="configuration">
+                <%= erb :configuration %>
+            </section>
 
-                <div id="untrusted">
-                    <h2>Untrusted</h2>
-                    <blockquote>
-                        These issues are considered untrusted (and may in fact be false positives) because at the time they were identified the server was exhibiting
-                        some kind of anomalous behavior or there was 3rd part interference (like network latency for example).
-                        <br/>
-                        Despite that fact, this is more of a warning and does not mean that you should let them unexamined.
-                    </blockquote>
+            <section class="tab" id="issues">
+                <%= erb :issues %>
+            </section>
 
-                    <% if !anomalous_hashes.empty? %>
-                        <div id="untrusted-tabs">
-                            <ul>
-                                <% anomalous_meta_results.each_pair do |name, data|%>
-                                    <li><a href="#<%=name%>"><%=data[:name]%></a></li>
-                                <% end %>
-                            </ul>
+            <section class="tab" id="plugins">
+                <%= erb :plugins %>
+            </section>
 
+            <section class="tab" id="sitemap">
+                <%= erb :sitemap %>
+            </section>
 
-                            <% anomalous_meta_results.each_pair do |name, data|%>
-                            <div id="<%=name%>">
-                                <blockquote> <%=data[:description]%> </blockquote>
-                                <br/>
-                                <% data[:results].each do |issue| %>
-                                    <%= erb :issue, { :idx => issue['index'], :issue => audit_store.issues[issue['index']-1] } %>
-                                <% end %>
-                            </div>
-                            <% end %>
-
-                        </div>
-                    <% else %>
-                        <p class="notice">No untrusted issues have been logged.</p>
-                    <% end %>
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <section class="tab" id="plugins">
-            <h2>Plugin results</h2>
-            <p> &nbsp; </p>
-
-            <% plugins.values.each do |plugin|%>
-            <p><%=plugin.force_encoding( 'utf-8' )%></p>
-            <%end%>
-        </section>
-
-        <section class="tab" id="sitemap">
-            <h2>Sitemap</h2>
-            <p> &nbsp; </p>
-            <h3><%=audit_store.sitemap.size%> pages</h3>
-            <% audit_store.sitemap.each do |url| %>
-              <a href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a><br/>
-              <%end%>
-
-        </section>
         </div>
     </body>
 </html>

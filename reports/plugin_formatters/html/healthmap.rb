@@ -45,10 +45,6 @@ class HTML
                         }
                     </style>
 
-                    <h3>Healthmap</h3>
-                    <blockquote><%=@description%></blockquote>
-
-                    <h4>Results</h4>
                     <% @results[:map].each do |entry| %>
                         <% state = entry.keys[0]%>
                         <% url   = entry.values[0]%>
@@ -58,7 +54,7 @@ class HTML
 
                     <br/>
 
-                    <h5>Stats</h5>
+                    <h3>Stats</h3>
                     <strong>Total</strong>: <%=@results[:total]%> <br/>
                     <strong>Safe</strong>: <%=@results[:safe]%> <br/>
                     <strong>Unsafe</strong>: <%=@results[:unsafe]%> <br/>

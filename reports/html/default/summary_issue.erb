@@ -1,0 +1,17 @@
+    <p>
+        <h4>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h4>
+
+        <p> <i><%= issue.description %> </i></p>
+
+        In <%= issue.elem %>
+
+        <% if issue.var%>
+        input <em><%= issue.var %></em>
+        <%end%>
+
+        <% if issue.method %>
+        using <%= issue.method %>
+        <%end%>
+
+        at <b><a href="<%= issue.url %>"><%= issue.url %></a></b>.
+    </p>
