@@ -20,7 +20,7 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1
 #
-class TimeoutNotice < Base
+class TimingAttacks < Base
 
     include Arachni::Module::Utilities
 
