@@ -18,7 +18,7 @@ module MetaModules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class TimingAttacks < Base
 
@@ -99,6 +99,7 @@ class TimingAttacks < Base
 
     def self.info
         {
+            :name           => 'Timming attack anomalies',
             :description    => %q{These logged issues used timing attacks.
                 However, the affected web pages demonstrated an unusually high response time rendering
                 these results inconclusive or (possibly) false positives.
@@ -108,7 +109,8 @@ class TimingAttacks < Base
 
                 Nomatter the case, please do look into the situation further.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
+            :tags           => [ 'anomaly' , 'timming', 'attacks' ]
         }
     end
 

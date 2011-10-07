@@ -146,6 +146,7 @@ class Discovery < Base
 
     def self.info
         {
+            :name           => 'Discovery response anomalies',
             :description    => %q{These issues were logged by discovery modules
                 (i.e. modules that look for certain files and folders on the server),
                 however the server responses are exhibiting an anomalous factor of similarity.
@@ -153,6 +154,7 @@ class Discovery < Base
                 There's a good chance that these issues are false positives.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
+            :tags           => [ 'anomaly' , 'discovery', 'file', 'directories']
         }
     end
 
