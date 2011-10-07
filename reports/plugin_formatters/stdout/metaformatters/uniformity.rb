@@ -47,11 +47,13 @@ module MetaFormatters
                 |id, uniformal|
 
                 issue = uniformal['issue']
-                print_ok( "#{issue['name']} in #{issue['elem']} variable '#{issue['var']}' using #{issue['method']} at the following pages:" )
+                print_ok( "#{issue['name']} in #{issue['elem']} variable" +
+                    " '#{issue['var']}' using #{issue['method']} at the following pages:" )
 
                 pages[id].each_with_index {
                     |url, i|
-                    print_info( url + " (Issue \##{uniformal['indices'][i]} - Hash ID: #{uniformal['hashes'][i]} )" )
+                    print_info( url + " (Issue \##{uniformal['indices'][i]}" +
+                        " - Hash ID: #{uniformal['hashes'][i]} )" )
                 }
 
                 print_line

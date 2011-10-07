@@ -45,7 +45,8 @@ module MetaFormatters
                     <%@results['uniformals'].each_pair do |id, uniformal| %>
                         <% issue = uniformal['issue'] %>
                         <li>
-                            <%=issue['name']%> in <%=issue['elem']%> variable '<%=issue['var']%>' using <%=issue['method']%> at the following pages:
+                            <%=issue['name']%> in <%=issue['elem']%> variable
+                            '<%=issue['var']%>' using <%=issue['method']%> at the following pages:
                             <ul>
 
                             <%@results['pages'][id].each_with_index do |url, i|%>

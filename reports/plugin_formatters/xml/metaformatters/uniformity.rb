@@ -63,7 +63,8 @@ module MetaFormatters
         end
 
         def add_uniformal( idx, uniformal )
-            __buffer( "<issue index=\"#{uniformal['indices'][idx]}\" hash=\"#{uniformal['hashes'][idx]}\" />" )
+            __buffer( "<issue index=\"#{uniformal['indices'][idx]}\"" +
+                " hash=\"#{uniformal['hashes'][idx]}\" />" )
         end
 
         def start_uniformals( id )
