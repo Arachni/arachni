@@ -59,7 +59,7 @@ class TimeoutNotice < Base
         }
     end
 
-    def mid
+    def post
 
         avg = get_avg
 

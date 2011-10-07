@@ -27,15 +27,15 @@ module MetaModules
         end
 
         #
-        # Called during the scan
-        #
-        def mid
-        end
-
-        #
         # Called after the scan has finished
         #
         def post
+        end
+
+        #
+        # Called after post
+        #
+        def clean_up
         end
 
         def self.info
@@ -80,7 +80,8 @@ class MetaModules < Arachni::Plugin::Base
     end
 
     def prepare
-        # prepare all meta modules here to give them a chance to set up their hooks
+        # let the metamodules know that the scan is about to start
+        # to give them a chance to set up their hooks
         # and callbacks to other framework interfaces.
         @inited.values.each { |meta| meta.pre }
 
@@ -94,10 +95,10 @@ class MetaModules < Arachni::Plugin::Base
 
     def run
         results = { }
-        # run all meta-modules
+        # let the metamodules know that the scan has finished
         @inited.each_pair {
             |name, meta|
-            if (metaresult = meta.mid) && !metaresult.empty?
+            if (metaresult = meta.post) && !metaresult.empty?
                 results[name] = { :results => metaresult }.
                     merge( ::Arachni::MetaModules::Base.info ).merge( meta.class.info )
             end
@@ -107,8 +108,8 @@ class MetaModules < Arachni::Plugin::Base
     end
 
     def clean_up
-        # let the meta-modules clean up after themselves
-        @inited.values.each { |meta| meta.post }
+        # tell the metamodules to clean up after themselves
+        @inited.values.each { |meta| meta.clean_up }
     end
 
     def self.info
