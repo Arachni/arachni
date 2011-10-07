@@ -18,17 +18,18 @@ class XML
 module PluginFormatters
 
 class MetaModules
+
 module MetaFormatters
 
     #
-    # XML formatter for the results of the Uniformity metamodule
+    # XML formatter for the results of the Discovery metamodule
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class Uniformity < Arachni::Plugin::Formatter
+    class Discovery < Arachni::Plugin::Formatter
 
         include Arachni::Reports::Buffer
 
@@ -38,39 +39,21 @@ module MetaFormatters
         end
 
         def run
-            start_tag( 'uniformity' )
+            start_tag( 'discovery' )
             simple_tag( 'description', @description )
             start_tag( 'results' )
 
-            uniformals = @results['uniformals']
-            pages      = @results['pages']
-
-            uniformals.each_pair {
-                |id, uniformal|
-
-                start_uniformals( id )
-
-                uniformal['hashes'].each_with_index {
-                    |hash, i|
-                    add_uniformal( i, uniformal )
-                }
-
-                end_tag( 'uniformals' )
-            }
+            @results.each { |issue| add_issue( issue ) }
 
             end_tag( 'results' )
-            end_tag( 'uniformity' )
+            end_tag( 'discovery' )
         end
 
-        def add_uniformal( idx, uniformal )
-            __buffer( "<issue index=\"#{uniformal['indices'][idx]}\"" +
-                " hash=\"#{uniformal['hashes'][idx]}\" />" )
+        def add_issue( issue )
+            __buffer( "<issue hash=\"#{issue['hash'].to_s}\" " +
+                " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
+                " url=\"#{issue['url']}\" />" )
         end
-
-        def start_uniformals( id )
-            __buffer( "<uniformals id=\"#{id}\">" )
-        end
-
 
     end
 

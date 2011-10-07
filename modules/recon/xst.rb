@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
@@ -61,7 +61,7 @@ class XST < Arachni::Module::Base
             :description    => %q{Sends an HTTP TRACE request and checks if it succeeded.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'CAPEC'     => 'http://capec.mitre.org/data/definitions/107.html',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross_Site_Tracing'
@@ -84,7 +84,7 @@ class XST < Arachni::Module::Base
 
     def __log_results( res )
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -93,10 +93,7 @@ class XST < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( "TRACE is enabled." )

@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class DirectoryListing < Arachni::Module::Base
 
@@ -129,7 +129,7 @@ class DirectoryListing < Arachni::Module::Base
             :description    => %q{Tries to force directory listings.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -150,7 +150,7 @@ class DirectoryListing < Arachni::Module::Base
 
         return if res.code != 200 || res.body.empty?
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -159,10 +159,7 @@ class DirectoryListing < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'Found: ' + res.effective_url )
     end

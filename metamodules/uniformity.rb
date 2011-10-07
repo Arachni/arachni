@@ -42,7 +42,7 @@ class Uniformity < Base
         @framework = framework
     end
 
-    def run
+    def post
 
         # will hold the hash IDs of inconclusive issues
         uniformals = {}
@@ -83,13 +83,13 @@ class Uniformity < Base
     end
 
     def self.info
-        super.merge( {
+        {
             :description    => %q{The same issue(s) persist(s) across different pages.
                 This is usually a sign for a lack of a central/single point of input
                 sanitization, a bad coding practise.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
-        } )
+        }
     end
 
 end

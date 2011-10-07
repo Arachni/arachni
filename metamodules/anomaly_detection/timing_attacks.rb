@@ -18,9 +18,9 @@ module MetaModules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
-class TimeoutNotice < Base
+class TimingAttacks < Base
 
     include Arachni::Module::Utilities
 
@@ -39,7 +39,7 @@ class TimeoutNotice < Base
         @counter = {}
     end
 
-    def prepare
+    def pre
         # run for each response as it arrives
         @http.add_on_complete {
             |res|
@@ -59,7 +59,7 @@ class TimeoutNotice < Base
         }
     end
 
-    def run
+    def post
 
         avg = get_avg
 
@@ -98,7 +98,7 @@ class TimeoutNotice < Base
     end
 
     def self.info
-        super.merge( {
+        {
             :description    => %q{These logged issues used timing attacks.
                 However, the affected web pages demonstrated an unusually high response time rendering
                 these results inconclusive or (possibly) false positives.
@@ -109,7 +109,7 @@ class TimeoutNotice < Base
                 Nomatter the case, please do look into the situation further.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
-        } )
+        }
     end
 
 end

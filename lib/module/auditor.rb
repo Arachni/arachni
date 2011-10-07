@@ -153,6 +153,70 @@ module Auditor
     }
 
     #
+    # Logs a remote file if it exists
+    #
+    # @param    [String]    url
+    # @param    [Proc]      &block  called if the file exists, just before logging
+    #
+    def log_remote_file_if_exists( url, &block )
+        req  = @http.get( url, :train => true )
+        req.on_complete {
+            |res|
+
+            if remote_file_exist?( res )
+                block.call( res ) if block_given?
+                log_remote_file( res )
+            end
+        }
+    end
+    alias :log_remote_directory_if_exists :log_remote_file_if_exists
+
+    #
+    # Checks that the response points to an existing file/page and not
+    # an error or custom 404 response
+    #
+    # @param    [Typhoeus::Response]    res
+    #
+    def remote_file_exist?( res )
+        res.code == 200 && !@http.custom_404?( res )
+    end
+
+    #
+    # Logs the existence of a remote file.
+    #
+    # @param    [Typhoeus::Response]    res
+    #
+    def log_remote_file( res )
+        url = res.effective_url
+        filename = File.basename( URI( res.effective_url ).path )
+
+        log_issue(
+            :url          => url,
+            :injected     => filename,
+            :id           => filename,
+            :elem         => Issue::Element::PATH,
+            :response     => res.body,
+            :headers      => {
+                :request    => res.request.headers,
+                :response   => res.headers,
+            }
+        )
+
+    end
+    alias :log_remote_directory :log_remote_file
+
+    #
+    # Helper method for issue logging.
+    #
+    # @param    [Hash]  opts    issue options ({Issue})
+    # @param    [Bool]  include_class_info    merge opts with module.info?
+    #
+    def log_issue( opts )
+        # register the issue
+        register_results( [ Issue.new( opts.merge( self.class.info ) ) ] )
+    end
+
+    #
     # Matches the "string" (default string is the HTML code in @page.html) to
     # an array of regular expressions and logs the results.
     #
@@ -251,9 +315,8 @@ module Auditor
         print_debug( 'Request ID: ' + res.request.id.to_s ) if res
         print_verbose( '---------' ) if only_positives?
 
-        # Instantiate a new Vulnerability class and
-        # append it to the results array
-        vuln = Issue.new( {
+        # Instantiate a new Issue class and append it to the results array
+        log_issue(
             :var          => opts[:altered],
             :url          => url,
             :injected     => opts[:injected],
@@ -269,8 +332,7 @@ module Auditor
                 :request    => request_headers,
                 :response   => response_headers,
             }
-        }.merge( self.class.info ) )
-        register_results( [vuln] )
+        )
     end
 
     #
@@ -349,11 +411,6 @@ module Auditor
             return true if @framework.modules.issue_set.include?( set_id )
         }
 
-
-        # if !@@__timeout_audited.empty?
-            # return @@__timeout_audited.include?( __rdiff_audit_id( elem ) )
-        # end
-
         return false
     end
 
@@ -402,19 +459,13 @@ module Auditor
             timing_attack( strings, opts ) {
                 |res, c_opts, elem|
 
-                # maybe this should be removed to take care of accidental timeouts
-                # and let phase 2 clean up the mess
-                # if !@@__timeout_audited.include?( __rdiff_audit_id( elem ) )
+                elem.auditor( self )
 
-                    elem.auditor( self )
-                    # @@__timeout_audited << __rdiff_audit_id( elem )
+                print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
-                    print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
+                Arachni::Module::Auditor.audit_timeout_stabilize( elem )
 
-                    Arachni::Module::Auditor.audit_timeout_stabilize( elem )
-
-                    @@__timeout_candidates << elem
-                # end
+                @@__timeout_candidates << elem
             }
         }
     end

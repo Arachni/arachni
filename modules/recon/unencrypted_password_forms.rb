@@ -22,7 +22,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
@@ -32,7 +32,6 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         # in this case we don't need to call the parent
         @page = page
 
-        @results    = []
         @@__audited ||= Set.new
     end
 
@@ -42,9 +41,6 @@ class UnencryptedPasswordForms < Arachni::Module::Base
             |form|
             __check( form )
         }
-
-        # register our results with the system
-        register_results( @results )
     end
 
     def __check( form )
@@ -66,7 +62,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
     def __log( url, input )
 
         if @@__audited.include?( input['name'] )
-            print_info( 'Skipping already audited field \'' +
+            print_info( 'Skipping already checked form \'' +
                 input['name'] + '\' of url: ' + url )
             return
         end
@@ -74,13 +70,12 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         name = input['name'] || input['id'] || 'n/a'
         @@__audited << name
 
-        # append the result to the results array
-        @results << Issue.new( {
+        log_issue(
             :var          => name,
             :url          => url,
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-        }.merge( self.class.info ) )
+        )
 
         print_ok( "Found unprotected password field '#{input['name']}' at #{url}" )
 
@@ -95,7 +90,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },

@@ -20,14 +20,14 @@ class MetaModules
 module MetaFormatters
 
     #
-    # HTML formatter for the results of the TimeoutNotice metamodule
+    # HTML formatter for the results of the TimingAttacks metamodule
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class TimeoutNotice < Arachni::Plugin::Formatter
+    class TimingAttacks < Arachni::Plugin::Formatter
 
         def initialize( metadata )
             @results     = metadata[:results]
@@ -47,7 +47,9 @@ module MetaFormatters
                     <%@results.each do |issue| %>
                         <li>
                             <a href="#issue_<%=issue['index']%>">
-                                <%=issue['name']%> at <%=issue['url']%> in <%=issue['elem']%> variable '<%=issue['var']%>' using <%=issue['method']%>
+                                <%=issue['name']%> at <%=issue['url']%> in
+                                <%=issue['elem']%> variable '<%=issue['var']%>'
+                                using <%=issue['method']%>
                             </a>
                         </li>
                     <%end%>

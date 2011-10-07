@@ -16,7 +16,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Htaccess < Arachni::Module::Base
 
@@ -42,7 +42,7 @@ class Htaccess < Arachni::Module::Base
                 GET requests but allows POST.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -60,7 +60,7 @@ class Htaccess < Arachni::Module::Base
 
     def __log_results( res )
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -69,10 +69,7 @@ class Htaccess < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'Request was accepted: ' + res.effective_url )
     end

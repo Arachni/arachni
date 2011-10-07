@@ -20,12 +20,21 @@ module MetaModules
         def initialize( framework )
         end
 
-        def prepare
+        #
+        # Called before the scan starts
+        #
+        def pre
         end
 
-        def run
+        #
+        # Called after the scan has finished
+        #
+        def post
         end
 
+        #
+        # Called after post
+        #
         def clean_up
         end
 
@@ -52,7 +61,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class MetaModules < Arachni::Plugin::Base
 
@@ -71,9 +80,10 @@ class MetaModules < Arachni::Plugin::Base
     end
 
     def prepare
-        # prepare all meta modules here to give them a chance to set up their hooks
+        # let the metamodules know that the scan is about to start
+        # to give them a chance to set up their hooks
         # and callbacks to other framework interfaces.
-        @inited.values.each { |meta| meta.prepare }
+        @inited.values.each { |meta| meta.pre }
 
         # we need to wait until the framework has finished running
         # in order to work with the full report
@@ -85,11 +95,12 @@ class MetaModules < Arachni::Plugin::Base
 
     def run
         results = { }
-        # run all meta-modules
+        # let the metamodules know that the scan has finished
         @inited.each_pair {
             |name, meta|
-            if (metaresult = meta.run) && !metaresult.empty?
-                results[name] = { :results => metaresult }.merge( meta.class.info )
+            if (metaresult = meta.post) && !metaresult.empty?
+                results[name] = { :results => metaresult }.
+                    merge( ::Arachni::MetaModules::Base.info ).merge( meta.class.info )
             end
         }
 
@@ -97,7 +108,7 @@ class MetaModules < Arachni::Plugin::Base
     end
 
     def clean_up
-        # let the meta-modules clean up after themselves
+        # tell the metamodules to clean up after themselves
         @inited.values.each { |meta| meta.clean_up }
     end
 
@@ -108,7 +119,7 @@ class MetaModules < Arachni::Plugin::Base
                 Before reviewing the scan results you are strongly encouraged to take full advantage of the data gathered via meta-analysis.
                 They will help you shed light into the inner workings of the web application and even caution you about possible false positives and/or inconclusive test results.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            :version        => '0.1.1'
         }
     end
 

@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -30,8 +30,6 @@ class XSSPath < Arachni::Module::Base
 
     def initialize( page )
         super( page )
-
-        @results    = []
     end
 
     def prepare( )
@@ -68,7 +66,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -94,8 +92,7 @@ class XSSPath < Arachni::Module::Base
         if res.body.substring?( id )
 
             url = res.effective_url
-            # append the result to the results hash
-            @results << Issue.new( {
+            log_issue(
                 :var          => 'n/a',
                 :url          => url,
                 :injected     => id,
@@ -108,14 +105,11 @@ class XSSPath < Arachni::Module::Base
                     :request    => res.request.headers,
                     :response   => res.headers,
                 }
-            }.merge( self.class.info ) )
+            )
 
             # inform the user that we have a match
             print_ok( "Match at #{url}" )
             print_verbose( "Inected string: #{id}" )
-
-            # register our results with the system
-            register_results( @results )
         end
     end
 
