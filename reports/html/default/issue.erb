@@ -4,6 +4,7 @@
                     <a href="#issue_<%=idx%>">[<%=idx%>] <%=escapeHTML(issue.name)%></a>
                 </h3>
 
+                <% if crypto_issues.is_a?( Array ) %>
                 <p>
                     <form name="false_positive_<%=j%>" id="false_positive_<%=idx%>">
                         <input type="hidden" name="module" value="<%=escapeHTML(issue.internal_modname)%>" />
@@ -12,6 +13,7 @@
                         <input onclick="javascript:report_fp( <%=idx%> );" type="button" value="Report false positive" />
                     </form>
                 </p>
+                <% end %>
 
 
                 <div class="left">
