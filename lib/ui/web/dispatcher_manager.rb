@@ -178,6 +178,7 @@ class DispatcherManager
                             :issues   => false
                         ) {
                             |prog_data|
+                            next if prog_data.rpc_exception?
                             instance.merge!( prog_data['stats'] )
                             instance['status']  = prog_data['status'].capitalize!
                             iter.return( instance )
@@ -188,6 +189,7 @@ class DispatcherManager
                             :issues   => false
                         ) {
                             |prog_data|
+                            next if prog_data.rpc_exception?
                             prog_data['instances'].each {
                                 |insdat|
                                  if insdat['url'] == instance['url']
