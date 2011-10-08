@@ -3,7 +3,7 @@
             <div id="summary-tabs">
                 <ul>
                     <li><a href="#graphs">Graphs</a></li>
-                    <li><a href="#issue-list">Issues</a></li>
+                    <li><a href="#issue-list">Issues [<%=audit_store.issues.size%>]</a></li>
                 </ul>
 
                 <div id="graphs">
@@ -27,7 +27,7 @@
 
                 <div id="issue-list">
 
-                    <h3>Found <%=audit_store.issues.size%> issues</h3>
+                    <%= erb :search, { :id => 'summary_issues_tab' } %>
 
                     <%
                        half_sz = ( audit_store.issues.size / 2 ).round

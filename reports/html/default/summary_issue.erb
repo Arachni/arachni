@@ -1,4 +1,4 @@
-    <p>
+    <div class="issue">
         <h4>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h4>
 
         <p> <em><%= issue.description %> </em></p>
@@ -14,4 +14,6 @@
         <%end%>
 
         at <b><a href="<%= issue.url %>"><%= issue.url %></a></b>.
-    </p>
+
+        <p>&nbsp;</p>
+    </div>

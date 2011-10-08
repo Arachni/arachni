@@ -3,6 +3,9 @@
 <%= erb 'js/highcharts.js' %>
 <%= erb 'js/highcharts-exporting.js' %>
 
+$.expr[':'].icontains = function(obj, index, meta, stack){
+    return (obj.textContent || obj.innerText || jQuery(obj).text() || '').toLowerCase().indexOf(meta[3].toLowerCase()) >= 0;
+};
 
 var configuration = <%= js_multiline(conf) %>
 var email_address;
@@ -77,6 +80,16 @@ function inspect(id) {
     });
 }
 
+function searchIssues( val ){
+    $(".issue").show();
+
+    if( val != '' ){
+        $(".issue:not(:icontains(" + val +"))").hide();
+    } else {
+        $(".issue").show();
+    }
+}
+
 jQuery(function ($) {
 
     tabs = function (options) {
@@ -128,8 +141,6 @@ jQuery(function ($) {
     $("#plugin-meta-tabs").tabs();
     $("#sitemap-tabs").tabs();
     $("#configuration-tabs").tabs();
-
-
 
     var issues;
     issues = new Highcharts.Chart({
