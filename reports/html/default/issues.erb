@@ -46,7 +46,7 @@
                                 <blockquote> <%=data[:description]%> </blockquote>
                                 <br/>
                                 <% data[:results].each do |issue| %>
-                                    <%= erb :issue, { :idx => issue['index'], :issue => audit_store.issues[issue['index']-1] } %>
+                                    <%= format_issue( issue['hash'] ) %>
                                 <% end %>
                             </div>
                             <% end %>
