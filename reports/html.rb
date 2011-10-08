@@ -80,7 +80,7 @@ class HTML < Arachni::Report::Base
         end
 
         def find_issue_by_hash( hash )
-            @audit_store.issues.each_aith_index {
+            @audit_store.issues.each_with_index {
                 |issue, i|
                 return [i+1, issue] if issue._hash == hash
             }
