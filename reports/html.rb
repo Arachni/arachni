@@ -41,11 +41,15 @@ class HTML < Arachni::Report::Base
         end
 
         def erb( tpl, params = {} )
-            scope = TemplateScope.instance.add_hash( params )
+            scope = TemplateScope.new( params )
+            scope.add( :audit_store, @audit_store )
 
             tpl = tpl.to_s + '.erb' if tpl.is_a?( Symbol )
 
-            path = File.exist?( tpl ) ? tpl : @base_path + tpl
+            @@base_path ||= @base_path
+
+
+            path = File.exist?( tpl ) ? tpl : @@base_path + tpl
             ERB.new( IO.read( path ) ).result( scope.get_binding )
         end
     end
@@ -53,10 +57,13 @@ class HTML < Arachni::Report::Base
     include Utils
 
     class TemplateScope
-        include Singleton
         include Utils
 
         REPORT_FP_URL = "https://github.com/Zapotek/arachni/issues"
+
+        def initialize( params )
+            add_hash( params )
+        end
 
         def add_hash( params )
             params.each_pair {
@@ -138,7 +145,7 @@ class HTML < Arachni::Report::Base
         print_status( 'Creating HTML report...' )
 
         plugins   = format_plugin_results( @audit_store.plugins )
-        base_path = File.dirname( @options['tpl'] ) + '/' +
+        @base_path = File.dirname( @options['tpl'] ) + '/' +
             File.basename( @options['tpl'], '.erb' ) + '/'
 
         conf = {}
@@ -151,7 +158,7 @@ class HTML < Arachni::Report::Base
             :conf        => conf,
             :audit_store => @audit_store,
             :plugins     => plugins,
-            :base_path   => base_path
+            :base_path   => @base_path
         )
 
         __save( @options['outfile'], erb( @options['tpl'], params ) )

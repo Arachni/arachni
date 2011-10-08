@@ -23,7 +23,7 @@
 
       <script type="text/javascript">
       //<![CDATA[
-        <%=erb 'js/init.js' %>
+        <%=erb 'js/init.js', { :conf => conf, :graph_data => graph_data } %>
       //]]>
       </script>
 
@@ -57,23 +57,29 @@
             </nav>
 
             <section class="tab" id="summary">
-                <%= erb :summary %>
+                <%= erb :summary, { :audit_store => audit_store} %>
             </section>
 
             <section class="tab" id="configuration">
-                <%= erb :configuration %>
+                <%= erb :configuration, { :audit_store => audit_store} %>
             </section>
 
             <section class="tab" id="issues">
-                <%= erb :issues %>
+                <%= erb :issues, {
+                        :audit_store => audit_store,
+                        :filtered_hashes  => filtered_hashes,
+                        :anomalous_hashes => anomalous_hashes,
+                        :anomalous_meta_results => anomalous_meta_results,
+                        :crypto_issues => crypto_issues
+                    } %>
             </section>
 
             <section class="tab" id="plugins">
-                <%= erb :plugins %>
+                <%= erb :plugins, { :audit_store => audit_store, :plugins => plugins } %>
             </section>
 
             <section class="tab" id="sitemap">
-                <%= erb :sitemap %>
+                <%= erb :sitemap, { :audit_store => audit_store } %>
             </section>
 
         </div>

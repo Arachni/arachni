@@ -16,7 +16,8 @@
                     <% if !filtered_hashes.empty? %>
                         <% audit_store.issues.each_with_index do |issue, i|%>
                             <% next if !filtered_hashes.include?( issue._hash ) %>
-                            <%= erb :issue, { :idx => i+1, :issue => issue } %>
+
+                            <%= erb :issue, { :idx => i+1, :issue => issue, :crypto_issues => crypto_issues } %>
                         <% end %>
                     <% else %>
                         <p class="notice">No trusted issues have been logged.</p>
