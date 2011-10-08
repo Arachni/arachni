@@ -34,6 +34,9 @@ class HTML < Arachni::Report::Base
         def for_anomalous_metamodules( audit_store, &block )
             audit_store.plugins['metamodules'][:results].each_pair {
                 |metaname, data|
+
+                ap data
+
                 next if !data[:tags] || !data[:tags].include?( 'anomaly' )
                 block.call( metaname, data )
             }
@@ -212,6 +215,10 @@ class HTML < Arachni::Report::Base
             :verification => {
                 'Yes' => 0,
                 'No'  => 0
+            },
+            :trust => {
+                'Trusted'   => 0,
+                'Untrusted' => 0
             }
         }
 
@@ -235,19 +242,16 @@ class HTML < Arachni::Report::Base
 
             crypto_issues << @crypto.encrypt( issue.to_yaml )
 
-            graph_data[:severities][issue.severity] ||= 0
             graph_data[:severities][issue.severity] += 1
             total_severities += 1
 
             graph_data[:issues][issue.name] ||= 0
             graph_data[:issues][issue.name] += 1
 
-            graph_data[:elements][issue.elem] ||= 0
             graph_data[:elements][issue.elem] += 1
             total_elements += 1
 
             verification = issue.verification ? 'Yes' : 'No'
-            graph_data[:verification][verification] ||= 0
             graph_data[:verification][verification] += 1
             total_verifications += 1
 
@@ -277,8 +281,11 @@ class HTML < Arachni::Report::Base
 
             if !anomalous?( anomalous_meta_results, issue )
                 filtered_hashes << issue._hash
+                graph_data[:trust]['Trusted'] += 1
+
             else
                 anomalous_hashes << issue._hash
+                graph_data[:trust]['Untrusted'] += 1
             end
 
         }

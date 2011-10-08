@@ -11,14 +11,18 @@
                     </div>
 
                     <br/>
-                    <div id="chart-severities" style="width: 40%; float:left">
+                    <div id="chart-severities" style="width: 35%; float:left">
                     </div>
 
-                    <div id="chart-elements" style="width: 40%; float:left">
+                    <div id="chart-elements" style="width: 35%; float:left">
                     </div>
 
-                    <div id="chart-verification" style="width: 20%">
+                    <div id="chart-verification" style="width: 15%; float:left">
                     </div>
+
+                    <div id="chart-trust" style="width: 15%">
+                    </div>
+
                 </div>
 
                 <div id="issue-list">
@@ -26,25 +30,34 @@
                     <h3>Found <%=audit_store.issues.size%> issues</h3>
 
                     <%
-                       half_sz = audit_store.issues.size / 2
-                       left = audit_store.issues[0..half_sz]
+                       half_sz = ( audit_store.issues.size / 2 ).round
+
+                       left = audit_store.issues[0...half_sz]
                        right = audit_store.issues[half_sz..-1]
+
+                       idx = 0
                     %>
 
                     <div style="float: left; width: 50%">
-                        <% left.each_with_index do |issue, i| %>
-                            <%= erb :summary_issue, :issue => issue, :i => i %>
+                        <% left.each do |issue| %>
+                            <%= erb :summary_issue, :issue => issue, :i => idx %>
+                            <% idx+=1 %>
                         <%end%>
 
                     </div>
 
                     <div>
-                        <% right.each_with_index do |issue, i| %>
-                            <%= erb :summary_issue, :issue => issue, :i => i+half_sz+1 %>
+                        <% right.each do |issue| %>
+                            <%= erb :summary_issue, :issue => issue, :i => idx %>
+                            <% idx+=1 %>
                         <%end%>
 
                         <p>&nbsp;</p>
                         <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+
                     </div>
 
                 </div>
