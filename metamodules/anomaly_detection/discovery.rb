@@ -139,7 +139,7 @@ class Discovery < Base
     def includes_tags?( tags )
         TAGS.each {
             |tag_pair|
-            return true if !(tags & tag_pair).empty?
+            return true if (tags & tag_pair).size == tag_pair.size
         }
         return false
     end
