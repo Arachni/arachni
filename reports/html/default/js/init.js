@@ -1,6 +1,7 @@
 <%= erb 'js/jquery.min.js' %>
 <%= erb 'js/jquery-ui.min.js' %>
 <%= erb 'js/highcharts.js' %>
+<%= erb 'js/highcharts-exporting.js' %>
 
 
 var configuration = <%= js_multiline(conf) %>
@@ -130,7 +131,7 @@ jQuery(function ($) {
 
 
 
-    var issues; // globally available
+    var issues;
     issues = new Highcharts.Chart({
         chart: {
             renderTo: 'chart-issues',
@@ -144,13 +145,55 @@ jQuery(function ($) {
             categories: <%= graph_data[:issues].keys.to_s %>
         },
         yAxis: {
+            min: 0,
             title: {
-                text: ''
+                text: 'Total issues'
+            },
+            stackLabels: {
+                enabled: true,
+                style: {
+                    fontWeight: 'bold',
+                    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                }
             }
         },
-        series: [{
-            data: <%= graph_data[:issues].values.to_s %>
-        }]
+        legend: {
+            align: 'right',
+            x: -100,
+            verticalAlign: 'top',
+            y: 20,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColorSolid) || 'white',
+            borderColor: '#CCC',
+            borderWidth: 1,
+            shadow: true
+        },
+        tooltip: {
+            formatter: function() {
+                return '<b>'+ this.x +'</b><br/>'+
+                    this.series.name +': '+ this.y +'<br/>'+
+                        'Total: '+ this.point.stackTotal;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                dataLabels: {
+                    enabled: true,
+                    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                }
+            }
+        },
+        series: [
+            {
+                name: 'Trusted',
+                data: <%= graph_data[:trusted_issues].values.to_s %>
+            },
+            {
+                name: 'Untrusted',
+                data: <%= graph_data[:untrusted_issues].values.to_s %>
+            }
+        ]
     });
 
     var severities;
