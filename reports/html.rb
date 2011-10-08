@@ -34,9 +34,6 @@ class HTML < Arachni::Report::Base
         def for_anomalous_metamodules( audit_store, &block )
             audit_store.plugins['metamodules'][:results].each_pair {
                 |metaname, data|
-
-                ap data
-
                 next if !data[:tags] || !data[:tags].include?( 'anomaly' )
                 block.call( metaname, data )
             }
