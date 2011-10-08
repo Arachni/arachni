@@ -76,7 +76,10 @@ class Backdoors < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{A backdoor file exists on the server.},
-                :description => %q{},
+                :description => %q{ The server response indicates that a file matching
+                    the name of a common backdoor is publicly accessible.
+                    This indicates that the server has been compromised and can
+                    (to some extent) be remotely controled by unauthorised users.},
                 :tags        => [ 'path', 'backdoor', 'file', 'discovery' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::HIGH,

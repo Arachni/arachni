@@ -40,14 +40,11 @@ module MetaFormatters
 
         def tpl
             %q{
-                    <h4>Discovery</h4>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
                     <ul>
                     <%@results.each do |issue| %>
                         <li>
                             <a href="#issue_<%=issue['index']%>">
-                                <%=issue['name']%> at <%=issue['url']%>
+                                [#<%=issue['index']%>] <%=issue['name']%> at <%=issue['url']%>
                             </a>
                         </li>
                     <%end%>

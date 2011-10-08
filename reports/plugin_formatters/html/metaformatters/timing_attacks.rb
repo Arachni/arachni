@@ -40,13 +40,11 @@ module MetaFormatters
 
         def tpl
             %q{
-                    <h4>Timeout notice</h4>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
                     <ul>
                     <%@results.each do |issue| %>
                         <li>
                             <a href="#issue_<%=issue['index']%>">
+                                [#<%=issue['index']%>]
                                 <%=issue['name']%> at <%=issue['url']%> in
                                 <%=issue['elem']%> variable '<%=issue['var']%>'
                                 using <%=issue['method']%>

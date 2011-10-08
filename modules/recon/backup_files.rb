@@ -71,8 +71,8 @@ class BackupFiles < Arachni::Module::Base
             file = ext % filename # Example: index.php.bak
             check!( path, file )
 
-            file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
-            check!( path, file )
+            cfile = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
+            check!( path, file ) if file != cfile
         }
 
         @@__audited << path
@@ -101,7 +101,10 @@ class BackupFiles < Arachni::Module::Base
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{A backup file exists on the server.},
-                :description => %q{},
+                :description => %q{ The server response indicates that a file matching
+                    the name of a common naming scheme for file backups can be publicly accessible.
+                    A developer has probably forgotten to remove this file after testing.
+                    This can lead to source code disclosure and privileged information leaks.},
                 :tags        => [ 'path', 'backup', 'file', 'discovery' ],
                 :cew         => '530',
                 :severity    => Issue::Severity::HIGH,

@@ -31,20 +31,7 @@ class HTML
             end
 
             def run
-
-                metaresults = format_meta_results( @results ).values
-                return ERB.new( tpl ).result( binding )
-            end
-
-            def tpl
-                %q{
-                    <h3>Metamodules</h3>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
-                    <%metaresults.each do |html|%>
-                        <%=html%>
-                    <%end%>
-                }
+                format_meta_results( @results )
             end
 
             #

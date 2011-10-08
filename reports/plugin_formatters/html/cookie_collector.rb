@@ -36,9 +36,6 @@ class HTML
 
             def tpl
                 %q{
-                    <h3>Cookie Collector</h3>
-                    <blockquote><%=@description%></blockquote>
-
                     <h4>Cookies</h4>
                     <ul>
                     <% @results.each do |entry| %>

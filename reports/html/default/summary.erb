@@ -1,0 +1,64 @@
+            <h2>Summary</h2>
+
+            <div id="summary-tabs">
+                <ul>
+                    <li><a href="#graphs">Graphs</a></li>
+                    <li><a href="#issue-list">Issues [<%=audit_store.issues.size%>]</a></li>
+                </ul>
+
+                <div id="graphs">
+                    <div id="chart-issues" style="width: 100%">
+                    </div>
+
+                    <br/>
+                    <div id="chart-severities" style="width: 25%; float:left">
+                    </div>
+
+                    <div id="chart-elements" style="width: 25%; float:left">
+                    </div>
+
+                    <div id="chart-verification" style="width: 25%; float:left">
+                    </div>
+
+                    <div id="chart-trust" style="width: 25%">
+                    </div>
+
+                </div>
+
+                <div id="issue-list">
+
+                    <%= erb :search, { :id => 'summary_issues_tab' } %>
+
+                    <%
+                       half_sz = ( audit_store.issues.size / 2 ).round
+
+                       left = audit_store.issues[0...half_sz]
+                       right = audit_store.issues[half_sz..-1]
+
+                       idx = 0
+                    %>
+
+                    <div style="float: left; width: 50%">
+                        <% left.each do |issue| %>
+                            <%= erb :summary_issue, :issue => issue, :i => idx %>
+                            <% idx+=1 %>
+                        <%end%>
+
+                    </div>
+
+                    <div>
+                        <% right.each do |issue| %>
+                            <%= erb :summary_issue, :issue => issue, :i => idx %>
+                            <% idx+=1 %>
+                        <%end%>
+
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+                        <p>&nbsp;</p>
+
+                    </div>
+
+                </div>
+            </div>
