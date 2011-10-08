@@ -1,9 +1,9 @@
     <p>
         <h4>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h4>
 
-        <p> <i><%= issue.description %> </i></p>
+        <p> <em><%= issue.description %> </em></p>
 
-        In <%= issue.elem %>
+        In <em><%= issue.elem %></em>
 
         <% if issue.var%>
         input <em><%= issue.var %></em>
