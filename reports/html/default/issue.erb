@@ -94,7 +94,7 @@
 
                     <% if (variation['response'] && !variation['response'].empty?) && variation['regexp_match'] %>
 
-                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="Relevant content is shown in red.">
+                    <div class="hidden" id="inspection-dialog_<%=var_idx%>_<%=idx%>" title="Relevant content is shown in red. (Hit Esc to close)">
                         <% match = escapeHTML( variation['regexp_match'] )%>
                         <pre> <%=escapeHTML( variation['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
                     </div>
