@@ -92,12 +92,13 @@ class ReportManager
     #
     # Saves the report to a file
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni XMLRPC server.
+    # @param    [Arachni::AuditStore]    report   audistore object as returned by the Arachni RPC server.
     #                                       Basically an 'afr' report as a string.
     #
     # @return   [String]        the path to the saved report
     #
     def save( report )
+        report = report.to_yaml
         @settings.log.report_saved( {}, get_filename( report ) )
         return save_to_file( report, report_to_path( report ) )
     end
@@ -194,7 +195,9 @@ class ReportManager
         begin
             location = savedir + Report.get( id ).filename + EXTENSION
             convert( type, File.read( location ) )
-        rescue
+        rescue Exception => e
+            ap e
+            ap e.backtrace
             return nil
         end
     end
@@ -220,12 +223,11 @@ class ReportManager
     private
 
     def unserialize( data )
-        data
-         # begin
-            # Marshal.load( data )
-         # rescue
-             # YAML.load( data )
-         # end
+         begin
+            Marshal.load( data )
+         rescue
+             YAML.load( data )
+         end
     end
 
     def save_to_file( data, file )
