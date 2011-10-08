@@ -66,12 +66,12 @@
         margin-bottom: 20px;
     }
 
-    a {
+    a, .issue a {
         color: #256F94;
         text-decoration: none
     }
 
-    a:hover {
+    a:hover, .issue a:hover {
         color: #BC6637;
     }
 
