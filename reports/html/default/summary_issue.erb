@@ -1,7 +1,7 @@
     <div class="issue">
         <h4>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h4>
 
-        <p> <em><%= issue.description %> </em></p>
+        <p> <em><%= escapeHTML(issue.description) %></em></p>
 
         In <em><%= issue.elem %></em>
 
