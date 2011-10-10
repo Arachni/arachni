@@ -105,11 +105,11 @@ class HTML < Arachni::Report::Base
         end
 
         def js_multiline( str )
-          "\"" + str.gsub( "\n", '\n' ) + "\"";
+          "\"" + normalize( str ).gsub( "\n", '\n' ) + "\"";
         end
 
         def normalize( str )
-            return str if !str || str.empty?
+            return '' if !str || str.empty?
 
             ic = ::Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
             ic.iconv( str + ' ' )[0..-2]
