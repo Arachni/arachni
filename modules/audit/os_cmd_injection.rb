@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -35,7 +35,7 @@ class OSCmdInjection < Arachni::Module::Base
 
         @__opts = {}
         @__opts[:regexp]   = [
-            /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/i,
+            /root:x:0:0:.+:[0-9a-zA-Z\/]+/i,
             /\[boot loader\](.*)\[operating systems\]/i
         ]
         @__opts[:format]   = [ Format::STRAIGHT ]
@@ -76,7 +76,7 @@ class OSCmdInjection < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                  'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
