@@ -365,6 +365,8 @@ class Options
 
         @datastore = {}
 
+        @spider_first = true
+
         # set some defaults
         @redirect_limit = 20
 
