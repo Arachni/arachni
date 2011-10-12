@@ -128,6 +128,10 @@ class Base
         []
     end
 
+    def framework
+        @framework
+    end
+
     #
     # ABSTRACT - REQUIRED
     #
