@@ -12,6 +12,7 @@ require 'typhoeus'
 
 module Arachni
 
+require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
@@ -289,17 +290,14 @@ class HTTP
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
-
-        follow_location    = opts[:follow_location]    || false
+        cookies   = opts[:cookies]
 
         async     = opts[:async]
         async     = true if async == nil
 
+        follow_location    = opts[:follow_location]    || false
+
         headers   = opts[:headers]   || {}
-        headers   = @init_headers.dup.merge( headers )
-
-
-        params = params.merge( { @rand_seed => '' } ) if !remove_id
 
         #
         # the exception jail function wraps the block passed to it
@@ -308,6 +306,11 @@ class HTTP
         # how cool is Ruby? Seriously....
         #
         exception_jail {
+
+            headers       = @init_headers.merge( headers )
+            headers['cookie'] = get_cookies_str( cookies, false ) if cookies
+
+            params = params.merge( { @rand_seed => '' } ) if !remove_id
 
             #
             # There are cases where the url already has a query and we also have
@@ -409,16 +412,8 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def cookie( url, opts = { } )
-
-        cookies   = opts[:params] || {}
-
-        opts[:headers] ||= {}
-
-        opts[:headers] = @init_headers.dup.
-          merge( { 'cookie' => get_cookies_str( cookies ) } ).merge( opts[:headers] )
-
+        opts[:cookies] = opts[:params].dup || {}
         opts[:params] = nil
-
         request( url, opts )
     end
 
@@ -549,10 +544,12 @@ class HTTP
     #
     # @return   [string]
     #
-    def get_cookies_str( cookies = { } )
+    def get_cookies_str( cookies = { }, with_existing = true )
 
-        jar = parse_cookie_str( @init_headers['cookie'] )
-        cookies = jar.merge( cookies )
+        if with_existing
+            jar = parse_cookie_str( @init_headers['cookie'] )
+            cookies = jar.merge( cookies )
+        end
 
         str = ''
         cookies.each_pair {
