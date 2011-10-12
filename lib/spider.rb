@@ -85,12 +85,12 @@ class Spider
             :timeout    => nil,
             :remove_id  => true,
             :async      => @opts.spider_first,
-            :follow_location => true
+            :follow_location => true,
         }
 
         # we need a parser in order to have access to skip() in case
         # there's a redirect that shouldn't be followed
-        seed_page = Arachni::HTTP.instance.get( paths[0], opts.merge( :async => false ) ).response
+        seed_page = http.get( paths[0], opts.merge( :async => false ) ).response
         parser = Parser.new( @opts, seed_page )
         parser.url = paths[0]
 
@@ -102,7 +102,7 @@ class Spider
 
                 visited << url
 
-                Arachni::HTTP.instance.get( url, opts ).on_complete {
+                http.get( url, opts ).on_complete {
                     |res|
 
                     next if parser.skip?( res.effective_url )
@@ -132,13 +132,13 @@ class Spider
 
                 }
 
-                Arachni::HTTP.instance.run if !@opts.spider_first
+                http.run if !@opts.spider_first
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
                     @opts.link_count_limit <= visited.size )
-                    Arachni::HTTP.instance.run if @opts.spider_first
+                    http.run if @opts.spider_first
                     return @sitemap.uniq
                 end
 
@@ -146,7 +146,7 @@ class Spider
             end
 
             if @opts.spider_first
-                Arachni::HTTP.instance.run
+                http.run
             else
                 break
             end
@@ -154,6 +154,10 @@ class Spider
         end
 
         return @sitemap.uniq
+    end
+
+    def http
+        Arachni::HTTP.instance
     end
 
     def skip?( url )
