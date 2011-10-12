@@ -72,9 +72,7 @@ class CSRF < Arachni::Module::Base
 
         # setup opts with empty cookies
         opts = {
-            :headers => {
-                'cookie'  => ''
-            },
+            :cookies => {},
             :remove_id => true
         }
 
