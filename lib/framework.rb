@@ -301,9 +301,10 @@ class Framework
             http.run
 
             # check to see if the page was updated
-            page = http.trainer.page
-            # and push it in the queue to be audited as well
-            @page_queue << page if page
+            http.trainer.flush_pages.each {
+                |page|
+                @page_queue << page
+            }
 
         end
     end
@@ -568,7 +569,6 @@ class Framework
 
         @modules.each_pair {
             |name, mod|
-
             wait_if_paused
             run_mod( mod, page.deep_clone )
         }
@@ -587,19 +587,25 @@ class Framework
 
     def harvest_http_responses
 
-       print_status( 'Harvesting HTTP responses...' )
-       print_info( 'Depending on server responsiveness and network' +
-        ' conditions this may take a while.' )
+        print_status( 'Harvesting HTTP responses...' )
+        print_info( 'Depending on server responsiveness and network' +
+            ' conditions this may take a while.' )
 
-       # run all the queued HTTP requests and harvest the responses
-       http.run
+        # grab updated pages
+        http.trainer.flush_pages.each {
+            |page|
+            @page_queue << page
+        }
 
-       # try to get an updated page from the Trainer
-       page = http.trainer.page
+        # run all the queued HTTP requests and harvest the responses
+        http.run
 
-       # if there was an updated page push it in the queue
-       @page_queue << page if page
-       audit_queue
+        http.trainer.flush_pages.each {
+            |page|
+            @page_queue << page
+        }
+
+        audit_queue
     end
 
     #
