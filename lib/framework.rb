@@ -272,6 +272,8 @@ class Framework
             audit_queue if !@opts.spider_first
         }
 
+        audit_queue
+
         exception_jail {
             if !Arachni::Module::Auditor.timeout_audit_blocks.empty?
                 print_line
@@ -279,12 +281,12 @@ class Framework
                 print_info( '---------------------------------------' )
                 Arachni::Module::Auditor.timeout_audit_run
             end
+
+            audit_queue
         }
 
-        audit_queue
-
         if( @opts.http_harvest_last )
-            harvest_http_responses( )
+            harvest_http_responses
         end
 
     end
