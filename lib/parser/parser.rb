@@ -635,7 +635,7 @@ class Parser
             return @@manager.available.map {
                 |name|
                 @@manager[name].new.run( doc )
-            }.flatten.uniq.collect.
+            }.flatten.uniq.compact.
             map { |path| to_absolute( url_sanitize( path ) ) }.
             reject { |path| skip?( path ) }
 
