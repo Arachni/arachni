@@ -119,17 +119,17 @@ class Trainer
         train_links( res[0], res[1] )
 
         if( @updated )
-            @page.html = res[0].body.dup
 
             begin
-                url           = res[0].request.url
+                url         = res[0].request.url
                 # prepare the page url
                 @parser.url = @parser.to_absolute( url )
             rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-                # raise e
+                return
             end
 
+            @page.html = res[0].body.dup
             @page.response_headers    = res[0].headers_hash
             @page.query_vars = @parser.link_vars( @parser.url ).dup
             @page.url        = @parser.url.dup
@@ -141,6 +141,8 @@ class Trainer
             @page.cookies    ||= []
 
             @pages << @page
+
+            @updated = false
         end
 
         print_debug( 'Training complete.' )
@@ -171,6 +173,7 @@ class Trainer
     def train_links( res, redir = false )
         return [], 0  if !@opts.audit_links
 
+        links = @parser.links.deep_clone
         if( redir )
 
             url = @parser.to_absolute( url_sanitize( res.effective_url ) )
@@ -180,7 +183,7 @@ class Trainer
             } )
         end
 
-        clinks, link_cnt = update_links( @parser.links )
+        clinks, link_cnt = update_links( links )
 
         if ( link_cnt > 0 )
             @page.links = clinks.flatten
