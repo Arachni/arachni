@@ -936,8 +936,8 @@ module Auditor
     #
     def audit_elems( elements, injection_str, opts = { }, &block )
 
-        opts            = OPTIONS.merge( opts )
-        url             = @page.url
+        opts = OPTIONS.merge( opts )
+        url  = @page.url
 
         opts[:injected_orig] = injection_str
 
