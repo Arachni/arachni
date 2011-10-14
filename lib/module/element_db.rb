@@ -139,7 +139,7 @@ module ElementDB
 
                 if( page_cookie.raw['name'] == cookie.raw['name'] )
                     @@cookies[i] = cookie
-                else
+                elsif !cookie_in_jar?( cookie )
                     @new_cookies << cookie
                     cookie_cnt += 1
                 end
@@ -150,6 +150,14 @@ module ElementDB
         @@cookies |= @new_cookies
 
         return [ @@cookies, cookie_cnt ]
+    end
+
+    def cookie_in_jar?( cookie )
+        @@cookies.each {
+            |c|
+            return true if c.raw['name'] == cookie.raw['name']
+        }
+        return false
     end
 
 end
