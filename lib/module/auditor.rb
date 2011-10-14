@@ -941,7 +941,7 @@ module Auditor
 
         opts[:injected_orig] = injection_str
 
-        elements.each{
+        elements.deep_clone.each {
             |elem|
             elem.auditor( self )
             elem.audit( injection_str, opts, &block )
