@@ -563,6 +563,10 @@ class Framework
     def run_mods( page )
         return if !page
 
+        print_line
+        print_status( "Auditting: [HTTP: #{page.code}] " + page.url )
+
+
         call_on_run_mods( page.deep_clone )
 
         @current_url = page.url.to_s
