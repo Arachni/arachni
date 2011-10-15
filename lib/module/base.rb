@@ -63,7 +63,7 @@ class Base
 
         @page  = page
         @http  = Arachni::HTTP.instance
-        @http.trainer.page = @page.dup
+        @http.trainer.set_page( @page )
 
         # update the cookies
         if( !@page.cookiejar.empty? )
@@ -126,6 +126,10 @@ class Base
     def redundant
         # [ 'sqli', 'sqli_blind_rdiff' ]
         []
+    end
+
+    def framework
+        @framework
     end
 
     #

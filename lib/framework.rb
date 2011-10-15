@@ -143,7 +143,7 @@ class Framework
     #
     # Runs the system
     #
-    # It parses the instanse options and runs the audit
+    # It parses the instance options and runs the audit
     #
     # @param   [Block]     &block  a block to call after the audit has finished
     #                                   but before running the reports
@@ -278,7 +278,13 @@ class Framework
                 print_info( '---------------------------------------' )
                 Arachni::Module::Auditor.timeout_audit_run
             end
+
+            audit_queue
         }
+
+        if( @opts.http_harvest_last )
+            harvest_http_responses
+        end
 
     end
 
@@ -294,9 +300,10 @@ class Framework
             http.run
 
             # check to see if the page was updated
-            page = http.trainer.page
-            # and push it in the queue to be audited as well
-            @page_queue << page if page
+            http.trainer.flush_pages.each {
+                |page|
+                @page_queue << page
+            }
 
         end
     end
@@ -311,7 +318,7 @@ class Framework
     #
     def audit_store( fresh = false )
 
-        # restore the original redundacy rules and their counters
+        # restore the original redundancy rules and their counters
         @opts.redundant = @orig_redundant
         opts = @opts.to_h
         opts['mods'] = @modules.keys
@@ -475,8 +482,6 @@ class Framework
         REVISION
     end
 
-    private
-
     def clean_up!( skip_audit_queue = false )
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
@@ -497,6 +502,8 @@ class Framework
 
         return true
     end
+
+    private
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
@@ -555,13 +562,16 @@ class Framework
     def run_mods( page )
         return if !page
 
+        print_line
+        print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
+
+
         call_on_run_mods( page.deep_clone )
 
         @current_url = page.url.to_s
 
         @modules.each_pair {
             |name, mod|
-
             wait_if_paused
             run_mod( mod, page.deep_clone )
         }
@@ -580,19 +590,25 @@ class Framework
 
     def harvest_http_responses
 
-       print_status( 'Harvesting HTTP responses...' )
-       print_info( 'Depending on server responsiveness and network' +
-        ' conditions this may take a while.' )
+        print_status( 'Harvesting HTTP responses...' )
+        print_info( 'Depending on server responsiveness and network' +
+            ' conditions this may take a while.' )
 
-       # run all the queued HTTP requests and harvest the responses
-       http.run
+        # grab updated pages
+        http.trainer.flush_pages.each {
+            |page|
+            @page_queue << page
+        }
 
-       # try to get an updated page from the Trainer
-       page = http.trainer.page
+        # run all the queued HTTP requests and harvest the responses
+        http.run
 
-       # if there was an updated page push it in the queue
-       @page_queue << page if page
-       audit_queue
+        http.trainer.flush_pages.each {
+            |page|
+            @page_queue << page
+        }
+
+        audit_queue
     end
 
     #

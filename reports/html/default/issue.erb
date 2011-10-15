@@ -171,8 +171,11 @@
                         </table>
 
                         <% if variation['escaped_response']%>
-                        <h5>HTML Response</h5>
-                        <iframe style="width: 100%; height: 400px" src="data:text/html;base64, <%=variation['escaped_response']%>"></iframe>
+                        <form style="display:inline" action="#">
+                            <input onclick="javascript:renderResponse( 'res_<%=var_idx%>_<%=idx%>', 'data:text/html;base64, <%= variation['escaped_response']%>' )"
+                            type="button" value="Render HTML response" />
+                        </form>
+                        <div id="res_<%=var_idx%>_<%=idx%>"></div>
                         <%end%>
 
                     </div>

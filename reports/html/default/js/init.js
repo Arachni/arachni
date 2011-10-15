@@ -10,6 +10,24 @@ $.expr[':'].icontains = function(obj, index, meta, stack){
 var configuration = <%= js_multiline(conf) %>
 var email_address;
 
+var $warned = false;
+function renderResponse( id, html ){
+
+    if ( !$warned ) {
+        confirm_render = confirm( "Rendering the response will also execute" +
+            " any JavaScript code that might be included in the page. " +
+            "Are you sure you want to continue?" );
+
+        $warned = confirm_render;
+        if( !confirm_render){
+            return;
+        }
+
+    }
+
+    $( '#' + id ).html( $( '<iframe style="width: 100%; height: 400px" ' + 'src="' + html + '" />' ) );
+}
+
 function getElem(id) {
     return document.getElementById(id)
 }

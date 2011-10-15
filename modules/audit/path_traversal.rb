@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -72,7 +72,7 @@ class PathTraversal < Arachni::Module::Base
         @__params = [
             {
                 'value'  => 'etc/passwd',
-                'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/i
+                'regexp' => /root:x:0:0:.+:[0-9a-zA-Z\/]+/i
             },
             {
                 'value'  => 'boot.ini',
@@ -119,7 +119,7 @@ class PathTraversal < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.2',
+            :version        => '0.2.3',
             :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

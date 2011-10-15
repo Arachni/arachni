@@ -36,6 +36,12 @@ class Trainer
     def initialize
       @opts     = Options.instance
       @updated  = false
+
+      @pages = []
+    end
+
+    def set_page( page )
+        @page = page.deep_clone
     end
 
     #
@@ -113,26 +119,39 @@ class Trainer
         train_links( res[0], res[1] )
 
         if( @updated )
-            @page.html = res[0].body.dup
 
             begin
-                url           = res[0].request.url
+                url         = res[0].request.url
                 # prepare the page url
                 @parser.url = @parser.to_absolute( url )
             rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-                # raise e
+                return
             end
 
+            @page.html = res[0].body.dup
             @page.response_headers    = res[0].headers_hash
             @page.query_vars = @parser.link_vars( @parser.url ).dup
             @page.url        = @parser.url.dup
             @page.code       = res[0].code
             @page.method     = res[0].request.method.to_s.upcase
 
+            @page.forms      ||= []
+            @page.links      ||= []
+            @page.cookies    ||= []
+
+            @pages << @page
+
+            @updated = false
         end
 
         print_debug( 'Training complete.' )
+    end
+
+    def flush_pages
+        pages = @pages.dup
+        @pages = []
+        pages
     end
 
     private
@@ -140,16 +159,13 @@ class Trainer
     def train_forms( res )
         return [], 0 if !@opts.audit_forms
 
-        forms = @parser.forms( ).clone
-        cforms, form_cnt = update_forms( forms )
+        cforms, form_cnt = update_forms( @parser.forms )
 
         if ( form_cnt > 0 )
             @page.forms = cforms.flatten
             @updated = true
 
-            print_debug( 'Found ' + form_cnt.to_s + ' new forms.' )
-        else
-            @page.forms = forms
+            print_info( 'Found ' + form_cnt.to_s + ' new forms.' )
         end
 
     end
@@ -157,8 +173,7 @@ class Trainer
     def train_links( res, redir = false )
         return [], 0  if !@opts.audit_links
 
-        links   = @parser.links.clone
-
+        links = @parser.links.deep_clone
         if( redir )
 
             url = @parser.to_absolute( url_sanitize( res.effective_url ) )
@@ -174,25 +189,20 @@ class Trainer
             @page.links = clinks.flatten
             @updated = true
 
-            print_debug( 'Found ' + link_cnt.to_s + ' new links.' )
-        else
-            @page.links = links
+            print_info( 'Found ' + link_cnt.to_s + ' new links.' )
         end
 
     end
 
     def train_cookies( res )
 
-        cookies = @parser.cookies.clone
-        ccookies, cookie_cnt = update_cookies( cookies )
+        ccookies, cookie_cnt = update_cookies( @parser.cookies )
 
         if ( cookie_cnt > 0 )
             @page.cookies = ccookies.flatten
             @updated = true
 
-            print_debug( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
-        else
-            @page.cookies = cookies
+            print_info( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
         end
 
     end

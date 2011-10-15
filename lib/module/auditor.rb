@@ -936,12 +936,12 @@ module Auditor
     #
     def audit_elems( elements, injection_str, opts = { }, &block )
 
-        opts            = OPTIONS.merge( opts )
-        url             = @page.url
+        opts = OPTIONS.merge( opts )
+        url  = @page.url
 
         opts[:injected_orig] = injection_str
 
-        elements.each{
+        elements.deep_clone.each {
             |elem|
             elem.auditor( self )
             elem.audit( injection_str, opts, &block )
