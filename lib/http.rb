@@ -150,7 +150,7 @@ class HTTP
     # Runs Hydra (all the asynchronous queued HTTP requests)
     #
     # Should only be called by the framework
-    # after all module threads have beed joined!
+    # after all module threads have been joined!
     #
     def run
         exception_jail {
@@ -196,7 +196,7 @@ class HTTP
 
     #
     # Queues a Tyhpoeus::Request and applies an 'on_complete' callback
-    # on behal of the trainer.
+    # on behalf of the trainer.
     #
     # @param  [Tyhpoeus::Request]  req  the request to queue
     # @param  [Bool]  async  run request async?
