@@ -161,7 +161,7 @@ class Framework
     #
     # Runs the system
     #
-    # It parses the instanse options and runs the audit
+    # It parses the instance options and runs the audit
     #
     # @param   [Block]     &block  a block to call after the audit has finished
     #                                   but before running the reports
@@ -321,7 +321,7 @@ class Framework
     #
     def audit_store( fresh = false )
 
-        # restore the original redundacy rules and their counters
+        # restore the original redundancy rules and their counters
         @opts.redundant = @orig_redundant
         opts = @opts.to_h
         opts['mods'] = @modules.keys
@@ -566,7 +566,7 @@ class Framework
         return if !page
 
         print_line
-        print_status( "Auditting: [HTTP: #{page.code}] " + page.url )
+        print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
 
 
         call_on_run_mods( page.deep_clone )
