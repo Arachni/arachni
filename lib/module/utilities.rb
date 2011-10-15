@@ -130,7 +130,8 @@ module Utilities
         begin
             block.call
         rescue Exception => e
-            print_error( e.to_s )
+            err_name = !e.to_s.empty? ? e.to_s : e.class.name
+            print_error( err_name )
             print_debug_backtrace( e )
             raise e
         end
