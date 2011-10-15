@@ -57,7 +57,7 @@ Gem::Specification.new do |s|
         helping penetration testers and administrators evaluate the security of web applications.
 
         Arachni is smart, it trains itself by learning from the HTTP responses it receives during the audit process.
-        Unlike other scanners, Arachni takes into account the dynamic nature of web applications and can detect changes caused while travelling
+        Unlike other scanners, Arachni takes into account the dynamic nature of web applications and can detect changes caused while traveling
         through the paths of a web application's cyclomatic complexity.
         This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
 
