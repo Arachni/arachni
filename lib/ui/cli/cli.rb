@@ -93,11 +93,18 @@ class CLI
         print_status( 'Initing...' )
 
         begin
-            # start the show!
-            @arachni.run( ){
-                @interrupt_handler.join if @interrupt_handler
+            # we may need to kill the audit so put it in a thread
+            @audit = Thread.new {
+                # start the show!
+                @arachni.run( )
+                print_stats
             }
-            print_stats
+
+            @audit.join
+
+            # if the user requested to exit the scan wait until the
+            # Thread that takes care of the clean up to finish
+            @exit_handler.join if @exit_handler
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )
@@ -158,11 +165,12 @@ class CLI
     #
     # The interrupt will be handled after a module has finished.
     #
-    def handle_interrupt( )
+    def handle_interrupt
         return if @interrupt_handler && @interrupt_handler.alive?
 
         only_positives_opt = only_positives?
         @@only_positives = false
+
         @interrupt_handler = Thread.new {
 
              Thread.new {
@@ -174,18 +182,28 @@ class CLI
                         unmute!
                         @interrupt_handler.kill
 
-                        print_info( 'Exiting...' )
-                        exit 0
+                        print_error( 'Exiting...' )
+                        print_info( 'Please wait while the reports are being generated.' )
+
+                        # kill the audit
+                        @audit.exit
+
+                        @exit_handler = Thread.new {
+                            @arachni.clean_up!( true )
+                            @arachni.reports.run( @arachni.audit_store( true ) )
+                            print_stats
+                        }
 
                     when 'r'
                         unmute!
-                        @arachni.reports.run( @arachni.audit_store( ) )
+                        @arachni.reports.run( @arachni.audit_store( true ) )
                 end
 
                 @@only_positives = only_positives_opt
                 unmute!
-                @interrupt_handler.kill
-                Thread.kill
+
+                @interrupt_handler.exit
+                Thread.exit
             }
 
             while( 1 )
@@ -200,7 +218,7 @@ class CLI
                     print_stats( true )
                 rescue Exception => e
                     exception_jail{ raise e }
-                    exit 0
+                    raise e
                 end
 
                 print_info( 'Continue? (hit \'enter\' to continue, \'r\' to generate reports and \'e\' to exit)' )
