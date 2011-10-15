@@ -485,8 +485,6 @@ class Framework
         REVISION
     end
 
-    private
-
     def clean_up!( skip_audit_queue = false )
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
@@ -507,6 +505,8 @@ class Framework
 
         return true
     end
+
+    private
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
