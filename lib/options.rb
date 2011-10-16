@@ -359,6 +359,8 @@ class Options
     attr_accessor :rpc_port
     attr_accessor :rpc_address
 
+    attr_accessor :rpc_instance_port_range
+
     attr_accessor :ssl
     attr_accessor :ssl_pkey
     attr_accessor :ssl_cert
@@ -405,6 +407,8 @@ class Options
         @restrict_paths     = []
         @extend_paths       = []
         @custom_headers     = {}
+
+        @rpc_instance_port_range = [1025, 65535]
 
 
         @spider_first = true
@@ -478,7 +482,8 @@ class Options
             [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
             [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         @dir['root']    = root_path
@@ -531,6 +536,10 @@ class Options
                             'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
                             'count'   => Integer( arg.to_s.split( /:/ )[1] ),
                         }
+
+                    when '--port-range'
+                        first, last = arg.to_s.split( '-' )
+                        @rpc_instance_port_range = [ Integer( first ), Integer( last ) ]
 
                     when '--custom-header'
                         header, val = arg.to_s.split( /=/, 2 )

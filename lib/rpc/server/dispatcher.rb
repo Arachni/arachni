@@ -240,6 +240,12 @@ class Dispatcher
     --port=<num>                specify port to listen to
                                     (Default: #{@opts.rpc_port})
 
+    --port-range=<beginning>-<end>
+
+                                specify port range for the RPC instances
+                                    (Make sure to allow for a few hundred ports.)
+                                    (Default: #{@opts.rpc_instance_port_range.join( '-' )})
+
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
     --pool-size=<num>           how many server workers/processes should be available
@@ -271,6 +277,7 @@ class Dispatcher
 
     --ssl-ca     <file>         location of the CA certificate (.pem)
                                     (Used to verify the clients to the server.)
+
 USAGE
     end
 
@@ -384,8 +391,10 @@ USAGE
     # Returns a random port
     #
     def rand_port
-        range = (1025..65535).to_a
-        range[ rand( 65535 - 1025 ) ]
+        first, last = @opts.rpc_instance_port_range
+        range = (first..last).to_a
+
+        range[ rand( range.last - range.first ) ]
     end
 
     def secret
