@@ -613,9 +613,9 @@ class CLI
 
     --only-positives            echo positive results *only*
 
-    --http-req-limit            concurent HTTP requests limit
-                                  (Be carefull not to kill your server.)
-                                  (Default: 60)
+    --http-req-limit            concurrent HTTP requests limit
+                                  (Be careful not to kill your server.)
+                                  (Default: 20)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
@@ -627,13 +627,18 @@ class CLI
                                    *and* you feel dangerous you can use
                                    this flag with an increased '--http-req-limit'
                                    to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
+                                 (*WARNING*: When scanning large websites with hundreds
                                   of pages this could eat up all your memory pretty quickly.)
 
-    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
+    --cookie-jar=<cookiejar>    Netscape HTTP cookie file, use curl to create it
 
 
     --user-agent=<user agent>   specify user agent
+
+    --custom-header='<name>=<value>'
+
+                                specify custom headers to be included in the HTTP requests
+                                (Can be used multiple times.)
 
     --authed-by=<who>           who authorized the scan, include name and e-mail address
                                   (It'll make it easier on the sys-admins during log reviews.)

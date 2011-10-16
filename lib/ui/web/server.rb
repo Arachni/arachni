@@ -128,6 +128,18 @@ class Server < Sinatra::Base
             return str
         end
 
+        def format_custom_headers( headers )
+            return if !headers || !headers.is_a?( Hash ) || headers.empty?
+
+            str = ''
+            headers.each_pair {
+                |name, val|
+                str += "#{name}=#{val}\r\n"
+            }
+
+            return str
+        end
+
         def prep_description( str )
             placeholder =  '--' + rand( 1000 ).to_s + '--'
             cstr = str.gsub( /^\s*$/xm, placeholder )
@@ -363,6 +375,13 @@ class Server < Sinatra::Base
                         'regexp'  => regexp,
                         'count'   => counter
                     }
+                }
+            elsif name == 'custom_headers'
+                cparams[name] = {}
+                value.split( "\r\n" ).each {
+                    |line|
+                    header, val = line.to_s.split( /=/, 2 )
+                    cparams[name][header] = val
                 }
             else
                 cparams[name] = to_i( value )
@@ -724,7 +743,8 @@ class Server < Sinatra::Base
             session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
             opts = {}
-            opts['settings'] = prep_opts( session['opts']['settings'] )
+            # opts['settings'] = prep_opts( session['opts']['settings'] )
+            opts['settings'] = session['opts']['settings']
             opts['plugins']  = YAML::load( session['opts']['plugins'] )
             opts['modules']  = session['opts']['modules']
 

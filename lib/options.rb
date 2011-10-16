@@ -16,7 +16,7 @@ module Arachni
 #
 # Options class.
 #
-# Implements the Singleton pattern and formaly defines
+# Implements the Singleton pattern and formally defines
 # all of Arachni's runtime options.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -374,6 +374,8 @@ class Options
     attr_accessor :webui_username
     attr_accessor :webui_password
 
+    attr_accessor :custom_headers
+
 
     def initialize( )
 
@@ -387,20 +389,21 @@ class Options
         @include    = []
         @redundant  = []
 
-        @focus_scan_on    = []
-
         @reports    = {}
         @lsrep      = []
 
         @lsmod      = []
-        @dir        = Hash.new
+        @dir        = {}
+
+        @plugins    = {}
+        @lsplug     = []
+        @datastore  = {}
+
         @exclude_cookies    = []
         @load_profile       = []
+        @focus_scan_on      = []
+        @custom_headers     = {}
 
-        @plugins = {}
-        @lsplug  = []
-
-        @datastore = {}
 
         @spider_first = true
 
@@ -470,7 +473,8 @@ class Options
             [ '--username',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--password',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         @dir['root']    = root_path
@@ -523,6 +527,10 @@ class Options
                             'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
                             'count'   => Integer( arg.to_s.split( /:/ )[1] ),
                         }
+
+                    when '--custom-header'
+                        header, val = arg.to_s.split( /=/, 2 )
+                        @custom_headers[header] = val
 
                     when '--obey_robots_txt'
                         @obey_robots_txt = true
