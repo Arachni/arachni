@@ -110,7 +110,7 @@ class HTTP
             'From'   => opts.authed_by || '',
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
-        }
+        }.merge( opts.custom_headers )
 
         cookies = {}
         cookies.merge!( self.class.parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
