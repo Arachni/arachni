@@ -8,6 +8,8 @@
 
 =end
 
+require 'win32/process' if RUBY_PLATFORM =~ /win32/
+
 require 'socket'
 require 'sys/proctable'
 
@@ -25,7 +27,7 @@ class Server
 #
 # Dispatcher class
 #
-# Dispatches RPC servers on demand providing a centralised environment
+# Dispatches RPC servers on demand providing a centralized environment
 # for multiple RPC clients and allows for extensive process monitoring.
 #
 # The process goes something like this:
@@ -83,9 +85,8 @@ class Dispatcher
 
         @server.add_handler( "dispatcher", self )
 
-        # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { shutdown }
-        trap( 'INT' ) { shutdown }
+        # trap interrupts and exit cleanly when required
+        trap_interrupts { shutdown }
 
         @jobs = []
         @pool = Queue.new
@@ -99,6 +100,13 @@ class Dispatcher
         print_status( 'Initialization complete.' )
 
         run
+    end
+
+    def trap_interrupts( &block )
+        [ 'EXIT', 'QUIT', 'HUP', 'INT' ].each {
+            |signal|
+            trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
+        }
     end
 
     def alive?
@@ -314,10 +322,10 @@ USAGE
                 @opts.rpc_port = avail_port( )
                 @token         = secret()
 
-                pid = Kernel.fork {
+                pid = fork {
                     exception_jail {
                         server = Arachni::RPC::Server::Instance.new( @opts, @token )
-                        trap( "INT", "IGNORE" )
+                        trap_interrupts
                         server.run
                     }
 
@@ -351,7 +359,7 @@ USAGE
     def prep_logging
         # reroute all output to a logfile
         @logfile ||= reroute_to_file( @opts.dir['root'] +
-            "logs/Dispatcher - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+            "logs/Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
     end
 
     def proc( pid )

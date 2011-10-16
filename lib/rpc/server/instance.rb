@@ -64,16 +64,18 @@ class Instance
 
         if logfile = @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['root'] +
-                "logs/Instance - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+                "logs/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
         else
             reroute_to_file( false )
         end
 
         set_handlers
 
-        # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { shutdown }
-        trap( 'INT' ) { shutdown }
+        # trap interrupts and exit cleanly when required
+        [ 'QUIT', 'HUP', 'INT' ].each {
+            |signal|
+            trap( signal ){ shutdown } if Signal.list.has_key?( signal )
+        }
     end
 
     #
