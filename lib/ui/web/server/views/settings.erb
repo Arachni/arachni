@@ -93,6 +93,11 @@
                         </select>
 
                     </p>
+                    <p>
+                        Custom HTTP headers: <textarea rows="2" cols="20" name="custom_headers"><%= format_custom_headers( session['opts']['settings']['custom_headers'] ) %></textarea>
+                    <br/>(Newline separated)
+                    <br/>(<em>header=value</em>)
+                    </p>
 
                 </fieldset>
             </div>
@@ -131,11 +136,6 @@
                     </p>
                     <p>
                         Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" <% if session['opts']['settings']['obey_robots_txt'] == true %> checked="checked" <% end %> />
-                    </p>
-                    <p>
-                        Custom HTTP headers: <textarea rows="2" cols="20" name="custom_headers"><%= format_custom_headers( session['opts']['settings']['custom_headers'] ) %></textarea>
-                    <br/>(Newline separated)
-                    <br/>(<em>header=value</em>)
                     </p>
                 </fieldset>
 
