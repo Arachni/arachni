@@ -264,6 +264,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - E-mail address disclosure
         - US Social Security Number disclosure
         - Forceful directory listing
+        - Mixed Resource/Scripting
 
 ### Report Management
 
