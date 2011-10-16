@@ -194,7 +194,13 @@ class ReportManager
 
         begin
             location = savedir + Report.get( id ).filename + EXTENSION
-            convert( type, File.read( location ) )
+
+            # if it's the default report type don't waste time converting
+            if '.' + type == EXTENSION
+                return File.read( location )
+            else
+                return convert( type, File.read( location ) )
+            end
         rescue Exception => e
             ap e
             ap e.backtrace
