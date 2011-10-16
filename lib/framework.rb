@@ -161,7 +161,7 @@ class Framework
         # Arachni managed to gather
         begin
             # start the audit
-            audit( )
+            exception_jail{ audit( ) }
         rescue Exception => e
             # ap e
             # ap e.backtrace

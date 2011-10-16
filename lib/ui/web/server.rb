@@ -363,6 +363,10 @@ class Server < Sinatra::Base
 
             if name == 'cookiejar'
                cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
+            elsif name == 'extend_paths'
+               cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
+            elsif name == 'restrict_paths'
+               cparams['restrict_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
             elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
 

@@ -48,8 +48,6 @@ class Options
 
     attr_accessor :grid_mode
 
-    attr_accessor :focus_scan_on
-
     #
     # @return   [String]    the URL of a neighbouring Dispatcher
     #
@@ -376,6 +374,9 @@ class Options
 
     attr_accessor :custom_headers
 
+    attr_accessor :restrict_paths
+    attr_accessor :extend_paths
+
 
     def initialize( )
 
@@ -401,7 +402,8 @@ class Options
 
         @exclude_cookies    = []
         @load_profile       = []
-        @focus_scan_on      = []
+        @restrict_paths     = []
+        @extend_paths       = []
         @custom_headers     = {}
 
 
@@ -474,7 +476,9 @@ class Options
             [ '--password',               GetoptLong::REQUIRED_ARGUMENT ],
             [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
             [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         @dir['root']    = root_path
@@ -531,6 +535,12 @@ class Options
                     when '--custom-header'
                         header, val = arg.to_s.split( /=/, 2 )
                         @custom_headers[header] = val
+
+                    when '--restrict-paths'
+                        @restrict_paths |= paths_from_file( arg )
+
+                    when '--extend-paths'
+                        @extend_paths |= paths_from_file( arg )
 
                     when '--obey_robots_txt'
                         @obey_robots_txt = true
@@ -876,6 +886,15 @@ class Options
         end
 
         return arg
+    end
+
+    def paths_from_file( file )
+        IO.read( file ).lines.map {
+            |path|
+            path.gsub!( "\n", '' )
+            path.gsub!( "\r", '' )
+            path
+        }
     end
 
     private

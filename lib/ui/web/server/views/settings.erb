@@ -137,6 +137,15 @@
                     <p>
                         Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" <% if session['opts']['settings']['obey_robots_txt'] == true %> checked="checked" <% end %> />
                     </p>
+                    <p>
+                        Extend paths: <input type="file" name="extend_paths" size="25" />
+                        <br/>(Newline separated)
+                    </p>
+                    <p>
+                        Restrict paths: <input type="file" name="restrict_paths" size="25" />
+                        <br/>(Newline separated)
+                    </p>
+
                 </fieldset>
 
             </div>

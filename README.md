@@ -175,6 +175,7 @@ From a user's or a component developer's point of view everything appears simple
 
  - Cookie-jar support
  - SSL support.
+ - Support for custom headers.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
@@ -202,6 +203,7 @@ From a user's or a component developer's point of view everything appears simple
  - Adjustable link count limit.
  - Adjustable redirect limit.
  - Modular path extraction via "Path Extractor" components.
+ - Can read paths from multiple user supplied files (to both restrict and extend the scope of the crawl).
 
 ### HTML Parser
 

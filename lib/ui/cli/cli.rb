@@ -669,7 +669,7 @@ class CLI
                                   (Can be used multiple times.)
 
     --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
-                                  (URLs matching <regex> will be crawled <count> links deep.)
+                                  (URLs matching <regex> will be crawled <count> amount of times.)
                                   (Can be used multiple times.)
 
     -f
@@ -683,6 +683,12 @@ class CLI
     --link-count=<number>       how many links to follow (default: inf)
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
+
+    --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
+                                  (Can be used multiple times.)
+
+    --restrict-paths=<file>     only crawl the paths in <file>
+                                  (Can be used multiple times.)
 
 
     Auditor ------------------------

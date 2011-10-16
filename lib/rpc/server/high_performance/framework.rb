@@ -156,14 +156,9 @@ class Framework
             if high_performance?
 
                 #
-                # We're in HPG (High Perfrmance Grid) mode,
+                # We're in HPG (High Performance Grid) mode,
                 # things are going to get weird...
                 #
-
-                # since the scan is distributed by way of assigning
-                # a list of URLs to each instance we are required to
-                # crawl first.
-                @framework.opts.spider_first = true
 
                 # start the crawl and store the URLs in the sitemap
                 Arachni::Spider.new( @framework.opts ).run {
@@ -183,7 +178,7 @@ class Framework
                     chunks = @sitemap.chunk( chunk_cnt )
 
                     # set the URLs to be audited by the local instance
-                    @framework.opts.focus_scan_on = chunks.pop
+                    @framework.opts.restrict_paths = chunks.pop
 
                     chunks.each_with_index {
                         |chunk, i|
@@ -704,7 +699,7 @@ class Framework
             instance = connect_to_instance( instance_hash )
 
             opts['url'] = opts['url'].to_s
-            opts['focus_scan_on'] = urls
+            opts['restrict_paths'] = urls
 
             opts['grid_mode'] = ''
 
