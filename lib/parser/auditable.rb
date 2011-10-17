@@ -241,6 +241,8 @@ class Auditable
             chash = hash.dup
             chash = Arachni::Module::KeyFiller.fill( chash )
             delem = self.deep_clone
+
+            add = false
             @raw['auditable'].each {
                 |input|
 
@@ -252,10 +254,15 @@ class Auditable
                         chash[input['name']] =
                             format_str( injection_str, chash[input['name']], format )
                     }
+
+                    add = true
                 end
             }
-            delem.auditable = chash
-            var_combo << delem
+
+            if add
+                delem.auditable = chash
+                var_combo << delem
+            end
         end
 
 
