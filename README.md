@@ -1,6 +1,8 @@
-# High Performance Grid (HPG) dev branch.
+# Experimental (unstable) branch
 
-The Grid is highly experimental and far from properly tested, however if you're feeling brave keep reading.
+This branch holds experimental code which is planned for release once it has been properly tested.
+
+The newest addition to the branch is the brand new High Performance Grid.
 
 ## Installation
 
