@@ -4,10 +4,16 @@ audit_forms: true
 audit_headers: true
 audit_links: true
 authed_by: 
+custom_headers: {}
+
+datastore: {}
+
 dir: 
 exclude: []
 
 exclude_cookies: []
+
+extend_paths: []
 
 http_req_limit: 20
 include: []
@@ -22,6 +28,7 @@ lsrep: []
 mods: 
 - interesting_responses
 - common_files
+- mixed_resource
 - xst
 - http_put
 - webdav
@@ -60,10 +67,7 @@ mods:
 - xpath
 - unvalidated_redirect
 - xss
-plugins: 
-  healthmap: {}
-
-  content_types: {}
+plugins: {}
 
 redirect_limit: 20
 redundant: []
@@ -71,5 +75,10 @@ redundant: []
 reports: 
   stdout: {}
 
+restrict_paths: []
+
+rpc_instance_port_range: 
+- 1025
+- 65535
 save_profile: 
-user_agent: Arachni/0.2.2
+user_agent: Arachni/0.4
