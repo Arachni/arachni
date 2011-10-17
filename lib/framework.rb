@@ -258,11 +258,8 @@ class Framework
         # initiates the crawl
         @spider.run {
             |page|
-
             @sitemap |= @spider.sitemap
-
             @page_queue << page
-            audit_queue if !@opts.spider_first
         }
 
         audit_queue
