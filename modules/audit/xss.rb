@@ -39,8 +39,11 @@ class XSS < Arachni::Module::Base
     def prepare( )
         @_tag_name = 'some_dangerous_input_' + seed
         @_injection_strs = [
+            # straight injection
             '<' + @_tag_name + ' />',
+            # go for an error
             '\'-;<' + @_tag_name + ' />',
+            # break out of HTML comments
             '--> <' + @_tag_name + ' /> <!--',
         ]
         @_opts = {
@@ -77,7 +80,10 @@ class XSS < Arachni::Module::Base
     def self.info
         {
             :name           => 'XSS',
-            :description    => %q{Cross-Site Scripting module},
+            :description    => %q{Cross-Site Scripting module.
+                It doesn't just look for the injected XSS string in the HMTL code
+                but actually parses the code and looks for the injected element proper.
+            },
             :elements       => [
                 Issue::Element::FORM,
                 Issue::Element::LINK,
