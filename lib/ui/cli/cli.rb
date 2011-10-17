@@ -26,7 +26,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.8
+# @version: 0.1.9
 # @see Arachni::Framework
 #
 class CLI
@@ -270,7 +270,7 @@ class CLI
     #
     def parse_opts(  )
 
-        if !@opts.repload
+        if !@opts.repload && !@opts.help
 
             if( !@opts.mods || @opts.mods.empty? )
                 print_info( "No modules were specified." )
@@ -538,7 +538,7 @@ class CLI
             @opts.load_profile = nil
             profiles.each {
                 |filename|
-                @opts.merge!( YAML::load( IO.read( filename ) ) )
+                @opts.merge!( @opts.load( filename ) )
             }
         }
     end
@@ -684,7 +684,7 @@ class CLI
 
     --link-count=<number>       how many links to follow (default: inf)
 
-    --redirect-limit=<number>   how many redirects to follow (default: inf)
+    --redirect-limit=<number>   how many redirects to follow (default: 20)
 
     --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
                                   (Can be used multiple times.)
