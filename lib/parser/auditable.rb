@@ -168,11 +168,14 @@ class Auditable
     end
 
     #
-    # Injectes the injecton_str in self's values according to formatting options
-    # and returns an array of hashes in the form of:
-    #  <altered_variable>   => <new element>
+    # Injects the injecton_str in self's values according to formatting options
+    # and returns an array of Element permutations.
     #
     # @param    [String]  injection_str  the string to inject
+    # @param    [Hash]    opts           formatting and permutation options
+    #                                       * :skip_orig => skip submission with default/original values (for {Arachni::Parser::Element::Form} elements)
+    #                                       * :format => {Format}
+    #                                       * :param_flip => flip injection value and input name
     #
     # @return    [Array]
     #
@@ -230,6 +233,31 @@ class Auditable
             elem.auditable[injection_str] = seed
             var_combo << elem
         end
+
+        # if there are two password type fields in the form there's a good
+        # chance that it's a 'please retype your password' thing so make sure
+        # that we have a variation which has identical password values
+        if self.is_a?( Arachni::Parser::Element::Form )
+            chash = hash.dup
+            chash = Arachni::Module::KeyFiller.fill( chash )
+            delem = self.deep_clone
+            @raw['auditable'].each {
+                |input|
+
+                if input['type'] == 'password'
+                    delem.altered = input['name']
+
+                    opts[:format].each {
+                        |format|
+                        chash[input['name']] =
+                            format_str( injection_str, chash[input['name']], format )
+                    }
+                end
+            }
+            delem.auditable = chash
+            var_combo << delem
+        end
+
 
         print_debug_injection_set( var_combo, opts )
 
