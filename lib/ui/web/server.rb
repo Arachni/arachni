@@ -213,6 +213,35 @@ class Server < Sinatra::Base
         log.webui_started
     end
 
+    def async_redirect( location, opts = {} )
+        response.status = 302
+
+        if methods.include?( :current_addon ) && current_addon
+            location = current_addon.path_root + location
+        end
+
+        if ( flash = opts[:flash] ) && !flash.empty?
+            location += "?#{flash.keys[0]}=#{URI.encode( flash.values[0] )}"
+        end
+
+        response.headers['Location'] = location
+
+        body ''
+    end
+
+    def redirect( location, opts = {} )
+        if methods.include?( :current_addon ) && current_addon
+            location = current_addon.path_root + location
+        end
+
+        if ( flash = opts[:flash] ) && !flash.empty?
+            location += "?#{flash.keys[0]}=#{URI.encode( flash.values[0] )}"
+        end
+
+        super( location )
+    end
+
+
     def addons
         settings.addons
     end
@@ -510,18 +539,6 @@ class Server < Sinatra::Base
         # Garbage collector, zombie killer. Reaps idle processes every 60 seconds.
         #
         ::EM.add_periodic_timer( 60 ){ ::EM.defer { shutdown_zombies } }
-    end
-
-    def async_redirect( location, opts = {} )
-        response.status = 302
-
-        if ( flash = opts[:flash] ) && !flash.empty?
-            location += "?#{flash.keys[0]}=#{URI.encode( flash.values[0] )}"
-        end
-
-        response.headers['Location'] = location
-
-        body ''
     end
 
     #

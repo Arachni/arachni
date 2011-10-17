@@ -43,6 +43,10 @@ module Addons
                     erb :addon, *erb_args
                 end
 
+                def async_present( *args )
+                    body present( *args )
+                end
+
                 def partial( tpl, args )
                     views = current_addon.path_views
                     trv = ( '../' * views.split( '/' ).size ) + views + tpl.to_s
@@ -108,16 +112,32 @@ module Addons
             settings.get( @route + path, &block )
         end
 
+        def aget( path, &block )
+            settings.aget( @route + path, &block )
+        end
+
         def post( path, &block )
             settings.post( @route + path, &block )
+        end
+
+        def apost( path, &block )
+            settings.apost( @route + path, &block )
         end
 
         def put( path, &block )
             settings.put( @route + path, &block )
         end
 
+        def aput( path, &block )
+            settings.aput( @route + path, &block )
+        end
+
         def delete( path, &block )
             settings.delete( @route + path, &block )
+        end
+
+        def adelete( path, &block )
+            settings.adelete( @route + path, &block )
         end
 
     end
