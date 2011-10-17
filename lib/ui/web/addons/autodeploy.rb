@@ -23,7 +23,7 @@ module Addons
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #
-# @version: 0.1
+# @version: 0.1.1
 #
 class AutoDeploy < Base
 
@@ -38,10 +38,13 @@ class AutoDeploy < Base
 
         end
 
-        get "/" do
-            present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :show_output => false,  :ret => {}
-
+        aget "/" do
+            autodeploy.list_with_liveness {
+                |deployments|
+                async_present :index, :deployments => deployments,
+                    :root => current_addon.path_root, :show_output => false,
+                    :ret => {}
+            }
         end
 
         post "/" do
@@ -51,11 +54,7 @@ class AutoDeploy < Base
                 !params[:port] || params[:port].empty? ||
                 !params[:dispatcher_port] || params[:dispatcher_port].empty?
 
-                flash[:err] = "Please fill in all the fields."
-
-                present :index, :deployments => autodeploy.list,
-                    :root => current_addon.path_root, :show_output => false,
-                    :ret => {}
+                redirect '/', :flash => { :err => "Please fill in all the fields." }
             else
                 deployment = Manager::Deployment.new( :host => params[:host],
                     :port => params[:port], :user => params[:username],
@@ -68,7 +67,6 @@ class AutoDeploy < Base
                     :root => current_addon.path_root, :channel => channel,
                     :show_output => true,  :ret => {}
             end
-
         end
 
         get '/channel/:channel' do
@@ -76,75 +74,85 @@ class AutoDeploy < Base
             autodeploy.output( params[:channel] ).to_json
         end
 
-        get '/channel/:channel/finalize' do
-
+        get '/channel/:channel/finalize' do |channel|
             deployment = autodeploy.finalize_setup( params[:channel] )
             log.autodeploy_deployment_saved( env,
                 "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
 
-            flash[:ok] = "Deployment was successful."
-
-            present :index, :deployments => autodeploy.list, :ret => {},
-                :root => current_addon.path_root, :show_output => false
+            redirect '/', :flash => { :ok => "Deployment was successful." }
         end
 
-
-        post '/:id' do
+        apost '/:id' do |id|
 
             ret = {}
             if !params[:password] || params[:password].empty?
-                flash[:err] = "The password field is required."
+                msg = "The password field is required."
+                async_redirect '/', :flash => { :err => msg }
             else
                 if params[:action] == 'delete'
 
                     ret = autodeploy.delete( params[:id], params[:password] )
 
                     if ret[:code]
-                        flash[:err] = "Uninstall process aborted because the last command failed.<br/>" +
+                        msg = "Uninstall process aborted because the last command failed." +
                             " Please ensure that the password is correct and the network is up."
+                        async_redirect '/', :flash => { :err => msg }
                     else
                         log.autodeploy_deployment_deleted( env, params[:id] )
-                        flash[:ok] = "Uninstall process was successful."
+                        msg = "Uninstall process was successful."
+                        async_redirect '/', :flash => { :ok => msg }
                     end
 
                 elsif params[:action] == 'run'
                     deployment = autodeploy.get( params[:id] )
                     ret = autodeploy.run( deployment, params[:password] )
 
-                    url = 'https://' + deployment.host + ':' + deployment.dispatcher_port
+                    autodeploy.alive?( deployment ){
+                        |alive|
 
-                    if settings.dispatchers.alive?( url )
-                        flash[:ok] = "Dispatcher is up and running."
-                        DispatcherManager::Dispatcher.first_or_create( :url => url )
-                        settings.log.autodeploy_dispatcher_enabled( env,
-                            "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
+                        if alive
+                            msg = "Dispatcher is up and running."
 
-                        ret = {}
-                    else
-                        flash[:err] = "Could not run the Dispatcher.<br/>" +
-                            " Please ensure that the password is correct and the network is up."
-                    end
+                            DispatcherManager::Dispatcher.first_or_create( :url => url )
+
+                            settings.log.autodeploy_dispatcher_enabled( env,
+                                "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
+
+                            async_redirect '/', :flash => { :ok => msg }
+                        else
+                            msg = "Could not run the Dispatcher." +
+                                " Please ensure that the password is correct and the network is up."
+
+                            async_redirect '/', :flash => { :err => msg }
+                        end
+                    }
                 elsif params[:action] == 'shutdown'
                     deployment = autodeploy.get( params[:id] )
                     ret = autodeploy.shutdown( deployment, params[:password] )
 
-                    if ret[:code] == 0 && !settings.dispatchers.alive?( url )
-                        flash[:ok] = "Dispatcher has been shutdown."
-                        settings.log.autodeploy_dispatcher_shutdown( env,
-                            "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
+                    err = "Could not shutdown the Dispatcher." +
+                        " Please ensure that the password is correct and the network is up."
 
-                        ret = {}
+                    if ret[:code] == 0
+                       autodeploy.alive?( deployment ){
+                           |liveness|
+                           if !liveness
+                               msg = "Dispatcher has been shutdown."
+
+                               settings.log.autodeploy_dispatcher_shutdown( env,
+                                    "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
+
+                               async_redirect '/', :flash => { :ok => msg }
+                           else
+                               async_redirect '/', :flash => { :err => err }
+                           end
+                       }
                     else
-                        flash[:err] = "Could not shutdown the Dispatcher.<br/>" +
-                            " Please ensure that the password is correct and the network is up."
+                        async_redirect '/', :flash => { :err => err }
                     end
-
-
                 end
             end
 
-            present :index, :deployments => autodeploy.list,
-                :root => current_addon.path_root, :ret => ret, :show_output => false
         end
 
 
@@ -159,7 +167,7 @@ class AutoDeploy < Base
             :name           => 'Auto-deploy',
             :description    => %q{Enables you to automatically convert any SSH enabled Linux box into an Arachni Dispatcher.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1'
+            :version        => '0.1.1'
         }
     end
 

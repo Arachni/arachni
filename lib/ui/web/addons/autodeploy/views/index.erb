@@ -62,13 +62,13 @@
                     <td><%=dep.dispatcher_port%></td>
                     <td><%=dep.user%></td>
                     <td><input name="password" type="password" /></td>
-                    <td><%=is_alive = dispatchers.alive?( 'https://' + dep.host + ':' + dep.dispatcher_port )%></td>
+                    <td><%=dep.alive%></td>
                     <td><%=dep.created_at%></td>
                     <td>
                         <%= csrf_tag %>
                         <input type="hidden" name="id" value="<%=dep.id%>">
 
-                        <% if !is_alive%>
+                        <% if !dep.alive%>
                             <input type="radio" name="action" value="run"> Run <br/>
                         <%else%>
                             <input type="radio" name="action" value="shutdown"> Shutdown <br/>

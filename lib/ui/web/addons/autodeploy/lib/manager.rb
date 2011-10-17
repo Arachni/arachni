@@ -25,17 +25,18 @@ class AutoDeploy
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Manager
 
     include Utilities
 
-    ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
+    # ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
+    ARCHIVE_PATH = 'http://localhost/~zapotek/'
     ARCHIVE_NAME = 'arachni-v0.3-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
-    EXEC = 'arachni_xmlrpcd'
+    EXEC = 'arachni_rpcd'
 
     class Deployment
         include DataMapper::Resource
@@ -45,6 +46,7 @@ class Manager
         property :port,             String
         property :dispatcher_port,  String
         property :user,             String
+        property :alive,            Boolean
         property :created_at,       DateTime, :default => Time.now
     end
 
@@ -168,9 +170,9 @@ class Manager
 
        session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + '/' +
                ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.dispatcher_port +
-           ' > arachni-xmlrpcd-startup.log 2>&1 &' )
+           ' > ' + EXEC + '-startup.log 2>&1 &' )
 
-       sleep( 5 )
+       sleep( 3 )
        { :code   => 0 }
     end
 
@@ -197,6 +199,28 @@ class Manager
         Deployment.all.reverse
     end
 
+    def list_with_liveness( &block )
+        ::EM.synchrony do
+            deployments = ::EM::Synchrony::Iterator.new( list ).map {
+                |deployment, iter|
+                alive?( deployment ){
+                    |alive|
+                    deployment.alive = alive
+                    iter.return( deployment )
+                }
+            }
+
+            block.call( deployments )
+        end
+    end
+
+    def alive?( deployment, &block )
+        @settings.dispatchers.alive?( get_rpc_url( deployment ) ){
+            |alive|
+            block.call( alive )
+        }
+    end
+
     def get( id )
         Deployment.get( id )
     end
@@ -218,6 +242,10 @@ class Manager
                   :password => password
                 }
             )
+    end
+
+    def get_rpc_url( deployment )
+        deployment.host + ':' + deployment.dispatcher_port
     end
 
     def get_url( deployment )
