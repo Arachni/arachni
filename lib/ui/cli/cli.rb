@@ -98,7 +98,7 @@ class CLI
             # we may need to kill the audit so put it in a thread
             @audit = Thread.new {
                 # start the show!
-                @arachni.run( )
+                @arachni.run { kill_interrupt_handler }
                 print_stats
             }
 
@@ -157,6 +157,11 @@ class CLI
 
     end
 
+    def kill_interrupt_handler
+        @@only_positives = @only_positives_opt
+        @interrupt_handler.exit if @interrupt_handler
+        unmute!
+    end
 
     #
     # Handles Ctrl+C interrupts
@@ -170,7 +175,7 @@ class CLI
     def handle_interrupt
         return if @interrupt_handler && @interrupt_handler.alive?
 
-        only_positives_opt = only_positives?
+        @only_positives_opt = only_positives_opt = only_positives?
         @@only_positives = false
 
         @interrupt_handler = Thread.new {
@@ -201,10 +206,7 @@ class CLI
                         @arachni.reports.run( @arachni.audit_store( true ) )
                 end
 
-                @@only_positives = only_positives_opt
-                unmute!
-
-                @interrupt_handler.exit
+                kill_interrupt_handler
                 Thread.exit
             }
 
