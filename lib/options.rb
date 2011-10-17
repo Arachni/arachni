@@ -354,8 +354,6 @@ class Options
     attr_accessor :lsplug
     attr_accessor :plugins
 
-    attr_accessor :spider_first
-
     attr_accessor :rpc_port
     attr_accessor :rpc_address
 
@@ -377,7 +375,10 @@ class Options
     attr_accessor :custom_headers
 
     attr_accessor :restrict_paths
+    attr_accessor :restrict_paths_filepath
+
     attr_accessor :extend_paths
+    attr_accessor :extend_paths_filepath
 
 
     def initialize( )
@@ -388,6 +389,15 @@ class Options
             instance_variable_set( var.to_s, nil )
         }
 
+        @dir            = {}
+        @dir['root']    = root_path
+        @dir['data']    = @dir['root'] + 'data/'
+        @dir['modules'] = @dir['root'] + 'modules/'
+        @dir['reports'] = @dir['root'] + 'reports/'
+        @dir['plugins'] = @dir['root'] + 'plugins/'
+        @dir['lib']     = @dir['root'] + 'lib/'
+
+
         @exclude    = []
         @include    = []
         @redundant  = []
@@ -396,7 +406,6 @@ class Options
         @lsrep      = []
 
         @lsmod      = []
-        @dir        = {}
 
         @plugins    = {}
         @lsplug     = []
@@ -411,15 +420,12 @@ class Options
         @rpc_instance_port_range = [1025, 65535]
 
 
-        @spider_first = true
-
         # set some defaults
         @redirect_limit = 20
 
         # relatively low but will give good performance without bottleneck
-        # on low bandwidth conections
+        # on low bandwidth connections
         @http_req_limit = 20
-
     end
 
     def parse!
@@ -486,13 +492,6 @@ class Options
             [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ]
         )
 
-        @dir['root']    = root_path
-        @dir['data']    = @dir['root'] + 'data/'
-        @dir['modules'] = @dir['root'] + 'modules/'
-        @dir['reports'] = @dir['root'] + 'reports/'
-        @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['lib']     = @dir['root'] + 'lib/'
-
         opts.quiet = true
 
         begin
@@ -512,9 +511,6 @@ class Options
 
                     when '--debug'
                         @debug = true
-
-                    when '--spider-first'
-                        @spider_first = true
 
                     when '--plugin'
                         plugin, opt_str = arg.split( ':', 2 )
@@ -547,9 +543,11 @@ class Options
 
                     when '--restrict-paths'
                         @restrict_paths |= paths_from_file( arg )
+                        @restrict_paths_filepath = arg
 
                     when '--extend-paths'
                         @extend_paths |= paths_from_file( arg )
+                        @extend_paths_filepath = arg
 
                     when '--obey_robots_txt'
                         @obey_robots_txt = true
@@ -732,13 +730,19 @@ class Options
         save_profile  = @save_profile.clone if @save_profile
         authed_by     = @authed_by.clone if @authed_by
 
+        restrict_paths = @restrict_paths.clone if @restrict_paths
+        extend_paths   = @extend_paths.clone if @extend_paths
+
         @dir          = nil
         @load_profile = nil
         @save_profile = nil
         @authed_by    = nil
+        @restrict_paths = nil
+        @extend_paths   = nil
+
 
         begin
-            f = File.open( file + PROFILE_EXT, 'w' )
+            f = File.open( file, 'w' )
             YAML.dump( self, f )
         rescue
             return
@@ -749,9 +753,26 @@ class Options
             @load_profile = load_profile
             @save_profile = save_profile
             @authed_by    = authed_by
+
+            @restrict_paths = restrict_paths
+            @extend_paths   = extend_paths
         end
 
         return f.path
+    end
+
+    def load( filename )
+        opts = YAML::load( IO.read( filename ) )
+
+        if opts.restrict_paths_filepath
+            opts.restrict_paths = paths_from_file( opts.restrict_paths_filepath )
+        end
+
+        if opts.extend_paths_filepath
+            opts.extend_paths   = paths_from_file( opts.extend_paths_filepath )
+        end
+
+        return opts
     end
 
     def url=( str )
@@ -817,15 +838,19 @@ class Options
 
     def to_arg( key )
 
+        do_not_parse = [
+            'show_profile',
+            'url',
+            'dir',
+        ]
+
         var = self.instance_variable_get( "@#{key}" )
 
         return if !var
         return if ( var.is_a?( Array ) || var.is_a?( Hash ) ) && var.empty?
-        return if key == 'show_profile'
-        return if key == 'url'
-        return if key == 'dir'
+        return if do_not_parse.include?( key )
         return if key == 'include' && var == [/.*/]
-        return if key == 'reports' && var == ['stdout']
+        return if key == 'reports' && var.keys == ['stdout']
 
         key = 'exclude_cookie' if key == 'exclude_cookies'
         key = 'report'         if key == 'reports'
@@ -838,6 +863,15 @@ class Options
 
             when 'mods'
                 var = var.join( ',' )
+
+            when 'restrict-paths'
+                var = @restrict_paths_filepath
+
+            when 'extend-paths'
+                var = @extend_paths_filepath
+
+            when 'rpc-instance-port-range'
+                var = var.join( '-' )
 
             when 'arachni-verbose'
                 key = 'verbosity'
