@@ -13,14 +13,15 @@ module Arachni
 module Modules
 
 #
-# XSS audit module.<br/>
-# It audits links, forms and cookies.
+# XSS audit module
 #
+# It doesn't just look for the injected XSS string in the HMTL code
+# but actually parses the code and looks for the injected element proper.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -32,32 +33,45 @@ class XSS < Arachni::Module::Base
 
     def initialize( page )
         super( page )
-
         @results    = []
     end
 
     def prepare( )
+        @_tag_name = 'some_dangerous_input_' + seed
         @_injection_strs = [
-            '<arachni_xss_' + seed,
-            '<arachni_xss_\'";_' + seed,
+            '<' + @_tag_name + ' />',
+            '\'-;<' + @_tag_name + ' />',
+            '--> <' + @_tag_name + ' /> <!--',
         ]
         @_opts = {
-            :format => [ Format::APPEND | Format::NULL ],
+            :format => [ Format::APPEND | Format::STRAIGHT ],
             :flip_param => true
         }
     end
 
     def run( )
+
+        opts = @_opts.dup
         @_injection_strs.each {
             |str|
 
-            opts = {
-                :match  => str,
-                :substring => str
-            }.merge( @_opts )
+            opts[:match] = opts[:substring] = str
 
-            audit( str, opts )
+            audit( str, opts ) {
+                |res, opts|
+                check_and_log( res, opts )
+            }
         }
+    end
+
+    def check_and_log( res, opts )
+        doc = Nokogiri::HTML( res.body )
+
+        # see if we managed to successfully inject our element
+        if !doc.xpath( "//#{@_tag_name}" ).empty?
+            opts[:match] = opts[:injected]
+            log( opts, res )
+        end
     end
 
     def self.info
@@ -71,7 +85,7 @@ class XSS < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.3',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
