@@ -8,75 +8,90 @@
 
 =end
 
+require 'win32/process' if RUBY_PLATFORM =~ /win32/
+
 require 'socket'
 require 'sys/proctable'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/xml/server/base'
-require Options.instance.dir['lib'] + 'rpc/xml/server/instance'
-require Options.instance.dir['lib'] + 'rpc/xml/server/output'
+require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
+
+require Options.instance.dir['lib'] + 'rpc/server/base'
+require Options.instance.dir['lib'] + 'rpc/server/instance'
+require Options.instance.dir['lib'] + 'rpc/server/output'
 
 module RPC
-module XML
-module Server
+class Server
 
 #
 # Dispatcher class
 #
-# Dispatches XML-RPC servers on demand providing a centralised environment
-# for multiple XMLRPC clients and allows for extensive process monitoring.
+# Dispatches RPC servers on demand providing a centralized environment
+# for multiple RPC clients and allows for extensive process monitoring.
 #
 # The process goes something like this:
 #   * a client issues a 'dispatch' call
-#   * the dispatcher starts a new XMLRPC server on a random port
-#   * the dispatcher returns the port of the XMLRPC server to the client
-#   * the client connects to the XMLRPC server listening on that port and does his business
+#   * the dispatcher starts a new RPC server on a random port
+#   * the dispatcher returns the port of the RPC server to the client
+#   * the client connects to the RPC server listening on that port and does his business
 #
-# Once the client finishes using the XMLRPC server it *must* shut it down.<br/>
-# If it doesn't the system will be eaten away by idle instances of XMLRPC servers.
+# Once the client finishes using the RPC server it *must* shut it down.<br/>
+# If it doesn't the system will be eaten away by idle instances of RPC servers.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
-class Dispatcher < Base
+class Dispatcher
+
+    require Options.instance.dir['lib'] + 'rpc/server/node'
 
     include Arachni::Module::Utilities
     include Arachni::UI::Output
     include ::Sys
-
-    private :shutdown, :alive?
-    public  :shutdown, :alive?
 
     def initialize( opts )
 
         banner
 
         @opts = opts
-        @opts.rpc_port  ||= 7331
-        @opts.pool_size ||= 5
 
-        if opts.help
+        @opts.rpc_port     ||= 7331
+        @opts.rpc_address  ||= 'localhost'
+        @opts.pool_size    ||= 5
+
+        if @opts.help
             print_help
             exit 0
         end
 
-        super( @opts )
+        @server = Base.new( @opts )
+
+        @server.add_async_check {
+            |method|
+            # methods that expect a block are async
+            method.parameters.flatten.include?( :block )
+        }
+
+        # let the instances in the pool know who to ask for routing instructions
+        # when we're in grid mode.
+        @opts.datastore[:dispatcher_url] = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
 
         prep_logging
 
-        print_status( 'Initing XMLRPC Server...' )
+        print_status( 'Initing RPC Server...' )
 
-        add_handler( "dispatcher", self )
+        @server.add_handler( "dispatcher", self )
 
-        # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { shutdown }
-        trap( 'INT' ) { shutdown }
+        # trap interrupts and exit cleanly when required
+        trap_interrupts { shutdown }
 
         @jobs = []
         @pool = Queue.new
+
+        @node = nil
 
         print_status( 'Warming up the pool...' )
         prep_pool
@@ -84,36 +99,38 @@ class Dispatcher < Base
 
         print_status( 'Initialization complete.' )
 
+        run
     end
 
-    # Starts the dispatcher's server
-    def run
-        print_status( 'Starting the server...' )
-        super
+    def trap_interrupts( &block )
+        [ 'EXIT', 'QUIT', 'HUP', 'INT' ].each {
+            |signal|
+            trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
+        }
     end
 
-    def shutdown
-        print_status( 'Shutting down...' )
-        super
-        print_status( 'Done.' )
+    def alive?
+        @server.alive?
     end
 
     #
-    # Dispatches an XMLRPC server instance from the pool
+    # Dispatches an RPC server instance from the pool
     #
-    # @param    [String]    owner   an owner assign to the dispatched XMLRPC server
+    # @param    [String]  owner     an owner assign to the dispatched RPC server
+    # @param    [Hash]    helpers   hash of helper data to be added to the job
     #
     # @return   [Hash]      includes port number, owner, clock info and proc info
     #
-    def dispatch( owner = 'unknown' )
+    def dispatch( owner = 'unknown', helpers = {} )
 
         # just to make sure...
         owner = owner.to_s
         cjob  = @pool.pop
         cjob['owner']     = owner
         cjob['starttime'] = Time.now
+        cjob['helpers']   = helpers
 
-        print_status( "Server dispatched -- PID: #{cjob['pid']} - " +
+        print_status( "Instance dispatched -- PID: #{cjob['pid']} - " +
             "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
 
         prep_pool
@@ -140,7 +157,7 @@ class Dispatcher < Base
                 cjob['runtime']  = cjob['currtime'] - cjob['starttime']
                 cjob['proc'] =  proc( cjob['pid'] )
 
-                return remove_nils( cjob )
+                return cjob
             end
         }
     end
@@ -170,16 +187,32 @@ class Dispatcher < Base
         running  = cjobs.reject{ |job| job['proc'].empty? }
         finished = cjobs - running
 
-        return {
+        stats = {
             'running_jobs'    => running,
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
             'curr_pool_size'  => @pool.size
         }
+
+        if @node
+            stats.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
+        end
+
+        return stats
+    end
+
+    def log
+        IO.read( prep_logging )
     end
 
     def proc_info
-        unnil( proc( Process.pid ) )
+        p = proc( Process.pid )
+
+        if @node
+            p.merge!( 'node' => @node.info )
+        end
+
+        return p
     end
 
     #
@@ -202,27 +235,46 @@ class Dispatcher < Base
 
     def print_help
         puts <<USAGE
-  Usage:  arachni_xmlrpcd \[options\]
+  Usage:  arachni_rpcd \[options\]
 
   Supported options:
 
     -h
     --help                      output this
 
-    --port                      specify port to listen to
+    --address=<host>            specify address to bind to
+                                    (Default: #{@opts.rpc_address})
+
+    --port=<num>                specify port to listen to
                                     (Default: #{@opts.rpc_port})
+
+    --port-range=<beginning>-<end>
+
+                                specify port range for the RPC instances
+                                    (Make sure to allow for a few hundred ports.)
+                                    (Default: #{@opts.rpc_instance_port_range.join( '-' )})
 
     --reroute-to-logfile        reroute all output to a logfile under 'logs/'
 
-    --pool-size                 how many server workers/processes should be available
+    --pool-size=<num>           how many server workers/processes should be available
                                   at any given moment (Default: #{@opts.pool_size})
+
+    --neighbour=<URL>           URL of a neighbouring Dispatcher (used to build a grid)
+
+    --weight=<float>            weight of the Dispatcher
+
+    --cost=<float>              cost of using this Dispatcher
+
+    --pipe-id=<string>          bandwidth pipe identification
+
+    --nickname=<string>         nickname of the Dispatcher
 
     --debug
 
 
     SSL --------------------------
 
-    (All SSL options will be honored by the dispatched XMLRPC instances as well.)
+    (All SSL options will be honored by the dispatched RPC instances as well.)
     (Do *not* use encrypted keys!)
 
     --ssl-pkey   <file>         location of the SSL private key (.pem)
@@ -233,27 +285,26 @@ class Dispatcher < Base
 
     --ssl-ca     <file>         location of the CA certificate (.pem)
                                     (Used to verify the clients to the server.)
+
 USAGE
     end
 
 
     private
 
-    #
-    # Recursively removes nils.
-    #
-    # @param    [Hash]  hash
-    #
-    # @return   [Hash]
-    #
-    def unnil( hash )
-        hash.each_pair {
-            |k, v|
-            hash[k] = '' if v.nil?
-            hash[k] = unnil( v ) if v.is_a? Hash
-        }
+    # Starts the dispatcher's server
+    def run
+        print_status( 'Starting the server...' )
+        t = Thread.new { @server.run }
+        # sleep( 2 )
+        @node = Node.new( @opts, @logfile )
+        @server.add_handler( "node", @node )
+        t.join
+    end
 
-        return hash
+    def shutdown
+        print_status( 'Shutting down...' )
+        @server.shutdown
     end
 
     #
@@ -271,27 +322,28 @@ USAGE
                 @opts.rpc_port = avail_port( )
                 @token         = secret()
 
-                pid = Kernel.fork {
+                pid = fork {
                     exception_jail {
-                        server = Arachni::RPC::XML::Server::Instance.new( @opts, @token )
-                        trap( "INT", "IGNORE" )
+                        server = Arachni::RPC::Server::Instance.new( @opts, @token )
+                        trap_interrupts
                         server.run
                     }
 
                     # restore logging
                     reroute_to_file( @logfile )
 
-                    print_status( "Server shutdown   -- PID: #{Process.pid} - " +
+                    print_status( "Instance shutdown   -- PID: #{Process.pid} - " +
                         "Port: #{@opts.rpc_port}" )
                 }
 
-                print_status( "Server added to pool -- PID: #{pid} - " +
+                print_status( "Instance added to pool -- PID: #{pid} - " +
                     "Port: #{@opts.rpc_port} - Owner: #{owner}" )
 
                 @pool << {
                     'token' => @token,
                     'pid'   => pid,
                     'port'  => @opts.rpc_port,
+                    'url'   => "#{@opts.rpc_address}:#{@opts.rpc_port}",
                     'owner' => owner,
                     'birthdate' => Time.now
                 }
@@ -307,7 +359,7 @@ USAGE
     def prep_logging
         # reroute all output to a logfile
         @logfile ||= reroute_to_file( @opts.dir['root'] +
-            "logs/XMLRPC-Dispatcher - #{Process.pid}:#{@opts.rpc_port} - #{Time.now.asctime}.log" )
+            "logs/Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
     end
 
     def proc( pid )
@@ -347,8 +399,10 @@ USAGE
     # Returns a random port
     #
     def rand_port
-        range = (1025..65535).to_a
-        range[ rand( 65535 - 1025 ) ]
+        first, last = @opts.rpc_instance_port_range
+        range = (first..last).to_a
+
+        range[ rand( range.last - range.first ) ]
     end
 
     def secret
@@ -380,7 +434,6 @@ USAGE
 
 end
 
-end
 end
 end
 end

@@ -24,7 +24,7 @@ exec  <<END
 export xterm="xterm -geometry 80X10 -hold"
 
 echo "[>] Starting the Arachni Dispatch server..."
-xterm -T "Arachni Dispatch server" -e "arachni_xmlrpcd" &
+xterm -T "Arachni Dispatch server" -e "arachni_rpcd" &
 sleep 5
 
 echo "[>] Starting the Arachni WebUI server..."

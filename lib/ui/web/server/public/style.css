@@ -587,6 +587,8 @@ div#footer-links p {
     color: #000;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    text-align: left;
+
 }
 
 .ok {
@@ -606,7 +608,6 @@ div#footer-links p {
 
 .notice {
     background: #ccc;
-    text-align: left;
 }
 
 .left {

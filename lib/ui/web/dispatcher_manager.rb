@@ -9,6 +9,9 @@
 =end
 
 require 'datamapper'
+require 'socket'
+
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 
 module Arachni
 module UI
@@ -20,7 +23,7 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class DispatcherManager
 
@@ -43,37 +46,33 @@ class DispatcherManager
     end
 
     #
-    # Puts a new dispatcher in the DB.
+    # Puts a new dispatcher (and it's neighbours) in the DB.
     #
-    # @param    [String]    url     URL of the dispatcher
+    # @param    [String]    url          URL of the dispatcher
+    # @param    [Bool]      neighbours   add its neighbouring dispatchers too?
     #
-    def new( url )
+    def new( url, neighbours = true )
         Dispatcher.first_or_create( :url => url )
+
+        return if !neighbours
+        connect( url ).node.neighbours {
+            |neighbours|
+            neighbours.each {
+                |node|
+                Dispatcher.first_or_create( :url => node )
+            }
+        }
     end
 
     #
-    # Provides an easy way to connect to a dispatcher and caches connections
-    # to reduce overhead.
+    # Provides an easy way to connect to a dispatcher.
     #
     # @param    [String]   url
     #
-    # @return   [Arachni::RPC::XML::Client::Dispatcher]
+    # @return   [Arachni::RPC::Client::Dispatcher]
     #
     def connect( url )
-        @@cache ||= {}
-
-        begin
-            if @@cache[url] && @@cache[url].alive?
-                return @@cache[url]
-            elsif ( tmp = Arachni::RPC::XML::Client::Dispatcher.new( @opts, url ) ) &&
-                  tmp.alive?
-                return @@cache[url] = tmp
-            end
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            return nil
-        end
+        Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
 
     #
@@ -81,26 +80,57 @@ class DispatcherManager
     #
     # @param    [String]    url     URL of the dispatcher
     #
-    def alive?( url, tries = 5 )
-        tries.times {
-            begin
-                return connect( url ).alive?
-            rescue Exception => e
-                # ap e
-                # ap e.backtrace
-            end
-        }
+    def alive?( url, &block )
+        raise( "This method requires a block!" ) if !block_given?
 
-        return false
+        connect( url ).alive? {
+            |ret|
+            ret = ( ret.rpc_connection_error? ) ? false : ret
+            block.call( ret )
+        }
     end
 
-    def first_alive
-        all.each {
-            |dispatcher|
-            return dispatcher if alive?( dispatcher.url )
-        }
+    def first_alive( &block )
+        raise( "This method requires a block!" ) if !block_given?
 
-        return nil
+        if !all.empty?
+            EM.synchrony do
+                dispatchers = EM::Synchrony::Iterator.new( all ).map {
+                    |dispatcher, iter|
+                    alive?( dispatcher.url ){
+                        |bool|
+                        if bool
+                            block.call( dispatcher )
+                        else
+                            iter.return( nil )
+                        end
+                    }
+                }.compact
+
+                if dispatchers.empty?
+                    block.call( false )
+                else
+                    block.call( dispatchers.pop )
+                end
+            end
+        else
+            block.call( false )
+        end
+    end
+
+    def jobs( &block )
+        ::EM::Iterator.new( all, 20 ).map( proc {
+            |dispatcher, iter|
+
+            connect( dispatcher.url ).stats {
+                |stats|
+                iter.return( stats['running_jobs'] ) if !stats.rpc_connection_error?
+            }
+
+        }, proc {
+            |running|
+            block.call( running.flatten )
+        })
     end
 
     #
@@ -108,26 +138,74 @@ class DispatcherManager
     #
     # @return   [Hash]
     #
-    def stats
-        stats_h = {}
-        all.each {
-            |dispatcher|
+    def stats( &block )
+        raise( "This method requires a block!" ) if !block_given?
 
-            begin
-                stats_h[dispatcher['url']] = connect( dispatcher['url'] ).stats
-                stats_h[dispatcher['url']]['running_jobs'].each {
-                    |job|
-                    begin
-                        instance = @settings.instances.port_to_url( job['port'], dispatcher['url'] )
-                        job['paused'] = @settings.instances.connect( instance ).framework.paused?
-                    rescue
+        EM.synchrony do
+
+            stats = EM::Synchrony::Iterator.new( all ).map {
+                |dispatcher, iter|
+
+                if !dispatcher.rpc_connection_error?
+                    connect( dispatcher.url ).stats {
+                        |stats|
+                        if !stats.rpc_exception?
+                            iter.return( { dispatcher.url => stats } )
+                        else
+                            iter.return( nil )
+                        end
+                    }
+                end
+            }.compact
+
+            sorted_stats = {}
+            stats.sort{ |a, b| a.keys[0] <=> b.keys[0] }.each {
+                |stat|
+                sorted_stats.merge!( stat )
+            }
+
+            sorted_stats.each_pair {
+                |k, stats|
+
+                sorted_stats[k]['running_jobs'] =
+                    EM::Synchrony::Iterator.new( stats['running_jobs'] ).map {
+                    |instance, iter|
+
+                    if instance['helpers']['rank'] != 'slave'
+                        @settings.instances.connect( instance['url'] ).framework.progress_data(
+                            :slaves   => false,
+                            :messages => false,
+                            :issues   => false
+                        ) {
+                            |prog_data|
+                            next if prog_data.rpc_exception?
+                            instance.merge!( prog_data['stats'] )
+                            instance['status']  = prog_data['status'].capitalize!
+                            iter.return( instance )
+                        }
+                    else
+                        @settings.instances.connect( instance['helpers']['master'] ).framework.progress_data(
+                            :messages => false,
+                            :issues   => false
+                        ) {
+                            |prog_data|
+                            next if prog_data.rpc_exception?
+                            prog_data['instances'].each {
+                                |insdat|
+                                 if insdat['url'] == instance['url']
+                                     instance.merge!( insdat )
+                                     instance['status'].capitalize!
+                                     iter.return( instance )
+                                end
+                            }
+                        }
                     end
-                }
-            rescue
-            end
-        }
+                }.compact
+            }
 
-        return stats_h
+
+            block.call( sorted_stats )
+        end
     end
 
     #
@@ -137,6 +215,29 @@ class DispatcherManager
     #
     def all( *args )
         Dispatcher.all( *args )
+    end
+
+    def all_with_liveness( &block )
+        raise( "This method requires a block!" ) if !block_given?
+
+        EM::Iterator.new( all ).map( proc{
+            |dispatcher, iter|
+
+            alive?( dispatcher.url ) {
+                |liveness|
+
+                m_dispatcher = {}
+                dispatcher.attributes.each_pair {
+                    |k, v|
+                    m_dispatcher[k.to_s] = v
+                }
+                m_dispatcher['alive'] = liveness
+                iter.return( m_dispatcher )
+            }
+        }, proc{
+            |dispatchers|
+            block.call( dispatchers )
+        })
     end
 
     #

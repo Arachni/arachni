@@ -10,36 +10,47 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'module/manager'
+require Options.instance.dir['lib'] + 'plugin/manager'
 
 module RPC
-module XML
-module Server
-
-module Module
+class Server
+module Plugin
 
 #
 # We need to extend the original Manager and redeclare its inherited methods
-# which are required over XMLRPC.
+# which are required over BrBRPC.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1
 #
-class Manager < ::Arachni::Module::Manager
+class Manager < ::Arachni::Plugin::Manager
 
     # make these inherited methods visible again
-    private :load, :available
-    public :load, :available
+    private :available
+    public  :available
 
-    def initialize( opts )
-        super( opts )
+    def initialize( framework )
+        super( framework )
+
+        @plugin_opts = {}
     end
 
-end
+    def load( plugins )
+        @plugin_opts.merge!( plugins )
+        super( plugins.keys )
+
+        @framework.opts.plugins = plugins
+    end
+
+    def create( name )
+        self[name].new( @framework, prep_opts( name, self[name], @plugin_opts[name] ) )
+    end
+
 
 end
+
 end
 end
 end

@@ -93,6 +93,11 @@
                         </select>
 
                     </p>
+                    <p>
+                        Custom HTTP headers: <textarea rows="2" cols="20" name="custom_headers"><%= format_custom_headers( session['opts']['settings']['custom_headers'] ) %></textarea>
+                    <br/>(Newline separated)
+                    <br/>(<em>header=value</em>)
+                    </p>
 
                 </fieldset>
             </div>
@@ -133,8 +138,14 @@
                         Obey robot.txt file: <input type="checkbox" name="obey_robots_txt" <% if session['opts']['settings']['obey_robots_txt'] == true %> checked="checked" <% end %> />
                     </p>
                     <p>
-                        Spider first: <input type="checkbox" name="spider_first" <% if session['opts']['settings']['spider_first'] == true %> checked="checked" <% end %> />
+                        Extend paths: <input type="file" name="extend_paths" size="25" />
+                        <br/>(Newline separated)
                     </p>
+                    <p>
+                        Restrict paths: <input type="file" name="restrict_paths" size="25" />
+                        <br/>(Newline separated)
+                    </p>
+
                 </fieldset>
 
             </div>

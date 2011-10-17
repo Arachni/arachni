@@ -4,7 +4,7 @@ require 'terminal-table/import'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 
 module UI
@@ -37,7 +37,7 @@ class DispatcherMonitor
 
         begin
             # start the XMLRPC client
-            @dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.url.to_s )
+            @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.url.to_s )
 
             # it seems like the XMLRPC client will connect us on the first
             # call...so make sure that it *can* actually connect
@@ -176,7 +176,7 @@ class DispatcherMonitor
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_xmlrpcd_monitor  https://host:port
+  Usage:  arachni_rpcd_monitor  https://host:port
 
   Supported options:
 

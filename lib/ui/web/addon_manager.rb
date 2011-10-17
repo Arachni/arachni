@@ -183,8 +183,8 @@ class AddonManager
             }
 
         rescue ::Exception => e
-            ap e.to_s
-            ap e.backtrace
+            # ap e.to_s
+            # ap e.backtrace
         end
     end
 

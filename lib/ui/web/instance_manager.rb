@@ -8,8 +8,9 @@
 
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 
 module Arachni
 module UI
@@ -33,52 +34,33 @@ class InstanceManager
     end
 
     #
-    # Provides an easy way to connect to an instance and caches connections
-    # to reduce overhead.
+    # Provides an easy way to connect to an instance
     #
     # @param    [String]   url
     # @param    [Hash]     session  session of the current user (optional)
     # @param    [String]   token    authentication token (optional)
     #
-    # @return   [Arachni::RPC::XML::Client::Instance]
+    # @return   [Arachni::RPC::Client::Instance]
     #
     def connect( url, session = nil, token = nil )
-        url = 'https://' + url if !url.include?( 'https' )
+        #
+        # Sync up the session authentication tokens with the ones in the
+        # class variables.
+        #
+        # This will allow users to still connect to instances even if they
+        # shutdown the WebUI or remove their cookies.
+        #
+        @@tokens ||= {}
+        session['tokens'] ||= {} if session
+        @@tokens[url] = token if token
 
-        @@connections ||= {}
+        session['tokens'].merge!( @@tokens ) if session
+        @@tokens.merge!( session['tokens'] ) if session
+        session['tokens'].merge!( @@tokens ) if session
 
-        begin
-            if @@connections[url] && @@connections[url].alive?
-              return @@connections[url]
-            end
-        rescue
-        end
+        tmp_token = session ? session['tokens'][url] : @@tokens[url]
 
-        begin
-
-            #
-            # Sync up the session authentication tokens with the ones in the
-            # class variables.
-            #
-            # This will allow users to still connect to instances even if they
-            # shutdown the WebUI or removed their cookies.
-            #
-
-            @@tokens ||= {}
-            session['tokens'] ||= {} if session
-            @@tokens[url] = token if token
-
-            session['tokens'].merge!( @@tokens ) if session
-            @@tokens.merge!( session['tokens'] ) if session
-            session['tokens'].merge!( @@tokens ) if session
-
-            tmp_token = session ? session['tokens'][url] : @@tokens[url]
-
-            return @@connections[url] =
-                Arachni::RPC::XML::Client::Instance.new( @opts, url, tmp_token )
-        rescue Exception => e
-            raise "Instance at #{url} has shutdown."
-        end
+        Arachni::RPC::Client::Instance.new( @opts, url, tmp_token )
     end
 
 end

@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
       s.email             = "tasos.laskos@gmail.com"
       s.authors           = [ "Tasos Laskos" ]
 
-      s.files             = %w( README.md ACKNOWLEDGMENTS.md Rakefile getoptslong.rb LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
+      s.files             = %w( README.md ACKNOWLEDGMENTS.md Rakefile LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.files            += Dir.glob("data/**/**")
       s.files            += Dir.glob("lib/**/**")
       s.files            += Dir.glob("conf/**/**")
@@ -31,23 +31,26 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("plugins/**/**")
       s.files            += Dir.glob("profiles/**/**")
       s.files            += Dir.glob("reports/**/**")
-      s.executables       = [ "arachni", "arachni_xmlrpcd_monitor", "arachni_xmlrpcd", "arachni_xmlrpc", "arachni_web", "arachni_web_autostart", ]
+      s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
 
       s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.rdoc_options      = ["--charset=UTF-8"]
 
-      s.add_dependency "arachni-typhoeus","~> 0.2.0.2"
-      s.add_dependency "nokogiri",        "~> 1.4.4"
-      s.add_dependency "awesome_print",   "~> 0.3.1"
-      s.add_dependency "sys-proctable",   "~> 0.8.1"
+      s.add_dependency "typhoeus"
+      s.add_dependency "awesome_print"
+      s.add_dependency "nokogiri",        "~> 1.5.0"
+      s.add_dependency "sys-proctable",   "~> 0.9.1"
       s.add_dependency "terminal-table",  "~> 1.4.2"
-      s.add_dependency "sinatra",         "~> 1.2.1"
-      s.add_dependency "datamapper",      "~> 1.0.2"
+      s.add_dependency "sinatra",         "~> 1.2.6"
+      s.add_dependency "async_sinatra",   "~> 0.5.0"
+      s.add_dependency "thin",            "~> 1.2.11"
+      s.add_dependency "datamapper",      "~> 1.1.0"
       s.add_dependency "rack_csrf",       "~> 2.1.0"
       s.add_dependency "rack-flash",      "~> 0.1.1"
-      s.add_dependency "json",            "~> 1.4.6"
-      s.add_dependency "dm-sqlite-adapter", "~> 1.0.2"
-      s.add_dependency "net-ssh",         "~> 2.1.4"
+      s.add_dependency "dm-sqlite-adapter", "~> 1.1.0"
+      s.add_dependency "net-ssh",         "~> 2.2.1"
+      s.add_dependency "eventmachine",    "~> 1.0.0.beta.4"
+      s.add_dependency "em-synchrony",    "~> 1.0.0"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards

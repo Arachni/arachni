@@ -35,7 +35,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.6
+# @version: 0.2.7
 #
 class HTTP
 
@@ -110,7 +110,7 @@ class HTTP
             'From'   => opts.authed_by || '',
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
-        }
+        }.merge( opts.custom_headers )
 
         cookies = {}
         cookies.merge!( self.class.parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
@@ -555,7 +555,7 @@ class HTTP
         cookies.each_pair {
             |name, value|
             value = '' if !value
-            val = URI.escape( URI.escape( value ), '+;' )
+            val = uri_encode( uri_encode( value ), '+;' )
             str += "#{name}=#{val};"
         }
         return str

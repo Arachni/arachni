@@ -9,7 +9,7 @@
 =end
 
 require 'datamapper'
-require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
 
 module Arachni
@@ -60,8 +60,8 @@ class Scheduler
         begin
             ticktock!
         rescue Exception => e
-            ap e
-            ap e.backtrace
+            # ap e
+            # ap e.backtrace
         end
     end
 
@@ -74,31 +74,33 @@ class Scheduler
     #
     # @return   [String]    URL of the laucnhed scanner instance
     #
-    def run( job, env = nil, session = nil )
-        instance     = @settings.dispatchers.connect( job.dispatcher ).dispatch( job.url )
-        instance_url = @settings.instances.port_to_url( instance['port'], job.dispatcher )
+    def run( job, env = nil, session = nil, &block )
+        raise( "This method requires a block!" ) if !block_given?
 
-        env = {
-            'REMOTE_ADDR' => job.owner_addr,
-            'REMOTE_HOST' => job.owner_host
-        } if env.nil?
+        @settings.dispatchers.connect( job.dispatcher ).dispatch( job.url ){
+            |instance|
 
-        @settings.log.scheduler_instance_dispatched( env, instance_url )
-        @settings.log.scheduler_instance_owner_assigned( env, job.url )
+            env = {
+                'REMOTE_ADDR' => job.owner_addr,
+                'REMOTE_HOST' => job.owner_host
+            } if env.nil?
 
-        arachni  = @settings.instances.connect( instance_url, session, instance['token'] )
+            @settings.log.scheduler_instance_dispatched( env, instance['url'] )
+            @settings.log.scheduler_instance_owner_assigned( env, job.url )
 
-        opts = YAML::load( job.opts )
+            arachni = @settings.instances.connect( instance['url'], session, instance['token'] )
 
-        arachni.opts.set( opts['settings'] )
-        arachni.modules.load( opts['modules'] )
-        arachni.plugins.load( opts['plugins'] )
+            opts = YAML::load( job.opts )
 
-        arachni.framework.run
-
-        @settings.log.scheduler_scan_started( env, job.url )
-
-        return instance_url
+            arachni.opts.set( opts['settings'] ){
+                arachni.modules.load( opts['modules'] ) {
+                    arachni.framework.run{
+                        @settings.log.scheduler_scan_started( env, job.url )
+                        block.call( instance['url'] )
+                    }
+                }
+            }
+        }
     end
 
     #
@@ -148,8 +150,8 @@ class Scheduler
                     begin
                         run_and_destroy( job ) if job.datetime <= Time.now
                     rescue Exception => e
-                        ap e
-                        ap e.backtrace
+                        # ap e
+                        # ap e.backtraces
                     end
 
                 }

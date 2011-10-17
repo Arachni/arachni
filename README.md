@@ -1,8 +1,96 @@
+# High Performance Grid (HPG) dev branch.
+
+The Grid is highly experimental and far from properly tested, however if you're feeling brave keep reading.
+
+## Installation
+
+You first need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
+
+    git clone git://github.com/Arachni/arachni-rpc.git
+    cd arachni-rpc
+    rake install
+
+<br/><br/>
+
+Then you'll have to do the same to get the latest Typhoeus code (still under dev, no gem yet as well)
+
+    git clone git://github.com/dbalatero/typhoeus.git
+    cd typhoeus
+    gem build typhoeus.gemspec
+    gem install typhoeus-0.2.4.gem
+
+If when running Arachni you get a Typhoeus related error try:
+
+    gem uninstall arachni-typhoeus
+
+and then install Typhoeus as described here.
+
+<br/><br/>
+
+Then things go as usual:
+
+    git clone git://github.com/Zapotek/arachni.git
+    cd arachni
+    git co grid
+    rake install
+
+## Setting up the High Performance Grid (HPG)
+
+Pretty much the same as setting up the WebUI but instead of running only one Dispatcher you can run as many as you can handle.
+
+In order to connect the Dispatchers into a grid you'll need to:
+
+ - specify an IP address or hostname on which the Dispatcher will be accessible by the rest of the Grid nodes (i.e. other Dispatchers)
+ - specify a neighbouring Dispatcher when running a new one
+ - use different Pipe IDs -- these are used to identify independent bandwidth lines to the target in order to split the workload in a way that will aggregate the collective bandwidth
+
+After that they will build their network themselves.
+
+Here's how it's done:
+
+Firing up the first one:
+
+    arachni_rpcd --pipe-id="Pipe 1" --nickname="My Dispatcher" --address=192.168.0.1
+
+Adding more to make a Grid:
+
+    arachni_rpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --address=192.168.0.2 --neighbour=192.168.0.1:7331
+
+Lather, rinse, repeat:
+
+    arachni_rpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --address=192.168.0.3 --neighbour=192.168.0.2:7331
+
+    arachni_rpcd --pipe-id="Pipe 4" --nickname="My forth Dispatcher" --address=192.168.0.4 --neighbour=192.168.0.3:7331
+
+That sort of setup assumes that each Dispatcher is on a machine with independent bandwidth lines (to the target website at least).
+
+If you want to, out of curiosity, start a few Dispatchers on localhost you will need to specify the ports:
+
+    arachni_rpcd --pipe-id="Pipe 1" --nickname="My Dispatcher"
+
+    arachni_rpcd --pipe-id="Pipe 2" --nickname="My second Dispatcher" --port=1111 --neighbour=localhost:7331
+
+    arachni_rpcd --pipe-id="Pipe 3" --nickname="My third Dispatcher" --port=2222 --neighbour=localhost:1111
+
+etc.
+
+## Usage
+
+After setting everything up you simply start the WebUI as usual.<br/>
+When it asks you to specify a Dispatcher you pick one, enter it and the WebUI will grab its neighbours automatically.
+
+Despite the fact that there haven't been any dramatic changes to the front-end of the WebUI you'll immediatly notice a sizable<br/>
+performance increase, both when browsing around and when monitoring running scans.<br/>
+
+You can find some more technical stuff here: http://trainofthought.segfault.gr/2011/07/29/arachni-grid-draft-design/
+
+And some screenshots here: http://trainofthought.segfault.gr/2011/09/02/arachni-a-sneak-peek-at-the-grid-with-screenshots/
+
 # Arachni - Web Application Security Scanner Framework
 <table>
     <tr>
         <th>Version</th>
-        <td>0.3</td>
+        <td>0.4</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -29,7 +117,7 @@
     </tr>
     <tr>
        <th>Author</th>
-       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> <a href="mailto:zapotek@segfault.gr">Zapotek</a> <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
+       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> "<a href="mailto:zapotek@segfault.gr">Zapotek</a>" <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
     </tr>
     <tr>
         <th>Twitter</th>
@@ -87,6 +175,7 @@ From a user's or a component developer's point of view everything appears simple
 
  - Cookie-jar support
  - SSL support.
+ - Support for custom headers.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
@@ -94,16 +183,16 @@ From a user's or a component developer's point of view everything appears simple
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
-    - Web UI (Utilizing the Client - Dispatch-server XMLRPC architecture)
-    - XMLRPC Client/Dispatch server
-       - Centralised deployment
-       - Multiple clients
-       - Parallel scans
-       - SSL encryption
-       - SSL cert based client authentication
-       - Remote monitoring
+    - Web UI (Utilizing the Client - Dispatch-server RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
+ - Open RPC Client/Dispatch-server Infrastructure
+    - Distributed deployment
+    - Multiple clients
+    - Parallel scans
+    - SSL encryption (with peer authentication)
+    - Remote monitoring
+    - Support for High Performance Grid configuration, utilizing multiple nodes to perform single scans.
 
 ### Website Crawler
 
@@ -114,6 +203,7 @@ From a user's or a component developer's point of view everything appears simple
  - Adjustable link count limit.
  - Adjustable redirect limit.
  - Modular path extraction via "Path Extractor" components.
+ - Can read paths from multiple user supplied files (to both restrict and extend the scope of the crawl).
 
 ### HTML Parser
 
@@ -174,6 +264,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - E-mail address disclosure
         - US Social Security Number disclosure
         - Forceful directory listing
+        - Mixed Resource/Scripting
 
 ### Report Management
 
@@ -203,9 +294,10 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - WAF (Web Application Firewall) Detector -- Establishes a baseline of normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
     - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
        - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
-       - TimeoutNotice -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+       - TimingAttacks -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
             It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
        - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
+       - Discovery -- Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
 
 ### Trainer subsystem
 

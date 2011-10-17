@@ -11,15 +11,14 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'framework'
-require Options.instance.dir['lib'] + 'rpc/xml/server/module/manager'
-require Options.instance.dir['lib'] + 'rpc/xml/server/plugin/manager'
+require Options.instance.dir['lib'] + 'rpc/server/module/manager'
+require Options.instance.dir['lib'] + 'rpc/server/plugin/manager'
 
 module RPC
-module XML
-module Server
+class Server
 
 #
-# Extends the Framework adding XML-RPC specific functionality
+# Extends the Framework adding RPC specific functionality
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -72,7 +71,7 @@ class Framework < Arachni::Framework
 
 
     #
-    # some XMLRPC libraries of other languages map remote objects to local objects
+    # some RPC libraries of other languages map remote objects to local objects
     # creating an invalid syntax situation since the aforementioned languages
     # may not allow "?" or "!" in method names.
     #
@@ -88,8 +87,8 @@ class Framework < Arachni::Framework
 
     def initialize( opts )
         super( opts )
-        @modules = Arachni::RPC::XML::Server::Module::Manager.new( opts )
-        @plugins = Arachni::RPC::XML::Server::Plugin::Manager.new( self )
+        @modules = Arachni::RPC::Server::Module::Manager.new( opts )
+        @plugins = Arachni::RPC::Server::Plugin::Manager.new( self )
     end
 
     #
@@ -137,6 +136,14 @@ class Framework < Arachni::Framework
             exception_jail { old_run }
         }
         return true
+    end
+
+    def get_plugin_store
+        @plugin_store
+    end
+
+    def set_plugin_store( plugin_store )
+        @plugin_store = plugin_store
     end
 
     #
@@ -200,7 +207,6 @@ class Framework < Arachni::Framework
 
 end
 
-end
 end
 end
 end

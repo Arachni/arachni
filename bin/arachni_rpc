@@ -9,13 +9,9 @@
 
 =end
 
-require 'pp'
-require 'ap'
+require_relative "../lib/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
-require cwd + '/../getoptslong.rb'
-require Arachni::Options.instance.dir['lib'] + 'ui/xmlrpc/xmlrpc'
+Arachni::Options.instance.parse!
+require Arachni::Options.instance.dir['lib'] + 'ui/rpc/rpc'
 
-client = Arachni::UI::XMLRPC.new( Arachni::Options.instance )
-client.run
+Arachni::UI::RPC.new( Arachni::Options.instance ).run

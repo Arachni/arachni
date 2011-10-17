@@ -22,7 +22,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.3
 #
 class Spider
 
@@ -61,9 +61,26 @@ class Spider
         @sitemap = []
         @on_every_page_blocks = []
 
+        @seed_url = @opts.url.to_s
+
+        @extend_paths   = @opts.extend_paths   || []
+        @restrict_paths = @opts.restrict_paths || []
+
+        @paths = [ @seed_url ]
+
+        if restricted_to_paths?
+            @paths |= @restrict_paths
+        else
+            @paths |= @extend_paths
+        end
+
         # if we have no 'include' patterns create one that will match
         # everything, like '.*'
         @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
+    end
+
+    def restricted_to_paths?
+        !@restrict_paths.empty?
     end
 
     #
@@ -76,26 +93,22 @@ class Spider
     def run( &block )
         return if @opts.link_count_limit == 0
 
-        paths = []
-        paths << @opts.url.to_s
-
         visited = []
 
         opts = {
             :timeout    => nil,
             :remove_id  => true,
-            :async      => @opts.spider_first,
             :follow_location => true,
         }
 
         # we need a parser in order to have access to skip() in case
         # there's a redirect that shouldn't be followed
-        seed_page = http.get( paths[0], opts.merge( :async => false ) ).response
+        seed_page = http.get( @seed_url, opts.merge( :async => false ) ).response
         parser = Parser.new( @opts, seed_page )
-        parser.url = paths[0]
+        parser.url = @seed_url
 
-        while( !paths.empty? )
-            while( !paths.empty? && url = paths.pop )
+        while( !@paths.empty? )
+            while( !@paths.empty? && url = parser.to_absolute( @paths.pop ) )
                 next if skip?( url )
 
                 wait_if_paused
@@ -113,44 +126,41 @@ class Spider
                     page = Arachni::Parser.new( @opts, res ).run
                     page.url = url_sanitize( res.effective_url )
 
-                    @sitemap |= page.paths
-                    paths    |= @sitemap - visited
-
+                    if !restricted_to_paths?
+                        @sitemap |= page.paths
+                        @paths   |= @sitemap - visited
+                    end
 
                     # call the block...if we have one
                     if block
                         exception_jail{
-                            block.call( page.clone )
+                            if !skip?( page.url )
+                                block.call( page.clone )
+                            else
+                                print_info( 'Matched skip rule.' )
+                            end
                         }
                     end
 
                     # run blocks specified later
                     @on_every_page_blocks.each {
                         |block|
-                        block.call( page )
+                        block.call( page ) if !skip?( page.url )
                     }
 
                 }
-
-                http.run if !@opts.spider_first
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
                     @opts.link_count_limit <= visited.size )
-                    http.run if @opts.spider_first
+                    http.run
                     return @sitemap.uniq
                 end
 
-
             end
 
-            if @opts.spider_first
-                http.run
-            else
-                break
-            end
-
+            http.run
         end
 
         return @sitemap.uniq

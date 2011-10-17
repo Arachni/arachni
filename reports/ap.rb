@@ -8,6 +8,8 @@
 
 =end
 
+require 'ap'
+
 module Arachni
 module Reports
 

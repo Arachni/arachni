@@ -92,12 +92,13 @@ class ReportManager
     #
     # Saves the report to a file
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni XMLRPC server.
+    # @param    [Arachni::AuditStore]    report   audistore object as returned by the Arachni RPC server.
     #                                       Basically an 'afr' report as a string.
     #
     # @return   [String]        the path to the saved report
     #
     def save( report )
+        report = report.to_yaml
         @settings.log.report_saved( {}, get_filename( report ) )
         return save_to_file( report, report_to_path( report ) )
     end
@@ -193,8 +194,16 @@ class ReportManager
 
         begin
             location = savedir + Report.get( id ).filename + EXTENSION
-            convert( type, File.read( location ) )
-        rescue
+
+            # if it's the default report type don't waste time converting
+            if '.' + type == EXTENSION
+                return File.read( location )
+            else
+                return convert( type, File.read( location ) )
+            end
+        rescue Exception => e
+            ap e
+            ap e.backtrace
             return nil
         end
     end

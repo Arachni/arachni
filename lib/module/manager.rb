@@ -10,20 +10,11 @@
 
 module Arachni
 
+
 #
 # The namespace under which all modules exist
 #
 module Modules
-
-    #
-    # Resets the namespace unloading all module classes
-    #
-    def self.reset
-        constants.each {
-            |const|
-            remove_const( const )
-        }
-    end
 end
 
 module Module
@@ -49,7 +40,20 @@ class Manager < Arachni::ComponentManager
         super( opts.dir['modules'], Arachni::Modules )
         @opts = opts
         @@results    = []
+        @@on_register_results = []
         @@issue_set  = Set.new
+
+        @@do_not_store = false
+
+        @@issue_mutex ||= Mutex.new
+    end
+
+    def self.on_register_results( &block )
+        @@on_register_results << block
+    end
+
+    def self.do_not_store!
+        @@do_not_store = true
     end
 
     #
@@ -60,8 +64,15 @@ class Manager < Arachni::ComponentManager
     # @param    [Array]
     #
     def self.register_results( results )
-        @@results |= results
-        results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
+
+        @@on_register_results.each { |block| block.call( results ) }
+        return if @@do_not_store
+
+
+        @@issue_mutex.synchronize {
+            @@results |= results
+            results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
+        }
     end
 
     def self.issue_set_id_from_issue( issue )
@@ -78,13 +89,14 @@ class Manager < Arachni::ComponentManager
     end
 
     def self.issue_set
-        @@issue_set
+        @@issue_mutex.synchronize {
+            @@issue_set
+        }
     end
 
     def issue_set
-        @@issue_set
+        self.class.issue_set
     end
-
 
     #
     # Class method
@@ -93,17 +105,14 @@ class Manager < Arachni::ComponentManager
     #
     # @param    [Array]
     #
-    def self.results( )
-        @@results
+    def self.results
+        @@issue_mutex.synchronize {
+            @@results
+        }
     end
 
     def results
-        @@results
-    end
-
-    def self.reset
-        @@results.clear
-        Arachni::Modules.reset
+        self.class.results
     end
 
 end

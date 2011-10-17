@@ -9,19 +9,20 @@
 =end
 
 require 'singleton'
+require 'getoptlong'
 
 module Arachni
 
 #
 # Options class.
 #
-# Implements the Singleton pattern and formaly defines
+# Implements the Singleton pattern and formally defines
 # all of Arachni's runtime options.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
 class Options
 
@@ -43,7 +44,34 @@ class Options
     #
     # @return    [Hash]
     #
-    attr_accessor   :datastore
+    attr_reader   :datastore
+
+    attr_accessor :grid_mode
+
+    #
+    # @return   [String]    the URL of a neighbouring Dispatcher
+    #
+    attr_accessor :neighbour
+
+    #
+    # @return   [Float]    cost of using the Dispatcher
+    #
+    attr_accessor :cost
+
+    #
+    # @return   [String]    a string identifying this bandwidth pipe
+    #
+    attr_accessor :pipe_id
+
+    #
+    # @return   [Float]    Dispatcher weight
+    #
+    attr_accessor :weight
+
+    #
+    # @return   [String]    Dispatcher nickname
+    #
+    attr_accessor :nickname
 
     #
     # Holds absolute paths for the directory structure of the framework
@@ -57,7 +85,7 @@ class Options
     #
     # @return    [String,URI]
     #
-    attr_accessor :url
+    attr_reader   :url
 
     #
     # Show help?
@@ -329,6 +357,10 @@ class Options
     attr_accessor :spider_first
 
     attr_accessor :rpc_port
+    attr_accessor :rpc_address
+
+    attr_accessor :rpc_instance_port_range
+
     attr_accessor :ssl
     attr_accessor :ssl_pkey
     attr_accessor :ssl_cert
@@ -338,6 +370,14 @@ class Options
 
     attr_accessor :reroute_to_logfile
     attr_accessor :pool_size
+
+    attr_accessor :webui_username
+    attr_accessor :webui_password
+
+    attr_accessor :custom_headers
+
+    attr_accessor :restrict_paths
+    attr_accessor :extend_paths
 
 
     def initialize( )
@@ -356,14 +396,20 @@ class Options
         @lsrep      = []
 
         @lsmod      = []
-        @dir        = Hash.new
+        @dir        = {}
+
+        @plugins    = {}
+        @lsplug     = []
+        @datastore  = {}
+
         @exclude_cookies    = []
         @load_profile       = []
+        @restrict_paths     = []
+        @extend_paths       = []
+        @custom_headers     = {}
 
-        @plugins = {}
-        @lsplug  = []
+        @rpc_instance_port_range = [1025, 65535]
 
-        @datastore = {}
 
         @spider_first = true
 
@@ -374,6 +420,304 @@ class Options
         # on low bandwidth conections
         @http_req_limit = 20
 
+    end
+
+    def parse!
+
+        # Construct getops struct
+        opts = GetoptLong.new(
+            [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
+            [ '--verbosity',         '-v', GetoptLong::NO_ARGUMENT ],
+            [ '--only-positives',    '-k', GetoptLong::NO_ARGUMENT ],
+            [ '--lsmod',                   GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--lsrep',                   GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--audit-links',       '-g', GetoptLong::NO_ARGUMENT ],
+            [ '--audit-forms',       '-p', GetoptLong::NO_ARGUMENT ],
+            [ '--audit-cookies',     '-c', GetoptLong::NO_ARGUMENT ],
+            [ '--audit-cookie-jar',        GetoptLong::NO_ARGUMENT ],
+            [ '--audit-headers',           GetoptLong::NO_ARGUMENT ],
+            [ '--spider-first',            GetoptLong::NO_ARGUMENT ],
+            [ '--obey-robots-txt',   '-o', GetoptLong::NO_ARGUMENT ],
+            [ '--redundant',               GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--depth',             '-d', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--load-profile',            GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--save-profile',            GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--show-profile',            GetoptLong::NO_ARGUMENT ],
+            [ '--proxy',             '-z', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--cookie-jar',        '-j', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
+            [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
+            [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
+            [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
+            [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--ssl-ca',                  GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--address',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
+            [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--neighbour',              GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--weight',                 GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--cost',                   GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--pipe-id',                GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--nickname',               GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--username',               GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--password',               GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ]
+        )
+
+        @dir['root']    = root_path
+        @dir['data']    = @dir['root'] + 'data/'
+        @dir['modules'] = @dir['root'] + 'modules/'
+        @dir['reports'] = @dir['root'] + 'reports/'
+        @dir['plugins'] = @dir['root'] + 'plugins/'
+        @dir['lib']     = @dir['root'] + 'lib/'
+
+        opts.quiet = true
+
+        begin
+            opts.each {
+                |opt, arg|
+
+                case opt
+
+                    when '--help'
+                        @help = true
+
+                    when '--only-positives'
+                        @only_positives = true
+
+                    when '--verbosity'
+                        @arachni_verbose = true
+
+                    when '--debug'
+                        @debug = true
+
+                    when '--spider-first'
+                        @spider_first = true
+
+                    when '--plugin'
+                        plugin, opt_str = arg.split( ':', 2 )
+
+                        opts = {}
+                        if( opt_str )
+                            opt_arr = opt_str.split( ',' )
+                            opt_arr.each {
+                                |c_opt|
+                                name, val = c_opt.split( '=', 2 )
+                                opts[name] = val
+                            }
+                        end
+
+                        @plugins[plugin] = opts
+
+                    when '--redundant'
+                        @redundant << {
+                            'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
+                            'count'   => Integer( arg.to_s.split( /:/ )[1] ),
+                        }
+
+                    when '--port-range'
+                        first, last = arg.to_s.split( '-' )
+                        @rpc_instance_port_range = [ Integer( first ), Integer( last ) ]
+
+                    when '--custom-header'
+                        header, val = arg.to_s.split( /=/, 2 )
+                        @custom_headers[header] = val
+
+                    when '--restrict-paths'
+                        @restrict_paths |= paths_from_file( arg )
+
+                    when '--extend-paths'
+                        @extend_paths |= paths_from_file( arg )
+
+                    when '--obey_robots_txt'
+                        @obey_robots_txt = true
+
+                    when '--depth'
+                        @depth_limit = arg.to_i
+
+                    when '--link-count'
+                        @link_count_limit = arg.to_i
+
+                    when '--redirect-limit'
+                        @redirect_limit = arg.to_i
+
+                    when '--lsmod'
+                        @lsmod << Regexp.new( arg.to_s )
+
+                    when '--lsplug'
+                        @lsplug << Regexp.new( arg.to_s )
+
+                    when '--lsrep'
+                        @lsrep << Regexp.new( arg.to_s )
+
+                    when '--http-req-limit'
+                      @http_req_limit = arg.to_i
+
+                    when '--audit-links'
+                        @audit_links = true
+
+                    when '--audit-forms'
+                        @audit_forms = true
+
+                    when '--audit-cookies'
+                        @audit_cookies = true
+
+                    when '--audit-cookie-jar'
+                        @audit_cookie_jar = true
+
+                    when '--audit-headers'
+                        @audit_headers = true
+
+                    when '--mods'
+                        @mods = arg.to_s.split( /,/ )
+
+                    when '--report'
+                        report, opt_str = arg.split( ':' )
+
+                        opts = {}
+                        if( opt_str )
+                            opt_arr = opt_str.split( ',' )
+                            opt_arr.each {
+                                |c_opt|
+                                name, val = c_opt.split( '=' )
+                                opts[name] = val
+                            }
+                        end
+
+                        @reports[report] = opts
+
+                    when '--repload'
+                        @repload = arg
+
+                    when '--save-profile'
+                        @save_profile = arg
+
+                    when '--load-profile'
+                        @load_profile << arg
+
+                    when '--show-profile'
+                        @show_profile = true
+
+                    when '--authed-by'
+                        @authed_by = arg
+
+                    when '--proxy'
+                        @proxy_addr, @proxy_port =
+                            arg.to_s.split( /:/ )
+
+                    when '--proxy-auth'
+                        @proxy_user, @proxy_pass =
+                            arg.to_s.split( /:/ )
+
+                    when '--proxy-type'
+                        @proxy_type = arg.to_s
+
+                    when '--cookie-jar'
+                        @cookie_jar = arg.to_s
+
+                    when '--user-agent'
+                        @user_agent = arg.to_s
+
+                    when '--exclude'
+                        @exclude << Regexp.new( arg )
+
+                    when '--include'
+                        @include << Regexp.new( arg )
+
+                    when '--exclude-cookie'
+                        @exclude_cookies << arg
+
+                    when '--follow-subdomains'
+                        @follow_subdomains = true
+
+                    when '--http-harvest-last'
+                        @http_harvest_last = true
+
+                    when '--ssl'
+                        @ssl = true
+
+                    when '--ssl-pkey'
+                        @ssl_pkey = arg.to_s
+
+                    when '--ssl-cert'
+                        @ssl_cert = arg.to_s
+
+                    when '--ssl-ca'
+                        @ssl_ca = arg.to_s
+
+                    when '--server'
+                        @server = arg.to_s
+
+                    when '--reroute-to-logfile'
+                        @reroute_to_logfile = true
+
+                    when '--port'
+                        @rpc_port = arg.to_i
+
+                    when '--address'
+                        @rpc_address = arg.to_s
+
+                    when '--pool-size'
+                        @pool_size = arg.to_i
+
+                    when '--neighbour'
+                        @neighbour = arg.to_s
+
+                    when '--cost'
+                        @cost = arg.to_s
+
+                    when '--weight'
+                        @weight = arg.to_s
+
+                    when '--pipe-id'
+                        @pipe_id = arg.to_s
+
+                    when '--nickname'
+                        @nickname = arg.to_s
+
+                    when '--host'
+                        options.server = arg.to_s
+
+                    when '--username'
+                        options.webui_username = arg.to_s
+
+                    when '--password'
+                        options.webui_password = arg.to_s
+
+                end
+            }
+        rescue Exception => e
+            puts e.inspect
+            exit
+        end
+
+        self.url = ARGV.shift
+    end
+
+    def root_path
+        File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) + '/'
     end
 
     #
@@ -414,12 +758,14 @@ class Options
         return if !str
 
         require 'uri'
-        require self.dir['lib'] + 'exceptions'
-        require self.dir['lib'] + 'module/utilities'
+        require @dir['lib'] + 'exceptions'
+        require @dir['lib'] + 'module/utilities'
 
         begin
             @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
-        rescue
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
@@ -549,6 +895,15 @@ class Options
         end
 
         return arg
+    end
+
+    def paths_from_file( file )
+        IO.read( file ).lines.map {
+            |path|
+            path.gsub!( "\n", '' )
+            path.gsub!( "\r", '' )
+            path
+        }
     end
 
     private

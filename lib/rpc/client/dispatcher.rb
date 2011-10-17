@@ -8,29 +8,29 @@
 
 =end
 
-require 'xmlrpc/client'
-require 'openssl'
-
 module Arachni
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/xml/client/base'
+require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
 
 module RPC
-module XML
-module Client
+class Client
 
 #
-# XMLRPC Dispatcher client
+# BrBRPC Dispatcher client
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
-class Dispatcher < Base
+class Dispatcher
+
+    attr_reader :node
 
     def initialize( opts, url )
-        super( opts, url )
+        @client = Base.new( opts, url )
+
+        @node = Mapper.new( @client, 'node' )
     end
 
     private
@@ -38,12 +38,11 @@ class Dispatcher < Base
     # Used to provide the illusion of locality for remote methods
     #
     def method_missing( sym, *args, &block )
-        call( "dispatcher.#{sym.to_s}", *args )
+        @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end
 
 end
 
-end
 end
 end
 end

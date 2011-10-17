@@ -13,7 +13,7 @@ module Arachni
 module UI
 
 #
-# XML-RPC deamon Output module
+# BrB-RPC deamon Output module
 #
 # It basically classifies and buffers all system messages until it's time to
 # flush the buffer and send them over the wire.
@@ -70,6 +70,7 @@ module Output
             }
         else
             @@buffer << msg
+            @@buffer.slice!( (@@buffer.size - 100)..@@buffer.size  )
         end
     end
 

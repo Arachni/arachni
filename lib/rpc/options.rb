@@ -13,7 +13,7 @@ module Arachni
 #
 # Overrides the Options class adding support for direct options parsing.
 #
-# Not much to look at but it streamlines XML-RPC server option handling.
+# Not much to look at but it streamlines BrB-RPC server option handling.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -60,12 +60,18 @@ class Options
         @lsmod      = []
         @exclude_cookies    = []
 
+        @datastore = {}
+
         # set some defaults
         @redirect_limit = 20
 
         # relatively low but will give good performance without bottleneck
         # on low bandwidth conections
         @http_req_limit = 20
+    end
+
+    def datastore=( hash )
+        @datastore = hash
     end
 
     #

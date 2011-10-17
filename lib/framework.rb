@@ -26,23 +26,9 @@ require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'component_manager'
 require 'yaml'
-require 'ap'
-require 'pp'
 
 
 module Arachni
-
-    #
-    # Resets the Framework providing a clean slate.
-    #
-    # This is useful to user interfaces that require the framework to be reused.
-    #
-    def self.reset
-        Element::Auditable.reset
-        Module::Manager.reset
-        Report::Manager.reset
-        Arachni::HTTP.instance.reset
-    end
 
 #
 # Arachni::Framework class
@@ -57,7 +43,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.3
+# @version: 0.2.5
 #
 class Framework
 
@@ -71,7 +57,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.3'
+    REVISION     = '0.2.5'
 
     #
     # Instance options
@@ -99,11 +85,6 @@ class Framework
     # @return   [Arachni::Spider]   spider
     #
     attr_reader :spider
-
-    #
-    # @return   [Arachni::HTTP]
-    #
-    attr_reader :http
 
     attr_reader :sitemap
     attr_reader :auditmap
@@ -150,6 +131,7 @@ class Framework
         @paused  = []
 
         @plugin_store = {}
+        @store = nil
 
         @current_url = ''
     end
@@ -179,8 +161,10 @@ class Framework
         # Arachni managed to gather
         begin
             # start the audit
-            audit( )
-        rescue Exception
+            exception_jail{ audit( ) }
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
         end
 
         clean_up!
@@ -197,13 +181,16 @@ class Framework
         return true
     end
 
-    def stats( refresh_time = false )
+    def stats( refresh_time = false, overide_refresh = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
 
         @auditmap ||= []
         @sitemap  ||= []
-        if !refresh_time || @auditmap.size == @sitemap.size
+
+        @opts.start_datetime = Time.now if !@opts.start_datetime
+
+        if (!refresh_time || @auditmap.size == @sitemap.size) && !overide_refresh
             @opts.delta_time ||= Time.now - @opts.start_datetime
         else
             @opts.delta_time = Time.now - @opts.start_datetime
@@ -211,12 +198,12 @@ class Framework
 
         curr_avg = 0
         if http.curr_res_cnt > 0 && http.curr_res_time > 0
-            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i.to_s
+            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i
         end
 
         avg = 0
         if res_cnt > 0
-            avg = ( res_cnt / @opts.delta_time ).to_i.to_s
+            avg = ( res_cnt / @opts.delta_time ).to_i
         end
 
         progress = (Float( @auditmap.size ) / @sitemap.size) * 100
@@ -229,6 +216,12 @@ class Framework
                 Arachni::Module::Auditor.timeout_audit_blocks.size ) * 50
         end
 
+        begin
+            progress = Float( progress.to_s[0...5] )
+        rescue
+            progress = 0.0
+        end
+
         return {
             :requests   => req_cnt,
             :responses  => res_cnt,
@@ -237,7 +230,7 @@ class Framework
             :avg        => avg,
             :sitemap_size  => @sitemap.size,
             :auditmap_size => @auditmap.size,
-            :progress      => progress.to_s[0...5],
+            :progress      => progress,
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
             :curr_avg      => curr_avg,
@@ -273,6 +266,10 @@ class Framework
         }
 
         audit_queue
+
+        if( @opts.http_harvest_last )
+            harvest_http_responses( )
+        end
 
         exception_jail {
             if !Arachni::Module::Auditor.timeout_audit_blocks.empty?

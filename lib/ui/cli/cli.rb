@@ -26,7 +26,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.7
+# @version: 0.1.8
 # @see Arachni::Framework
 #
 class CLI
@@ -80,6 +80,8 @@ class CLI
 
         # work on the user supplied arguments
         parse_opts( )
+
+        @interrupt_handler = nil
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
@@ -206,7 +208,7 @@ class CLI
                 Thread.exit
             }
 
-            while( 1 )
+            loop do
 
                 unmute!
                 print_line
@@ -611,9 +613,9 @@ class CLI
 
     --only-positives            echo positive results *only*
 
-    --http-req-limit            concurent HTTP requests limit
-                                  (Be carefull not to kill your server.)
-                                  (Default: 60)
+    --http-req-limit            concurrent HTTP requests limit
+                                  (Be careful not to kill your server.)
+                                  (Default: 20)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
@@ -625,13 +627,18 @@ class CLI
                                    *and* you feel dangerous you can use
                                    this flag with an increased '--http-req-limit'
                                    to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
+                                 (*WARNING*: When scanning large websites with hundreds
                                   of pages this could eat up all your memory pretty quickly.)
 
-    --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
+    --cookie-jar=<cookiejar>    Netscape HTTP cookie file, use curl to create it
 
 
     --user-agent=<user agent>   specify user agent
+
+    --custom-header='<name>=<value>'
+
+                                specify custom headers to be included in the HTTP requests
+                                (Can be used multiple times.)
 
     --authed-by=<who>           who authorized the scan, include name and e-mail address
                                   (It'll make it easier on the sys-admins during log reviews.)
@@ -662,7 +669,7 @@ class CLI
                                   (Can be used multiple times.)
 
     --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
-                                  (URLs matching <regex> will be crawled <count> links deep.)
+                                  (URLs matching <regex> will be crawled <count> amount of times.)
                                   (Can be used multiple times.)
 
     -f
@@ -676,6 +683,12 @@ class CLI
     --link-count=<number>       how many links to follow (default: inf)
 
     --redirect-limit=<number>   how many redirects to follow (default: inf)
+
+    --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
+                                  (Can be used multiple times.)
+
+    --restrict-paths=<file>     only crawl the paths in <file>
+                                  (Can be used multiple times.)
 
 
     Auditor ------------------------

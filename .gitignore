@@ -10,5 +10,7 @@
 /lib/ui/web/server/public/reports/*
 /todo.txt
 /tmp
+/logs/
 /private.pem
 generate-autodeploy.sh
+tests/fp_discover.php

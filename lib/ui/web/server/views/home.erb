@@ -5,17 +5,27 @@
 
             <input type="submit" value="Launch Scan" />
 
+            <% show_hp = false %>
+
             <div id="page-intro">
                 Select a Dispatcher:
                 <select name="dispatcher">
-                <% dispatcher_stats.each_pair do |d_url, stats| %>
-                    <% next if !dispatchers.alive?( d_url ) %>
+                <% stats.each_pair do |d_url, stats| %>
                     <option value="<%=d_url%>">
-                        @<%=escape( d_url )%> - <%=stats['running_jobs'].size%> running scans,
-                         <%=i=0;stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
+                        <%=show_dispatcher_line( stats )%>
+                        <% if !stats['neighbours'].empty? %>
+                            [HP]
+                            <% show_hp = true %>
+                        <%end%>
                     </option>
                 <%end%>
                 </select>
+
+                <br/>
+                <% if show_hp %>
+                    Use High Performance Grid (HPG) mode <input type="checkbox" name="high_performance" />
+                    (Dispatchers marked with "[HP]" are part of a Grid and can be used in High Performance mode. <strong>Attention:</strong> The HPG is highly unstable and experimental.)
+                <%end%>
 
                 <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
             </div>

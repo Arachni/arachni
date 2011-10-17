@@ -36,29 +36,33 @@
         <%= erb :flash, {:layout => false} %>
 
         <div id="scan_data">
-            <h3>Scan statisics</h3>
             <div class="left">
+                <h3>Scan statisics</h3>
                 <ul>
                     <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
+                    <li>Requests/second: <span id="avg">0</span></li>
                     <li>Runtime: <span id="runtime">00:00:00</span></li>
-                </ul>
-            </div>
-            <div>
-                <ul>
                     <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
-                    <li>Average response time: <span id="average_res_time">0</span> ms</li>
+                    <li>Average response time: <span id="average_res_time">0</span>s</li>
                     <li>Timed-out requests: <span id="time_out_count">0</span></li>
-                    <li>Current page: <span id="current_page">0</span></li>
-                </ul>
 
+                </ul>
             </div>
 
-            <p><em>
-                (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
-                you may see some backwards progress or other weird progress behavior.)
-            </em></p>
-            <div id="progressbar"></div>
+            <div class="right">
+                <h3>Instances</h3>
+                <div style="height: 245px; overflow-y: scroll" id="currently_auditing">
+                </div>
+            </div>
+
+            <div>
+                <p><em>
+                    (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
+                    you may see some backwards progress or other weird progress behavior.)
+                </em></p>
+                <div id="progressbar"></div>
+            </div>
 
             <div class="left">
                 <h3>Scanner output:</h3>
@@ -121,51 +125,56 @@
                     if( stats == undefined ){ return }
 
                     document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
-                    document.getElementById( 'current_page' ).innerHTML = stats.current_page;
                     document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;
+                    document.getElementById( 'avg' ).innerHTML = stats.avg;
                     document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
                     document.getElementById( 'runtime' ).innerHTML = stats.time;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
-                }
 
-                function updateProgressBar(){
-                    var stats_url = "/instance/<%= escape( params['url'].to_s ) %>/stats.json";
-                    $.getJSON( stats_url, function(data) {
-                        if( data.stats == undefined ){ return }
-                        setStats( data.stats );
-                        setProgressBar( parseInt( data.stats.progress ) );
-                    });
+                    elem = document.getElementById( 'currently_auditing');
+                    elem.innerHTML = '';
+                    for( i in stats.instances ) {
+
+                        elem.innerHTML += '<strong>' + stats.instances[i].url + '</strong> <br/>';
+
+                        status = stats.instances[i].status
+                        if( status == 'busy' ) {
+                            page = stats.instances[i].current_page;
+
+                            elem.innerHTML += 'Currently auditing: ' + '<a href="' +
+                            page + '">' + page + '</a>';
+                        } else {
+                            elem.innerHTML += status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+
+                         elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
+
+                        $( "#progressbar_" + i ).progressbar({
+                            value: stats.instances[i].progress
+                        });
+
+                    }
+
                 }
 
                 function updateOutput() {
-                    if( !document.getElementById( 'output' ) ) return;
-
                     var output_url = "/instance/<%= escape( params['url'].to_s ) %>/output.json";
                     $.getJSON( output_url, function(data) {
 
-                        if( data.status == 'finished' ){
+                        if( data.messages.status == 'finished' ){
                             showShutdownDialog( );
                         } else {
-                            if( data.report == undefined ) {
-                                document.getElementById( 'output' ).innerHTML = data.data;
-                            } else {
-                                showReportLoadingDialog();
-                                showReport( data.report );
-                                $( "#dialog-loading" ).dialog('close')
+
+                            document.getElementById( 'output' ).innerHTML = data.messages.data;
+                            document.getElementById( 'output_results' ).innerHTML = data.issues.data;
+
+                            if( data.stats.avg != undefined ){
+                                setStats( data.stats );
+                                setProgressBar( parseInt( data.stats.progress ) );
                             }
                         }
-
-                    });
-                }
-
-                function updateResults() {
-                    if( !document.getElementById( 'output_results' ) ) return;
-
-                    var output_results_url = "/instance/<%= escape( params['url'].to_s ) %>/output_results.json";
-                    $.getJSON( output_results_url, function(data) {
-                        document.getElementById( 'output_results' ).innerHTML = data.data;
                     });
                 }
 
@@ -189,20 +198,9 @@
 
                     setProgressBar( 0 );
 
-                    updateProgressBar();
-                    setInterval( function() {
-                        updateProgressBar();
-                    }, 3000 );
-
                     updateOutput( );
                     setInterval( function() {
                           updateOutput( );
-                    }, 1500 );
-
-
-                    updateResults( )
-                    setInterval( function() {
-                          updateResults( );
                     }, 5000 );
 
                 })

@@ -3,8 +3,8 @@ require 'openssl'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/xml/client/dispatcher'
-require Options.instance.dir['lib'] + 'rpc/xml/client/instance'
+require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
+require Options.instance.dir['lib'] + 'rpc/client/instance'
 
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
@@ -13,14 +13,12 @@ require Options.instance.dir['lib'] + 'framework'
 module UI
 
 #
-# Arachni::UI:XMLRPC class
-#
-# Provides an self sufficient Arachni XML-RPC client.
+# Provides an self sufficient Arachni RPC client.
 #
 # It mimics the standard CLI interface's functionality
 # albeit in a client-server fashion.
 #
-# This should be your first stop when looking into creating your own XMLRPC client. <br/>
+# This should be your first stop when looking into creating your own RPC client. <br/>
 # Of course you don't need to instantiate the framework or any other Arachni related classes
 # in your own client, this is just to provide some other info to the user.
 #
@@ -30,7 +28,7 @@ module UI
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2
 #
-class XMLRPC
+class RPC
 
     include Arachni::UI::Output
     include Arachni::Module::Utilities
@@ -85,20 +83,17 @@ class XMLRPC
 
         begin
 
-            @dispatcher = Arachni::RPC::XML::Client::Dispatcher.new( @opts, @opts.server )
+            @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.server )
 
             # get a new instance and assign the url we're going to audit as the
             # 'owner'
             @instance = @dispatcher.dispatch( @opts.url.to_s )
 
-            instance_url = URI( @opts.server.to_s )
-            instance_url.port = @instance['port']
-
             # start the XMLRPC client
-            @server = Arachni::RPC::XML::Client::Instance.new( @opts, instance_url.to_s, @instance['token'] )
+            @server = Arachni::RPC::Client::Instance.new( @opts, @instance['url'], @instance['token'] )
         rescue Exception => e
             print_error( "Could not connect to server." )
-            print_error( "Error: #{e.to_s}." )
+            print_debug( "Error: #{e.to_s}." )
             print_debug_backtrace( e )
             exit 0
         end
@@ -154,7 +149,7 @@ class XMLRPC
 
                 # things will get crazy if we don't block a bit I think...
                 # we'll see...
-                ::IO::select( nil, nil, nil, 0.3 )
+                ::IO::select( nil, nil, nil, 2 )
             end
 
             puts
@@ -251,7 +246,7 @@ class XMLRPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.framework.abort!
+            @server.framework.clean_up!
             report
             shutdown
             print_info( 'Exiting...' )
@@ -350,6 +345,24 @@ class XMLRPC
                 'metamodules'   => {},
             }
         )
+
+        @server.plugins.load( @opts.plugins )
+
+
+        @server.modules.load( @opts.mods )
+
+        opts = @opts.to_h.dup
+
+        illegal.each {
+            |k|
+            opts.delete( k )
+        }
+
+        opts['url'] = opts['url'].to_s
+        @server.opts.set( opts )
+
+        return
+
         @opts.to_h.each {
             |opt, arg|
 
@@ -398,12 +411,6 @@ class XMLRPC
             when 'plugins'
                 next if arg.empty?
 
-                ap arg
-                print_status 'Loading plug-ins:'
-                @server.plugins.load( arg ).each {
-                    |mod|
-                    print_info ' * ' + mod
-                }
 
             when "http_req_limit"
                 print_status 'Setting HTTP request limit: ' +
@@ -662,7 +669,7 @@ class XMLRPC
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_xmlrpc --server https://host:port \[options\] url
+  Usage:  arachni_rpc --server https://host:port \[options\] url
 
   Supported options:
 

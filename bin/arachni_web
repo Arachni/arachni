@@ -9,23 +9,9 @@
 
 =end
 
-require 'getoptlong'
-require 'pp'
-require 'ap'
+require_relative "../lib/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
-
-require cwd + '/../lib/options'
-options = Arachni::Options.instance
-
-options.dir            = Hash.new
-options.dir['root']    = File.expand_path( cwd + '/../' ) + '/'
-options.dir['data']    = options.dir['root'] + 'data/'
-options.dir['modules'] = options.dir['root'] + 'modules/'
-options.dir['reports'] = options.dir['root'] + 'reports/'
-options.dir['plugins'] = options.dir['root'] + 'plugins/'
-options.dir['lib']     = options.dir['root'] + 'lib/'
+Arachni::Options.instance.parse!
 
 def print_help( root )
         puts <<USAGE
@@ -40,39 +26,20 @@ def print_help( root )
 
     --host                      specify host
 
+    --username                  set username for HTTP basic auth
+    --password                  set password for HTTP basic auth
+
     For SSL options refer to "webui.yaml" and "README.webui.yaml.txt" under "#{root}conf/".
 
 USAGE
 end
 
-
-# Construct getops struct
-opts = GetoptLong.new(
-    [ '--help', '-h',             GetoptLong::NO_ARGUMENT ],
-    [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
-)
-
-begin
-    opts.each {
-        |opt, arg|
-
-        case opt
-
-            when '--help'
-                print_help( options.dir['root'] )
-                exit
-
-            when '--port'
-                # not really used for RPC this time but by create another attr
-                options.rpc_port = arg.to_i
-
-            when '--host'
-                # not really used for RPC this time but by create another attr
-                options.server = arg.to_s
-        end
-    }
+options = Arachni::Options.instance
+if options.help
+    print_help( options.root_path )
+    exit
 end
 
+
 # Sinatra will run automatically
-require options.dir['lib'] + 'ui/web/server'
+require Arachni::Options.instance.dir['lib'] + 'ui/web/server'

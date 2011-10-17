@@ -1,10 +1,10 @@
 
         <% [:err, :ok, :notice ].each do |name| %>
 
-        <% if flash.has?( name ) %>
+        <% if ( msg = flash[name] ) || ( msg = params[name] ) %>
         <div class="flash">
             <div class="<%= name %>">
-                <%= flash[name] %>
+                <%= escape( msg ) %>
             </div>
         </div>
         <% end %>

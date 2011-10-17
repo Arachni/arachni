@@ -1,6 +1,64 @@
 
 # ChangeLog
 
+## Version 0.4 _(Under development)_
+- RPC Infrastructure (**New**)
+   - Dispatchers can now be connected to form a High Performance Grid and share scan workloads.
+   - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>, a light-weight and high-performance custom client/server RPC implementation.
+- WebUI
+   - Sinatra
+      - Updated to use the light-weight and high-performance <a href="http://code.macournoyer.com/thin/">Thin</a> server.
+      - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses.
+   - Added support for HTTP Basic Auth
+   - Updated screens to provide access to HPG (High Performance Grid) features:
+      - Home
+         - Added option to enable HPG mode on a per scan basis
+      - Dispatchers
+         - Added node information (Nickname, Pipe ID, Weight, Cost).
+         - Added neighbour inspection per dispatcher.
+         - Added log inspection per dispatcher.
+         - Improved accuracy of instance statuses.
+         - Added percentages for memory and CPU usage per instance.
+      - Instance (scan management)
+         - Provides an average of all stats of scanner instances.
+         - Added per instance progress bars.
+         - Added per instance statuses.
+   - Fixed small typo in "Settings" screen. [Issue #62]
+- Spider
+   - Added "--depth" parameter.
+   - Fixed incorrect implementation of the inclusion filters.
+   - Now follows "Location" headers directly and bypasses the trainer.
+- Parser
+   - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
+- Plugins
+   - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
+- Heeded Ruby's warnings (<em>ruby -w</em>).
+- Modules
+   - Added helper methods for checking the existence of remote files and directories
+   - Added helper methods for issue logging.
+   - Refactored modules replacing duplicate code with the new helper methods.
+- Meta-Modules
+   - Updated API method names to better fit their operation.
+   - New 'Discovery' metamodule (accompanied by appropriate report formatters) [Issue #81]
+      - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+   - Renamed 'TimeoutNotice' to 'TimingAttacks' and put under the 'anomaly_detection' directory.
+- Dependencies
+   - Added
+      - Arachni-RPC
+      - EventMachine
+      - EM Synchrony
+      - AsyncSinatra
+   - Updated
+      - Sys-proctable => 0.9.1
+      - Nokogiri => 1.5.0
+      - Sinatra => 1.2.6
+      - Datamapper => 1.1.0
+      - Json => 1.6.1
+      - Datamapper SQLite adapter => 1.1.0
+      - Net-SSH => 2.2.1
+   - Removed
+      - JSON (Provided by DataMapper)
+
 ## Version 0.3 _(July 26, 2011)_
 - HTTP client
    - Fixed race condition in timeout options.

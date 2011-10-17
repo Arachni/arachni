@@ -49,6 +49,7 @@ class Base
 
     # get the output interface
     include Arachni::Module::Output
+    include Arachni::Module::Utilities
 
     #
     # @param    [Arachni::Framework]    framework
