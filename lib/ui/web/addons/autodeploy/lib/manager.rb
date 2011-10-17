@@ -33,7 +33,7 @@ class Manager
 
     # ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
     ARCHIVE_PATH = 'http://localhost/~zapotek/'
-    ARCHIVE_NAME = 'arachni-v0.3-autodeploy'
+    ARCHIVE_NAME = 'arachni-v0.4-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
     EXEC = 'arachni_rpcd'
