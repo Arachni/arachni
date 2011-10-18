@@ -14,7 +14,7 @@
 - Framework
    - <em>stats()</em>
       - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
-      - Fixed bug that caused a less than 100% progress at the end of scans. [Issue #86]]
+      - Fixed bug that caused a less than 100% progress at the end of scans. [Issue #86]
 - User Interfaces
    - WebUI
       - Sinatra
