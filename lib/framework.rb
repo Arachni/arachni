@@ -206,7 +206,11 @@ class Framework
             avg = ( res_cnt / @opts.delta_time ).to_i
         end
 
-        redir_sz = @spider.redirects.size
+        if @spider
+            redir_sz = @spider.redirects.size
+        else
+            redir_sz = 0
+        end
 
         progress = (Float( @auditmap.size ) / ( @sitemap.size - redir_sz ) ) * 100
 
