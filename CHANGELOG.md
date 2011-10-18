@@ -3,40 +3,80 @@
 
 ## Version 0.4 _(Under development)_
 - RPC Infrastructure (**New**)
-   - Dispatchers can now be connected to form a High Performance Grid and share scan workloads.
+   - Dispatcher
+      - Dispatchers can now be connected to form a High Performance Grid and share scan workloads.
+      - Users can now specify a range of ports to be used for spawned Instances. [Issue #76]
+      - Now checks for signal availability before using <em>trap()</em>. [Issue #71]
+      - Now uses Windows compliant filenames for the logs. [Issue #70]
+      - Now includes <em>win32/process</em> to provide <em>Process.pid</em>/<em>fork()</em> (and others) under Windows platforms.
    - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>, a light-weight and high-performance custom client/server RPC implementation.
-- WebUI
-   - Sinatra
-      - Updated to use the light-weight and high-performance <a href="http://code.macournoyer.com/thin/">Thin</a> server.
-      - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses.
-   - Added support for HTTP Basic Auth
-   - Updated screens to provide access to HPG (High Performance Grid) features:
-      - Home
-         - Added option to enable HPG mode on a per scan basis
-      - Dispatchers
-         - Added node information (Nickname, Pipe ID, Weight, Cost).
-         - Added neighbour inspection per dispatcher.
-         - Added log inspection per dispatcher.
-         - Improved accuracy of instance statuses.
-         - Added percentages for memory and CPU usage per instance.
-      - Instance (scan management)
-         - Provides an average of all stats of scanner instances.
-         - Added per instance progress bars.
-         - Added per instance statuses.
-   - Fixed small typo in "Settings" screen. [Issue #62]
+- User Interfaces
+   - WebUI
+      - Sinatra
+         - Updated to use the light-weight and high-performance <a href="http://code.macournoyer.com/thin/">Thin</a> server.
+         - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses.
+      - Added support for HTTP Basic Auth
+      - Updated screens to provide access to HPG (High Performance Grid) features:
+         - Home
+            - Added option to enable HPG mode on a per scan basis
+         - Dispatchers
+            - Added node information (Nickname, Pipe ID, Weight, Cost).
+            - Added neighbour inspection per dispatcher.
+            - Added log inspection per dispatcher.
+            - Improved accuracy of instance statuses.
+            - Added percentages for memory and CPU usage per instance.
+         - Instance (scan management)
+            - Provides an average of all stats of scanner instances.
+            - Added per instance progress bars.
+            - Added per instance statuses.
+         - Settings
+            - Added proxy settings. [Issue #74]
+            - Added settings for restrict and extend paths options.
+      - Fixed small typo in "Settings" screen. [Issue #62]
+      - Reports -- AFR report is now served straight-up to avoid corruption. [Issue #55]
+      - Add-ons -- Updated to use the new async libraries.
+   - CLI
+      - Improved interrupt handler, it now exits in a cleaner fashion and is more obedient.
+- HTTP client
+   - Added support for including custom headers. [Issue #90]
+   - Refactored in order for all methods to use <em>request()</em>.
+   - Bug-fixed cookie preservation.
 - Spider
+   - spider-first option removed and set to true by default.
    - Added "--depth" parameter.
    - Fixed incorrect implementation of the inclusion filters.
    - Now follows "Location" headers directly and bypasses the trainer.
+   - Added support for extending the crawl scope with a file that contains newline separated URLs. [Issue #67]
+   - Added support for restricting the crawl scope with a file that contains newline separated URLs.
+   - Made more resilient against malformed/non-standard URLs. [Issue #57]
 - Parser
    - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
+   - Auditable elements
+      - If there are 2 or more password fields in a form an extra variation is added with
+        the same inputs for all passwords in case it's a 'please repeat your password' thing. [Issue #59]
 - Plugins
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
+- Reports
+   - HTML report
+      - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
+      - Refactored and broken into erb partials.
+      - Organised subsections into tabs.
+      - HTML responses of logged Issues are now rendered on-demand. [Issue #88]
+      - Added graph showing issue trust totals.
+      - The main issue graph shows trusted and untrusted issues in 2 different series.
+      - ALl JavaScript and CSS code is now included in the report for off-line viewing.
 - Heeded Ruby's warnings (<em>ruby -w</em>).
 - Modules
-   - Added helper methods for checking the existence of remote files and directories
-   - Added helper methods for issue logging.
+   - API
+      - Auditor
+         - Added helper methods for checking the existence of remote files and directories
+         - Added helper methods for issue logging.
    - Refactored modules replacing duplicate code with the new helper methods.
+   - Audit
+      - XSS -- Updated to actually inject an element, parse the HTML response and
+        look for that element before logging in order to eliminate false positives. [Issue #59]
+   - Recon
+      - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) [Issue #56]
 - Meta-Modules
    - Updated API method names to better fit their operation.
    - New 'Discovery' metamodule (accompanied by appropriate report formatters) [Issue #81]
