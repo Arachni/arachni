@@ -21,18 +21,20 @@ module Addons
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #
-# @version: 0.1
+# @version: 0.1.1
 #
 class Scheduler < Base
 
     def run
 
-        get "/" do
-            present :index,
-                :jobs => scheduler.jobs( :order => :created_at.desc ),
-                # we need to get our context via "addons.running['scheduler']"
-                # which is, essentially, this class.
-                :root => current_addon.path_root
+        aget "/" do
+            settings.dispatchers.stats {
+                |stats|
+                async_present :index,
+                    :jobs => scheduler.jobs( :order => :created_at.desc ),
+                    :root => current_addon.path_root,
+                    :d_stats => stats
+            }
         end
 
         post '/' do
@@ -59,7 +61,8 @@ class Scheduler < Base
                 session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
                 opts = {}
-                opts['settings'] = prep_opts( session['opts']['settings'] )
+                # opts['settings'] = prep_opts( session['opts']['settings'] )
+                opts['settings'] = session['opts']['settings']
                 opts['plugins']  = YAML::load( session['opts']['plugins'] )
                 opts['modules']  = session['opts']['modules']
 
@@ -78,41 +81,35 @@ class Scheduler < Base
                         job.datetime = parse_datetime( params[:datetime] )
 
                         if !job.valid?
-                            flash[:err] = 'Job holds invalid data, skipping...'
+                            msg = [ :err, 'Job holds invalid data, skipping...' ]
                         else
                             job.save
-                            flash[:ok] = "Job saved."
+                            msg = [ :ok, "Job saved." ]
                         end
                     rescue Exception => e
-                        flash[:err] = 'Could not parse date (' + e.to_s + ').'
+                        msg = [ :err, 'Could not parse date (' + e.to_s + ').' ]
                     end
 
                 else
-                    flash[:err] = 'Date cannot be empty.'
+                    msg = [ :err, 'Date cannot be empty.' ]
                 end
             end
 
-            present :index,
-                :jobs => scheduler.jobs( :order => :created_at.desc ),
-                # we need to get our context via "addons.running['scheduler']"
-                # which is, essentially, this class.
-                :root => current_addon.path_root
-
-
+            redirect  '/', :flash => { msg[0] => msg[1] }
         end
 
         post '/delete' do
             scheduler.delete_all
             log.scheduler_jobs_deleted( env )
 
-            redirect addons.running['scheduler'].path_root + '/'
+            redirect  '/'
         end
 
         post '/:id/delete' do
             scheduler.delete( params[:id] )
             log.scheduler_job_deleted( env, params[:id] )
 
-            redirect addons.running['scheduler'].path_root + '/'
+            redirect '/'
         end
 
     end
@@ -126,7 +123,7 @@ class Scheduler < Base
             :name           => 'Scheduler',
             :description    => %q{Schedules and runs scan jobs.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1'
+            :version        => '0.1.1'
         }
     end
 

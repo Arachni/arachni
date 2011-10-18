@@ -23,7 +23,7 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Scheduler
 
@@ -108,9 +108,12 @@ class Scheduler
     #
     # @param    [Job]   job
     #
-    def run_and_destroy( job )
-        run( job )
-        job.destroy
+    def run_and_destroy( job, &block )
+        run( job ){
+            |url|
+            job.destroy
+            block.call( url ) if block_given?
+        }
     end
 
     #
@@ -148,10 +151,10 @@ class Scheduler
                     |job|
 
                     begin
-                        run_and_destroy( job ) if job.datetime <= Time.now
+                        run_and_destroy( job ) if job.datetime <= Time.now.to_date
                     rescue Exception => e
-                        # ap e
-                        # ap e.backtraces
+                        ap e
+                        ap e.backtraces
                     end
 
                 }

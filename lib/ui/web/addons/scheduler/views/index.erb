@@ -16,24 +16,20 @@
 
                 Select a Dispatcher:
                 <select name="dispatcher">
-                <% if !dispatchers.first_alive%>
+                <% if d_stats.empty?%>
                         <option value="">None available, please add a Dispatcher to continue.</option>
                 <%else%>
-                    <% dispatcher_stats.each_pair do |d_url, stats| %>
-                        <% next if !dispatchers.alive?( d_url ) %>
-                        <option value="<%=d_url%>">
-                            @<%=escape( d_url )%> - <%=stats['running_jobs'].size%> running scans,
-                             <%=i=0;stats['running_jobs'].each{ |job| i+= proc_mem( job['proc']['rss'] ).to_i }; i.to_s%>MB RAM usage.
-                        </option>
+                    <% d_stats.each_pair do |d_url, stats| %>
+                        <option value="<%=d_url%>"><%=show_dispatcher_line( stats ) %></option>
                     <%end%>
                 <%end%>
                 </select>
 
-                URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" <% if !dispatchers.first_alive%>  disabled="disabled"<%end%> />
-                Schedule for: <input id="datetime" name="datetime" <% if !dispatchers.first_alive%>  disabled="disabled"<%end%> />
+                URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" <% if d_stats.empty?%>  disabled="disabled"<%end%> />
+                Schedule for: <input id="datetime" name="datetime" <% if d_stats.empty?%>  disabled="disabled"<%end%> />
 
                 <%= csrf_tag %>
-                <input type="submit" value="Add" <% if !dispatchers.first_alive%>  disabled="disabled"<%end%> />
+                <input type="submit" value="Add" <% if d_stats.empty?%>  disabled="disabled"<%end%> />
 
             </form>
         </div>
