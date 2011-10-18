@@ -36,11 +36,18 @@ class Spider
     attr_reader :opts
 
     #
-    # Sitemap, array of links
+    # Discovered paths
     #
     # @return [Array]
     #
     attr_reader :sitemap
+
+    #
+    # URLs that caused redirects
+    #
+    # @return [Array]
+    #
+    attr_reader :redirects
 
     #
     # Code block to be executed on each page
@@ -58,7 +65,8 @@ class Spider
     def initialize( opts )
         @opts = opts
 
-        @sitemap = []
+        @sitemap   = []
+        @redirects = []
         @on_every_page_blocks = []
 
         @seed_url = @opts.url.to_s
@@ -128,6 +136,11 @@ class Spider
 
                     if !restricted_to_paths?
                         @sitemap |= page.paths
+
+                        if !res.headers_hash['Location'].empty?
+                            @redirects << res.request.url
+                        end
+
                         @paths   |= @sitemap - visited
                     end
 
