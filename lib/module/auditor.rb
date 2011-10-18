@@ -45,9 +45,26 @@ module Auditor
         # determine scan progress
         @@__timeout_loaded_modules ||= Set.new
 
+        @@__on_timing_attacks      ||= []
+
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track audited elements
         @@__rdiff_audited ||= Set.new
+    end
+
+    def self.on_timing_attacks( &block )
+        @@__on_timing_attacks << block
+    end
+
+    def Auditor.call_on_timing_blocks( res, elem )
+        @@__on_timing_attacks.each {
+            |block|
+            block.call( res, elem )
+        }
+    end
+
+    def call_on_timing_blocks( res, elem )
+        Auditor.call_on_timing_blocks( res, elem )
     end
 
     #
@@ -62,7 +79,7 @@ module Auditor
       STRAIGHT = 1 << 0
 
       #
-      # Apends the injection string to the default value of the input vector.<br/>
+      # Appends the injection string to the default value of the input vector.<br/>
       # (If no default value exists Arachni will choose one.)
       #
       APPEND   = 1 << 1
@@ -529,6 +546,8 @@ module Auditor
         elem.get_auditor.http.get( elem.action ).on_complete {
             |res|
 
+            self.call_on_timing_blocks( res, elem )
+
             if !res.timed_out?
 
                 elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
@@ -613,7 +632,6 @@ module Auditor
     def timing_attack( strings, opts, &block )
 
         opts[:timeout_divider] ||= 1
-        # opts[:async] = false
 
         [strings].flatten.each {
             |str|
@@ -624,6 +642,8 @@ module Auditor
 
             audit( str, opts ) {
                 |res, c_opts, elem|
+
+                call_on_timing_blocks( res, elem )
                 block.call( res, c_opts, elem ) if block && res.timed_out?
             }
         }
