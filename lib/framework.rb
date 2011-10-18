@@ -273,6 +273,10 @@ class Framework
                 print_line
                 print_status( 'Running timing attacks.' )
                 print_info( '---------------------------------------' )
+                Arachni::Module::Auditor.on_timing_attacks {
+                    |res, elem|
+                    @current_url = elem.action if !elem.action.empty?
+                }
                 Arachni::Module::Auditor.timeout_audit_run
             end
 
