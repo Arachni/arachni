@@ -206,7 +206,9 @@ class Framework
             avg = ( res_cnt / @opts.delta_time ).to_i
         end
 
-        progress = (Float( @auditmap.size ) / @sitemap.size) * 100
+        redir_sz = @spider.redirects.size
+
+        progress = (Float( @auditmap.size ) / ( @sitemap.size - redir_sz ) ) * 100
 
         if Arachni::Module::Auditor.timeout_loaded_modules.size > 0 &&
             Arachni::Module::Auditor.timeout_audit_blocks.size > 0
