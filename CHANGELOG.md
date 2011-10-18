@@ -11,6 +11,10 @@
       - Now includes <em>win32/process</em> to provide <em>Process.pid</em>/<em>fork()</em> (and others) under Windows platforms. (**New**)
    - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>,
     a light-weight and high-performance custom client/server RPC implementation.
+- Framework
+   - <em>stats()</em>
+      - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
+      - Fixed bug that caused a less than 100% progress at the end of scans. [Issue #86]]
 - User Interfaces
    - WebUI
       - Sinatra
