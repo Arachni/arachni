@@ -925,7 +925,7 @@ module Auditor
     end
 
     #
-    # Audits Auditalble HTML/HTTP elements
+    # Audits Auditable HTML/HTTP elements
     #
     # @param  [Array<Arachni::Element::Auditable>]  elements    elements to audit
     # @param  [String]  injection_str  same as for {#audit}
