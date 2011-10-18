@@ -33,14 +33,14 @@ module Auditor
         # @@__timeout_audited      ||= Set.new
 
         # holds timing-attack performing Procs to be run after all
-        # non-tming-attack modules have finished.
+        # non-timing-attack modules have finished.
         @@__timeout_audit_blocks   ||= Queue.new
 
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
         @@__timeout_candidates     ||= Queue.new
 
-        # modules which have called the timing attack audit mthod (audit_timeout)
+        # modules which have called the timing attack audit method (audit_timeout)
         # we're interested in the amount, not the names, and is used to
         # determine scan progress
         @@__timeout_loaded_modules ||= Set.new
@@ -134,10 +134,10 @@ module Auditor
         #
         # If 'train' is set to true the HTTP response will be
         # analyzed for new elements. <br/>
-        # Be carefull when enabling it, there'll be a performance penalty.
+        # Be careful when enabling it, there'll be a performance penalty.
         #
         # When the Auditor submits a form with original or sample values
-        # this option will be overriden to true.
+        # this option will be overridden to true.
         #
         :train     => false,
 
@@ -395,7 +395,7 @@ module Auditor
 
     #
     # This is called right before an [Arachni::Parser::Element]
-    # is submitted/auditted and is used to determine whether to skip it or not.
+    # is submitted/audited and is used to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
@@ -422,7 +422,7 @@ module Auditor
     # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
     #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
     #   - Initial probing for candidates -- Any element that times out is added to a queue.
-    #   - Stabilization -- The candidate is submited with its default values in
+    #   - Stabilization -- The candidate is submitted with its default values in
     #     order to wait until the effects of the timing attack have worn off.
     # * Loop 2 -- Verifies the candidates. This is much more delicate so the
     #   concurrent requests are lowered to pairs.
@@ -444,7 +444,7 @@ module Auditor
     #
     #
     # @param   [Array]     strings     injection strings
-    #                                       __TIME__ will be substituded with (timeout / timeout_divider)
+    #                                       __TIME__ will be substituted with (timeout / timeout_divider)
     # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
     #                                   * :timeout -- milliseconds to wait for the request to complete
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
@@ -481,7 +481,7 @@ module Auditor
 
     #
     # Holds timing-attack performing Procs to be run after all
-    # non-tming-attack modules have finished.
+    # non-timing-attack modules have finished.
     #
     # @return   [Queue]
     #
@@ -504,7 +504,7 @@ module Auditor
     end
 
     #
-    # Runs phase 2 of the timing attack auditng an individual element
+    # Runs phase 2 of the timing attack auditing an individual element
     # (which passed phase 1) with a higher delay and timeout
     #
     def self.audit_timeout_phase_2( elem )
@@ -605,7 +605,7 @@ module Auditor
     # Optionally, you can add a :timeout_divider.
     #
     # @param   [Array]     strings     injection strings
-    #                                       '__TIME__' will be substituded with (timeout / timeout_divider)
+    #                                       '__TIME__' will be substituted with (timeout / timeout_divider)
     # @param    [Hash]      opts        options as described in {OPTIONS}
     # @param    [Block]     &block      block to call if a timeout occurs,
     #                                       it will be passed the response and opts
@@ -683,7 +683,7 @@ module Auditor
             :format      => [ Format::APPEND ],
             # allow duplicate requests
             :redundant   => true,
-            # amound of rdiff iterations
+            # amount of rdiff iterations
             :precision   => 2
         }.merge( opts )
 
