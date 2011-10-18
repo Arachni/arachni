@@ -33,7 +33,7 @@ Then things go as usual:
 
     git clone git://github.com/Zapotek/arachni.git
     cd arachni
-    git co grid
+    git checkout grid
     rake install
 
 ## Setting up the High Performance Grid (HPG)
