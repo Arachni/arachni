@@ -80,7 +80,7 @@ class Issue
     attr_accessor :url
 
     #
-    # The headers exchanhed during the attack
+    # The headers exchanged during the attack
     #
     # @return [Hash<String, Hash>]  request and reply headers
     #
@@ -187,7 +187,7 @@ class Issue
     attr_accessor :remedy_guidance
 
     #
-    # A code snipet showing the user how to remedy the situation
+    # A code snippet showing the user how to remedy the situation
     #
     # @return    [String]
     #
