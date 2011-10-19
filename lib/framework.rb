@@ -206,20 +206,64 @@ class Framework
             avg = ( res_cnt / @opts.delta_time ).to_i
         end
 
+        # we need to remove URLs that lead to redirects from the sitemap
+        # when calculating the progress %.
+        #
+        # this is because even though these URLs are valid webapp paths
+        # they are not actual pages and thus can't be audited;
+        # so the sitemap and auditmap will never match and the progress will
+        # never get to 100% which may confuse users.
+        #
         if @spider
             redir_sz = @spider.redirects.size
         else
             redir_sz = 0
         end
 
-        progress = (Float( @auditmap.size ) / ( @sitemap.size - redir_sz ) ) * 100
+        #
+        # There are 2 audit phases:
+        #  * regular analysis attacks
+        #  * timing attacks
+        #
+        # When calculating the progress % we have to take both into account,
+        # however each is calculated using different criteria.
+        #
+        # Progress of regular attacks is calculated as:
+        #     amount of audited pages / amount of all discovered pages
+        #
+        # However, the progress of the timing attacks is calculated as:
+        #     amount of called timeout blocks / amount of total blocks
+        #
+        # The timing attack modules are run with the regular ones however
+        # their procedures are piled up into an array of Procs
+        # which are called after the regular attacks.
+        #
+        # So when we reach the point of needing to include their progress in
+        # the overall progress percentage we'll be working with accurate
+        # data regarding the total blocks, etc.
+        #
 
-        if Arachni::Module::Auditor.timeout_loaded_modules.size > 0 &&
-            Arachni::Module::Auditor.timeout_audit_blocks.size > 0
+        #
+        # If we have timing attacks then each phase must account for half
+        # of the progress.
+        #
+        # This is not very granular but it's good enough for now...
+        #
+        if Arachni::Module::Auditor.timeout_loaded_modules.size > 0
+            multi = 50
+        else
+            multi = 100
+        end
 
-            progress /= 2
-            progress += ( Float( Arachni::Module::Auditor.timeout_loaded_modules.size ) /
-                Arachni::Module::Auditor.timeout_audit_blocks.size ) * 50
+        progress = (Float( @auditmap.size ) / ( @sitemap.size - redir_sz ) ) * multi
+
+        if Arachni::Module::Auditor.running_timeout_attacks?
+
+            called_blocks = Arachni::Module::Auditor.timeout_audit_blocks_cnt -
+                Arachni::Module::Auditor.timeout_audit_blocks.size
+
+            progress += ( Float( called_blocks ) /
+                Arachni::Module::Auditor.timeout_audit_blocks_cnt ) * multi
         end
 
         begin
