@@ -323,12 +323,13 @@ class HTTP
             cparams = params.dup
             curl    = normalize_url( url.dup )
 
-            cparams = q_to_h( curl ).merge( cparams )
-
-            begin
-                curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
-            rescue
-                return
+            if opts[:method] != :post
+                begin
+                    cparams = q_to_h( curl ).merge( cparams )
+                    curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
+                rescue
+                    return
+                end
             end
 
             opts = {
