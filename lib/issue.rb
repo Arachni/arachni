@@ -223,9 +223,9 @@ class Issue
     attr_accessor :_hash
 
     #
-    # Sets up the instanse attributes
+    # Sets up the instance attributes
     #
-    # @param    Hash    cofiguration hash
+    # @param    Hash    configuration hash
     #                     Usually the returned data of a module's
     #                     info() method for the references
     #                     merged with a name=>value pair hash holding
