@@ -36,6 +36,8 @@ module Auditor
         # non-timing-attack modules have finished.
         @@__timeout_audit_blocks   ||= Queue.new
 
+        @@__timeout_audit_blocks_cnt ||= 0
+
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
         @@__timeout_candidates     ||= Queue.new
@@ -47,13 +49,47 @@ module Auditor
 
         @@__on_timing_attacks      ||= []
 
+        @@__running_timeout_attacks ||= false
+
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track audited elements
         @@__rdiff_audited ||= Set.new
     end
 
+    #
+    # Returns the names of all loaded modules that use timing attacks.
+    #
+    # @return   [Set]
+    #
+    def self.timeout_loaded_modules
+        @@__timeout_loaded_modules
+    end
+
+    #
+    # Holds timing-attack performing Procs to be run after all
+    # non-timing-attack modules have finished.
+    #
+    # @return   [Queue]
+    #
+    def self.timeout_audit_blocks
+        @@__timeout_audit_blocks
+    end
+
+    def self.add_timeout_audit_block( &block )
+        @@__timeout_audit_blocks_cnt += 1
+        @@__timeout_audit_blocks << block
+    end
+
+    def self.running_timeout_attacks?
+        @@__running_timeout_attacks
+    end
+
     def self.on_timing_attacks( &block )
         @@__on_timing_attacks << block
+    end
+
+    def self.timeout_audit_blocks_cnt
+        @@__timeout_audit_blocks_cnt
     end
 
     def Auditor.call_on_timing_blocks( res, elem )
@@ -431,7 +467,6 @@ module Auditor
         return false
     end
 
-
     #
     # Audits elements using timing attacks and automatically logs results.
     #
@@ -469,7 +504,7 @@ module Auditor
     def audit_timeout( strings, opts )
         @@__timeout_loaded_modules << self.class.info[:name]
 
-        @@__timeout_audit_blocks << Proc.new {
+        Auditor.add_timeout_audit_block {
             delay = opts[:timeout]
 
             audit_timeout_debug_msg( 1, delay )
@@ -488,29 +523,12 @@ module Auditor
     end
 
     #
-    # Returns the names of all loaded modules that use timing attacks.
-    #
-    # @return   [Set]
-    #
-    def self.timeout_loaded_modules
-        @@__timeout_loaded_modules
-    end
-
-    #
-    # Holds timing-attack performing Procs to be run after all
-    # non-timing-attack modules have finished.
-    #
-    # @return   [Queue]
-    #
-    def self.timeout_audit_blocks
-        @@__timeout_audit_blocks
-    end
-
-    #
     # Runs all blocks in {timeout_audit_blocks} and verifies
     # and logs the candidate elements.
     #
     def self.timeout_audit_run
+        @@__running_timeout_attacks = true
+
         while( !@@__timeout_audit_blocks.empty? )
             @@__timeout_audit_blocks.pop.call
         end
