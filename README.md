@@ -25,7 +25,7 @@ Then things go as usual:
 
     git clone git://github.com/Zapotek/arachni.git
     cd arachni
-    git checkout grid
+    git checkout experimental
     rake install
 
 If you encounter a Typhoeus related error while running Arachni issue:
