@@ -296,7 +296,7 @@ USAGE
     def run
         print_status( 'Starting the server...' )
         t = Thread.new { @server.run }
-        # sleep( 2 )
+        sleep( 2 )
         @node = Node.new( @opts, @logfile )
         @server.add_handler( "node", @node )
         t.join
