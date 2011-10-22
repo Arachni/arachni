@@ -568,13 +568,9 @@ class Server < Sinatra::Base
         instance.framework.clean_up!{
             |res|
 
-            ap "SAVE AND SHUTDOWN: #{res.inspect}"
-
             if !res.rpc_connection_error?
                 instance.framework.auditstore {
                     |auditstore|
-
-                    ap "SAVE AND SHUTDOWN -- auditstore: #{auditstore.class}"
 
                     if !auditstore.rpc_connection_error?
                         report_path = reports.save( auditstore )
@@ -587,29 +583,6 @@ class Server < Sinatra::Base
                 block.call( res )
             end
         }
-        # ::Arachni::RPC::EM::Synchrony.run do
-            # instance = instances.connect( url, session )
-#
-            # begin
-                # res = instance.framework.clean_up!
-                # ap "SAVE AND SHUTDOWN #{res}"
-#
-                # begin
-                    # auditstore = instance.framework.auditstore
-                    # ap "SAVE AND SHUTDOWN -- auditstore: #{auditstore.class}"
-#
-                    # report_path = reports.save( auditstore )
-                    # instance.service.shutdown!
-                    # block.call( report_path )
-                # rescue Exception => e
-                    # ap e
-                    # block.call( e )
-                # end
-            # rescue Exception => e
-                # ap e
-                # block.call( e )
-            # end
-        # end
     end
 
     #
