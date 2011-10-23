@@ -276,7 +276,7 @@ class Framework
     # Set the URL and authentication token required to connect to our master.
     #
     # @param    [String]    url     master's URL in 'https://hostname:port' form
-    # @param    [String]    token   master's autentication token
+    # @param    [String]    token   master's authentication token
     #
     def set_master( url, token )
         @master_url = url
@@ -439,7 +439,6 @@ class Framework
         }, proc {
             |slave_data|
 
-            stats = []
             slave_data.each {
                 |slave|
                 data['messages']  |= slave['messages'] if include_messages
