@@ -160,10 +160,11 @@ class Framework
                 # things are going to get weird...
                 #
 
-                # start the crawl and store the URLs in the sitemap
+                paths = []
+                # start the crawl and extract all paths
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
-                    @sitemap << page.url
+                    paths << page.url
                 }
                 @crawling_done = true
 
@@ -172,10 +173,10 @@ class Framework
                 prefered_dispatchers {
                     |pref_dispatchers|
 
-                    # decide in how many chunks to split the sitemap
+                    # decide in how many chunks to split the paths
                     chunk_cnt = pref_dispatchers.size + 1
 
-                    chunks = @sitemap.chunk( chunk_cnt )
+                    chunks = paths.chunk( chunk_cnt )
 
                     # set the URLs to be audited by the local instance
                     @framework.opts.restrict_paths = chunks.pop
@@ -188,10 +189,13 @@ class Framework
                             @instances << inst
                         }
                     }
+
+                    @framework.run
                 }
+            else
+                @framework.run
             end
 
-            @framework.run
         }
 
         return true
