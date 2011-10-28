@@ -52,9 +52,9 @@
                 <td><%=job.id%></td>
                 <td><%=job.dispatcher%></td>
                 <td><%=job.url%></td>
-                <td><%=job.datetime%></td>
+                <td><%=job.datetime.to_time%></td>
                 <td><%=job.owner_host%> (<%=job.owner_addr%>)</td>
-                <td><%=job.created_at%></td>
+                <td><%=job.created_at.to_time%></td>
                 <td>
                     <form action="<%=root%>/<%=job.id%>/delete" method="post">
                         <%= csrf_tag %>
