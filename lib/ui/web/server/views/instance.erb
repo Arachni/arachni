@@ -137,7 +137,8 @@
                     elem.innerHTML = '';
                     for( i in stats.instances ) {
 
-                        elem.innerHTML += '<strong>' + stats.instances[i].url + '</strong> <br/>';
+                        elem.innerHTML += '<strong>' + stats.instances[i].url +
+                        ' - ' + stats.instances[i].progress + '%' + '</strong> <br/>';
 
                         status = stats.instances[i].status
                         if( status == 'busy' ) {
@@ -149,7 +150,7 @@
                             elem.innerHTML += status.charAt(0).toUpperCase() + status.slice(1);
                         }
 
-                         elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
+                        elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
 
                         $( "#progressbar_" + i ).progressbar({
                             value: stats.instances[i].progress
