@@ -598,7 +598,7 @@ class Server < Sinatra::Base
 
                 next if instance['helpers']['rank'] == 'slave'
 
-                save_and_shutdown( instances.connect( instance['url'], session ) ){
+                save_and_shutdown( instance['url'] ){
                     log.instance_shutdown( env, instance['url'] )
                 }
             }
