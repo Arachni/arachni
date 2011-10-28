@@ -1,6 +1,3 @@
-<h3>Profiler</h3>
-<blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
 <script type="text/javascript">
 
     var tooltip_data = <%=@results['times'].to_json%>;
@@ -83,7 +80,7 @@
 </script>
 
 
-<h4>Response time analysis</h4>
+<h3>Response time analysis</h3>
 
 <strong>Average response time</strong>: <%=avg_time%> seconds <br/>
 <strong>Max</strong>: <%=times.max%> seconds <br/>
@@ -94,10 +91,10 @@
 
 <p>&nbsp;</p>
 
-<h4>Inputs that affect output (Taint analysis)</h4>
+<h3>Inputs that affect output (Taint analysis)</h3>
 <% @results['inputs'].each_with_index do |item, idx| %>
 
-    <h5>
+    <h4>
         <%=item['element']['type'].capitalize%>
 
         <%if item['element']['name']%>
@@ -119,7 +116,7 @@
         <%if item['element']['method']%>
         using <%=item['request']['method']%>
         <%end%>
-    </h5>
+    </h4>
 
     <p>
         It was submitted using the following parameters:
