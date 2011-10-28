@@ -259,11 +259,11 @@ class Framework
 
         if Arachni::Module::Auditor.running_timeout_attacks?
 
-            called_blocks = Arachni::Module::Auditor.timeout_audit_blocks_cnt -
-                Arachni::Module::Auditor.timeout_audit_blocks.size
+            called_blocks = Arachni::Module::Auditor.timeout_audit_operations_cnt -
+                Arachni::Module::Auditor.current_timeout_audit_operations_cnt
 
             progress += ( Float( called_blocks ) /
-                Arachni::Module::Auditor.timeout_audit_blocks_cnt ) * multi
+                Arachni::Module::Auditor.timeout_audit_operations_cnt ) * multi
         end
 
         begin

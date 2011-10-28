@@ -36,7 +36,7 @@ module Auditor
         # non-timing-attack modules have finished.
         @@__timeout_audit_blocks   ||= Queue.new
 
-        @@__timeout_audit_blocks_cnt ||= 0
+        @@__timeout_audit_operations_cnt ||= 0
 
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
@@ -75,10 +75,20 @@ module Auditor
         @@__timeout_audit_blocks
     end
 
+    def self.current_timeout_audit_operations_cnt
+        @@__timeout_audit_blocks.size + @@__timeout_candidates.size
+    end
+
     def self.add_timeout_audit_block( &block )
-        @@__timeout_audit_blocks_cnt += 1
+        @@__timeout_audit_operations_cnt += 1
         @@__timeout_audit_blocks << block
     end
+
+    def Auditor.add_timeout_candidate( elem )
+        @@__timeout_audit_operations_cnt += 1
+        @@__timeout_candidates << elem
+    end
+
 
     def self.running_timeout_attacks?
         @@__running_timeout_attacks
@@ -88,8 +98,8 @@ module Auditor
         @@__on_timing_attacks << block
     end
 
-    def self.timeout_audit_blocks_cnt
-        @@__timeout_audit_blocks_cnt
+    def self.timeout_audit_operations_cnt
+        @@__timeout_audit_operations_cnt
     end
 
     def Auditor.call_on_timing_blocks( res, elem )
@@ -517,7 +527,7 @@ module Auditor
 
                 Arachni::Module::Auditor.audit_timeout_stabilize( elem )
 
-                @@__timeout_candidates << elem
+                Auditor.add_timeout_candidate( elem )
             }
         }
     end
