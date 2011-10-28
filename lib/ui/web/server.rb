@@ -457,7 +457,6 @@ class Server < Sinatra::Base
         dispatchers.first_alive {
             |dispatcher|
             if !dispatcher
-                block.call
                 async_redirect '/dispatchers/edit'
             else
                 dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
