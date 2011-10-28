@@ -1032,12 +1032,10 @@ class Server < Sinatra::Base
         }
     end
 
-    ::EM.run do
-        run! :host    => Arachni::Options.instance.server   || '0.0.0.0',
-             :port    => Arachni::Options.instance.rpc_port || 4567,
-             :server  => %w[ thin ],
-             :thin    => prep_thin
-    end
+    run! :host    => Arachni::Options.instance.server   || '0.0.0.0',
+         :port    => Arachni::Options.instance.rpc_port || 4567,
+         :server  => %w[ thin ],
+         :thin    => prep_thin
 
     at_exit do
 

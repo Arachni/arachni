@@ -40,6 +40,9 @@ if options.help
     exit
 end
 
+require 'eventmachine'
 
-# Sinatra will run automatically
-require Arachni::Options.instance.dir['lib'] + 'ui/web/server'
+::EM.run do
+    # Sinatra will run automatically
+    require Arachni::Options.instance.dir['lib'] + 'ui/web/server'
+end
