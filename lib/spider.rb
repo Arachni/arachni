@@ -77,7 +77,7 @@ class Spider
         @paths = [ @seed_url ]
 
         if restricted_to_paths?
-            @paths |= @restrict_paths
+            @paths |= @sitemap = @restrict_paths
         else
             @paths |= @extend_paths
         end
