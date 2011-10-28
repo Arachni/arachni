@@ -57,12 +57,7 @@ class Scheduler
 
         Job.auto_upgrade!
 
-        begin
-            ticktock!
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-        end
+        ticktock!
     end
 
     #
@@ -145,24 +140,12 @@ class Scheduler
     private
 
     def ticktock!
-        @reaper ||= Thread.new {
-            while( true )
-                jobs.each {
-                    |job|
-
-                    begin
-                        run_and_destroy( job ) if job.datetime <= Time.now.to_date
-                    rescue Exception => e
-                        ap e
-                        ap e.backtraces
-                    end
-
-                }
-
-                ::IO::select( nil, nil, nil, 5 )
-            end
+        ::EM.add_periodic_timer( 1 ){
+            jobs.each {
+                |job|
+                run_and_destroy( job ) if job.datetime <= DateTime.now
+            }
         }
-
     end
 
 end
