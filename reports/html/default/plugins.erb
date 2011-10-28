@@ -9,7 +9,9 @@
 
                 <% plugins.each_pair do |name, html|%>
                     <div id="<%=name%>">
-                    <blockquote><%=get_plugin_info( name )[:description]%></blockquote>
+                    <blockquote><pre>
+                        <%=prep_description( get_plugin_info( name )[:description] )%>
+                    </pre></blockquote>
 
                     <% if html.is_a?( Hash )%>
 
