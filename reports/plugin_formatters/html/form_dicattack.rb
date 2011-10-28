@@ -36,7 +36,7 @@ class HTML
 
             def tpl
                 %q{
-                    <h4>Credentials</h4>
+                    <h3>Credentials</h3>
                     <strong>Username</strong>: <%=CGI.escapeHTML(@results[:username])%> <br/>
                     <strong>Password</strong>: <%=CGI.escapeHTML(@results[:password])%>
                 }

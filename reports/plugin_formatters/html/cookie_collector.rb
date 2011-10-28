@@ -36,7 +36,7 @@ class HTML
 
             def tpl
                 %q{
-                    <h4>Cookies</h4>
+                    <h3>Cookies</h3>
                     <ul>
                     <% @results.each do |entry| %>
                         <li>

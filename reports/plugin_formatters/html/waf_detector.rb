@@ -36,10 +36,7 @@ class HTML
 
             def tpl
                 %q{
-                    <h3>WAF Detector</h3>
-                    <blockquote><pre><%=::Arachni::Reports::HTML.prep_description(@description)%></pre></blockquote>
-
-                    <h4>Result</h4>
+                    <h3>Result</h3>
                     <blockquote><%=@results[:msg]%></blockquote>
                 }
 
