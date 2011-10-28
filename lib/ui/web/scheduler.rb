@@ -88,10 +88,12 @@ class Scheduler
             opts = YAML::load( job.opts )
 
             arachni.opts.set( opts['settings'] ){
-                arachni.modules.load( opts['modules'] ) {
-                    arachni.framework.run{
-                        @settings.log.scheduler_scan_started( env, job.url )
-                        block.call( instance['url'] )
+                arachni.plugins.load( opts['plugins'] ) {
+                    arachni.modules.load( opts['modules'] ) {
+                        arachni.framework.run{
+                            @settings.log.scheduler_scan_started( env, job.url )
+                            block.call( instance['url'] )
+                        }
                     }
                 }
             }
