@@ -88,6 +88,10 @@ class HTML < Arachni::Report::Base
             }
         end
 
+        def prep_description( str )
+            Arachni::Reports::HTML.prep_description( str )
+        end
+
         def find_issue_by_hash( hash )
             @audit_store.issues.each_with_index {
                 |issue, i|
