@@ -90,6 +90,12 @@ class Page
     #
     attr_accessor :cookiejar
 
+    def self.from_http_response( res, opts )
+        page = Arachni::Parser.new( opts, res ).run
+        page.url = Arachni::Module::Utilities.url_sanitize( res.effective_url )
+        return page
+    end
+
     def initialize( opts = {} )
         opts.each {
             |k, v|
