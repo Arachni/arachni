@@ -8,6 +8,8 @@
 
 =end
 
+require 'tmpdir'
+
 module Arachni
 module Database
 
