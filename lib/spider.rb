@@ -50,13 +50,6 @@ class Spider
     attr_reader :redirects
 
     #
-    # Code block to be executed on each page
-    #
-    # @return [Proc]
-    #
-    attr_reader :on_every_page_blocks
-
-    #
     # Constructor <br/>
     # Instantiates Spider class with user options.
     #
@@ -98,7 +91,7 @@ class Spider
     #
     # @return [Arachni::Parser::Page]
     #
-    def run( &block )
+    def run( parse = true, &block )
         return if @opts.link_count_limit == 0
 
         visited = []
@@ -131,10 +124,18 @@ class Spider
                     print_line
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
 
-                    page = Arachni::Parser::Page.from_http_response( res, @opts )
+                    if parse
+                        page = Arachni::Parser::Page.from_http_response( res, @opts )
+                        paths = page.paths
+                        check_url = page.url
+                    else
+                        c_parser = Parser.new( @opts, res )
+                        paths = c_parser.paths
+                        check_url = c_parser.url
+                    end
 
                     if !restricted_to_paths?
-                        @sitemap |= page.paths
+                        @sitemap |= paths
 
                         if !res.headers_hash['Location'].empty?
                             @redirects << res.request.url
@@ -146,20 +147,13 @@ class Spider
                     # call the block...if we have one
                     if block
                         exception_jail{
-                            if !skip?( page.url )
-                                block.call( page.clone )
+                            if !skip?( check_url )
+                                block.call( parse ? page.clone : res )
                             else
                                 print_info( 'Matched skip rule.' )
                             end
                         }
                     end
-
-                    # run blocks specified later
-                    @on_every_page_blocks.each {
-                        |block|
-                        block.call( page ) if !skip?( page.url )
-                    }
-
                 }
 
                 # make sure we obey the link count limit and
@@ -227,18 +221,6 @@ class Spider
     def paused?
         @pause ||= false
         return @pause
-    end
-
-    #
-    # Hook for further analysis of pages, statistics etc.
-    #
-    # @param [Proc] block code to be executed for every page
-    #
-    # @return [self]
-    #
-    def on_every_page( &block )
-        @on_every_page_blocks.push( block )
-        self
     end
 
 end
