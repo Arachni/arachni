@@ -180,8 +180,7 @@ class HTML < Arachni::Report::Base
             :options        => [
                 Arachni::OptPath.new( 'tpl', [ false, 'Template to use.',
                     File.dirname( __FILE__ ) + '/html/default.erb' ] ),
-                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
-                    Time.now.to_s + '.html' ] ),
+                Arachni::Report::Options.outfile( '.html' )
             ]
         }
     end

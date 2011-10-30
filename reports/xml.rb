@@ -174,10 +174,7 @@ class XML < Arachni::Report::Base
             :description    => %q{Exports a report as an XML file.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.2',
-            :options        => [
-                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
-                    Time.now.to_s + '.xml' ] ),
-            ]
+            :options        => [ Arachni::Report::Options.outfile( '.xml' ) ]
         }
     end
 
