@@ -131,8 +131,7 @@ class Spider
                     print_line
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
 
-                    page = Arachni::Parser.new( @opts, res ).run
-                    page.url = url_sanitize( res.effective_url )
+                    page = Arachni::Parser::Page.from_http_response( res, @opts )
 
                     if !restricted_to_paths?
                         @sitemap |= page.paths
