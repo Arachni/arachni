@@ -24,6 +24,7 @@ require opts.dir['lib'] + 'module'
 require opts.dir['lib'] + 'plugin'
 require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
+require opts.dir['lib'] + 'database'
 require opts.dir['lib'] + 'component_manager'
 require 'yaml'
 
@@ -97,7 +98,7 @@ class Framework
     #
     # Plug-ins can push their own pages to be audited if they wish to...
     #
-    # @return   [Queue<Arachni::Parser::Page>]   page queue
+    # @return   [Arachni::Database::Queue]   page queue
     #
     attr_reader :page_queue
 
@@ -118,7 +119,7 @@ class Framework
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
 
-        @page_queue = Queue.new
+        @page_queue = Arachni::Database::Queue.new
 
         prepare_cookie_jar( )
         prepare_user_agent( )
@@ -547,6 +548,8 @@ class Framework
 
         # a plug-in may have updated the page queue, rock it!
         audit_queue if !skip_audit_queue
+
+        @page_queue.clear
 
         # refresh the audit store
         audit_store( true )
