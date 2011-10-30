@@ -167,7 +167,6 @@ class ReportManager
     def get_filename( report )
         rep = unserialize( report )
         filename = "#{URI(rep.options['url']).host}:#{rep.start_datetime}"
-        filename.gsub( ':', '.' )
     end
 
     def get_issue_count( report )
