@@ -11,6 +11,37 @@
 module Arachni
 module Report
 
+#
+# Provides some common options for the reports
+#
+#
+# @author: Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#                                      <zapotek@segfault.gr>
+# @version: 0.1
+#
+module Options
+
+    #
+    # Returns a string option named 'outfile'.
+    #
+    # Default value is:
+    #   year-month-day hour.minute.second +timezone.extension
+    #
+    # @param    [String]    ext     extension for the outfile
+    # @param    [String]    desc    description of the option
+    #
+    # @return   [Arachni::OptString]
+    #
+    def outfile( ext = '', desc = 'Where to save the report.' )
+        Arachni::OptString.new( 'outfile', [ false, desc,
+            Time.now.to_s.gsub( ':', '.' ) + ext ] )
+    end
+
+    extend self
+end
+
+
 class FormatterManager < ComponentManager
 
     def paths
