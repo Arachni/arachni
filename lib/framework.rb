@@ -313,10 +313,10 @@ class Framework
         @auditmap ||= []
 
         # initiates the crawl
-        @spider.run {
-            |page|
+        @spider.run( false ) {
+            |response|
             @sitemap |= @spider.sitemap
-            @url_queue << page.url
+            @url_queue << url_sanitize( response.effective_url )
         }
 
         audit_queue
