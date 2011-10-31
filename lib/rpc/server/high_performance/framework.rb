@@ -9,6 +9,7 @@
 =end
 
 require 'ap'
+require 'pp'
 require 'em-synchrony'
 
 module Arachni
@@ -160,13 +161,33 @@ class Framework
                 # things are going to get weird...
                 #
 
-                paths = []
+                # we'll need analyze the pages prior to assigning
+                # them to each instance at the element level so as to gain
+                # more granular control over the assigned workload
+                #
+                # put simply, we'll need to perform some magic in order
+                # to prevent different instances from auditing the same elements
+                # and wasting bandwidth
+                #
+                # for example: search forms, logout links and the like will
+                # most likely exist on most pages of the site and since each
+                # instance is assigned a set of URLs/pages to audit they will end up
+                # with common elements so we have to prevent instances from
+                # performing identical checks.
+                #
+                # interesting note: should previously unseen elements dynamically
+                # appear during the audit they will override these restrictions
+                # and each instance will audit them at will.
+                #
+                pages = ::Arachni::Database::Hash.new
+
                 # start the crawl and extract all paths
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
-                    paths << page.url
+                    pages[page.url] = page
                 }
                 @crawling_done = true
+
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
@@ -176,21 +197,33 @@ class Framework
                     # decide in how many chunks to split the paths
                     chunk_cnt = pref_dispatchers.size + 1
 
-                    chunks = paths.chunk( chunk_cnt )
+                    # split the URLs of the pages in equal chunks and group them
+                    chunks = pages.keys.chunk( chunk_cnt )
+
+                    # remove duplicate elements across the (per instance) chunks
+                    # while spreading them out evenly
+                    elements = distribute_elements( chunks, pages )
+
+                    # restrict the local instance to its assigned elements
+                    restrict_to_elements!( elements.pop )
 
                     # set the URLs to be audited by the local instance
                     @framework.opts.restrict_paths = chunks.pop
 
                     chunks.each_with_index {
                         |chunk, i|
-                        # spawn a remote instance and assign a chunk of URLs to it
-                        spawn( chunk, pref_dispatchers[i] ) {
+                        # spawn a remote instance and assign a chunk of URLs
+                        # and elements to it
+                        spawn( chunk, elements[i], pref_dispatchers[i] ) {
                             |inst|
                             @instances << inst
                         }
                     }
 
                     @framework.run
+
+                    # empty out the Hash and remove temporary files
+                    pages.clear
                 }
             else
                 @framework.run
@@ -274,6 +307,11 @@ class Framework
 
     def get_plugin_store
         @framework.get_plugin_store
+    end
+
+    def restrict_to_elements!( elements )
+        ::Arachni::Element::Auditable.restrict_to_elements!( elements )
+        true
     end
 
     #
@@ -646,16 +684,121 @@ class Framework
         @master.framework.register_issue( results ){}
     end
 
+    #
+    # Returns an array containing unique and evenly distributed elements per chunk
+    # for each instance.
+    #
+    def distribute_elements( chunks, pages )
+
+        #
+        # chunks = URLs to be assigned to each instance
+        # pages = hash with URLs for key and Pages for values.
+        #
+
+        # groups together all the elements of all chunks
+        elements_per_chunk = []
+        chunks.each_with_index {
+            |chunk, i|
+
+            elements_per_chunk[i] ||= []
+            chunk.each {
+                |url|
+                elements_per_chunk[i] |= build_elem_list( pages[url] )
+            }
+        }
+
+        # removes elements from each chunk
+        # that are also included in other chunks too
+        #
+        # this will leave us with the same grouping as before
+        # but without duplicate elements across the chunks,
+        # albeit with an non-optimal distribution amongst instances.
+        #
+        unique_chunks = elements_per_chunk.map.with_index {
+            |chunk, i|
+            chunk.reject {
+                |item|
+                elements_per_chunk[i..-1].flatten.count( item ) > 1
+            }
+        }
+
+        # get them into proper order to be ready for proping up
+        elements_per_chunk.reverse!
+        unique_chunks.reverse!
+
+        # evenly distributed elements across chunks
+        # using the previously duplicate elements
+        #
+        # in order for elements to be moved between chunks they need to
+        # have been available in the destination to begin with since
+        # we can't assign an element to an instance which won't
+        # have a page containing that element
+        unique_chunks.each_with_index {
+            |chunk, i|
+
+            chunk.each {
+                |item|
+                next_c = unique_chunks[i+1]
+                if next_c && (chunk.size > next_c.size ) &&
+                    elements_per_chunk[i+1].include?( item )
+                    unique_chunks[i].delete( item )
+                    next_c << item
+                end
+            }
+        }
+
+        # set them in the same order as the original 'chunks' group
+        return unique_chunks.reverse
+    end
+
+    def build_elem_list( page )
+        list = []
+
+        opts = {
+            :no_auditor => true,
+            :no_timeout => true,
+            :no_injection_str => true
+        }
+
+        if @framework.opts.audit_links
+            list |= page.links.map { |elem| elem.audit_id( nil, opts ) }.uniq
+        end
+
+        if @framework.opts.audit_forms
+            list |= page.forms.map { |elem| elem.audit_id( nil, opts ) }.uniq
+        end
+
+        if @framework.opts.audit_cookies
+            list |= page.cookies.map { |elem| elem.audit_id( nil, opts ) }.uniq
+        end
+
+        return list
+    end
+
+    #
+    # Returns the dispatchers that have different Pipe IDs i.e. can be setup
+    # in HPG mode; pretty simple at this point.
+    #
+    # TODO: implement filtering criteria and restrictions
+    #
     def prefered_dispatchers( &block )
+
+        # keep track of the Pipe IDs we've used
         @used_pipe_ids ||= []
 
+        # get the info of the local dispatcher since this will be our
+        # frame of reference
         dispatcher.node.info {
             |info|
 
+            # add the Pipe ID of the local Dispatcher in order to avoid it later on
             @used_pipe_ids << info['pipe_id']
+
+            # grab the rest of the Dispatchers of the Grid
             dispatcher.node.neighbours_with_info {
                 |dispatchers|
 
+                # make sure that each Dispatcher is alive before moving on
                 ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map( proc {
                     |dispatcher, iter|
                     connect_to_dispatcher( dispatcher['url'] ).alive? {
@@ -668,6 +811,9 @@ class Framework
                     }
                 }, proc {
                     |nodes|
+
+                    # get the Dispatchers with unique Pipe IDs and send them
+                    # to the block
 
                     pref_dispatcher_urls = []
                     nodes.each {
@@ -684,7 +830,10 @@ class Framework
         }
     end
 
-    def spawn( urls, prefered_dispatcher, &block )
+    #
+    # Spawns and runs a new remote instance
+    #
+    def spawn( urls, elements, prefered_dispatcher, &block )
 
         opts = @framework.opts.to_h.deep_clone
 
@@ -723,14 +872,16 @@ class Framework
             }
 
             instance.opts.set( opts ){
-                instance.framework.set_master( self_url, self_token ){
-                    instance.modules.load( opts['mods'] ) {
-                        instance.plugins.load( opts['plugins'] ) {
-                            instance.framework.run {
-                                block.call( {
-                                    'url' => instance_hash['url'],
-                                    'token' => instance_hash['token'] }
-                                )
+                instance.framework.restrict_to_elements!( elements ){
+                    instance.framework.set_master( self_url, self_token ){
+                        instance.modules.load( opts['mods'] ) {
+                            instance.plugins.load( opts['plugins'] ) {
+                                instance.framework.run {
+                                    block.call( {
+                                        'url' => instance_hash['url'],
+                                        'token' => instance_hash['token'] }
+                                    )
+                                }
                             }
                         }
                     }
