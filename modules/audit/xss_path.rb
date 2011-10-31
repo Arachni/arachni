@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -32,23 +32,31 @@ class XSSPath < Arachni::Module::Base
         super( page )
     end
 
-    def prepare( )
+    def prepare
         @str = '/<arachni_xss_path_' + seed
         @__injection_strs = [
             @str,
             '?>"\'>' + @str,
             '?=>"\'>' + @str
         ]
+
+        @@audited ||= Set.new
     end
 
-    def run( )
+    def run
 
         path = get_path( @page.url )
+
+        return if @@audited.include?( path )
+        @@audited << path
 
         @__injection_strs.each {
             |str|
 
             url  = path + str
+
+            print_status( "Checking for: #{url}" )
+
             req  = @http.get( url )
 
             req.on_complete {
@@ -56,7 +64,6 @@ class XSSPath < Arachni::Module::Base
                 __log_results( res, str )
             }
         }
-
     end
 
 
@@ -66,7 +73,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -109,7 +116,7 @@ class XSSPath < Arachni::Module::Base
 
             # inform the user that we have a match
             print_ok( "Match at #{url}" )
-            print_verbose( "Inected string: #{id}" )
+            print_verbose( "Injected string: #{id}" )
         end
     end
 
