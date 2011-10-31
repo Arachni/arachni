@@ -100,6 +100,7 @@ class Spider
             :timeout    => nil,
             :remove_id  => true,
             :follow_location => true,
+            :update_cookies  => true
         }
 
         # we need a parser in order to have access to skip() in case

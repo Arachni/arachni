@@ -234,7 +234,7 @@ class HTTP
 
             call_on_complete( res )
 
-            parse_and_set_cookies( res )
+            parse_and_set_cookies( res ) if req.update_cookies?
 
             print_debug( '------------' )
             print_debug( 'Got response.' )
@@ -292,6 +292,8 @@ class HTTP
         timeout   = opts[:timeout]
         cookies   = opts[:cookies]
 
+        update_cookies   = opts[:update_cookies]
+
         async     = opts[:async]
         async     = true if async == nil
 
@@ -344,6 +346,7 @@ class HTTP
 
             req = Typhoeus::Request.new( curl, opts )
             req.train! if train
+            req.update_cookies! if update_cookies
 
             queue( req, async )
             return req

@@ -19,8 +19,7 @@ module Typhoeus
 
     class Request
 
-        attr_accessor :id, :proxy, :proxy_username, :proxy_password,
-                      :proxy_username, :proxy_password, :proxy_type
+        attr_accessor :id
 
         alias :old_initialize :initialize
 
@@ -31,6 +30,7 @@ module Typhoeus
             @handled_response   = []
             @multiple_callbacks = false
             @train              = false
+            @update_cookies     = false
         end
 
         def on_complete( multi = false, &block )
@@ -78,6 +78,14 @@ module Typhoeus
 
         def train!
             @train = true
+        end
+
+        def update_cookies?
+            @update_cookies
+        end
+
+        def update_cookies!
+            @update_cookies = true
         end
 
     end
