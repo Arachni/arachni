@@ -53,6 +53,13 @@ class Auditable
         @auditor
     end
 
+    def override_instance_scope!
+        @override_instance_scope = true
+    end
+
+    def override_instance_scope?
+        @override_instance_scope ||= false
+    end
 
     #
     # Delegate output related methods to the auditor
@@ -227,7 +234,7 @@ class Auditable
 
         }
 
-        if opts[:param_flip]
+        if opts[:param_flip] #&& !self.is_a?( Arachni::Parser::Element::Cookie )
             elem = self.dup
             elem.altered = 'Parameter flip'
             elem.auditable[injection_str] = seed
@@ -293,6 +300,34 @@ class Auditable
         return "Auditing #{self.type} variable '" + altered + "' of " + @action
     end
 
+    #
+    # Returns am audit identifier string to be registered using {#audited}.
+    #
+    # @param  [Hash]  input
+    # @param  [Hash]  opts
+    #
+    # @return  [String]
+    #
+    def audit_id( injection_str = '', opts = {} )
+        vars = auditable.keys.sort.to_s
+
+        str = ''
+        str += !opts[:no_auditor] ? "#{@auditor.class.info[:name]}:" : ''
+
+        str += "#{@action}:" + "#{self.type}:#{vars}"
+        str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
+        str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
+
+        return str
+    end
+
+    def self.restrict_to_elements!( elements )
+        @@restrict_to_elements = Set.new
+        elements.each {
+            |elem|
+            @@restrict_to_elements << elem
+        }
+    end
 
     private
 
@@ -415,35 +450,35 @@ class Auditable
     end
 
     #
-    # Returns am audit identifier string to be registered using {#audited}.
-    #
-    # @param  [Hash]  input
-    # @param  [Hash]  opts
-    #
-    # @return  [String]
-    #
-    def audit_id( injection_str, opts = {} )
-        vars = auditable.keys.sort.to_s
-
-        timeout = opts[:timeout] || ''
-        return "#{@auditor.class.info[:name]}:" +
-          "#{@action}:" + "#{self.type}:" +
-          "#{vars}=#{injection_str.to_s}:timeout=#{timeout}"
-    end
-
-    #
     # Checks whether or not an audit has been already performed.
     #
     # @param  [String]  audit_id  a string returned by {#audit_id}
     #
     def audited?( audit_id )
-      ret =  @@audited.include?( audit_id )
 
-      msg = 'Current audit ID: ' if !ret
-      msg = 'Skipping, already audited: ' if ret
-      print_debug( msg + audit_id )
+        opts = {
+            :no_auditor => true,
+            :no_timeout => true,
+            :no_injection_str => true
+        }
 
-      return ret
+        @@restrict_to_elements ||= Set.new
+
+        if @@audited.include?( audit_id )
+            msg = 'Skipping, already audited: ' + audit_id
+            ret = true
+        elsif !override_instance_scope? && !@@restrict_to_elements.empty? &&
+            !@@restrict_to_elements.include?( audit_id( nil, opts ) )
+            msg = 'Skipping, out of instance scope.'
+            ret = true
+        else
+            msg = 'Current audit ID: ' + audit_id
+            ret = false
+        end
+
+        print_debug( msg )
+
+        return ret
     end
 
     #

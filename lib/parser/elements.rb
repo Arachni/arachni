@@ -131,14 +131,18 @@ class Link < Base
         Arachni::Module::Auditor::Element::LINK
     end
 
-    def audit_id( injection_str, opts = {} )
+    def audit_id( injection_str = '', opts = {} )
         vars = auditable.keys.sort.to_s
-        url = URI( @auditor.page.url ).merge( URI( @action ).path ).to_s
+        url = @action.gsub( /\?.*/, '' )
 
-        timeout = opts[:timeout] || ''
-        return "#{@auditor.class.info[:name]}:" +
-          "#{url}:" + "#{self.type}:" +
-          "#{vars}=#{injection_str.to_s}:timeout=#{timeout}"
+        str = ''
+        str += !opts[:no_auditor] ? "#{@auditor.class.info[:name]}:" : ''
+
+        str += "#{url}:" + "#{self.type}:#{vars}"
+        str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
+        str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
+
+        return str
     end
 
 
