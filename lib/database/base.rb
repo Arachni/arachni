@@ -51,9 +51,14 @@ module Database
         #
         # @return   [String]    filepath
         #
-        def dump( obj )
+        def dump( obj, &block )
             f = File.open( get_unique_filename, 'w' )
-            f.write( serialize( obj ) )
+
+            serialized = serialize( obj )
+            f.write( serialized )
+
+            block.call( serialized ) if block_given?
+
             f.path
         ensure
             f.close
@@ -76,7 +81,7 @@ module Database
         # @param    [String]    filepath
         #
         def delete_file( filepath )
-            File.delete( filepath )
+            File.delete( filepath ) if File.exist?( filepath )
         end
 
         #
