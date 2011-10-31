@@ -40,7 +40,7 @@ class Trainer < Arachni::Module::Base
 
         @opts = {
             #
-            # tell the frameworm to learn from the
+            # tell the framework to learn from the
             # server responses that this module will cause.
             #
             :train  => true,
