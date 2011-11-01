@@ -513,10 +513,10 @@ class Server < Sinatra::Base
     #
     # Makes sure that all systems are go and populates the session with default values
     #
-    def prep_session
-        session[:flash] = {}
+    def prep_session( skip_dispatcher = false )
+        session[:flash] ||= {}
 
-        ensure_dispatcher
+        ensure_dispatcher if !skip_dispatcher
 
         session['opts'] ||= {}
         session['opts']['settings'] ||= {
