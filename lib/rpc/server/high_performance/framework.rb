@@ -522,12 +522,17 @@ class Framework
             |instance, iter|
             connect_to_instance( instance ).framework.progress_data( opts ) {
                 |tmp|
-                tmp['url'] = instance['url']
-                iter.return( tmp )
+                if !tmp.rpc_exception?
+                    tmp['url'] = instance['url']
+                    iter.return( tmp )
+                else
+                    iter.return( nil )
+                end
             }
         }, proc {
             |slave_data|
 
+            slave_data.compact!
             slave_data.each {
                 |slave|
                 data['messages']  |= slave['messages'] if include_messages
