@@ -127,6 +127,9 @@ class Framework < Arachni::Framework
         return plug_info
     end
 
+    def override_sitemap!( urls )
+        @override_sitemap = urls
+    end
 
     #
     # Starts the audit.
