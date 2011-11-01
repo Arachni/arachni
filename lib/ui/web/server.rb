@@ -188,7 +188,7 @@ class Server < Sinatra::Base
     dir = File.dirname( File.expand_path( __FILE__ ) )
 
     set :views,  "#{dir}/server/views"
-    set :public, "#{dir}/server/public"
+    set :public_folder, "#{dir}/server/public"
     set :tmp,    "#{dir}/server/tmp"
     set :db,     "#{dir}/server/db"
     set :static, true
@@ -533,11 +533,11 @@ class Server < Sinatra::Base
             'metamodules'   => {}
         } )
 
-
         #
         # Garbage collector, zombie killer. Reaps idle processes every 60 seconds.
         #
-        ::EM.add_periodic_timer( 60 ){ ::EM.defer { shutdown_zombies } }
+        @@zombie_reaper ||=
+            ::EM.add_periodic_timer( 60 ){ ::EM.defer { shutdown_zombies } }
     end
 
     #
@@ -706,6 +706,7 @@ class Server < Sinatra::Base
     # starts a scan
     #
     apost "/scan" do
+        prep_session
 
         valid = true
         begin

@@ -79,7 +79,7 @@ class ReportManager
     # @return    [String]    save directory
     #
     def savedir
-        @settings.public + "/#{FOLDERNAME}/"
+        @settings.public_folder + "/#{FOLDERNAME}/"
     end
 
     #
