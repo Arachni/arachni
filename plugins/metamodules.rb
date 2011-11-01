@@ -112,6 +112,10 @@ class MetaModules < Arachni::Plugin::Base
         @inited.values.each { |meta| meta.clean_up }
     end
 
+    def self.distributable?
+        true
+    end
+
     def self.info
         {
             :name           => 'Metamodules',

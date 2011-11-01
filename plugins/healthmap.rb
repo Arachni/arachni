@@ -79,6 +79,10 @@ class HealthMap < Arachni::Plugin::Base
         url.gsub( '?' + query, '' )
     end
 
+    def self.distributable?
+        true
+    end
+
     def self.info
         {
             :name           => 'Health map',

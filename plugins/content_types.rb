@@ -70,6 +70,10 @@ class ContentTypes < Arachni::Plugin::Base
         register_results( @results )
     end
 
+    def self.distributable?
+        true
+    end
+
     def self.info
         {
             :name           => 'Content-types',

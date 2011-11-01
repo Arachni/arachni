@@ -82,14 +82,38 @@ class Base
 
     end
 
-    def register_results( results )
-        @framework.plugin_store( self, results )
+    #
+    # OPTIONAL
+    #
+    # Only used when in Grid mode.
+    #
+    # Should the plug-in be distributed
+    # across all instances or only run by the master
+    # prior to any distributed operations?
+    #
+    # For example, if a plug-in dynamically modifies the framework options
+    # in any way and wants these changes to be identical
+    # across instances this method should return 'false'.
+    #
+    def self.distributable?
+        false
+    end
+
+    #
+    # REQUIRED IF self.distributable? RETURNS 'TRUE'
+    #
+    # Only used when in Grid mode.
+    #
+    # Merges an array of results as gathered by the plug-in when run
+    # by multiple instances.
+    #
+    def self.merge( results )
     end
 
     #
     # REQUIRED
     #
-    # Do not ommit any of the info.
+    # Do not omit any of the info.
     #
     def self.info
         {
@@ -105,6 +129,9 @@ class Base
         }
     end
 
+    def register_results( results )
+        @framework.plugin_store( self, results )
+    end
 end
 
 end

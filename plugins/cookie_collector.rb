@@ -72,6 +72,9 @@ class CookieCollector < Arachni::Plugin::Base
         register_results( @cookies )
     end
 
+    def self.distributable?
+        true
+    end
 
     def self.info
         {

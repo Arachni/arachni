@@ -219,6 +219,10 @@ class Profiler < Arachni::Plugin::Base
         @inputs << result
     end
 
+    def self.distributable?
+        true
+    end
+
     def self.info
         {
             :name           => 'Profiler',
