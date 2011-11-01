@@ -37,6 +37,8 @@ class Framework < Arachni::Framework
     private :old_run, :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
     public  :stats, :pause!, :paused?, :resume!, :lsmod, :modules, :lsplug, :clean_up!
 
+    attr_accessor :sitemap
+
     #
     # Aborts the running audit.
     #
