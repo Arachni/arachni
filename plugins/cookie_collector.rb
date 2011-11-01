@@ -76,6 +76,11 @@ class CookieCollector < Arachni::Plugin::Base
         true
     end
 
+    def self.merge( results )
+        results.flatten
+    end
+
+
     def self.info
         {
             :name           => 'Cookie collector',
@@ -85,7 +90,7 @@ class CookieCollector < Arachni::Plugin::Base
                     It will log thousands of results leading to a huge report,
                     highly increased memory and CPU usage.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
         }
     end
 

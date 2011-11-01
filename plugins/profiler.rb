@@ -21,7 +21,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Profiler < Arachni::Plugin::Base
 
@@ -223,6 +223,19 @@ class Profiler < Arachni::Plugin::Base
         true
     end
 
+    def self.merge( results )
+        inputs = []
+        times = []
+
+        results.each {
+            |result|
+            inputs |= result['inputs']
+            times |= result['times']
+        }
+
+        return { 'inputs' => inputs, 'times' => times }
+    end
+
     def self.info
         {
             :name           => 'Profiler',
@@ -231,7 +244,7 @@ class Profiler < Arachni::Plugin::Base
 
                 It's does not perform any vulnerability assesment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            :version        => '0.1.1'
         }
     end
 

@@ -17,7 +17,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class ContentTypes < Arachni::Plugin::Base
 
@@ -74,6 +74,20 @@ class ContentTypes < Arachni::Plugin::Base
         true
     end
 
+    def self.merge( results )
+        merged = {}
+        results.each {
+            |result|
+            result.each {
+                |type, val|
+                merged[type] ||= []
+                merged[type] |= val
+            }
+        }
+
+        return merged
+    end
+
     def self.info
         {
             :name           => 'Content-types',
@@ -81,7 +95,7 @@ class ContentTypes < Arachni::Plugin::Base
                 It can help you categorize and identify publicly available file-types
                 which in turn can help you identify accidentally leaked files.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :options        => [
                 Arachni::OptString.new( 'exclude', [ false,
                     'Exclude content-types that match this regular expression.', 'text' ]
