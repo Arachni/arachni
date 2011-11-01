@@ -28,6 +28,7 @@ class Scheduler < Base
     def run
 
         aget "/" do
+            prep_session
             settings.dispatchers.stats {
                 |stats|
                 async_present :index,
@@ -40,6 +41,7 @@ class Scheduler < Base
         post '/' do
             valid = true
 
+            prep_session
             begin
                 URI.parse( params['url'] )
             rescue
