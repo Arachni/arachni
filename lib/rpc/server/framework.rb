@@ -146,6 +146,17 @@ class Framework < Arachni::Framework
         @plugin_store = plugin_store
     end
 
+    def get_page_queue
+        @page_queue
+    end
+
+    def update_page_queue( pages )
+        pages.each {
+            |page|
+            @page_queue << page
+        }
+    end
+
     #
     # Returns the results of the audit.
     #
