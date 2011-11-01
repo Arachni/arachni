@@ -48,6 +48,8 @@ class Framework
         @modules = @framework.modules
         @plugins = @framework.plugins
 
+        @job = nil
+
         # holds all running instances
         @instances = []
 
@@ -154,6 +156,14 @@ class Framework
         # end
 
         ::EM.defer {
+
+            #
+            # if we're in HPG mode do fancy stuff like distributing and balancing workload
+            # as well as starting slave instances and deal with some lower level
+            # operations of the local instance like running plug-ins etc...
+            #
+            # otherwise just run the local instance, nothing special...
+            #
             if high_performance?
 
                 #
@@ -181,6 +191,14 @@ class Framework
                 #
                 pages = ::Arachni::Database::Hash.new
 
+                # prepare the local instance (runs plugins and start the timer)
+                @framework.prepare
+
+                # we need to take our cues from the local framework as some
+                # plug-ins may need the system to wait for them to finish
+                # before moving on.
+                sleep( 0.2 ) while @framework.paused?
+
                 # start the crawl and extract all paths
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
@@ -188,6 +206,14 @@ class Framework
                 }
                 @crawling_done = true
 
+                # the plug-ins may have update the framework page_queue
+                # so we need to distribute these pages as well
+                page_a = []
+                page_q = @framework.get_page_queue
+                while !page_q.empty? && page = page_q.pop
+                    page_a << page
+                    pages[page.url] = page
+                end
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
@@ -199,6 +225,13 @@ class Framework
 
                     # split the URLs of the pages in equal chunks and group them
                     chunks = pages.keys.chunk( chunk_cnt )
+
+                    # split the page array into chunks that will be distributed
+                    # across the instances
+                    page_chunks = page_a.chunk( chunk_cnt )
+
+                    # assign us our fair share of plug-in discovered pages
+                    @framework.update_page_queue( page_chunks.pop )
 
                     # remove duplicate elements across the (per instance) chunks
                     # while spreading them out evenly
@@ -212,20 +245,26 @@ class Framework
 
                     chunks.each_with_index {
                         |chunk, i|
-                        # spawn a remote instance and assign a chunk of URLs
-                        # and elements to it
-                        spawn( chunk, elements[i], pref_dispatchers[i] ) {
+
+                        # spawn a remote instance, assign a chunk of URLs
+                        # and elements to it and run it
+                        spawn( chunk, page_chunks[i], elements[i], pref_dispatchers[i] ) {
                             |inst|
                             @instances << inst
                         }
                     }
 
-                    @framework.run
+                    # start the local instance
+                    @job = Thread.new {
+                        exception_jail{ @framework.audit }
+                        exception_jail{ @framework.clean_up! }
+                    }
 
                     # empty out the Hash and remove temporary files
                     pages.clear
                 }
             else
+                # start the local instance
                 @framework.run
             end
 
@@ -333,6 +372,11 @@ class Framework
         return true
     end
 
+    def update_page_queue( pages )
+        @framework.update_page_queue( pages )
+        true
+    end
+
     #
     # Returns the master's URL
     #
@@ -401,10 +445,18 @@ class Framework
             return 'crawling'
         elsif @framework.paused?
             return 'paused'
-        elsif !@framework.busy?
+        elsif !busy?
             return 'done'
         else
             return 'busy'
+        end
+    end
+
+    def busy?
+        if @job
+            return @job.alive?
+        else
+            return @framework.busy?
         end
     end
 
@@ -833,7 +885,7 @@ class Framework
     #
     # Spawns and runs a new remote instance
     #
-    def spawn( urls, elements, prefered_dispatcher, &block )
+    def spawn( urls, pages, elements, prefered_dispatcher, &block )
 
         opts = @framework.opts.to_h.deep_clone
 
@@ -871,16 +923,25 @@ class Framework
                 opts['include'][i] = v.source
             }
 
+            # don't let the slaves run plug-ins that are not meant
+            # to be distributed
+            opts['plugins'].reject! {
+                |k, v|
+                !@plugins[k].distributable?
+            }
+
             instance.opts.set( opts ){
-                instance.framework.restrict_to_elements!( elements ){
-                    instance.framework.set_master( self_url, self_token ){
-                        instance.modules.load( opts['mods'] ) {
-                            instance.plugins.load( opts['plugins'] ) {
-                                instance.framework.run {
-                                    block.call( {
-                                        'url' => instance_hash['url'],
-                                        'token' => instance_hash['token'] }
-                                    )
+                instance.framework.update_page_queue( pages ) {
+                    instance.framework.restrict_to_elements!( elements ){
+                        instance.framework.set_master( self_url, self_token ){
+                            instance.modules.load( opts['mods'] ) {
+                                instance.plugins.load( opts['plugins'] ) {
+                                    instance.framework.run {
+                                        block.call( {
+                                            'url' => instance_hash['url'],
+                                            'token' => instance_hash['token'] }
+                                        )
+                                    }
                                 }
                             }
                         }
