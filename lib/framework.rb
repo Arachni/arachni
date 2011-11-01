@@ -148,6 +148,14 @@ class Framework
         Arachni::HTTP.instance
     end
 
+    def prepare
+        @running = true
+        @opts.start_datetime = Time.now
+
+        # run all plugins
+        @plugins.run
+    end
+
     #
     # Runs the system
     #
@@ -157,12 +165,7 @@ class Framework
     #                                   but before running the reports
     #
     def run( &block )
-        @running = true
-
-        @opts.start_datetime = Time.now
-
-        # run all plugins
-        @plugins.run
+        prepare
 
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results
