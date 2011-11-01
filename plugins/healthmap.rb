@@ -79,6 +79,31 @@ class HealthMap < Arachni::Plugin::Base
         url.gsub( '?' + query, '' )
     end
 
+    def self.distributable?
+        true
+    end
+
+    def self.merge( results )
+        merged = {
+            :map    => [],
+            :total  => 0,
+            :safe   => 0,
+            :unsafe => 0,
+            :issue_percentage => 0
+        }
+
+        results.each {
+            |healthmap|
+            merged[:map]    |= healthmap[:map]
+            merged[:total]  += healthmap[:total]
+            merged[:safe]   += healthmap[:safe]
+            merged[:unsafe] += healthmap[:unsafe]
+        }
+        merged[:issue_percentage] = ( ( Float( merged[:unsafe] ) / merged[:total] ) * 100 ).round
+        return merged
+    end
+
+
     def self.info
         {
             :name           => 'Health map',
