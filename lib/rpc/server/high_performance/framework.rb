@@ -64,7 +64,8 @@ class Framework
     # @see Arachni::RPC::Server::Framework#busy?
     #
     def busy?( include_slaves = true, &block )
-        busyness = [ @framework.busy? ]
+
+        busyness = [ local_busy? ]
 
         if @instances.empty? || !include_slaves
             block.call( busyness[0] )
@@ -143,7 +144,6 @@ class Framework
     # Starts the audit.
     #
     def run
-
         # EventMachine.add_periodic_timer( 1 ) do
             # print "Arachni::RPC::Client::Handler objects: "
             # puts ObjectSpace.each_object( Arachni::RPC::Client::Handler ) {}
@@ -165,6 +165,7 @@ class Framework
             # otherwise just run the local instance, nothing special...
             #
             if high_performance?
+                @starting = true
 
                 #
                 # We're in HPG (High Performance Grid) mode,
@@ -202,6 +203,7 @@ class Framework
                 # start the crawl and extract all paths
                 Arachni::Spider.new( @framework.opts ).run {
                     |page|
+                    @sitemap << page.url
                     pages[page.url] = page
                 }
                 @crawling_done = true
@@ -257,8 +259,10 @@ class Framework
                     # start the local instance
                     @job = Thread.new {
                         exception_jail{ @framework.audit }
+                        @framework.override_sitemap!( @sitemap )
                         exception_jail{ @framework.clean_up! }
                     }
+                    @starting = false
 
                     # empty out the Hash and remove temporary files
                     pages.clear
@@ -292,8 +296,8 @@ class Framework
     # any unfinished business (like running plug-ins).
     #
     def clean_up!( &block )
+        @framework.override_sitemap!( @sitemap ) if high_performance?
         @framework.clean_up!( true )
-        plugin_results = @framework.get_plugin_store
 
         if @instances.empty?
             block.call if block_given?
@@ -312,10 +316,9 @@ class Framework
             }
 
         }, proc {
-            |res|
-            while( result = res.pop )
-                plugin_results.merge!( result )
-            end
+            |results|
+            results << @framework.get_plugin_store
+            update_plugin_results!( results )
             block.call
         })
     end
@@ -445,18 +448,10 @@ class Framework
             return 'crawling'
         elsif @framework.paused?
             return 'paused'
-        elsif !busy?
+        elsif !local_busy?
             return 'done'
         else
             return 'busy'
-        end
-    end
-
-    def busy?
-        if @job
-            return @job.alive?
-        else
-            return @framework.busy?
         end
     end
 
@@ -732,8 +727,54 @@ class Framework
 
     private
 
+    def local_busy?
+        return true if @starting
+
+        if @job
+            return @job.alive?
+        else
+            return @framework.busy?
+        end
+    end
+
     def report_issue_to_master( results )
         @master.framework.register_issue( results ){}
+    end
+
+    #
+    # Takes the plug-in results of all the instances and merges them together.
+    #
+    def update_plugin_results!( results )
+        info = {}
+        formatted = {}
+
+        results.each {
+            |plugins|
+
+            plugins.each {
+                |name, res|
+                next if !res
+
+                formatted[name] ||= []
+                formatted[name] << res[:results]
+
+                info[name] = res.reject{ |k, v| k == :results } if !info[name]
+            }
+        }
+
+        merged = {}
+        formatted.each {
+            |plugin, results|
+
+            if !@plugins[plugin].distributable?
+                res = results[0]
+            else
+                res = @plugins[plugin].merge( results )
+            end
+            merged[plugin] = info[plugin].merge( :results => res )
+        }
+
+        @framework.set_plugin_store( merged )
     end
 
     #
