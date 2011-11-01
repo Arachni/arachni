@@ -287,12 +287,11 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
     - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
     - WAF (Web Application Firewall) Detector -- Establishes a baseline of normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
-    - MetaModules -- Loads and runs high-level meta-analysis modules pre/mid/post-scan
-       - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
-       - TimingAttacks -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
-            It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
-       - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
-       - Discovery -- Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+    - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
+    - TimingAttacks -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+         It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+    - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
+    - Discovery -- Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
 
 ### Trainer subsystem
 

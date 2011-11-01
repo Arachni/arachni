@@ -17,19 +17,15 @@ module Reports
 class XML
 module PluginFormatters
 
-class MetaModules
-
-module MetaFormatters
-
     #
-    # XML formatter for the results of the TimingAttacks metamodule
+    # XML formatter for the results of the Discovery plugin.
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class TimingAttacks < Arachni::Plugin::Formatter
+    class Discovery < Arachni::Plugin::Formatter
 
         include Arachni::Reports::Buffer
 
@@ -39,28 +35,24 @@ module MetaFormatters
         end
 
         def run
-            start_tag( 'timeout_notice' )
+            start_tag( 'discovery' )
             simple_tag( 'description', @description )
             start_tag( 'results' )
 
             @results.each { |issue| add_issue( issue ) }
 
             end_tag( 'results' )
-            end_tag( 'timeout_notice' )
+            end_tag( 'discovery' )
         end
 
         def add_issue( issue )
             __buffer( "<issue hash=\"#{issue['hash'].to_s}\" " +
                 " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
-                " url=\"#{issue['url']}\" element=\"#{issue['elem']}\" " +
-                " variable=\"#{issue['var']}\" method=\"#{issue['method']}\" />" )
+                " url=\"#{issue['url']}\" />" )
         end
 
     end
 
-end
-
-end
 end
 end
 end

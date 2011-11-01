@@ -9,25 +9,20 @@
 =end
 
 module Arachni
-
 module Reports
 
 class HTML
 module PluginFormatters
 
-class MetaModules
-
-module MetaFormatters
-
     #
-    # HTML formatter for the results of the TimingAttacks metamodule
+    # HTML formatter for the results of the Uniformity plugin.
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class TimingAttacks < Arachni::Plugin::Formatter
+    class Uniformity < Arachni::Plugin::Formatter
 
         def initialize( metadata )
             @results     = metadata[:results]
@@ -41,24 +36,28 @@ module MetaFormatters
         def tpl
             %q{
                     <ul>
-                    <%@results.each do |issue| %>
+                    <%@results['uniformals'].each_pair do |id, uniformal| %>
+                        <% issue = uniformal['issue'] %>
                         <li>
-                            <a href="#issue_<%=issue['index']%>">
-                                [#<%=issue['index']%>]
-                                <%=issue['name']%> at <%=issue['url']%> in
-                                <%=issue['elem']%> variable '<%=issue['var']%>'
-                                using <%=issue['method']%>
-                            </a>
+                            <%=issue['name']%> in <%=issue['elem']%> variable
+                            '<%=issue['var']%>' using <%=issue['method']%> at the following pages:
+                            <ul>
+
+                            <%@results['pages'][id].each_with_index do |url, i|%>
+                                <li>
+                                    [<%=uniformal['indices'][i]%>] <a href="#issue_<%=uniformal['indices'][i]%>"><%=url%></a>
+                                </li>
+                            <%end%>
+
+                            </ul>
                         </li>
                     <%end%>
                     </ul>
             }
         end
+
     end
 
-end
-
-end
 end
 end
 end

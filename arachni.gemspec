@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("data/**/**")
       s.files            += Dir.glob("lib/**/**")
       s.files            += Dir.glob("conf/**/**")
-      s.files            += Dir.glob("metamodules/**/**")
       s.files            += Dir.glob("external/**/**")
       s.files            += Dir.glob("logs/**/**")
       s.files            += Dir.glob("modules/**/**")

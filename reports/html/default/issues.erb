@@ -46,6 +46,7 @@
 
                             <% anomalous_meta_results.each_pair do |name, data|%>
                             <div id="<%=name%>">
+                                <h3>Component description:</h3>
                                 <blockquote> <%=data[:description]%> </blockquote>
                                 <br/>
                                 <% data[:results].each do |issue| %>

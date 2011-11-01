@@ -9,7 +9,7 @@
 =end
 
 module Arachni
-module MetaModules
+module Plugins
 
 #
 # Catches custom 404 or similar server behavior that can confuse discovery
@@ -26,7 +26,7 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Discovery < Base
+class Discovery < Arachni::Plugin::Base
 
     include Arachni::Module::Utilities
 
@@ -41,12 +41,15 @@ class Discovery < Base
     # in common which makes it possible to spot them without much bother
     SIMILARITY_TOLERANCE = 0.25
 
-    def initialize( framework )
+    def initialize( framework, opts )
         @framework = framework
     end
 
-    def post
+    def prepare
+        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+    end
 
+    def run
         # URL path => issue array
         issues_per_path = {}
 
@@ -111,7 +114,7 @@ class Discovery < Base
             end
         }
 
-        return issues
+        register_results( issues ) if !issues.empty?
     end
 
     #
@@ -147,15 +150,15 @@ class Discovery < Base
 
     def self.info
         {
-            :name           => 'Discovery response anomalies',
-            :description    => %q{These issues were logged by discovery modules
+            :name           => 'Discovery module response anomalies',
+            :description    => %q{Analyzes the scan results and identifies issues logged by discovery modules
                 (i.e. modules that look for certain files and folders on the server),
-                however the server responses are exhibiting an anomalous factor of similarity.
+                while the server responses were exhibiting an anomalous factor of similarity.
 
                 There's a good chance that these issues are false positives.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
-            :tags           => [ 'anomaly' , 'discovery', 'file', 'directories']
+            :tags           => [ 'anomaly' , 'discovery', 'file', 'directories', 'meta']
         }
     end
 

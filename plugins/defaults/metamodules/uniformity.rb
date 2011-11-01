@@ -9,7 +9,7 @@
 =end
 
 module Arachni
-module MetaModules
+module Plugins
 
 #
 # Goes through all the issues and checks for signs of uniformity using
@@ -25,7 +25,7 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Uniformity < Base
+class Uniformity < Arachni::Plugin::Base
 
     include Arachni::Module::Utilities
 
@@ -38,12 +38,15 @@ class Uniformity < Base
         Issue::Element::HEADER
     ]
 
-    def initialize( framework )
+    def initialize( framework, opts )
         @framework = framework
     end
 
-    def post
+    def prepare
+        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+    end
 
+    def run
         # will hold the hash IDs of inconclusive issues
         uniformals = {}
         pages      = {}
@@ -79,17 +82,18 @@ class Uniformity < Base
         pages.reject!{ |k, v| v.size == 1 }
 
         return if pages.empty?
-        return { 'uniformals' => uniformals, 'pages' => pages }
+        register_results(  { 'uniformals' => uniformals, 'pages' => pages } )
     end
 
     def self.info
         {
             :name           => 'Uniformity (Lack of central sanitization)',
-            :description    => %q{The same issue(s) persist(s) across different pages.
-                This is usually a sign for a lack of a central/single point of input
-                sanitization, a bad coding practise.},
+            :description    => %q{Analyzes the scan results and logs issues which persist across different pages.
+                This is usually a sign for a lack of a central/single point of input sanitization,
+                a bad coding practise.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :tags           => [ 'meta' ],
+            :version        => '0.1'
         }
     end
 

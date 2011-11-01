@@ -68,7 +68,11 @@
          - Cookie collector
          - Healthmap
          - Profiler
+         - AutoThrottle
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
+   - Discovery (accompanied by appropriate report formatters). (**New**) [Issue #81]
+      - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+   - Added the 'defaults' subdirectory which contains plug-ins that should be loaded by default.
 - Reports
    - HTML report
       - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
@@ -91,10 +95,7 @@
    - Recon
       - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
 - Meta-Modules
-   - Updated API method names to better fit their operation.
-   - New 'Discovery' metamodule (accompanied by appropriate report formatters). (**New**) [Issue #81]
-      - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
-   - Renamed 'TimeoutNotice' to 'TimingAttacks' and put under the 'anomaly_detection' directory.
+   - Have all been converted to regular plug-ins in order to make distribution across the Grid easier.
 - Dependencies
    - Added
       - Arachni-RPC

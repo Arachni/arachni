@@ -9,7 +9,7 @@
 =end
 
 module Arachni
-module MetaModules
+module Plugins
 
 #
 # Auto adjusts HTTP throughput for maximum network utilization.
@@ -19,7 +19,7 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2
 #
-class AutoThrottle < Base
+class AutoThrottle < Arachni::Plugin::Base
 
     HIGH_THRESHOLD    = 0.9
     MIDDLE_THRESHOLD  = 0.34
@@ -32,12 +32,12 @@ class AutoThrottle < Base
 
     MIN_CONCURRENCY = 2
 
-    def initialize( framework )
+    def initialize( framework, opts )
         @framework = framework
         @http      = framework.http
     end
 
-    def pre
+    def prepare
 
         # run for each response as it arrives
         @http.add_on_complete {
@@ -66,6 +66,22 @@ class AutoThrottle < Base
             end
         }
 
+    end
+
+    def self.distributable?
+        true
+    end
+
+    def self.info
+        {
+            :name           => 'AutoThrottle',
+            :description    => %q{Monitors HTTP response times and automatically
+                throttles the request concurrency in order to maintain stability
+                and prevent from killing the server.},
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :tags           => [ 'meta' ],
+            :version        => '0.1'
+        }
     end
 
 end

@@ -15,19 +15,15 @@ module Reports
 class HTML
 module PluginFormatters
 
-class MetaModules
-
-module MetaFormatters
-
     #
-    # HTML formatter for the results of the Discovery metamodule
+    # HTML formatter for the results of the TimingAttacks plugin.
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
     #
-    class Discovery < Arachni::Plugin::Formatter
+    class TimingAttacks < Arachni::Plugin::Formatter
 
         def initialize( metadata )
             @results     = metadata[:results]
@@ -44,7 +40,10 @@ module MetaFormatters
                     <%@results.each do |issue| %>
                         <li>
                             <a href="#issue_<%=issue['index']%>">
-                                [#<%=issue['index']%>] <%=issue['name']%> at <%=issue['url']%>
+                                [#<%=issue['index']%>]
+                                <%=issue['name']%> at <%=issue['url']%> in
+                                <%=issue['elem']%> variable '<%=issue['var']%>'
+                                using <%=issue['method']%>
                             </a>
                         </li>
                     <%end%>
@@ -53,9 +52,6 @@ module MetaFormatters
         end
     end
 
-end
-
-end
 end
 end
 end

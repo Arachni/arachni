@@ -32,8 +32,7 @@ class HTML < Arachni::Report::Base
     module Utils
 
         def for_anomalous_metamodules( audit_store, &block )
-            return if !audit_store.plugins['metamodules']
-            audit_store.plugins['metamodules'][:results].each_pair {
+            audit_store.plugins.each_pair {
                 |metaname, data|
                 next if !data[:tags] || !data[:tags].include?( 'anomaly' )
                 block.call( metaname, data )
@@ -296,11 +295,14 @@ class HTML < Arachni::Report::Base
                 graph_data[:trust]['Trusted'] += 1
                 graph_data[:trusted_issues][issue.name] ||= 0
                 graph_data[:trusted_issues][issue.name]   += 1
+
+                graph_data[:untrusted_issues][issue.name] ||= 0
             else
                 anomalous_hashes << issue._hash
                 graph_data[:trust]['Untrusted'] += 1
                 graph_data[:untrusted_issues][issue.name] ||= 0
                 graph_data[:untrusted_issues][issue.name] += 1
+                graph_data[:trusted_issues][issue.name] ||= 0
             end
 
         }

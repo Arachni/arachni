@@ -14,11 +14,8 @@ module Reports
 class Stdout
 module PluginFormatters
 
-class MetaModules
-module MetaFormatters
-
     #
-    # Stdout formatter for the results of the Discovery metamodule
+    # Stdout formatter for the results of the Discovery plugin.
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
@@ -49,8 +46,6 @@ module MetaFormatters
 
     end
 
-end
-end
 end
 end
 end

@@ -30,7 +30,9 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::Module::Utilities
 
-    ALWAYS_ON = [ 'metamodules', 'content_types', 'healthmap' ]
+    ALWAYS_ON = [
+        'defaults/*'
+    ]
 
     #
     # @param    [Arachni::Framework]    framework   framework instance

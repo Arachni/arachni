@@ -166,7 +166,7 @@ class Server < Sinatra::Base
         end
 
         def plugins
-            @@plugins
+            @@plugins.reverse
         end
 
         def proc_mem( rss )
@@ -528,9 +528,13 @@ class Server < Sinatra::Base
         }
         session['opts']['modules'] ||= [ '*' ]
         session['opts']['plugins'] ||= YAML::dump( {
-            'content_types' => {},
-            'healthmap'     => {},
-            'metamodules'   => {}
+            "healthmap"      => {},
+            "timing_attacks" => {},
+            "discovery"      => {},
+            "uniformity"     => {},
+            "content_types"  => {},
+            "autothrottle"   => {}
+
         } )
 
         #
@@ -773,6 +777,7 @@ class Server < Sinatra::Base
     # sets modules
     #
     post "/modules" do
+        prep_session
         session['opts']['modules'] = prep_modules( escape_hash( params ) )
         flash.now[:ok] = "Modules updated."
         show :modules, true
@@ -790,6 +795,7 @@ class Server < Sinatra::Base
     # sets plugins
     #
     post "/plugins" do
+        prep_session
         session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
         flash.now[:ok] = "Plugins updated."
         erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )

@@ -9,7 +9,7 @@
 =end
 
 module Arachni
-module MetaModules
+module Plugins
 
 #
 # Provides a notice for issues uncovered by timing attacks when the affected audited
@@ -20,7 +20,7 @@ module MetaModules
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2
 #
-class TimingAttacks < Base
+class TimingAttacks < Arachni::Plugin::Base
 
     include Arachni::Module::Utilities
 
@@ -31,7 +31,7 @@ class TimingAttacks < Base
     # in order to be considered
     TIME_THRESHOLD = 0.6
 
-    def initialize( framework )
+    def initialize( framework, opts )
         @framework = framework
         @http = framework.http
 
@@ -39,7 +39,7 @@ class TimingAttacks < Base
         @counter = {}
     end
 
-    def pre
+    def prepare
         # run for each response as it arrives
         @http.add_on_complete {
             |res|
@@ -57,10 +57,11 @@ class TimingAttacks < Base
             # add up all requests for each path
             @counter[path] += 1
         }
+
+        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
     end
 
-    def post
-
+    def run
         avg = get_avg
 
         # will hold the hash IDs of inconclusive issues
@@ -82,7 +83,7 @@ class TimingAttacks < Base
             end
         }
 
-        return inconclusive
+        register_results( inconclusive ) if !inconclusive.empty?
     end
 
     def get_avg
@@ -97,20 +98,26 @@ class TimingAttacks < Base
         return avg
     end
 
+    def self.distributable?
+        true
+    end
+
+    def self.merge( results )
+        results.flatten
+    end
+
     def self.info
         {
             :name           => 'Timming attack anomalies',
-            :description    => %q{These logged issues used timing attacks.
-                However, the affected web pages demonstrated an unusually high response time rendering
-                these results inconclusive or (possibly) false positives.
+            :description    => %q{Analyzes the scan results and logs issues that used timing attacks
+                while the affected web pages demonstrated an unusually high response time.
+                A situation which renders the logged issues inconclusive or (possibly) false positives.
 
                 Pages with high response times usually include heavy-duty processing
-                which makes them prime targets for Denial-of-Service attacks.
-
-                Nomatter the case, please do look into the situation further.},
+                which makes them prime targets for Denial-of-Service attacks.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.2',
-            :tags           => [ 'anomaly' , 'timming', 'attacks' ]
+            :tags           => [ 'anomaly' , 'timming', 'attacks', 'meta' ]
         }
     end
 

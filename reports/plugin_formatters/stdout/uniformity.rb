@@ -9,19 +9,13 @@
 =end
 
 module Arachni
-
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
-
 module Reports
 
-class XML
+class Stdout
 module PluginFormatters
 
-class MetaModules
-module MetaFormatters
-
     #
-    # XML formatter for the results of the Uniformity metamodule
+    # Stdout formatter for the results of the Uniformity plugin.
     #
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
@@ -30,17 +24,18 @@ module MetaFormatters
     #
     class Uniformity < Arachni::Plugin::Formatter
 
-        include Arachni::Reports::Buffer
-
         def initialize( metadata )
             @results     = metadata[:results]
             @description = metadata[:description]
         end
 
         def run
-            start_tag( 'uniformity' )
-            simple_tag( 'description', @description )
-            start_tag( 'results' )
+            print_status( ' --- Uniformity (Lack of centralised sanitization):' )
+            print_info( 'Description: ' + @description )
+
+            print_line
+            print_info( 'Relevant issues:' )
+            print_info( '--------------------' )
 
             uniformals = @results['uniformals']
             pages      = @results['pages']
@@ -48,35 +43,22 @@ module MetaFormatters
             uniformals.each_pair {
                 |id, uniformal|
 
-                start_uniformals( id )
+                issue = uniformal['issue']
+                print_ok( "#{issue['name']} in #{issue['elem']} variable" +
+                    " '#{issue['var']}' using #{issue['method']} at the following pages:" )
 
-                uniformal['hashes'].each_with_index {
-                    |hash, i|
-                    add_uniformal( i, uniformal )
+                pages[id].each_with_index {
+                    |url, i|
+                    print_info( url + " (Issue \##{uniformal['indices'][i]}" +
+                        " - Hash ID: #{uniformal['hashes'][i]} )" )
                 }
 
-                end_tag( 'uniformals' )
+                print_line
             }
-
-            end_tag( 'results' )
-            end_tag( 'uniformity' )
         end
-
-        def add_uniformal( idx, uniformal )
-            __buffer( "<issue index=\"#{uniformal['indices'][idx]}\"" +
-                " hash=\"#{uniformal['hashes'][idx]}\" />" )
-        end
-
-        def start_uniformals( id )
-            __buffer( "<uniformals id=\"#{id}\">" )
-        end
-
 
     end
 
-end
-
-end
 end
 end
 end
