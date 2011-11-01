@@ -415,11 +415,15 @@ class Framework
                 :version  => version( ),
                 :revision => REVISION,
                 :options  => opts,
-                :sitemap  => @sitemap ? @sitemap.sort : ['N/A'],
+                :sitemap  => audit_store_sitemap || [],
                 :issues   => @modules.results( ).deep_clone,
                 :plugins  => @plugin_store
             }, self )
          end
+    end
+
+    def audit_store_sitemap
+        @override_sitemap ? @override_sitemap : @sitemap
     end
 
     def plugin_store( plugin, obj )
