@@ -61,6 +61,13 @@
       - If there are 2 or more password fields in a form an extra variation is added with
         the same inputs for all passwords in case it's a 'please repeat your password' thing. (**New**) [Issue #59]
 - Plugins
+   - API -- Added <code>distributable?()</code> and <code>merge()</code> class methods which declare
+        if a plug-in can be distributed to all instances when running in Grid mode and merge an array of its own results respectively.
+      - Distributable plug-ins:
+         - Content-Types
+         - Cookie collector
+         - Healthmap
+         - Profiler
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
 - Reports
    - HTML report
@@ -98,7 +105,7 @@
       - Typhoeus =>0.3.2
       - Sys-proctable => 0.9.1
       - Nokogiri => 1.5.0
-      - Sinatra => 1.2.6
+      - Sinatra => 1.3.1
       - Datamapper => 1.1.0
       - Json => 1.6.1
       - Datamapper SQLite adapter => 1.1.0
