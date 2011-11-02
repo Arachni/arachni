@@ -17,7 +17,7 @@ require Options.instance.dir['lib'] + 'rpc/server/base'
 require Options.instance.dir['lib'] + 'rpc/server/output'
 require Options.instance.dir['lib'] + 'rpc/server/options'
 
-require Options.instance.dir['lib'] + 'rpc/server/high_performance/framework'
+require Options.instance.dir['lib'] + 'rpc/server/framework'
 
 module RPC
 class Server
@@ -118,15 +118,9 @@ class Instance
     # Starts the HTTPS server and the BrB-RPC service.
     #
     def run
-
-        begin
-            print_status( 'Starting the server...' )
-            # start the show!
-            @server.run
-        rescue Exception => e
-            exception_jail{ raise e }
-            exit 0
-        end
+        print_status( 'Starting the server...' )
+        # start the show!
+        @server.run
     end
 
     def alive?
@@ -145,7 +139,7 @@ class Instance
     #
     def prep_framework
         @framework = nil
-        @framework = Arachni::RPC::Server::HighPerformance::Framework.new( Options.instance )
+        @framework = Arachni::RPC::Server::Framework.new( Options.instance )
     end
 
     #

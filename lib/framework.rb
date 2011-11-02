@@ -165,7 +165,10 @@ class Framework
     #                                   but before running the reports
     #
     def run( &block )
+        # ap 'IN RUN'
         prepare
+
+        # ap 'AFTER PREPARE'
 
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results
@@ -173,16 +176,20 @@ class Framework
         begin
             # start the audit
             exception_jail{ audit( ) }
+            # ap 'AFTER AUDIT'
         rescue Exception => e
             # ap e
             # ap e.backtrace
         end
 
         clean_up!
+        # ap 'AFTER CLEANUP'
         begin
             block.call if block
         rescue Exception
         end
+
+        # ap 'BLOCK CALL'
 
         # run reports
         if( @opts.reports && !@opts.reports.empty? )
