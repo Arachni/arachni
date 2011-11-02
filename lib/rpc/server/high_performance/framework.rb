@@ -733,12 +733,12 @@ class Framework
     private
 
     def local_busy?
-        return true if @starting
-
-        if @job
-            return @job.alive?
-        else
+        if !high_performance?
             return @framework.busy?
+        elsif @starting
+            return true
+        elsif @job
+            return @job.alive?
         end
     end
 
