@@ -27,17 +27,7 @@
 
                     <% modules.each do |mod|%>
                     <% next if mod['path'] =~ /recon/ %>
-                        <h4>
-                            <input type="checkbox" class="audit" name="modules[<%=mod['mod_name']%>]"
-                                <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
-                                <%=escape( mod['name'] )%>
-                        </h4>
-                        <pre class="notice"> <%=prep_description( escape( mod['description'] ) )%></pre>
-                        <p>
-                            <strong>Version:</strong> <%=mod['version']%><br/>
-                            <strong>Author:</strong> <%=escape( mod['author'])%>
-                        </p>
-
+                    <%= erb :module, { :layout => false }, :mod => mod, :class_name => 'audit' %>
                     <% end %>
                 </fieldset>
             </div>
@@ -53,19 +43,9 @@
 
                     <% modules.each do |mod|%>
                     <% next if mod['path'] =~ /audit/ %>
-                        <h4>
-                            <input type="checkbox" class="recon" name="modules[<%=mod['mod_name']%>]"
-                                <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
-                                <%=escape( mod['name'] )%>
-                        </h4>
-                        <pre class="notice"> <%=prep_description( escape( mod['description'] ) )%></pre>
-                        <p>
-                            <strong>Version:</strong> <%=mod['version']%><br/>
-                            <strong>Author:</strong> <%=escape( mod['author'])%>
-                        </p>
+                    <%= erb :module, { :layout => false }, :mod => mod, :class_name => 'recon' %>
                     <% end %>
                 </fieldset>
             </div>
-
 
         </form>
