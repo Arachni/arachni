@@ -108,7 +108,7 @@ class TimingAttacks < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Timming attack anomalies',
+            :name           => 'Timing attack anomalies',
             :description    => %q{Analyzes the scan results and logs issues that used timing attacks
                 while the affected web pages demonstrated an unusually high response time.
                 A situation which renders the logged issues inconclusive or (possibly) false positives.
@@ -117,7 +117,7 @@ class TimingAttacks < Arachni::Plugin::Base
                 which makes them prime targets for Denial-of-Service attacks.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.2',
-            :tags           => [ 'anomaly' , 'timming', 'attacks', 'meta' ]
+            :tags           => [ 'anomaly' , 'timing', 'attacks', 'meta' ]
         }
     end
 
