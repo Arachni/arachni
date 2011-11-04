@@ -128,6 +128,9 @@ class Base
         []
     end
 
+    #
+    # Returns the framework.
+    #
     def framework
         @framework
     end
@@ -182,8 +185,15 @@ class Base
         }
     end
 
-    def register_results( results )
-        Arachni::Module::Manager.register_results( results )
+    #
+    # Just a delegator logs an array of issues.
+    #
+    # @param    [Array<Arachni::Issue>]     issues
+    #
+    # @see Arachni::Module::Manager.register_results
+    #
+    def register_results( issues )
+        Arachni::Module::Manager.register_results( issues )
     end
 
     def set_framework( framework )
