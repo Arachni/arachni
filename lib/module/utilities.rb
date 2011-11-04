@@ -8,6 +8,7 @@
 
 =end
 
+require 'digest/sha1'
 require 'cgi'
 
 module Arachni
