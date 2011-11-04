@@ -8,8 +8,6 @@
 
 =end
 
-require 'digest/sha1'
-
 module Arachni
 
 module Modules
