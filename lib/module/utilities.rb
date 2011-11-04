@@ -155,7 +155,7 @@ module Utilities
         rescue Exception => e
             err_name = !e.to_s.empty? ? e.to_s : e.class.name
             print_error( err_name )
-            print_debug_backtrace( e )
+            print_error_backtrace( e )
             raise e
         end
     end
