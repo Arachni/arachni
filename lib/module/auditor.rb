@@ -216,27 +216,46 @@ module Auditor
     }
 
     #
-    # Logs a remote file if it exists
+    # Logs a remote file or directory if it exists.
     #
     # @param    [String]    url
+    # @param    [Bool]      silent  if false, a message will be sent to stdout
+    #                               containing the status of the operation.
     # @param    [Proc]      &block  called if the file exists, just before logging
     #
-    def log_remote_file_if_exists( url, &block )
-        req  = @http.get( url, :train => true )
+    # @return   [Object]    - nil if no URL was provided
+    #                       - false if the request couldn't be fired
+    #                       - true if everything went fine
+    #
+    # @see #remote_file_exist?
+    #
+    def log_remote_file_if_exists( url, silent = false, &block )
+        return nil if !url
+
+        req  = @http.get( url )
+        return false if !req
         req.on_complete {
             |res|
+
+            print_status( 'Analyzing response for: ' + url ) if !silent
 
             if remote_file_exist?( res )
                 block.call( res ) if block_given?
                 log_remote_file( res )
+
+                # if the file exists let the trainer parse it since it may
+                # contain brand new data to audit
+                @http.trainer.add_response( res )
             end
         }
+
+        return true
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
     #
     # Checks that the response points to an existing file/page and not
-    # an error or custom 404 response
+    # an error or custom 404 response.
     #
     # @param    [Typhoeus::Response]    res
     #
@@ -245,9 +264,11 @@ module Auditor
     end
 
     #
-    # Logs the existence of a remote file.
+    # Logs the existence of a remote file as an issue.
     #
     # @param    [Typhoeus::Response]    res
+    #
+    # @see #log_issue
     #
     def log_remote_file( res )
         url = res.effective_url
@@ -273,6 +294,8 @@ module Auditor
     #
     # @param    [Hash]  opts    issue options ({Issue})
     # @param    [Bool]  include_class_info    merge opts with module.info?
+    #
+    # @see Arachni::Module::Base#register_results
     #
     def log_issue( opts )
         # register the issue
