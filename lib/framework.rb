@@ -8,7 +8,8 @@
 
 =end
 
-
+require 'ap'
+require 'pp'
 require 'rubygems'
 
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
@@ -730,7 +731,7 @@ class Framework
             raise
         rescue Exception => e
             print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
-            print_debug_backtrace( e )
+            print_error_backtrace( e )
         end
     end
 
