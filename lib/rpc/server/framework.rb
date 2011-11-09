@@ -314,12 +314,13 @@ class Framework < ::Arachni::Framework
             instance_conn.framework.clean_up! {
                 instance_conn.framework.get_plugin_store {
                     |res|
-                    iter.return( res )
+                    iter.return( !res.rpc_exception? ?  res : nil )
                 }
             }
 
         }, proc {
             |results|
+            results.compact!
             results << get_plugin_store
             update_plugin_results!( results )
             block.call
