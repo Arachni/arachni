@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("conf/**/**")
       s.files            += Dir.glob("external/**/**")
       s.files            += Dir.glob("logs/**/**")
+      s.files            += Dir.glob("extras/**/**")
       s.files            += Dir.glob("modules/**/**")
       s.files            += Dir.glob("path_extractors/**/**")
       s.files            += Dir.glob("plugins/**/**")
