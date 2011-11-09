@@ -30,7 +30,7 @@ Then things go as usual:
 
 If you encounter a Typhoeus related error while running Arachni issue:
 
-   gem clean
+    gem clean
 
 ## Setting up the High Performance Grid (HPG)
 
@@ -260,6 +260,9 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - US Social Security Number disclosure
         - Forceful directory listing
         - Mixed Resource/Scripting
+        - SVN Digger dirs
+        - SVN Digger files
+
 
 ### Report Management
 
@@ -340,6 +343,14 @@ If you want to clone the repository and work with the source code then you'll ne
 
     $ rake install
 
+
+## Configuration of <em>extras</em>
+
+The <em>extras</em> directory holds components that are considered too specialised, dangerous or in some way unsuitable for utilising without explicit user interaction. <br/>
+This directory was mainly added to distribute modules which can be helpful but should not be put in the default <em>modules</em> directory to prevent them from being
+automatically loaded.
+
+Should you want to use these extra components simply move them from the <em>extras</em> folder to their appropriate system directories.
 
 ## Supported platforms
 

@@ -11,6 +11,12 @@
       - Now includes <em>win32/process</em> to provide <em>Process.pid</em>/<em>fork()</em> (and others) under Windows platforms. (**New**)
    - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>,
     a light-weight and high-performance custom client/server RPC implementation.
+- Added <em>extras</em> directory holding components that are considered too specialised, dangerous or in some way unsuitable for
+    utilising without explicit user interaction. (**New**)
+    - Modules
+       - Recon
+          - SVN Digger dirs -- Finds directories, based on wordlists created from open source repositories
+          - SVN Digger files -- Finds files, based on wordlists created from open source repositories
 - Framework
    - <em>stats()</em>
       - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
