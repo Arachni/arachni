@@ -2,34 +2,45 @@
         <form action="/scan" method="post">
 
             <%= csrf_tag %>
-
             <input type="submit" value="Launch Scan" />
-
-            <% show_hp = false %>
 
             <div id="page-intro">
                 Select a Dispatcher:
-                <select name="dispatcher">
-                <% stats.each_pair do |d_url, stats| %>
+                <select id="dispatcher" name="dispatcher">
+                <% stats.each_pair do |d_url, d_stats| %>
                     <option value="<%=d_url%>">
-                        <%=show_dispatcher_line( stats )%>
-                        <% if !stats['neighbours'].empty? %>
-                            [HP]
-                            <% show_hp = true %>
-                        <%end%>
+                        <%=show_dispatcher_line( d_stats )%>
+                        <%= !d_stats['neighbours'].empty? ? '[HP]' : nil %>
                     </option>
                 <%end%>
                 </select>
 
-                <br/>
-                <% if show_hp %>
+                <span id="hpg">
+                    <br/>
                     Use High Performance Grid (HPG) mode <input type="checkbox" name="high_performance" />
-                    (Dispatchers marked with "[HP]" are part of a Grid and can be used in High Performance mode. <strong>Attention:</strong> The HPG is highly unstable and experimental.)
-                <%end%>
+                    <strong>Attention:</strong> The HPG is highly unstable and experimental.
+                </span>
 
                 <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
             </div>
 
         </form>
+
+        <script type="text/javascript">
+            <% hpg= {}; stats.each do |k, v| hpg[k] = !v['neighbours'].empty? end %>
+            hpg = <%=hpg.to_json%>;
+
+            if( !hpg[ $("#dispatcher option:first").val() ] ) {
+                $('#hpg').hide();
+            }
+
+            $('#dispatcher').change( function() {
+                if( hpg[$(this).attr('value')] ) {
+                    $('#hpg').show();
+                } else {
+                    $('#hpg').hide();
+                }
+            });
+        </script>
 
         <%= erb :flash, {:layout => false} %>
