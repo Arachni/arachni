@@ -725,11 +725,6 @@ class Server < Sinatra::Base
             async_redirect '/', :flash => { :err => "Invalid URL." }
         elsif !params['dispatcher'] || params['dispatcher'].empty?
             async_redirect '/', :flash => { :err => "Please select a Dispatcher." }
-        # elsif params['high_performance'] && neighbours.empty?
-            # msg = "The selected Dispatcher can't be used " +
-                # "in High Performance mode because it has no neighbours " +
-                # "(i.e. is not pat of any Grid)."
-            # async_redirect '/', :flash => { :err => msg }
         else
 
             session['opts']['settings']['url'] = params[:url]
