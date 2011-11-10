@@ -40,7 +40,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 # Provides a web user interface for the Arachni Framework using Sinatra.
 #
-# It's basically an XMLRPC client for Dispatchers and Instances wearing a pretty frock.
+# It's basically an RPC client for Dispatchers and Instances wearing a pretty frock.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -368,7 +368,7 @@ class Server < Sinatra::Base
     end
 
     #
-    # Prepares form params to be used as options for XMLRPC transmission
+    # Prepares form params to be used as options for RPC transmission
     #
     # @param    [Hash]  params
     #

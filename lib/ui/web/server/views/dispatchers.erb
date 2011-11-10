@@ -1,17 +1,15 @@
 
         <div id="page-intro">
             <h2>Dispatchers</h2>
-            <p>The dispatchers spawn an XMLRPC server per scan and provide statistics for all running server instances.<br/>
+            <p>The dispatchers spawn RPC instances and provide relevant statistics.<br/>
                 This interface allows you to "Attach" to (see the output of), pause, resume and shutdown instances.
             </p>
 
             <form action="/dispatchers/edit" method="get">
                 <input type="submit" value="Edit dispatchers" />
             </form>
-
-
-
         </div>
+
         <%= erb :flash, {:layout => false} %>
 
         <div style="display: none" id="dialog_log" title="Log">

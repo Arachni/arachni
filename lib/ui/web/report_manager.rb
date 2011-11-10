@@ -106,7 +106,7 @@ class ReportManager
     #
     # Gets the path to a given report based on the contents of the report
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni XMLRPC server.
+    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni RPC server.
     #                                       Basically an 'afr' report as a string.
     # @return   [String]
     #
@@ -159,7 +159,7 @@ class ReportManager
     # Generates a filename based on the contents of the report in the form of
     # host:audit_date
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni XMLRPC server.
+    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni RPC server.
     #                                       Basically an 'afr' report as a string.
     #
     # @return   [String]        host:audit_date
