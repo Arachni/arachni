@@ -46,6 +46,7 @@ class Framework < ::Arachni::Framework
     attr_reader :instances, :opts, :modules, :plugins
 
     MAX_CONCURRENCY = 20
+    MIN_PAGES_PER_INSTANCE = 30
 
     def initialize( opts )
         super( opts )
@@ -130,7 +131,7 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns true if running in HPG (High Performance Grid) mode and we're th e master,
+    # Returns true if running in HPG (High Performance Grid) mode and we're the master,
     # false otherwise.
     #
     # @return   [Bool]
@@ -226,11 +227,9 @@ class Framework < ::Arachni::Framework
                 prefered_dispatchers {
                     |pref_dispatchers|
 
-                    # decide in how many chunks to split the paths
-                    chunk_cnt = pref_dispatchers.size + 1
-
-                    # split the URLs of the pages in equal chunks and group them
-                    chunks = pages.keys.chunk( chunk_cnt )
+                    # split the URLs of the pages in equal chunks
+                    chunks    = split_urls( pages.keys, pref_dispatchers )
+                    chunk_cnt = chunks.size
 
                     # split the page array into chunks that will be distributed
                     # across the instances
@@ -648,7 +647,7 @@ class Framework < ::Arachni::Framework
         @modules.class.do_not_store!
         @modules.class.on_register_results {
             |results|
-            report_issue_to_master( results )
+            report_issues_to_master( results )
         }
 
         return true
@@ -680,7 +679,7 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  true on success, false on invalid token
     #
-    def register_issue( issues, token )
+    def register_issues( issues, token )
         return false if high_performance? && !valid_token?( token )
 
         @modules.class.register_results( issues )
@@ -701,13 +700,19 @@ class Framework < ::Arachni::Framework
         @plugin_store = plugin_store
     end
 
-    def report_issue_to_master( results )
-        @master.framework.register_issue( results, master_priv_token ){}
+    #
+    # Reports an array of issues back to the master instance.
+    #
+    # @param    [Array<Arachni::Issue>]     issues
+    #
+    def report_issues_to_master( issues )
+        @master.framework.register_issues( issues, master_priv_token ){}
         return true
     end
 
     #
-    # Takes the plug-in results of all the instances and merges them together.
+    # Takes the plug-in results of all the instances, merges them together and
+    # resets the @plugin_store.
     #
     def update_plugin_results!( results )
         info = {}
@@ -837,8 +842,6 @@ class Framework < ::Arachni::Framework
     # Returns the dispatchers that have different Pipe IDs i.e. can be setup
     # in HPG mode; pretty simple at this point.
     #
-    # TODO: implement filtering criteria and restrictions
-    #
     def prefered_dispatchers( &block )
 
         # keep track of the Pipe IDs we've used
@@ -859,26 +862,26 @@ class Framework < ::Arachni::Framework
                 # make sure that each Dispatcher is alive before moving on
                 ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map( proc {
                     |dispatcher, iter|
-                    connect_to_dispatcher( dispatcher['url'] ).alive? {
+                    connect_to_dispatcher( dispatcher['url'] ).stats {
                         |res|
                         if !res.rpc_exception?
-                            iter.return( dispatcher )
+                            iter.return( res )
                         else
                             iter.return( nil )
                         end
                     }
                 }, proc {
-                    |nodes|
+                    |dispatchers|
 
                     # get the Dispatchers with unique Pipe IDs and send them
                     # to the block
 
                     pref_dispatcher_urls = []
-                    nodes.each {
-                        |node|
-                        if !@used_pipe_ids.include?( node['pipe_id'] )
-                            @used_pipe_ids << node['pipe_id']
-                            pref_dispatcher_urls << node['url']
+                    pick_dispatchers( dispatchers ).each {
+                        |dispatcher|
+                        if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
+                            @used_pipe_ids << dispatcher['node']['pipe_id']
+                            pref_dispatcher_urls << dispatcher['node']['url']
                         end
                     }
 
@@ -886,6 +889,104 @@ class Framework < ::Arachni::Framework
                 })
             }
         }
+    end
+
+    #
+    # Splits URLs into chunks for each instance while taking into account a
+    # minimum amount of URLs per instance.
+    #
+    def split_urls( urls, dispatchers )
+        chunks = []
+        idx    = 0
+
+        # figure out the min amount of pages per chunk
+        begin
+            if @opts.min_pages_per_instance && @opts.min_pages_per_instance.to_i > 0
+                min_pages_per_instance = @opts.min_pages_per_instance.to_i
+            else
+                min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+            end
+        rescue
+            min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+        end
+
+        # first try a simplistic approach, just split the the URLs in
+        # equally sized chunks for each instance
+        orig_chunks = urls.chunk( dispatchers.size + 1 )
+
+        # if the first chunk matches the minimum then they all do
+        # (except the last possibly) so return these as is...
+        return orig_chunks if orig_chunks[0].size >= min_pages_per_instance
+
+        #
+        # otherwise re-arrange the chunks into larger ones
+        #
+        orig_chunks.each.with_index {
+            |chunk, i|
+
+            chunk.each {
+                |url|
+
+                chunks[idx] ||= []
+                if chunks[idx].size < min_pages_per_instance
+                    chunks[idx] << url
+                else
+                    idx += 1
+                end
+            }
+        }
+
+        return chunks
+    end
+
+    #
+    # Picks the dispatchers to use based on their load balancing metrics and
+    # the instructed maximum amount of slaves.
+    #
+    def pick_dispatchers( dispatchers )
+        d = dispatchers.each.with_index {
+            |dispatcher, i|
+            dispatchers[i]['score'] = get_dispatcher_score( dispatcher )
+        }.sort {
+            |dispatcher_1, dispatcher_2|
+            dispatcher_1['score'] <=> dispatcher_2['score']
+        }
+
+        begin
+            if @opts.max_slaves && @opts.max_slaves.to_i > 0
+                return d[0...@opts.max_slaves.to_i]
+            end
+        rescue
+            return d
+        end
+    end
+
+    #
+    # Returns the load balancing score of a dispatcher based
+    # on its resource consumption and weight.
+    #
+    def get_dispatcher_score( dispatcher )
+        score = get_resource_consumption( dispatcher['running_jobs'] )
+        score *= dispatcher['weight'] if dispatcher['weight']
+        return score
+    end
+
+    #
+    # Returns a nominal resource consumption of a dispatcher.
+    #
+    # It's basically calculated as the sum of the CPU and Memory usage
+    # percentages of its running instances.
+    #
+    def get_resource_consumption( jobs )
+        mem = 0
+        cpu = 0
+        jobs.each {
+            |job|
+            mem += Float( job['proc']['pctmem'] )
+            cpu += Float( job['proc']['pctcpu'] )
+        }
+
+        return cpu + mem
     end
 
     #
