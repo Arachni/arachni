@@ -306,26 +306,19 @@ class Server < Sinatra::Base
         str = "#{escape( '@' + stats['node']['url'] )}" +
             " - #{stats['running_jobs'].size} running scans, "
 
-        i=0
-        stats['running_jobs'].each {
-            |job|
-            i+= proc_mem( job['proc']['rss'] ).to_i
-        }
-        str += i.to_s + 'MB RAM usage '
+        rss = 0
+        mem = 0
+        cpu = 0
 
-        i=0
         stats['running_jobs'].each {
             |job|
-            i+= Float( job['proc']['pctmem'] )
+            rss += proc_mem( job['proc']['rss'] ).to_i
+            mem += Float( job['proc']['pctmem'] )
+            cpu += Float( job['proc']['pctcpu'] )
         }
-        str += '(' + i.to_s[0..4] + '%), '
-
-        i=0
-        stats['running_jobs'].each {
-            |job|
-            i+= Float( job['proc']['pctcpu'] )
-        }
-        str += i.to_s[0..4] + '% CPU usage'
+        str += rss.to_s + 'MB RAM usage '
+        str += '(' + mem.to_s[0..4] + '%), '
+        str += cpu.to_s[0..4] + '% CPU usage'
     end
 
     def show_dispatcher_node_line( stats )
@@ -738,6 +731,14 @@ class Server < Sinatra::Base
             opts = {}
             # opts['settings'] = prep_opts( session['opts']['settings'] )
             opts['settings'] = session['opts']['settings']
+
+            if params['high_performance']
+                opts['settings']['min_pages_per_instance']=
+                    params['min_pages_per_instance']
+
+                opts['settings']['max_slaves'] = params['max_slaves']
+            end
+
             opts['plugins']  = YAML::load( session['opts']['plugins'] )
             opts['modules']  = session['opts']['modules']
 
