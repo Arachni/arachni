@@ -5,41 +5,62 @@
             <input type="submit" value="Launch Scan" />
 
             <div id="page-intro">
-                Select a Dispatcher:
-                <select id="dispatcher" name="dispatcher">
-                <% stats.each_pair do |d_url, d_stats| %>
-                    <option value="<%=d_url%>">
-                        <%=show_dispatcher_line( d_stats )%>
-                        <%= !d_stats['neighbours'].empty? ? '[HP]' : nil %>
-                    </option>
-                <%end%>
-                </select>
+                <div class="left">
+                    Select a Dispatcher:
+                    <select id="dispatcher" name="dispatcher">
+                    <% stats.each_pair do |d_url, d_stats| %>
+                        <option value="<%=d_url%>">
+                            <%=show_dispatcher_line( d_stats )%>
+                            <%= !d_stats['neighbours'].empty? ? '[HP]' : nil %>
+                        </option>
+                    <%end%>
+                    </select>
 
-                <span id="hpg">
-                    <br/>
-                    Use High Performance Grid (HPG) mode <input type="checkbox" name="high_performance" />
-                    <strong>Attention:</strong> The HPG is highly unstable and experimental.
-                </span>
+                    <span class="hpg">
+                        <br/>
+                        Use High Performance Grid (HPG) mode <input type="checkbox" id="high_performance_checkbox" name="high_performance" />
+                        <strong>Attention:</strong> The HPG is highly unstable and experimental.
+                    </span>
 
-                <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
+                    <h2>URL: <input name="url" value="<%=session['opts']['settings']['url']%>" size="50" /></h2>
+                </div>
+
+                <div class="left hpg_options">
+                    <h2>Distribution options</h2>
+                    Use a maximum of <input name="max_slaves" value="10" size="1" /> slave instances with at least <input name="min_pages_per_instance" value="30" size="1" /> pages per instance.
+                </div>
             </div>
 
         </form>
 
         <script type="text/javascript">
-            <% hpg= {}; stats.each do |k, v| hpg[k] = !v['neighbours'].empty? end %>
-            hpg = <%=hpg.to_json%>;
+            function updateHpgVisibility(){
+                <% hpg= {}; stats.each do |k, v| hpg[k] = !v['neighbours'].empty? end %>
+                hpg = <%=hpg.to_json%>;
 
-            if( !hpg[ $("#dispatcher option:first").val() ] ) {
-                $('#hpg').hide();
+                if( !hpg[ $("#dispatcher option:selected").val() ] ) {
+                    $('.hpg').hide();
+                } else {
+                    $('.hpg').show();
+                }
             }
 
-            $('#dispatcher').change( function() {
-                if( hpg[$(this).attr('value')] ) {
-                    $('#hpg').show();
+            function updateHpgOptionsVisibility(){
+                if( !$("#high_performance_checkbox").is(':checked') ) {
+                    $('.hpg_options').hide();
                 } else {
-                    $('#hpg').hide();
+                    $('.hpg_options').show();
                 }
+            }
+
+            updateHpgOptionsVisibility();
+            $('#high_performance_checkbox').change(function () {
+                updateHpgOptionsVisibility();
+            });
+
+            updateHpgVisibility();
+            $('#dispatcher').change(function () {
+                updateHpgVisibility();
             });
         </script>
 
