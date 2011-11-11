@@ -242,7 +242,7 @@ class Profiler < Arachni::Plugin::Base
             :description    => %q{Examines the behavior of the web application gathering general statistics
                 and performs taint analysis to determine which inputs affect the output.
 
-                It's does not perform any vulnerability assesment nor does it send attack payloads.},
+                It does not perform any vulnerability assesment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.1'
         }
