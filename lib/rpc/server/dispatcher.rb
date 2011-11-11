@@ -263,8 +263,6 @@ class Dispatcher
 
     --weight=<float>            weight of the Dispatcher
 
-    --cost=<float>              cost of using this Dispatcher
-
     --pipe-id=<string>          bandwidth pipe identification
 
     --nickname=<string>         nickname of the Dispatcher

@@ -325,7 +325,7 @@ class Server < Sinatra::Base
         str = "Nickname: #{stats['node']['nickname']} - "
         str += "Pipe ID: #{stats['node']['pipe_id']} - "
         str += "Weight: #{stats['node']['weight']} - "
-        str += "Cost: #{stats['node']['cost']} "
+        # str += "Cost: #{stats['node']['cost']} "
     end
 
     def welcomed?
