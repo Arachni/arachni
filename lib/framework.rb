@@ -324,18 +324,21 @@ class Framework
         @sitemap  ||= []
         @auditmap ||= []
 
-        # initiates the crawl
-        @spider.run( false ) {
-            |response|
-            @sitemap |= @spider.sitemap
-            @url_queue << url_sanitize( response.effective_url )
-        }
-
-        # @spider.run {
-            # |page|
-            # @sitemap |= @spider.sitemap
-            # @page_queue << page
-        # }
+        # if we're restricted to a given list of paths there's no reason to run the spider
+        if @opts.restrict_paths && !@opts.restrict_paths.empty?
+            @sitemap = @opts.restrict_paths
+            @sitemap.each {
+                |url|
+                @url_queue << url_sanitize( url )
+            }
+        else
+            # initiates the crawl
+            @spider.run( false ) {
+                |response|
+                @sitemap |= @spider.sitemap
+                @url_queue << url_sanitize( response.effective_url )
+            }
+        end
 
         audit_queue
 

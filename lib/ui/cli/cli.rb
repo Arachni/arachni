@@ -689,7 +689,7 @@ class CLI
     --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
                                   (Can be used multiple times.)
 
-    --restrict-paths=<file>     only crawl the paths in <file>
+    --restrict-paths=<file>     use the paths in <file> instead of crawling
                                   (Can be used multiple times.)
 
 
