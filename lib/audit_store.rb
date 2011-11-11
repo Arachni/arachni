@@ -23,7 +23,7 @@ require Options.instance.dir['lib'] + 'issue'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class AuditStore
 
@@ -112,9 +112,11 @@ class AuditStore
     #
     def AuditStore.load( file )
          begin
-            Marshal.load( IO.read( file ) )
-         rescue
-             YAML.load( IO.read( file ) )
+             r = YAML.load( IO.read( file ) )
+             r.version
+             r
+         rescue Exception => e
+             Marshal.load( File.binread( file ) )
          end
     end
 
@@ -125,11 +127,16 @@ class AuditStore
     #
     def save( file )
         @framework = ''
-        f = File.open( file, 'w' )
         begin
-            Marshal.dump( self, f )
+            File.open( file, 'w' ) {
+                |f|
+                f.write( YAML.dump( self ) )
+            }
         rescue
-            YAML.dump( self, f )
+            File.open( file, 'wb' ) {
+                |f|
+                f.write( Marshal.dump( self ) )
+            }
         end
     end
 
