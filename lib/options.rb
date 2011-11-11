@@ -380,6 +380,9 @@ class Options
     attr_accessor :extend_paths
     attr_accessor :extend_paths_filepath
 
+    attr_accessor :min_pages_per_instance
+    attr_accessor :max_slaves
+
 
     def initialize( )
 
