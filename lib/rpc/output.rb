@@ -98,7 +98,7 @@ module Output
     # @return    [void]
     #
     def print_status( str = '' )
-        if @@only_positives then return end
+        return if @@only_positives
         buffer( :status => str )
     end
 
@@ -113,7 +113,7 @@ module Output
     # @return    [void]
     #
     def print_info( str = '' )
-        if @@only_positives then return end
+        return if @@only_positives
         buffer( :info => str )
     end
 
@@ -140,7 +140,7 @@ module Output
     # @return    [void]
     #
     def print_debug( str = '' )
-        if !@@debug then return end
+        return if !@@debug
 
         if reroute_to_file?
             buffer( :debug => str )
@@ -161,7 +161,7 @@ module Output
     # @return    [void]
     #
     def print_debug_pp( obj = nil )
-        if !@@debug then return end
+        return if !@@debug
         pp obj
     end
 
@@ -176,8 +176,13 @@ module Output
     # @return    [void]
     #
     def print_debug_backtrace( e = nil )
-        if !@@debug then return end
+        return if !e || !@@debug
         e.backtrace.each{ |line| print_debug( line ) }
+    end
+
+    def print_error_backtrace( e = nil )
+        return if !e
+        e.backtrace.each{ |line| print_error( line ) }
     end
 
     # Prints a verbose message
@@ -191,7 +196,7 @@ module Output
     # @return    [void]
     #
     def print_verbose( str = '' )
-        if !@@verbose then return end
+        return if !@@verbose
         buffer( :verbose => str )
     end
 
@@ -206,7 +211,7 @@ module Output
     # @return    [void]
     #
     def print_line( str = '' )
-        if @@only_positives then return end
+        return if @@only_positives
         buffer( :line => str )
     end
 
