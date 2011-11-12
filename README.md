@@ -281,6 +281,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
  - Plug-ins are framework demi-gods, they have direct access to the framework instance.
  - Can be used to add any functionality to Arachni.
  - Currently available plugins:
+    - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
     - Passive Proxy -- Analyzes requests and responses between the web app and the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
     - Form based AutoLogin
     - Dictionary attacker for HTTP Auth

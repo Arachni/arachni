@@ -79,6 +79,8 @@
    - Discovery (accompanied by appropriate report formatters). (**New**) [Issue #81]
       - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
    - Added the 'defaults' subdirectory which contains plug-ins that should be loaded by default.
+   - Added:
+      - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
 - Reports
    - HTML report
       - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
@@ -109,7 +111,7 @@
       - EM Synchrony
       - AsyncSinatra
    - Updated
-      - Typhoeus =>0.3.2
+      - Typhoeus => 0.3.2
       - Sys-proctable => 0.9.1
       - Nokogiri => 1.5.0
       - Sinatra => 1.3.1
