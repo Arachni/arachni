@@ -79,7 +79,7 @@ class ComponentManager < Hash
             |opt|
 
             name  = opt.name
-            val   = user_opts[name]
+            val   = user_opts[name] || opt.default
 
             if( opt.empty_required_value?( val ) )
                 errors[name] = {
