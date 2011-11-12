@@ -82,6 +82,14 @@ class Base
 
     end
 
+    def wait_while_framework_running
+        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+    end
+
+    def self.gems
+        [ ]
+    end
+
     #
     # OPTIONAL
     #
