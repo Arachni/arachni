@@ -391,5 +391,35 @@ class OptInt < OptBase
     end
 end
 
+###
+#
+# Floating point option.
+#
+###
+class OptFloat < OptBase
+    def type
+        return 'float'
+    end
+
+    def normalize(value)
+        begin
+            Float( value )
+        rescue
+            nil
+        end
+    end
+
+    def valid?(value)
+        return false if empty_required_value?(value)
+
+        if value and not normalize(value).to_s.match(/^\d+\.\d+$/)
+            return false
+        end
+
+        return super
+    end
+end
+
+
 end
 
