@@ -56,6 +56,21 @@ class Manager < Arachni::ComponentManager
         each {
             |name, plugin|
 
+            if( ret = sane_env?( plugin ) ) != true
+                if !ret[:gem_errors].empty?
+                    print_error( "[#{name}] The following plug-in dependencies aren't satisfied:" )
+                    ret[:gem_errors].each {
+                       |gem|
+                        print_info( "\t* #{gem}" )
+                    }
+
+                    print_info( "Try installing them by running:" )
+                    print_info( "\tgem install #{ret[:gem_errors].join( ' ' )}" )
+                end
+
+                raise
+            end
+
             @jobs << Thread.new {
 
                 exception_jail {
@@ -76,6 +91,25 @@ class Manager < Arachni::ComponentManager
             print_status( 'Waiting for plugins to settle...' )
             ::IO::select( nil, nil, nil, 1 )
         end
+    end
+
+    def sane_env?( plugin )
+        gem_errors = []
+
+        plugin.gems.each {
+            |gem|
+            begin
+                require gem
+            rescue Exception => e
+                gem_errors << gem
+            end
+        }
+
+        return {
+            :gem_errors => gem_errors
+        } if !gem_errors.empty?
+
+        return true
     end
 
     def create( name )
