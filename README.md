@@ -296,6 +296,9 @@ The analyzer can graciously handle badly written HTML code due to a combination 
          It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
     - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
     - Discovery -- Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+    - BeepNotify -- Beeps when the scan finishes.
+    - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
+    - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
 
 ### Trainer subsystem
 

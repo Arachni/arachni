@@ -81,6 +81,9 @@
    - Added the 'defaults' subdirectory which contains plug-ins that should be loaded by default.
    - Added:
       - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
+      - BeepNotify -- Beeps when the scan finishes.
+      - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
+      - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
 - Reports
    - HTML report
       - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
