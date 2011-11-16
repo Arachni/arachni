@@ -8,7 +8,7 @@
 
 =end
 
-require 'arachni/rpc'
+require 'arachni/rpc/em'
 require 'yaml'
 
 module Arachni
@@ -23,7 +23,7 @@ class Server
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Base < ::Arachni::RPC::Server
+class Base < ::Arachni::RPC::EM::Server
 
     def initialize( opts, token = nil )
         super(

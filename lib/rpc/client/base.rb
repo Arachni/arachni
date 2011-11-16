@@ -8,7 +8,7 @@
 
 =end
 
-require 'arachni/rpc'
+require 'arachni/rpc/em'
 require 'yaml'
 
 module Arachni
@@ -22,7 +22,7 @@ class Client
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
 #
-class Base < ::Arachni::RPC::Client
+class Base < ::Arachni::RPC::EM::Client
 
     def initialize( opts, url, token = nil )
         host, port = url.split( ':' )

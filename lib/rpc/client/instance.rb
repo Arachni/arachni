@@ -34,7 +34,7 @@ class Instance
     #
     # Used to make remote option attributes look like setter methods
     #
-    class OptsMapper < Mapper
+    class OptsMapper < RemoteObjectMapper
 
         def method_missing( sym, *args, &block )
             return super( sym, *args, &block ) if sym == :set
@@ -49,10 +49,10 @@ class Instance
         @client = Base.new( opts, url, token )
 
         @opts      = OptsMapper.new( @client, 'opts' )
-        @framework = Mapper.new( @client, 'framework' )
-        @modules   = Mapper.new( @client, 'modules' )
-        @plugins   = Mapper.new( @client, 'plugins' )
-        @service   = Mapper.new( @client, 'service' )
+        @framework = RemoteObjectMapper.new( @client, 'framework' )
+        @modules   = RemoteObjectMapper.new( @client, 'modules' )
+        @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
+        @service   = RemoteObjectMapper.new( @client, 'service' )
     end
 
 end
