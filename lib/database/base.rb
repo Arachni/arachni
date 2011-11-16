@@ -34,8 +34,7 @@ module Database
         def initialize( serializer = nil )
             @serializer = serializer
             if !@serializer
-                require 'yaml'
-                @serializer = YAML
+                @serializer = Marshal
             end
         end
 
