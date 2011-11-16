@@ -749,7 +749,7 @@ class Server < Sinatra::Base
             job = Scheduler::Job.new(
                 :dispatcher  => params[:dispatcher],
                 :url         => params[:url],
-                :opts        => opts.to_yaml,
+                :opts        => YAML.dump( opts ),
                 :owner_addr  => env['REMOTE_ADDR'],
                 :owner_host  => env['REMOTE_HOST'],
                 :created_at  => Time.now
@@ -853,7 +853,7 @@ class Server < Sinatra::Base
         instances.connect( params[:url], session ).framework.progress_data {
             |prog|
 
-            if !prog.rpc_connection_error?
+            if !prog.rpc_exception?
 
                 @@output_streams ||= {}
                 @@output_streams[params[:url]] = OutputStream.new( prog['messages'], 38 )
