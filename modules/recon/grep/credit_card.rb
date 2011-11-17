@@ -17,15 +17,13 @@ module Modules
 # Scans every page for credit card numbers.
 #
 # @author: morpheuslaw <msidagni@nopsec.com>
-# @version: 0.1
+# @version: 0.1.1
 #
 class CreditCards < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
-    end
+    def run
+        return if !text?
 
-    def run( )
         ccNumber = /\b(((4\d{3})|(5[1-5]\d{2})|(6011))-?\d{4}-?\d{4}-?\d{4}|3[4,7][\d\s-]{15})\b/
 
         # match CC number candidates and verify matches before logging
@@ -33,6 +31,14 @@ class CreditCards < Arachni::Module::Base
             |match|
             __luhn_check( match )
         }
+    end
+
+    def text?
+        @page.response_headers.each {
+            |k, v|
+            return true if k.downcase == 'content-type' && v.include?( 'text' )
+        }
+        return false
     end
 
     #
@@ -66,7 +72,7 @@ class CreditCards < Arachni::Module::Base
             :name           => 'Credit card number disclosure',
             :description    => %q{Scans pages for credit card numbers.},
             :author         => 'morpheuslaw <msidagni@nopsec.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Credit card number disclosure.},
