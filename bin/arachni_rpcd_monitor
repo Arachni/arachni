@@ -13,6 +13,6 @@ require_relative "../lib/options"
 
 Arachni::Options.instance.parse!
 
-require Arachni::Options.instance.dir['lib'] + 'ui/dispatcher_monitor'
+require Arachni::Options.instance.dir['lib'] + 'ui/rpc/dispatcher_monitor'
 
 Arachni::UI::DispatcherMonitor.new( Arachni::Options.instance ).run
