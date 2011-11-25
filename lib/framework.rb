@@ -27,7 +27,6 @@ require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'database'
 require opts.dir['lib'] + 'component_manager'
-require 'yaml'
 
 
 module Arachni

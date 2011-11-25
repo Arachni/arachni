@@ -16,7 +16,6 @@ require "rack/csrf"
 require 'rack-flash'
 require 'json'
 require 'erb'
-require 'yaml'
 require 'cgi'
 require 'fileutils'
 

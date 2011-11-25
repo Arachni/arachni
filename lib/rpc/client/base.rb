@@ -9,7 +9,6 @@
 =end
 
 require 'arachni/rpc/em'
-require 'yaml'
 
 module Arachni
 module RPC

@@ -9,7 +9,6 @@
 =end
 
 require 'openssl'
-require "yaml"
 require "base64"
 
 #

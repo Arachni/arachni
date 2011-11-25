@@ -8,6 +8,9 @@
 
 =end
 
+require 'yaml'
+YAML::ENGINE.yamler = 'syck'
+
 require 'singleton'
 require 'getoptlong'
 
