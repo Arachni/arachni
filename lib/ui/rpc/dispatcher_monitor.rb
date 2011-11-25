@@ -35,6 +35,13 @@ class DispatcherMonitor
             exit 0
         end
 
+        if !@opts.url
+            print_error "No server specified."
+            print_line
+            usage
+            exit 0
+        end
+
         begin
             # start the XMLRPC client
             @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.url.to_s )
@@ -176,7 +183,7 @@ class DispatcherMonitor
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_rpcd_monitor  https://host:port
+  Usage:  arachni_rpcd_monitor  host:port
 
   Supported options:
 
