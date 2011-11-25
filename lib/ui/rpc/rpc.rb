@@ -1,5 +1,13 @@
-require 'xmlrpc/client'
-require 'openssl'
+=begin
+                  Arachni
+  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
 
 module Arachni
 
@@ -26,7 +34,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.2
 #
 class RPC
 
@@ -89,7 +97,7 @@ class RPC
             # 'owner'
             @instance = @dispatcher.dispatch( @opts.url.to_s )
 
-            # start the XMLRPC client
+            # start the RPC client
             @server = Arachni::RPC::Client::Instance.new( @opts, @instance['url'], @instance['token'] )
         rescue Exception => e
             print_error( "Could not connect to server." )
@@ -114,7 +122,7 @@ class RPC
         end
 
         #
-        # we could just execute pause() upon an interrupt but XMLRPC I/O
+        # we could just execute pause() upon an interrupt but RPC I/O
         # needs to be synchronized otherwise we'll get an HTTP exception
         #
         @pause = false
@@ -141,7 +149,7 @@ class RPC
 
             print_line
 
-            # grab the XMLRPC server output while a scan is running
+            # grab the RPC server output while a scan is running
             while( @server.framework.busy? )
                 output
 
@@ -172,7 +180,7 @@ class RPC
             @opts.load_profile = nil
             profiles.each {
                 |filename|
-                @opts.merge!( YAML::load( IO.read( filename ) ) )
+                @opts.merge!( Arachni::Options.instance.load( filename ) )
             }
         }
     end
@@ -196,7 +204,7 @@ class RPC
     end
 
     #
-    # Grabs the output from the XMLRPC server and routes it to the proper output method.
+    # Grabs the output from the RPC server and routes it to the proper output method.
     #
     def output
         @server.service.output.each {
@@ -232,15 +240,15 @@ class RPC
         # make it easier on the user, grab the report to have something
         # to show him while the scan is paused.
         #
+
         begin
-            print_issues( YAML.load( @server.framework.report ) )
+            print_issues( @server.framework.issues )
         rescue Exception => e
             exception_jail{ raise e }
             exit 0
         end
 
-        print_info( 'Arachni was interrupted,' +
-            ' do you want to continue?' )
+        print_info( 'Arachni is paused, do you want to continue?' )
 
         print_info( 'Continue? (hit \'enter\' to continue, \'e\' to exit)' )
 
@@ -255,7 +263,6 @@ class RPC
 
         @pause = false
         @server.framework.resume!
-
     end
 
     #
@@ -263,32 +270,27 @@ class RPC
     #
     # This method is used during a pause.
     #
-    def print_issues( audit_store )
+    def print_issues( issues )
 
-        print_line( )
-        print_info( audit_store['issues'].size.to_s +
-          ' issues have been detected.' )
+        print_line
+        print_info( issues.size.to_s + ' issues have been detected.' )
 
-        print_line( )
-        audit_store['issues'].each {
+        print_line
+        issues.each {
             |issue|
 
-            print_ok( "#{issue['name']} (In #{issue['elem']} variable '#{issue['var']}'" +
-              " - Severity: #{issue['severity']} - Variations: #{issue['variations'].size.to_s})" )
-
-            print_info( issue['variations'][0]['url'] )
-
-            print_line( )
+            print_ok( "#{issue.name} (In #{issue.elem} variable '#{issue.var}'" +
+              " - Severity: #{issue.severity}" )
         }
 
-        print_line( )
-
+        print_line
     end
 
     #
-    # Parses, sets and sends options to the XMLRPC server.
+    # Parses, sets and sends options to the RPC server.
     #
     def parse_opts
+        @opts.reports['stdout'] = {} if @opts.reports.empty?
 
         #
         # No modules have been specified, set the mods to '*' (all).
@@ -316,8 +318,12 @@ class RPC
             @opts.audit_cookies = true
         end
 
+        opts = @opts.to_h.dup
+
+        @framework.reports.load( opts['reports'].keys )
+
         # do not send these options over the wire
-        illegal = [
+        [
             # this is bad, do not override the server's directory structure
             'dir',
 
@@ -328,105 +334,39 @@ class RPC
             'load_profile',
 
             # report options should remain local
-            # If you send this to the server it will cause a Ruby segfault.
             'repopts',
             'repsave',
 
             # do not automatically send this options over
             # we'll take care of this ourselves as soon as we get to the 'cookie_jar'
             # option.
-            'cookies'
-        ]
-
-        @server.plugins.load(
-            {
-                'content_types' => {},
-                'healthmap'     => {},
-                'metamodules'   => {},
-            }
-        )
-
-        @server.plugins.load( @opts.plugins )
-
-
-        @server.modules.load( @opts.mods )
-
-        opts = @opts.to_h.dup
-
-        illegal.each {
+            'cookies',
+            'rpc_instance_port_range',
+            'datastore',
+            'reports'
+        ].each {
             |k|
             opts.delete( k )
         }
 
         opts['url'] = opts['url'].to_s
-        @server.opts.set( opts )
 
-        return
+        if opts['cookie_jar']
+            opts['cookies'] = parse_cookie_jar( opts['cookie_jar'] )
+            opts.delete( 'cookie_jar' )
+        end
 
-        @opts.to_h.each {
-            |opt, arg|
-
-            next if !arg
-            next if illegal.include? opt
-
-            case opt
-
-            when "arachni_verbose"
-                print_status "Enabling verbosity."
-                verbose!
-                @server.framework.verbose_on
-
-            when 'redundant'
-                print_status 'Setting redundancy rules.'
-
-                redundant = []
-                arg.each {
-                    |rule|
-                    rule['regexp'] = rule['regexp'].to_s
-                    redundant << rule
-                }
-                @server.opts.redundant( redundant )
-
-            when 'exclude', 'include'
-                print_status "Setting #{opt} rules."
-                @server.call( "opts.#{opt}=", arg.map{ |rule| rule.to_s } )
-
-            when 'url'
-                print_status 'Setting url: ' + @server.call( "opts.url=", arg.to_s )
-
-            when 'cookie_jar'
-                print_status 'Setting cookies:'
-                @server.opts.cookies( parse_cookie_jar( arg ) ).each_pair {
-                    |k, v|
-                    print_info ' * ' + k + ' => ' + v
-                }
-
-            when 'mods'
-                print_status 'Loading modules:'
-                @server.modules.load( arg ).each {
-                    |mod|
-                    print_info ' * ' + mod
-                }
-
-            when 'plugins'
-                next if arg.empty?
-
-
-            when "http_req_limit"
-                print_status 'Setting HTTP request limit: ' +
-                    @server.opts.http_req_limit( arg ).to_s
-
-            when 'reports'
-                arg['stdout'] = {}
-                exception_jail{ @framework.reports.load( arg.keys ) }
-
-            else
-                print_status "Setting #{opt}."
-                @server.call( "opts.#{opt}=", arg )
-
-            end
+        @framework.plugins.load_defaults!.each {
+            |plugin|
+            @opts.plugins[plugin] = {} if !@opts.plugins.include?( plugin )
         }
 
+        @server.plugins.load( @opts.plugins )
+        @server.modules.load( @opts.mods )
+        @server.opts.set( opts )
+
+        # ap opts
+        # exit
     end
 
     #
@@ -438,16 +378,13 @@ class RPC
     end
 
     #
-    # Grabs the report from the XMLRPC server and runs the selected Arachni report module.
+    # Grabs the report from the RPC server and runs the selected Arachni report module.
     #
     def report
         print_status "Grabbing scan report..."
 
-        # this will return the AuditStore as a hash
-        # ap @server.call( "framework.report" )
-
         # this will return the AuditStore as a string in YAML format
-        audit_store = YAML.load( @server.framework.auditstore )
+        audit_store = @server.framework.auditstore
 
         # run the loaded reports and get the generated filename
         @framework.reports.run( audit_store )
@@ -455,16 +392,16 @@ class RPC
         print_status "Grabbing stats..."
 
         stats = @server.framework.stats
-        print_line
-        print_info( "Sent #{stats['requests']} requests." )
-        print_info( "Received and analyzed #{stats['responses']} responses." )
-        print_info( 'In ' + stats['time'] )
 
-        avg = 'Average: ' + stats['avg'] + ' requests/second.'
+        print_line
+        print_info( "Sent #{stats[:requests]} requests." )
+        print_info( "Received and analyzed #{stats[:responses]} responses." )
+        print_info( 'In ' + stats[:time].to_s )
+
+        avg = 'Average: ' + stats[:avg].to_s + ' requests/second.'
         print_info( avg )
 
         print_line
-
     end
 
     def parse_cookie_jar( jar )
@@ -489,45 +426,45 @@ class RPC
         mods.each {
             |info|
 
-            print_status( "#{info['mod_name']}:" )
+            print_status( "#{info[:mod_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info['name'] )
-            print_line( "Description:\t"  + info['description'] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
 
-            if( info['elements'] && info['elements'].size > 0 )
+            if( info[:elements] && info[:elements].size > 0 )
                 print_line( "Elements:\t" +
-                    info['elements'].join( ', ' ).downcase )
+                    info[:elements].join( ', ' ).downcase )
             end
 
-            if( info['dependencies'] )
+            if( info[:dependencies] )
                 print_line( "Dependencies:\t" +
-                    info['dependencies'].join( ', ' ).downcase )
+                    info[:dependencies].join( ', ' ).downcase )
             end
 
-            print_line( "Author:\t\t"     + info['author'] )
-            print_line( "Version:\t"      + info['version'] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
 
             print_line( "References:" )
-            if info['references'].is_a?( Hash )
-                info['references'].keys.each {
+            if info[:references].is_a?( Hash )
+                info[:references].keys.each {
                     |key|
-                    print_info( key + "\t\t" + info['references'][key] )
+                    print_info( key + "\t\t" + info[:references][key] )
                 }
             end
 
             print_line( "Targets:" )
-            info['targets'].keys.each {
+            info[:targets].keys.each {
                 |key|
-                print_info( key + "\t\t" + info['targets'][key] )
+                print_info( key + "\t\t" + info[:targets][key] )
             }
 
-            if( info['issue'] &&
-                ( sploit = info['issue']['metasploitable'] ) )
+            if( info[:issue] &&
+                ( sploit = info[:issue]['metasploitable'] ) )
                 print_line( "Metasploitable:\t" + sploit )
             end
 
-            print_line( "Path:\t"    + info['path'] )
+            print_line( "Path:\t"    + info[:path] )
 
             i+=1
 
@@ -603,16 +540,16 @@ class RPC
         plugins.each {
             |info|
 
-            print_status( "#{info['plug_name']}:" )
+            print_status( "#{info[:plug_name]}:" )
             print_line( "--------------------" )
 
-            print_line( "Name:\t\t"       + info['name'] )
-            print_line( "Description:\t"  + info['description'] )
+            print_line( "Name:\t\t"       + info[:name] )
+            print_line( "Description:\t"  + info[:description] )
 
-            if( info['options'] && !info['options'].empty? )
+            if( info[:options] && !info[:options].empty? )
                 print_line( "Options:\t" )
 
-                info['options'].each {
+                info[:options].each {
                     |option|
                     print_info( "\t#{option['name']} - #{option['desc']}" )
                     print_info( "\tType:        #{option['type']}" )
@@ -623,9 +560,9 @@ class RPC
                 }
             end
 
-            print_line( "Author:\t\t"     + info['author'] )
-            print_line( "Version:\t"      + info['version'] )
-            print_line( "Path:\t"         + info['path'] )
+            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Version:\t"      + info[:version] )
+            print_line( "Path:\t"         + info[:path] )
 
             print_line
         }
