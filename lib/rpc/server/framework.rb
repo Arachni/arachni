@@ -528,38 +528,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Scan statistics
-    #
-    # @return   [Hash]
-    #
-    # def stats( fresh = true )
-#
-        # stats = []
-        # begin
-            # stats << @framework.stats( fresh, true )
-        # rescue
-            # return {}
-        # end
-#
-        # begin
-            # stats = @instances.map { |instance| connect_to_instance( instance ).framework.stats( fresh ) }
-        # rescue Exception => e
-            # # ap e
-            # # ap e.backtrace
-        # end
-#
-        # final_stats = {}
-        # begin
-            # final_stats = merge_stats( stats )
-        # rescue Exception => e
-            # # ap e
-            # # ap e.backtrace
-        # end
-#
-        # return final_stats
-    # end
-
-    #
     # Returns the results of the audit as an AuditStore object.
     #
     # @return   [Arachni::AuditStore]
