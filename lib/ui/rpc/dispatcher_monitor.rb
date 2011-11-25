@@ -1,5 +1,3 @@
-require 'xmlrpc/client'
-require 'openssl'
 require 'terminal-table/import'
 
 module Arachni
@@ -43,12 +41,8 @@ class DispatcherMonitor
         end
 
         begin
-            # start the XMLRPC client
+            # start the RPC client
             @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.url.to_s )
-
-            # it seems like the XMLRPC client will connect us on the first
-            # call...so make sure that it *can* actually connect
-            @dispatcher.jobs
         rescue Exception => e
             print_error( "Could not connect to server." )
             print_error( "Error: #{e.to_s}." )
