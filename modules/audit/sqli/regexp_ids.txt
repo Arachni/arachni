@@ -17,9 +17,7 @@ ADODB\.Field \(0x800A0BCD\)<br>
 Procedure '[^']+' requires parameter '[^']+'
 ADODB\.Recordset\'
 Unclosed quotation mark before the character string
-SQLCODE
 DB2 SQL error:
-SQLSTATE
 \[IBM\]\[CLI Driver\]\[DB26000\]
 \[CLI Driver\]
 \[DB26000\]
@@ -55,10 +53,6 @@ A Parser Error \(syntax error\)
 java\.sql\.SQLException
 Unexpected end of command in statement
 \[Macromedia\]\[SQLServer JDBC Driver\]
-SELECT .*? FROM .*?
-UPDATE .*? SET .*?
-INSERT INTO .*?
-Unknown column
 where clause
 SQL syntax.*MySQL
 Warning.*mysql_.*
