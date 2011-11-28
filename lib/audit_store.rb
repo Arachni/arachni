@@ -147,7 +147,8 @@ class AuditStore
     #
     def to_h
 
-        hash = obj_to_hash( self )
+        hash = obj_to_hash( self ).dup
+        hash.delete( 'framework' )
 
         issues = []
         hash['issues'].each {
@@ -156,6 +157,17 @@ class AuditStore
         }
 
         hash['issues'] = issues
+
+        hash['plugins'].each {
+            |plugin, results|
+            next if !results[:options]
+
+            hash['plugins'][plugin][:options] = hash['plugins'][plugin][:options].map {
+                |opt|
+                opt.to_h
+            }
+        }
+
         return hash
     end
 
