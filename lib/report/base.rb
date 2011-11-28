@@ -77,6 +77,15 @@ class Base
     end
 
     #
+    # @param    [AuditStore]  audit_store
+    # @param    [Hash]        options       options passed to the report
+    #
+    def initialize( audit_store, options )
+        @audit_store   = audit_store
+        @options       = options
+    end
+
+    #
     # REQUIRED
     #
     def run( )
