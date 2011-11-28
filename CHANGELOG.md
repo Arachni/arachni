@@ -84,6 +84,7 @@
       - BeepNotify -- Beeps when the scan finishes.
       - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
       - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
+      - Manual verification -- Flags issues that require manual verification as untrusted in order to reduce the signal-to-noise ratio.
 - Reports
    - HTML report
       - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
@@ -103,6 +104,8 @@
    - Audit
       - XSS -- Updated to actually inject an element, parse the HTML response and
         look for that element before logging in order to eliminate false positives. [Issue #59]
+      - Path traversal -- Fixed broken regular expressions
+      - SQL Injection -- Fixed broken regular expressions
    - Recon
       - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
 - Meta-Modules
