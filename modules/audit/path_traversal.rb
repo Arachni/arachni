@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.3
+# @version: 0.2.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -72,11 +72,11 @@ class PathTraversal < Arachni::Module::Base
         @__params = [
             {
                 'value'  => 'etc/passwd',
-                'regexp' => /root:x:0:0:.+:[0-9a-zA-Z\/]+/i
+                'regexp' => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im
             },
             {
                 'value'  => 'boot.ini',
-                'regexp' => /\[boot loader\](.*)\[operating systems\]/i
+                'regexp' => /\[boot loader\](.*)\[operating systems\]/im
             }
 
         ]
