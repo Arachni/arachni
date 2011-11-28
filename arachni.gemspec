@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
 
       s.add_dependency "typhoeus",        "~> 0.3.2"
       s.add_dependency "awesome_print"
+      s.add_dependency "json"
       s.add_dependency "nokogiri",        "~> 1.5.0"
       s.add_dependency "sys-proctable",   "~> 0.9.1"
       s.add_dependency "terminal-table",  "~> 1.4.2"
