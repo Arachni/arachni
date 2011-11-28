@@ -127,7 +127,7 @@ class OptBase
             |var|
             hash[var.to_s.gsub( /@/, '' )] = self.instance_variable_get( var )
         }
-        return hash
+        return hash.merge( 'type' => type )
     end
 
 
