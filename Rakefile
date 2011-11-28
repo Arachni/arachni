@@ -54,6 +54,9 @@ desc "Cleaning report and log files."
 task :clean do
 
     sh "rm *.afr || true"
+    sh "rm *.yaml || true"
+    sh "rm *.json || true"
+    sh "rm *.marshal || true"
     sh "rm *.gem || true"
     sh "rm logs/*.log || true"
     sh "rm lib/ui/web/server/db/log.db || true"

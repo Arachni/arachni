@@ -79,7 +79,7 @@
    - Discovery (accompanied by appropriate report formatters). (**New**) [Issue #81]
       - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
    - Added the 'defaults' subdirectory which contains plug-ins that should be loaded by default.
-   - Added:
+   - Added: (**New**)
       - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
       - BeepNotify -- Beeps when the scan finishes.
       - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
@@ -94,6 +94,10 @@
       - Added graph showing issue trust totals. (**New**)
       - The main issue graph shows trusted and untrusted issues in 2 different series.
       - ALl JavaScript and CSS code is now included in the report for off-line viewing.
+   - Added (**New**)
+      - JSON -- Exports the audit results as a JSON serialized Hash.
+      - Marshal -- Exports the audit results as a Marshal serialized Hash.
+      - YAML -- Exports the audit results as a YAML serialized Hash.
 - Heeded Ruby's warnings (<em>ruby -w</em>).
 - Modules
    - API

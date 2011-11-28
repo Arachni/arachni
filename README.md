@@ -278,8 +278,11 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - HTML (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the new HTML report template.)
     - XML
     - TXT
-    - YAML serialization
-    - Metareport (providing Metasploit integration to allow for [automated and assisted exploitation](http://zapotek.github.com/arachni/file.EXPLOITATION.html))
+    - AFR -- The default Arachni Framework Report format.
+    - JSON
+    - Marshal
+    - YAML
+    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://zapotek.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
