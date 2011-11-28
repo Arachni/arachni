@@ -424,7 +424,7 @@ class Auditable
 
     def match_regexp_and_log( regexp, res, opts )
         regexp = regexp.is_a?( Regexp ) ? regexp :
-            Regexp.new( regexp.to_s, Regexp::IGNORECASE | Regexp::MULTILINE )
+            Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
