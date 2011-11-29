@@ -803,6 +803,10 @@ class Options
         return str
     end
 
+    def restrict_paths=( urls )
+        @restrict_paths = [urls].flatten
+    end
+
     #
     # Converts the Options object to hash
     #
