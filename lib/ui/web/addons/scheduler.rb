@@ -65,6 +65,15 @@ class Scheduler < Base
                 opts = {}
                 # opts['settings'] = prep_opts( session['opts']['settings'] )
                 opts['settings'] = session['opts']['settings']
+
+                if params['high_performance']
+                    opts['settings']['grid_mode'] = 'high_performance'
+                    opts['settings']['min_pages_per_instance'] =
+                        params['min_pages_per_instance']
+
+                    opts['settings']['max_slaves'] = params['max_slaves']
+                end
+
                 opts['plugins']  = YAML::load( session['opts']['plugins'] )
                 opts['modules']  = session['opts']['modules']
 
