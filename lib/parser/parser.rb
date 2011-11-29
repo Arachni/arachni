@@ -116,8 +116,7 @@ class Parser
     def run
 
         # non text files won't contain any auditable elements
-        type = Arachni::HTTP.content_type( @response_headers )
-        if type.is_a?( String) && !type.substring?( 'text' )
+        if !text?
             return Page.new( {
                 :code        => @code,
                 :url         => @url,
@@ -169,6 +168,12 @@ class Parser
             :cookiejar   => jar
         } )
 
+    end
+
+    def text?
+        type = Arachni::HTTP.content_type( @response_headers )
+        return false if !type
+        return type.to_s.substring?( 'text' )
     end
 
     def doc

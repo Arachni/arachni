@@ -131,7 +131,7 @@ class Spider
                         check_url = page.url
                     else
                         c_parser = Parser.new( @opts, res )
-                        paths = c_parser.paths
+                        paths = c_parser.text? ? c_parser.paths : []
                         check_url = c_parser.url
                     end
 
