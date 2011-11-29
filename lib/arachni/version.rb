@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 =begin
                   Arachni
   Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -9,10 +8,9 @@
 
 =end
 
-require_relative "../lib/arachni/options"
+module Arachni
 
-Arachni::Options.instance.parse!
+    # the universal system version
+    VERSION      = '0.4'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
-
-Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance )
+end

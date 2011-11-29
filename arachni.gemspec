@@ -9,7 +9,7 @@
 =end
 
 Gem::Specification.new do |s|
-      require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
+      require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
       s.name              = "arachni"
       s.version           = Arachni::VERSION

@@ -73,7 +73,7 @@ class Server < Sinatra::Base
             end
         end
 
-        @@conf = YAML::load_file( opts.dir['root'] + 'conf/webui.yaml' )
+        @@conf = YAML::load_file( opts.dir['conf'] + 'webui.yaml' )
         opts.ssl      = @@conf['ssl']['client']['enable']
         opts.ssl_pkey = @@conf['ssl']['client']['key']
         opts.ssl_cert = @@conf['ssl']['client']['cert']

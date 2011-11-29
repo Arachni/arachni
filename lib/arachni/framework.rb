@@ -15,7 +15,7 @@ require 'rubygems'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
 opts = Arachni::Options.instance
 
-require opts.dir['lib'] + 'arachni'
+require opts.dir['lib'] + 'version'
 require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'

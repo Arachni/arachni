@@ -636,10 +636,9 @@ class Parser
     # @return   [Array]   paths
     #
     def run_extractors
-        lib = @opts.dir['root'] + 'path_extractors/'
-
         begin
-            @@manager ||= ::Arachni::ComponentManager.new( lib, Extractors )
+            @@manager ||=
+                ::Arachni::ComponentManager.new( @opts.dir['path_extractors'], Extractors )
 
             return @@manager.available.map {
                 |name|

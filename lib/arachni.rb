@@ -8,9 +8,4 @@
 
 =end
 
-module Arachni
-
-    # the universal system version
-    VERSION      = '0.4'
-
-end
+require_relative 'arachni/framework'

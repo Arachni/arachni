@@ -1,0 +1,53 @@
+--- !ruby/object:Arachni::AuditStore
+delta_time: 00:00:54
+finish_datetime: Thu Nov 17 00:46:53 2011
+framework: 
+issues: []
+options:
+  dir:
+    root: /home/zapotek/workspace/arachni/
+    data: /home/zapotek/workspace/arachni/data/
+    modules: /home/zapotek/workspace/arachni/modules/
+    reports: /home/zapotek/workspace/arachni/reports/
+    plugins: /home/zapotek/workspace/arachni/plugins/
+    lib: /home/zapotek/workspace/arachni/lib/
+  exclude: []
+  include:
+  - (?-mix:.*)
+  redundant: []
+  reports: {}
+  lsrep: []
+  lsmod: []
+  plugins: {}
+  lsplug: []
+  datastore:
+    :dispatcher_url: localhost:1111
+    :token: ead83a5bdd844b7feb4244e7dd5265d3
+  exclude_cookies: []
+  load_profile: []
+  restrict_paths: []
+  extend_paths: []
+  custom_headers: {}
+  rpc_instance_port_range:
+  - 1025
+  - 65535
+  redirect_limit: 20
+  http_req_limit: 20
+  rpc_port: 1352
+  pipe_id: '1'
+  neighbour: localhost:7331
+  rpc_address: localhost
+  pool_size: 5
+  user_agent: Arachni/0.4
+  start_datetime: 2011-11-17 00:45:59.639115088 +02:00
+  finish_datetime: 2011-11-17 00:46:53.883037408 +02:00
+  delta_time: 54.24392232
+  mods: []
+  url: ''
+plugins: {}
+revision: 0.2.5
+sitemap: []
+start_datetime: Thu Nov 17 00:45:59 2011
+taguri: ! '!ruby/object:Arachni::AuditStore'
+to_yaml_style: 1
+version: '0.4'

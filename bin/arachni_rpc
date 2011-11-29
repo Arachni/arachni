@@ -9,7 +9,7 @@
 
 =end
 
-require_relative "../lib/options"
+require_relative "../lib/arachni/options"
 
 Arachni::Options.instance.parse!
 require Arachni::Options.instance.dir['lib'] + 'ui/rpc/rpc'

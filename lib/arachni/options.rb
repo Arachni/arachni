@@ -397,12 +397,16 @@ class Options
 
         @dir            = {}
         @dir['root']    = root_path
+        @dir['gfx']     = @dir['root'] + 'gfx/'
+        @dir['conf']    = @dir['root'] + 'conf/'
+        @dir['logs']    = @dir['root'] + 'logs/'
         @dir['data']    = @dir['root'] + 'data/'
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
         @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['lib']     = @dir['root'] + 'lib/'
-
+        @dir['path_extractors']    = @dir['root'] + 'path_extractors/'
+        @dir['lib']     = @dir['root'] + 'lib/arachni/'
+        @dir['arachni'] = @dir['lib'][0...-1]
 
         @exclude    = []
         @include    = []
@@ -721,7 +725,7 @@ class Options
     end
 
     def root_path
-        File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) + '/'
+        File.dirname( File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) ) + '/'
     end
 
     #

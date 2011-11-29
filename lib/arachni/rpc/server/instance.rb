@@ -63,8 +63,8 @@ class Instance
 
 
         if logfile = @opts.reroute_to_logfile
-            reroute_to_file( @opts.dir['root'] +
-                "logs/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
+            reroute_to_file( @opts.dir['logs'] +
+                "Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
         else
             reroute_to_file( false )
         end

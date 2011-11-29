@@ -8,6 +8,8 @@
 
 =end
 
+require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
+
 desc "Generate docs"
 
 task :docs do
@@ -70,9 +72,6 @@ end
 #
 desc "Build the arachni gem."
 task :build  => [ :clean ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem build arachni.gemspec"
 end
 
@@ -82,9 +81,6 @@ end
 #
 desc "Build and install the arachni gem."
 task :install  => [ :build ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem install arachni-#{Arachni::VERSION}.gem"
 end
 
@@ -94,8 +90,5 @@ end
 #
 desc "Push a new version to Gemcutter"
 task :publish => [ :build ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem push arachni-#{Arachni::VERSION}.gem"
 end
