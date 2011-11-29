@@ -273,6 +273,8 @@ module Output
         end
     end
 
+    extend self
+
 end
 
 end
