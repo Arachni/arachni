@@ -83,6 +83,21 @@ class Server < Sinatra::Base
 
     helpers do
 
+        #
+        # Converts seconds to a (00:00:00) (hours:minutes:seconds) string
+        #
+        # @param    [String,Float,Integer]    seconds
+        #
+        # @return    [String]     hours:minutes:seconds
+        #
+        def secs_to_hms( secs )
+            secs = secs.to_i
+            return [secs/3600, secs/60 % 60, secs % 60].map {
+                |t|
+                t.to_s.rjust( 2, '0' )
+            }.join(':')
+        end
+
         def title
             main = 'Arachni - Web Application Security Scanner Framework'
 
@@ -525,7 +540,8 @@ class Server < Sinatra::Base
             "discovery"      => {},
             "uniformity"     => {},
             "content_types"  => {},
-            "autothrottle"   => {}
+            "autothrottle"   => {},
+            "manual_verification"   => {}
 
         } )
 
@@ -732,6 +748,7 @@ class Server < Sinatra::Base
             opts['settings'] = session['opts']['settings']
 
             if params['high_performance']
+                opts['settings']['grid_mode'] = 'high_performance'
                 opts['settings']['min_pages_per_instance']=
                     params['min_pages_per_instance']
 
@@ -740,10 +757,6 @@ class Server < Sinatra::Base
 
             opts['plugins']  = YAML::load( session['opts']['plugins'] )
             opts['modules']  = session['opts']['modules']
-
-            if params['high_performance']
-                opts['settings']['grid_mode'] = 'high_performance'
-            end
 
             job = Scheduler::Job.new(
                 :dispatcher  => params[:dispatcher],
