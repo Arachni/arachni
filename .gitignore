@@ -4,10 +4,8 @@
 *.gem
 /tests/.htpasswd
 /tests/htaccess
-/lib/ui/web/server/db/log.db
-/lib/ui/web/server/db/default.db
-/lib/ui/web/server/db/welcomed
-/lib/ui/web/server/public/reports/*
+/lib/arachni/ui/web/server/db/*
+/lib/arachni/ui/web/server/public/reports/*
 /todo.txt
 /tmp
 /logs/
