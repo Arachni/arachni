@@ -249,7 +249,7 @@ class Issue
                 send( "#{k.to_s.downcase}=", v )
             rescue Exception => e
             end
-        }
+        } if opts[:issue]
 
         if( @cwe )
             @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
