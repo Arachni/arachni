@@ -51,10 +51,13 @@ class Manager < Arachni::ComponentManager
     def self.on_register_results( &block )
         @@on_register_results << block
     end
+    def on_register_results( &block ) self.class.on_register_results( &block ) end
+
 
     def self.do_not_store!
         @@do_not_store = true
     end
+    def do_not_store!() self.class.do_not_store! end
 
     #
     # Class method
@@ -74,12 +77,15 @@ class Manager < Arachni::ComponentManager
             results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
         }
     end
+    def register_results( results ) self.class.register_results( results ) end
 
     def self.issue_set_id_from_issue( issue )
         issue_url = URI( issue.url )
         issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
         return "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
     end
+    def issue_set_id_from_issue( issue ) self.class.issue_set_id_from_issue( issue ) end
+
 
     def self.issue_set_id_from_elem( mod_name, elem )
         elem_url  = URI( elem.action )
@@ -87,16 +93,14 @@ class Manager < Arachni::ComponentManager
 
         return "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
     end
+    def issue_set_id_from_elem( mod_name, elem ) self.class.issue_set_id_from_elem( mod_name, elem ) end
 
     def self.issue_set
         @@issue_mutex.synchronize {
             @@issue_set
         }
     end
-
-    def issue_set
-        self.class.issue_set
-    end
+    def issue_set() self.class.issue_set end
 
     #
     # Class method
@@ -110,10 +114,7 @@ class Manager < Arachni::ComponentManager
             @@results
         }
     end
-
-    def results
-        self.class.results
-    end
+    def results() self.class.results end
 
 end
 end
