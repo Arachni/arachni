@@ -442,7 +442,7 @@ class RPC
                     info[:dependencies].join( ', ' ).downcase )
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
 
             print_line( "References:" )
@@ -517,7 +517,7 @@ class RPC
                 }
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
             print_line( "Path:\t"         + info[:path] )
 
@@ -560,7 +560,7 @@ class RPC
                 }
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
             print_line( "Path:\t"         + info[:path] )
 

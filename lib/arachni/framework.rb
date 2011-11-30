@@ -479,7 +479,7 @@ class Framework
                 info[:dependencies] = []
             end
 
-            info[:author]    = info[:author].strip
+            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
             info[:version]   = info[:version].strip
             info[:path]      = path.strip
 
@@ -509,6 +509,7 @@ class Framework
 
             info[:rep_name]    = report
             info[:path]        = @reports.name_to_path( report )
+            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
 
             rep_info << info
         }
@@ -534,6 +535,7 @@ class Framework
 
             info[:plug_name]   = plugin
             info[:path]        = @plugins.name_to_path( plugin )
+            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
 
             plug_info << info
         }

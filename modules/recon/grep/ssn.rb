@@ -33,7 +33,10 @@ class SSN < Arachni::Module::Base
         {
             :name           => 'SSN',
             :description    => %q{Greps pages for disclosed US Social Security Numbers.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :author         => [
+                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
+                'haliphax' # tweaked regexp
+            ],
             :version        => '0.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {

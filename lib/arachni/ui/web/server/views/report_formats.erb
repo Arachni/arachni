@@ -24,7 +24,7 @@
 
                 <p>
                     <strong>Version:</strong> <%=report['version']%><br/>
-                    <strong>Author:</strong> <%=escape( report['author'])%>
+                    <strong>Author:</strong> <%=escape( report['author'].join( ", " ))%>
                 </p>
                 </fieldset>
             <% end %>

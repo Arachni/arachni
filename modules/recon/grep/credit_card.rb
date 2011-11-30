@@ -71,7 +71,10 @@ class CreditCards < Arachni::Module::Base
         {
             :name           => 'Credit card number disclosure',
             :description    => %q{Scans pages for credit card numbers.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
+            :author         => [
+                'morpheuslaw <msidagni@nopsec.com>', # original
+                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>' # general optimizations
+            ],
             :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {

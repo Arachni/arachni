@@ -400,7 +400,7 @@ class CLI
                     info[:elements].join( ', ' ).downcase )
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
 
             if( info[:references] )
@@ -476,7 +476,7 @@ class CLI
                 }
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
             print_line( "Path:\t"         + info[:path] )
 
@@ -517,7 +517,7 @@ class CLI
                 }
             end
 
-            print_line( "Author:\t\t"     + info[:author] )
+            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
             print_line( "Path:\t"         + info[:path] )
 
