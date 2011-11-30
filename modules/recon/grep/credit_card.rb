@@ -16,8 +16,11 @@ module Modules
 #
 # Scans every page for credit card numbers.
 #
-# @author: morpheuslaw <msidagni@nopsec.com>
-# @version: 0.1.1
+# @author: morpheuslaw <msidagni@nopsec.com>, Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @version: 0.2
+#
+# @see http://en.wikipedia.org/wiki/Bank_card_number
+# @see http://en.wikipedia.org/wiki/Luhn_algorithm
 #
 class CreditCards < Arachni::Module::Base
 
@@ -29,7 +32,7 @@ class CreditCards < Arachni::Module::Base
         # match CC number candidates and verify matches before logging
         match_and_log( ccNumber ){
             |match|
-            __luhn_check( match )
+            valid_credit_card?( match )
         }
     end
 
@@ -44,27 +47,44 @@ class CreditCards < Arachni::Module::Base
     #
     # Checks for a valid credit card number
     #
-    def __luhn_check( cc_number )
-      cc_number   = cc_number.gsub( /D/, '' )
-      cc_length   = cc_number.length
-      parity      = cc_length % 2
+    def valid_credit_card?( number )
+        return if !valid_association?( number )
 
-      sum = 0
-      for i in 0..cc_length
-         digit = cc_number[i].to_i - 48
+        number = number.to_s.gsub( /\D/, '' )
+        number.reverse!
 
-         if i % 2 == parity
-           digit = digit * 2
-         end
+        relative_number = {
+            '0' => 0,
+            '1' => 2,
+            '2' => 4,
+            '3' => 6,
+            '4' => 8,
+            '5' => 1,
+            '6' => 3,
+            '7' => 5,
+            '8' => 7,
+            '9' => 9
+        }
 
-         if digit > 9
-           digit = digit - 9
-         end
+        sum = 0
 
-         sum = sum + digit
-      end
+        number.split( '' ).each_with_index {
+            |n, i|
+            sum += ( i % 2 == 0 ) ? n.to_i : relative_number[n]
+        }
 
-      return (sum % 10) == 0
+        sum % 10 == 0
+    end
+
+    def valid_association?( number )
+        number = number.to_s.gsub( /\D/, '' )
+
+        return :dinners  if number.length == 14 && number =~ /^3(0[0-5]|[68])/
+        return :amex     if number.length == 15 && number =~ /^3[47]/
+        return :visa     if [13,16].include?(number.length) && number =~ /^4/
+        return :master   if number.length == 16 && number =~ /^5[1-5]/
+        return :discover if number.length == 16 && number =~ /^6011/
+        return nil
     end
 
     def self.info
@@ -73,9 +93,15 @@ class CreditCards < Arachni::Module::Base
             :description    => %q{Scans pages for credit card numbers.},
             :author         => [
                 'morpheuslaw <msidagni@nopsec.com>', # original
-                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>' # general optimizations
+                # updated number checks and regexp
+                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>'
             ],
-            :version        => '0.1.1',
+            :version        => '0.2',
+            :references     => {
+                'Wikipedia - Bank card number' => 'http://en.wikipedia.org/wiki/Bank_card_number',
+                'Wikipedia - Luhn algorithm' => 'http://en.wikipedia.org/wiki/Luhn_algorithm',
+                'Luhn Ruby implementation'   => 'https://gist.github.com/1182499'
+            },
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Credit card number disclosure.},
