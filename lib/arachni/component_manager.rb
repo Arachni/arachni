@@ -40,11 +40,11 @@ class ComponentManager < Hash
 
     #
     # @param    [String]    lib       the path to the component library/folder
-    # @param    [Module]    parent    the parent module of the components
+    # @param    [Module]    namespace    the namespace of the components
     #
-    def initialize( lib, parent )
+    def initialize( lib, namespace )
         @lib    = lib
-        @parent = parent
+        @namespace = namespace
     end
 
     #
@@ -280,7 +280,7 @@ class ComponentManager < Hash
 
     def load_from_path( path )
         ::Kernel::load( path )
-        return @parent.const_get( @parent.constants[-1] )
+        return @namespace.const_get( @namespace.constants[-1] )
     end
 
 
