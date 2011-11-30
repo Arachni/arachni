@@ -12,11 +12,8 @@ module Arachni
 module Modules
 
 #
-#
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
+# @version: 0.1.1
 #
 class SSN < Arachni::Module::Base
 
@@ -37,7 +34,7 @@ class SSN < Arachni::Module::Base
                 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
                 'haliphax' # tweaked regexp
             ],
-            :version        => '0.1',
+            :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Disclosed US Social Security Number.},
