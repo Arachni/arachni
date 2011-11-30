@@ -42,6 +42,8 @@ module Output
 
     @@reroute_to_file = false
 
+    @@buffer_cap = 30
+
     @@buffer ||= []
 
     #
@@ -70,8 +72,14 @@ module Output
             }
         else
             @@buffer << msg
-            @@buffer.slice!( (@@buffer.size - 100)..@@buffer.size  )
+            if @@buffer_cap.is_a? Integer
+                @@buffer.slice!( (@@buffer.size - @@buffer_cap)..@@buffer.size  )
+            end
         end
+    end
+
+    def uncap_buffer!
+        @@buffer_cap = nil
     end
 
     # Prints an error message
