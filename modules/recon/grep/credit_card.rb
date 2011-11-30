@@ -24,7 +24,7 @@ class CreditCards < Arachni::Module::Base
     def run
         return if !text?
 
-        ccNumber = /\b(((4\d{3})|(5[1-5]\d{2})|(6011))-?\d{4}-?\d{4}-?\d{4}|3[4,7][\d\s-]{15})\b/
+        ccNumber = /\b(((4\d{3})|(5[1-5]\d{2})|(6011))[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}|3[4,7][\d\s-]{15})\b/
 
         # match CC number candidates and verify matches before logging
         match_and_log( ccNumber ){
