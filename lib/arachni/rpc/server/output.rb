@@ -294,6 +294,8 @@ module Output
         out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
 
+    extend self
+
 end
 
 end
