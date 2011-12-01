@@ -555,7 +555,7 @@ class Parser
 
 
     def too_deep?( url )
-        if @opts.depth_limit && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+        if @opts.depth_limit > 0 && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
             return true
         else
             return false

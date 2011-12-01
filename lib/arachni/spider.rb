@@ -160,6 +160,7 @@ class Spider
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
+                    @opts.link_count_limit > 0 &&
                     @opts.link_count_limit <= visited.size )
                     http.run
                     return @sitemap.uniq
