@@ -417,7 +417,6 @@ class Options
 
         @datastore  = {}
         @grid_mode  = ''
-        @neighbour  = ''
         @cost       = 0.0
         @pipe_id    = ''
         @weight     = 0.0
