@@ -16,7 +16,7 @@ module RPC
 class Client
 
 #
-# BrBRPC client for remote instances spawned by a remote dispatcher
+# RPC client for remote instances spawned by a remote dispatcher
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

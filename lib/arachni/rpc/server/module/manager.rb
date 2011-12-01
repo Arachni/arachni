@@ -19,7 +19,7 @@ module Module
 
 #
 # We need to extend the original Manager and redeclare its inherited methods
-# which are required over BrBRPC.
+# which are required over RPC.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

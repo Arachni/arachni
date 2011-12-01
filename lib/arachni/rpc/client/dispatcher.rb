@@ -16,7 +16,7 @@ module RPC
 class Client
 
 #
-# BrBRPC Dispatcher client
+# RPC Dispatcher client
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>

@@ -23,12 +23,12 @@ module RPC
 class Server
 
 #
-# BrBRPC Server class
+# RPC Server class
 #
-# Provides an BrB-RPC server to assist with general integration and UI development.
+# Provides an RPC server to assist with general integration and UI development.
 #
 # Only instantiated by the Dispatcher to provide support for multiple
-# and concurent BrBRPC clients/scans.
+# and concurent RPC clients/scans.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -37,12 +37,12 @@ class Server
 #
 class Instance
 
-    # the output interface for BrB-RPC
+    # the output interface for RPC
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
     #
-    # Initializes the BrB-RPC interface, the HTTP(S) server and the framework.
+    # Initializes the RPC interface, the HTTP(S) server and the framework.
     #
     # @param    [Options]    opts
     #
@@ -115,7 +115,7 @@ class Instance
     alias :shutdown! :shutdown
 
     #
-    # Starts the HTTPS server and the BrB-RPC service.
+    # Starts the HTTPS server and the RPC service.
     #
     def run
         print_status( 'Starting the server...' )
@@ -162,7 +162,7 @@ class Instance
     end
 
     #
-    # Starts the BrB-RPC service and attaches it to the HTTP(S) server.<br/>
+    # Starts the RPC service and attaches it to the HTTP(S) server.<br/>
     # It also prepares all the RPC handlers.
     #
     def set_handlers

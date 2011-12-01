@@ -13,7 +13,7 @@ module Arachni
 module UI
 
 #
-# BrB-RPC deamon Output module
+# RPC deamon Output module
 #
 # It basically classifies and buffers all system messages until it's time to
 # flush the buffer and send them over the wire.

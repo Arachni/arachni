@@ -13,7 +13,7 @@ module Arachni
 #
 # Overrides the Options class adding support for direct options parsing.
 #
-# Not much to look at but it streamlines BrB-RPC server option handling.
+# Not much to look at but it streamlines RPC server option handling.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
@@ -33,41 +33,6 @@ class Options
             end
         }
         true
-    end
-
-    #
-    # Resets all important options that can affect the scan
-    # during framework reuse.
-    #
-    def reset
-        # nil everything out
-        self.instance_variables.each {
-            |var|
-
-            # do *NOT* nil out @dir, we'll loose our paths!
-            next if var.to_s == '@dir'
-
-            begin
-                instance_variable_set( var.to_s, nil )
-            rescue Exception
-            end
-        }
-
-
-        @exclude    = []
-        @include    = []
-        @redundant  = []
-        @lsmod      = []
-        @exclude_cookies    = []
-
-        @datastore = {}
-
-        # set some defaults
-        @redirect_limit = 20
-
-        # relatively low but will give good performance without bottleneck
-        # on low bandwidth conections
-        @http_req_limit = 20
     end
 
     def datastore=( hash )
