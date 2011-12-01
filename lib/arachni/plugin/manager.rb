@@ -30,7 +30,7 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::Module::Utilities
 
-    ALWAYS_ON = [
+    DEFAULT = [
         'defaults/*'
     ]
 
@@ -45,7 +45,7 @@ class Manager < Arachni::ComponentManager
     end
 
     def load_defaults!
-        load( ALWAYS_ON )
+        load( DEFAULT )
     end
 
     #
@@ -180,6 +180,7 @@ class Manager < Arachni::ComponentManager
     #
     def get( name )
         @jobs.each { |job| return job if job[:name] == name }
+        return
     end
 
 
