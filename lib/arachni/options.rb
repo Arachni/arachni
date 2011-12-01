@@ -142,7 +142,7 @@ class Options
 
     #
     # How many links to follow?
-    # If nil, link_count_limit = inf
+    # If -1, link_count_limit = inf
     #
     # @return    [Integer]
     #
@@ -150,7 +150,7 @@ class Options
 
     #
     # How many redirects to follow?
-    # If nil, redirect_limit = inf
+    # If -1, redirect_limit = inf
     #
     # @return    [Integer]
     #
@@ -387,8 +387,11 @@ class Options
     attr_accessor :max_slaves
 
 
-    def initialize( )
+    def initialize
+        reset!
+    end
 
+    def reset!
         # nil everything out
         self.instance_variables.each {
             |var|
@@ -408,18 +411,58 @@ class Options
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['arachni'] = @dir['lib'][0...-1]
 
-        @exclude    = []
-        @include    = []
+        # we must add default values for everything because that can serve
+        # both as a default configuration and as an inexpensive way to declare
+        # their data types for later verification
+
+        @datastore  = {}
+        @grid_mode  = ''
+        @neighbour  = ''
+        @cost       = 0.0
+        @pipe_id    = ''
+        @weight     = 0.0
+        @nickname   = ''
+
         @redundant  = []
 
-        @reports    = {}
-        @lsrep      = []
+        @obey_robots_txt = false
+
+        @depth_limit      = -1
+        @link_count_limit = -1
+        @redirect_limit   = 20
 
         @lsmod      = []
+        @lsrep      = []
 
-        @plugins    = {}
+        @http_req_limit = 20
+
+        @audit_links = false
+        @audit_forms = false
+        @audit_cookies = false
+        @audit_headers = false
+
+        @mods = []
+
+        @reports    = {}
+
+        @authed_by = ''
+
+        @exclude    = []
+        @exclude_cookies    = []
+
+        @include    = []
+
+        @follow_subdomains = false
+        @http_harvest_last = false
+
+
         @lsplug     = []
-        @datastore  = {}
+        @plugins    = {}
+
+        @rpc_port    = 7331
+        @rpc_address = 'localhost'
+
+        @rpc_instance_port_range = [1025, 65535]
 
         @exclude_cookies    = []
         @load_profile       = []
@@ -427,15 +470,8 @@ class Options
         @extend_paths       = []
         @custom_headers     = {}
 
-        @rpc_instance_port_range = [1025, 65535]
-
-
-        # set some defaults
-        @redirect_limit = 20
-
-        # relatively low but will give good performance without bottleneck
-        # on low bandwidth connections
-        @http_req_limit = 20
+        @min_pages_per_instance = 30
+        @max_slaves = 10
     end
 
     def parse!
