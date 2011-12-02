@@ -250,7 +250,10 @@ class HTML < Arachni::Report::Base
         @audit_store.issues.each_with_index {
             |issue, i|
 
-            crypto_issues << @crypto.encrypt( issue.to_yaml )
+            begin
+                crypto_issues << @crypto.encrypt( YAML::dump( issue ) )
+            rescue
+            end
 
             graph_data[:severities][issue.severity] += 1
             total_severities += 1
