@@ -416,12 +416,6 @@ class Options
         # their data types for later verification
 
         @datastore  = {}
-        @grid_mode  = ''
-        @cost       = 0.0
-        @pipe_id    = ''
-        @weight     = 0.0
-        @nickname   = ''
-
         @redundant  = []
 
         @obey_robots_txt = false
@@ -435,11 +429,6 @@ class Options
 
         @http_req_limit = 20
 
-        @audit_links = false
-        @audit_forms = false
-        @audit_cookies = false
-        @audit_headers = false
-
         @mods = []
 
         @reports    = {}
@@ -451,15 +440,8 @@ class Options
 
         @include    = []
 
-        @follow_subdomains = false
-        @http_harvest_last = false
-
-
         @lsplug     = []
         @plugins    = {}
-
-        @rpc_port    = 7331
-        @rpc_address = 'localhost'
 
         @rpc_instance_port_range = [1025, 65535]
 
