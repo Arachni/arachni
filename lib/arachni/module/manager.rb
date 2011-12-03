@@ -33,19 +33,18 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::UI::Output
 
+    @@results             ||= []
+    @@on_register_results ||= []
+    @@issue_set           ||= Set.new
+    @@do_not_store        ||= false
+    @@issue_mutex         ||= Mutex.new
+
     #
     # @param    [Arachni::Options]  opts
     #
     def initialize( opts )
         super( opts.dir['modules'], Arachni::Modules )
         @opts = opts
-        @@results    = []
-        @@on_register_results = []
-        @@issue_set  = Set.new
-
-        @@do_not_store = false
-
-        @@issue_mutex ||= Mutex.new
     end
 
     def self.on_register_results( &block )
