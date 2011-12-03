@@ -471,9 +471,9 @@ module Auditor
 
                 when  Element::HEADER
                     audit_headers( injection_str, opts, &block )
+                when  Element::BODY
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
-
             end
 
         }
