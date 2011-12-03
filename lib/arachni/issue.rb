@@ -232,13 +232,12 @@ class Issue
     #                     class attributes
     #
     def initialize( opts = {} )
-
         @verification = false
 
         opts.each {
             |k, v|
             begin
-                send( "#{k.to_s.downcase}=", v )
+                send( "#{k.to_s.downcase}=", encode( v ) )
             rescue Exception => e
             end
         }
@@ -246,7 +245,7 @@ class Issue
         opts[:issue].each {
             |k, v|
             begin
-                send( "#{k.to_s.downcase}=", v )
+                send( "#{k.to_s.downcase}=", encode( v ) )
             rescue Exception => e
             end
         } if opts[:issue]
@@ -271,16 +270,17 @@ class Issue
         @opts = hash.dup
     end
 
-    def response=( html )
-        @response = encode( html )
+    def []( k )
+        instance_variable_get( "@#{k.to_s}".to_sym )
     end
 
-    def regexp_match=( match )
-        @regexp_match = encode( match )
-    end
-
-    def id=( id )
-        @id = encode( id )
+    def []=( k, v )
+        v= encode( v )
+        begin
+            send( "#{k.to_s}=", v )
+        rescue
+            instance_variable_set( "@#{k.to_s}".to_sym, v )
+        end
     end
 
     def each
@@ -304,15 +304,13 @@ class Issue
     private
 
     def encode( str )
-        return str if !str
-        str.encode( :invalid => :replace )
+        return str if !str || !str.is_a?( String )
+        str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
     end
 
     def normalize_name( name )
         name.to_s.gsub( /@/, '' )
     end
 
-
 end
-
 end
