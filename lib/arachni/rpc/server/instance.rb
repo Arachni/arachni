@@ -57,9 +57,7 @@ class Instance
 
         @opts.datastore[:token] = token
 
-        if @opts.debug
-            debug!
-        end
+        debug! if @opts.debug
 
 
         if logfile = @opts.reroute_to_logfile
@@ -76,6 +74,8 @@ class Instance
             |signal|
             trap( signal ){ shutdown } if Signal.list.has_key?( signal )
         }
+
+        run
     end
 
     #
@@ -86,10 +86,7 @@ class Instance
     # @return   [Array<Hash>]
     #
     def output( &block )
-        @framework.output {
-            |out|
-            block.call( out | flush_buffer )
-        }
+        @framework.output( &block )
     end
 
     #
@@ -114,6 +111,12 @@ class Instance
     end
     alias :shutdown! :shutdown
 
+    def alive?
+        @server.alive?
+    end
+
+    private
+
     #
     # Starts the HTTPS server and the RPC service.
     #
@@ -122,12 +125,6 @@ class Instance
         # start the show!
         @server.run
     end
-
-    def alive?
-        @server.alive?
-    end
-
-    private
 
     def dispatcher
         @dispatcher ||=
