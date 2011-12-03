@@ -513,8 +513,7 @@ class Auditable
         append = default_str if ( format & Format::APPEND )   != 0
         semicolon = append = null = ''   if ( format & Format::STRAIGHT ) != 0
 
-
-        return semicolon + append + injection_str + null
+        return semicolon + append + injection_str.to_s + null
     end
 
     def print_debug_injection_set( var_combo, opts )
