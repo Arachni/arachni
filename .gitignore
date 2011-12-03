@@ -5,6 +5,7 @@
 /tests/.htpasswd
 /tests/htaccess
 /lib/arachni/ui/web/server/db/*
+/lib/arachni/ui/web/server/tmp/*
 /lib/arachni/ui/web/server/public/reports/*
 /todo.txt
 /tmp
