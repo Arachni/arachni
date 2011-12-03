@@ -19,7 +19,7 @@ class Parser
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class Page
 
@@ -97,11 +97,22 @@ class Page
     end
 
     def initialize( opts = {} )
+
+        @forms = []
+        @links = []
+        @cookies = []
+        @headers = []
+
+        @cookiejar = {}
+        @paths = []
+
+        @response_headers = {}
+        @query_vars       = {}
+
         opts.each {
             |k, v|
             send( "#{k}=", v )
         }
-
     end
 
     def body
