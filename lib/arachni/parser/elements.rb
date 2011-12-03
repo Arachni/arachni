@@ -78,7 +78,7 @@ class Base < Arachni::Element::Auditable
     #
     def initialize( url, raw = {} )
         @raw   = raw.dup
-        @url   = url.dup
+        @url   = url.to_s
     end
 
     #
@@ -111,10 +111,10 @@ class Link < Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['href']
+        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action]
         @method = 'get'
 
-        @auditable = @raw['vars']
+        @auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
         @orig      = @auditable.deep_clone
         @orig.freeze
     end
@@ -159,17 +159,15 @@ class Form < Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['attrs']['action']
-        @method = @raw['attrs']['method']
+        @action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
+        @method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
 
-        @auditable = simple['auditable'] || {}
+        @auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable'] || {}
         @orig      = @auditable.deep_clone
         @orig.freeze
     end
 
     def http_request( url, opts )
-
-
         params   = opts[:params]
         altered  = opts[:altered]
 
@@ -207,7 +205,6 @@ class Form < Base
     end
 
     def id
-
         id = simple['attrs'].to_s
 
         auditable.map {
@@ -217,12 +214,10 @@ class Form < Base
         }
 
         return id
-
     end
 
     def simple
-
-        form = Hash.new
+        form = {}
 
         return form if !@raw || !@raw['auditable'] || @raw['auditable'].empty?
 
@@ -252,7 +247,12 @@ class Cookie < Base
         @action = @url
         @method = 'cookie'
 
-        @auditable = { @raw['name'] => @raw['value'] }
+        if @raw['name']
+            @auditable = { @raw['name'] => @raw['value'] }
+        else
+            @auditable = @raw
+        end
+
         @simple = @auditable.dup
         @auditable.reject! {
             |cookie|
