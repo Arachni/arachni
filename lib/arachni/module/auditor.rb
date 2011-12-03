@@ -154,6 +154,17 @@ module Auditor
         SERVER  = Issue::Element::SERVER
     end
 
+    RDIFF_OPTIONS =  {
+        # append our seeds to the default values
+        :format      => [ Format::APPEND ],
+
+        # allow duplicate requests
+        :redundant   => true,
+
+        # amount of rdiff iterations
+        :precision   => 2
+    }
+
     #
     # Default audit options.
     #
@@ -773,15 +784,6 @@ module Auditor
             opts[:elements] = OPTIONS[:elements]
         end
 
-        opts = {
-            # append our seeds to the default values
-            :format      => [ Format::APPEND ],
-            # allow duplicate requests
-            :redundant   => true,
-            # amount of rdiff iterations
-            :precision   => 2
-        }.merge( opts )
-
         opts[:elements].each {
             |elem|
 
@@ -830,6 +832,8 @@ module Auditor
     # @param    [Block]     &block      same as for {#audit_rdiff}
     #
     def audit_rdiff_elem( elem, opts = {}, &block )
+
+        opts = RDIFF_OPTIONS.merge( opts )
 
         # don't continue if there's a missing value
         elem.auditable.values.each {
