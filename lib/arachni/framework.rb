@@ -20,9 +20,10 @@ require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
 require opts.dir['lib'] + 'spider'
 require opts.dir['lib'] + 'parser'
-require opts.dir['lib'] + 'audit_store'
+require opts.dir['lib'] + 'issue'
 require opts.dir['lib'] + 'module'
 require opts.dir['lib'] + 'plugin'
+require opts.dir['lib'] + 'audit_store'
 require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'database'
@@ -411,7 +412,7 @@ class Framework
     #
     # @return    [AuditStore]
     #
-    def audit_store( fresh = false )
+    def audit_store( fresh = true )
 
         # restore the original redundancy rules and their counters
         @opts.redundant = @orig_redundant
@@ -428,9 +429,10 @@ class Framework
                 :sitemap  => audit_store_sitemap || [],
                 :issues   => @modules.results( ).deep_clone,
                 :plugins  => @plugin_store
-            }, self )
+            })
          end
     end
+    alias :auditstore :audit_store
 
     def audit_store_sitemap
         @override_sitemap ? @override_sitemap : @sitemap
