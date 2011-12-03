@@ -433,8 +433,6 @@ class Options
 
         @reports    = {}
 
-        @authed_by = ''
-
         @exclude    = []
         @exclude_cookies    = []
 
