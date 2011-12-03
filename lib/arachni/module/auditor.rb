@@ -610,7 +610,7 @@ module Auditor
 
                         # all issues logged by timing attacks need manual verification.
                         # end of story.
-                        c_opts[:verification] = true
+                        # c_opts[:verification] = true
                         elem.get_auditor.log( c_opts, c_res )
 
                         self.audit_timeout_stabilize( elem )
@@ -936,7 +936,7 @@ module Auditor
                                 :regexp_match => 'n/a',
                                 :elem         => res['elem'].type,
                                 :response     => res['res'].body,
-                                :verification => true,
+                                # :verification => true,
                                 :headers      => {
                                     :request    => res['res'].request.headers,
                                     :response   => res['res'].headers,
