@@ -102,13 +102,6 @@ class Dispatcher
         run
     end
 
-    def trap_interrupts( &block )
-        [ 'EXIT', 'QUIT', 'HUP', 'INT' ].each {
-            |signal|
-            trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
-        }
-    end
-
     def alive?
         @server.alive?
     end
@@ -290,6 +283,13 @@ USAGE
 
     private
 
+    def trap_interrupts( &block )
+        [ 'EXIT', 'QUIT', 'HUP', 'INT' ].each {
+            |signal|
+            trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
+        }
+    end
+
     # Starts the dispatcher's server
     def run
         print_status( 'Starting the server...' )
@@ -318,13 +318,11 @@ USAGE
 
                 # get an available port for the child
                 @opts.rpc_port = avail_port( )
-                @token         = secret()
+                @token         = secret( )
 
                 pid = fork {
                     exception_jail {
-                        server = Arachni::RPC::Server::Instance.new( @opts, @token )
-                        trap_interrupts
-                        server.run
+                        Arachni::RPC::Server::Instance.new( @opts, @token )
                     }
 
                     # restore logging
