@@ -22,7 +22,7 @@ module Web
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.2
 #
 class ReportManager
 
@@ -38,7 +38,6 @@ class ReportManager
         property :filename,     String
         property :datestamp,    DateTime
     end
-
 
     def initialize( opts, settings )
         @opts     = opts
@@ -92,8 +91,7 @@ class ReportManager
     #
     # Saves the report to a file
     #
-    # @param    [Arachni::AuditStore]    report   audistore object as returned by the Arachni RPC server.
-    #                                       Basically an 'afr' report as a string.
+    # @param    [Arachni::AuditStore]    report
     #
     # @return   [String]        the path to the saved report
     #
@@ -105,7 +103,7 @@ class ReportManager
     #
     # Gets the path to a given report based on the contents of the report
     #
-    # @param    [Arachni::AuditStore]   report   audistore object as returned by the Arachni RPC server.
+    # @param    [Arachni::AuditStore]   report
     # @return   [String]
     #
     def report_to_path( report )
@@ -157,9 +155,9 @@ class ReportManager
     # Generates a filename based on the contents of the report in the form of
     # host:audit_date
     #
-    # @param    [Arachni::AuditStore]    report   audistore object as returned by the Arachni RPC server
+    # @param    [Arachni::AuditStore]    report
     #
-    # @return   [String]        host:audit_date
+    # @return   [String]        host.audit_date.ext
     #
     def report_to_filename( report )
         filename = "#{URI(report.options['url']).host}:#{report.start_datetime}"
@@ -254,7 +252,6 @@ class ReportManager
         return content
     end
 
-
     def get_tmp_outfile_name( type, report )
         tmpdir + report_to_filename( report ) + '.' + type
     end
@@ -267,7 +264,6 @@ class ReportManager
 
         return false
     end
-
 
     def populate_available
         @@available ||= []
