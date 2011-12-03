@@ -98,20 +98,18 @@ class ReportManager
     # @return   [String]        the path to the saved report
     #
     def save( report )
-        report = report.to_yaml
-        @settings.log.report_saved( {}, get_filename( report ) )
+        @settings.log.report_saved( {}, report_to_filename( report ) )
         return save_to_file( report, report_to_path( report ) )
     end
 
     #
     # Gets the path to a given report based on the contents of the report
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni RPC server.
-    #                                       Basically an 'afr' report as a string.
+    # @param    [Arachni::AuditStore]   report   audistore object as returned by the Arachni RPC server.
     # @return   [String]
     #
     def report_to_path( report )
-        savedir + File.basename( get_filename( report ) + EXTENSION )
+        savedir + File.basename( report_to_filename( report ) + EXTENSION )
     end
 
     #
@@ -159,27 +157,25 @@ class ReportManager
     # Generates a filename based on the contents of the report in the form of
     # host:audit_date
     #
-    # @param    [String]        report  YAML serialized audistore object as returned by the Arachni RPC server.
-    #                                       Basically an 'afr' report as a string.
+    # @param    [Arachni::AuditStore]    report   audistore object as returned by the Arachni RPC server
     #
     # @return   [String]        host:audit_date
     #
-    def get_filename( report )
-        rep = unserialize( report )
-        filename = "#{URI(rep.options['url']).host}:#{rep.start_datetime}"
+    def report_to_filename( report )
+        filename = "#{URI(report.options['url']).host}:#{report.start_datetime}"
         filename.gsub( ':', '.' )
     end
 
     def get_issue_count( report )
-        unserialize( report ).issues.size
+        report.issues.size
     end
 
     def get_host( report )
-        return URI(unserialize( report ).options['url']).host
+        return URI( report.options['url'] ).host
     end
 
     def get_finish_datetime( report )
-        return unserialize( report ).finish_datetime
+        return report.finish_datetime
     end
 
     #
@@ -200,7 +196,7 @@ class ReportManager
             if '.' + type == EXTENSION
                 return File.read( location )
             else
-                return convert( type, File.read( location ) )
+                return convert( type, ::Arachni::AuditStore.load( location ) )
             end
         rescue Exception => e
             ap e
@@ -229,41 +225,29 @@ class ReportManager
 
     private
 
-    def unserialize( data )
-         begin
-            Marshal.load( data )
-         rescue
-             YAML.load( data )
-         end
-    end
-
-    def save_to_file( data, file )
-        return file if File.exists?( file )
-
-        f = File.new( file, 'w' )
-        f.write( data )
-        f.close
-
+    def save_to_file( report, file )
+        report.save( file )
         Report.create(
-            :issue_count => get_issue_count( data ),
-            :host        => get_host( data ),
-            :filename    => File.basename( f.path, EXTENSION ),
+            :issue_count => get_issue_count( report ),
+            :host        => get_host( report ),
+            :filename    => File.basename( file, EXTENSION ),
             :datestamp   => Time.now.asctime
         )
 
-        return f.path
+        return file
     end
 
     def convert( type, report )
-
         opts = {}
+
         classes[type].info[:options].each {
             |opt|
             opts[opt.name] = opt.default if opt.default
         }
+
         opts['outfile'] = get_tmp_outfile_name( type, report )
 
-        classes[type].new( unserialize( report ), opts ).run
+        classes[type].new( report, opts ).run
 
         content = File.read( opts['outfile'] )
         FileUtils.rm( opts['outfile'] )
@@ -272,7 +256,7 @@ class ReportManager
 
 
     def get_tmp_outfile_name( type, report )
-        tmpdir + get_filename( report ) + '.' + type
+        tmpdir + report_to_filename( report ) + '.' + type
     end
 
     def has_outfile?( options )
