@@ -264,7 +264,7 @@ class Auditable
 
                     add = true
                 end
-            }
+            } if @raw['auditable']
 
             if add
                 delem.auditable = chash
