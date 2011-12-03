@@ -52,6 +52,9 @@ class AuditStore
     #
     attr_reader :issues
 
+    #
+    # @return    [Hash]  plugin results
+    #
     attr_reader :plugins
 
     #
@@ -69,8 +72,7 @@ class AuditStore
     #
     attr_reader :delta_time
 
-    attr_accessor :framework
-
+    MODULE_NAMESPACE = ::Arachni::Modules
 
     ORDER = [
         ::Arachni::Issue::Severity::HIGH,
@@ -79,10 +81,7 @@ class AuditStore
         ::Arachni::Issue::Severity::INFORMATIONAL
     ]
 
-    def initialize( audit = {}, framework )
-
-        @framework = framework
-
+    def initialize( audit = {} )
         # set instance variables from audit opts
         audit.each {
             |k, v|
@@ -100,7 +99,6 @@ class AuditStore
         end
 
         @delta_time = secs_to_hms( @options['delta_time'] )
-
     end
 
     #
@@ -126,7 +124,6 @@ class AuditStore
     # @param    [String]    file
     #
     def save( file )
-        @framework = ''
         begin
             File.open( file, 'w' ) {
                 |f|
@@ -146,17 +143,13 @@ class AuditStore
     # @return    [Hash]
     #
     def to_h
-
         hash = obj_to_hash( self ).dup
-        hash.delete( 'framework' )
 
-        issues = []
-        hash['issues'].each {
+        hash['issues'] = hash['issues'].map {
             |issue|
-            issues << obj_to_hash( issue )
+            issue.variations = issue.variations.map { |var| obj_to_hash( var ) }
+            obj_to_hash( issue )
         }
-
-        hash['issues'] = issues
 
         hash['plugins'].each {
             |plugin, results|
@@ -193,15 +186,12 @@ class AuditStore
     # @return    [Hash]
     #
     def obj_to_hash( obj )
-        hash = Hash.new
+        hash = {}
         obj.instance_variables.each {
             |var|
-
             key       = var.to_s.gsub( /@/, '' )
             hash[key] = obj.instance_variable_get( var )
-
         }
-
         return hash
     end
 
@@ -280,53 +270,30 @@ class AuditStore
             var = issue.var || ''
 
             __id  = issue.mod_name +
-             '::' + issue.elem + '::' +
+                '::' + issue.elem + '::' +
                 var + '::' +
                 issue.url.split( /\?/ )[0]
 
             orig_url  = issue.url
             issue.url = issue.url.split( /\?/ )[0]
 
-            if( !new_issues[__id] )
-                new_issues[__id] = issue
-            end
-
-            if( !new_issues[__id].variations )
-                new_issues[__id].variations = []
-            end
+            new_issues[__id] = issue         if !new_issues[__id]
+            new_issues[__id].variations = [] if !new_issues[__id].variations
 
             issue.headers ||= {}
-            issue.headers['request']  = issue.headers[:request] || {}
-            issue.headers['response'] = issue.headers[:response] || {}
+            issue.headers['request']  = (issue.headers[:request] || {}).dup
+            issue.headers['response'] = (issue.headers[:response] || {}).dup
+
+            issue.headers.delete( :request )
+            issue.headers.delete( :response )
 
             new_issues[__id]._hash = Digest::MD5.hexdigest( __id )
-
-            modname = ''
-            @framework.modules.each_pair {
-                |name, mod|
-
-                if mod.info[:name] == new_issues[__id].mod_name
-                    modname = name
-                    break
-                end
-            }
-
-            new_issues[__id].internal_modname = modname
-
-            new_issues[__id].variations << {
-                'url'           => orig_url,
-                'injected'      => issue.injected,
-                'id'            => issue.id,
-                'regexp'        => issue.regexp,
-                'regexp_match'  => issue.regexp_match,
-                'headers'       => issue.headers,
-                'response'      => issue.response,
-                'opts'          => issue.opts ? issue.opts : {}
-            }
+            new_issues[__id].internal_modname =
+                get_internal_module_name( new_issues[__id].mod_name )
+            new_issues[__id].variations << issue.deep_clone
 
             variation_keys.each {
                 |key|
-
                 if( new_issues[__id].instance_variable_defined?( '@' + key ) )
                     new_issues[__id].remove_instance_var( '@' + key )
                 end
@@ -343,6 +310,14 @@ class AuditStore
         }
 
         new_issues
+    end
+
+    def get_internal_module_name( modname )
+        MODULE_NAMESPACE.constants.each {
+            |mod|
+            klass = MODULE_NAMESPACE.const_get( mod )
+            return mod.to_s if klass.info[:name] == modname
+        }
     end
 
     #
