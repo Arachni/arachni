@@ -216,6 +216,30 @@ module Auditor
     }
 
     #
+    # ABSTRACT - OPTIONAL
+    #
+    # Prevents auditing elements that have been previously
+    # logged by any of the modules returned by this method.
+    #
+    # @return   [Array]     module names
+    #
+    def redundant
+        # [ 'sqli', 'sqli_blind_rdiff' ]
+        []
+    end
+
+    #
+    # Just a delegator logs an array of issues.
+    #
+    # @param    [Array<Arachni::Issue>]     issues
+    #
+    # @see Arachni::Module::Manager.register_results
+    #
+    def register_results( issues )
+        Arachni::Module::Manager.register_results( issues )
+    end
+
+    #
     # Logs a remote file or directory if it exists.
     #
     # @param    [String]    url
