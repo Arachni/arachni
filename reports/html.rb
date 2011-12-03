@@ -113,9 +113,7 @@ class HTML < Arachni::Report::Base
 
         def normalize( str )
             return '' if !str || str.empty?
-
-            ic = ::Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
-            ic.iconv( str + ' ' )[0..-2]
+            str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
         end
 
         def escapeHTML( str )
