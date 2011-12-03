@@ -266,8 +266,11 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - US Social Security Number disclosure
         - Forceful directory listing
         - Mixed Resource/Scripting
+    - Extras
         - SVN Digger dirs
         - SVN Digger files
+        - RAFT dirs
+        - RAFT files
 
 
 ### Report Management

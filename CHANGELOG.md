@@ -112,6 +112,11 @@
       - SQL Injection -- Fixed broken regular expressions
    - Recon
       - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
+   - Extras (**New**)
+      - SVN Digger dirs (Herman Stevens)
+      - SVN Digger files (Herman Stevens)
+      - RAFT dirs (Herman Stevens)
+      - RAFT files (Herman Stevens)
 - Meta-Modules
    - Have all been converted to regular plug-ins in order to make distribution across the Grid easier.
 - Dependencies
