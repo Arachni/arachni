@@ -257,7 +257,6 @@ class Issue
 
         @mod_name   = opts[:name]
         @references = opts[:references] || {}
-
     end
 
     def regexp=( regexp )
@@ -270,6 +269,18 @@ class Issue
         hash[:regexp] = hash[:regexp].to_s
         hash[:match]  ||= false
         @opts = hash.dup
+    end
+
+    def response=( html )
+        @response = encode( html )
+    end
+
+    def regexp_match=( match )
+        @regexp_match = encode( match )
+    end
+
+    def id=( id )
+        @id = encode( id )
     end
 
     def each
@@ -291,6 +302,11 @@ class Issue
     end
 
     private
+
+    def encode( str )
+        return str if !str
+        str.encode( :invalid => :replace )
+    end
 
     def normalize_name( name )
         name.to_s.gsub( /@/, '' )
