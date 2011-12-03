@@ -46,13 +46,16 @@ class Manager < Arachni::ComponentManager
     # @param  [AuditStore]  audit_store
     #
     def run( audit_store, run_afr = true )
+        if run_afr
+            # run the default report first
+            run_one( 'afr', audit_store.deep_clone )
+            delete( 'afr' )
+        end
+
         self.each {
             |name, report|
             run_one( name, audit_store.deep_clone )
         }
-
-        # run the default report
-        run_one( 'afr', audit_store.deep_clone ) if run_afr
     end
 
     def run_one( name, audit_store )
