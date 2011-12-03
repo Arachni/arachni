@@ -36,10 +36,11 @@ class Framework < ::Arachni::Framework
     include Arachni::Module::Utilities
 
     # make this inherited methods visible again
-    private :stats, :paused?, :lsmod, :lsplug, :version, :revision
-    public  :stats, :paused?, :lsmod, :lsplug, :version, :revision
+    private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision
+    public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision
 
     alias :old_clean_up! :clean_up!
+    alias :auditstore    :audit_store
 
     private :old_clean_up!
 
@@ -402,7 +403,6 @@ class Framework < ::Arachni::Framework
     # @return   [String]
     #
     def status
-
         if !@crawling_done && master.empty? && high_performance?
             return 'crawling'
         elsif paused?
@@ -528,23 +528,12 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns the results of the audit as an AuditStore object.
-    #
-    # @return   [Arachni::AuditStore]
-    #
-    def auditstore
-        store = audit_store( true ).deep_clone
-        store.framework = nil
-        return store
-    end
-
-    #
     # Returns the results of the audit as a hash.
     #
     # @return   [Hash]
     #
     def report
-        auditstore.to_h
+        audit_store.to_h
     end
 
     #
@@ -553,7 +542,7 @@ class Framework < ::Arachni::Framework
     # @return   [Array]
     #
     def issues
-        audit_store( true ).issues.map {
+        audit_store.issues.map {
             |issue|
             tmp_issue = issue.deep_clone
             tmp_issue.variations = []
