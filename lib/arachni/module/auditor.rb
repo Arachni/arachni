@@ -816,6 +816,7 @@ module Auditor
                         |c_elem|
                         audit_rdiff_elem( c_elem, opts, &block )
                     }
+                when  Element::BODY
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
 
