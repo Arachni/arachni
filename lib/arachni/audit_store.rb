@@ -82,6 +82,9 @@ class AuditStore
     ]
 
     def initialize( audit = {} )
+        @plugins = {}
+        @sitemap = []
+
         # set instance variables from audit opts
         audit.each {
             |k, v|
@@ -90,7 +93,11 @@ class AuditStore
 
         @options         = prepare_options( @options )
         @issues          = sort( prepare_variations( @issues ) )
-        @start_datetime  = @options['start_datetime'].asctime
+        if @options['start_datetime']
+            @start_datetime  = @options['start_datetime'].asctime
+        else
+            @start_datetime = Time.now.asctime
+        end
 
         if @options['finish_datetime']
             @finish_datetime = @options['finish_datetime'].asctime
