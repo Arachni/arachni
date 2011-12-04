@@ -47,6 +47,19 @@ class Manager < Arachni::ComponentManager
         @opts = opts
     end
 
+    def run( page )
+        values.each { |mod| run_one( mod, page ) }
+    end
+
+    def run_one( mod, page )
+        mod = self[mod] if mod.is_a?( String )
+
+        mod_new = mod.new( page )
+        mod_new.prepare
+        mod_new.run
+        mod_new.clean_up
+    end
+
     def self.on_register_results( &block )
         @@on_register_results << block
     end

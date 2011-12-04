@@ -142,6 +142,9 @@ class Framework
         @plugin_store = {}
         @store = nil
 
+        @auditmap ||= []
+        @sitemap  ||= []
+
         @current_url = ''
     end
 
@@ -725,14 +728,7 @@ class Framework
         return if !run_mod?( mod, page )
 
         begin
-
-            # instantiate the module
-            mod_new = mod.new( page )
-            mod_new.set_framework( self )
-
-            mod_new.prepare
-            mod_new.run
-            mod_new.clean_up
+            @modules.run_one( mod, page )
         rescue SystemExit
             raise
         rescue Exception => e
