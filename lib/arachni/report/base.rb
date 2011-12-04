@@ -99,6 +99,8 @@ class Base
     # @param    [AuditStore#plugins]      plugins   plugin data/results
     #
     def format_plugin_results( plugins )
+        formatted = {}
+        return formatted if !plugins
 
         # get the object that extends this class (i.e. the running report)
         ancestor = self.class.ancestors[0]
@@ -122,7 +124,6 @@ class Base
         @@formatters[ancestor].load( ['*'] ) if @@formatters[ancestor].empty?
 
         # run the formatters and gather the formatted data they return
-        formatted = {}
         @@formatters[ancestor].each_pair {
             |name, formatter|
             plugin_results = plugins[name]
