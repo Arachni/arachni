@@ -127,7 +127,6 @@ class HTTP
         } if opts.proxy_addr
 
         @opts = {
-            :user_agent      => opts.user_agent,
             :follow_location => false,
             :disable_ssl_peer_verification => true,
             :timeout         => 50000
