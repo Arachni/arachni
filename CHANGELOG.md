@@ -126,7 +126,7 @@
       - EM Synchrony
       - AsyncSinatra
    - Updated
-      - Typhoeus => 0.3.2
+      - Typhoeus => 0.3.3
       - Sys-proctable => 0.9.1
       - Nokogiri => 1.5.0
       - Sinatra => 1.3.1
