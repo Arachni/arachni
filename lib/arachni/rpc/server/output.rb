@@ -94,6 +94,10 @@ module Output
         buffer( :error => str )
         print_color( '[-]', 31, str, $stderr )
     end
+    def print_error_backtrace( e )
+        e.backtrace.each { |line| print_error( line ) }
+    end
+
 
     # Prints a status message
     #

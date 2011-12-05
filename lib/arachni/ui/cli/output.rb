@@ -137,12 +137,12 @@ module Output
     # @param    [Exception]
     # @return    [void]
     #
-    def print_debug_backtrace( e = nil )
+    def print_debug_backtrace( e )
         if !@@debug then return end
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
-    def print_error_backtrace( e = nil )
+    def print_error_backtrace( e )
         e.backtrace.each{ |line| print_error( line ) }
     end
 
