@@ -605,13 +605,16 @@ class Server < Sinatra::Base
                     |auditstore|
 
                     if !auditstore.rpc_connection_error?
+                        log.webui_save_and_shutdown_auditstore_success( env, url )
                         report_path = reports.save( auditstore )
                         instance.service.shutdown!{ block.call( report_path ) }
                     else
+                        log.webui_save_and_shutdown_auditstore_failed( env, url )
                         block.call( auditstore )
                     end
                 }
             else
+                log.webui_save_and_shutdown_clean_up_failed( env, url )
                 block.call( res )
             end
         }
