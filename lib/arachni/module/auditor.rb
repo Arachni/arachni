@@ -530,7 +530,7 @@ module Auditor
 
             set_id = @framework.modules.class.issue_set_id_from_elem( mod_name, elem )
             return true if @framework.modules.issue_set.include?( set_id )
-        }
+        } if @framework
 
         return false
     end
