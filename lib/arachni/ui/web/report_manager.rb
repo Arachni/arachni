@@ -47,6 +47,7 @@ class ReportManager
         DataMapper::setup( :default, "sqlite3://#{@settings.db}/default.db" )
         DataMapper.finalize
 
+        # Report.raise_on_save_failure = true
         Report.auto_upgrade!
 
         migrate_files
@@ -62,14 +63,17 @@ class ReportManager
             next if Report.first( :filename => File.basename( file, EXTENSION ) )
 
             begin
-                data = File.read( file )
+                report = ::Arachni::AuditStore.load( file )
                 Report.create(
-                    :issue_count => get_issue_count( data ),
-                    :host        => get_host( data ),
+                    :issue_count => get_issue_count( report ),
+                    :host        => get_host( report ),
                     :filename    => File.basename( file, EXTENSION ),
-                    :datestamp   => get_finish_datetime( data )
+                    :datestamp   => DateTime.now
                 )
-            rescue
+            rescue Exception => e
+                # p file
+                # ap e
+                # ap e.backtrace
             end
         }
     end
@@ -161,7 +165,7 @@ class ReportManager
     #
     def report_to_filename( report )
         filename = "#{URI(report.options['url']).host}:#{report.start_datetime}"
-        filename.gsub( ':', '.' )
+        filename.gsub( ':', '.' ).gsub( ' ', '_' ).gsub( '-', '_' ).gsub( '__', '_' )
     end
 
     def get_issue_count( report )
@@ -229,7 +233,7 @@ class ReportManager
             :issue_count => get_issue_count( report ),
             :host        => get_host( report ),
             :filename    => File.basename( file, EXTENSION ),
-            :datestamp   => Time.now.asctime
+            :datestamp   => DateTime.now
         )
 
         return file
