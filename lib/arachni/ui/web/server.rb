@@ -19,6 +19,27 @@ require 'erb'
 require 'cgi'
 require 'fileutils'
 
+module Sinatra::Helpers:Async
+    def aerror( &block )
+        define_method :aerror, &block
+    end
+
+    def async_handle_exception
+        yield
+    rescue ::Exception => boom
+        if respond_to? :aerror
+            aerror boom
+        elsif settings.show_exceptions?
+            printer = Sinatra::ShowExceptions.new( proc{ raise boom } )
+            s, h, b = printer.call( request.env )
+            response.status = s
+            response.headers.replace( h )
+            response.body = b
+        else
+            body( handle_exception!( boom ) )
+        end
+    end
+end
 
 module Arachni
 module UI
@@ -641,6 +662,47 @@ class Server < Sinatra::Base
                 }
             }
         }
+    end
+
+    def show_error( title, message = '', backtrace = [] )
+        skip = [
+            'rack.input',
+            'rack.errors',
+            'async.callback',
+            'async.close',
+            'rack.logger',
+        ]
+
+        err_env = {}
+        env.each {
+            |k, v|
+            next if skip.include?( k )
+            err_env[k] = v
+        }
+
+        err_env['rack.session.options'].delete( :coder )
+        err_env['rack.session.options'].delete( :secure_random )
+
+        err_env.merge!(
+            :title     => title,
+            :message   => message,
+            :backtrace => backtrace.join( "\n" )
+        )
+
+        erb :error, { :layout => true },
+            :title     => title,
+            :message   => message,
+            :backtrace => backtrace.join( "\n" ),
+            :env       => err_env.to_yaml
+    end
+
+    not_found do
+        show_error( 'Could not find requested path.',
+            'Please use the menus for navigation, it\'ll be easier on you...' )
+    end
+
+    aerror do |e|
+        body show_error( e.class.to_s, e.message, e.backtrace )
     end
 
     aget "/" do

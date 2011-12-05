@@ -1,1 +1,22 @@
-<h1 style="font-size:110%;font-family:Arial, sans-serif;"><%= error %></h1>
+        <div id="page-intro">
+            <h2><%= escape( title ) %></h2>
+            <p>
+                <%= escape( message ) if !message.empty? %>
+            </p>
+        </div>
+
+        <% if !backtrace.empty? %>
+            <a href='https://github.com/Zapotek/arachni/issues'>
+                If you could submit the gibberish you see under 'Environment' that'd really be helpful.
+            </a>
+
+            <p>
+                <h3>Backtrace</h3>
+                <pre style='max-height: 300px; overflow: auto'><%= escape( backtrace ) %></pre>
+            </p>
+
+            <p>
+                <h3>Environment</h3>
+                 <pre style='max-height: 300px; overflow: auto'><%= escape( env ) %></pre>
+             </p>
+        <%end%>
