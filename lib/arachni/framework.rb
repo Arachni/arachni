@@ -728,7 +728,7 @@ class Framework
         return if !run_mod?( mod, page )
 
         begin
-            @modules.run_one( mod, page )
+            @modules.run_one( mod, page, self )
         rescue SystemExit
             raise
         rescue Exception => e

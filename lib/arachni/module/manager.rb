@@ -47,14 +47,15 @@ class Manager < Arachni::ComponentManager
         @opts = opts
     end
 
-    def run( page )
-        values.each { |mod| run_one( mod, page ) }
+    def run( page, framework = nil )
+        values.each { |mod| run_one( mod, page, framework ) }
     end
 
-    def run_one( mod, page )
+    def run_one( mod, page, framework = nil )
         mod = self[mod] if mod.is_a?( String )
 
         mod_new = mod.new( page )
+        mod_new.set_framework( framework ) if framework
         mod_new.prepare
         mod_new.run
         mod_new.clean_up
