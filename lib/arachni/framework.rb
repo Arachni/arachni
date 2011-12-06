@@ -142,8 +142,8 @@ class Framework
         @plugin_store = {}
         @store = nil
 
-        @auditmap ||= []
-        @sitemap  ||= []
+        @auditmap = []
+        @sitemap  = []
 
         @current_url = ''
     end
@@ -206,9 +206,6 @@ class Framework
     def stats( refresh_time = false, overide_refresh = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
-
-        @auditmap ||= []
-        @sitemap  ||= []
 
         @opts.start_datetime = Time.now if !@opts.start_datetime
 
@@ -324,9 +321,6 @@ class Framework
 
         @spider = Arachni::Spider.new( @opts )
 
-        @sitemap  ||= []
-        @auditmap ||= []
-
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
             @sitemap = @opts.restrict_paths
@@ -438,7 +432,7 @@ class Framework
     alias :auditstore :audit_store
 
     def audit_store_sitemap
-        @override_sitemap ? @override_sitemap : @sitemap
+        @override_sitemap && !@override_sitemap.empty? ? @override_sitemap : @sitemap
     end
 
     def plugin_store( plugin, obj )
