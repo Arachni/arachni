@@ -37,6 +37,7 @@ class XSSPath < Arachni::Module::Base
         @str = '<' + @_tag_name + ' />'
         @__injection_strs = [
             @str,
+            '?' + @str,
             '?>"\'>' + @str,
             '?=>"\'>' + @str
         ]
