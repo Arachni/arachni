@@ -138,7 +138,8 @@
                     for( i in stats.instances ) {
 
                         elem.innerHTML += '<strong>' + stats.instances[i].url +
-                        ' - ' + stats.instances[i].progress + '%' + '</strong> <br/>';
+                        ' - ' + stats.instances[i].progress + '%' +
+                        ' - Est. remaining time: ' + stats.instances[i].eta + '</strong> <br/>';
 
                         status = stats.instances[i].status
                         if( status == 'busy' ) {
