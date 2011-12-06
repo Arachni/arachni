@@ -51,7 +51,7 @@ module Output
     # @return    [void]
     #
     def print_error( str = '' )
-        print_color( '[-]', 31, str, $stderr )
+        print_color( '[-]', 31, str, $stderr, true )
     end
 
     # Prints a status message
@@ -64,9 +64,9 @@ module Output
     # @param    [String]    status string
     # @return    [void]
     #
-    def print_status( str = '' )
+    def print_status( str = '', unmute = false )
         if @@only_positives then return end
-        print_color( '[*]', 34, str )
+        print_color( '[*]', 34, str, $stdout, unmute )
     end
 
     # Prints an info message
@@ -79,9 +79,9 @@ module Output
     # @param    [String]    info string
     # @return    [void]
     #
-    def print_info( str = '' )
+    def print_info( str = '', unmute = false )
         if @@only_positives then return end
-        print_color( '[~]', 30, str )
+        print_color( '[~]', 30, str, $stdout, unmute )
     end
 
     # Prints a good message, something that went very very right,
@@ -92,8 +92,8 @@ module Output
     # @param    [String]    ok string
     # @return    [void]
     #
-    def print_ok( str = '' )
-        print_color( '[+]', 32, str )
+    def print_ok( str = '', unmute = false )
+        print_color( '[+]', 32, str, $stdout, unmute )
     end
 
     # Prints a debugging message
@@ -106,9 +106,9 @@ module Output
     # @param    [String]    debugging string
     # @return    [void]
     #
-    def print_debug( str = '' )
+    def print_debug( str = '', unmute = false )
         if !@@debug then return end
-        print_color( '[!]', 36, str, $stderr )
+        print_color( '[!]', 36, str, $stderr, unmute )
     end
 
     # Pretty prints an object, used for debugging,
@@ -157,9 +157,9 @@ module Output
     # @param    [String]    verbose string
     # @return    [void]
     #
-    def print_verbose( str = '' )
+    def print_verbose( str = '', unmute = false )
         if !@@verbose then return end
-        print_color( '[v]', 37, str )
+        print_color( '[v]', 37, str, $stdout, unmute )
     end
 
     # Prints a line of message
@@ -172,9 +172,9 @@ module Output
     # @param    [String]    string
     # @return    [void]
     #
-    def print_line( str = '' )
+    def print_line( str = '', unmute = false )
         if @@only_positives then return end
-        return if muted?
+        return if muted? && !unmute
         puts str
     end
 
@@ -263,8 +263,8 @@ module Output
     #
     # @return    [void]
     #
-    def print_color( sign, color, string, out = $stdout )
-        return if muted?
+    def print_color( sign, color, string, out = $stdout, unmute = false )
+        return if muted? && !unmute
 
         if out.tty?
             out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";

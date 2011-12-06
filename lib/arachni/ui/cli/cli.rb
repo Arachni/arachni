@@ -12,6 +12,8 @@
 module Arachni
 
 require Options.instance.dir['lib'] + 'ui/cli/output'
+require Options.instance.dir['mixins'] + 'terminal'
+require Options.instance.dir['mixins'] + 'progress_bar'
 require Options.instance.dir['arachni']
 
 module UI
@@ -30,6 +32,8 @@ module UI
 # @see Arachni::Framework
 #
 class CLI
+    include ::Arachni::Mixins::Terminal
+    include ::Arachni::Mixins::ProgressBar
 
     #
     # Instance options
@@ -126,35 +130,63 @@ class CLI
 
     private
 
-    def print_stats( refresh_time = false )
+    def print_stats( refresh_time = false, unmute = false )
 
         stats   = @arachni.stats( refresh_time )
 
         audited = stats[:auditmap_size]
         mapped  = stats[:sitemap_size]
 
-        print_line
-        print_info( "Audit progress: #{stats[:progress]}% ( Discovered #{mapped} pages )" )
-        print_line
-        print_info( "Sent #{stats[:requests]} requests." )
-        print_info( "Received and analyzed #{stats[:responses]} responses." )
-        print_info( 'In ' + stats[:time] )
+        print_line( restr, unmute )
+
+        print_info( restr( "#{progress_bar( stats[:progress], 61 )}" ), unmute )
+        print_info( restr( "Est. remaining time: #{stats[:eta]}" ), unmute )
+
+        print_line( restr, unmute )
+
+        if stats[:current_page] && !stats[:current_page].empty?
+            print_info( restr( "Crawler has discovered #{mapped} pages." ), unmute )
+        else
+            print_info( restr( "Crawling, discovered #{mapped} pages and counting." ), unmute )
+        end
+
+        if @arachni.opts.link_count_limit > 0
+
+            feedback = ''
+            if @arachni.page_queue_total_size
+                feedback = " -- excluding #{@arachni.page_queue_total_size} pages of Trainer feedback"
+            end
+
+            print_info( restr( "Audit limited to a max of #{@arachni.opts.link_count_limit} " +
+                "pages#{feedback}." ),
+                unmute
+            )
+        end
+
+        print_line( restr, unmute )
+
+        print_info( restr( "Sent #{stats[:requests]} requests." ), unmute )
+        print_info( restr( "Received and analyzed #{stats[:responses]} responses." ), unmute )
+        print_info( restr( 'In ' + stats[:time] ), unmute )
 
         avg = 'Average: ' + stats[:avg].to_s + ' requests/second.'
-        print_info( avg )
+        print_info( restr( avg ), unmute )
 
-        print_line
-        print_info( "Currently auditing           #{stats[:current_page]}" )
-        print_info( "Burst response time total    #{stats[:curr_res_time]}" )
-        print_info( "Burst response count total   #{stats[:curr_res_cnt]} " )
-        print_info( "Burst average response time  #{stats[:average_res_time]}" )
-        print_info( "Burst average                #{stats[:curr_avg]} requests/second" )
-        print_info( "Timed-out requests           #{stats[:time_out_count]}" )
-        print_info( "Original max concurrency     #{@opts.http_req_limit}" )
-        print_info( "Throttled max concurrency    #{stats[:max_concurrency]}" )
+        print_line( restr, unmute )
+        if stats[:current_page] && !stats[:current_page].empty?
+            print_info( restr( "Currently auditing" +
+                "           #{stats[:current_page]}" ), unmute )
+        end
 
-        print_line
+        print_info( restr( "Burst response time total    #{stats[:curr_res_time]}" ), unmute )
+        print_info( restr( "Burst response count total   #{stats[:curr_res_cnt]} " ), unmute )
+        print_info( restr( "Burst average response time  #{stats[:average_res_time]}" ), unmute )
+        print_info( restr( "Burst average                #{stats[:curr_avg]} requests/second" ), unmute )
+        print_info( restr( "Timed-out requests           #{stats[:time_out_count]}" ), unmute )
+        print_info( restr( "Original max concurrency     #{@opts.http_req_limit}" ), unmute )
+        print_info( restr( "Throttled max concurrency    #{stats[:max_concurrency]}" ), unmute )
 
+        print_line( restr, unmute )
     end
 
     def kill_interrupt_handler
@@ -210,25 +242,26 @@ class CLI
                 Thread.exit
             }
 
+            mute!
+            clear_screen!
             loop do
 
-                unmute!
-                print_line
-                clear_screen
-                print_info( 'Results thus far:' )
+                print_line( restr, true )
+                move_to_home!
+                print_info( restr( 'Results thus far:' ), true )
 
                 begin
-                    print_issues( @arachni.audit_store( true ) )
-                    print_stats( true )
+                    print_issues( @arachni.audit_store( true ), true )
+                    print_stats( true, true )
                 rescue Exception => e
                     exception_jail{ raise e }
                     raise e
                 end
 
-                print_info( 'Continue? (hit \'enter\' to continue, \'r\' to generate reports and \'e\' to exit)' )
-                mute!
+                print_info( restr( 'Continue? (hit \'enter\' to continue, \'r\' to generate reports and \'e\' to exit)' ), true )
+                flush!
 
-                ::IO::select( nil, nil, nil, 1 )
+                ::IO::select( nil, nil, nil, 0.3 )
             end
 
             unmute!
@@ -236,30 +269,30 @@ class CLI
 
     end
 
-    def clear_screen
-        puts "\e[H\e[2J"
-    end
+    def print_issues( audit_store, unmute = false )
 
-    def print_issues( audit_store )
+        print_line( restr, unmute )
+        print_info( restr( audit_store.issues.size.to_s +
+          ' issues have been detected.' ), unmute )
 
-        print_line( )
-        print_info( audit_store.issues.size.to_s +
-          ' issues have been detected.' )
+        print_line( restr, unmute )
 
-        print_line( )
-        audit_store.issues.each {
-            |issue|
+        issues    = audit_store.issues
+        issue_cnt = audit_store.issues.count
+        issues.each.with_index {
+            |issue, i|
 
-            print_ok( "#{issue.name} (In #{issue.elem} variable '#{issue.var}'" +
-              " - Severity: #{issue.severity} - Variations: #{issue.variations.size.to_s})" )
+            input = issue.var ? " input `#{issue.var}`" : ''
+            meth  = issue.method ? " using #{issue.method}" : ''
+            cnt   = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )
 
-            print_info( issue.variations[0]['url'] )
-
-            print_line( )
+            print_ok( restr(  "#{cnt} #{issue.name} at #{issue.url} in" +
+                " #{issue.elem}#{input}#{meth}." ),
+                unmute
+            )
         }
 
-        print_line( )
-
+        print_line( restr, unmute )
     end
 
     #
