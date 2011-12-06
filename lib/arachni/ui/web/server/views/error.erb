@@ -1,7 +1,7 @@
         <div id="page-intro">
-            <h2><%= escape( title ) %></h2>
+            <h2><%= title %></h2>
             <p>
-                <%= escape( message ) if !message.empty? %>
+                <%= message if !message.empty? %>
             </p>
         </div>
 
@@ -12,11 +12,11 @@
 
             <p>
                 <h3>Backtrace</h3>
-                <pre style='max-height: 300px; overflow: auto'><%= escape( backtrace ) %></pre>
+                <pre style='max-height: 300px; overflow: auto'><%= backtrace %></pre>
             </p>
 
             <p>
                 <h3>Environment</h3>
-                 <pre style='max-height: 300px; overflow: auto'><%= escape( env ) %></pre>
+                 <pre style='max-height: 300px; overflow: auto'><%= env %></pre>
              </p>
         <%end%>
