@@ -33,11 +33,12 @@ class XSSPath < Arachni::Module::Base
     end
 
     def prepare
-        @_tag_name = '<my_tag_' + seed + ' />'
+        @_tag_name = 'my_tag_' + seed
+        @str = '<' + @_tag_name + ' />'
         @__injection_strs = [
-            @_tag_name,
-            '?>"\'>' + @_tag_name,
-            '?=>"\'>' + @_tag_name
+            @str,
+            '?>"\'>' + @str,
+            '?=>"\'>' + @str
         ]
 
         @@audited ||= Set.new
@@ -60,7 +61,7 @@ class XSSPath < Arachni::Module::Base
 
             req.on_complete {
                 |res|
-                __log_results( res, str )
+                check_and_log( res, str )
             }
         }
     end
