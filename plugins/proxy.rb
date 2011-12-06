@@ -15,12 +15,12 @@ module Plugins
 # Passive proxy.
 #
 # Will gather data based on user actions and exchanged HTTP traffic and push that
-# data to the {Framework#page_queue} to be audited.
+# data to the {Framework#push_to_page_queue} to be audited.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Proxy < Arachni::Plugin::Base
 
@@ -116,7 +116,7 @@ class Proxy < Arachni::Plugin::Base
         print_info " *  #{page.cookies.size} cookies"
 
         update_framework_cookies( page, req )
-        @framework.page_queue << page.dup
+        @framework.push_to_page_queue( page.dup )
 
         return res
     end
@@ -234,7 +234,7 @@ class Proxy < Arachni::Plugin::Base
                 It also updates the framework cookies with the cookies of the HTTP requests and
                 responses, thus it can also be used to login to a web application.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :options        => [
                 Arachni::OptPort.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
                 Arachni::OptAddress.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
