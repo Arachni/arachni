@@ -1080,6 +1080,9 @@ class Framework < ::Arachni::Framework
                 }
 
                 final_stats['current_pages'] << instats['current_page'] if instats['current_page']
+
+                final_stats['eta'] ||= instats['eta']
+                final_stats['eta']   = max_eta( final_stats['eta'], instats['eta'] )
             }
 
             avg.each {
@@ -1096,7 +1099,20 @@ class Framework < ::Arachni::Framework
         return final_stats
     end
 
+    def max_eta( eta1, eta2 )
+        return eta1 if eta1 == eta2
 
+        # splits them into hours, mins and secs
+        eta1_splits = eta1.split( ':' )
+        eta2_splits = eta2.split( ':' )
+
+        # go through and compare the hours, mins, sec
+        eta1_splits.size.times {
+            |i|
+            return eta1 if eta1_splits[i].to_i > eta2_splits[i].to_i
+            return eta2 if eta1_splits[i].to_i < eta2_splits[i].to_i
+        }
+    end
 
 end
 

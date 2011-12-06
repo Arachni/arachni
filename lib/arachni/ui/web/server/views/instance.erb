@@ -41,6 +41,7 @@
                 <ul>
                     <li>Pages discovered: <span id="crawled">0</span></li>
                     <li>Progress: <span id="percentage">0</span>%</li>
+                    <li>Est. remaining time: <span id="eta">--:--:--</span></li>
                     <li>Requests/second: <span id="avg">0</span></li>
                     <li>Runtime: <span id="runtime">00:00:00</span></li>
                     <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
@@ -131,6 +132,7 @@
                     document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
 
                     document.getElementById( 'runtime' ).innerHTML = stats.time;
+                    document.getElementById( 'eta' ).innerHTML = stats.eta;
                     document.getElementById( 'percentage' ).innerHTML = parseInt( stats.progress );
 
                     elem = document.getElementById( 'currently_auditing');
