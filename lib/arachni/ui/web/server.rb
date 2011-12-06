@@ -11,7 +11,8 @@
 require 'eventmachine'
 require 'em-synchrony'
 require 'sinatra/async'
-require "rack/csrf"
+# require "rack/csrf"
+require 'securerandom'
 require 'rack-flash'
 require 'json'
 require 'erb'
@@ -90,7 +91,7 @@ class Server < Sinatra::Base
     configure do
         use Rack::Flash
         use Rack::Session::Cookie
-        use Rack::Csrf, :raise => true
+        # use Rack::Csrf, :raise => true
 
         opts = Arachni::Options.instance
 
@@ -195,11 +196,21 @@ class Server < Sinatra::Base
         end
 
         def csrf_token
-            Rack::Csrf.csrf_token( env )
+            # Rack::Csrf.csrf_token( env )
+            @@csrf_token ||= SecureRandom.base64( 32 )
+        end
+
+        def csrf_field
+            '_csrf'
+        end
+
+        def csrf_key
+            'csrf.token'
         end
 
         def csrf_tag
-            Rack::Csrf.csrf_tag( env )
+            # Rack::Csrf.csrf_tag( env )
+            %Q(<input type="hidden" name="#{csrf_field}" value="#{csrf_token}" />)
         end
 
         def modules
@@ -699,19 +710,33 @@ class Server < Sinatra::Base
         )
 
         erb :error, { :layout => true },
-            :title     => title,
-            :message   => message,
-            :backtrace => backtrace.join( "\n" ),
-            :env       => err_env.to_yaml
+            :title     => escape( title ),
+            :message   => escape( message ).gsub( "\n", '<br />' ),
+            :backtrace => escape( backtrace.join( "\n" ) ),
+            :env       => escape( err_env.to_yaml )
     end
 
     not_found do
-        show_error( 'Could not find requested path.',
+        show_error( 'Could not find the requested path',
             'Please use the menus for navigation, it\'ll be easier on you...' )
+    end
+
+    before do
+        if %q{POST PUT DELETE}.include?( env['REQUEST_METHOD'] ) &&
+            csrf_token != params[csrf_field]
+            redirect '/csrf_error'
+        end
     end
 
     aerror do |e|
         body show_error( e.class.to_s, e.message, e.backtrace )
+    end
+
+    aget '/csrf_error' do
+        body show_error( 'Invalid CSRF token',
+            "The CSRF token that accompanied your last request was invalid.\n" +
+            "Please go back and try again..."
+        )
     end
 
     aget "/" do
@@ -873,14 +898,14 @@ class Server < Sinatra::Base
     #
     # sets plugins
     #
-    post "/plugins" do
+    apost "/plugins" do
         prep_session
         session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
         flash.now[:ok] = "Plugins updated."
         erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )
     end
 
-    get "/settings" do
+    aget "/settings" do
         prep_session
         erb :settings, { :layout => true }
     end
@@ -888,7 +913,7 @@ class Server < Sinatra::Base
     #
     # sets general framework settings
     #
-    post "/settings" do
+    apost "/settings" do
 
         if session['opts']['settings']['url']
             url = session['opts']['settings']['url'].dup
@@ -1027,44 +1052,44 @@ class Server < Sinatra::Base
 
     end
 
-    get "/reports" do
+    aget "/reports" do
         erb :reports, { :layout => true }, :reports => reports.all( :order => :datestamp.desc ),
             :available => reports.available
     end
 
-    get '/reports/formats' do
+    aget '/reports/formats' do
         erb :report_formats, { :layout => true }, :reports => reports.available
     end
 
-    post '/reports/delete' do
+    apost '/reports/delete' do
         reports.delete_all
         log.reports_deleted( env )
 
         redirect '/reports'
     end
 
-    post '/report/:id/delete' do
+    apost '/report/:id/delete' do
         reports.delete( params[:id] )
         log.report_deleted( env, params[:id] )
 
         redirect '/reports'
     end
 
-    get '/report/:id.:type' do
+    aget '/report/:id.:type' do
         log.report_converted( env, params[:id] + '.' + params[:type] )
         content_type( params[:type], :default => 'application/octet-stream' )
         reports.get( params[:type], params[:id] )
     end
 
-    get '/log' do
+    aget '/log' do
         erb :log, { :layout => true }, :entries => log.entry.all.reverse
     end
 
-    get '/addons' do
+    aget '/addons' do
         erb :addons
     end
 
-    post '/addons' do
+    apost '/addons' do
         params['addons'] ||= {}
         addon_names = params['addons'].keys
 

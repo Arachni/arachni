@@ -47,7 +47,7 @@ Gem::Specification.new do |s|
       s.add_dependency "thin",            "~> 1.2.11"
       s.add_dependency "data_objects",    "~> 0.10.6"
       s.add_dependency "datamapper",      "~> 1.1.0"
-      s.add_dependency "rack_csrf",       "~> 2.1.0"
+      # s.add_dependency "rack_csrf",       "~> 2.1.0"
       s.add_dependency "rack-flash",      "~> 0.1.1"
       s.add_dependency "dm-sqlite-adapter", "~> 1.1.0"
       s.add_dependency "net-ssh",         "~> 2.2.1"
