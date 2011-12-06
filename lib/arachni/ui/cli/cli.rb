@@ -214,11 +214,13 @@ class CLI
 
              Thread.new {
 
-                case gets[0]
+                c = gets[0]
+                clear_screen!
+                unmute!
+                case c
 
                     when 'e'
                         @@only_positives = false
-                        unmute!
                         @interrupt_handler.kill
 
                         print_error( 'Exiting...' )
@@ -234,7 +236,6 @@ class CLI
                         }
 
                     when 'r'
-                        unmute!
                         @arachni.reports.run( @arachni.audit_store( true ) )
                 end
 
