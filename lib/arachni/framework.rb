@@ -263,7 +263,7 @@ class Framework
     #
     # @return   [Hash]
     #
-    def stats( refresh_time = false, overide_refresh = false )
+    def stats( refresh_time = false, override_refresh = false )
         req_cnt = http.request_count
         res_cnt = http.response_count
 
