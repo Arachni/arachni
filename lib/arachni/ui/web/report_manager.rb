@@ -68,7 +68,7 @@ class ReportManager
                     :issue_count => get_issue_count( report ),
                     :host        => get_host( report ),
                     :filename    => File.basename( file, EXTENSION ),
-                    :datestamp   => DateTime.now
+                    :datestamp   => get_finish_datetime( report )
                 )
             rescue Exception => e
                 # p file
