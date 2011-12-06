@@ -409,6 +409,7 @@ class Options
         @dir['plugins'] = @dir['root'] + 'plugins/'
         @dir['path_extractors']    = @dir['root'] + 'path_extractors/'
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
+        @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]
 
         # we must add default values for everything because that can serve
