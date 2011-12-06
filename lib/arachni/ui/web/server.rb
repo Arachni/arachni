@@ -10,7 +10,6 @@
 
 require 'eventmachine'
 require 'em-synchrony'
-require 'sinatra/base'
 require 'sinatra/async'
 require "rack/csrf"
 require 'rack-flash'
@@ -19,24 +18,31 @@ require 'erb'
 require 'cgi'
 require 'fileutils'
 
-module Sinatra::Helpers:Async
+#
+# Monkey patch Sinatra::Async to support error handling.
+#
+# This is from their own repo, can't wait for them to push the gem though.
+#
+module Sinatra::Async
     def aerror( &block )
         define_method :aerror, &block
     end
 
-    def async_handle_exception
-        yield
-    rescue ::Exception => boom
-        if respond_to? :aerror
-            aerror boom
-        elsif settings.show_exceptions?
-            printer = Sinatra::ShowExceptions.new( proc{ raise boom } )
-            s, h, b = printer.call( request.env )
-            response.status = s
-            response.headers.replace( h )
-            response.body = b
-        else
-            body( handle_exception!( boom ) )
+    module Helpers
+        def async_handle_exception
+            yield
+        rescue ::Exception => boom
+            if respond_to? :aerror
+                aerror boom
+            elsif settings.show_exceptions?
+                printer = Sinatra::ShowExceptions.new( proc{ raise boom } )
+                s, h, b = printer.call( request.env )
+                response.status = s
+                response.headers.replace( h )
+                response.body = b
+            else
+                body( handle_exception!( boom ) )
+            end
         end
     end
 end
