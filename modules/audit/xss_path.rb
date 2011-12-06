@@ -67,6 +67,10 @@ class XSSPath < Arachni::Module::Base
     end
 
     def check_and_log( res, str )
+        # check for the existence of the tag name before parsing to verify
+        # no reason to waste resources...
+        return if ! res.body.substring?( @_tag_name )
+
         doc = Nokogiri::HTML( res.body )
 
         # see if we managed to successfully inject our element
@@ -104,29 +108,25 @@ class XSSPath < Arachni::Module::Base
     end
 
     def __log_results( res, id )
+        url = res.effective_url
+        log_issue(
+            :var          => 'n/a',
+            :url          => url,
+            :injected     => id,
+            :id           => id,
+            :regexp       => 'n/a',
+            :regexp_match => 'n/a',
+            :elem         => Issue::Element::PATH,
+            :response     => res.body,
+            :headers      => {
+                :request    => res.request.headers,
+                :response   => res.headers,
+            }
+        )
 
-        if res.body.substring?( id )
-
-            url = res.effective_url
-            log_issue(
-                :var          => 'n/a',
-                :url          => url,
-                :injected     => id,
-                :id           => id,
-                :regexp       => 'n/a',
-                :regexp_match => 'n/a',
-                :elem         => Issue::Element::PATH,
-                :response     => res.body,
-                :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            )
-
-            # inform the user that we have a match
-            print_ok( "Match at #{url}" )
-            print_verbose( "Injected string: #{id}" )
-        end
+        # inform the user that we have a match
+        print_ok( "Match at #{url}" )
+        print_verbose( "Injected string: #{id}" )
     end
 
 
