@@ -350,10 +350,14 @@ class Framework
         end
 
         begin
-            progress = Float( progress.to_s[0...5] )
+            progress = Float( sprintf( "%.2f", progress ) )
         rescue
             progress = 0.0
         end
+
+        # sometimes progress may slightly exceed 100%
+        # which can cause a few strange stuff to happen
+        progress = 100.0 if progress > 100.0
 
         return {
             :requests   => req_cnt,
