@@ -9,111 +9,44 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
-# XSS in URI audit module.
+# Left here for compatibility reasons, has been obsoleted by the xss_path module.
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
-#
-# @see http://cwe.mitre.org/data/definitions/79.html
-# @see http://ha.ckers.org/xss.html
-# @see http://secunia.com/advisories/9716/
 #
 class XSSURI < Arachni::Module::Base
 
-    include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-
-        @results    = []
-
-        # since we'll bypass the Auditor we need to keep track of our audits
-        @@__audited  ||= Set.new
+    def prepare
+        if @framework && !@framework.modules.keys.include?( 'xss_path' )
+            @mod = @framework.modules['xss_path'].new( @page )
+            @mod.set_framework( @framework )
+            @mod.prepare
+        end
     end
 
-    def prepare( )
-        @str = '/<arachni_xss_uri_' + seed
+    def run
+        print_error( 'Module has been obsoleted and will eventually be removed.' )
+        print_info( 'Please remove it from any profiles or scripts you may have created.' )
+        print_info( '-- Running \'xss_path\' instead.' )
+        @mod.run if @mod
     end
 
-    def run( )
-
-    uri  = URI( normalize_url( @page.url ) )
-    url  = uri.scheme + '://' + uri.host + uri.path  + @str
-
-    if @@__audited.include?( url )
-        print_info( 'Skipping already audited url: ' + url )
-        return
+    def clean_up
+        @mod.clean_up if @mod
     end
-
-    @@__audited << url
-
-    req  = @http.get( url )
-
-    req.on_complete {
-        |res|
-        __log_results( res )
-    }
-
-    end
-
 
     def self.info
         {
             :name           => 'XSSURI',
-            :description    => %q{Cross-Site Scripting module for path injection},
-            :elements       => [ ],
+            :description    => %q{Compatibility module, will load and run xss_path instead.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.4',
-            :references     => {
-                'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                'Secunia'  => 'http://secunia.com/advisories/9716/'
-            },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Cross-Site Scripting (XSS) in URI},
-                :description => %q{Client-side code, like JavaScript, can
-                    be injected into the web application.},
-                :tags        => [ 'xss', 'uri', 'path', 'regexp', 'injection', 'script' ],
-                :cwe         => '79',
-                :severity    => Issue::Severity::HIGH,
-                :cvssv2       => '9.0',
-                :remedy_guidance    => '',
-                :remedy_code => '',
-            }
-
+            :version        => '0'
         }
     end
-
-    def __log_results( res )
-
-        if res.body.substring?( @str )
-
-            url = res.effective_url
-            log_issue(
-                :url          => url,
-                :injected     => @str,
-                :id           => @str,
-                :regexp       => @str,
-                :regexp_match => @str,
-                :elem         => Issue::Element::PATH,
-                :response     => res.body,
-                :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            )
-
-            # inform the user that we have a match
-            print_ok( "In #{@page.url} at " + url )
-        end
-    end
-
 
 end
 end
