@@ -403,7 +403,8 @@ class Framework < ::Arachni::Framework
     # @return   [String]
     #
     def status
-        if !@crawling_done && master.empty? && high_performance?
+        if( !@crawling_done && master.empty? && high_performance?) ||
+            ( master.empty? && !high_performance? && stats[:current_page].empty? )
             return 'crawling'
         elsif paused?
             return 'paused'
