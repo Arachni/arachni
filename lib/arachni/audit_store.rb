@@ -288,8 +288,15 @@ class AuditStore
             new_issues[__id].variations = [] if !new_issues[__id].variations
 
             issue.headers ||= {}
-            issue.headers['request']  = (issue.headers[:request] || {}).dup
-            issue.headers['response'] = (issue.headers[:response] || {}).dup
+
+            issue.headers['request'] ||= {}
+            (issue.headers[:request] || {}).each {
+                |k, v|
+                issue.headers['request'][k] = v.dup if v
+            }
+
+            issue.headers['response'] ||= {}
+            issue.headers['response'] = (issue.headers[:response] || '').dup
 
             issue.headers.delete( :request )
             issue.headers.delete( :response )
