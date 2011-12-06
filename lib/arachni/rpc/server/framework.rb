@@ -551,19 +551,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Connects to a remote Instance.
-    #
-    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
-    #                                   In subsequent calls the 'token' can be omitted.
-    #
-    def connect_to_instance( instance )
-        @tokens  ||= {}
-
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
-    end
-
-    #
     # The following methods need to be accessible over RPC but are *privileged*.
     #
     # They're used for intra-Grid communication between masters and their slaves
@@ -655,6 +642,19 @@ class Framework < ::Arachni::Framework
 
     def set_plugin_store( plugin_store )
         @plugin_store = plugin_store
+    end
+
+    #
+    # Connects to a remote Instance.
+    #
+    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
+    #                                   In subsequent calls the 'token' can be omitted.
+    #
+    def connect_to_instance( instance )
+        @tokens  ||= {}
+
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
     #

@@ -100,7 +100,9 @@ class Instance
             |instance|
             # Don't know why but this works better than EM's stuff
             t << Thread.new {
-                @framework.connect_to_instance( instance ).service.shutdown!
+                @framework.instance_eval{
+                    connect_to_instance( instance ).service.shutdown!
+                }
             }
         }
 
@@ -135,7 +137,6 @@ class Instance
     # Initialises the RPC framework.
     #
     def prep_framework
-        @framework = nil
         @framework = Arachni::RPC::Server::Framework.new( Options.instance )
     end
 
