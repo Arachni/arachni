@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version: 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -33,18 +33,17 @@ class XSSPath < Arachni::Module::Base
     end
 
     def prepare
-        @str = '/<arachni_xss_path_' + seed
+        @_tag_name = '<my_tag_' + seed + ' />'
         @__injection_strs = [
-            @str,
-            '?>"\'>' + @str,
-            '?=>"\'>' + @str
+            @_tag_name,
+            '?>"\'>' + @_tag_name,
+            '?=>"\'>' + @_tag_name
         ]
 
         @@audited ||= Set.new
     end
 
     def run
-
         path = get_path( @page.url )
 
         return if @@audited.include?( path )
@@ -66,6 +65,15 @@ class XSSPath < Arachni::Module::Base
         }
     end
 
+    def check_and_log( res, str )
+        doc = Nokogiri::HTML( res.body )
+
+        # see if we managed to successfully inject our element
+        if !doc.xpath( "//#{@_tag_name}" ).empty?
+            __log_results( res, str )
+        end
+    end
+
 
     def self.info
         {
@@ -73,7 +81,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.4',
+            :version        => '0.1.5',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -106,7 +114,7 @@ class XSSPath < Arachni::Module::Base
                 :id           => id,
                 :regexp       => 'n/a',
                 :regexp_match => 'n/a',
-                :elem         => Issue::Element::LINK,
+                :elem         => Issue::Element::PATH,
                 :response     => res.body,
                 :headers      => {
                     :request    => res.request.headers,
