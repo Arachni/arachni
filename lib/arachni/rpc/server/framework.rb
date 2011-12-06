@@ -1044,13 +1044,12 @@ class Framework < ::Arachni::Framework
     end
 
     def merge_stats( stats )
-
-        final_stats = stats.pop
+        final_stats = stats.pop.dup
         return {} if !final_stats || final_stats.empty?
 
         return final_stats if stats.empty?
 
-        final_stats['current_pages'] = [ ]
+        final_stats['current_pages'] = []
         final_stats['current_pages'] << final_stats['current_page'] if final_stats['current_page']
 
         total = [
@@ -1088,7 +1087,8 @@ class Framework < ::Arachni::Framework
 
             avg.each {
                 |k|
-                final_stats[k.to_s] /= stats.size + 1
+                final_stats[k.to_s] /= Float( stats.size + 1 )
+                final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
             }
         rescue Exception => e
             # ap e
