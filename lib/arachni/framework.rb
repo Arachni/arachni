@@ -805,8 +805,8 @@ class Framework
 
         @current_url = page.url.to_s
 
-        @modules.each_pair {
-            |name, mod|
+        @modules.values.each {
+            |mod|
             wait_if_paused
             run_mod( mod, page.deep_clone )
         }
