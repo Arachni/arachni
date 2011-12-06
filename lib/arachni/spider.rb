@@ -122,7 +122,6 @@ class Spider
 
                     next if parser.skip?( res.effective_url )
 
-                    print_line
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
 
                     if parse
@@ -161,7 +160,7 @@ class Spider
                 # return if we have exceeded it.
                 if( @opts.link_count_limit &&
                     @opts.link_count_limit > 0 &&
-                    @opts.link_count_limit <= visited.size )
+                    visited.size >= @opts.link_count_limit )
                     http.run
                     return @sitemap.uniq
                 end
