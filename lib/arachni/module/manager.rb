@@ -47,13 +47,24 @@ class Manager < Arachni::ComponentManager
         @opts = opts
     end
 
+    #
+    # Runs all modules against 'page'.
+    #
+    # @param    [::Arachni::Parser::Page]   page    page to audit
+    # @param    [::Arachni::Framework]   framework  to be assigned to modules
+    #
     def run( page, framework = nil )
-        values.each { |mod| run_one( mod, page, framework ) }
+        keys.each { |mod| run_one( mod, page, framework ) }
     end
 
+    #
+    # Runs a single module against 'page'.
+    #
+    # @param    [::Arachni::Module::Base]   mod    module to run as a class
+    # @param    [::Arachni::Parser::Page]   page    page to audit
+    # @param    [::Arachni::Framework]   framework  to be assigned to the module
+    #
     def run_one( mod, page, framework = nil )
-        mod = self[mod] if mod.is_a?( String )
-
         mod_new = mod.new( page )
         mod_new.set_framework( framework ) if framework
         mod_new.prepare
