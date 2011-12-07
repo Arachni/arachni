@@ -21,6 +21,7 @@
    - <em>stats()</em>
       - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
       - Fixed bug that caused a less than 100% progress at the end of scans. [Issue #86]
+      - If the crawler is limited by link-count it will be taken under consideration.
    - Significantly reduced memory footprint by re-scheduling the consumption of Trainer generated pages.
 - User Interfaces
    - WebUI
@@ -94,6 +95,8 @@
       - Added graph showing issue trust totals. (**New**)
       - The main issue graph shows trusted and untrusted issues in 2 different series.
       - ALl JavaScript and CSS code is now included in the report for off-line viewing.
+      - Removed manual-verification piechart, obsoleted by the trust chart.
+      - Added link to Highcharts license..
    - Added (**New**)
       - JSON -- Exports the audit results as a JSON serialized Hash.
       - Marshal -- Exports the audit results as a Marshal serialized Hash.
@@ -110,6 +113,8 @@
         look for that element before logging in order to eliminate false positives. [Issue #59]
       - Path traversal -- Fixed broken regular expressions
       - SQL Injection -- Fixed broken regular expressions
+      - XSS Path -- Updated to verify the injection using HTML parsing
+      - XSS URI -- Made obsolete and will be removed from future releases -- loads and runs XSS Path instead.
    - Recon
       - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
    - Extras (**New**)
@@ -135,6 +140,7 @@
       - Datamapper SQLite adapter => 1.1.0
       - Net-SSH => 2.2.1
    - Removed
+      - Rack-CSRF
       - JSON (Provided by DataMapper)
 
 ## Version 0.3 _(July 26, 2011)_
