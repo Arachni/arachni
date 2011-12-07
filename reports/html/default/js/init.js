@@ -261,7 +261,7 @@ jQuery(function ($) {
         },
         series: [{
             type: 'pie',
-            data: [ <% graph_data[:elements].each do |element| %> <%= element.to_s %> , <% end %> ]
+            data: <%= graph_data[:elements].map{ |e, c| [e.capitalize, c]  }.to_json %>
         }]
     });
 
