@@ -104,6 +104,10 @@ class Base < Arachni::Element::Auditable
 
     end
 
+    def dup
+        self.class.new( @url.dup, @raw.dup )
+    end
+
 end
 
 class Link < Base
