@@ -75,21 +75,7 @@
                 <div class="output" id="output_results"></div>
             </div>
 
-            <div style="display: none" id="dialog-loading" title="Loading the scan report...">
-                <p>
-                    Please wait while the scan report is being loaded. <br/>
-                    This process maybe take a while depending on the size of the report.
-                </p>
-                <p>
-                    <em>
-                        If the loading process takes an unusually long time the zombie reaper
-                        may have beaten you to it.<br/>
-                        Use the "Reports" tab to view the report.
-                    </em>
-                </p>
-            </div>
-
-            <div style="display: none" id="dialog-shutdown" title="The scanner has been shutdown...">
+            <div style="display: none" id="dialog-shutdown" title="Instance has been shutdown...">
                 <p>
                     The report is waiting for you <a href="/reports">here</a>.
                 </p>
@@ -167,7 +153,7 @@
                     var output_url = "/instance/<%= escape( params['url'].to_s ) %>/output.json";
                     $.getJSON( output_url, function(data) {
 
-                        if( data.messages.status == 'finished' ){
+                        if( data.status == 'finished' ){
                             showShutdownDialog( );
                         } else {
 
@@ -179,14 +165,6 @@
                                 setProgressBar( parseInt( data.stats.progress ) );
                             }
                         }
-                    });
-                }
-
-                function showReportLoadingDialog( ) {
-                    $( "#dialog-loading" ).dialog({
-                        height: 200,
-                        width: 720,
-                        modal: true
                     });
                 }
 

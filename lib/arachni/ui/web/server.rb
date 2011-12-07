@@ -979,9 +979,10 @@ class Server < Sinatra::Base
 
                 output['stats']['instances'] = prog['instances'].dup
             else
-                msg = "Connection error, retrying...."
+                msg = "The instance has been shutdown."
                 output['messages'] = { 'data' => msg }
                 output['issues']   = { 'data' => msg }
+                output['status']   = 'finished'
             end
             body output.to_json
         }
