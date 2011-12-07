@@ -905,16 +905,15 @@ class Server < Sinatra::Base
         erb :plugins, { :layout => true }, :session_options => YAML::load( session['opts']['plugins'] )
     end
 
-    aget "/settings" do
+    get "/settings" do
         prep_session
-        body erb :settings, { :layout => true }
+        erb :settings, { :layout => true }
     end
 
     #
     # sets general framework settings
     #
     post "/settings" do
-
         if session['opts']['settings']['url']
             url = session['opts']['settings']['url'].dup
         end
