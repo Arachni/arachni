@@ -284,7 +284,7 @@ USAGE
     private
 
     def trap_interrupts( &block )
-        [ 'EXIT', 'QUIT', 'HUP', 'INT' ].each {
+        [ 'QUIT', 'INT' ].each {
             |signal|
             trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
         }
