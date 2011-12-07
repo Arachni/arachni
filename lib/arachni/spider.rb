@@ -108,6 +108,7 @@ class Spider
         seed_page = http.get( @seed_url, opts.merge( :async => false ) ).response
         parser = Parser.new( @opts, seed_page )
         parser.url = @seed_url
+        @paths = parser.paths
 
         while( !@paths.empty? )
             while( !@paths.empty? && url = parser.to_absolute( @paths.pop ) )
