@@ -265,26 +265,6 @@ jQuery(function ($) {
         }]
     });
 
-    var verification;
-    verification = new Highcharts.Chart({
-        chart: {
-            renderTo: 'chart-verification',
-            backgroundColor: '#ccc'
-        },
-        title: {
-            text: 'Requiring manual verification'
-        },
-        tooltip: {
-            formatter: function () {
-                return '<b>' + this.point.name + '</b>: ' + this.y + ' %';
-            }
-        },
-        series: [{
-            type: 'pie',
-            data: [ <% graph_data[:verification].each do |severity| %> <%= severity.to_s %> , <% end %> ]
-        }]
-    });
-
     var trust;
     trust = new Highcharts.Chart({
         chart: {
