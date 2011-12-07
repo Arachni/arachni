@@ -224,7 +224,7 @@ class CLI
                         @interrupt_handler.kill
 
                         print_error( 'Exiting...' )
-                        print_info( 'Please wait while the reports are being generated.' )
+                        print_info( 'Please wait while the system cleans up.' )
 
                         # kill the audit
                         @audit.exit
