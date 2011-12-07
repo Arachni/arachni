@@ -898,7 +898,7 @@ class Server < Sinatra::Base
     #
     # sets plugins
     #
-    apost "/plugins" do
+    post "/plugins" do
         prep_session
         session['opts']['plugins'] = YAML::dump( prep_plugins( escape_hash( params ) ) )
         flash.now[:ok] = "Plugins updated."
@@ -907,13 +907,13 @@ class Server < Sinatra::Base
 
     aget "/settings" do
         prep_session
-        erb :settings, { :layout => true }
+        body erb :settings, { :layout => true }
     end
 
     #
     # sets general framework settings
     #
-    apost "/settings" do
+    post "/settings" do
 
         if session['opts']['settings']['url']
             url = session['opts']['settings']['url'].dup
@@ -1053,40 +1053,40 @@ class Server < Sinatra::Base
     end
 
     aget "/reports" do
-        erb :reports, { :layout => true }, :reports => reports.all( :order => :datestamp.desc ),
+        body erb :reports, { :layout => true }, :reports => reports.all( :order => :datestamp.desc ),
             :available => reports.available
     end
 
     aget '/reports/formats' do
-        erb :report_formats, { :layout => true }, :reports => reports.available
+        body erb :report_formats, { :layout => true }, :reports => reports.available
     end
 
     apost '/reports/delete' do
         reports.delete_all
         log.reports_deleted( env )
 
-        redirect '/reports'
+        async_redirect '/reports'
     end
 
-    apost '/report/:id/delete' do
-        reports.delete( params[:id] )
-        log.report_deleted( env, params[:id] )
+    apost '/report/:id/delete' do |id|
+        reports.delete( id )
+        log.report_deleted( env, id )
 
-        redirect '/reports'
+        async_redirect '/reports'
     end
 
-    aget '/report/:id.:type' do
-        log.report_converted( env, params[:id] + '.' + params[:type] )
-        content_type( params[:type], :default => 'application/octet-stream' )
-        reports.get( params[:type], params[:id] )
+    aget '/report/:id.:type' do |id, type|
+        log.report_converted( env, id + '.' + type )
+        content_type( type, :default => 'application/octet-stream' )
+        body reports.get( type, id )
     end
 
     aget '/log' do
-        erb :log, { :layout => true }, :entries => log.entry.all.reverse
+        body erb :log, { :layout => true }, :entries => log.entry.all.reverse
     end
 
     aget '/addons' do
-        erb :addons
+        body erb :addons
     end
 
     apost '/addons' do
@@ -1094,7 +1094,7 @@ class Server < Sinatra::Base
         addon_names = params['addons'].keys
 
         addons.enable!( addon_names )
-        erb :addons
+        body erb :addons
     end
 
 
