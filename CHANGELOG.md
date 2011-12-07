@@ -42,6 +42,7 @@
             - Provides an average of all stats of scanner instances. (**New**)
             - Added per instance progress bars. (**New**)
             - Added per instance statuses. (**New**)
+            - Added est. remaining time. (**New**)
          - Settings
             - Added proxy settings. [Issue #74] (**New**)
             - Added settings for restrict and extend paths options. (**New**)
@@ -49,7 +50,10 @@
       - Reports -- AFR report is now served straight-up to avoid corruption. [Issue #55]
       - Add-ons -- Updated to use the new async libraries.
    - CLI
-      - Improved interrupt handler, it now exits in a cleaner fashion and is more obedient.
+      - Improved interrupt handler:
+         - It now exits in a cleaner fashion and is more obedient.
+         - Added est. remaining time. (**New**)
+         - Added progressbar. (**New**)
 - HTTP client
    - Added support for including custom headers. [Issue #90] (**New**)
    - Refactored in order for all methods to use <em>request()</em>.
