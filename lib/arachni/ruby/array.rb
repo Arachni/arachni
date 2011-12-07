@@ -11,6 +11,7 @@
 class Array
 
     def chunk( pieces = 2 )
+        return self if pieces <= 0
 
         len    = self.length;
         mid    = ( len / pieces )
