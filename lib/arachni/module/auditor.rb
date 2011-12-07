@@ -240,6 +240,19 @@ module Auditor
     end
 
     #
+    # ABSTRACT - OPTIONAL
+    #
+    # Allows modules to ignore HPG scope restrictions
+    #
+    # This way they can audit elements that are not on the Grid sanctioned whitlist.
+    #
+    # @return   [Bool]
+    #
+    def override_instance_scope?
+        false
+    end
+
+    #
     # Just a delegator logs an array of issues.
     #
     # @param    [Array<Arachni::Issue>]     issues
