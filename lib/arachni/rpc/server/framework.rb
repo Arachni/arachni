@@ -232,36 +232,38 @@ class Framework < ::Arachni::Framework
                     chunks    = split_urls( pages.keys, pref_dispatchers )
                     chunk_cnt = chunks.size
 
-                    # split the page array into chunks that will be distributed
-                    # across the instances
-                    page_chunks = page_a.chunk( chunk_cnt )
+                    if chunk_cnt > 0
+                        # split the page array into chunks that will be distributed
+                        # across the instances
+                        page_chunks = page_a.chunk( chunk_cnt )
 
-                    # assign us our fair share of plug-in discovered pages
-                    update_page_queue!( page_chunks.pop, @local_token )
+                        # assign us our fair share of plug-in discovered pages
+                        update_page_queue!( page_chunks.pop, @local_token )
 
-                    # remove duplicate elements across the (per instance) chunks
-                    # while spreading them out evenly
-                    elements = distribute_elements( chunks, pages )
+                        # remove duplicate elements across the (per instance) chunks
+                        # while spreading them out evenly
+                        elements = distribute_elements( chunks, pages )
 
-                    # empty out the Hash and remove temporary files
-                    pages.clear
+                        # empty out the Hash and remove temporary files
+                        pages.clear
 
-                    # restrict the local instance to its assigned elements
-                    restrict_to_elements!( elements.pop, @local_token )
+                        # restrict the local instance to its assigned elements
+                        restrict_to_elements!( elements.pop, @local_token )
 
-                    # set the URLs to be audited by the local instance
-                    @opts.restrict_paths = chunks.pop
+                        # set the URLs to be audited by the local instance
+                        @opts.restrict_paths = chunks.pop
 
-                    chunks.each_with_index {
-                        |chunk, i|
+                        chunks.each_with_index {
+                            |chunk, i|
 
-                        # spawn a remote instance, assign a chunk of URLs
-                        # and elements to it and run it
-                        spawn( chunk, page_chunks[i], elements[i], pref_dispatchers[i] ) {
-                            |inst|
-                            @instances << inst
+                            # spawn a remote instance, assign a chunk of URLs
+                            # and elements to it and run it
+                            spawn( chunk, page_chunks[i], elements[i], pref_dispatchers[i] ) {
+                                |inst|
+                                @instances << inst
+                            }
                         }
-                    }
+                    end
 
                     # start the local instance
                     Thread.new {
