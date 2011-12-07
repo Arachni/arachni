@@ -149,6 +149,7 @@ class Auditable
         injection_sets( injection_str, opts ).each {
             |elem|
 
+            elem.auditor( get_auditor )
             opts[:altered] = elem.altered.dup
 
             return if skip?( elem )
@@ -236,6 +237,12 @@ class Auditable
 
         if opts[:param_flip] #&& !self.is_a?( Arachni::Parser::Element::Cookie )
             elem = self.dup
+
+            # when under HPG mode element auditing is strictly regulated
+            # and when we flip params we essentially create a new element
+            # which won't be on the whitelist
+            elem.override_instance_scope!
+
             elem.altered = 'Parameter flip'
             elem.auditable[injection_str] = seed
             var_combo << elem
@@ -247,7 +254,7 @@ class Auditable
         if self.is_a?( Arachni::Parser::Element::Form )
             chash = hash.dup
             chash = Arachni::Module::KeyFiller.fill( chash )
-            delem = self.deep_clone
+            delem = self.dup
 
             add = false
             @raw['auditable'].each {
@@ -454,9 +461,9 @@ class Auditable
     #
     # Checks whether or not an audit has been already performed.
     #
-    # @param  [String]  audit_id  a string returned by {#audit_id}
+    # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
-    def audited?( audit_id )
+    def audited?( elem_audit_id )
 
         opts = {
             :no_auditor => true,
@@ -466,15 +473,16 @@ class Auditable
 
         @@restrict_to_elements ||= Set.new
 
-        if @@audited.include?( audit_id )
-            msg = 'Skipping, already audited: ' + audit_id
+        if @@audited.include?( elem_audit_id )
+            msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
-        elsif !override_instance_scope? && !@@restrict_to_elements.empty? &&
+        elsif !get_auditor.override_instance_scope? && !override_instance_scope? &&
+            !@@restrict_to_elements.empty? &&
             !@@restrict_to_elements.include?( audit_id( nil, opts ) )
             msg = 'Skipping, out of instance scope.'
             ret = true
         else
-            msg = 'Current audit ID: ' + audit_id
+            msg = 'Current audit ID: ' + elem_audit_id
             ret = false
         end
 
