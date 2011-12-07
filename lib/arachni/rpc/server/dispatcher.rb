@@ -294,7 +294,10 @@ USAGE
     def run
         print_status( 'Starting the server...' )
         t = Thread.new { @server.run }
-        sleep( 2 )
+
+        # wait for the server to settle
+        sleep( 0.1 ) while !@server.ready?
+
         @node = Node.new( @opts, @logfile )
         @server.add_handler( "node", @node )
         t.join

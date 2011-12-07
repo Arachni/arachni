@@ -32,6 +32,15 @@ class Base < ::Arachni::RPC::EM::Server
         )
     end
 
+    def start
+        super
+        @ready = true
+    end
+
+    def ready?
+        @ready ||= false
+    end
+
 end
 
 end
