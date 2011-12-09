@@ -36,7 +36,7 @@ class Stdout
                 print_line
                 print_info( 'Legend:' )
                 print_ok( 'No issues' )
-                print_error( 'Has issues' )
+                print_bad( 'Has issues' )
                 print_line
 
                 @results[:map].each {
@@ -46,7 +46,7 @@ class Stdout
                     url   = i.values[0]
 
                     if state == :unsafe
-                        print_error( url )
+                        print_bad( url )
                     else
                         print_ok( url )
                     end
@@ -56,7 +56,7 @@ class Stdout
 
                 print_info( 'Total: ' + @results[:total].to_s )
                 print_ok( 'Without issues: ' + @results[:safe].to_s )
-                print_error( 'With issues: ' + @results[:unsafe].to_s +
+                print_bad( 'With issues: ' + @results[:unsafe].to_s +
                     " ( #{@results[:issue_percentage].to_s}% )" )
 
                 print_line
