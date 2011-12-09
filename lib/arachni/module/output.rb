@@ -27,6 +27,7 @@ module Output
     include Arachni::UI::Output
 
     alias :o_print_error    :print_error
+    alias :o_print_bad      :print_bad
     alias :o_print_status   :print_status
     alias :o_print_info     :print_info
     alias :o_print_ok       :print_ok
@@ -36,6 +37,10 @@ module Output
 
     def print_error( str = '' )
         o_print_error( self.class.info[:name] + ": " + str )
+    end
+
+    def print_bad( str = '', out = $stdout, unmute = false )
+        o_print_bad( self.class.info[:name] + ": " + str, out, unmute )
     end
 
     def print_status( str = '' )

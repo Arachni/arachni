@@ -21,7 +21,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 module Output
 
@@ -42,6 +42,8 @@ module Output
 
     @@mute  = false
 
+    @@opened = false
+
     # Prints an error message
     #
     # It ignores all flags, error messages will be output under all
@@ -52,6 +54,28 @@ module Output
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
+        File.open( 'error.log', 'a' ){
+            |f|
+            if !@@opened
+                f.puts
+                f.puts "#{Time.now} " + ( "-" * 80 )
+            end
+            print_color( "[#{Time.now}]", 31, str, f, true )
+        }
+
+        @@opened = true
+    end
+
+    #
+    # Same as print_error but the message won't be printed to stderr.
+    #
+    # Used mainly to draw attention.
+    #
+    # @param    [String]    error string
+    #
+    def print_bad( str = '', unmute = false )
+        return if muted? && !unmute
+        print_color( '[-]', 31, str, $stdout, unmute )
     end
 
     # Prints a status message

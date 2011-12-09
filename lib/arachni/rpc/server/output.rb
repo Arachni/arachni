@@ -21,7 +21,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 module Output
 
@@ -98,6 +98,17 @@ module Output
         e.backtrace.each { |line| print_error( line ) }
     end
 
+    #
+    # Same as print_error but the message won't be printed to stderr.
+    #
+    # Used mainly to draw attention to something that didn't behave as expected
+    # rather than display an actual error.
+    #
+    # @param    [String]    error string
+    #
+    def print_bad( str = '' )
+        buffer( :red => str )
+    end
 
     # Prints a status message
     #

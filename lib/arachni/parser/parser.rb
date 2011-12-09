@@ -649,7 +649,7 @@ class Parser
 
         rescue ::Exception => e
             print_error( e.to_s )
-            print_debug_backtrace( e )
+            print_error_backtrace( e )
         end
     end
 

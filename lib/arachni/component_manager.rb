@@ -269,8 +269,8 @@ class ComponentManager < Hash
                 msg = "Empty required value"
             end
 
-            print_info( " *  #{msg}: #{optname} => #{val}" )
-            print_info( " *  Expected type: #{error[:opt].type}" )
+            print_error( " *  #{msg}: #{optname} => #{val}" )
+            print_error( " *  Expected type: #{error[:opt].type}" )
 
             print_line
         }

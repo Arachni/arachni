@@ -69,7 +69,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         if !login_form
             register_results( { :code => 0, :msg => MSG_FAILURE + @options['url'] } )
-            print_error( MSG_FAILURE + @options['url'] )
+            print_bad( MSG_FAILURE + @options['url'] )
             return
         end
 
@@ -85,7 +85,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         if !res
             register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
-            print_error( MSG_NO_RESPONSE )
+            print_bad( MSG_NO_RESPONSE )
             return
         else
             register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => @http.current_cookies.dup } )

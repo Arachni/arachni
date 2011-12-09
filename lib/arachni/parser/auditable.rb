@@ -374,7 +374,7 @@ class Auditable
 
             # make sure that we have a response before continuing
             if !res
-                print_error( 'Failed to get responses, backing out... ' )
+                print_error( 'Failed to get response, backing out...' )
                 next
             else
                 print_status( 'Analyzing response #' + res.request.id.to_s + '...' )  if elem.opts && !elem.opts[:silent]

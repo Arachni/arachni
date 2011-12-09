@@ -70,6 +70,8 @@ class Trainer
 
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
+            print_error( "URL: #{res.effective_url}" )
+            print_error_backtrace( e )
             raise e
         end
 
@@ -126,6 +128,13 @@ class Trainer
                 @parser.url = @parser.to_absolute( url )
             rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
+
+                begin
+                    print_error( "URL: #{res[0].request.url}" )
+                rescue
+                end
+
+                print_error_backtrace( e )
                 return
             end
 

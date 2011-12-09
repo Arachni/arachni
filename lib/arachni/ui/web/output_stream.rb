@@ -23,7 +23,7 @@ module Web
             @buffer = []
 
             @icon_whitelist = {}
-            [ 'status', 'ok', 'error', 'info' ].each {
+            [ 'status', 'ok', 'error', 'info', 'bad' ].each {
                 |icon|
                 @icon_whitelist[icon] = "<img src='/icons/#{icon}.png' />"
             }
