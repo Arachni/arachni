@@ -15,12 +15,6 @@
           Copyright (c) Arachni 2011.
            -->
 
-      <style type="text/css">
-      /*<![CDATA[*/
-        <%=erb 'css/jquery-ui.css' %>
-      /*]]>*/
-      </style>
-
       <script type="text/javascript">
       //<![CDATA[
         <%=erb 'js/init.js', { :conf => conf, :graph_data => graph_data } %>
@@ -29,6 +23,8 @@
 
       <style type="text/css">
       /*<![CDATA[*/
+        <%=erb 'css/jquery.jqplot.min.css' %>
+        <%=erb 'css/jquery-ui.css' %>
         <%=erb 'css/main.css' %>
       /*]]>*/
       </style>

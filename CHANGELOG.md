@@ -100,7 +100,7 @@
       - The main issue graph shows trusted and untrusted issues in 2 different series.
       - ALl JavaScript and CSS code is now included in the report for off-line viewing.
       - Removed manual-verification piechart, obsoleted by the trust chart.
-      - Added link to Highcharts license..
+      - Replaced Highcharts with jqPlot due to licensing reasons.
    - Added (**New**)
       - JSON -- Exports the audit results as a JSON serialized Hash.
       - Marshal -- Exports the audit results as a Marshal serialized Hash.
