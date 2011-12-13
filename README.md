@@ -47,11 +47,6 @@
 
 ![Arachni logo](http://zapotek.github.com/arachni/logo.png)
 
-Kindly sponsored by: [![NopSec](http://zapotek.github.com/arachni/nopsec_logo.png)](http://www.nopsec.com)
-
-Help by donating:
-[![Click here to lend your support to: Arachni - Web Application Security Scanner Framework and make a donation at www.pledgie.com!](http://pledgie.com/campaigns/14482.png)](http://www.pledgie.com/campaigns/14482)
-
 ## Synopsis
 
 Arachni is a feature-full, modular, high-performance Ruby framework aimed towards helping
