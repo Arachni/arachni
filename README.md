@@ -15,17 +15,11 @@ You first need to install EventMachine from source:
 
 Secondly, you need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
 
-    git clone git://github.com/Arachni/arachni-rpc.git
-    cd arachni-rpc
-    rake install
-
-and
-
     git clone git://github.com/Arachni/arachni-rpc-em.git
     cd arachni-rpc-em
     rake install
 
-<br/><br/>
+<br/>
 
 Then things go as usual:
 
