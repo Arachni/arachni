@@ -8,8 +8,6 @@
 
 =end
 
-require 'win32/process' if RUBY_PLATFORM =~ /win32/
-
 require 'socket'
 require 'sys/proctable'
 
