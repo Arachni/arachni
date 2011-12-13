@@ -36,23 +36,22 @@ Gem::Specification.new do |s|
       s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
       s.rdoc_options      = ["--charset=UTF-8"]
 
-      s.add_dependency "typhoeus",        "~> 0.3.3"
+      s.add_dependency "typhoeus",        ">= 0.3.3"
       s.add_dependency "awesome_print"
       s.add_dependency "json"
-      s.add_dependency "nokogiri",        "~> 1.5.0"
-      s.add_dependency "sys-proctable",   "~> 0.9.1"
-      s.add_dependency "terminal-table",  "~> 1.4.2"
+      s.add_dependency "nokogiri",        ">= 1.5.0"
+      s.add_dependency "sys-proctable",   ">= 0.9.1"
+      s.add_dependency "terminal-table",  ">= 1.4.2"
       s.add_dependency "sinatra",         "~> 1.3.1"
-      s.add_dependency "async_sinatra",   "~> 0.5.0"
-      s.add_dependency "thin",            "~> 1.2.11"
-      s.add_dependency "data_objects",    "~> 0.10.6"
-      s.add_dependency "datamapper",      "~> 1.1.0"
-      # s.add_dependency "rack_csrf",       "~> 2.1.0"
-      s.add_dependency "rack-flash",      "~> 0.1.1"
-      s.add_dependency "dm-sqlite-adapter", "~> 1.1.0"
-      s.add_dependency "net-ssh",         "~> 2.2.1"
-      s.add_dependency "eventmachine",    "~> 1.0.0.beta.4"
-      s.add_dependency "em-synchrony",    "~> 1.0.0"
+      s.add_dependency "async_sinatra",   ">= 0.5.0"
+      s.add_dependency "thin",            ">= 1.2.11"
+      s.add_dependency "data_objects",    "= 0.10.7"
+      s.add_dependency "datamapper",      "= 1.1.0"
+      s.add_dependency "rack-flash",      ">= 0.1.1"
+      s.add_dependency "dm-sqlite-adapter", "= 1.1.0"
+      s.add_dependency "net-ssh",         ">= 2.2.1"
+      s.add_dependency "eventmachine",    ">= 1.0.0.beta.4"
+      s.add_dependency "em-synchrony",    ">= 1.0.0"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
