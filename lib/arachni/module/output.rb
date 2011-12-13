@@ -40,7 +40,7 @@ module Output
     end
 
     def print_bad( str = '', out = $stdout, unmute = false )
-        o_print_bad( self.class.info[:name] + ": " + str, out, unmute )
+        o_print_bad( self.class.info[:name] + ": " + str, unmute )
     end
 
     def print_status( str = '' )
