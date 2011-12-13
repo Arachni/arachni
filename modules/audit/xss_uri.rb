@@ -29,9 +29,9 @@ class XSSURI < Arachni::Module::Base
     end
 
     def run
-        print_error( 'Module has been obsoleted and will eventually be removed.' )
-        print_error( 'Please remove it from any profiles or scripts you may have created.' )
-        print_error( '-- Running \'xss_path\' instead.' )
+        print_bad( 'Module has been obsoleted and will eventually be removed.' )
+        print_bad( 'Please remove it from any profiles or scripts you may have created.' )
+        print_bad( '-- Running \'xss_path\' instead.' )
         @mod.run if @mod
     end
 
