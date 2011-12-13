@@ -8,7 +8,6 @@
       - Users can now specify a range of ports to be used for spawned Instances. [Issue #76]
       - Now checks for signal availability before using <em>trap()</em>. (**New**) [Issue #71]
       - Now uses Windows compliant filenames for the logs. (**New**) [Issue #70]
-      - Now includes <em>win32/process</em> to provide <em>Process.pid</em>/<em>fork()</em> (and others) under Windows platforms. (**New**)
    - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>,
     a light-weight and high-performance custom client/server RPC implementation.
 - Added <em>extras</em> directory holding components that are considered too specialised, dangerous or in some way unsuitable for
