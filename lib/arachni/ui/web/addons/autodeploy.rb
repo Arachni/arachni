@@ -113,6 +113,7 @@ class AutoDeploy < Base
                         if alive
                             msg = "Dispatcher is up and running."
 
+                            url = deployment.host + ':' + deployment.dispatcher_port
                             DispatcherManager::Dispatcher.first_or_create( :url => url )
 
                             settings.log.autodeploy_dispatcher_enabled( env,
@@ -128,28 +129,29 @@ class AutoDeploy < Base
                     }
                 elsif params[:action] == 'shutdown'
                     deployment = autodeploy.get( params[:id] )
-                    ret = autodeploy.shutdown( deployment, params[:password] )
+                    autodeploy.shutdown( deployment, params[:password] ) {
+                        |ret|
+                        err = "Could not shutdown the Dispatcher." +
+                            " Please ensure that the password is correct and the network is up."
 
-                    err = "Could not shutdown the Dispatcher." +
-                        " Please ensure that the password is correct and the network is up."
+                        if ret[:code] == 0
+                           autodeploy.alive?( deployment ){
+                               |liveness|
+                               if !liveness
+                                   msg = "Dispatcher has been shutdown."
 
-                    if ret[:code] == 0
-                       autodeploy.alive?( deployment ){
-                           |liveness|
-                           if !liveness
-                               msg = "Dispatcher has been shutdown."
+                                   settings.log.autodeploy_dispatcher_shutdown( env,
+                                        "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
 
-                               settings.log.autodeploy_dispatcher_shutdown( env,
-                                    "ID: #{deployment.id} [#{autodeploy.get_url( deployment )}]" )
-
-                               async_redirect '/', :flash => { :ok => msg }
-                           else
-                               async_redirect '/', :flash => { :err => err }
-                           end
-                       }
-                    else
-                        async_redirect '/', :flash => { :err => err }
+                                   async_redirect '/', :flash => { :ok => msg }
+                               else
+                                   async_redirect '/', :flash => { :err => err }
+                               end
+                           }
+                        else
+                            async_redirect '/', :flash => { :err => err }
                     end
+                    }
                 end
             end
 

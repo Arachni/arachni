@@ -176,22 +176,22 @@ class Manager
        { :code   => 0 }
     end
 
-    def shutdown( deployment, password )
+    def shutdown( deployment, password, &block )
+       url =  "#{deployment.host}:#{deployment.dispatcher_port}"
+       @settings.dispatchers.connect( url ).proc_info {
+           |proc|
+           begin
+               session = ssh( deployment, password )
+           rescue Exception => e
+               return {
+                   :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
+                   :status => 'failed',
+                   :code   => 1
+               }
+           end
 
-       url =  "https://#{deployment.host}:#{deployment.dispatcher_port}"
-       proc = @settings.dispatchers.connect( url ).proc_info
-
-       begin
-           session = ssh( deployment, password )
-       rescue Exception => e
-           return {
-               :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
-               :status => 'failed',
-               :code   => 1
-           }
-       end
-
-        ssh_exec!( deployment, session, 'kill -9 -' + proc['pgrp'] )
+            block.call ssh_exec!( deployment, session, 'kill -9 -' + proc['pgrp'] )
+        }
     end
 
 
