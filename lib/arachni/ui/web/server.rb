@@ -11,7 +11,6 @@
 require 'eventmachine'
 require 'em-synchrony'
 require 'sinatra/async'
-# require "rack/csrf"
 require 'securerandom'
 require 'rack-flash'
 require 'json'
@@ -91,7 +90,6 @@ class Server < Sinatra::Base
     configure do
         use Rack::Flash
         use Rack::Session::Cookie
-        # use Rack::Csrf, :raise => true
 
         opts = Arachni::Options.instance
 
@@ -376,8 +374,7 @@ class Server < Sinatra::Base
     def show_dispatcher_node_line( stats )
         str = "Nickname: #{stats['node']['nickname']} - "
         str += "Pipe ID: #{stats['node']['pipe_id']} - "
-        str += "Weight: #{stats['node']['weight']} - "
-        # str += "Cost: #{stats['node']['cost']} "
+        str += "Weight: #{stats['node']['weight']}"
     end
 
     def welcomed?
