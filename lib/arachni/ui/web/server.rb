@@ -104,7 +104,6 @@ class Server < Sinatra::Base
         opts.ssl_pkey = @@conf['ssl']['client']['key']
         opts.ssl_cert = @@conf['ssl']['client']['cert']
         opts.ssl_ca   = @@conf['ssl']['client']['ca']
-
     end
 
     helpers do
@@ -256,6 +255,7 @@ class Server < Sinatra::Base
     set :dispatchers, DispatcherManager.new( Arachni::Options.instance, settings )
     set :instances,   InstanceManager.new( Arachni::Options.instance, settings )
     set :scheduler,   Scheduler.new( Arachni::Options.instance, settings )
+    set :conf,       @@conf
     set :addons,     AddonManager.new( Arachni::Options.instance, settings )
 
     configure do
