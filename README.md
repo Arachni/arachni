@@ -6,20 +6,11 @@ The newest addition to the branch is the brand new High Performance Grid.
 
 ## Installation
 
-You first need to install EventMachine from source:
-
-    git clone git://github.com/eventmachine/eventmachine.git
-    cd eventmachine
-    gem build eventmachine.gemspec
-    gem install eventmachine-1.0.0.beta.4.gem
-
-Secondly, you need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
+First off, you need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
 
     git clone git://github.com/Arachni/arachni-rpc-em.git
     cd arachni-rpc-em
     rake install
-
-<br/>
 
 Then things go as usual:
 
