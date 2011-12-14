@@ -1,22 +1,133 @@
 
         <div>
-
             <form action="<%=root%>/" method="post">
                 <h2>Perform a new deployment</h2>
                 <br/>
-
-                <fieldset>
+                <i>Parameters marked with * are mandatory.</i> <br/>
+                <fieldset class='left' style='width: 30%'>
                     <legend>SSH options:</legend>
-                    Host: <input name="host" />
-                    Port: <input name="port" value="22" size="4" />
-                    Username: <input name="username" />
-                    Password (will not be stored): <input name="password" type="password" />
+                    <table>
+                        <tr>
+                            <td>*Host:</td>
+                            <td><input name="host" /></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                *Port:
+                            </td>
+                            <td>
+                                <input name="port" value="22" size="4" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                *Username:
+                            </td>
+                            <td>
+                                <input name="user" />
+                            <td>
+                        </tr>
+                        <tr>
+                            <td>
+                                *Password (will not be stored):
+                            </td>
+                            <td>
+                                <input name="password" type="password" />
+                            </td>
+                        </tr>
+                    </table>
                 </fieldset>
-                <br/>
 
-                <fieldset>
+                <fieldset class='left' style='width: 30%'>
                     <legend>Dispatcher options:</legend>
-                    Port: <input name="dispatcher_port" value="7331" />
+                    <table>
+                        <tr>
+                            <td>
+                                *Port:
+                            </td>
+                            <td>
+                                <input name="dispatcher_port" value="7331" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Pool size:
+                            </td>
+                            <td>
+                                <input name="pool_size" value="5" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SSL private key:
+                            </td>
+                            <td>
+                                <input name="ssl_pkey" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SSL certificate:
+                            </td>
+                            <td>
+                                <input name="ssl_cert" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SSL CA certificate:
+                            </td>
+                            <td>
+                                <input name="ssl_ca" value="" />
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <fieldset class='left' style='width: 30%'>
+                    <legend>Node options:</legend>
+                    <table>
+                        <tr>
+                            <td>
+                                Nickname:
+                            </td>
+                            <td>
+                                <input name="nickname" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Weight:
+                            </td>
+                            <td>
+                                <input name="weight" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Pipe ID:
+                            </td>
+                            <td>
+                                <input name="pipe_id" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Neighbour:
+                            </td>
+                            <td>
+                                <input name="neighbour" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Bind address:
+                            </td>
+                            <td>
+                                <input name="address" value="" />
+                            </td>
+                        </tr>
+                    </table>
                 </fieldset>
                 <br/>
 
@@ -25,13 +136,22 @@
             </form>
 
             <% if show_output || !ret.empty? %>
-            <br/>
-            <h3>Output</h3>
-            <b>Status: <span id="status"><%=ret[:status]%></span></b>
-            <br/>
-            <pre id="output" style="max-height: 400px; overflow: scroll"><%=ret[:output]%></pre>
+            <div class='clear'>
+                <h3>Output</h3>
+                <strong>Status: <span id="status"><%=ret[:status]%></span></strong>
+                <br/>
+                <pre id="output" style="max-height: 400px; overflow: scroll"><%=ret[:output]%></pre>
+            </div>
             <% end %>
 
+        </div>
+
+        <div class='clear'>
+            <ul>
+            <% flash[:errors] && flash[:errors].each do |k, v| %>
+                <li> <%=k%> - <%=v%></li>
+            <% end %>
+            </ul>
         </div>
 
 
@@ -63,7 +183,7 @@
                     <td><%=dep.user%></td>
                     <td><input name="password" type="password" /></td>
                     <td><%=dep.alive%></td>
-                    <td><%=dep.created_at%></td>
+                    <td><%=dep.created_at.to_time%></td>
                     <td>
                         <%= csrf_tag %>
                         <input type="hidden" name="id" value="<%=dep.id%>">

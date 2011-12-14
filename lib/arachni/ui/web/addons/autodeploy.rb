@@ -49,16 +49,40 @@ class AutoDeploy < Base
 
         post "/" do
 
+            opts = {}
+            if !params[:pool_size].empty?
+                opts[:pool_size] = params[:pool_size].to_i
+            end
+
+            if !params[:nickname].empty?
+                opts[:nickname]  = params[:nickname]
+            end
+
+            if !params[:weight].empty?
+                opts[:weight]    = params[:weight]
+            end
+
+            if params[:pipe_id].empty?
+                opts[:pipe_id]   = params[:pipe_id]
+            end
+
+            params.each { |k, v| opts[k.to_sym] = v }
+            opts.delete( :password )
+            opts.delete( :_csrf )
+
+            deployment = Manager::Deployment.new( opts )
+
             if !params[:host] || params[:host].empty? || !params[:username] ||
                 params[:username].empty? || !params[:password] || params[:password].empty? ||
                 !params[:port] || params[:port].empty? ||
                 !params[:dispatcher_port] || params[:dispatcher_port].empty?
 
-                redirect '/', :flash => { :err => "Please fill in all the fields." }
+                flash[:err] = "Please fill in all mandatory fields."
+
+                present :index, :deployments => autodeploy.list,
+                    :root => current_addon.path_root, :show_output => false,
+                    :ret => {}, :errors => deployment.errors
             else
-                deployment = Manager::Deployment.new( :host => params[:host],
-                    :port => params[:port], :user => params[:username],
-                    :dispatcher_port => params[:dispatcher_port] )
 
                 settings.log.autodeploy_setup_started( env, autodeploy.get_url( deployment ) )
                 channel = autodeploy.setup( deployment, params[:password] )
@@ -113,7 +137,7 @@ class AutoDeploy < Base
                         if alive
                             msg = "Dispatcher is up and running."
 
-                            url = deployment.host + ':' + deployment.dispatcher_port
+                            url = deployment.host + ':' + deployment.dispatcher_port.to_s
                             DispatcherManager::Dispatcher.first_or_create( :url => url )
 
                             settings.log.autodeploy_dispatcher_enabled( env,

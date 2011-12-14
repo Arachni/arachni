@@ -42,12 +42,25 @@ class Manager
         include DataMapper::Resource
 
         property :id,               Serial
+
         property :host,             String
-        property :port,             String
-        property :dispatcher_port,  String
+        property :port,             Integer
         property :user,             String
+        property :pool_size,        Integer, :default => 5
+
+        property :dispatcher_port,  Integer, :default => 7331
+        property :nickname,         String
+        property :weight,           String
+        property :pipe_id,          String
+        property :neighbour,        String
+        property :address,          String
+
         property :alive,            Boolean
         property :created_at,       DateTime, :default => Time.now
+
+        validates_numericality_of :pool_size, :gt => 0
+        validates_numericality_of :dispatcher_port, :gt => 0
+        validates_numericality_of :port, :gt => 0
     end
 
     #
@@ -84,7 +97,7 @@ class Manager
             end
 
 
-            wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.dispatcher_port +
+            wget = 'wget --output-document=' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s +
                 ARCHIVE_EXT + ' ' + ARCHIVE_PATH + ARCHIVE_NAME + ARCHIVE_EXT
             ret = ssh_exec!( deployment, session, wget )
 
@@ -93,7 +106,7 @@ class Manager
                 return
             end
 
-            mkdir = 'mkdir ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port
+            mkdir = 'mkdir ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s
             ret = ssh_exec!( deployment, session,  mkdir )
 
             if ret[:code] != 0
@@ -102,8 +115,8 @@ class Manager
             end
 
 
-            tar = 'tar xvf ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + ARCHIVE_EXT +
-                ' -C ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port
+            tar = 'tar xvf ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + ARCHIVE_EXT +
+                ' -C ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s
             ret = ssh_exec!( deployment, session,  tar )
 
             if ret[:code] != 0
@@ -112,7 +125,7 @@ class Manager
             end
 
 
-            chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + '/' +
+            chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' +
                 ARCHIVE_NAME + '/' + EXEC
             ret = ssh_exec!( deployment, session, chmod )
 
@@ -168,9 +181,37 @@ class Manager
            }
        end
 
-       session.exec!( 'nohup ./' + ARCHIVE_NAME + '-' + deployment.dispatcher_port + '/' +
-               ARCHIVE_NAME + '/' + EXEC + ' --port=' + deployment.dispatcher_port +
-           ' > ' + EXEC + '-startup.log 2>&1 &' )
+
+        cmd  = 'nohup ./' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' + ARCHIVE_NAME + '/' + EXEC
+        cmd += " --port='#{deployment.dispatcher_port}'"
+
+        if deployment.nickname && !deployment.nickname.empty?
+            cmd += " --nickname='#{deployment.nickname}'"
+        end
+
+        if deployment.pipe_id && !deployment.pipe_id.empty?
+            cmd += " --pipe-id='#{deployment.pipe_id}'"
+        end
+
+        if deployment.weight && !deployment.weight.empty?
+            cmd += " --weight='#{deployment.weight}'"
+        end
+
+        if deployment.neighbour && !deployment.neighbour.empty?
+            cmd += " --neighbour='#{deployment.neighbour}'"
+        end
+
+        if deployment.address && !deployment.address.empty?
+            cmd += " --address='#{deployment.address}'"
+        end
+
+        if deployment.pool_size > 0
+            cmd += " --pool-size='#{deployment.pool_size}'"
+        end
+
+        cmd += ' > ' + EXEC + '-startup.log 2>&1 &'
+
+        session.exec!( cmd )
 
        sleep( 3 )
        { :code   => 0 }
@@ -245,7 +286,7 @@ class Manager
     end
 
     def get_rpc_url( deployment )
-        deployment.host + ':' + deployment.dispatcher_port
+        deployment.host + ':' + deployment.dispatcher_port.to_s
     end
 
     def get_url( deployment )
