@@ -39,8 +39,8 @@ module Output
         o_print_error( self.class.info[:name] + ": " + str )
     end
 
-    def print_bad( str = '', out = $stdout, unmute = false )
-        o_print_bad( self.class.info[:name] + ": " + str, unmute )
+    def print_bad( str = '', out = $stdout )
+        o_print_bad( self.class.info[:name] + ": " + str )
     end
 
     def print_status( str = '' )
