@@ -72,8 +72,8 @@ class AutoDeploy < Base
 
             deployment = Manager::Deployment.new( opts )
 
-            if !params[:host] || params[:host].empty? || !params[:username] ||
-                params[:username].empty? || !params[:password] || params[:password].empty? ||
+            if !params[:host] || params[:host].empty? || !params[:user] ||
+                params[:user].empty? || !params[:password] || params[:password].empty? ||
                 !params[:port] || params[:port].empty? ||
                 !params[:dispatcher_port] || params[:dispatcher_port].empty?
 
