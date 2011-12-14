@@ -28,7 +28,10 @@ class Base < ::Arachni::RPC::EM::Server
         super(
             :host  => opts.rpc_address,
             :port  => opts.rpc_port,
-            :token => token
+            :token => token,
+            :ssl_ca     => opts.ssl_ca,
+            :ssl_pkey   => opts.ssl_pkey,
+            :ssl_cert   => opts.ssl_cert
         )
     end
 
