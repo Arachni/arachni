@@ -33,9 +33,9 @@ class ReportManager
         include DataMapper::Resource
 
         property :id,           Serial
-        property :host,         String
+        property :host,         Text
         property :issue_count,  Integer
-        property :filename,     String
+        property :filename,     Text
         property :datestamp,    DateTime
     end
 
