@@ -266,14 +266,19 @@ class Dispatcher
     (All SSL options will be honored by the dispatched RPC instances as well.)
     (Do *not* use encrypted keys!)
 
-    --ssl-pkey   <file>         location of the SSL private key (.pem)
+    --ssl-pkey   <file>         location of the server SSL private key (.pem)
                                     (Used to verify the server to the clients.)
 
-    --ssl-cert   <file>         location of the SSL certificate (.pem)
+    --ssl-cert   <file>         location of the server SSL certificate (.pem)
                                     (Used to verify the server to the clients.)
+
+    --node-ssl-pkey   <file>    location of the client SSL private key (.pem)
+                                    (Used to verify this node to other servers.)
+
+    --node-ssl-cert   <file>    location of the client SSL certificate (.pem)
+                                    (Used to verify this node to other servers.)
 
     --ssl-ca     <file>         location of the CA certificate (.pem)
-                                    (Used to verify the clients to the server.)
 
 USAGE
     end

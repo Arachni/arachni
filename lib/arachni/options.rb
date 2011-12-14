@@ -367,6 +367,9 @@ class Options
     attr_accessor :ssl_cert
     attr_accessor :ssl_ca
 
+    attr_accessor :node_ssl_pkey
+    attr_accessor :node_ssl_cert
+
     attr_accessor :server
 
     attr_accessor :reroute_to_logfile
@@ -499,7 +502,9 @@ class Options
             [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
             [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--ssl-ca',                  GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--node-ssl-pkey',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--node-ssl-cert',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--ssl-ca',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--address',                GetoptLong::REQUIRED_ARGUMENT ],
             [ '--reroute-to-logfile',     GetoptLong::NO_ARGUMENT ],
             [ '--pool-size',              GetoptLong::REQUIRED_ARGUMENT ],

@@ -31,8 +31,8 @@ class Base < ::Arachni::RPC::EM::Client
             :token => token,
             :keep_alive => false,
             :ssl_ca     => opts.ssl_ca,
-            :ssl_pkey   => opts.ssl_pkey,
-            :ssl_cert   => opts.ssl_cert
+            :ssl_pkey   => opts.node_ssl_pkey || opts.ssl_pkey,
+            :ssl_cert   => opts.node_ssl_cert || opts.ssl_cert
         )
     end
 
