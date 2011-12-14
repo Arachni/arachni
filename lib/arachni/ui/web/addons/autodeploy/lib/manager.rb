@@ -10,6 +10,7 @@
 
 require 'datamapper'
 require 'net/ssh'
+require 'net/scp'
 require 'digest/md5'
 
 
@@ -55,6 +56,10 @@ class Manager
         property :neighbour,        String
         property :address,          String
 
+        property :ssl_pkey,         Text
+        property :ssl_cert,         Text
+        property :ssl_ca,           Text
+
         property :alive,            Boolean
         property :created_at,       DateTime, :default => Time.now
 
@@ -63,10 +68,6 @@ class Manager
         validates_numericality_of :port, :gt => 0
     end
 
-    #
-    # Initializes the Scheduler and starts the clock.
-    #
-    #
     def initialize( opts, settings )
         @opts     = opts
         @settings = settings
@@ -124,10 +125,11 @@ class Manager
                 return
             end
 
-
             chmod = 'chmod +x ' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' +
                 ARCHIVE_NAME + '/' + EXEC
             ret = ssh_exec!( deployment, session, chmod )
+
+            upload_ssl_pems!( deployment, session )
 
             if ret[:code] != 0
                 @@setup[url][:status] = 'failed'
@@ -181,7 +183,6 @@ class Manager
            }
        end
 
-
         cmd  = 'nohup ./' + ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' + ARCHIVE_NAME + '/' + EXEC
         cmd += " --port='#{deployment.dispatcher_port}'"
 
@@ -207,6 +208,18 @@ class Manager
 
         if deployment.pool_size > 0
             cmd += " --pool-size='#{deployment.pool_size}'"
+        end
+
+        if deployment.ssl_pkey && !deployment.ssl_pkey.empty?
+            cmd += " --ssl-pkey='/#{deployment.ssl_pkey}'"
+        end
+
+        if deployment.ssl_cert && !deployment.ssl_cert.empty?
+            cmd += " --ssl-cert='/#{deployment.ssl_cert}'"
+        end
+
+        if deployment.ssl_ca && !deployment.ssl_ca.empty?
+            cmd += " --ssl-ca='/#{deployment.ssl_ca}'"
         end
 
         cmd += ' > ' + EXEC + '-startup.log 2>&1 &'
@@ -292,6 +305,28 @@ class Manager
     def get_url( deployment )
         deployment.user + '@' + deployment.host + ':' + deployment.port.to_s +
             '$' + deployment.dispatcher_port.to_s
+    end
+
+    def upload_ssl_pems!( deployment, ssh )
+
+        if !File.exist?( @opts.ssl_pkey ) || !File.exist?( @opts.ssl_cert ) ||
+            !File.exist?( @opts.ssl_ca )
+            return
+        end
+
+        dir = ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' + ARCHIVE_NAME +
+            '/cde-root/'
+
+        deployment.ssl_pkey = "ssl_key.pem"
+        deployment.ssl_cert = "ssl_cert.pem"
+        deployment.ssl_ca   = "ssl_ca.pem"
+
+        tx = []
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['key'], dir + deployment.ssl_pkey )
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['cert'], dir + deployment.ssl_cert )
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['ca'], dir + deployment.ssl_ca )
+
+        tx.each { |d| d.wait }
     end
 
     def ssh_exec!( deployment, ssh, command )
