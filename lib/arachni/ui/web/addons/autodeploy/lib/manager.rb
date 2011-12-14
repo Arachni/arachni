@@ -37,6 +37,13 @@ class Manager
     ARCHIVE_NAME = 'arachni-v0.4-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
+    NODE_SSL_KEY  = "node_ssl_key.pem"
+    NODE_SSL_CERT = "node_ssl_cert.pem"
+    SSL_KEY  = "ssl_key.pem"
+    SSL_CERT = "ssl_cert.pem"
+    SSL_CA   = "ssl_ca.pem"
+
+
     EXEC = 'arachni_rpcd'
 
     class Deployment
@@ -56,9 +63,7 @@ class Manager
         property :neighbour,        String
         property :address,          String
 
-        property :ssl_pkey,         Text
-        property :ssl_cert,         Text
-        property :ssl_ca,           Text
+        property :ssl,              Boolean
 
         property :alive,            Boolean
         property :created_at,       DateTime, :default => Time.now
@@ -147,6 +152,7 @@ class Manager
     end
 
     def finalize_setup( channel )
+        @@setup[channel][:deployment].ssl = @settings.conf['ssl']['server']['enable']
         @@setup[channel][:deployment].save
         return @@setup[channel][:deployment]
     end
@@ -210,17 +216,15 @@ class Manager
             cmd += " --pool-size='#{deployment.pool_size}'"
         end
 
-        if deployment.ssl_pkey && !deployment.ssl_pkey.empty?
-            cmd += " --ssl-pkey='/#{deployment.ssl_pkey}'"
+        if deployment.ssl
+            cmd += " --node-ssl-pkey='/#{NODE_SSL_KEY}'"
+            cmd += " --node-ssl-cert='/#{NODE_SSL_CERT}'"
+            cmd += " --ssl-pkey='/#{SSL_KEY}'"
+            cmd += " --ssl-cert='/#{SSL_CERT}'"
+            cmd += " --ssl-ca='/#{SSL_CA}'"
         end
 
-        if deployment.ssl_cert && !deployment.ssl_cert.empty?
-            cmd += " --ssl-cert='/#{deployment.ssl_cert}'"
-        end
-
-        if deployment.ssl_ca && !deployment.ssl_ca.empty?
-            cmd += " --ssl-ca='/#{deployment.ssl_ca}'"
-        end
+        puts cmd
 
         cmd += ' > ' + EXEC + '-startup.log 2>&1 &'
 
@@ -309,22 +313,20 @@ class Manager
 
     def upload_ssl_pems!( deployment, ssh )
 
-        if !File.exist?( @opts.ssl_pkey ) || !File.exist?( @opts.ssl_cert ) ||
-            !File.exist?( @opts.ssl_ca )
+        if !@settings.conf['ssl']['client']['enable'] ||
+            !@settings.conf['ssl']['server']['enable']
             return
         end
 
-        dir = ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' + ARCHIVE_NAME +
-            '/cde-root/'
-
-        deployment.ssl_pkey = "ssl_key.pem"
-        deployment.ssl_cert = "ssl_cert.pem"
-        deployment.ssl_ca   = "ssl_ca.pem"
+        dir = ARCHIVE_NAME + '-' + deployment.dispatcher_port.to_s + '/' +
+            ARCHIVE_NAME + '/cde-root/'
 
         tx = []
-        tx << ssh.scp.upload( @settings.conf['ssl']['server']['key'], dir + deployment.ssl_pkey )
-        tx << ssh.scp.upload( @settings.conf['ssl']['server']['cert'], dir + deployment.ssl_cert )
-        tx << ssh.scp.upload( @settings.conf['ssl']['server']['ca'], dir + deployment.ssl_ca )
+        tx << ssh.scp.upload( @settings.conf['ssl']['client']['key'], dir + NODE_SSL_KEY )
+        tx << ssh.scp.upload( @settings.conf['ssl']['client']['cert'], dir + NODE_SSL_CERT )
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['key'], dir + SSL_KEY )
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['cert'], dir + SSL_CERT )
+        tx << ssh.scp.upload( @settings.conf['ssl']['server']['ca'], dir + SSL_CA )
 
         tx.each { |d| d.wait }
     end
