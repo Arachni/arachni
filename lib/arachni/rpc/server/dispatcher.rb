@@ -88,11 +88,21 @@ class Dispatcher
 
         @jobs = []
         @pool = Queue.new
+        @replenisher = Queue.new
+
+        print_status( 'Warming up the pool...' )
+        @opts.pool_size.times{ add_instance_to_pool }
+
+        # this thread will wait in the background and replenish the pool
+        Thread.new {
+            loop {
+                add_instance_to_pool
+                @replenisher.pop
+            }
+        }
 
         @node = nil
 
-        print_status( 'Warming up the pool...' )
-        prep_pool
         print_status( 'Done.' )
 
         print_status( 'Initialization complete.' )
@@ -116,7 +126,7 @@ class Dispatcher
 
         # just to make sure...
         owner = owner.to_s
-        cjob  = @pool.pop
+        cjob  = @pool.shift
         cjob['owner']     = owner
         cjob['starttime'] = Time.now
         cjob['helpers']   = helpers
@@ -124,11 +134,11 @@ class Dispatcher
         print_status( "Instance dispatched -- PID: #{cjob['pid']} - " +
             "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
 
-        prep_pool
+        @replenisher << true
 
         @jobs << cjob
 
-        return job( cjob['pid'] )
+        return cjob
     end
 
     #
@@ -311,49 +321,36 @@ USAGE
         @server.shutdown
     end
 
-    #
-    # Initializes and updates the pool making sure that the number of
-    # available server processes stays constant for any given moment
-    #
-    def prep_pool
+    def add_instance_to_pool
 
         owner = 'dispatcher'
+        exception_jail{
 
-        (@pool.size - @opts.pool_size).abs.times {
-            exception_jail{
+            # get an available port for the child
+            @opts.rpc_port = avail_port( )
+            @token         = secret( )
 
-                # get an available port for the child
-                @opts.rpc_port = avail_port( )
-                @token         = secret( )
-
-                pid = fork {
-                    exception_jail {
-                        Arachni::RPC::Server::Instance.new( @opts, @token )
-                    }
-
-                    # restore logging
-                    reroute_to_file( @logfile )
-
-                    print_status( "Instance shutdown   -- PID: #{Process.pid} - " +
-                        "Port: #{@opts.rpc_port}" )
+            pid = ::EM.fork_reactor {
+                exception_jail {
+                    Arachni::RPC::Server::Instance.new( @opts, @token )
                 }
-
-                print_status( "Instance added to pool -- PID: #{pid} - " +
-                    "Port: #{@opts.rpc_port} - Owner: #{owner}" )
-
-                @pool << {
-                    'token' => @token,
-                    'pid'   => pid,
-                    'port'  => @opts.rpc_port,
-                    'url'   => "#{@opts.rpc_address}:#{@opts.rpc_port}",
-                    'owner' => owner,
-                    'birthdate' => Time.now
-                }
-
-                # let the child go about his business
-                Process.detach( pid )
-                @token = nil
             }
+
+            print_status( "Instance added to pool -- PID: #{pid} - " +
+                "Port: #{@opts.rpc_port} - Owner: #{owner}" )
+
+            @pool << {
+                'token' => @token,
+                'pid'   => pid,
+                'port'  => @opts.rpc_port,
+                'url'   => "#{@opts.rpc_address}:#{@opts.rpc_port}",
+                'owner' => owner,
+                'birthdate' => Time.now
+            }
+
+            # let the child go about his business
+            Process.detach( pid )
+            @token = nil
         }
 
     end
