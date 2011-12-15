@@ -279,7 +279,7 @@ class AuditStore
             __id  = issue.mod_name +
                 '::' + issue.elem + '::' +
                 var + '::' +
-                issue.url.split( /\?/ )[0]
+                issue.url.split( /\?/ )[0].gsub( '//', '/' )
 
             orig_url  = issue.url
             issue.url = issue.url.split( /\?/ )[0]
