@@ -6,14 +6,6 @@ The newest addition to the branch is the brand new High Performance Grid.
 
 ## Installation
 
-First off, you need to install the Arachni-RPC system from source (it's still under development so there's no gem yet):
-
-    git clone git://github.com/Arachni/arachni-rpc-em.git
-    cd arachni-rpc-em
-    rake install
-
-Then things go as usual:
-
     git clone git://github.com/Zapotek/arachni.git
     cd arachni
     git checkout experimental
