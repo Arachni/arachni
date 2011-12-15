@@ -1,4 +1,68 @@
 
+        <div id='help' style='display: none'>
+            <h2>SSH Options</h2>
+            <p>Options related to the SSH protocol.</p>
+
+            <h4>Host</h4>
+            <p>Hostname or IP address of the SSH server.</p>
+
+            <h4>Port</h4>
+            <p>Port number of the SSH server -- usually 22.</p>
+
+            <h4>Username</h4>
+            <p>SSH username.</p>
+
+            <h4>Password</h4>
+            <p>SSH password.</p>
+
+            <h2>Dispatcher Options</h2>
+            <p>Options related to the operation of the Arachni Dispatcher.</p>
+
+            <h4>Port</h4>
+            <p>Port for the Dispatcher to listen on.</p>
+
+            <h4>Pool size</h4>
+            <p>Amount of Instances to have ready at any given time.</p>
+
+            <h2>Node Options</h2>
+            <p>Options related to the operation of the Grid Node.</p>
+
+            <h4>Nickname</h4>
+            <p>Identification string for the node -- useless to any sort of operation, available only for your convinience.</p>
+
+            <h4>Weight</h4>
+            <p>Metric which affects the availability of the Node.</p>
+            <p>
+                Calculated as:
+                <pre>total_resource_consumption * weight</pre>
+                <br/>
+                <i>Lowest score wins.</i>
+            </p>
+
+            <h4>Pipe ID</h4>
+            <p>
+                String used to identify different bandwidth pipes to the target.<br/>
+                Only Dispatchers with different Pipe-IDs can be used in High Performance Grid mode.
+            </p>
+
+            <h4>Neighbour</h4>
+            <p>
+                URL of a neighbouring node in the form of:
+                <pre>host:port</pre>
+                <br/>
+
+                By specifying a neighbour you can form a Grid of Dispatcher nodes and use them to perform a distributed/high-performance scan.
+            </p>
+
+            <h4>Bind address</h4>
+            <p>
+                IP address or hostname to bind to.<br/>
+                If you want the node to be part of a Grid this address must be accessible by all the other nodes.
+            </p>
+        </div>
+
+        <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
+
         <div>
             <form action="<%=root%>/" method="post">
                 <h2>Perform a new deployment</h2>
