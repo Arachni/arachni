@@ -1,31 +1,9 @@
---- !ruby/object:Arachni::Options 
+--- !ruby/object:Arachni::Options
 audit_cookies: true
 audit_forms: true
 audit_headers: true
 audit_links: true
-authed_by: 
-custom_headers: {}
-
-datastore: {}
-
-dir: 
-exclude: []
-
-exclude_cookies: []
-
-extend_paths: []
-
-http_req_limit: 20
-include: []
-
-load_profile: 
-lsmod: []
-
-lsplug: []
-
-lsrep: []
-
-mods: 
+mods:
 - interesting_responses
 - common_files
 - mixed_resource
@@ -53,7 +31,6 @@ mods:
 - sqli_blind_rdiff
 - path_traversal
 - xss_event
-- xss_uri
 - sqli_blind_timing
 - code_injection
 - rfi
@@ -67,18 +44,5 @@ mods:
 - xpath
 - unvalidated_redirect
 - xss
-plugins: {}
 
 redirect_limit: 20
-redundant: []
-
-reports: 
-  stdout: {}
-
-restrict_paths: []
-
-rpc_instance_port_range: 
-- 1025
-- 65535
-save_profile: 
-user_agent: Arachni/0.4
