@@ -193,7 +193,7 @@ class AutoDeploy < Base
             :name           => 'Auto-deploy',
             :description    => %q{Enables you to automatically convert any SSH enabled Linux box into an Arachni Dispatcher.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1'
+            :version        => '0.2'
         }
     end
 

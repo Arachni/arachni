@@ -134,7 +134,7 @@ class Scheduler < Base
             :name           => 'Scheduler',
             :description    => %q{Schedules and runs scan jobs.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1'
+            :version        => '0.2'
         }
     end
 
