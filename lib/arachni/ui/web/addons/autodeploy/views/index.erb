@@ -1,5 +1,5 @@
 
-        <div id='help' style='display: none'>
+        <div id='help' style='display: none' title="Help">
             <h2>SSH Options</h2>
             <p>Options related to the SSH protocol.</p>
 
@@ -61,7 +61,14 @@
             </p>
         </div>
 
+        <div id='ssl_info' style='display: none' title="SSL info">
+            In order to make key management easier, the add-on will automatically deploy and use the SSL key/certs specified in:
+            <pre>/conf/webui.yaml</pre>
+        </div>
+
         <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
+        <button onclick="$('#ssl_info').dialog( { width: 820 } );"/>SSL info</button>
+
 
         <div>
             <form action="<%=root%>/" method="post">
