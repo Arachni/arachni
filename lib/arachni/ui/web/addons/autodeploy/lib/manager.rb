@@ -224,7 +224,7 @@ class Manager
             cmd += " --ssl-ca='/#{SSL_CA}'"
         end
 
-        puts cmd
+        # puts cmd
 
         cmd += ' > ' + EXEC + '-startup.log 2>&1 &'
 
