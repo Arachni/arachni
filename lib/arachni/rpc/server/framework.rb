@@ -539,6 +539,14 @@ class Framework < ::Arachni::Framework
         audit_store.to_h
     end
 
+    def serialized_auditstore
+        audit_store.to_yaml
+    end
+
+    def serialized_report
+        audit_store.to_h.to_yaml
+    end
+
     #
     # Returns a array containing summaries of all discovered issues (i.e. no variations).
     #
