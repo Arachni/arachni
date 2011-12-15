@@ -1108,7 +1108,7 @@ class Server < Sinatra::Base
         puts "== Sinatra/#{Sinatra::VERSION} has taken the stage " +
             "on #{port} for #{environment} with backup from #{handler_name}" unless handler_name =~/cgi/i
 
-        handler.run self, handler_opts.merge( :Host => bind, :Port => port ) do
+        handler.run self, handler_opts.merge( :Host => options[:host], :Port => options[:port] ) do
             |server|
             [ :INT, :TERM ].each { |sig| trap( sig ) { quit!( server, handler_name ) } }
 
@@ -1139,7 +1139,7 @@ class Server < Sinatra::Base
         }
     end
 
-    run! :host    => Arachni::Options.instance.server   || '0.0.0.0',
+    run! :host    => Arachni::Options.instance.server || '0.0.0.0',
          :port    => Arachni::Options.instance.rpc_port || 4567,
          :server  => %w[ thin ],
          :thin    => prep_thin
