@@ -30,9 +30,8 @@ Arachni - Web Application Security Scanner Framework
     -h
     --help                      output this
 
-    --port                      specify port
-
-    --host                      specify host
+    --port                      specify port to listen on
+    --host                      specify host to bind to
 
     --username                  set username for HTTP basic auth
     --password                  set password for HTTP basic auth
