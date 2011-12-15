@@ -90,9 +90,9 @@ power to work with.
 
 ## Creating New Plug-ins
 
-Unlike the two previous types of components plug-ins are demi-gods.
-Each plug-in is passed the instance of the running framework to do with it what it pleases.
-Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.
+Unlike the two previous types of components plug-ins are demi-gods.<br/>
+Each plug-in is passed the instance of the running framework to do with it what it pleases.<br/>
+Via the framework they have access to all Arachni subsystems and can alter or extend Arachni's behavior on the fly.<br/>
 Plug-ins run in parallel to the framework and are executed right before the scan process starts.
 
 ## Licensing
