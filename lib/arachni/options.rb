@@ -727,13 +727,13 @@ class Options
                         @nickname = arg.to_s
 
                     when '--host'
-                        options.server = arg.to_s
+                        @server = arg.to_s
 
                     when '--username'
-                        options.webui_username = arg.to_s
+                        @webui_username = arg.to_s
 
                     when '--password'
-                        options.webui_password = arg.to_s
+                        @webui_password = arg.to_s
 
                 end
             }
