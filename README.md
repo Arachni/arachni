@@ -158,7 +158,6 @@ From a user's or a component developer's point of view everything appears simple
  - Cookie-jar support.
  - Custom header support.
  - SSL support.
- - Support for custom headers.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
