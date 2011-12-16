@@ -78,10 +78,6 @@ class EmailNotify < Arachni::Plugin::Base
         [ 'pony' ]
     end
 
-    def self.default_config
-        File.dirname( __FILE__ ) + '/email_notify/config.rb'
-    end
-
     def self.info
         {
             :name           => 'E-mail notify',
@@ -100,7 +96,7 @@ class EmailNotify < Arachni::Plugin::Base
                 Arachni::OptString.new( 'username', [ true, 'SMTP username.' ] ),
                 Arachni::OptString.new( 'password', [ true, 'SMTP password.' ] ),
                 Arachni::OptString.new( 'authentication', [ false, 'Authentication.', 'plain', [ 'plain', 'login', 'cram_md5', '' ] ] ),
-                Arachni::OptEnum.new( 'report', [ false, 'Report type to send as an attachment.', 'txt', [ 'txt', 'xml', 'html', 'none' ] ] )
+                Arachni::OptEnum.new( 'report', [ false, 'Report type to send as an attachment.', 'txt', [ 'txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none' ] ] )
             ]
 
         }
