@@ -75,6 +75,11 @@ class Scheduler
         @settings.dispatchers.connect( job.dispatcher ).dispatch( job.url ){
             |instance|
 
+            if instance.rpc_exception?
+                @settings.log.scheduler_instance_dispatch_failed( env )
+                next
+            end
+
             env = {
                 'REMOTE_ADDR' => job.owner_addr,
                 'REMOTE_HOST' => job.owner_host
