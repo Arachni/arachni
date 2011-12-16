@@ -1,3 +1,24 @@
+        <div id='help' style='display: none' title="Help">
+            <h2>Starting a scan</h2>
+
+            <h4>Single</h4>
+            <p>
+                A single scan can be performed easily enough, you just select a Dispatcher,
+                enter the URL of your target and hit "Launch Scan".
+            </p>
+
+            <h4>High Performance</h4>
+            <p>
+                A high performance scan utilizes more than one Arachni Instance to perform the audit.<br/>
+                The master instance will perform the crawl and then calculate and distribute the workload amongst its slaves.<br/>
+                This allows scan-time to be severely decreased, by as much as n times less under ideal circumstances, where n equals the number of running instances.
+            </p>
+            <p>
+                You can find more info <a href="https://github.com/Zapotek/arachni/wiki/Web-user-interface#wiki-usage_start-a-scan_hpg">here</a>.
+            </p>
+        </div>
+
+        <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
 
         <form action="/scan" method="post">
 
