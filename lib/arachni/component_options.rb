@@ -185,7 +185,7 @@ end
 ###
 class OptBool < OptBase
 
-    TrueRegex = /^(y|yes|t|1|true)$/i
+    TrueRegex = /^(y|yes|t|1|true|on)$/i
 
     def type
         return 'bool'
@@ -196,7 +196,7 @@ class OptBool < OptBase
 
         if ((value != nil and
             (value.to_s.empty? == false) and
-            (value.to_s.match(/^(y|yes|n|no|t|f|0|1|true|false)$/i) == nil)))
+            (value.to_s.match(/^(y|yes|n|no|t|f|0|1|true|false|on)$/i) == nil)))
             return false
         end
 
