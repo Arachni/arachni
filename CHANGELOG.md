@@ -14,8 +14,10 @@
     utilising without explicit user interaction. (**New**)
     - Modules
        - Recon
-          - SVN Digger dirs -- Finds directories, based on wordlists created from open source repositories
-          - SVN Digger files -- Finds files, based on wordlists created from open source repositories
+          - SVN Digger dirs -- Finds directories, based on wordlists created from open source repositories (Herman Stevens)
+          - SVN Digger files -- Finds files, based on wordlists created from open source repositories (Herman Stevens)
+          - RAFT dirs (Herman Stevens)
+          - RAFT files (Herman Stevens)
 - Framework
    - <em>stats()</em>
       - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
@@ -26,7 +28,7 @@
    - WebUI
       - Sinatra
          - Updated to use the light-weight and high-performance <a href="http://code.macournoyer.com/thin/">Thin</a> server.
-         - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses.
+         - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses. (**New**)
       - Added support for HTTP Basic Auth (**New**)
       - Updated screens to provide access to HPG (High Performance Grid) features:
          - Home
@@ -48,7 +50,7 @@
       - Fixed small typo in "Settings" screen. [Issue #62]
       - Reports -- AFR report is now served straight-up to avoid corruption. [Issue #55]
       - Add-ons -- Updated to use the new async libraries.
-      - Added help buttons.
+      - Added help buttons. (**New**)
    - CLI
       - Improved interrupt handler:
          - It now exits in a cleaner fashion and is more obedient.
@@ -121,11 +123,6 @@
       - XSS URI -- Made obsolete and will be removed from future releases -- loads and runs XSS Path instead.
    - Recon
       - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
-   - Extras (**New**)
-      - SVN Digger dirs (Herman Stevens)
-      - SVN Digger files (Herman Stevens)
-      - RAFT dirs (Herman Stevens)
-      - RAFT files (Herman Stevens)
 - Meta-Modules
    - Have all been converted to regular plug-ins in order to make distribution across the Grid easier.
 - Dependencies
