@@ -48,6 +48,7 @@
       - Fixed small typo in "Settings" screen. [Issue #62]
       - Reports -- AFR report is now served straight-up to avoid corruption. [Issue #55]
       - Add-ons -- Updated to use the new async libraries.
+      - Added help buttons.
    - CLI
       - Improved interrupt handler:
          - It now exits in a cleaner fashion and is more obedient.
