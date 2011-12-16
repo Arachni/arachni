@@ -216,6 +216,8 @@ class Dispatcher
         return p
     end
 
+    private
+
     #
     # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
@@ -293,8 +295,6 @@ class Dispatcher
 USAGE
     end
 
-
-    private
 
     def trap_interrupts( &block )
         [ 'QUIT', 'INT' ].each {
