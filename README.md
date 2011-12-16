@@ -155,7 +155,8 @@ From a user's or a component developer's point of view everything appears simple
 
 ### General
 
- - Cookie-jar support
+ - Cookie-jar support.
+ - Custom header support.
  - SSL support.
  - Support for custom headers.
  - User Agent spoofing.
@@ -165,16 +166,16 @@ From a user's or a component developer's point of view everything appears simple
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
-    - Web UI (Utilizing the Client - Dispatch-server RPC infrastructure)
+    - Web UI (Utilizing the Client - Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
- - Open RPC Client/Dispatch-server Infrastructure
+ - Open [RPC](https://github.com/Zapotek/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
     - Distributed deployment
     - Multiple clients
     - Parallel scans
     - SSL encryption (with peer authentication)
     - Remote monitoring
-    - Support for High Performance Grid configuration, utilizing multiple nodes to perform single scans.
+    - Support for High Performance Grid configuration, combining the resources of multiple nodes to perform fast scans.
 
 ### Website Crawler
 
