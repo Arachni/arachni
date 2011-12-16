@@ -338,6 +338,8 @@ To install Arachni:
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
 
+    $ git clone git://github.com/Zapotek/arachni.git
+    $ cd arachni
     $ rake install
 
 
