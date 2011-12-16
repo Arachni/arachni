@@ -150,6 +150,10 @@ class DispatcherManager
                     connect( dispatcher.url ).stats {
                         |stats|
                         if !stats.rpc_exception?
+
+                            # automatically grab and save neighbours
+                            stats['neighbours'].each { |n| new( n ) }
+
                             iter.return( { dispatcher.url => stats } )
                         else
                             iter.return( nil )
