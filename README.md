@@ -306,10 +306,11 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## Usage
 
+### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
+
 ### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
 
-
-### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
+### [Starting a Dispatcher](https://github.com/Zapotek/arachni/wiki/RPC-server)
 
 ## Installation
 
