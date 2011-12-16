@@ -93,13 +93,13 @@ class EmailNotify < Arachni::Plugin::Base
                 Arachni::OptString.new( 'to', [ true, 'E-mail address of the receiver.' ] ),
                 Arachni::OptString.new( 'cc', [ false, 'E-mail address to which to send a carbon copy of the notification.' ] ),
                 Arachni::OptString.new( 'bcc', [ false, 'E-mail address for a blind carbon copy.' ] ),
-                Arachni::OptString.new( 'from', [ false, 'E-mail address of the sender.' ] ),
-                Arachni::OptAddress.new( 'server_address', [ false, 'Address of the SMTP server to use.' ] ),
-                Arachni::OptPort.new( 'server_port', [ false, 'SMTP port.' ] ),
+                Arachni::OptString.new( 'from', [ true, 'E-mail address of the sender.' ] ),
+                Arachni::OptAddress.new( 'server_address', [ true, 'Address of the SMTP server to use.' ] ),
+                Arachni::OptPort.new( 'server_port', [ true, 'SMTP port.' ] ),
                 Arachni::OptBool.new( 'tls', [ false, 'Use TLS/SSL?.' ] ),
-                Arachni::OptString.new( 'username', [ false, 'SMTP username.' ] ),
-                Arachni::OptString.new( 'password', [ false, 'SMTP password.' ] ),
-                Arachni::OptString.new( 'authentication', [ false, 'SMTP username.', 'plain', [ 'plain', 'login', 'cram_md5', '' ] ] ),
+                Arachni::OptString.new( 'username', [ true, 'SMTP username.' ] ),
+                Arachni::OptString.new( 'password', [ true, 'SMTP password.' ] ),
+                Arachni::OptString.new( 'authentication', [ false, 'Authentication.', 'plain', [ 'plain', 'login', 'cram_md5', '' ] ] ),
                 Arachni::OptEnum.new( 'report', [ false, 'Report type to send as an attachment.', 'txt', [ 'txt', 'xml', 'html', 'none' ] ] )
             ]
 
