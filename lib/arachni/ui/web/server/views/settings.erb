@@ -1,17 +1,27 @@
-    <script type="text/javascript">
-        $(function() {
-            $( "#slider" ).slider({
-                value: <%=session['opts']['settings']['http_req_limit']%>,
-                min: 1,
-                max: 200,
-                step: 1,
-                slide: function( event, ui ) {
-                    $( "#http_req_limit" ).val( ui.value );
-                }
+        <div id='help' style='display: none' title="Help">
+            <h2>Settings</h2>
+            <p>
+                These settings have the same effect as their <a href="https://github.com/Zapotek/arachni/wiki/Command-line-user-interface">Command Line Interface</a> counterparts.
+            </p>
+
+        </div>
+
+        <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
+
+        <script type="text/javascript">
+            $(function() {
+                $( "#slider" ).slider({
+                    value: <%=session['opts']['settings']['http_req_limit']%>,
+                    min: 1,
+                    max: 200,
+                    step: 1,
+                    slide: function( event, ui ) {
+                        $( "#http_req_limit" ).val( ui.value );
+                    }
+                });
+                $( "#http_req_limit" ).val( $( "#slider" ).slider( "value" ) );
             });
-            $( "#http_req_limit" ).val( $( "#slider" ).slider( "value" ) );
-        });
-    </script>
+        </script>
 
         <form action="/settings" method="post" enctype="multipart/form-data">
 
@@ -19,7 +29,6 @@
                 <div id="page-intro">
                     <h2>Settings</h2>
                     <p>General settings regarding the internals of the Arachni Framework.
-                        <br/>
                         <br/>
                      </p>
                     <p>
