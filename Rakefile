@@ -62,6 +62,7 @@ task :clean do
     sh "rm *.gem || true"
     sh "rm logs/*.log || true"
     sh "rm lib/arachni/ui/web/server/db/*.* || true"
+    sh "rm lib/arachni/ui/web/server/db/welcomed || true"
     sh "rm lib/arachni/ui/web/server/public/reports/*.* || true"
     sh "rm lib/arachni/ui/web/server/tmp/*.* || true"
 end

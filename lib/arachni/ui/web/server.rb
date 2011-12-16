@@ -388,9 +388,7 @@ class Server < Sinatra::Base
 
     def ensure_welcomed
         return if welcomed?
-
-        welcomed!
-        redirect '/welcome'
+        async_redirect '/welcome'
     end
 
     def options
@@ -753,6 +751,7 @@ class Server < Sinatra::Base
     end
 
     aget "/welcome" do
+        welcomed!
         body erb :welcome, { :layout => true }
     end
 
