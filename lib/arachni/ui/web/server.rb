@@ -266,7 +266,8 @@ class Server < Sinatra::Base
     def async_redirect( location, opts = {} )
         response.status = 302
 
-        if methods.include?( :current_addon ) && current_addon
+        if methods.include?( :current_addon ) && current_addon &&
+            location != '/dispatchers/edit'
             location = current_addon.path_root + location
         end
 
@@ -837,7 +838,7 @@ class Server < Sinatra::Base
             session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
             opts = {}
-            # opts['settings'] = prep_opts( session['opts']['settings'] )
+            opts['settings'] = prep_opts( session['opts']['settings'] )
             opts['settings'] = session['opts']['settings']
 
             if params['high_performance']

@@ -63,7 +63,7 @@ class Scheduler < Base
                 session['opts']['settings']['audit_headers'] = true if session['opts']['settings']['audit_headers']
 
                 opts = {}
-                # opts['settings'] = prep_opts( session['opts']['settings'] )
+                opts['settings'] = prep_opts( session['opts']['settings'] )
                 opts['settings'] = session['opts']['settings']
 
                 if params['high_performance']
