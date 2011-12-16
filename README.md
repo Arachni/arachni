@@ -320,15 +320,13 @@ CDE packages are self contained and thus alleviate the need for Ruby and other d
 You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
-Due to some incompatibility this release does not have a CDE package yet.
-
 ### Gem
 
 To install the Gem or work with the source code you'll also need the following system libraries:
 
     $ sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
 
-You will also need to have Ruby 1.9.2 installed *including* the dev package/headers.<br/>
+You will also need to have Ruby 1.9.2 (or later) installed *including* the dev package/headers.<br/>
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby 1.9.2](http://www.ruby-lang.org/en/downloads/) manually.
 
 
