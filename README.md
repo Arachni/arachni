@@ -128,9 +128,12 @@ Unlike other scanners, it takes into account the dynamic nature of web applicati
 through the paths of a web application's cyclomatic complexity and is able to adjust itself accordingly.<br/>
 This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
 
-Finally, Arachni yields great performance due to its asynchronous HTTP model (courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)) --
+Moreover, Arachni yields great performance due to its asynchronous HTTP model (courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)) --
 especially when combined with a High Performance Grid setup which allows you to combine the resources of multiple nodes for lightning fast scans.<br/>
-Thus, you'll only be limited by the responsiveness of the server under audit.s.
+Thus, you'll only be limited by the responsiveness of the server under audit.
+
+Finally, it is versatile enough to cover a great deal of use cases,
+ranging from a simple command line scanner utility, to a global high performance grid of scanners, to a Ruby library allowing for scripted audits.
 
 **Note**: _Despite the fact that Arachni is mostly targeted towards web application security, it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules._
 
