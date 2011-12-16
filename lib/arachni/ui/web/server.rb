@@ -504,6 +504,12 @@ class Server < Sinatra::Base
             else
                 dispatchers.connect( dispatcher.url ).dispatch( HELPER_OWNER ){
                     |instance|
+
+                    if instance.rpc_exception?
+                        log.webui_helper_instance_connect_failed( env, url )
+                        next
+                    end
+
                     @@arachni = instances.connect( instance['url'], session, instance['token'] )
                     block.call( @@arachni )
                 }
