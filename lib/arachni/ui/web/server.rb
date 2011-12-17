@@ -364,8 +364,8 @@ class Server < Sinatra::Base
         stats['running_jobs'].each {
             |job|
             rss += proc_mem( job['proc']['rss'] ).to_i
-            mem += Float( job['proc']['pctmem'] )
-            cpu += Float( job['proc']['pctcpu'] )
+            mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
+            cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
         }
         str += rss.to_s + 'MB RAM usage '
         str += '(' + mem.to_s[0..4] + '%), '
