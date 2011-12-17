@@ -18,12 +18,12 @@
             </p>
         </div>
 
-        <form action="/scan" method="post">
+        <button style='display: inline' onclick="$('#help').dialog( { height: 530, width: 500 } );return false;"/>Help</button>
+
+        <form action="/scan" method="post" style='display: inline' >
 
             <%= csrf_tag %>
-            <button style='display: inline' onclick="$('#help').dialog( { height: 530, width: 500 } );return false;"/>Help</button>
-
-            <input style='display: inline' type="submit" value="Launch Scan" />
+            <input type="submit" value="Launch Scan" />
 
             <div id="page-intro">
                 <div class="left">
