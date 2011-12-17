@@ -304,14 +304,6 @@ However, this is usually not required since Arachni is aware of which requests a
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
-## Usage
-
-### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
-
-### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
-
-### [Starting a Dispatcher](https://github.com/Zapotek/arachni/wiki/RPC-server)
-
 ## Installation
 
 ### CDE packages for Linux
@@ -345,6 +337,15 @@ If you want to clone the repository and work with the source code then you'll ne
 
 
 ### [Windows -- under Cygwin](https://github.com/Zapotek/arachni/wiki/Installation)
+
+
+## Usage
+
+### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
+
+### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
+
+### [Starting a Dispatcher](https://github.com/Zapotek/arachni/wiki/RPC-server)
 
 
 ## Configuration of <em>extras</em>
