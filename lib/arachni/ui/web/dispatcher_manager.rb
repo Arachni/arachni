@@ -100,7 +100,7 @@ class DispatcherManager
                     alive?( dispatcher.url ){
                         |bool|
                         if bool
-                            block.call( dispatcher )
+                            iter.return( dispatcher )
                         else
                             iter.return( nil )
                         end
