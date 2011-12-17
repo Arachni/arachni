@@ -344,7 +344,7 @@ If you want to clone the repository and work with the source code then you'll ne
     rake install
 
 
-### [Under windows -- using Cygwin]([instructions](https://github.com/Zapotek/arachni/wiki/Installation))
+### [Windows -- under Cygwin](https://github.com/Zapotek/arachni/wiki/Installation)
 
 
 ## Configuration of <em>extras</em>
