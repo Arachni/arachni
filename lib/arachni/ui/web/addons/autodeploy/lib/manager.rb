@@ -241,11 +241,12 @@ class Manager
            begin
                session = ssh( deployment, password )
            rescue Exception => e
-               return {
+               block.call( {
                    :output => e.class.name + ': ' + e.to_s + "\n" + e.backtrace.join( "\n" ),
                    :status => 'failed',
                    :code   => 1
-               }
+               })
+               next
            end
 
             block.call ssh_exec!( deployment, session, 'kill -9 -' + proc['pgrp'] )
