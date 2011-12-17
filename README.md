@@ -344,6 +344,9 @@ If you want to clone the repository and work with the source code then you'll ne
     rake install
 
 
+### [Under windows -- using Cygwin]([instructions](https://github.com/Zapotek/arachni/wiki/Installation))
+
+
 ## Configuration of <em>extras</em>
 
 The <em>extras</em> directory holds components that are considered too specialised, dangerous or in some way unsuitable for utilising without explicit user interaction. <br/>
@@ -354,10 +357,9 @@ Should you want to use these extra components simply move them from the <em>extr
 
 ## Supported platforms
 
-Arachni should work on all *nix and POSIX compliant platforms with Ruby
-and the aforementioned requirements.
+Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
 
-Windows users should run Arachni in Cygwin.
+Windows users can run Arachni in Cygwin by following these [instructions](https://github.com/Zapotek/arachni/wiki/Installation).
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at
