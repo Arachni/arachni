@@ -85,8 +85,7 @@ class DispatcherManager
 
         connect( url ).alive? {
             |ret|
-            ret = ( ret.rpc_connection_error? ) ? false : ret
-            block.call( ret )
+            block.call( ret.rpc_connection_error? ? false : true )
         }
     end
 
@@ -182,10 +181,13 @@ class DispatcherManager
                             :issues   => false
                         ) {
                             |prog_data|
-                            next if prog_data.rpc_exception?
-                            instance.merge!( prog_data['stats'] )
-                            instance['status']  = prog_data['status'].capitalize!
-                            iter.return( instance )
+                            if prog_data.rpc_exception?
+                                iter.return( nil )
+                            else
+                                instance.merge!( prog_data['stats'] )
+                                instance['status']  = prog_data['status'].capitalize!
+                                iter.return( instance )
+                            end
                         }
                     else
                         @settings.instances.connect( instance['helpers']['master'] ).framework.progress_data(
@@ -193,20 +195,22 @@ class DispatcherManager
                             :issues   => false
                         ) {
                             |prog_data|
-                            next if prog_data.rpc_exception?
-                            prog_data['instances'].each {
-                                |insdat|
-                                 if insdat['url'] == instance['url']
-                                     instance.merge!( insdat )
-                                     instance['status'].capitalize!
-                                     iter.return( instance )
-                                end
-                            }
+                            if prog_data.rpc_exception?
+                                iter.return( nil )
+                            else
+                                prog_data['instances'].each {
+                                    |insdat|
+                                     if insdat['url'] == instance['url']
+                                         instance.merge!( insdat )
+                                         instance['status'].capitalize!
+                                         iter.return( instance )
+                                    end
+                                }
+                            end
                         }
                     end
                 }.compact
             }
-
 
             block.call( sorted_stats )
         end
