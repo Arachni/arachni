@@ -817,7 +817,7 @@ class Server < Sinatra::Base
     # starts a scan
     #
     apost "/scan" do
-        prep_session
+        prep_session( true )
 
         valid = true
         begin
