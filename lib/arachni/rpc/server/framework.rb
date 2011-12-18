@@ -950,8 +950,8 @@ class Framework < ::Arachni::Framework
         cpu = 0
         jobs.each {
             |job|
-            mem += Float( job['proc']['pctmem'] )
-            cpu += Float( job['proc']['pctcpu'] )
+            mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
+            cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
         }
 
         return cpu + mem
