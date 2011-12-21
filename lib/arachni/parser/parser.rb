@@ -674,7 +674,11 @@ class Parser
         i = new_arr.size
         selects.each {
             |select|
-            select['attrs']['value'] = select['options'][0]['value']
+
+            begin
+                select['attrs']['value'] = select['options'][0]['value']
+            rescue
+            end
             new_arr << select['attrs']
         }
 
