@@ -102,7 +102,10 @@ class CLI
             # we may need to kill the audit so put it in a thread
             @audit = Thread.new {
                 # start the show!
-                @arachni.run { kill_interrupt_handler }
+                @arachni.run {
+                    kill_interrupt_handler
+                    clear_screen!
+                }
                 print_stats
             }
 
@@ -223,7 +226,7 @@ class CLI
                         @@only_positives = false
                         @interrupt_handler.kill
 
-                        print_error( 'Exiting...' )
+                        print_status( 'Exiting...' )
                         print_info( 'Please wait while the system cleans up.' )
 
                         # kill the audit
