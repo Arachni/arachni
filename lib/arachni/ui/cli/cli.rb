@@ -654,7 +654,7 @@ class CLI
 
     --http-req-limit            concurrent HTTP requests limit
                                   (Be careful not to kill your server.)
-                                  (Default: 20)
+                                  (Default: #{@opts.http_req_limit})
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
     --http-harvest-last         build up the HTTP request queue of the audit for the whole site
@@ -721,7 +721,7 @@ class CLI
 
     --link-count=<number>       how many links to follow (default: inf)
 
-    --redirect-limit=<number>   how many redirects to follow (default: 20)
+    --redirect-limit=<number>   how many redirects to follow (default: #{@opts.redirect_limit})
 
     --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
                                   (Can be used multiple times.)
