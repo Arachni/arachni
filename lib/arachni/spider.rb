@@ -106,6 +106,9 @@ class Spider
         # we need a parser in order to have access to skip() in case
         # there's a redirect that shouldn't be followed
         seed_page = http.get( @seed_url, opts.merge( :async => false ) ).response
+
+        print_status( "[HTTP: #{seed_page.code}] " + seed_page.effective_url )
+
         parser = Parser.new( @opts, seed_page )
         parser.url = @seed_url
         @paths = parser.paths
