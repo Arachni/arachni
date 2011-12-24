@@ -17,7 +17,7 @@ module Arachni::Parser::Extractors
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Scripts < Paths
 
@@ -29,8 +29,7 @@ class Scripts < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.search( "//script[@src]" ).map { |a| a['src'] } |
-        doc.search( "//script" ).map { |script| URI.extract( script.to_s ) }
+        doc.search( "//script[@src]" ).map { |a| a['src'] }
     end
 
 end
