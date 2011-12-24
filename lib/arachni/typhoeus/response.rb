@@ -2,6 +2,10 @@
 module Typhoeus
   class Response
 
+    def redirection?
+        (300...399).include?( @code )
+    end
+
     #
     # Converts obj to hash
     #
