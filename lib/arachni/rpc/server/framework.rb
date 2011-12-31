@@ -655,7 +655,7 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Registers an array holding [Arachni::Issue] objects with the local instance.
+    # Registers an array holding {Arachni::Issue} objects with the local instance.
     #
     # Primarily used by slaves to register issues they find on the spot.
     #
@@ -663,7 +663,7 @@ class Framework < ::Arachni::Framework
     # @param    [String]                   token     privileged token, prevents this method
     #                                                   from being called by 3rd parties.
     #
-    # @return   [Bool]  true on success, false on invalid token
+    # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
     #
     def register_issues( issues, token )
         return false if high_performance? && !valid_token?( token )
