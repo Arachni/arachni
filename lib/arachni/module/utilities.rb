@@ -150,14 +150,14 @@ module Utilities
     #
     # @param    [Block]
     #
-    def exception_jail( &block )
+    def exception_jail( raise_exception = true, &block )
         begin
             block.call
         rescue Exception => e
             err_name = !e.to_s.empty? ? e.to_s : e.class.name
             print_error( err_name )
             print_error_backtrace( e )
-            raise e
+            raise e if raise_exception
         end
     end
 
