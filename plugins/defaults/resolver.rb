@@ -29,8 +29,10 @@ class Resolver < Arachni::Plugin::Base
         host_to_ipaddress = {}
         @framework.audit_store.deep_clone.issues.each_with_index {
             |issue|
-            host = URI( issue.url ).host
-            host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
+            exception_jail( false ) {
+                host = URI( issue.url ).host
+                host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
+            }
         }
         print_status 'Done!'
 
