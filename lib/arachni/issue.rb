@@ -250,6 +250,14 @@ class Issue
             end
         } if opts[:issue]
 
+        if opts[:headers] && opts[:headers][:request]
+            @headers[:request] = {}.merge( opts[:headers][:request] )
+        end
+
+        if opts[:headers] && opts[:headers][:response]
+            @headers[:response] = {}.merge( opts[:headers][:response] )
+        end
+
         if( @cwe )
             @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
         end
