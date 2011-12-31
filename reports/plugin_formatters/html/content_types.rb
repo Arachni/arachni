@@ -25,11 +25,6 @@ class HTML
         #
         class ContentTypes < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
-
             def run
                 return ERB.new( tpl ).result( binding )
             end

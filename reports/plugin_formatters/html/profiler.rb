@@ -15,56 +15,51 @@ module Arachni
 module Reports
 
 class HTML
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # HTML formatter for the results of the Profiler plugin
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class Profiler < Arachni::Plugin::Formatter
+    #
+    # HTML formatter for the results of the Profiler plugin
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
+    class Profiler < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
+        def run
 
-            def run
+            @results['times'].each_with_index {
+                |itm, i|
+                @results['times'][i] = escape_hash( itm )
+            }
 
-                @results['times'].each_with_index {
-                    |itm, i|
-                    @results['times'][i] = escape_hash( itm )
-                }
+            times      = @results['times'].map{ |item| item['time'] }
+            total_time = 0
+            times.each {
+                |time|
+                total_time += time
+            }
 
-                times      = @results['times'].map{ |item| item['time'] }
-                total_time = 0
-                times.each {
-                    |time|
-                    total_time += time
-                }
+            avg_time = total_time / times.size
+            times.reject!{ |time| time < avg_time }
 
-                avg_time = total_time / times.size
-                times.reject!{ |time| time < avg_time }
+            return ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
+        end
 
-                return ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
-            end
+        def escape_hash( hash )
+            hash.each_pair {
+                |k, v|
+                hash[k] = CGI.escape( v ) if v.is_a?( String )
+                hash[k] = escape_hash( v ) if v.is_a? Hash
+            }
 
-            def escape_hash( hash )
-                hash.each_pair {
-                    |k, v|
-                    hash[k] = CGI.escape( v ) if v.is_a?( String )
-                    hash[k] = escape_hash( v ) if v.is_a? Hash
-                }
-
-                return hash
-            end
-
+            return hash
         end
 
     end
+
+end
 end
 
 end

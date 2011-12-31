@@ -13,38 +13,33 @@ module Arachni
 module Reports
 
 class HTML
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # HTML formatter for the results of the WAF Detector plugin
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class WAFDetector < Arachni::Plugin::Formatter
+    #
+    # HTML formatter for the results of the WAF Detector plugin
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
+    class WAFDetector < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
+        def run
+            return ERB.new( tpl ).result( binding )
+        end
 
-            def run
-                return ERB.new( tpl ).result( binding )
-            end
-
-            def tpl
-                %q{
-                    <h3>Result</h3>
-                    <blockquote><%=@results[:msg]%></blockquote>
-                }
-
-            end
+        def tpl
+            %q{
+                <h3>Result</h3>
+                <blockquote><%=@results[:msg]%></blockquote>
+            }
 
         end
 
     end
+
+end
 end
 
 end

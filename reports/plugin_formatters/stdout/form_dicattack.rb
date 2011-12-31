@@ -12,40 +12,35 @@ module Arachni
 module Reports
 
 class Stdout
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # Stdout formatter for the results of the FormDicattack plugin
-        #
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class FormDicattack < Arachni::Plugin::Formatter
+    #
+    # Stdout formatter for the results of the FormDicattack plugin
+    #
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
+    class FormDicattack < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
+        def run
+            print_status( 'Form dictionary attacker' )
+            print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
 
-            def run
-                print_status( 'Form dictionary attacker' )
-                print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
+            print_info( 'Description: ' + @description )
+            print_line
+            print_info( "Cracked credentials:" )
+            print_ok( '    Username: ' + @results[:username] ) if @results[:username]
+            print_ok( '    Password: ' + @results[:password] ) if @results[:password]
 
-                print_info( 'Description: ' + @description )
-                print_line
-                print_info( "Cracked credentials:" )
-                print_ok( '    Username: ' + @results[:username] ) if @results[:username]
-                print_ok( '    Password: ' + @results[:password] ) if @results[:password]
-
-                print_line
-            end
-
+            print_line
         end
 
     end
+
+end
 end
 
 end

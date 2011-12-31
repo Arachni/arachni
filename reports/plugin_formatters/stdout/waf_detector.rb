@@ -12,36 +12,31 @@ module Arachni
 module Reports
 
 class Stdout
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # Stdout formatter for the results of the WAFDetector plugin
-        #
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class WAFDetector < Arachni::Plugin::Formatter
+    #
+    # Stdout formatter for the results of the WAFDetector plugin
+    #
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
+    class WAFDetector < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
+        def run
+            print_status( 'WAF Detector' )
+            print_info( '~~~~~~~~~~~~~~' )
 
-            def run
-                print_status( 'WAF Detector' )
-                print_info( '~~~~~~~~~~~~~~' )
-
-                print_info( 'Description: ' + @description )
-                print_line
-                print_ok( @results[:msg] )
-            end
-
+            print_info( 'Description: ' + @description )
+            print_line
+            print_ok( @results[:msg] )
         end
 
     end
+
+end
 end
 
 end

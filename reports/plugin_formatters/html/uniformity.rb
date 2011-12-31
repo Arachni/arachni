@@ -24,11 +24,6 @@ module PluginFormatters
     #
     class Uniformity < Arachni::Plugin::Formatter
 
-        def initialize( metadata )
-            @results     = metadata[:results]
-            @description = metadata[:description]
-        end
-
         def run
             return ERB.new( tpl ).result( binding )
         end

@@ -24,7 +24,8 @@ class Formatter
     include Arachni::UI::Output
 
     def initialize( plugin_data )
-
+        @results     = plugin_data[:results]
+        @description = plugin_data[:description]
     end
 
     def run

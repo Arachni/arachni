@@ -29,11 +29,6 @@ module PluginFormatters
 
         include Arachni::Reports::Buffer
 
-        def initialize( metadata )
-            @results     = metadata[:results]
-            @description = metadata[:description]
-        end
-
         def run
             start_tag( 'timeout_notice' )
             simple_tag( 'description', @description )

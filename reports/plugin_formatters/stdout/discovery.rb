@@ -24,11 +24,6 @@ module PluginFormatters
     #
     class Discovery < Arachni::Plugin::Formatter
 
-        def initialize( metadata )
-            @results     = metadata[:results]
-            @description = metadata[:description]
-        end
-
         def run
             print_status( ' --- Discovery:' )
             print_info( 'Description: ' + @description )
