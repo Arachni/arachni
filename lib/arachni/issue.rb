@@ -254,7 +254,7 @@ class Issue
             @headers[:request] = {}.merge( opts[:headers][:request] )
         end
 
-        if opts[:headers] && opts[:headers][:response]
+        if opts[:headers] && opts[:headers][:response].is_a?( Hash )
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
