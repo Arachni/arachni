@@ -291,6 +291,15 @@ class Issue
         end
     end
 
+    def to_h
+        h = {}
+        each_pair {
+            |k, v|
+            h[k] = v
+        }
+        h
+    end
+
     def each
         self.instance_variables.each {
             |var|
