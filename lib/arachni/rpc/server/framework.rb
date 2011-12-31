@@ -112,7 +112,7 @@ class Framework < ::Arachni::Framework
     #
     # Returns an array containing information about all available plug-ins.
     #
-    # @param    [Array]
+    # @return    [Array<Hash>]
     #
     def lsplug
         plug_info = []
@@ -430,7 +430,9 @@ class Framework < ::Arachni::Framework
     #                             * :messages -- include output messages
     #                             * :slaves   -- include slave data
     #                             * :issues   -- include issue summaries
-    #                             Uses an implicit include (i.e. nil will be considered true).
+    #                             Uses an implicit include for the above (i.e. nil will be considered true).
+    #
+    #                             * :as_hash  -- if set to true will convert issues to hashes before returning
     #
     # @param    [Proc]  &block  block to which to pass the result
     #
@@ -454,6 +456,12 @@ class Framework < ::Arachni::Framework
             include_issues = opts[:issues]
         end
 
+        if opts[:as_hash]
+            as_hash = true
+        else
+            as_hash = opts[:as_hash]
+        end
+
         data = {
             'stats'     => {},
             'status'    => status,
@@ -461,7 +469,11 @@ class Framework < ::Arachni::Framework
         }
 
         data['messages']  = flush_buffer if include_messages
-        data['issues']    = issues if include_issues
+
+        if include_issues
+            data['issues'] = as_hash ? issues_as_hash : issues
+        end
+
         data['instances'] = {} if include_slaves
 
         stats = []
@@ -538,11 +550,19 @@ class Framework < ::Arachni::Framework
     def report
         audit_store.to_h
     end
+    alias :audit_store_as_hash :report
+    alias :auditstore_as_hash :report
 
+    #
+    # @return   [String]    YAML representation of {#auditstore}
+    #
     def serialized_auditstore
         audit_store.to_yaml
     end
 
+    #
+    # @return   [String]    YAML representation of {#report}
+    #
     def serialized_report
         audit_store.to_h.to_yaml
     end
@@ -550,7 +570,7 @@ class Framework < ::Arachni::Framework
     #
     # Returns a array containing summaries of all discovered issues (i.e. no variations).
     #
-    # @return   [Array]
+    # @return   [Array<Arachni::Issue>]
     #
     def issues
         audit_store.issues.map {
@@ -559,6 +579,17 @@ class Framework < ::Arachni::Framework
             tmp_issue.variations = []
             tmp_issue
         }
+    end
+
+    #
+    # Returns the return value of {#issues} as an Array of hashes
+    #
+    # @return   [Array<Hash>]
+    #
+    # @see #issues
+    #
+    def issues_as_hash
+        issues.map { |i| i.to_h }
     end
 
     #
