@@ -106,7 +106,7 @@ And some screenshots here: http://trainofthought.segfault.gr/2011/09/02/arachni-
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2011 Tasos Laskos</td>
+        <td>2010-2012 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
