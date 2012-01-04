@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
@@ -11,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -24,50 +21,13 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
 # @see http://en.wikipedia.org/wiki/Remote_File_Inclusion
 #
 class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
-
-    #
-    # Arachni::Module::HTTP instance
-    #
-    # You don't really need to declare this,
-    # you inherit it from Arachni::Module
-    #
-    # It's an initialized object of the Arachni::Module::HTTP instance
-    # class configured with proxy, authentication, SSL settings etc.
-    #
-    # Look at Arachni::Module::HTTP instance doc to see what you get.
-    #
-    # If you need direct access to the Net::HTTP session you can get
-    # it from @http.session
-    #
-    # @return [Arachni::Module::HTTP]
-    #
-    attr_reader :http
-
-    #
-    # REQUIRED
-    #
-    # Initializes the module and the parent.
-    #
-    # @see Arachni::Module::Base
-    # @see Page
-    #
-    # @param    [Page]    page    you can always expect this to be provided
-    #                               by the system.
-    #
-    def initialize( page )
-        # unless you want to do something freaky
-        # *do not* ommit the following line
-        super( page )
-
-        # init your stuff here
-    end
 
     #
     # OPTIONAL
@@ -77,7 +37,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # It may be redundant but it's optional anyways...
     #
-    def prepare( )
+    def prepare
         #
         # You can use print_debug() for debugging.
         # Don't over-do ti though, debugging messages are supposed to
@@ -112,7 +72,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # This is used to deliver the module's payload whatever it may be.
     #
-    def run( )
+    def run
         print_debug(  'In run()' )
 
         audit( @__injection_url, @__opts )
@@ -126,7 +86,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
     #
     # May also be redundant but, once again, it's optional
     #
-    def clean_up( )
+    def clean_up
         print_debug( 'In clean_up()' )
     end
 
@@ -155,7 +115,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'WASC'       => 'http://projects.webappsec.org/Remote-File-Inclusion',
                 'Wikipedia'  => 'http://en.wikipedia.org/wiki/Remote_File_Inclusion'

@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -29,10 +28,6 @@ module Modules
 class WebDav < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         #
@@ -51,10 +46,8 @@ class WebDav < Arachni::Module::Base
         @@__auditted ||= Set.new
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url )
-
         return if @@__found || @@__auditted.include?( path )
 
         print_status( "Checking: #{path}" )
@@ -77,7 +70,7 @@ class WebDav < Arachni::Module::Base
             :description    => %q{Checks for WebDAV enabled directories.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',

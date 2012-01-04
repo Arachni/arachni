@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,16 +20,12 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 #
 class BackupFiles < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         # to keep track of the requests and not repeat them
@@ -45,10 +40,8 @@ class BackupFiles < Arachni::Module::Base
         }
     end
 
-    def run( )
-
-        path     = get_path( @page.url )
-
+    def run
+        path = get_path( @page.url )
         return if @@__audited.include?( path )
 
         filename = File.basename( URI( normalize_url( @page.url ) ).path )
@@ -96,7 +89,7 @@ class BackupFiles < Arachni::Module::Base
             :description    => %q{Tries to find sensitive backup files.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

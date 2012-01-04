@@ -11,7 +11,6 @@
 require 'digest/md5'
 
 module Arachni
-
 module Modules
 
 #
@@ -20,7 +19,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 #
 class InterestingResponses < Arachni::Module::Base
@@ -32,14 +31,12 @@ class InterestingResponses < Arachni::Module::Base
         404
     ]
 
-    def initialize( page )
-        super( page )
-
+    def prepare
         # we need to run only once
         @@__ran ||= false
     end
 
-    def run( )
+    def run
         return if @@__ran
 
         print_status( "Listening..." )
@@ -62,7 +59,7 @@ class InterestingResponses < Arachni::Module::Base
             :description    => %q{Logs all non 200 (OK) server responses.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.3',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Interesting server response.},

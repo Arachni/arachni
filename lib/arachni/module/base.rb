@@ -96,7 +96,7 @@ class Base
     #
     # It provides you with a way to setup your module's data and methods.
     #
-    def prepare( )
+    def prepare
     end
 
     #
@@ -104,7 +104,7 @@ class Base
     #
     # This is used to deliver the module's payload whatever it may be.
     #
-    def run( )
+    def run
     end
 
     #
@@ -112,7 +112,7 @@ class Base
     #
     # This is called after run() has finished executing,
     #
-    def clean_up( )
+    def clean_up
     end
 
     #

@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
@@ -11,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -22,21 +19,17 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
 class UnencryptedPasswordForms < Arachni::Module::Base
 
-    def initialize( page )
-        # in this case we don't need to call the parent
-        @page = page
-
+    def prepare
         @@__audited ||= Set.new
     end
 
-    def run( )
-
+    def run
         @page.forms.each {
             |form|
             __check( form )
@@ -90,7 +83,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },

@@ -9,24 +9,19 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Htaccess < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def run( )
+    def run
         return if @page.code != 401
 
         @http.post( @page.url ).on_complete {
@@ -42,7 +37,7 @@ class Htaccess < Arachni::Module::Base
                 GET requests but allows POST.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

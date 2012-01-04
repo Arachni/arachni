@@ -33,11 +33,7 @@ class CodeInjectionTiming < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         @@__injection_str ||= []
 

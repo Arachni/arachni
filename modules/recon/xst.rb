@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -20,7 +19,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
@@ -30,14 +29,12 @@ class XST < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-
+    def prepare
         # we need to run only once
         @@__ran ||= false
     end
 
-    def run( )
+    def run
         return if @@__ran
 
         print_status( "Checking..." )
@@ -61,7 +58,7 @@ class XST < Arachni::Module::Base
             :description    => %q{Sends an HTTP TRACE request and checks if it succeeded.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'CAPEC'     => 'http://capec.mitre.org/data/definitions/107.html',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross_Site_Tracing'

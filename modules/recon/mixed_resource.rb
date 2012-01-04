@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
@@ -11,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -22,16 +19,13 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
 #
 class MixedResource < Arachni::Module::Base
 
-    def initialize( page )
-        # in this case we don't need to call the parent
-        @page = page
-
+    def prepare
         @@__audited ||= Set.new
     end
 
@@ -83,7 +77,7 @@ class MixedResource < Arachni::Module::Base
                 Issue::Element::BODY
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'Google Online Security Blog' =>
                     'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'

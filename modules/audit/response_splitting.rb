@@ -21,44 +21,31 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @version: 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
 #
 class ResponseSplitting < Arachni::Module::Base
+    include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-
-        # initialize the header
-        @__header = ''
-
-        # initialize the array that will hold the results
-        @results = []
-    end
-
-    def prepare( )
-
+    def run
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
         # if we find it it means that the attack was succesful
         # thus site is vulnerable.
-        @__header = "\r\nX-CRLF-Safe: no"
-    end
-
-    def run( )
+        header = "\r\nX-CRLF-Safe: no"
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( @__header, :param_flip => true ) {
+        audit( header, :param_flip => true ) {
             |res, opts|
             if res.headers_hash['X-CRLF-Safe'] &&
                !res.headers_hash['X-CRLF-Safe'].empty?
 
-                opts[:injected] = URI.encode( opts[:injected] )
+                opts[:injected] = uri_encode( opts[:injected] )
                 log( opts, res )
             end
         }
@@ -77,7 +64,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.5',
+            :version        => '0.1.6',
             :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'

@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -20,17 +19,13 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class DirectoryListing < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
     DIFF_THRESHOLD = 1000
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         foo = File.basename( __FILE__, '.rb' )
@@ -44,8 +39,7 @@ class DirectoryListing < Arachni::Module::Base
        @@__checked ||= Set.new
     end
 
-    def run( )
-
+    def run
         return if @page.code != 200
         path = get_path( @page.url )
 
@@ -129,7 +123,7 @@ class DirectoryListing < Arachni::Module::Base
             :description    => %q{Tries to force directory listings.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

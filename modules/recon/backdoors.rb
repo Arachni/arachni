@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,16 +17,12 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 #
 class Backdoors < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         # to keep track of the requests and not repeat them
@@ -42,7 +37,7 @@ class Backdoors < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
 
         path = get_path( @page.url )
         return if @@__audited.include?( path )
@@ -71,7 +66,7 @@ class Backdoors < Arachni::Module::Base
             :description    => %q{Tries to find common backdoors on the server.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

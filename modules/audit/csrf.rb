@@ -41,7 +41,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -50,11 +50,7 @@ module Modules
 #
 class CSRF < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
@@ -64,7 +60,7 @@ class CSRF < Arachni::Module::Base
         @@__audited ||= Set.new
     end
 
-    def run( )
+    def run
 
         print_status( 'Looking for CSRF candidates...' )
 
@@ -264,7 +260,7 @@ class CSRF < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.1',
+            :version        => '0.2.2',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

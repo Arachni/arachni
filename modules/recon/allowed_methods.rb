@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,7 +17,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -27,16 +26,11 @@ class AllowedMethods < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
     def prepare
         @@__ran ||= false
     end
 
-    def run( )
-
+    def run
         return if @@__ran
 
         print_status( "Checking..." )
@@ -57,7 +51,7 @@ class AllowedMethods < Arachni::Module::Base
             :description    => %q{Checks for supported HTTP methods.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },

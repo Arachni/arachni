@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,22 +17,18 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 class HTTP_PUT < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-
+    def prepare
         @@__checked ||= Set.new
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url ) + 'Arachni-' + seed.to_s[0..4].to_s
-
         return if @@__checked.include?( path )
         @@__checked << path
 
@@ -55,7 +50,7 @@ class HTTP_PUT < Arachni::Module::Base
             :description    => %q{Checks if uploading files is possible using the HTTP PUT method.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.3',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

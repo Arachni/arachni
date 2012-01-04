@@ -20,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
@@ -28,10 +28,6 @@ module Modules
 class CommonDirectories < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         # to keep track of the requests and not repeat them
@@ -46,8 +42,7 @@ class CommonDirectories < Arachni::Module::Base
         }
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url )
         return if @@__audited.include?( path )
 
@@ -75,7 +70,7 @@ class CommonDirectories < Arachni::Module::Base
             :description    => %q{Tries to find common directories on the server.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {

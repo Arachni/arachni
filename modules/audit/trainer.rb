@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -22,18 +21,14 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 #
 class Trainer < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         # this will be the used as the injection string
         @str = '_arachni_trainer_' + seed
@@ -48,8 +43,7 @@ class Trainer < Arachni::Module::Base
         }
     end
 
-    def run( )
-
+    def run
         #
         # this will inject the string in @str into all available inputs
         #
@@ -77,7 +71,7 @@ class Trainer < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },

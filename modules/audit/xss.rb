@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.3
+# @version: 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -31,12 +30,7 @@ class XSS < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-        @results    = []
-    end
-
-    def prepare( )
+    def prepare
         @_tag_name = 'some_dangerous_input_' + seed
         @_injection_strs = [
             # straight injection
@@ -52,7 +46,7 @@ class XSS < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
 
         opts = @_opts.dup
         @_injection_strs.each {
@@ -91,7 +85,7 @@ class XSS < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.3',
+            :version        => '0.3.1',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

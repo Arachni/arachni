@@ -22,28 +22,17 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 #
 class UnvalidatedRedirect < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
-
-        # initialize the array that will hold the results
-        @results = []
-    end
-
-    def prepare( )
-        @__urls = [
+    def run
+        [
           'www.arachni-boogie-woogie.com',
           'http://www.arachni-boogie-woogie.com',
-        ]
-    end
-
-    def run( )
-        @__urls.each {
+        ].each {
             |url|
             audit( url ) {
                 |res, opts|
@@ -65,7 +54,7 @@ class UnvalidatedRedirect < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1',
+            :version        => '0.1.3',
             :references     => {
                  'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
             },

@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.4
+# @version: 0.2.5
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -26,13 +26,7 @@ module Modules
 #
 class PathTraversal < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
-
-        @results    = []
-    end
-
-    def prepare( )
+    def prepare
 
         #
         # the way this works is pretty cool since it will actually
@@ -88,7 +82,7 @@ class PathTraversal < Arachni::Module::Base
 
     end
 
-    def run( )
+    def run
 
         @__params.each {
             |param|
@@ -119,7 +113,7 @@ class PathTraversal < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.3',
+            :version        => '0.2.5',
             :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

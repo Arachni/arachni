@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.3
+# @version: 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -30,10 +29,6 @@ module Modules
 class BlindrDiffSQLInjection < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         @@__bools ||= []
@@ -50,9 +45,9 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
         end
     end
 
-    def run( )
-
+    def run
         opts = {}
+
         # fault injection seeds
         opts[:faults] = [ '\'"`' ]
         # boolean injection seeds
@@ -75,7 +70,7 @@ class BlindrDiffSQLInjection < Arachni::Module::Base
                 Issue::Element::COOKIE
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version         => '0.3',
+            :version         => '0.3.1',
             :references      => {
                 'OWASP'      => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
                 'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html'
