@@ -19,13 +19,7 @@ module Plugins
 #
 class HTTPDicattack < Arachni::Plugin::Base
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
+    def prepare
 
         # disable spidering and the subsequent audit
         # @framework.opts.link_count_limit = 0
@@ -33,9 +27,7 @@ class HTTPDicattack < Arachni::Plugin::Base
         # don't scan the website just yet
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         @url     = @framework.opts.url.to_s
         @users   = File.read( @options['username_list'] ).split( "\n" )
         @passwds = File.read( @options['password_list'] ).split( "\n" )
@@ -43,7 +35,7 @@ class HTTPDicattack < Arachni::Plugin::Base
         @found = false
     end
 
-    def run( )
+    def run
 
         if !protected?( @url )
             print_info( "The URL you provided doesn't seem to be protected." )

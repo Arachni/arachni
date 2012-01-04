@@ -23,7 +23,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Uniformity < Arachni::Plugin::Base
 
@@ -38,12 +38,8 @@ class Uniformity < Arachni::Plugin::Base
         Issue::Element::HEADER
     ]
 
-    def initialize( framework, opts )
-        @framework = framework
-    end
-
     def prepare
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+        wait_while_framework_running
     end
 
     def run
@@ -93,7 +89,7 @@ class Uniformity < Arachni::Plugin::Base
                 a bad coding practise.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :tags           => [ 'meta' ],
-            :version        => '0.1'
+            :version        => '0.1.1'
         }
     end
 

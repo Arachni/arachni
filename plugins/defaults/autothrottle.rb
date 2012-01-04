@@ -32,37 +32,33 @@ class AutoThrottle < Arachni::Plugin::Base
 
     MIN_CONCURRENCY = 2
 
-    def initialize( framework, opts )
-        @framework = framework
-        @http      = framework.http
-    end
-
     def prepare
+        http = @framework.http
 
         # run for each response as it arrives
-        @http.add_on_complete {
+        http.add_on_complete {
 
             # adjust only after finished bursts
-            next if @http.curr_res_cnt == 0 || @http.curr_res_cnt % @http.max_concurrency != 0
+            next if http.curr_res_cnt == 0 || http.curr_res_cnt % http.max_concurrency != 0
 
-            print_debug( "Max concurrency: " + @http.max_concurrency.to_s )
-            if( @http.max_concurrency > MIN_CONCURRENCY && @http.average_res_time > HIGH_THRESHOLD ) ||
-                @http.max_concurrency > @framework.opts.http_req_limit
+            print_debug( "Max concurrency: " + http.max_concurrency.to_s )
+            if( http.max_concurrency > MIN_CONCURRENCY && http.average_res_time > HIGH_THRESHOLD ) ||
+                http.max_concurrency > @framework.opts.http_req_limit
 
-                # make sure that @http.max_concurrency >= MIN_CONCURRENCY
-                if @http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY
-                    step = MIN_CONCURRENCY - @http.max_concurrency
+                # make sure that http.max_concurrency >= MIN_CONCURRENCY
+                if http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY
+                    step = MIN_CONCURRENCY - http.max_concurrency
                 else
                     step = STEP_DOWN
                 end
 
                 print_debug( "Stepping down!: #{step}" )
-                @http.max_concurrency!( @http.max_concurrency + step )
+                http.max_concurrency!( http.max_concurrency + step )
 
-            elsif @http.average_res_time < HIGH_THRESHOLD && @http.average_res_time > LOW_THREASHOLD
+            elsif http.average_res_time < HIGH_THRESHOLD && http.average_res_time > LOW_THREASHOLD
 
                 print_debug( "Stepping up!: +#{STEP_UP}" )
-                @http.max_concurrency!( @http.max_concurrency + STEP_UP )
+                http.max_concurrency!( http.max_concurrency + STEP_UP )
             end
         }
 
@@ -80,7 +76,7 @@ class AutoThrottle < Arachni::Plugin::Base
                 and prevent from killing the server.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :tags           => [ 'meta' ],
-            :version        => '0.1'
+            :version        => '0.1.2'
         }
     end
 

@@ -17,31 +17,18 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class HealthMap < Arachni::Plugin::Base
 
     include Arachni::Module::Utilities
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-    end
-
     def prepare
-        while( @framework.running? )
-            ::IO.select( nil, nil, nil, 1 )
-        end
-
+        wait_while_framework_running
         @audit_store = @framework.audit_store( true )
     end
 
-    def run( )
-
+    def run
         sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
         sitemap |= issue_urls = @audit_store.issues.map { |issue| issue.url }.uniq
 
@@ -109,7 +96,7 @@ class HealthMap < Arachni::Plugin::Base
             :name           => 'Health map',
             :description    => %q{Generates a simple list of safe/unsafe URLs.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
         }
     end
 

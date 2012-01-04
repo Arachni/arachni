@@ -18,7 +18,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class TimingAttacks < Arachni::Plugin::Base
 
@@ -31,17 +31,12 @@ class TimingAttacks < Arachni::Plugin::Base
     # in order to be considered
     TIME_THRESHOLD = 0.6
 
-    def initialize( framework, opts )
-        @framework = framework
-        @http = framework.http
-
+    def prepare
         @times = {}
         @counter = {}
-    end
 
-    def prepare
         # run for each response as it arrives
-        @http.add_on_complete {
+        @framework.http.add_on_complete {
             |res|
 
             # we don't care about non OK responses
@@ -58,7 +53,7 @@ class TimingAttacks < Arachni::Plugin::Base
             @counter[path] += 1
         }
 
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+        wait_while_framework_running
     end
 
     def run
@@ -116,7 +111,7 @@ class TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :tags           => [ 'anomaly' , 'timing', 'attacks', 'meta' ]
         }
     end

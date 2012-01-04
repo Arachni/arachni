@@ -21,23 +21,14 @@ class FormDicattack < Arachni::Plugin::Base
 
     attr_accessor :http
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         # disable spidering and the subsequent audit
         # @framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         @url     = @framework.opts.url.to_s
         @users   = File.read( @options['username_list'] ).split( "\n" )
         @passwds = File.read( @options['password_list'] ).split( "\n" )
@@ -52,7 +43,7 @@ class FormDicattack < Arachni::Plugin::Base
         @found = false
     end
 
-    def run( )
+    def run
 
         if !form = login_form
             print_error( 'Could not find a form suiting the provided params at: ' +

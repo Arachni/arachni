@@ -24,7 +24,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Discovery < Arachni::Plugin::Base
 
@@ -41,12 +41,8 @@ class Discovery < Arachni::Plugin::Base
     # in common which makes it possible to spot them without much bother
     SIMILARITY_TOLERANCE = 0.25
 
-    def initialize( framework, opts )
-        @framework = framework
-    end
-
     def prepare
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+        wait_while_framework_running
     end
 
     def run
@@ -157,7 +153,7 @@ class Discovery < Arachni::Plugin::Base
 
                 There's a good chance that these issues are false positives.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :tags           => [ 'anomaly' , 'discovery', 'file', 'directories', 'meta']
         }
     end

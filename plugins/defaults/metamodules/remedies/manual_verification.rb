@@ -17,12 +17,12 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class ManualVerification < Arachni::Plugin::Base
 
     def prepare
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+        wait_while_framework_running
     end
 
     def run
@@ -51,7 +51,7 @@ class ManualVerification < Arachni::Plugin::Base
             :name           => 'Issues requiring manual verification',
             :description    => %q{Goes through the list of logged issues and cherry picks the ones that require manual verification.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :tags           => [ 'anomaly' , 'verification', 'meta' ]
         }
     end

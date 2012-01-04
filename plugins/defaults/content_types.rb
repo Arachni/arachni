@@ -17,18 +17,9 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class ContentTypes < Arachni::Plugin::Base
-
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-    end
 
     def prepare
         @results = {}
@@ -37,7 +28,7 @@ class ContentTypes < Arachni::Plugin::Base
         @logged = Set.new
     end
 
-    def run( )
+    def run
         @framework.http.add_on_complete {
             |res|
 
@@ -61,12 +52,7 @@ class ContentTypes < Arachni::Plugin::Base
     end
 
     def clean_up
-        # we need to wait until the framework has finished running
-        # before logging the results
-        while( @framework.running? )
-            ::IO.select( nil, nil, nil, 1 )
-        end
-
+        wait_while_framework_running
         register_results( @results )
     end
 
@@ -95,7 +81,7 @@ class ContentTypes < Arachni::Plugin::Base
                 It can help you categorize and identify publicly available file-types
                 which in turn can help you identify accidentally leaked files.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :options        => [
                 Arachni::OptString.new( 'exclude', [ false,
                     'Exclude content-types that match this regular expression.', 'text' ]

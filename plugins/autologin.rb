@@ -21,7 +21,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class AutoLogin < Arachni::Plugin::Base
 
@@ -31,19 +31,10 @@ class AutoLogin < Arachni::Plugin::Base
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         @params = parse_params
 
         # we need to declared this in order to pass ourselves
@@ -51,7 +42,7 @@ class AutoLogin < Arachni::Plugin::Base
         @http = @framework.http
     end
 
-    def run( )
+    def run
 
         # grab the page containing the login form
         res  = @framework.http.get( @options['url'], :async => false ).response
@@ -134,7 +125,7 @@ class AutoLogin < Arachni::Plugin::Base
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
                 Arachni::OptUrl.new( 'url', [ true, 'The URL that contains the login form.' ] ),
                 Arachni::OptString.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )

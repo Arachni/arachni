@@ -25,14 +25,7 @@ module Plugins
 #
 class ReScan < Arachni::Plugin::Base
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         @framework.pause!
         print_status( "System paused." )
     end

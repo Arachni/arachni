@@ -38,20 +38,11 @@ class Proxy < Arachni::Plugin::Base
 
     MSG_NOT_INCLUDED = 'This resource is disallowed based on an include rule.'
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         # don't let the framework run just yet
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         require @framework.opts.dir['plugins'] + '/proxy/server.rb'
 
         # foo initialization, we just need it to verify URLs
@@ -74,7 +65,7 @@ class Proxy < Arachni::Plugin::Base
         )
     end
 
-    def run( )
+    def run
         print_status( "Listening on: " +
             "http://#{@server[:BindAddress]}:#{@server[:Port]}" )
 
