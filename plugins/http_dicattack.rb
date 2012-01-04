@@ -86,7 +86,7 @@ class HTTPDicattack < Arachni::Plugin::Base
 
         print_status( "Waiting for the requests to complete..." )
         @framework.http.run
-        print_error( "Couldn't find a match." )
+        print_bad( "Couldn't find a match." )
 
     end
 
