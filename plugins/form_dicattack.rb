@@ -46,7 +46,7 @@ class FormDicattack < Arachni::Plugin::Base
     def run
 
         if !form = login_form
-            print_error( 'Could not find a form suiting the provided params at: ' +
+            print_bad( 'Could not find a form suiting the provided params at: ' +
                 @url )
             return
         end
@@ -78,7 +78,8 @@ class FormDicattack < Arachni::Plugin::Base
                 opts = {
                     :headers => {
                         'cookie'  => ''
-                    }
+                    },
+                    :update_cookies => true
                 }
                 form.submit( opts ).on_complete {
                     |res|
@@ -97,7 +98,7 @@ class FormDicattack < Arachni::Plugin::Base
 
                     # register our findings...
                     register_results( { :username => user, :password => pass } )
-                    clean_up( )
+                    clean_up
 
                     raise "Stopping the attack."
                 }
@@ -107,7 +108,7 @@ class FormDicattack < Arachni::Plugin::Base
 
         print_status( "Waiting for the requests to complete..." )
         @http.run
-        print_error( "Couldn't find a match." )
+        print_bad( "Couldn't find a match." )
 
     end
 

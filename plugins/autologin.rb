@@ -45,7 +45,7 @@ class AutoLogin < Arachni::Plugin::Base
     def run
 
         # grab the page containing the login form
-        res  = @framework.http.get( @options['url'], :async => false ).response
+        res  = @http.get( @options['url'], :async => false ).response
 
         parser = Arachni::Parser.new( @framework.opts, res )
         # parse the response as a Page object
@@ -72,7 +72,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         # register us as the auditor
         login_form.auditor( self )
-        res = login_form.submit( :async => false ).response
+        res = login_form.submit( :async => false, :update_cookies => true ).response
 
         if !res
             register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
