@@ -25,11 +25,13 @@ module Modules
 #                                <herman.stevens@gmail.com>
 #                                http://blog.astyran.sg
 #
-# @version: 0.1
+# @version: 0.2
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
 class SvnDiggerDirs < Arachni::Module::Base
+
+    include Arachni::Module::Utilities
 
     def initialize( page )
         super( page )
@@ -78,7 +80,7 @@ class SvnDiggerDirs < Arachni::Module::Base
                 The wordlist utilized by this module will be vast and will add a considerable
                 amount of time to the overall scan time.},
             :author         => 'Herman Stevens <herman.stevens@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.2',
             :references     => {
                 'Mavituna Security' =>
                     'http://www.mavitunasecurity.com/blog/svn-digger-better-lists-for-forced-browsing/',
