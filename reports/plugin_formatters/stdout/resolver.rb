@@ -33,6 +33,7 @@ module PluginFormatters
                 |hostname, ipaddress|
                 print_info( hostname + ': ' + ipaddress )
             }
+            print_line
         end
 
     end
