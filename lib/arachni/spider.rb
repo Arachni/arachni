@@ -111,7 +111,7 @@ class Spider
 
         parser = Parser.new( @opts, seed_page )
         parser.url = @seed_url
-        @paths = parser.paths
+        @paths = parser.paths | [@seed_url]
 
         while( !@paths.empty? )
             while( !@paths.empty? && url = parser.to_absolute( @paths.pop ) )
