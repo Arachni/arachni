@@ -59,6 +59,18 @@ module Output
             if !@@opened
                 f.puts
                 f.puts "#{Time.now} " + ( "-" * 80 )
+
+                h = {}
+                ENV.each { |k, v| h[k] = v }
+                f.puts 'ENV:'
+                f.puts h.to_yaml
+
+                f.puts "-" * 80
+
+                f.puts 'OPTIONS:'
+                f.puts Arachni::Options.instance.to_yaml
+
+                f.puts "-" * 80
             end
             print_color( "[#{Time.now}]", 31, str, f, true )
         }
