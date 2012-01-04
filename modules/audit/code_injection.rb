@@ -31,11 +31,9 @@ module Modules
 #
 class CodeInjection < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
+    include Arachni::Module::Utilities
 
-        # code to inject
-        @__injection_strs = []
+    def prepare
 
         # digits from a sha1 hash
         # the codes in @__injection_strs will tell the web app
@@ -43,17 +41,10 @@ class CodeInjection < Arachni::Module::Base
         @__rand1 = '287630581954'
         @__rand2 = '4196403186331128'
 
-        # our results array
-        @results = []
-    end
-
-    def prepare( )
-
-        @__opts = {}
-
-        # the sum of the 2 numbers as a string
-        @__opts[:substring] = ( @__rand1.to_i + @__rand2.to_i ).to_s
-        @__opts[:format]    = [ Format::APPEND ]
+        @__opts = {
+            :substring => ( @__rand1.to_i + @__rand2.to_i ).to_s,
+            :format    => [ Format::APPEND, Format::STRAIGHT ]
+        }
 
         # code to be injected to the webapp
         @__injection_strs = [
@@ -71,7 +62,7 @@ class CodeInjection < Arachni::Module::Base
         ]
     end
 
-    def run( )
+    def run
 
         # iterate through the injection codes
         @__injection_strs.each {
@@ -85,7 +76,7 @@ class CodeInjection < Arachni::Module::Base
     end
 
     def __variations( str )
-        @__variations.map{ |var| var % str } | [str]
+        @__variations.map { |var| uri_encode( var % str, '+' ) } | [uri_encode( str, '+' )]
     end
 
 
