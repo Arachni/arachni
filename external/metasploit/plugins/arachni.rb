@@ -1,8 +1,3 @@
-#
-# $Id$
-# $Revision$
-#
-
 module Msf
 
 class Plugin::Arachni < Msf::Plugin

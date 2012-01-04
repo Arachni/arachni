@@ -1,6 +1,4 @@
 =begin
-  $Id$
-
                   Arachni
   Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
