@@ -11,8 +11,8 @@
 require 'eventmachine'
 require 'em-synchrony'
 require 'sinatra/async'
+require 'sinatra/flash'
 require 'securerandom'
-require 'rack-flash'
 require 'json'
 require 'erb'
 require 'cgi'
@@ -82,13 +82,13 @@ module Web
 
 class Server < Sinatra::Base
 
+    register Sinatra::Flash
     register Sinatra::Async
 
     include Arachni::Module::Utilities
     include Utilities
 
     configure do
-        use Rack::Flash
         use Rack::Session::Cookie
 
         opts = Arachni::Options.instance
