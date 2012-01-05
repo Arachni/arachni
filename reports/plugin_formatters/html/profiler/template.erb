@@ -160,12 +160,14 @@
               <input onclick="javascript:inspect( '#inspection-dialog_<%=idx%>')" type="button" value="Inspect" />
             </form>
 
+            <% if item['request']['params'] %>
             <form style="display:inline" action="<%=item['request']['url']%>" target="_blank" method="<%=item['request']['method']%>">
               <% item['request']['params'].each_pair do |name, value|%>
               <input type="hidden" name="<%=CGI.escapeHTML(name)%>" value="<%=CGI.escapeHTML( value )%>" />
               <%end%>
               <input type="submit" value="Replay" />
             </form>
+            <%end%>
 
     </p>
 
