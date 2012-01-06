@@ -106,7 +106,7 @@ class AutoDeploy < Base
             redirect '/', :flash => { :ok => "Deployment was successful." }
         end
 
-        apost '/:id' do |id|
+        apost '/:ids' do |ids|
 
             ret = {}
             if !params[:password] || params[:password].empty?
