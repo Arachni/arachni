@@ -568,36 +568,20 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsmod
-
-        mod_info = []
-        @modules.available( ).each {
+        @modules.available.map {
             |name|
 
             path = @modules.name_to_path( name )
             next if !lsmod_match?( path )
 
-            info = @modules[name].info( )
-
-            info[:mod_name]    = name
-            info[:name]        = info[:name].strip
-            info[:description] = info[:description].strip
-
-            if( !info[:dependencies] )
-                info[:dependencies] = []
-            end
-
-            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
-            info[:version]   = info[:version].strip
-            info[:path]      = path.strip
-
-            mod_info << info
-        }
-
-        # unload all modules
-        @modules.clear( )
-
-        return mod_info
-
+            @modules[name].info.merge(
+                :mod_name => name,
+                :author   => [@modules[name].info[:author]].flatten.map { |a| a.strip },
+                :path     => path.strip
+            )
+        }.compact
+    ensure
+        @modules.clear
     end
 
     #
@@ -607,22 +591,20 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsrep
-
-        rep_info = []
-        @reports.available( ).each {
+        @reports.available.map {
             |report|
 
-            info = @reports[report].info
+            path = @reports.name_to_path( report )
+            next if !lsrep_match?( path )
 
-            info[:rep_name]    = report
-            info[:path]        = @reports.name_to_path( report )
-            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
-
-            rep_info << info
-        }
-        @reports.clear( )
-
-        return rep_info
+            @reports[report].info.merge(
+                :rep_name => report,
+                :path     => path,
+                :author   => [@reports[report].info[:author]].flatten.map { |a| a.strip }
+            )
+        }.compact
+    ensure
+        @reports.clear
     end
 
     #
@@ -632,24 +614,20 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsplug
-
-        plug_info = []
-
-        @plugins.available( ).each {
+        @plugins.available.map {
             |plugin|
 
-            info = @plugins[plugin].info
+            path = @plugins.name_to_path( plugin )
+            next if !lsplug_match?( path )
 
-            info[:plug_name]   = plugin
-            info[:path]        = @plugins.name_to_path( plugin )
-            info[:author]    = [info[:author]].flatten.map { |a| a.strip }
-
-            plug_info << info
-        }
-
-        @plugins.clear( )
-
-        return plug_info
+            @plugins[plugin].info.merge(
+                :plug_name => plugin,
+                :path      => path,
+                :author    => [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
+            )
+        }.compact
+    ensure
+        @plugins.clear
     end
 
     #
@@ -896,15 +874,26 @@ class Framework
         return false
     end
 
+    def lsrep_match?( path )
+        regexp_array_match( @opts.lsrep, path )
+    end
+
     def lsmod_match?( path )
+        regexp_array_match( @opts.lsmod, path )
+    end
+
+    def lsplug_match?( path )
+        regexp_array_match( @opts.lsplug, path )
+    end
+
+    def regexp_array_match( regexps, str )
         cnt = 0
-        @opts.lsmod.each {
+        regexps.each {
             |filter|
-            cnt += 1 if path =~ filter
+            cnt += 1 if str =~ filter
         }
-        return true if cnt == @opts.lsmod.size
+        return true if cnt == regexps.size
     end
 
 end
-
 end
