@@ -29,7 +29,7 @@ sleep 5
 
 echo "[>] Starting the Arachni WebUI server..."
 xterm -T "Arachni WebUI server" -e "arachni_web" &
-sleep 3
+sleep 5
 
 echo "[>] Opening browser..."
 xdg-open http://127.0.0.1:4567
