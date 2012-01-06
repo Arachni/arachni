@@ -201,15 +201,11 @@ class Profiler < Arachni::Plugin::Base
 
     def self.merge( results )
         inputs = []
-        times = []
-
         results.each {
             |result|
             inputs |= result['inputs']
-            times |= result['times']
         }
-
-        return { 'inputs' => inputs, 'times' => times }
+        return { 'inputs' => inputs }
     end
 
     def self.info
