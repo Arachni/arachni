@@ -21,7 +21,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class Profiler < Arachni::Plugin::Base
 
@@ -138,20 +138,9 @@ class Profiler < Arachni::Plugin::Base
         Struct.new( 'Body', :type, :method, :raw, :auditable )
 
         @inputs = []
-        @times  = []
     end
 
     def run
-        @framework.http.add_on_complete {
-            |res|
-            @times << {
-                'url'    => res.effective_url,
-                'method' => res.request.method.to_s.upcase,
-                'params' => res.request.params,
-                'time'   => res.start_transfer_time
-            }
-        }
-
         @framework.add_on_run_mods {
             |page|
 
@@ -164,9 +153,8 @@ class Profiler < Arachni::Plugin::Base
     end
 
     def clean_up
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
-
-        register_results( { 'inputs' => @inputs, 'times' => @times } )
+        wait_while_framework_running
+        register_results( { 'inputs' => @inputs } )
     end
 
     def log( taint, res, elem, landed_elems )
@@ -232,7 +220,7 @@ class Profiler < Arachni::Plugin::Base
 
                 It does not perform any vulnerability assesment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2'
+            :version        => '0.1.3'
         }
     end
 

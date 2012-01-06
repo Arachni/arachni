@@ -71,17 +71,6 @@ module PluginFormatters
             }
             end_tag( 'inputs' )
 
-            start_tag( 'times' )
-            @results['times'].each {
-                |elem|
-                start_tag( 'response' )
-                add_hash( elem )
-                add_params( elem['params'] ) if elem['params']
-                end_tag( 'response' )
-            }
-            end_tag( 'times' )
-
-
             end_tag( 'results' )
             end_tag( 'profiler' )
 

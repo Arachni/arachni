@@ -82,6 +82,7 @@
          - Healthmap
          - Profiler
          - AutoThrottle
+   - Profiler -- Removed response time logging and moved it to <em>defaults</em>.
    - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
    - Discovery (accompanied by appropriate report formatters). (**New**) [Issue #81]
       - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
