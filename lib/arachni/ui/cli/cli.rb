@@ -420,7 +420,7 @@ class CLI
         print_info( 'Available modules:' )
         print_line
 
-        mods = @arachni.lsmod( )
+        mods = @arachni.lsmod
 
         i = 0
         mods.each {
@@ -448,11 +448,13 @@ class CLI
                 }
             end
 
-            print_line( "Targets:" )
-            info[:targets].keys.each {
-                |key|
-                print_info( key + "\t\t" + info[:targets][key] )
-            }
+            if info[:targets]
+                print_line( "Targets:" )
+                info[:targets].keys.each {
+                    |key|
+                    print_info( key + "\t\t" + info[:targets][key] )
+                }
+            end
 
             if( info[:issue] &&
                 ( sploit = info[:issue][:metasploitable] ) )
