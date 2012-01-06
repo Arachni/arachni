@@ -127,23 +127,15 @@ class HTML < Arachni::Report::Base
         end
     end
 
-    #
-    # @param [AuditStore]  audit_store
-    # @param [Hash]   options    options passed to the report
-    #
-    def initialize( audit_store, options )
-        @audit_store   = audit_store
-        @options       = options
-
-        @crypto = RSA_AES_CBC.new( Options.instance.dir['data'] + 'crypto/public.pem' )
+    def prepare
+        # @crypto = RSA_AES_CBC.new( Options.instance.dir['data'] + 'crypto/public.pem' )
     end
 
     #
     # Runs the HTML report.
     #
-    def run( )
-
-        print_line( )
+    def run
+        print_line
         print_status( 'Creating HTML report...' )
 
         plugins   = format_plugin_results( @audit_store.plugins )
@@ -151,10 +143,10 @@ class HTML < Arachni::Report::Base
             File.basename( @options['tpl'], '.erb' ) + '/'
 
         conf = {}
-        conf['options']  = @audit_store.options
-        conf['version']  = @audit_store.version
-        conf['revision'] = @audit_store.revision
-        conf = @crypto.encrypt( conf.to_yaml )
+        # conf['options']  = @audit_store.options
+        # conf['version']  = @audit_store.version
+        # conf['revision'] = @audit_store.revision
+        # conf = @crypto.encrypt( conf.to_yaml )
 
         params = __prepare_data.merge(
             :conf        => conf,
@@ -248,10 +240,10 @@ class HTML < Arachni::Report::Base
         @audit_store.issues.each_with_index {
             |issue, i|
 
-            begin
-                crypto_issues << @crypto.encrypt( YAML::dump( issue ) )
-            rescue
-            end
+            # begin
+                # crypto_issues << @crypto.encrypt( YAML::dump( issue ) )
+            # rescue
+            # end
 
             graph_data[:severities][issue.severity] += 1
             total_severities += 1

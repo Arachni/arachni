@@ -105,6 +105,7 @@
       - ALl JavaScript and CSS code is now included in the report for off-line viewing.
       - Removed manual-verification piechart, obsoleted by the trust chart.
       - Replaced Highcharts with jqPlot due to licensing reasons.
+      - Removed false-positive reporting -- was causing segfaults on Mac OSX. [Issue #126]
    - Added (**New**)
       - JSON -- Exports the audit results as a JSON serialized Hash.
       - Marshal -- Exports the audit results as a Marshal serialized Hash.

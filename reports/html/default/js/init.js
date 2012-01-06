@@ -15,7 +15,7 @@ $.expr[':'].icontains = function(obj, index, meta, stack){
 
 <%= erb 'js/helpers.js' %>
 
-var configuration = <%= js_multiline(conf) %>
+// var configuration = <%= js_multiline(conf) %>
 var email_address;
 
 jQuery(function ($) {
