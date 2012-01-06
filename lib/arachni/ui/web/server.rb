@@ -574,16 +574,19 @@ class Server < Sinatra::Base
             'user_agent'     => 'Arachni/' + Arachni::VERSION
         }
         session['opts']['modules'] ||= [ '*' ]
-        session['opts']['plugins'] ||= YAML::dump( {
-            "healthmap"      => {},
-            "timing_attacks" => {},
-            "discovery"      => {},
-            "uniformity"     => {},
-            "content_types"  => {},
-            "autothrottle"   => {},
-            "manual_verification"   => {}
 
-        } )
+
+        require Arachni::Options.instance.dir['lib'] + 'framework'
+        framework = Arachni::Framework.new( Arachni::Options.instance )
+        plugins = Arachni::Plugin::Manager.new( framework )
+
+        default_plugins = {}
+        plugins.parse( Arachni::Plugin::Manager::DEFAULT ).each {
+            |mod|
+            default_plugins[mod] = {}
+        }
+
+        session['opts']['plugins'] ||= YAML::dump( default_plugins )
 
         #
         # Garbage collector, zombie killer. Reaps idle processes every 60 seconds.
