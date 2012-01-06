@@ -305,7 +305,7 @@ However, this is usually not required since Arachni is aware of which requests a
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
-## Installation
+## [Installation](https://github.com/Zapotek/arachni/wiki/Installation)
 
 ### CDE packages for Linux
 
