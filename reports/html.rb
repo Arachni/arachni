@@ -28,8 +28,20 @@ module Reports
 # @version: 0.3
 #
 class HTML < Arachni::Report::Base
+    include Arachni::Module::Utilities
 
     module Utils
+
+        def normalize( str )
+            return '' if !str || str.empty?
+            str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
+        end
+
+        def escapeHTML( str )
+            # carefully escapes HTML and converts to UTF-8
+            # while removing invalid character sequences
+            return CGI.escapeHTML( normalize( str ) )
+        end
 
         def for_anomalous_metamodules( audit_store, &block )
             audit_store.plugins.each_pair {
@@ -111,17 +123,6 @@ class HTML < Arachni::Report::Base
           "\"" + normalize( str ).gsub( "\n", '\n' ) + "\"";
         end
 
-        def normalize( str )
-            return '' if !str || str.empty?
-            str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
-        end
-
-        def escapeHTML( str )
-            # carefully escapes HTML and converts to UTF-8
-            # while removing invalid character sequences
-            return CGI.escapeHTML( normalize( str ) )
-        end
-
         def get_binding
             binding
         end
@@ -148,7 +149,14 @@ class HTML < Arachni::Report::Base
         # conf['revision'] = @audit_store.revision
         # conf = @crypto.encrypt( conf.to_yaml )
 
+        title_url = @audit_store.options['url']
+        begin
+            title_url = uri_parse( @audit_store.options['url'] ).host
+        rescue
+        end
+
         params = __prepare_data.merge(
+            :title_url   => escapeHTML( title_url ),
             :conf        => conf,
             :audit_store => @audit_store,
             :plugins     => plugins,
