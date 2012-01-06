@@ -49,7 +49,10 @@ class ManualVerification < Arachni::Plugin::Base
     def self.info
         {
             :name           => 'Issues requiring manual verification',
-            :description    => %q{Goes through the list of logged issues and cherry picks the ones that require manual verification.},
+            :description    => %q{The HTTP responses of the issues logged by this plugin exhibit a suspicious pattern
+                even before any audit action has taken place -- this challenges the relevance of the audit procedure.
+
+                Thus, these issues require manual verification.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.1',
             :tags           => [ 'anomaly' , 'verification', 'meta' ]
