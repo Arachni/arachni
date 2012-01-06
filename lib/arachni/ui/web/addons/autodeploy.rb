@@ -131,6 +131,7 @@ class AutoDeploy < Base
                     deployment = autodeploy.get( params[:id] )
                     ret = autodeploy.run( deployment, params[:password] )
 
+                    sleep 5
                     autodeploy.alive?( deployment ){
                         |alive|
 
