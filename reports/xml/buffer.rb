@@ -60,7 +60,11 @@ module Reports
             start_tag( type )
             headers.each_pair {
                 |name, value|
-                __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                if name.downcase == 'set-cookie' && value.is_a?( Array )
+                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.join( "\n" ) )}\" />" )
+                else
+                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                end
             }
             end_tag( type )
         end
