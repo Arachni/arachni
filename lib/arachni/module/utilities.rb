@@ -31,6 +31,10 @@ module Utilities
         @@uri_parser ||= URI::Parser.new
     end
 
+    def uri_parse( url )
+        uri_parser.parse( url )
+    end
+
     def uri_encode( *args )
         uri_parser.escape( *args )
     end
