@@ -84,7 +84,7 @@ class RPC
 
 
         # Check for missing url
-        if( !@opts.url && !@opts.lsmod )
+        if( !@opts.url && @opts.lsmod.empty? )
             print_error( "Missing url argument." )
             exit 0
         end
