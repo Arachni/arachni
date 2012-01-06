@@ -47,6 +47,30 @@ module Sinatra::Async
     end
 end
 
+#
+# Monkey patch Rack's cookie management to fix a nil error
+#
+# @see https://github.com/rack/rack/pull/304
+#
+class Rack::Session::Cookie
+    def unpacked_cookie_data(env)
+        env["rack.session.unpacked_cookie_data"] ||= begin
+            request = Rack::Request.new(env)
+            session_data = request.cookies[@key]
+
+            if @secret && session_data
+                session_data, digest = session_data.split("--")
+                unless digest == generate_hmac(session_data, @secret)
+                    # Clear the session data if secret doesn't match and old secret doesn't match
+                    session_data = nil if (@old_secret.nil? || (digest != generate_hmac(session_data, @old_secret)))
+                end
+            end
+
+            coder.decode(session_data) || {}
+        end
+    end
+end
+
 module Arachni
 module UI
 
