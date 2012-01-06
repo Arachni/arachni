@@ -98,7 +98,7 @@ And some screenshots here: http://trainofthought.segfault.gr/2011/09/02/arachni-
     </tr>
     <tr>
        <th>Author</th>
-       <td><a href="mailto:tasos.laskos@gmail.com">Tasos</a> "<a href="mailto:zapotek@segfault.gr">Zapotek</a>" <a href="mailto:tasos.laskos@gmail.com">Laskos</a></td>
+       <td><a href="mailto:tasos.laskos@gmail.com">Tasos Laskos</a></td>
     </tr>
     <tr>
         <th>Twitter</th>
