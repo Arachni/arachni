@@ -268,8 +268,11 @@ If you want to clone the repository and work with the source code then you'll ne
     rake install
 
 
-### [Windows -- under Cygwin](https://github.com/Zapotek/arachni/wiki/Installation)
+### Cygwin packages for Windows
 
+Arachni does not yet run natively on Windows systems, however until that day comes you can download a pre-configured Cygwin environment containing Arachni and its dependencies.
+All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/), select a directory for it, open it up and then execute the Cygwin batch file.
+You will then be presented with a Bash shell, after that you'll be able to use Arachni as if you were on a Linux system.
 
 ## Usage
 
