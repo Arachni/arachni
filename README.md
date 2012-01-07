@@ -245,6 +245,12 @@ CDE packages are self contained and thus alleviate the need for Ruby and other d
 You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
+### Cygwin packages for Windows
+
+Arachni does not yet run natively on Windows systems, however until that day comes you can download a pre-configured Cygwin environment containing Arachni and its dependencies.
+All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/), select a directory for it, open it up and then execute the Cygwin batch file.
+You will then be presented with a Bash shell, after that you'll be able to use Arachni as if you were on a Linux system.
+
 ### Gem
 
 To install the Gem or work with the source code you'll also need the following system libraries:
@@ -267,12 +273,6 @@ If you want to clone the repository and work with the source code then you'll ne
     cd arachni
     rake install
 
-
-### Cygwin packages for Windows
-
-Arachni does not yet run natively on Windows systems, however until that day comes you can download a pre-configured Cygwin environment containing Arachni and its dependencies.
-All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/), select a directory for it, open it up and then execute the Cygwin batch file.
-You will then be presented with a Bash shell, after that you'll be able to use Arachni as if you were on a Linux system.
 
 ## Usage
 
