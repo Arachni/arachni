@@ -105,7 +105,7 @@ From a user's or a component developer's point of view everything appears simple
     - Parallel scans
     - SSL encryption (with peer authentication)
     - Remote monitoring
-    - Support for High Performance Grid configuration, combining the resources of multiple nodes to perform fast scans.
+    - Support for [High Performance Grid](https://github.com/Zapotek/arachni/wiki/RPC-server#wiki-grid) configuration, combining the resources of multiple nodes to perform fast scans.
 
 ### Website Crawler
 
