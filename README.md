@@ -292,7 +292,7 @@ Should you want to use these extra components simply move them from the <em>extr
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
 
-Windows users can run Arachni in Cygwin by following these [instructions](https://github.com/Zapotek/arachni/wiki/Installation).
+Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Zapotek/arachni/wiki/Installation).
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at
