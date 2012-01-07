@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -20,17 +19,13 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 class DirectoryListing < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
     DIFF_THRESHOLD = 1000
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         foo = File.basename( __FILE__, '.rb' )
@@ -44,8 +39,7 @@ class DirectoryListing < Arachni::Module::Base
        @@__checked ||= Set.new
     end
 
-    def run( )
-
+    def run
         return if @page.code != 200
         path = get_path( @page.url )
 
@@ -129,7 +123,7 @@ class DirectoryListing < Arachni::Module::Base
             :description    => %q{Tries to force directory listings.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -150,7 +144,7 @@ class DirectoryListing < Arachni::Module::Base
 
         return if res.code != 200 || res.body.empty?
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -159,10 +153,7 @@ class DirectoryListing < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'Found: ' + res.effective_url )
     end

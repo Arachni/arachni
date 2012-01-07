@@ -2,7 +2,7 @@
 
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -24,12 +24,12 @@ exec  <<END
 export xterm="xterm -geometry 80X10 -hold"
 
 echo "[>] Starting the Arachni Dispatch server..."
-xterm -T "Arachni Dispatch server" -e "arachni_xmlrpcd" &
+xterm -T "Arachni Dispatch server" -e "arachni_rpcd" &
 sleep 5
 
 echo "[>] Starting the Arachni WebUI server..."
 xterm -T "Arachni WebUI server" -e "arachni_web" &
-sleep 3
+sleep 5
 
 echo "[>] Opening browser..."
 xdg-open http://127.0.0.1:4567

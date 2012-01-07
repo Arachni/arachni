@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -19,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -52,11 +51,7 @@ class XSSEvent < Arachni::Module::Base
         'src' # not an event but it fits the module structure
     ]
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
         @_injection_strs = [
             ";arachni_xss_in_element_event=" + seed + '//',
             "\";arachni_xss_in_element_event=" + seed + '//',
@@ -68,7 +63,7 @@ class XSSEvent < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
         @_injection_strs.each {
             |str|
             audit( str, @_opts ) {
@@ -106,7 +101,7 @@ class XSSEvent < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

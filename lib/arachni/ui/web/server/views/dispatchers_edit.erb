@@ -1,0 +1,71 @@
+        <div id='help' style='display: none' title="Help">
+            <h2>First run</h2>
+            <p>
+                If this is your first run of the WebUI then you've been
+                redirected here because you haven't specified any Dispatchers
+                for the WebUI to use.
+            </p>
+
+            <h2>Dispatchers</h2>
+            <p>
+                You can start a Dispatcher by running:
+                <pre>arachni_rpcd</pre>
+                in a terminal.
+            </p>
+            <p>
+                This command will fire-up a Dispatcher which will, by default,
+                bind to: <pre>localhost:7331</pre>
+            </p>
+            <p>
+                Input this URL in the 'URL' field and press "Add".<br/>
+                After that you should be able to use the WebUI to perform scans.
+            </p>
+
+            <p>
+                You can find more information about setting up Dispatchers <a href="https://github.com/Zapotek/arachni/wiki/RPC-server">here</a>.
+            </p>
+
+        </div>
+
+        <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
+
+        <div id="page-intro">
+            <h2>Edit Dispatchers</h2>
+            <p>
+                This screen allows you to add and remove Dispatchers.
+            </p>
+        </div>
+
+        <%= erb :flash, {:layout => false} %>
+
+        <% if !dispatchers.empty? %>
+        <table>
+            <tr>
+                <th>Location</th>
+                <th>Alive?</th>
+                <th>Action</th>
+            </tr>
+            <% dispatchers.each do |dispatcher| %>
+            <tr>
+                <td><%=dispatcher['url']%></td>
+                <td><%=dispatcher['alive'].to_s.capitalize%></td>
+                <td>
+                    <form action="/dispatchers/<%=dispatcher['id']%>/delete" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+            </tr>
+            <%end%>
+        </table>
+        <%else%>
+        <span class="notice"> There are no available Dispatchers at the moment. Add one if you want to start a scan.</span>
+        <br/><br/>
+        <%end%>
+
+        <form action="/dispatchers/add" method="post">
+            <%= csrf_tag %>
+            <label>URL:</label>
+            <input name="url" value="localhost:7331" />
+            <input type="submit" value="Add" />
+        </form>

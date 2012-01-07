@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -20,7 +20,7 @@ module Arachni::Parser::Extractors
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2
 #
 class Generic < Paths
 
@@ -33,10 +33,54 @@ class Generic < Paths
     #
     def run( doc )
         begin
-            URI.extract( doc.to_s )
+            html = doc.to_s
+            URI.extract( html, ['http', 'https'] ).map {
+                |u|
+
+                #
+                # This extractor needs to be a tiny bit intelligent because
+                # due to its generic nature it'll inevitably match some garbage.
+                #
+                # For example, if some JS code contains:
+                #
+                #    var = 'http://blah.com?id=1'
+                #
+                # or
+                #
+                #    var = { 'http://blah.com?id=1', 1 }
+                #
+                #
+                # The URI.extract call will match:
+                #
+                #    http://blah.com?id=1'
+                #
+                # and
+                #
+                #    http://blah.com?id=1',
+                #
+                # respectively.
+                #
+                #
+                if !includes_quotes?( u )
+                    u
+                else
+
+                    if html.include?( '\'' + u )
+                        u.split( '\'' ).first
+                    elsif html.include?( '"' + u )
+                        u.split( '"' ).first
+                    else
+                        u
+                    end
+                end
+            }
         rescue
             return []
         end
+    end
+
+    def includes_quotes?( url )
+        url.include?( '\'' ) || url.include?( '"' )
     end
 
 end

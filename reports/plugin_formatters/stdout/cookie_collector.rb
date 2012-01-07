@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -12,49 +12,44 @@ module Arachni
 module Reports
 
 class Stdout
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # Stdout formatter for the results of the CookieCollector plugin
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class CookieCollector < Arachni::Plugin::Formatter
+    #
+    # Stdout formatter for the results of the CookieCollector plugin
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1
+    #
+    class CookieCollector < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
+        def run
+            print_status( 'Cookie collector' )
+            print_info( '~~~~~~~~~~~~~~~~~~' )
 
-            def run
-                print_status( 'Cookie collector' )
-                print_info( '~~~~~~~~~~~~~~~~~~' )
+            print_info( 'Description: ' + @description )
+            print_line
 
-                print_info( 'Description: ' + @description )
-                print_line
+            @results.each_with_index {
+                |result, i|
 
-                @results.each_with_index {
-                    |result, i|
-
-                    print_info( "[#{(i + 1).to_s}] On #{result[:time]}" )
-                    print_info( "URL: " + result[:res]['effective_url'] )
-                    print_info( 'Cookies forced to: ' )
-                    result[:cookies].each_pair{
-                        |name, value|
-                        print_info( "    #{name} => #{value}" )
-                    }
-                    print_line
+                print_info( "[#{(i + 1).to_s}] On #{result[:time]}" )
+                print_info( "URL: " + result[:res]['effective_url'] )
+                print_info( 'Cookies forced to: ' )
+                result[:cookies].each_pair{
+                    |name, value|
+                    print_info( "    #{name} => #{value}" )
                 }
-
                 print_line
-            end
+            }
 
+            print_line
         end
 
     end
+
+end
 end
 
 end

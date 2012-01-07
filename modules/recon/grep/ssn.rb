@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -12,11 +12,8 @@ module Arachni
 module Modules
 
 #
-#
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
+# @version: 0.1.1
 #
 class SSN < Arachni::Module::Base
 
@@ -33,8 +30,11 @@ class SSN < Arachni::Module::Base
         {
             :name           => 'SSN',
             :description    => %q{Greps pages for disclosed US Social Security Numbers.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :author         => [
+                'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>', # original
+                'haliphax' # tweaked regexp
+            ],
+            :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Disclosed US Social Security Number.},

@@ -1,8 +1,6 @@
 =begin
-  $Id$
-
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -11,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -22,29 +19,21 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
 class UnencryptedPasswordForms < Arachni::Module::Base
 
-    def initialize( page )
-        # in this case we don't need to call the parent
-        @page = page
-
-        @results    = []
+    def prepare
         @@__audited ||= Set.new
     end
 
-    def run( )
-
+    def run
         @page.forms.each {
             |form|
             __check( form )
         }
-
-        # register our results with the system
-        register_results( @results )
     end
 
     def __check( form )
@@ -66,7 +55,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
     def __log( url, input )
 
         if @@__audited.include?( input['name'] )
-            print_info( 'Skipping already audited field \'' +
+            print_info( 'Skipping already checked form \'' +
                 input['name'] + '\' of url: ' + url )
             return
         end
@@ -74,13 +63,12 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         name = input['name'] || input['id'] || 'n/a'
         @@__audited << name
 
-        # append the result to the results array
-        @results << Issue.new( {
+        log_issue(
             :var          => name,
             :url          => url,
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-        }.merge( self.class.info ) )
+        )
 
         print_ok( "Found unprotected password field '#{input['name']}' at #{url}" )
 
@@ -95,7 +83,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.1.3',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },

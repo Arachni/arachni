@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -21,23 +21,14 @@ class FormDicattack < Arachni::Plugin::Base
 
     attr_accessor :http
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         # disable spidering and the subsequent audit
         # @framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         @url     = @framework.opts.url.to_s
         @users   = File.read( @options['username_list'] ).split( "\n" )
         @passwds = File.read( @options['password_list'] ).split( "\n" )
@@ -52,10 +43,10 @@ class FormDicattack < Arachni::Plugin::Base
         @found = false
     end
 
-    def run( )
+    def run
 
         if !form = login_form
-            print_error( 'Could not find a form suiting the provided params at: ' +
+            print_bad( 'Could not find a form suiting the provided params at: ' +
                 @url )
             return
         end
@@ -87,7 +78,8 @@ class FormDicattack < Arachni::Plugin::Base
                 opts = {
                     :headers => {
                         'cookie'  => ''
-                    }
+                    },
+                    :update_cookies => true
                 }
                 form.submit( opts ).on_complete {
                     |res|
@@ -106,7 +98,7 @@ class FormDicattack < Arachni::Plugin::Base
 
                     # register our findings...
                     register_results( { :username => user, :password => pass } )
-                    clean_up( )
+                    clean_up
 
                     raise "Stopping the attack."
                 }
@@ -116,7 +108,7 @@ class FormDicattack < Arachni::Plugin::Base
 
         print_status( "Waiting for the requests to complete..." )
         @http.run
-        print_error( "Couldn't find a match." )
+        print_bad( "Couldn't find a match." )
 
     end
 

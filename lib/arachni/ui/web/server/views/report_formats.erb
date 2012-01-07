@@ -1,0 +1,30 @@
+
+            <%= erb :flash, {:layout => false} %>
+
+            <%= csrf_tag %>
+            <div id="page-intro">
+                <h2>Report formats</h2>
+                <p>
+                    This page lists all available report formats.
+                <br/>
+                <br/>
+                </p>
+
+                <form action="/reports" method="get">
+                    <input type="submit" value="Back to reports" />
+                </form>
+
+            </div>
+
+            <% reports.each do |report|%>
+                <fieldset>
+                <h3><%=escape( report['name'] )%></h3>
+                <h4>Description</h4>
+                <div class="notice"> <%=escape( report['description'] )%></div>
+
+                <p>
+                    <strong>Version:</strong> <%=report['version']%><br/>
+                    <strong>Author:</strong> <%=escape( report['author'].join( ", " ))%>
+                </p>
+                </fieldset>
+            <% end %>

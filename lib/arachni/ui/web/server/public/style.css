@@ -1,0 +1,647 @@
+body {
+    background: #ddd;
+    margin:0;
+    padding:0;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    color: #333;
+}
+
+.wrapper {
+    background: #ddd url('bodybg.png') repeat-x scroll top left;
+}
+
+.subpage {
+    background-image: url('bodybg-small.png');
+}
+
+* {
+    margin:0;
+    padding:0;
+}
+
+/** element defaults **/
+table {
+    width: 100%;
+    text-align: left;
+}
+
+th, td {
+    padding: 10px 10px;
+}
+
+th {
+    color: #fff;
+    background: #2978A1 none repeat-x scroll -15px 0;
+}
+
+td {
+    border-bottom: 1px solid #222;
+    color: #111;
+}
+
+.output {
+    width: 100%;
+    height: 560px;
+    border: 0px;
+    overflow: scroll
+}
+
+code, blockquote {
+    display: block;
+    border-left: 5px solid #ddd;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+code {
+    background-color: #ddd;
+    border: none;
+}
+blockquote {
+    border-left: 5px solid #333;
+}
+
+blockquote p {
+    font-style: italic;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    margin: 0;
+    color: #909090;
+    height: 1%;
+}
+
+p {
+    line-height: 1.9em;
+    margin-bottom: 20px;
+}
+
+a {
+    color: #256F94;
+}
+
+a:hover {
+    color: #BC6637;
+}
+
+a:focus {
+    outline: none;
+}
+
+fieldset {
+    display: block;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+fieldset legend {
+    font-weight: bold;
+    font-size: 13px;
+    padding-right: 10px;
+    color: #666;
+}
+
+fieldset form {
+    padding-top: 15px;
+}
+
+fieldset p label {
+    float: left;
+    width: 150px;
+}
+
+form input, form select, form textarea {
+    padding: 5px;
+    color: #333333;
+    border: 1px solid #999;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+form input.formbutton {
+    border: none;
+    background: #FFFFFF url(bodybg.png) repeat-x scroll 0 -160px;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: Tahoma, Geneva, sans-serif;
+    letter-spacing: 1px;
+    width: auto;
+    overflow: visible;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+form.searchform p {
+    margin: 5px 0;
+}
+
+form.searchform input.s {
+    border: 1px solid #000;
+}
+
+form.settings input, textarea {
+    float: right;
+    margin-right: 10px
+}
+
+.options input, textarea {
+    float: right;
+    margin-right: 10px
+}
+
+form.reset input {
+    float: left;
+}
+
+
+span.required {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    color: #ff0000;
+}
+
+h1 {
+    color: #1F5D7C;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 35px;
+}
+
+h2 {
+    color: #111;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    padding: 0 0 5px;
+    margin: 0;
+    font-weight: normal;
+}
+
+h3 {
+    color: #BC6637;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+h4 {
+    padding-bottom: 10px;
+    font-size: 15px;
+    color: #666;
+}
+
+h5 {
+    padding-bottom: 10px;
+    font-size: 13px;
+    color: #666;
+}
+
+ul, ol {
+    margin: 0 0 35px 35px;
+}
+
+li {
+    padding-bottom: 5px;
+}
+
+li ol, li ul {
+    font-size: 1.0em;
+    margin-bottom: 0;
+    padding-top: 5px;
+}
+
+.spider {
+    background: transparent url('spider.png') no-repeat  right;
+
+}
+
+#container {
+/*    width: 960px;*/
+    margin:0 auto;
+    padding: 0;
+}
+
+#header {
+    padding: 0;
+    margin: 0 auto;
+    height: 110px;
+}
+
+#header h1  {
+    padding-top: 35px;
+    padding-left: 10px;
+}
+
+#header h1 a {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, Sans-Serif;
+    color: #FFF;
+    font-size: 45px;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: -1px;
+    text-shadow: 2px 2px #222;
+}
+
+#header h2 {
+    color: #999;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 13px;
+    margin-left: 7px;
+    padding-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#nav {
+    height: 50px;
+    min-width: 960px;
+    width: 75%;
+}
+
+#nav ul {
+    list-style: none;
+    padding: 0 5px;
+    margin: 0;
+    float: right;
+    height: 50px;
+}
+
+#nav ul li {
+    float: left;
+    display: block;
+    padding:0;
+    background: transparent url('nav-left.jpg') no-repeat scroll top left;
+    margin: 0 2px;
+}
+
+#nav ul li.selected {
+    background: transparent url('nav-selected-left.jpg') no-repeat scroll top left;
+}
+
+#nav ul li a {
+    color: #9f9f9f;
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 22px 20px 12px;
+    text-decoration: none;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, Sans-Serif;
+    background: transparent url('nav-right.jpg') no-repeat scroll top right;
+}
+
+#nav ul li a:hover {
+    color: #ccc;
+}
+
+#nav ul li.selected a, #nav ul li.selected a:hover {
+    color: #eee;
+    background: transparent url('nav-selected-right.jpg') no-repeat scroll top right;
+}
+
+#nav ul li a.selected {
+    color: #fff;
+}
+
+#nav ul li a.selected:hover {
+    text-decoration: none;
+}
+
+#nav ul ul {
+    position:absolute;
+    display: none; /* Hide off-screen when not needed (this is more accessible than display:none;) */
+    background: none;
+    margin-left: -6px
+}
+
+#nav ul li:hover ul li{
+    list-style: none;
+    margin: 0;
+    height: 50px;
+    background: none;
+}
+
+#nav li:hover ul { /* Display the dropdown on hover */
+    display: block; /* Bring back on-screen when needed */
+    background: none;
+
+    -moz-border-radius-bottomleft: 10px;
+    -moz-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomleft: 10px;
+}
+
+#nav li:hover a{ /* These create persistent hover states, meaning the top-most link stays 'hovered' even when your cursor has moved down the list. */
+}
+
+#nav li:hover ul a{ /* The persistent hover state does however create a global style for links even before they're hovered. Here we undo these effects. */
+    text-decoration: none;
+    background: #202020;
+    -moz-border-radius-bottomleft: 10px;
+    -moz-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomright: 10px;
+    -webkit-border-radius-bottomleft: 10px;
+    height: 10px
+}
+
+#nav li:hover ul li a:hover{ /* Here we define the most explicit hover states--what happens when you hover each individual link. */
+    background: #333;
+}
+
+
+#page-intro {
+    height: 150px;
+    padding: 50px 20px 0;
+    color: #eee;
+}
+
+#page-intro h2, #page-intro-small h2 {
+    color: #fff;
+    font-size: 33px;
+    font-weight: bold;
+    text-shadow: 2px 2px #194E67;
+    font-family: 'Lucida Grande','Lucida Sans Unicode',Geneva,Verdana,Sans-Serif;
+}
+
+#page-intro form {
+    display: inline
+}
+
+#page-intro p {
+    font-size: 12px;
+}
+
+#page-intro-small {
+    height: 66px;
+    padding: 30px 20px 0;
+    color: #eee;
+}
+
+
+#body {
+    background: transparent none repeat-y scroll 0 0;
+    margin: 15px auto 0;
+    padding: 15px;
+}
+
+#content {
+    width: 100%;
+    float: left;
+    margin: 0;
+}
+
+.sidebar {
+    width: 280px;
+    padding: 10px 0 0;
+    background: transparent url('sidebar-top.jpg') no-repeat scroll top left;
+    float: right;
+}
+
+
+.reports, .sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin-bottom: 0;
+    line-height: 1.9em;
+    padding-bottom: 0;
+}
+
+.sidebar li ul {
+    border-top: 1px solid #D2875F;
+    background: #2A2A2A;
+}
+
+.sidebar li ul li {
+    display: block;
+    border-top: none;
+    padding: 10px;
+    margin: 0;
+    line-height: 1.5em;
+    color: #999;
+}
+
+.sidebar li ul li a {
+    font-weight: normal;
+    color: #999;
+}
+
+.sidebar li ul.blocklist li {
+    padding: 0;
+    display: inline;
+}
+
+.sidebar li ul.blocklist li a {
+    display: block;
+    padding: 7px 8px;
+    text-decoration: none;
+}
+
+.sidebar li ul.blocklist li a:hover {
+    background-color: #202020;
+    color: #ccc;
+}
+
+.sidebar li ul li a:hover {
+    color: #ccc;
+}
+
+.sidebar h4 {
+    display: inline-block; /* for IE 6, 7 */
+}
+
+.sidebar h4 {
+    background: #C7754A url(sidebar-h4.jpg) repeat-x scroll 0 0;
+    color: #FFFFFF;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    display: block;
+    line-height: 1em;
+    margin: 0;
+    padding: 12px;
+    text-transform: uppercase;
+}
+
+.sidebar-end {
+    width: 280px;
+    height: 10px;
+    background: transparent url('sidebar-bottom.jpg') no-repeat scroll top left;
+}
+
+.clear {
+    clear: both;
+}
+
+#footer {
+    margin:0 auto;
+    background: #000 url('footer.jpg') repeat-x scroll bottom left;
+    padding: 30px 5px 0;
+}
+
+.footer-content {
+    margin: 0 auto;
+    display: block;
+    padding-bottom: 30px;
+}
+
+#footer a {
+    color: #999;
+    text-decoration: underline;
+}
+
+#footer h4 {
+    color: #ccc;
+    font-size: 18px;
+    font-weight: normal;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, Sans-Serif;
+}
+
+#footer p {
+    text-align: left;
+    color: #999;
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#footer form {
+    margin: 0;
+    padding: 0;
+}
+
+#footer form input#searchbutton {
+    background-color: #E53E91;
+    margin: 0;
+}
+
+#footer form input#searchquery {
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    border: none;
+    padding: 6px 5px;
+}
+
+#footer ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid #222;
+}
+
+#footer ul li {
+    padding: 0;
+}
+
+#footer ul li a  {
+    display: inline-block; /* for IE 6, 7 */
+}
+
+#footer ul li a {
+    text-decoration: none;
+    display: block;
+    font-size: 11px;
+    padding: 7px 10px;
+    border-bottom: 1px solid #222;
+}
+
+#footer ul li a:hover {
+    background-color: #111;
+}
+
+.footer-box {
+    margin-right: 26px;
+    float: left;
+}
+
+.end-footer-box {
+    margin-right: 0;
+}
+
+#footer-links {
+    background-color: #000;
+    color: #ccc;
+    padding: 5px;
+}
+div#footer-links p {
+    padding: 0;
+    margin: 0 auto;
+    font-size: 10px;
+    display: block;
+}
+#footer-links a {
+    color: #eee;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.err, .ok, .notice {
+    margin: 0.3em 0;
+    padding: 5px 7px;
+    text-align: center;
+    color: #000;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    text-align: left;
+
+}
+
+.ok {
+    background: #00A8FF;
+}
+
+.err {
+    background: #f10;
+}
+
+.err_on {
+    display: inline-block;
+    padding: 0px 3px;
+    color: #f10;
+    font-weight: bold;
+}
+
+.notice {
+    background: #ccc;
+}
+
+.left {
+    float: left;
+    width: 49%;
+    padding-right: 5px
+}
+
+.right {
+    float: right;
+    width: 50%;
+    border-left: 1px
+}
+
+.height_scroller {
+    height: 300px;
+    overflow: scroll
+}
+
+.ui-progressbar-value {
+    background-image: url(/css/smoothness/images/pbar-ani.gif);
+}
+
+#slider {
+    width: 50%;
+    float: right;
+};
+
+#dialog-modal {
+    display: none;
+}
+
+iframe.report {
+    width: 100%;
+    height: 900px;
+    border: 0px
+}

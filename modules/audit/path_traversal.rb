@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -18,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version: 0.2.5
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -26,13 +26,7 @@ module Modules
 #
 class PathTraversal < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
-
-        @results    = []
-    end
-
-    def prepare( )
+    def prepare
 
         #
         # the way this works is pretty cool since it will actually
@@ -72,11 +66,11 @@ class PathTraversal < Arachni::Module::Base
         @__params = [
             {
                 'value'  => 'etc/passwd',
-                'regexp' => /\w+:.+:[0-9]+:[0-9]+:.+:[0-9a-zA-Z\/]+/i
+                'regexp' => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im
             },
             {
                 'value'  => 'boot.ini',
-                'regexp' => /\[boot loader\](.*)\[operating systems\]/i
+                'regexp' => /\[boot loader\](.*)\[operating systems\]/im
             }
 
         ]
@@ -88,7 +82,7 @@ class PathTraversal < Arachni::Module::Base
 
     end
 
-    def run( )
+    def run
 
         @__params.each {
             |param|
@@ -119,7 +113,7 @@ class PathTraversal < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.2',
+            :version        => '0.2.5',
             :references     => {
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'

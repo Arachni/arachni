@@ -1,10 +1,3 @@
-#
-# $Id$
-# $Revision$
-#
-
-require 'pp'
-
 module Msf
 
 class Plugin::Arachni < Msf::Plugin

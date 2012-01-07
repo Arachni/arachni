@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,7 +20,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -29,10 +28,6 @@ module Modules
 class WebDav < Arachni::Module::Base
 
     include Arachni::Module::Utilities
-
-    def initialize( page )
-        super( page )
-    end
 
     def prepare
         #
@@ -51,10 +46,8 @@ class WebDav < Arachni::Module::Base
         @@__auditted ||= Set.new
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url )
-
         return if @@__found || @@__auditted.include?( path )
 
         print_status( "Checking: #{path}" )
@@ -77,7 +70,7 @@ class WebDav < Arachni::Module::Base
             :description    => %q{Checks for WebDAV enabled directories.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :references     => {
                 'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
@@ -103,7 +96,7 @@ class WebDav < Arachni::Module::Base
 
         @@__found = true
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -112,10 +105,7 @@ class WebDav < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( "Enabled for: #{res.effective_url}" )

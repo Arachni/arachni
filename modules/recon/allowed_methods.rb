@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,7 +17,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
@@ -27,16 +26,11 @@ class AllowedMethods < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
     def prepare
         @@__ran ||= false
     end
 
-    def run( )
-
+    def run
         return if @@__ran
 
         print_status( "Checking..." )
@@ -57,7 +51,7 @@ class AllowedMethods < Arachni::Module::Base
             :description    => %q{Checks for supported HTTP methods.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },
@@ -80,7 +74,7 @@ class AllowedMethods < Arachni::Module::Base
 
         return if !methods || methods.empty?
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :regexp_match => methods,
@@ -90,10 +84,7 @@ class AllowedMethods < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( methods )

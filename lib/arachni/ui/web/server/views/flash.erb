@@ -1,0 +1,18 @@
+
+        <% [:err, :ok, :notice ].each do |name| %>
+
+        <% if ( msg = flash[name] ) || ( msg = params[name] ) %>
+        <div class="flash">
+            <div class="<%= name %>">
+                <%= escape( msg ) %>
+            </div>
+        </div>
+        <% end %>
+
+        <% end %>
+
+        <script type="text/javascript">
+            if( $( '.flash' ) ){
+                setTimeout( "$( '.flash' ).fadeOut( 1600, \"linear\" );", 2500 );
+            }
+        </script>

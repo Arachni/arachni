@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,23 +17,16 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.2.1
 #
 #
 class Backdoors < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
     def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= Set.new
-
-        # our results array
-        @results = []
 
         @@__filenames ||=[]
         return if !@@__filenames.empty?
@@ -45,7 +37,7 @@ class Backdoors < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
 
         path = get_path( @page.url )
         return if @@__audited.include?( path )
@@ -57,13 +49,10 @@ class Backdoors < Arachni::Module::Base
             url  = path + file
 
             print_status( "Checking for #{url}" )
-
-            req  = @http.get( url, :train => true )
-
-            req.on_complete {
+            log_remote_file_if_exists( url ) {
                 |res|
-                print_status( "Analyzing #{res.effective_url}" )
-                __log_results( res, file )
+                # inform the user
+                print_ok( "Found #{file} at " + res.effective_url )
             }
         }
 
@@ -77,13 +66,16 @@ class Backdoors < Arachni::Module::Base
             :description    => %q{Tries to find common backdoors on the server.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1',
+            :version        => '0.2.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{A backdoor file exists on the server.},
-                :description => %q{},
-                :tags        => [ 'path', 'backdoor', 'file' ],
+                :description => %q{ The server response indicates that a file matching
+                    the name of a common backdoor is publicly accessible.
+                    This indicates that the server has been compromised and can
+                    (to some extent) be remotely controled by unauthorised users.},
+                :tags        => [ 'path', 'backdoor', 'file', 'discovery' ],
                 :cwe         => '',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
@@ -92,38 +84,6 @@ class Backdoors < Arachni::Module::Base
             }
 
         }
-    end
-
-    #
-    # Adds an issue to the @results array<br/>
-    # and outputs an "OK" message with the filename and its url.
-    #
-    # @param  [Net::HTTPResponse]  res   the HTTP response
-    # @param  [String]  filename   the discovered filename
-    #
-    def __log_results( res, filename )
-
-        return if( res.code != 200 || @http.custom_404?( res ) )
-
-        url = res.effective_url
-        # append the result to the results array
-        @results << Issue.new( {
-            :url          => url,
-            :injected     => filename,
-            :id           => filename,
-            :elem         => Issue::Element::PATH,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( @results )
-
-        # inform the user that we have a match
-        print_ok( "Found #{filename} at " + url )
     end
 
 end

@@ -1,0 +1,193 @@
+
+        <div id="page-intro">
+            <h2 id="page_header">Attached to instance @<%=remove_proto( params['url'] )%></h2>
+            <p id="page_description">
+                This page allows you to see what's going on at the other end of the wire -- i.e. get progress information directly from the scanner Instance(s).
+                <br/>
+                <br/>
+            </p>
+
+            <div id="control_buttons">
+                <%if !shutdown %>
+
+                <%if !paused %>
+                    <form action="/instance/<%=remove_proto( params['url'] )%>/pause" method="post">
+                        <%= csrf_tag %>
+                        <input type="submit" value="Pause" />
+                    </form>
+                <%end%>
+
+                <%if paused %>
+                <form action="/instance/<%=remove_proto( params['url'] )%>/resume" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Resume" />
+                </form>
+                <%end%>
+
+                <form action="/instance/<%=remove_proto( params['url'] )%>/shutdown" method="post">
+                    <%= csrf_tag %>
+                    <input type="submit" value="Shutdown" />
+                </form>
+
+                <% end %>
+            </div>
+        </div>
+
+        <%= erb :flash, {:layout => false} %>
+
+        <div id="scan_data">
+            <div class="left">
+                <h3>Scan statisics</h3>
+                <ul>
+                    <li>Pages discovered: <span id="crawled">0</span></li>
+                    <li>Progress: <span id="percentage">0</span>%</li>
+                    <li>Est. remaining time: <span id="eta">--:--:--</span></li>
+                    <li>Requests/second: <span id="avg">0</span></li>
+                    <li>Runtime: <span id="runtime">00:00:00</span></li>
+                    <li>Current max concurrency: <span id="max_concurrency">0</span> requests</li>
+                    <li>Average response time: <span id="average_res_time">0</span>s</li>
+                    <li>Timed-out requests: <span id="time_out_count">0</span></li>
+
+                </ul>
+            </div>
+
+            <div class="right">
+                <h3>Instances</h3>
+                <div style="height: 245px; overflow-y: scroll" id="currently_auditing">
+                </div>
+            </div>
+
+            <div>
+                <p><em>
+                    (Due to the fact that Arachni discovers pages using 2 complementary systems (the Spider and the Trainer)
+                    you may see some backwards progress or other weird progress behavior.)
+                </em></p>
+                <div id="progressbar"></div>
+            </div>
+
+            <div class="left">
+                <h3>Scanner output:</h3>
+                <div class="output" id="output"></div>
+            </div>
+
+            <div class="right">
+                <h3>Results thus far:</h3>
+                <div class="output" id="output_results"></div>
+            </div>
+
+            <div style="display: none" id="dialog-shutdown" title="Instance has been shutdown...">
+                <p>
+                    The report is waiting for you <a href="/reports">here</a>.
+                </p>
+            </div>
+
+            <script type="text/javascript">
+                //<![CDATA[
+
+                function inspect( id ){
+                    $( id ).dialog({
+                        height: 500,
+                        width: 1000,
+                        modal: true
+                    });
+                }
+
+                function setProgressBar( progress ) {
+                    $( "#progressbar" ).progressbar({
+                        value: progress
+                    });
+                }
+
+                function showReport( html ){
+                    document.getElementById( 'control_buttons' ).innerHTML = ""
+                    document.getElementById( 'page_header' ).innerHTML = "Report"
+                    document.getElementById( 'page_description' ).innerHTML =
+                        "The scan has completed succesfully, you can review the results using this report.<br/>" +
+                        "This report has been saved and you can view or export it in various format via the Reports tab."
+
+                    document.getElementById( 'scan_data' ).innerHTML = "<iframe class='report' src=" + html + "></iframe>"
+                }
+
+                function setStats( stats ){
+                    if( stats == undefined ){ return }
+
+                    document.getElementById( 'crawled' ).innerHTML = stats.sitemap_size;
+                    document.getElementById( 'average_res_time' ).innerHTML = stats.average_res_time;
+                    document.getElementById( 'avg' ).innerHTML = stats.avg;
+                    document.getElementById( 'time_out_count' ).innerHTML = stats.time_out_count;
+                    document.getElementById( 'max_concurrency' ).innerHTML = stats.max_concurrency;
+
+                    document.getElementById( 'runtime' ).innerHTML = stats.time;
+                    document.getElementById( 'eta' ).innerHTML = stats.eta;
+                    document.getElementById( 'percentage' ).innerHTML = stats.progress;
+
+                    elem = document.getElementById( 'currently_auditing');
+                    elem.innerHTML = '';
+                    for( i in stats.instances ) {
+
+                        elem.innerHTML += '<strong>' + stats.instances[i].url +
+                        ' - ' + stats.instances[i].progress + '%' +
+                        ' - Est. remaining time: ' + stats.instances[i].eta + '</strong> <br/>';
+
+                        status = stats.instances[i].status
+                        if( status == 'busy' ) {
+                            page = stats.instances[i].current_page;
+
+                            elem.innerHTML += 'Currently auditing: ' + '<a href="' +
+                            page + '">' + page + '</a>';
+                        } else {
+                            elem.innerHTML += status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+
+                        elem.innerHTML += '<div style="height:20px" id="progressbar_' + i + '"></div> <br/>';
+
+                        $( "#progressbar_" + i ).progressbar({
+                            value: stats.instances[i].progress
+                        });
+
+                    }
+
+                }
+
+                function updateOutput() {
+                    var output_url = "/instance/<%= escape( params['url'].to_s ) %>/output.json";
+                    $.getJSON( output_url, function(data) {
+
+                        if( data.status == 'finished' ){
+                            showShutdownDialog( );
+                        } else {
+
+                            document.getElementById( 'output' ).innerHTML = data.messages.data;
+                            document.getElementById( 'output_results' ).innerHTML = data.issues.data;
+
+                            if( data.stats.avg != undefined ){
+                                setStats( data.stats );
+                                setProgressBar( parseInt( data.stats.progress ) );
+                            }
+                        }
+                    });
+                }
+
+                function showShutdownDialog( ) {
+                    $( "#dialog-shutdown" ).dialog({
+                        height: 100,
+                        modal: true
+                    });
+                }
+
+
+                $( document ).ready(function() {
+
+                    setProgressBar( 0 );
+
+                    updateOutput( );
+                    setInterval( function() {
+                          updateOutput( );
+                    }, 5000 );
+
+                })
+
+             //]]>
+            </script>
+
+        </div>

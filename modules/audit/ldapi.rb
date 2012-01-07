@@ -1,8 +1,6 @@
 =begin
-  $Id$
-
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -20,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
@@ -30,11 +28,7 @@ class LDAPInjection < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         #
         # we make this a class variable and populate it only once
@@ -58,7 +52,7 @@ class LDAPInjection < Arachni::Module::Base
 
     end
 
-    def run( )
+    def run
         audit( @__injection_str, @__opts )
     end
 
@@ -76,7 +70,7 @@ class LDAPInjection < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'WASC'      => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
                 'OWASP'     => 'http://www.owasp.org/index.php/LDAP_injection'

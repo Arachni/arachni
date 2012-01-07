@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -33,11 +33,7 @@ class CodeInjectionTiming < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         @@__injection_str ||= []
 

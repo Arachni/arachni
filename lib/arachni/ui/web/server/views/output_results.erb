@@ -1,0 +1,51 @@
+        <% if issues.size > 0 %>
+
+            <h4>Total: <%=issues.size%></h4>
+            <% issues.each_with_index do |issue, i|%>
+            <p>
+                <h5>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h5>
+                     In <%= issue.elem %>
+
+                     <% if issue.var%>
+                     input <em><%= issue.var %></em>
+                     <%end%>
+
+                     <% if issue.method %>
+                     using <%= issue.method %>
+                     <%end%>
+
+                     at <a href="<%= issue.url %>"><%= issue.url %></a>.
+                     <br/>
+
+                 <% if (issue.variations[0] && issue.variations[0]['response'] && !issue.variations[0]['response'].empty?) && issue.variations[0]['regexp_match'] %>
+
+                 <div style="display: none" id="inspection-dialog_<%=i%>" title="Relevant content is shown in red.">
+                     <% match = CGI.escapeHTML( issue.variations[0]['regexp_match'] )%>
+                     <pre> <%=CGI.escapeHTML( issue.variations[0]['response'] ).gsub( match, '<strong style="color: red">' + match + '</strong>' ) %> </pre>
+                 </div>
+
+                 <form style="display:inline" action="#">
+                     <input onclick="javascript:inspect( '#inspection-dialog_<%=i%>')" type="button" value="Inspect" />
+                 </form>
+
+                 <% if issue.method && (issue.elem.downcase == 'form' || issue.elem.downcase == 'link' ) &&
+                       ( issue.method.downcase == 'get' || issue.method.downcase == 'post' ) %>
+                    <form style="display:inline" action="<%=issue.variations[0]['url']%>" target="_blank" method="<%=issue.method.downcase%>">
+                        <% if issue.variations[0]['opts'][:combo]%>
+                            <%issue.variations[0]['opts'][:combo].each_pair do |name, value|%>
+                                <input type="hidden" name="<%=escape(name)%>" value="<%=escape( value )%>" />
+                            <%end%>
+                        <%end%>
+                        <input type="submit" value="Replay" />
+                    </form>
+                 <%end%>
+
+
+                 <%end%>
+
+            </p>
+            <%end%>
+
+        <%else%>
+            <h4> Nothing yet, once something is found you'll be the first to know...</h4>
+        <%end%>

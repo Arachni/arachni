@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -41,7 +41,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -50,11 +50,7 @@ module Modules
 #
 class CSRF < Arachni::Module::Base
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
@@ -64,7 +60,7 @@ class CSRF < Arachni::Module::Base
         @@__audited ||= Set.new
     end
 
-    def run( )
+    def run
 
         print_status( 'Looking for CSRF candidates...' )
 
@@ -72,9 +68,7 @@ class CSRF < Arachni::Module::Base
 
         # setup opts with empty cookies
         opts = {
-            :headers => {
-                'cookie'  => ''
-            },
+            :cookies => {},
             :remove_id => true
         }
 
@@ -246,16 +240,14 @@ class CSRF < Arachni::Module::Base
 
         @@__audited << "#{url}::#{name}"
 
-        # append the result to the results array
-        issue = Issue.new( {
+        log_issue(
             :var          => name,
             :url          => url,
             :elem         => Issue::Element::FORM,
             :response     => @page.html,
-        }.merge( self.class.info ) )
+        )
 
         print_ok( "Found unprotected form with name '#{name}' at '#{url}'" )
-        register_results( [ issue ] )
     end
 
     def self.info
@@ -268,7 +260,7 @@ class CSRF < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2',
+            :version        => '0.2.2',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

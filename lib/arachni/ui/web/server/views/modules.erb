@@ -1,0 +1,51 @@
+
+        <form action="/modules" method="post">
+
+            <%= csrf_tag %>
+            <div id="page-intro">
+                <h2>Modules</h2>
+                <p>
+                    Module components assert and log entities of security interest about a web application.
+                <br/><br/>
+                </p>
+                <p>
+                    <input type="button" onclick="javascript:checkAll( 'audit' );checkAll( 'recon' );" value="Check all"/>
+                    <input type="button" onclick="javascript:uncheckAll( 'audit' );uncheckAll( 'recon' );" value="Uncheck all"/>
+                    <input type="submit" value="Save" />
+                </p>
+            </div>
+
+            <%= erb :flash, {:layout => false} %>
+            <div class="left">
+                <fieldset>
+                    <h3>Audit</h3>
+                    <p>Audit modules actively test the web application via inputs like link parameters, forms, cookies and headers in order to assert the existence of security Issues.</p>
+                    <p>
+                        <input type="button" onclick="javascript:checkAll( 'audit' );" value="Check all"/>
+                        <input type="button" onclick="javascript:uncheckAll( 'audit' );" value="Uncheck all"/>
+                    </p>
+
+                    <% modules.each do |mod|%>
+                    <% next if mod['path'] =~ /recon/ %>
+                    <%= erb :module, { :layout => false }, :mod => mod, :class_name => 'audit' %>
+                    <% end %>
+                </fieldset>
+            </div>
+
+            <div class="right">
+                <fieldset>
+                    <h3>Recon</h3>
+                    <p>Recon modules passively test the web application, mainly analyzing server configuration, responses and looking for directories and files.</p>
+                    <p>
+                        <input type="button" onclick="javascript:checkAll( 'recon' );" value="Check all"/>
+                        <input type="button" onclick="javascript:uncheckAll( 'recon' );" value="Uncheck all"/>
+                    </p>
+
+                    <% modules.each do |mod|%>
+                    <% next if mod['path'] =~ /audit/ %>
+                    <%= erb :module, { :layout => false }, :mod => mod, :class_name => 'recon' %>
+                    <% end %>
+                </fieldset>
+            </div>
+
+        </form>

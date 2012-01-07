@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,24 +9,19 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.2
 #
 class Htaccess < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def run( )
+    def run
         return if @page.code != 401
 
         @http.post( @page.url ).on_complete {
@@ -42,7 +37,7 @@ class Htaccess < Arachni::Module::Base
                 GET requests but allows POST.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.2',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -60,7 +55,7 @@ class Htaccess < Arachni::Module::Base
 
     def __log_results( res )
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -69,10 +64,7 @@ class Htaccess < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'Request was accepted: ' + res.effective_url )
     end

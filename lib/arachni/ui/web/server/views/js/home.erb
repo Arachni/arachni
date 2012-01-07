@@ -1,0 +1,32 @@
+
+        <script type="text/javascript">
+            function updateHpgVisibility(){
+                <% hpg= {}; stats.each do |k, v| hpg[k] = !v['neighbours'].empty? end %>
+                hpg = <%=hpg.to_json%>;
+
+                if( !hpg[ $("#dispatcher option:selected").val() ] ) {
+                    $('.hpg').hide();
+                    $('.hpg_options').hide();
+                } else {
+                    $('.hpg').show();
+                }
+            }
+
+            function updateHpgOptionsVisibility(){
+                if( !$("#high_performance_checkbox").is(':checked') ) {
+                    $('.hpg_options').hide();
+                } else {
+                    $('.hpg_options').show();
+                }
+            }
+
+            updateHpgOptionsVisibility();
+            $('#high_performance_checkbox').change(function () {
+                updateHpgOptionsVisibility();
+            });
+
+            updateHpgVisibility();
+            $('#dispatcher').change(function () {
+                updateHpgVisibility();
+            });
+        </script>

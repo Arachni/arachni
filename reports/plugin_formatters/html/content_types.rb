@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -25,21 +25,12 @@ class HTML
         #
         class ContentTypes < Arachni::Plugin::Formatter
 
-            def initialize( plugin_data )
-                @results     = plugin_data[:results]
-                @description = plugin_data[:description]
-            end
-
             def run
                 return ERB.new( tpl ).result( binding )
             end
 
             def tpl
                 %q{
-                    <h3>Content types</h3>
-                    <blockquote><%=@description%></blockquote>
-
-                    <h4>Results</h4>
                     <% @results.each_pair do |type, responses| %>
                         <ul>
 

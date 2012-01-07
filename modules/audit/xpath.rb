@@ -1,8 +1,6 @@
 =begin
-  $Id$
-
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -11,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -20,7 +17,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
@@ -30,11 +27,7 @@ class XPathInjection < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
 
         #
         # we make this a class variable and populate it only once
@@ -60,7 +53,7 @@ class XPathInjection < Arachni::Module::Base
 
     end
 
-    def run( )
+    def run
         @__injection_strs.each {
             |str|
             audit( str, @__opts )
@@ -79,7 +72,7 @@ class XPathInjection < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :references     => {
                 'OWASP'      => 'http://www.owasp.org/index.php/XPATH_Injection'
             },

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,14 +9,10 @@
 
 =end
 
-require 'pp'
-require 'ap'
+require_relative "../lib/arachni/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
-require cwd + '/../getoptslong.rb'
+Arachni::Options.instance.parse!
 
 require Arachni::Options.instance.dir['lib'] + 'ui/cli/cli'
 
-cli = Arachni::UI::CLI.new( Arachni::Options.instance )
-cli.run
+Arachni::UI::CLI.new( Arachni::Options.instance ).run

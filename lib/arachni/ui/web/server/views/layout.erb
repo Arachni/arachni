@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" dir="ltr">
+  <head>
+    <title><%=title%></title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    <link type="text/css" href="/css/smoothness/jquery-ui-1.8.9.custom.css" rel="Stylesheet" />
+    <link rel="stylesheet" href="/style.css" type="text/css" />
+
+    <script type="text/javascript" src="/js/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-1.8.9.custom.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui-timepicker.js"></script>
+
+    <script type="text/javascript">
+        function checkAll( type ) {
+            $( "." + type + ':not(:disabled)' ).attr( "checked", true )
+        }
+
+        function uncheckAll( type ) {
+            $( "." + type ).attr( "checked", false )
+        }
+    </script>
+
+    </head>
+    <body>
+    <div class="wrapper">
+        <div id="container">
+            <div class="spider">
+            <div id="header">
+                <h1><a href="/">Arachni v<%=Arachni::VERSION%></a></h1>
+                <h2>Web Application Security Scanner Framework</h2>
+                <h3>WebUI v<%=Arachni::UI::Web::VERSION%></h3>
+            </div>
+            <div id="nav">
+                <ul>
+                    <li <% if selected_tab?( '/' )%>class="selected" <%end%>> <a href="/">Start a scan</a></li>
+                    <li <% if selected_tab?( 'modules' )%>class="selected" <%end%>><a href="/modules">Modules</a></li>
+                    <li <% if selected_tab?( 'plugins' )%>class="selected" <%end%>><a href="/plugins">Plugins</a></li>
+                    <li <% if selected_tab?( 'settings' )%>class="selected" <%end%>><a href="/settings">Settings</a></li>
+                    <li <% if selected_tab?( 'reports' )%>class="selected" <%end%>><a href="/reports">Reports [<%=report_count%>]</a></li>
+                    <li <% if selected_tab?( 'addons' )%>class="selected" <%end%>><a href="/addons">Add-ons <%if !addons.enabled.empty? %>&darr;<%end%> [<%=addons.enabled.size%>/<%=addons.available.size%>]</a>
+
+                        <% if !addons.enabled.empty?%>
+                        <ul>
+                            <% addons.enabled.each do |name| %>
+                            <li><a href="/addons/<%=escape( name )%>/"><%= escape( addons.by_name( name )['title'] ) %></a></li>
+                            <%end%>
+                        </ul>
+                        <%end%>
+
+                    </li>
+                    <li <% if selected_tab?( 'dispatchers' )%>class="selected" <%end%>><a href="/dispatchers">Dispatchers</a></li>
+                    <li <% if selected_tab?( 'log' )%>class="selected" <%end%>><a href="/log">Log</a></li>
+                </ul>
+            </div>
+            </div>
+            <div id="body">
+                <div id="content">
+                <%= yield %>
+                </div>
+            </div>
+
+            <div class="clear"></div>
+        </div>
+    </div>
+    <div id="footer">
+        <div class="footer-content">
+
+            <div class="footer-box">
+                <h4><a href="http://arachni.segfault.gr">About Arachni</a></h4>
+                <p>
+                    Arachni is a feature-full, modular, high-performance Ruby framework aimed towards <br/>
+                    helping penetration testers and administrators evaluate the security of web applications.
+                </p>
+            </div>
+
+            <div class="footer-box">
+                <h4>Help</h4>
+                <ul>
+                  <li><a href="https://github.com/Zapotek/arachni/wiki/Web-user-interface">WebUI User Guide</a></li>
+                  <li><a href="http://github.com/Zapotek/arachni/wiki">Wiki</a></li>
+                  <li><a href="http://groups.google.com/group/arachni">Google Group</a></li>
+                  <li><a href="https://github.com/Zapotek/arachni/issues">Found a bug?</a></li>
+
+                </ul>
+            </div>
+
+            <div class="footer-box">
+
+                <h4>Interesting links</h4>
+                <ul>
+                    <li><a href="http://arachni.segfault.gr">Homepage</a></li>
+                    <li><a href="http://trainofthought.segfault.gr/category/projects/arachni/">News straight from the developer's blog</a></li>
+                    <li><a href="http://twitter.com/Zap0tek">Developer's Twitter feed</a></li>
+                    <li><a href="https://github.com/Zapotek/arachni/tree/experimental">The bleeding edge, Arachni's experimental branch</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-box end-footer-box">
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div id="footer-links">
+            <p>&copy; <a href="mailto:tasos.laskos@gmail.com">Tasos "Zapotek" Laskos</a> 2011-2012 <a href="http://www.spyka.net"></a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -60,7 +60,11 @@ module Reports
             start_tag( type )
             headers.each_pair {
                 |name, value|
-                __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                if name.downcase == 'set-cookie' && value.is_a?( Array )
+                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.join( "\n" ) )}\" />" )
+                else
+                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                end
             }
             end_tag( type )
         end

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -21,7 +21,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class AutoLogin < Arachni::Plugin::Base
 
@@ -31,19 +31,10 @@ class AutoLogin < Arachni::Plugin::Base
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-
+    def prepare
         @framework.pause!
         print_info( "System paused." )
-    end
 
-    def prepare
         @params = parse_params
 
         # we need to declared this in order to pass ourselves
@@ -51,10 +42,10 @@ class AutoLogin < Arachni::Plugin::Base
         @http = @framework.http
     end
 
-    def run( )
+    def run
 
         # grab the page containing the login form
-        res  = @framework.http.get( @options['url'], :async => false ).response
+        res  = @http.get( @options['url'], :async => false ).response
 
         parser = Arachni::Parser.new( @framework.opts, res )
         # parse the response as a Page object
@@ -69,7 +60,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         if !login_form
             register_results( { :code => 0, :msg => MSG_FAILURE + @options['url'] } )
-            print_error( MSG_FAILURE + @options['url'] )
+            print_bad( MSG_FAILURE + @options['url'] )
             return
         end
 
@@ -81,11 +72,11 @@ class AutoLogin < Arachni::Plugin::Base
 
         # register us as the auditor
         login_form.auditor( self )
-        res = login_form.submit( :async => false ).response
+        res = login_form.submit( :async => false, :update_cookies => true ).response
 
         if !res
             register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
-            print_error( MSG_NO_RESPONSE )
+            print_bad( MSG_NO_RESPONSE )
             return
         else
             register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => @http.current_cookies.dup } )
@@ -134,7 +125,7 @@ class AutoLogin < Arachni::Plugin::Base
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
                 Arachni::OptUrl.new( 'url', [ true, 'The URL that contains the login form.' ] ),
                 Arachni::OptString.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )

@@ -1,0 +1,30 @@
+
+                        <h4>
+                            <input type="checkbox" class="<%=class_name%>" name="modules[<%=mod['mod_name']%>]"
+                                <% if session['opts']['modules'] && ( session['opts']['modules'][0] == '*' || session['opts']['modules'].include?( mod['mod_name'] ) ) %> checked="checked" <% end %> />
+                                <%=escape( mod['name'] )%>
+                        </h4>
+                        <pre class="notice"> <%=prep_description( escape( mod['description'] ) )%></pre>
+                        <p>
+                            <% if mod['references'] && !mod['references'].empty? %>
+                                <strong>References:</strong>
+                                <% mod['references'].each.with_index do |item, i| %>
+                                    <a href="<%=item[1]%>"><%= escape( item[0] ) %> </a>
+                                    <%if mod['references'].size !=  i+1%>
+                                    ,
+                                    <%end%>
+                                <%end%>
+                                <br/>
+                            <%end%>
+
+                            <% if mod['elements'] && !mod['elements'].empty? %>
+                                <strong>Elements:</strong> <%= mod['elements'].join( ', ' ) %><br/>
+                            <%end%>
+
+                            <% if mod['issue'] && mod['issue']['tags'] && !mod['issue']['tags'].empty? %>
+                                <strong>Tags:</strong> <%= mod['issue']['tags'].join( ', ' ) %><br/>
+                            <%end%>
+
+                            <strong>Version:</strong> <%=mod['version']%><br/>
+                            <strong>Author:</strong> <%=escape( mod['author'].join( ", " ))%>
+                        </p>

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -11,7 +11,6 @@
 require 'digest/md5'
 
 module Arachni
-
 module Modules
 
 #
@@ -20,7 +19,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 #
 class InterestingResponses < Arachni::Module::Base
@@ -32,14 +31,12 @@ class InterestingResponses < Arachni::Module::Base
         404
     ]
 
-    def initialize( page )
-        super( page )
-
+    def prepare
         # we need to run only once
         @@__ran ||= false
     end
 
-    def run( )
+    def run
         return if @@__ran
 
         print_status( "Listening..." )
@@ -62,7 +59,7 @@ class InterestingResponses < Arachni::Module::Base
             :description    => %q{Logs all non 200 (OK) server responses.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.3',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Interesting server response.},
@@ -94,7 +91,7 @@ class InterestingResponses < Arachni::Module::Base
         @@_loged[:paths]   << path
         @@_loged[:digests] << digest
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :id           => "Code: #{res.code.to_s}",
@@ -104,10 +101,7 @@ class InterestingResponses < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         # inform the user that we have a match
         print_ok( "Found an interesting response (Code: #{res.code.to_s})." )

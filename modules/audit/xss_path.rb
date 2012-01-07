@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,7 +17,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -28,37 +27,52 @@ class XSSPath < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-
-        @results    = []
-    end
-
-    def prepare( )
-        @str = '/<arachni_xss_path_' + seed
+    def prepare
+        @_tag_name = 'my_tag_' + seed
+        @str = '<' + @_tag_name + ' />'
         @__injection_strs = [
             @str,
+            '?' + @str,
             '?>"\'>' + @str,
             '?=>"\'>' + @str
         ]
+
+        @@audited ||= Set.new
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url )
+
+        return if @@audited.include?( path )
+        @@audited << path
 
         @__injection_strs.each {
             |str|
 
             url  = path + str
+
+            print_status( "Checking for: #{url}" )
+
             req  = @http.get( url )
 
             req.on_complete {
                 |res|
-                __log_results( res, str )
+                check_and_log( res, str )
             }
         }
+    end
 
+    def check_and_log( res, str )
+        # check for the existence of the tag name before parsing to verify
+        # no reason to waste resources...
+        return if ! res.body.substring?( @_tag_name )
+
+        doc = Nokogiri::HTML( res.body )
+
+        # see if we managed to successfully inject our element
+        if !doc.xpath( "//#{@_tag_name}" ).empty?
+            __log_results( res, str )
+        end
     end
 
 
@@ -68,7 +82,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.2',
+            :version        => '0.1.6',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -90,33 +104,25 @@ class XSSPath < Arachni::Module::Base
     end
 
     def __log_results( res, id )
+        url = res.effective_url
+        log_issue(
+            :var          => 'n/a',
+            :url          => url,
+            :injected     => id,
+            :id           => id,
+            :regexp       => 'n/a',
+            :regexp_match => 'n/a',
+            :elem         => Issue::Element::PATH,
+            :response     => res.body,
+            :headers      => {
+                :request    => res.request.headers,
+                :response   => res.headers,
+            }
+        )
 
-        if res.body.substring?( id )
-
-            url = res.effective_url
-            # append the result to the results hash
-            @results << Issue.new( {
-                :var          => 'n/a',
-                :url          => url,
-                :injected     => id,
-                :id           => id,
-                :regexp       => 'n/a',
-                :regexp_match => 'n/a',
-                :elem         => Issue::Element::LINK,
-                :response     => res.body,
-                :headers      => {
-                    :request    => res.request.headers,
-                    :response   => res.headers,
-                }
-            }.merge( self.class.info ) )
-
-            # inform the user that we have a match
-            print_ok( "Match at #{url}" )
-            print_verbose( "Inected string: #{id}" )
-
-            # register our results with the system
-            register_results( @results )
-        end
+        # inform the user that we have a match
+        print_ok( "Match at #{url}" )
+        print_verbose( "Injected string: #{id}" )
     end
 
 

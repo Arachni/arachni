@@ -1,0 +1,53 @@
+
+        <form action="/plugins" method="post">
+
+            <%= csrf_tag %>
+            <div id="page-intro">
+                <h2>Plugins</h2>
+                <p>
+                    Plugin components extend the functionality of the framework in abstract ways.
+                <br/>
+                <br/>
+                </p>
+                <p>
+                    <input type="button" onclick="javascript:checkAll( 'plugin' );" value="Check all"/>
+                    <input type="button" onclick="javascript:uncheckAll( 'plugin' );" value="Uncheck all"/>
+                    <input type="submit" value="Save" />
+                </p>
+            </div>
+
+            <%= erb :flash, {:layout => false} %>
+            <% plugins.each do |plugin|%>
+                <h3>
+                    <input <%if plugin_has_required_file_option?( plugin['options'] )%>
+                        disabled="disabled" <%end%> type="checkbox"
+                        class="plugin" name="plugins[<%=plugin['plug_name']%>]"
+
+                        <% if session['opts']['plugins'] &&
+                              session['opts']['plugins'].include?( plugin['plug_name'] ) %>
+                              checked="checked"
+                      <% end %>
+                    />
+
+                    <%=plugin['name']%>
+
+                    <%if plugin_has_required_file_option?( plugin['options'] )%>
+                        <em> (This plugin requires an option type which is not yet supported by the WebUI)</em>
+                    <%end%>
+                </h3>
+                <h4>Description</h4>
+                <pre class="notice"> <%=prep_description( escape( plugin['description'] ) )%></pre>
+
+                <% if plugin['tags'] && !plugin['tags'].empty? %>
+                    <strong>Tags:</strong> <%= plugin['tags'].join( ', ' ) %><br/>
+                <%end%>
+
+                <%= erb :options, { :layout => false }, :component => plugin, :session_options => session_options %>
+
+                <p>
+                    <strong>Version:</strong> <%=plugin['version']%><br/>
+                    <strong>Author:</strong> <%=escape( plugin['author'].join( ", " ))%>
+                </p>
+            <% end %>
+
+        </form>

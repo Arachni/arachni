@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -17,23 +17,15 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+# @version: 0.1.3
 #
 class CookieCollector < Arachni::Plugin::Base
-
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        super( framework, options )
-    end
 
     def prepare
         @cookies = []
     end
 
-    def run( )
+    def run
         @framework.http.add_on_new_cookies {
             |cookies, res|
             update( cookies, res )
@@ -72,6 +64,14 @@ class CookieCollector < Arachni::Plugin::Base
         register_results( @cookies )
     end
 
+    def self.distributable?
+        true
+    end
+
+    def self.merge( results )
+        results.flatten
+    end
+
 
     def self.info
         {
@@ -82,7 +82,7 @@ class CookieCollector < Arachni::Plugin::Base
                     It will log thousands of results leading to a huge report,
                     highly increased memory and CPU usage.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.3',
         }
     end
 

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -26,7 +26,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class WAFDetector < Arachni::Plugin::Base
 
@@ -36,17 +36,7 @@ class WAFDetector < Arachni::Plugin::Base
 
     MSG_NOT_FOUND    = %q{Could not detect any sign of filtering, a WAF doesn't seem to be present.}
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
-    def initialize( framework, options )
-        @framework = framework
-        @options   = options
-    end
-
     def prepare
-
         @precision = @options['precision']
 
         bad = [
@@ -79,8 +69,7 @@ class WAFDetector < Arachni::Plugin::Base
 
     end
 
-    def run( )
-
+    def run
         print_status( "Starting detection with a precision of #{@precision}." )
 
         print_status( "Stage #1: Requesting original page." )
@@ -106,7 +95,7 @@ class WAFDetector < Arachni::Plugin::Base
                 inconclusive!
             end
         }
-
+        @framework.http.run
     end
 
     def found!
@@ -168,7 +157,7 @@ class WAFDetector < Arachni::Plugin::Base
 
                  Steps 1 to 3 will be repeated _precision_ times (default: 5) and the responses will be averaged using rDiff analysis.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
                 Arachni::OptInt.new( 'precision', [ false, 'Stage precision (how many times to perform each detection stage).', 5 ] )
             ]

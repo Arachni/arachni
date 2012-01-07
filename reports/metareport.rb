@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -63,6 +63,7 @@ class Metareport < Arachni::Report::Base
                 # pp variation['opts']
 
                 params = variation['opts'][:combo]
+                next if !params[issue.var]
                 params[issue.var] = params[issue.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
 
                 if method == 'cookie'
@@ -98,7 +99,7 @@ class Metareport < Arachni::Report::Base
         # pp msf
 
         outfile = File.new( @options['outfile'], 'w')
-        YAML.dump( msf, outfile )
+        ::YAML.dump( msf, outfile )
         outfile.close
 
         print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
@@ -126,10 +127,7 @@ class Metareport < Arachni::Report::Base
             :description    => %q{Creates a file to be used with the Arachni MSF plug-in.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
-            :options        => [
-                Arachni::OptString.new( 'outfile', [ false, 'Where to save the report.',
-                    Time.now.to_s + '.msf' ] ),
-            ]
+            :options        => [ Arachni::Report::Options.outfile( '.msf' ) ]
 
         }
     end

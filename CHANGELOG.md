@@ -1,6 +1,152 @@
 
 # ChangeLog
 
+## Version 0.4 _(January 7, 2012)_
+- RPC Infrastructure (**New**)
+   - Dispatcher
+      - Dispatchers can now be connected to form a High Performance Grid and share scan workloads.
+      - Users can now specify a range of ports to be used for spawned Instances. [Issue #76]
+      - Now checks for signal availability before using <em>trap()</em>. (**New**) [Issue #71]
+      - Now uses Windows compliant filenames for the logs. (**New**) [Issue #70]
+   - Ruby's XMLRPC libraries have been replaced by <a href="https://github.com/Arachni/arachni-rpc">Arachni-RPC</a>,
+    a light-weight and high-performance custom client/server RPC implementation.
+- Added <em>extras</em> directory holding components that are considered too specialised, dangerous or in some way unsuitable for
+    utilising without explicit user interaction. (**New**)
+    - Modules
+       - Recon
+          - SVN Digger dirs -- Finds directories, based on wordlists created from open source repositories (Herman Stevens)
+          - SVN Digger files -- Finds files, based on wordlists created from open source repositories (Herman Stevens)
+          - RAFT dirs (Herman Stevens)
+          - RAFT files (Herman Stevens)
+- Framework
+   - <em>stats()</em>
+      - Fixed bug that caused the <em>current_page</em> to not be refreshed during timing attacks.
+      - Fixed bug that caused a less than 100% progress at the end of scans. [Issue #86]
+      - If the crawler is limited by link-count it will be taken under consideration.
+   - Significantly reduced memory footprint by re-scheduling the consumption of Trainer generated pages.
+- User Interfaces
+   - WebUI
+      - Sinatra
+         - Updated to use the light-weight and high-performance <a href="http://code.macournoyer.com/thin/">Thin</a> server.
+         - Added <a href="https://github.com/raggi/async_sinatra">async_sinatra</a> to allow for asynchronous responses. (**New**)
+      - Added support for HTTP Basic Auth (**New**)
+      - Updated screens to provide access to HPG (High Performance Grid) features:
+         - Home
+            - Added option to enable HPG mode on a per scan basis (**New**)
+         - Dispatchers
+            - Added node information (Nickname, Pipe ID, Weight, Cost). (**New**)
+            - Added neighbour inspection per dispatcher. (**New**)
+            - Added log inspection per dispatcher. (**New**)
+            - Improved accuracy of instance statuses.
+            - Added percentages for memory and CPU usage per instance. (**New**)
+         - Instance (scan management)
+            - Provides an average of all stats of scanner instances. (**New**)
+            - Added per instance progress bars. (**New**)
+            - Added per instance statuses. (**New**)
+            - Added est. remaining time. (**New**)
+         - Settings
+            - Added proxy settings. [Issue #74] (**New**)
+            - Added settings for restrict and extend paths options. (**New**)
+      - Fixed small typo in "Settings" screen. [Issue #62]
+      - Reports -- AFR report is now served straight-up to avoid corruption. [Issue #55]
+      - Add-ons -- Updated to use the new async libraries.
+      - Added help buttons. (**New**)
+   - CLI
+      - Improved interrupt handler:
+         - It now exits in a cleaner fashion and is more obedient.
+         - Added est. remaining time. (**New**)
+         - Added progressbar. (**New**)
+- HTTP client
+   - Added support for including custom headers. [Issue #90] (**New**)
+   - Refactored in order for all methods to use <em>request()</em>.
+   - Bug-fixed cookie preservation.
+- Spider
+   - spider-first option removed and set to true by default.
+   - Added "--depth" parameter. (**New**)
+   - Fixed incorrect implementation of the inclusion filters.
+   - Now follows "Location" headers directly and bypasses the trainer.
+   - Added support for extending the crawl scope with a file that contains newline separated URLs. (**New**) [Issue #67]
+   - Added support for restricting the crawl scope with a file that contains newline separated URLs. (**New**)
+   - Made more resilient against malformed/non-standard URLs. [Issue #57]
+- Parser
+   - Encoded URLs with fragments right after the host caused URI.parse to fail. [Issue #66]
+   - Auditable elements
+      - If there are 2 or more password fields in a form an extra variation is added with
+        the same inputs for all passwords in case it's a 'please repeat your password' thing. (**New**) [Issue #59]
+- Plugins
+   - API -- Added <code>distributable?()</code> and <code>merge()</code> class methods which declare
+        if a plug-in can be distributed to all instances when running in Grid mode and merge an array of its own results respectively.
+      - Distributable plug-ins:
+         - Content-Types
+         - Cookie collector
+         - Healthmap
+         - Profiler
+         - AutoThrottle
+   - Profiler -- Removed response time logging and moved it to <em>defaults</em>.
+   - Proxy -- Fixed bug which caused some headers not to be forwarded. [Issue #64]
+   - Discovery (accompanied by appropriate report formatters). (**New**) [Issue #81]
+      - Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+   - Added the 'defaults' subdirectory which contains plug-ins that should be loaded by default.
+   - Added: (**New**)
+      - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
+      - BeepNotify -- Beeps when the scan finishes.
+      - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
+      - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
+      - Manual verification -- Flags issues that require manual verification as untrusted in order to reduce the signal-to-noise ratio.
+      - Resolver -- Resolves vulnerable hostnames to IP addresses.
+- Reports
+   - HTML report
+      - Fixed replay forms to include URL params in the <em>action</em> attribute. [Issue #73]
+      - Refactored and broken into erb partials.
+      - Organised subsections into tabs. (**New**)
+      - HTML responses of logged Issues are now rendered on-demand. [Issue #88]
+      - Added graph showing issue trust totals. (**New**)
+      - The main issue graph shows trusted and untrusted issues in 2 different series.
+      - ALl JavaScript and CSS code is now included in the report for off-line viewing.
+      - Removed manual-verification piechart, obsoleted by the trust chart.
+      - Replaced Highcharts with jqPlot due to licensing reasons.
+      - Removed false-positive reporting -- was causing segfaults on Mac OSX. [Issue #126]
+   - Added (**New**)
+      - JSON -- Exports the audit results as a JSON serialized Hash.
+      - Marshal -- Exports the audit results as a Marshal serialized Hash.
+      - YAML -- Exports the audit results as a YAML serialized Hash.
+- Heeded Ruby's warnings (<em>ruby -w</em>).
+- Modules
+   - API
+      - Auditor
+         - Added helper methods for checking the existence of remote files and directories. (**New**)
+         - Added helper methods for issue logging. (**New**)
+   - Refactored modules replacing duplicate code with the new helper methods.
+   - Audit
+      - XSS -- Updated to actually inject an element, parse the HTML response and
+        look for that element before logging in order to eliminate false positives. [Issue #59]
+      - Path traversal -- Fixed broken regular expressions
+      - SQL Injection -- Fixed broken regular expressions
+      - XSS Path -- Updated to verify the injection using HTML parsing
+      - XSS URI -- Made obsolete and will be removed from future releases -- loads and runs XSS Path instead.
+   - Recon
+      - Added MixedResource detection module (<a href="http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html">Reference</a>) (**New**) [Issue #56]
+- Meta-Modules
+   - Have all been converted to regular plug-ins in order to make distribution across the Grid easier.
+- Dependencies
+   - Added
+      - Arachni-RPC
+      - EventMachine
+      - EM Synchrony
+      - AsyncSinatra
+   - Updated
+      - Typhoeus => 0.3.3
+      - Sys-proctable => 0.9.1
+      - Nokogiri => 1.5.0
+      - Sinatra => 1.3.1
+      - Datamapper => 1.1.0
+      - Json => 1.6.1
+      - Datamapper SQLite adapter => 1.1.0
+      - Net-SSH => 2.2.1
+   - Removed
+      - Rack-CSRF
+      - JSON (Provided by DataMapper)
+
 ## Version 0.3 _(July 26, 2011)_
 - HTTP client
    - Fixed race condition in timeout options.

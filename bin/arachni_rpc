@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+=begin
+                  Arachni
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+
+  This is free software; you can copy and distribute and modify
+  this program under the term of the GPL v2.0 License
+  (See LICENSE file for details)
+
+=end
+
+require_relative "../lib/arachni/options"
+
+Arachni::Options.instance.parse!
+require Arachni::Options.instance.dir['lib'] + 'ui/rpc/rpc'
+
+Arachni::UI::RPC.new( Arachni::Options.instance ).run

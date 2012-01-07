@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -21,23 +20,16 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @version: 0.2.1
 #
 #
 class BackupFiles < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-    end
-
     def prepare
         # to keep track of the requests and not repeat them
         @@__audited ||= Set.new
-
-        # our results array
-        @results = []
 
         @@__extensions ||=[]
         return if !@@__extensions.empty?
@@ -48,12 +40,11 @@ class BackupFiles < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
+        path = get_path( @page.url )
+        return if @@__audited.include?( path )
 
         filename = File.basename( URI( normalize_url( @page.url ) ).path )
-        path     = get_path( @page.url )
-
-        return if @@__audited.include?( path )
 
         print_status( "Scanning..." )
 
@@ -71,28 +62,26 @@ class BackupFiles < Arachni::Module::Base
             #
 
             file = ext % filename # Example: index.php.bak
-            url  = path + file
-            next if !( req1 = __request_once( url ) )
+            check!( path, file )
 
-
-            req1.on_complete {
-                |res|
-                __log_results( res, file )
-            }
-
-            file = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
-            url  = path + file
-            next if !( req2 = __request_once( url ) )
-
-            req2.on_complete {
-                |res|
-                __log_results( res, file )
-            }
+            cfile = ext % filename.gsub( /\.(.*)/, '' ) # Example: index.bak
+            check!( path, file ) if file != cfile
         }
 
         @@__audited << path
     end
 
+    def check!( path, file )
+
+        url = path + file
+
+        print_status( "Checking for #{url}" )
+
+        log_remote_file_if_exists( url ) {
+            |res|
+            print_ok( "Found #{file} at " + res.effective_url )
+        }
+    end
 
     def self.info
         {
@@ -100,13 +89,16 @@ class BackupFiles < Arachni::Module::Base
             :description    => %q{Tries to find sensitive backup files.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.5',
+            :version        => '0.2.1',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{A backup file exists on the server.},
-                :description => %q{},
-                :tags        => [ 'path', 'backup', 'file' ],
+                :description => %q{ The server response indicates that a file matching
+                    the name of a common naming scheme for file backups can be publicly accessible.
+                    A developer has probably forgotten to remove this file after testing.
+                    This can lead to source code disclosure and privileged information leaks.},
+                :tags        => [ 'path', 'backup', 'file', 'discovery' ],
                 :cew         => '530',
                 :severity    => Issue::Severity::HIGH,
                 :cvssv2       => '',
@@ -115,61 +107,6 @@ class BackupFiles < Arachni::Module::Base
             }
 
         }
-    end
-
-    #
-    # Adds an issue to the @results array<br/>
-    # and outputs an "OK" message with the filename and its url.
-    #
-    # @param  [Net::HTTPResponse]  res   the HTTP response
-    # @param  [String]  filename   the discovered filename
-    #
-    def __log_results( res, filename )
-
-        # some webapps disregard the extension and load the page anyway
-        # which will lead to false positives, take care of that.
-        return if res.body == @page.html
-
-        return if( res.code != 200 || @http.custom_404?( res ) )
-
-        url = res.effective_url
-        # append the result to the results array
-        @results << Issue.new( {
-            :url          => url,
-            :injected     => filename,
-            :id           => filename,
-            :elem         => Issue::Element::PATH,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( @results )
-
-        # inform the user that we have a match
-        print_ok( "Found #{filename} at " + url )
-    end
-
-    #
-    # Gets a URL only once
-    #
-    # @param  [String]  url   the url to get
-    #
-    # @return  [FalseClass/HTTPResponse]   false if the url has been
-    #                                          previously requested,<br/>
-    #                                          the HTTPResponse otherwise
-    #
-    def __request_once( url )
-
-        print_status( "Checking for #{url}" )
-
-        # force the Trainer to analyze it and if it's HTML it'll extract any new attack vectors.
-        req  = @http.get( url, :train => true )
-
-        return req
     end
 
 end

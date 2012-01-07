@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -18,22 +17,18 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.3
 #
 class HTTP_PUT < Arachni::Module::Base
 
     include Arachni::Module::Utilities
 
-    def initialize( page )
-        super( page )
-
+    def prepare
         @@__checked ||= Set.new
     end
 
-    def run( )
-
+    def run
         path = get_path( @page.url ) + 'Arachni-' + seed.to_s[0..4].to_s
-
         return if @@__checked.include?( path )
         @@__checked << path
 
@@ -55,7 +50,7 @@ class HTTP_PUT < Arachni::Module::Base
             :description    => %q{Checks if uploading files is possible using the HTTP PUT method.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.3',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -73,7 +68,7 @@ class HTTP_PUT < Arachni::Module::Base
 
     def __log_results( res )
 
-        issue = Issue.new( {
+        log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,
             :elem         => Issue::Element::SERVER,
@@ -82,10 +77,7 @@ class HTTP_PUT < Arachni::Module::Base
                 :request    => res.request.headers,
                 :response   => res.headers,
             }
-        }.merge( self.class.info ) )
-
-        # register our results with the system
-        register_results( [issue] )
+        )
 
         print_ok( 'File has been created: ' + res.effective_url )
     end

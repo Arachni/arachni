@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -25,7 +25,7 @@ class Proxy
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1.1
+    # @version: 0.1.2
     #
     class Server < WEBrick::HTTPProxyServer
 
@@ -34,7 +34,7 @@ class Proxy
             src.each{|key, value|
                 key = key.downcase
                 if HopByHop.member?(key)          || # RFC2616: 13.5.1
-                   connections.member?(key)       || # RFC2616: 14.10
+                   connections.member?(key)       #|| # RFC2616: 14.10
                    # ShouldNotTransfer.member?(key)    # pragmatics
                   @logger.debug("choose_header: `#{key}: #{value}'")
                   next

@@ -1,6 +1,6 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,7 +9,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -19,7 +18,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -31,11 +30,7 @@ class XSSHTMLTag < Arachni::Module::Base
 
     TAG_NAME = 'arachni_xss_in_tag'
 
-    def initialize( page )
-        super( page )
-    end
-
-    def prepare( )
+    def prepare
         @_injection_strs = [
             " #{TAG_NAME}=" + seed,
             "\" #{TAG_NAME}=\"" + seed,
@@ -47,7 +42,7 @@ class XSSHTMLTag < Arachni::Module::Base
         }
     end
 
-    def run( )
+    def run
         @_injection_strs.each {
             |str|
             audit( str, @_opts ) {
@@ -85,7 +80,7 @@ class XSSHTMLTag < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'

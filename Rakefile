@@ -1,12 +1,14 @@
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
   (See LICENSE file for details)
 
 =end
+
+require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
 desc "Generate docs"
 
@@ -54,11 +56,15 @@ desc "Cleaning report and log files."
 task :clean do
 
     sh "rm *.afr || true"
+    sh "rm *.yaml || true"
+    sh "rm *.json || true"
+    sh "rm *.marshal || true"
     sh "rm *.gem || true"
-    sh "rm logs/XMLRPC* || true"
-    sh "rm lib/ui/web/server/db/log.db || true"
-    sh "rm lib/ui/web/server/db/default.db || true"
-    sh "rm lib/ui/web/server/db/welcomed || true"
+    sh "rm logs/*.log || true"
+    sh "rm lib/arachni/ui/web/server/db/*.* || true"
+    sh "rm lib/arachni/ui/web/server/db/welcomed || true"
+    sh "rm lib/arachni/ui/web/server/public/reports/*.* || true"
+    sh "rm lib/arachni/ui/web/server/tmp/*.* || true"
 end
 
 
@@ -67,9 +73,6 @@ end
 #
 desc "Build the arachni gem."
 task :build  => [ :clean ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem build arachni.gemspec"
 end
 
@@ -79,9 +82,6 @@ end
 #
 desc "Build and install the arachni gem."
 task :install  => [ :build ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem install arachni-#{Arachni::VERSION}.gem"
 end
 
@@ -91,8 +91,5 @@ end
 #
 desc "Push a new version to Gemcutter"
 task :publish => [ :build ] do
-
-    require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
-
     sh "gem push arachni-#{Arachni::VERSION}.gem"
 end

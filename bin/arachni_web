@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 =begin
                   Arachni
-  Copyright (c) 2010-2011 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
   This is free software; you can copy and distribute and modify
   this program under the term of the GPL v2.0 License
@@ -9,26 +9,20 @@
 
 =end
 
-require 'getoptlong'
-require 'pp'
-require 'ap'
+require_relative "../lib/arachni/options"
 
-cwd = File.expand_path( File.dirname( __FILE__ ) )
-$:.unshift( cwd )
-
-require cwd + '/../lib/options'
-options = Arachni::Options.instance
-
-options.dir            = Hash.new
-options.dir['root']    = File.expand_path( cwd + '/../' ) + '/'
-options.dir['data']    = options.dir['root'] + 'data/'
-options.dir['modules'] = options.dir['root'] + 'modules/'
-options.dir['reports'] = options.dir['root'] + 'reports/'
-options.dir['plugins'] = options.dir['root'] + 'plugins/'
-options.dir['lib']     = options.dir['root'] + 'lib/'
+Arachni::Options.instance.parse!
 
 def print_help( root )
         puts <<USAGE
+Arachni - Web Application Security Scanner Framework
+       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+                                      <zapotek@segfault.gr>
+               (With the support of the community and the Arachni Team.)
+
+       Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
+       Documentation: http://github.com/Zapotek/arachni/wiki
+
   Usage:  arachni_web \[options\]
 
   Supported options:
@@ -36,43 +30,26 @@ def print_help( root )
     -h
     --help                      output this
 
-    --port                      specify port
+    --port                      specify port to listen on
+    --host                      specify host to bind to
 
-    --host                      specify host
+    --username                  set username for HTTP basic auth
+    --password                  set password for HTTP basic auth
 
     For SSL options refer to "webui.yaml" and "README.webui.yaml.txt" under "#{root}conf/".
 
 USAGE
 end
 
-
-# Construct getops struct
-opts = GetoptLong.new(
-    [ '--help', '-h',             GetoptLong::NO_ARGUMENT ],
-    [ '--port',                   GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--host',                   GetoptLong::REQUIRED_ARGUMENT ],
-)
-
-begin
-    opts.each {
-        |opt, arg|
-
-        case opt
-
-            when '--help'
-                print_help( options.dir['root'] )
-                exit
-
-            when '--port'
-                # not really used for RPC this time but by create another attr
-                options.rpc_port = arg.to_i
-
-            when '--host'
-                # not really used for RPC this time but by create another attr
-                options.server = arg.to_s
-        end
-    }
+options = Arachni::Options.instance
+if options.help
+    print_help( options.root_path )
+    exit
 end
 
-# Sinatra will run automatically
-require options.dir['lib'] + 'ui/web/server'
+require 'eventmachine'
+
+::EM.run do
+    # Sinatra will run automatically
+    require Arachni::Options.instance.dir['lib'] + 'ui/web/server'
+end
