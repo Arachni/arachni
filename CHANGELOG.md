@@ -1,7 +1,7 @@
 
 # ChangeLog
 
-## Version 0.4 _(Under development)_
+## Version 0.4 _(January 7, 2012)_
 - RPC Infrastructure (**New**)
    - Dispatcher
       - Dispatchers can now be connected to form a High Performance Grid and share scan workloads.
