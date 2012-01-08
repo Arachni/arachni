@@ -2,7 +2,7 @@
 
 ## Version 0.4.1 _(Under development)_
 - Reports
-   - XML -- added _severity_
+   - XML -- added missing Issue attributes
 
 ## Version 0.4 _(January 7, 2012)_
 - RPC Infrastructure (**New**)
