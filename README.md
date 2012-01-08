@@ -6,7 +6,7 @@
     </tr>
     <tr>
         <th>Homepage</th>
-        <td><a href="http://arachni.segfault.gr">http://arachni.segfault.gr</a></td>
+        <td><a href="http://arachni-scanner.com">http://arachni-scanner.com</a></td>
     </tr>
     <tr>
         <th>Blog</th>
