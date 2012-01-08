@@ -14,7 +14,7 @@ This branch holds experimental code which is planned for release once it has bee
 <table>
     <tr>
         <th>Version</th>
-        <td>0.4</td>
+        <td>0.4.1</td>
     </tr>
     <tr>
         <th>Homepage</th>
