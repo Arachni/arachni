@@ -22,7 +22,7 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version: 0.2.1
 #
 class XML < Arachni::Report::Base
 
@@ -123,6 +123,7 @@ class XML < Arachni::Report::Base
 
             start_tag( 'issue' )
             simple_tag( 'name', issue.name )
+            simple_tag( 'severity', issue.severity )
 
             simple_tag( 'url', issue.url )
             simple_tag( 'element', issue.elem )
@@ -173,7 +174,7 @@ class XML < Arachni::Report::Base
             :name           => 'XML report',
             :description    => %q{Exports a report as an XML file.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.2',
+            :version        => '0.2.1',
             :options        => [ Arachni::Report::Options.outfile( '.xml' ) ]
         }
     end

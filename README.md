@@ -1,3 +1,15 @@
+# Experimental branch
+
+This branch holds experimental code which is planned for release once it has been properly tested.
+
+## Installation
+
+    git clone git://github.com/Zapotek/arachni.git
+    cd arachni
+    git checkout experimental
+    rake install
+
+
 # Arachni - Web Application Security Scanner Framework
 <table>
     <tr>
