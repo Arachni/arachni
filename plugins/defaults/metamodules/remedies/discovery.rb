@@ -55,8 +55,10 @@ class Discovery < Arachni::Plugin::Base
         # URL path => size of responses
         response_size_per_path  = {}
 
-        on_relevant_issues {
+        @framework.audit_store.issues.each_with_index {
             |issue, idx|
+
+            next if !includes_tags?( issue.tags )
 
             # discovery issues only have 1 variation
             variation = issue.variations.first
@@ -66,7 +68,14 @@ class Discovery < Arachni::Plugin::Base
             # will control the behavior under that path
             #
             # did that make any sense?
-            path = File.dirname( URI( normalize_url( variation['url'] ) ).path )
+            path = ''
+            begin
+                exception_jail {
+                    path = File.dirname( URI( normalize_url( variation['url'] ) ).path )
+                }
+            rescue
+                next
+            end
 
             # gathering total response sizes for issues per path
             response_size_per_path[path] ||= 0
@@ -111,21 +120,6 @@ class Discovery < Arachni::Plugin::Base
         }
 
         register_results( issues ) if !issues.empty?
-    end
-
-    #
-    # Passes each issue that was logged by a discovery module to the block.
-    #
-    # @param    [Proc]   &block
-    #
-    def on_relevant_issues( &block )
-        @framework.audit_store.issues.each_with_index {
-            |issue, idx|
-
-            if includes_tags?( issue.tags )
-                block.call( issue, idx )
-            end
-        }
     end
 
     #
