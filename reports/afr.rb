@@ -17,22 +17,12 @@ module Reports
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class AFR < Arachni::Report::Base
 
-    #
-    # @param [AuditStore]  audit_store
-    # @param [Hash]   options    options passed to the report
-    #
-    def initialize( audit_store, options )
-        @audit_store   = audit_store
-        @options       = options
-    end
-
-    def run( )
-
-        print_line( )
+    def run
+        print_line
         print_status( 'Dumping audit results in \'' + @options['outfile']  + '\'.' )
 
         @audit_store.save( @options['outfile'] )
