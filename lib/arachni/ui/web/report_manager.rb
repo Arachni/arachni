@@ -191,7 +191,7 @@ class ReportManager
     def get( type, id )
         return if !valid_class?( type )
 
-        begin
+        # begin
             location = savedir + Report.get( id ).filename + EXTENSION
 
             # if it's the default report type don't waste time converting
@@ -200,11 +200,11 @@ class ReportManager
             else
                 return convert( type, ::Arachni::AuditStore.load( location ) )
             end
-        rescue Exception => e
-            ap e
-            ap e.backtrace
-            return nil
-        end
+        # rescue Exception => e
+            # ap e
+            # ap e.backtrace
+            # return nil
+        # end
     end
 
     #
