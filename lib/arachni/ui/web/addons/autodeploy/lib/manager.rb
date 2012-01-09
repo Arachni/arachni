@@ -26,7 +26,7 @@ class AutoDeploy
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 class Manager
 
@@ -34,7 +34,7 @@ class Manager
 
     ARCHIVE_PATH = 'https://github.com/downloads/Zapotek/arachni/'
     # ARCHIVE_PATH = 'http://localhost/~zapotek/'
-    ARCHIVE_NAME = 'arachni-v0.4-autodeploy'
+    ARCHIVE_NAME = 'arachni-v' + Arachni::VERSION + '-autodeploy'
     ARCHIVE_EXT  = '.tar.gz'
 
     NODE_SSL_KEY  = "node_ssl_key.pem"
