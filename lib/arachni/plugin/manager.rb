@@ -24,7 +24,7 @@ module Plugin
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Manager < Arachni::ComponentManager
 
@@ -73,7 +73,7 @@ class Manager < Arachni::ComponentManager
 
             @jobs << Thread.new {
 
-                exception_jail {
+                exception_jail( false ) {
                     Thread.current[:name] = name
 
                     plugin_new = create( name )

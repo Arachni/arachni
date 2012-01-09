@@ -43,7 +43,7 @@ require opts.dir['lib'] + 'component_manager'
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @version: 0.2.2
 #
 class Parser
     include Arachni::UI::Output
@@ -244,7 +244,7 @@ class Parser
     #
     # @return    [Hash]    HTTP header fields
     #
-    def headers( )
+    def headers
         headers_arr  = []
         {
             'accept'          => 'text/html,application/xhtml+xml,application' +
@@ -642,7 +642,7 @@ class Parser
 
             return @@manager.available.map {
                 |name|
-                @@manager[name].new.run( doc )
+                exception_jail( false ){ @@manager[name].new.run( doc ) }
             }.flatten.uniq.compact.
             map { |path| to_absolute( url_sanitize( path ) ) }.
             reject { |path| skip?( path ) }

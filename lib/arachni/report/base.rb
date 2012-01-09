@@ -60,13 +60,14 @@ end
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @version: 0.1.1
 # @abstract
 #
 class Base
 
     # get the output interface
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     # where to report false positives <br/>
     # info about this should be included in all templates
@@ -88,7 +89,7 @@ class Base
     #
     # REQUIRED
     #
-    def run( )
+    def run
 
     end
 
@@ -129,7 +130,9 @@ class Base
             plugin_results = plugins[name]
             next if !plugin_results || plugin_results[:results].empty?
 
-            formatted[name] = formatter.new( plugin_results.deep_clone ).run
+            exception_jail( false ) {
+                formatted[name] = formatter.new( plugin_results.deep_clone ).run
+            }
         }
 
         return formatted
@@ -150,7 +153,7 @@ class Base
             ],
             :description    => %q{This class should be extended by all reports.},
             :author         => 'zapotek',
-            :version        => '0.1',
+            :version        => '0.1.1',
         }
     end
 

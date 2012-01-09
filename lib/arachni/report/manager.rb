@@ -26,9 +26,11 @@ module Report
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1
+# @version: 0.1.1
 #
 class Manager < Arachni::ComponentManager
+
+    include Arachni::Module::Utilities
 
     # the extension of the Arachni Framework Report files
     EXTENSION   = '.afr'
@@ -54,7 +56,9 @@ class Manager < Arachni::ComponentManager
 
         self.each {
             |name, report|
-            run_one( name, audit_store.deep_clone )
+            exception_jail( false ){
+                run_one( name, audit_store.deep_clone )
+            }
         }
     end
 
