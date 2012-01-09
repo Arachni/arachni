@@ -18,7 +18,7 @@ module Plugins
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 class TimingAttacks < Arachni::Plugin::Base
 
@@ -42,15 +42,27 @@ class TimingAttacks < Arachni::Plugin::Base
             # we don't care about non OK responses
             next if res.code != 200
 
-            path = URI( normalize_url( res.effective_url ) ).path
-            path = '/' if path.empty?
-            @counter[path] ||= @times[path] ||= 0
+            begin
+                path = nil
+                # let's hope for a proper and clean parse but be prepared for
+                # all hell to break loose too...
+                begin
+                    path = URI( normalize_url( res.effective_url ) ).path
+                rescue
+                    url = res.effective_url.split( '?' ).first
+                    path = URI( normalize_url( res.effective_url ) ).path
+                end
 
-            # add up all request times for a specific path
-            @times[path] += res.start_transfer_time
+                path = '/' if path.empty?
+                @counter[path] ||= @times[path] ||= 0
 
-            # add up all requests for each path
-            @counter[path] += 1
+                # add up all request times for a specific path
+                @times[path] += res.start_transfer_time
+
+                # add up all requests for each path
+                @counter[path] += 1
+            rescue
+            end
         }
 
         wait_while_framework_running
@@ -111,7 +123,7 @@ class TimingAttacks < Arachni::Plugin::Base
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :tags           => [ 'anomaly' , 'timing', 'attacks', 'meta' ]
         }
     end

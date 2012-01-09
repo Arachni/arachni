@@ -11,6 +11,6 @@
 module Arachni
 
     # the universal system version
-    VERSION      = '0.4'
+    VERSION      = '0.4.1'
 
 end

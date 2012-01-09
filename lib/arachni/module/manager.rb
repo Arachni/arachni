@@ -32,6 +32,7 @@ module Module
 class Manager < Arachni::ComponentManager
 
     include Arachni::UI::Output
+    include Arachni::Module::Utilities
 
     @@results             ||= []
     @@on_register_results ||= []
@@ -54,7 +55,7 @@ class Manager < Arachni::ComponentManager
     # @param    [::Arachni::Framework]   framework  to be assigned to modules
     #
     def run( page, framework = nil )
-        keys.each { |mod| run_one( mod, page, framework ) }
+        keys.each { |mod| exception_jail( false ){ run_one( mod, page, framework ) } }
     end
 
     #
