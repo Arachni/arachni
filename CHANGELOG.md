@@ -1,8 +1,9 @@
 # ChangeLog
 
-## Version 0.4.1 _(Under development)_
+## Version 0.4.0.1 _(January 9, 2012)_
 - Reports
    - XML -- added missing Issue attributes
+- Added draconian run-time exception handling to all components.
 
 ## Version 0.4 _(January 7, 2012)_
 - RPC Infrastructure (**New**)
