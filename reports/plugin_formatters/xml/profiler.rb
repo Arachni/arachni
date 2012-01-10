@@ -23,7 +23,7 @@ module PluginFormatters
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class Profiler < Arachni::Plugin::Formatter
 
@@ -90,7 +90,7 @@ module PluginFormatters
             start_tag( 'params' )
             params.each_pair {
                 |name, value|
-                __buffer( "<param name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                __buffer( "<param name=\"#{name}\" value=\"#{CGI.escapeHTML( value || '' )}\" />" )
             }
             end_tag( 'params' )
         end
