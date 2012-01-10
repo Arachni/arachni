@@ -3,7 +3,7 @@
 ## Version 0.4.1 _(Under development)_
 - Plugins
    - Proxy -- Fixed typo in code which prevented headers from being properly
-   forwarded which results in non-existent content-types which prevented proper parsing.
+   forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports
