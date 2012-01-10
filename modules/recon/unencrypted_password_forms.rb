@@ -19,7 +19,7 @@ module Modules
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version: 0.1.4
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
@@ -41,6 +41,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
         scheme = URI( form.action ).scheme
         return if( scheme.downcase == 'https' )
 
+        return if !form.raw['auditable']
         form.raw['auditable'].each {
             |input|
 
@@ -83,7 +84,7 @@ class UnencryptedPasswordForms < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },
