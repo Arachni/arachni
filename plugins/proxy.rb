@@ -85,7 +85,7 @@ class Proxy < Arachni::Plugin::Base
         end
 
         headers = {}
-        headers.merge( res.header.dup )     if res.header
+        headers.merge!( res.header.dup )     if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
         # proper initialization in order to parse the response into a page
