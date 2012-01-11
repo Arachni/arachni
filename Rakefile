@@ -55,6 +55,7 @@ end
 desc "Cleaning report and log files."
 task :clean do
 
+    sh "rm error.log || true"
     sh "rm *.afr || true"
     sh "rm *.yaml || true"
     sh "rm *.json || true"
