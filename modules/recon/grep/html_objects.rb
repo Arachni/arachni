@@ -20,13 +20,8 @@ module Modules
 #
 class HTMLObjects < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
-    end
-
-    def run( )
-        regexp = /\<object(.*)\>(.*)\<\/object\>/im
-        match_and_log( regexp )
+    def run
+        match_and_log( /\<object(.*)\>(.*)\<\/object\>/im )
     end
 
     def self.info

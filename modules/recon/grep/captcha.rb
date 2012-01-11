@@ -20,11 +20,7 @@ module Modules
 #
 class CAPTCHA < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
-    end
-
-    def run( )
+    def run
 
         begin
             # since we only care about forms parse the HTML and match forms only

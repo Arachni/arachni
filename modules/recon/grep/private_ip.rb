@@ -16,16 +16,12 @@ module Modules
 #
 # Scans every page for prvate IP addresses.
 #
-# @author: morpheuslaw <msidagni@nopsec.com>
-# @version: 0.1
+# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @version   0.2
 #
 class PrivateIP < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
-    end
-
-    def run( )
+    def run
         regexp = /(?<!\.)(?<!\d)(?:(?:10|127)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|192\.168|169\.254|172\.0?(?:1[6-9]|2[0-9]|3[01]))(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){2}(?!\d)(?!\.)/
         match_and_log( regexp )
     end
@@ -34,8 +30,8 @@ class PrivateIP < Arachni::Module::Base
         {
             :name           => 'Private IP address finder',
             :description    => %q{Scans pages for private IP addresses.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
-            :version        => '0.1',
+            :author         => 'Tasos Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.2',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Private IP address disclosure.},

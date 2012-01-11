@@ -16,14 +16,10 @@ module Modules
 #
 # Scans every page for CVS/SVN users.
 #
-# @author: morpheuslaw <msidagni@nopsec.com>
-# @version: 0.1
+# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @version  0.2
 #
 class CvsSvnUsers < Arachni::Module::Base
-
-    def initialize( page )
-        @page = page
-    end
 
     def run
         regexps = [
@@ -53,8 +49,8 @@ class CvsSvnUsers < Arachni::Module::Base
         {
             :name           => 'CVS/SVN users',
             :description    => %q{Scans every page for CVS/SVN users.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
-            :version        => '0.1',
+            :author         => 'Tasos Laskos <tasos.laskos@gmail.com>',
+            :version        => '0.2',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{CVS/SVN user disclosure.},

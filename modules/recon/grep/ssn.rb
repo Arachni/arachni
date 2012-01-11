@@ -12,18 +12,13 @@ module Arachni
 module Modules
 
 #
-# @author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
-# @version: 0.1.1
+# @author:   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
+# @version:  0.1.1
 #
 class SSN < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
-    end
-
-    def run( )
-        regexp = /\b(?!000)([0-6]\d{2}|7([0-6]\d|7[012]))([ -]?)(?!00)\d\d\3(?!0000)\d{4}\b/
-        match_and_log( regexp )
+    def run
+        match_and_log( /\b(?!000)([0-6]\d{2}|7([0-6]\d|7[012]))([ -]?)(?!00)\d\d\3(?!0000)\d{4}\b/ )
     end
 
     def self.info
