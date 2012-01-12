@@ -738,7 +738,8 @@ class RPC
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                  (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to see all.
+                                  Use '*' as a module name to deploy all modules or inside module names like so:
                                       xss_*   to load all xss modules
                                       sqli_*  to load all sql injection modules
                                       etc.
@@ -761,6 +762,7 @@ class RPC
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <report>: the name of the report as displayed by '--lsrep'
+                                    (Reports are referenced by their filename without the '.rb' extension, use '--lsrep' to see all.)
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
@@ -772,6 +774,7 @@ class RPC
     --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <plugin>: the name of the plugin as displayed by '--lsplug'
+                                    (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to see all.)
                                     (Can be used multiple times.)
 
 USAGE
