@@ -96,6 +96,4 @@ Via the framework they have access to all Arachni subsystems and can alter or ex
 Plug-ins run in parallel to the framework and are executed right before the scan process starts.
 
 ## Licensing
-All code must be contributed with a GPL v2 compatible license.<br/>
-Do place licensing information in your code files.
-
+All code must be contributed with an Apache License Version 2.0 compatible license.
