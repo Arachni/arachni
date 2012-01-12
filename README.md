@@ -51,7 +51,7 @@ Experimental/unstable branch -- used for integration.
     </tr>
     <tr>
         <th>License</th>
-        <td><a href="file.LICENSE.html">GNU General Public License v2</a></td>
+        <td><a href="file.LICENSE.html">Apache License Version 2.0</a></td>
     </tr>
 </table>
 
@@ -313,7 +313,7 @@ Please send your feedback using Github's issue system at
 
 
 ## License
-Arachni is licensed under the GNU General Public License v2.<br/>
+Arachni is licensed under the Apache License Version 2.0.<br/>
 See the [LICENSE](file.LICENSE.html) file for more information.
 
 

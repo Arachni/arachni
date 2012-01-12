@@ -1,11 +1,14 @@
 # ChangeLog
 
 ## Version 0.4.1 _(Under development)_
+- License -- Moved from GPLv2 to Apache License Version 2.
 - Plugins
-   - Proxy -- Fixed typo in code which prevented headers from being properly
+   - Proxy -- Fixed typo in code which prevented headers from being properly.
    forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
 - Modules
    - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
+- Extras
+   - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports
