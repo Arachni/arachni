@@ -76,7 +76,7 @@ class Manager < Arachni::ComponentManager
                 exception_jail( false ) {
                     Thread.current[:name] = name
 
-                    plugin_new = create( name )
+                    Thread.current[:instance] = plugin_new = create( name )
                     plugin_new.prepare
                     plugin_new.run
                     plugin_new.clean_up
