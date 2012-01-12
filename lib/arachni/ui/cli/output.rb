@@ -21,7 +21,7 @@ module UI
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version: 0.1.2
 #
 module Output
 
@@ -211,7 +211,12 @@ module Output
     def print_line( str = '', unmute = false )
         if @@only_positives then return end
         return if muted? && !unmute
-        puts str
+
+        # we may get IO errors...freaky stuff...
+        begin
+            puts str
+        rescue
+        end
     end
 
     # Sets the {@@verbose} flag to true
@@ -302,10 +307,14 @@ module Output
     def print_color( sign, color, string, out = $stdout, unmute = false )
         return if muted? && !unmute
 
-        if out.tty?
-            out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
-        else
-            out.print "#{sign} #{string}\n";
+        # we may get IO errors...freaky stuff...
+        begin
+            if out.tty?
+                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+            else
+                out.print "#{sign} #{string}\n";
+            end
+        rescue
         end
     end
 
