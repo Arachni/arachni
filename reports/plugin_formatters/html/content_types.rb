@@ -13,60 +13,61 @@ module Arachni
 module Reports
 
 class HTML
-    module PluginFormatters
+module PluginFormatters
 
-        #
-        # HTML formatter for the results of the ContentTypes plugin
-        #
-        # @author: Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
-        # @version: 0.1
-        #
-        class ContentTypes < Arachni::Plugin::Formatter
+    #
+    # HTML formatter for the results of the ContentTypes plugin
+    #
+    # @author: Tasos "Zapotek" Laskos
+    #                                      <tasos.laskos@gmail.com>
+    #                                      <zapotek@segfault.gr>
+    # @version: 0.1.1
+    #
+    class ContentTypes < Arachni::Plugin::Formatter
+    include Arachni::Reports::HTML::Utils
 
-            def run
-                return ERB.new( tpl ).result( binding )
-            end
+        def run
+            return ERB.new( tpl ).result( binding )
+        end
 
-            def tpl
-                %q{
-                    <% @results.each_pair do |type, responses| %>
-                        <ul>
+        def tpl
+            %q{
+                <% @results.each_pair do |type, responses| %>
+                    <ul>
 
-                            <li>
-                                <%=type%>
-                                <ul>
-                                    <% responses.each do |res| %>
-                                    <li>
-                                        URL: <a href="<%=CGI.escapeHTML(res[:url])%>"><%=CGI.escapeHTML(res[:url])%></a><br/>
-                                        Method: <%=res[:method]%>
+                        <li>
+                            <%=type%>
+                            <ul>
+                                <% responses.each do |res| %>
+                                <li>
+                                    URL: <a href="<%=escapeHTML(res[:url])%>"><%=escapeHTML(res[:url])%></a><br/>
+                                    Method: <%=res[:method]%>
 
-                                        <% if res[:params] && res[:method].downcase == 'post' %>
-                                            <ul>
-                                                <li>Parameters:</li>
-                                                <%res[:params].each_pair do |name, val|%>
-                                                <li>
-                                                    <%=name%> = <%=val%>
-                                                </li>
-                                                <%end%>
-                                            <ul>
-                                        <%end%>
-                                    </li>
+                                    <% if res[:params] && res[:method].downcase == 'post' %>
+                                        <ul>
+                                            <li>Parameters:</li>
+                                            <%res[:params].each_pair do |name, val|%>
+                                            <li>
+                                                <%=name%> = <%=val%>
+                                            </li>
+                                            <%end%>
+                                        <ul>
                                     <%end%>
-                                </ul>
-                            </li>
+                                </li>
+                                <%end%>
+                            </ul>
+                        </li>
 
-                        </ul>
+                    </ul>
 
-                    <%end%>
-                }
-
-            end
+                <%end%>
+            }
 
         end
 
     end
+
+end
 end
 
 end

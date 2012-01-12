@@ -21,9 +21,10 @@ module PluginFormatters
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class HealthMap < Arachni::Plugin::Formatter
+        include Arachni::Reports::HTML::Utils
 
         def run
             return ERB.new( tpl ).result( binding )
@@ -44,7 +45,7 @@ module PluginFormatters
                     <% state = entry.keys[0]%>
                     <% url   = entry.values[0]%>
 
-                    <a class="<%=state%>" href="<%=CGI.escapeHTML(url)%>"><%=CGI.escapeHTML(url)%></a> <br/>
+                    <a class="<%=state%>" href="<%=escapeHTML(url)%>"><%=escapeHTML(url)%></a> <br/>
                 <%end%>
 
                 <br/>

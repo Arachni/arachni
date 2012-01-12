@@ -14,11 +14,11 @@
         <%end%>
 
         <%if item['element']['owner']%>
-        at <a href="<%=CGI.escapeHTML( item['element']['owner'] )%>"> <%=item['element']['owner']%> </a>
+        at <a href="<%=escapeHTML( item['element']['owner'] )%>"> <%=item['element']['owner']%> </a>
         <%end%>
 
         <%if item['element']['action']%>
-        pointing to <a href="<%=CGI.escapeHTML( item['element']['action'] ) %>"> <%=item['element']['action']%>  </a>
+        pointing to <a href="<%=escapeHTML( item['element']['action'] ) %>"> <%=item['element']['action']%>  </a>
         <%end%>
 
         <%if item['element']['method']%>
@@ -34,7 +34,7 @@
         <%end%>
         </ul>
 
-        The taint landed in the following elements at <a href="<%=CGI.escapeHTML( item['request']['url'] )%>"> <%=item['request']['url']%> </a>:
+        The taint landed in the following elements at <a href="<%=escapeHTML( item['request']['url'] )%>"> <%=item['request']['url']%> </a>:
             <ul>
             <%item['landed'].each do |elem| %>
                 <li>
@@ -60,8 +60,8 @@
             </ul>
 
             <div class="hidden" id="inspection-dialog_<%=idx%>" title="Relevant content is shown in red.">
-              <% match = CGI.escapeHTML( item['response']['body'] )%>
-              <pre> <%=CGI.escapeHTML( item['response']['body'] ).gsub( item['taint'], '<strong style="color: red">' + item['taint'] + '</strong>' ) %> </pre>
+              <% match = escapeHTML( item['response']['body'] )%>
+              <pre> <%=escapeHTML( item['response']['body'] ).gsub( item['taint'], '<strong style="color: red">' + item['taint'] + '</strong>' ) %> </pre>
             </div>
 
             <form style="display:inline" action="#">
@@ -71,7 +71,7 @@
             <% if item['request']['params'] %>
             <form style="display:inline" action="<%=item['request']['url']%>" target="_blank" method="<%=item['request']['method']%>">
               <% item['request']['params'].each_pair do |name, value|%>
-              <input type="hidden" name="<%=CGI.escapeHTML( name || '' )%>" value="<%=CGI.escapeHTML( value || '' )%>" />
+              <input type="hidden" name="<%=escapeHTML( name || '' )%>" value="<%=escapeHTML( value || '' )%>" />
               <%end%>
               <input type="submit" value="Replay" />
             </form>

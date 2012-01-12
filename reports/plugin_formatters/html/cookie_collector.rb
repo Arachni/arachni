@@ -21,9 +21,10 @@ module PluginFormatters
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class CookieCollector < Arachni::Plugin::Formatter
+        include Arachni::Reports::HTML::Utils
 
         def run
             return ERB.new( tpl ).result( binding )
@@ -35,12 +36,12 @@ module PluginFormatters
                 <ul>
                 <% @results.each do |entry| %>
                     <li>
-                        On <%=entry[:time].to_s%> @ <a href="<%=CGI.escapeHTML(entry[:res]['effective_url'])%>"><%=CGI.escapeHTML(entry[:res]['effective_url'])%></a>
+                        On <%=entry[:time].to_s%> @ <a href="<%=escapeHTML(entry[:res]['effective_url'])%>"><%=escapeHTML(entry[:res]['effective_url'])%></a>
                         <br/>
                         Cookies were forced to:
                         <ul>
                             <% entry[:cookies].each_pair do |name, val| %>
-                                <li><%=CGI.escapeHTML(name)%> = <%=CGI.escapeHTML(val)%></li>
+                                <li><%=escapeHTML(name)%> = <%=escapeHTML(val)%></li>
                             <%end%>
                         </ul>
                     </li>

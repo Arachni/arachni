@@ -23,9 +23,10 @@ module PluginFormatters
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.2
+    # @version: 0.2.1
     #
     class Profiler < Arachni::Plugin::Formatter
+        include Arachni::Reports::HTML::Utils
 
         def run
             return ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )

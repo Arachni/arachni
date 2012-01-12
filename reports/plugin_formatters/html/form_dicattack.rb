@@ -21,9 +21,10 @@ module PluginFormatters
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class FormDicattack < Arachni::Plugin::Formatter
+        include Arachni::Reports::HTML::Utils
 
         def run
             return ERB.new( tpl ).result( binding )
@@ -32,8 +33,8 @@ module PluginFormatters
         def tpl
             %q{
                 <h3>Credentials</h3>
-                <strong>Username</strong>: <%=CGI.escapeHTML(@results[:username])%> <br/>
-                <strong>Password</strong>: <%=CGI.escapeHTML(@results[:password])%>
+                <strong>Username</strong>: <%=escapeHTML(@results[:username])%> <br/>
+                <strong>Password</strong>: <%=escapeHTML(@results[:password])%>
             }
         end
 
