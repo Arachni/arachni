@@ -79,7 +79,6 @@ module Database
         def []( k )
             load( @h[k] ) if @h[k]
         end
-        alias :fetch :[]
 
         #
         # Returns an array containing the given key and its value.
