@@ -213,8 +213,9 @@ module Database
             return if !value?( val )
             each {
                 |k, v|
-                return k if val == self[val]
+                return k if val == self[k]
             }
+            nil
         end
 
         #
