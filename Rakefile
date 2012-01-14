@@ -19,9 +19,7 @@ require 'rspec/core/rake_task'
 
 require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
-RSpec::Core::RakeTask.new do |t|
-    t.rspec_opts = ['--options', "\"#{File.dirname(__FILE__)}/.rspec\""]
-end
+RSpec::Core::RakeTask.new
 
 desc "Generate docs"
 
