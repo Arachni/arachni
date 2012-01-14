@@ -58,6 +58,8 @@ module Database
         # @param    [Object]    k   key
         # @param    [Object]    v   value
         #
+        # @return   [Object]    returns value
+        #
         def []=( k, v )
             @h[k] = dump( v ) {
                 |serialized|
@@ -77,6 +79,7 @@ module Database
         def []( k )
             load( @h[k] ) if @h[k]
         end
+        alias :fetch :[]
 
         #
         # Returns an array containing the given key and its value.
