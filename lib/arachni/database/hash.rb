@@ -131,8 +131,8 @@ module Database
         # @return   [Array]
         #
         def shift
-            k, v = @h.shift
-            [ k, load_and_delete_file( v ) ]
+            k, v = @h.first
+            [ k, delete( k ) ]
         end
 
         #
@@ -354,7 +354,7 @@ module Database
                 eql = {}
                 h.to_hash.each {
                     |k, v|
-                    eql[k] = eql_hash( v.to_yaml )
+                    eql[k] = eql_hash( serialize( v ) )
                 }
                 @eql_h == eql
             else
