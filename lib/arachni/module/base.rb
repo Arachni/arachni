@@ -122,6 +122,23 @@ class Base
     end
 
     #
+    # Provides access to the plugin manager
+    #
+    # You can use it to gain access to the instances of running plugins like so:
+    #
+    #    p plugins.get( 'profiler' )
+    #    # => #<Thread:0x000000025b2ff0 sleep>
+    #
+    #    p plugins.get( 'profiler' )[:instance]
+    #    # => #<Arachni::Plugins::Profiler>
+    #
+    # @return   [Arachni::PluginManager]
+    #
+    def plugins
+        @framework.plugins
+    end
+
+    #
     # Returns the framework.
     #
     def framework
