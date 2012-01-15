@@ -125,6 +125,10 @@ class Page
         @html
     end
 
+    def body=( str )
+        @html = str
+    end
+
     #
     # Returns an array of forms from {#forms} with its attributes and<br/>
     # its auditable inputs as a name=>value hash
