@@ -250,7 +250,7 @@ module Auditor
     #
     # Allows modules to ignore HPG scope restrictions
     #
-    # This way they can audit elements that are not on the Grid sanctioned whitlist.
+    # This way they can audit elements that are not on the Grid sanctioned whitelist.
     #
     # @return   [Bool]
     #
