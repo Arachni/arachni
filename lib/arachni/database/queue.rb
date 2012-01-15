@@ -89,7 +89,7 @@ module Database
             while( !@q.empty? )
                 path = @q.pop
                 next if !path
-                delete_file( filepath )
+                delete_file( path )
             end
         end
 
