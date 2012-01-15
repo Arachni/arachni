@@ -539,6 +539,10 @@ module Auditor
 
         opts  = OPTIONS.merge( opts )
 
+        if !opts[:regexp] && ! opts[:substring]
+            opts[:substring] ||= injection_str
+        end
+
         opts[:elements].each {
             |elem|
 
