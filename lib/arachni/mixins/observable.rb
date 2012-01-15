@@ -30,6 +30,7 @@ module Mixins
 #
 # The observers set hooks using:
 #    * observer_instance.add_<hookname>( &block )
+#    * observer_instance.on_<hookname>( &block )
 #
 #
 # @author: Tasos "Zapotek" Laskos
@@ -52,7 +53,7 @@ module Observable
         if( action && hook )
             case action
 
-            when 'add'
+            when 'add', 'on'
                 add_block( hook, &block )
                 return
 
