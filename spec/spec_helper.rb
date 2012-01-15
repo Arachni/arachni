@@ -3,22 +3,77 @@
 # Require this file using `require "spec_helper.rb"` to ensure that it is only
 # loaded once.
 #
-# See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
-RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
-  config.run_all_when_everything_filtered = true
-  config.filter_run :focus
-  config.color = true
-  config.add_formatter :documentation
-end
 
 require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
+
 
 def require_from_root( path )
     require Arachni::Options.instance.dir['lib'] + path
 end
 
+
 def require_testee!
     require Kernel::caller.first.split( ':' ).first.gsub( '/spec/arachni', '/lib/arachni' ).gsub( '_spec', '' )
+end
+
+def server_port
+    9999
+end
+
+def server_url
+    'http://localhost:' + server_port.to_s
+end
+
+def start_server!
+    root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
+    @server_pid ||= fork {
+        exec 'ruby', root + 'servers/server.rb', '-p 9999'
+    }
+
+    require 'net/http'
+    begin
+        Timeout::timeout( 10 ) do
+            loop do
+                begin
+                    response = Net::HTTP.get_response( URI.parse( server_url ) )
+                    if response.is_a?( Net::HTTPSuccess )
+                        puts 'Server is up!'
+                        return
+                    end
+                rescue SystemCallError => error
+                end
+            end
+        end
+    rescue Timeout::Error => error
+        abort "Server never started!"
+    end
+end
+
+
+def reload_server!
+    kill_server!
+    start_server!
+end
+
+
+def kill_server!
+    Process.kill( 'INT', @server_pid ) if @server_pid
+end
+
+# See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+RSpec.configure do |config|
+    config.treat_symbols_as_metadata_keys_with_true_values = true
+    config.run_all_when_everything_filtered = true
+    config.filter_run :focus
+    config.color = true
+    config.add_formatter :documentation
+
+    config.before( :suite ) do
+        start_server!
+    end
+
+    config.after( :suite ) do
+        kill_server!
+    end
 end
