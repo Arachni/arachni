@@ -465,7 +465,7 @@ module Auditor
             request_headers  = res.request.headers
             response_headers = res.headers
             response         = res.body
-            url              = opts[:action]
+            url              = opts[:action] || res.effective_url
             method           = res.request.method.to_s.upcase
         end
 
