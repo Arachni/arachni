@@ -135,13 +135,8 @@ class Page
     #
     # @return    [Array]
     #
-    def forms_simple( )
-        forms = []
-        @forms.each {
-            |form|
-            forms << form.simple
-        }
-        return forms
+    def forms_simple
+        @forms.map { |form| form.simple }
     end
 
     #
@@ -150,12 +145,7 @@ class Page
     # @return    [Hash]
     #
     def links_simple
-        links = []
-        @links.each {
-            |link|
-            links << link.simple
-        }
-        return links
+        @links.map { |link| link.simple }
     end
 
     #
@@ -164,8 +154,7 @@ class Page
     # @return    [Hash]    the cookie attributes, values, etc
     #
     def cookies_simple
-        cookies = { }
-
+        cookies = {}
         @cookies.each {
             |cookie|
             cookies.merge!( cookie.simple )
