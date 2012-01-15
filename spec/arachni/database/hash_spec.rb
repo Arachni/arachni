@@ -202,6 +202,13 @@ describe Arachni::Database::Hash do
         (@hash == @seeds).should == true
     end
 
+    # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-clear
+    it 'should implement clear()' do
+        @hash.clear
+        @seeds.clear
+        @hash.size.should == @seeds.size
+    end
+
     after :all do
         # clear the DB files
         @hash.clear
