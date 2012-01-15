@@ -14,7 +14,8 @@ class AuditorTest
     def page
         @page ||= Arachni::Parser::Page.new(
             url:  @framework.opts.url.to_s,
-            body: 'Match this!'
+            body: 'Match this!',
+            method: 'get'
         )
     end
 
@@ -24,6 +25,14 @@ class AuditorTest
 
     def framework
         @framework
+    end
+
+    def load_page_from( url )
+        http.get( url ).on_complete {
+            |res|
+            @page = Arachni::Parser::Page.from_http_response( res, framework.opts )
+        }
+        http.run
     end
 
     def self.info
@@ -40,9 +49,9 @@ describe Arachni::Module::Auditor do
 
     before :all do
         @opts = Arachni::Options.instance
-        @opts.url = server_url
+        @opts.audit_links = true
 
-        @url = @opts.url.to_s + '/auditor'
+        @opts.url = @url = server_url_for( :auditor )
 
         @framework = Arachni::Framework.new( @opts )
         @auditor = AuditorTest.new( @framework )
@@ -57,11 +66,13 @@ describe Arachni::Module::Auditor do
         @auditor.register_results( [ issue ] )
 
         logged_issue = @framework.modules.results.first
+        logged_issue.should be_true
+
         logged_issue.name.should == issue.name
         logged_issue.url.should  == issue.url
     end
 
-    context '#log_remote_file_if_exists' do
+    describe :log_remote_file_if_exists do
         before do
             @base_url = @url + '/log_remote_file_if_exists/'
         end
@@ -72,6 +83,8 @@ describe Arachni::Module::Auditor do
             @framework.http.run
 
             logged_issue = @framework.modules.results.first
+            logged_issue.should be_true
+
             logged_issue.url.split( '?' ).first.should == file
             logged_issue.elem.should == Arachni::Issue::Element::PATH
             logged_issue.id.should == 'true'
@@ -88,14 +101,12 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    context '#remote_file_exist?' do
+    describe :remote_file_exist? do
         before do
             @base_url = @url + '/log_remote_file_if_exists/'
         end
 
-        after :each do
-            @framework.http.run
-        end
+        after { @framework.http.run }
 
         it 'should return true if file exists' do
             @framework.http.get( @base_url + 'true' ).on_complete {
@@ -113,34 +124,40 @@ describe Arachni::Module::Auditor do
     end
 
 
-    it 'should #log_remote_file' do
-        file = @url + '/log_remote_file_if_exists/true'
-        @framework.http.get( file ).on_complete {
-            |res|
-            @auditor.log_remote_file( res )
-        }
-        @framework.http.run
+    describe :log_remote_file do
+        it 'should log a remote file' do
+            file = @url + '/log_remote_file_if_exists/true'
+            @framework.http.get( file ).on_complete {
+                |res|
+                @auditor.log_remote_file( res )
+            }
+            @framework.http.run
 
-        logged_issue = @framework.modules.results.first
-        logged_issue.url.split( '?' ).first.should == file
-        logged_issue.elem.should == Arachni::Issue::Element::PATH
-        logged_issue.id.should == 'true'
-        logged_issue.injected.should == 'true'
-        logged_issue.mod_name.should == @auditor.class.info[:name]
-        logged_issue.name.should == @auditor.class.info[:issue][:name]
-        logged_issue.verification.should be_false
+            logged_issue = @framework.modules.results.first
+            logged_issue.should be_true
+
+            logged_issue.url.split( '?' ).first.should == file
+            logged_issue.elem.should == Arachni::Issue::Element::PATH
+            logged_issue.id.should == 'true'
+            logged_issue.injected.should == 'true'
+            logged_issue.mod_name.should == @auditor.class.info[:name]
+            logged_issue.name.should == @auditor.class.info[:issue][:name]
+            logged_issue.verification.should be_false
+        end
     end
 
-    it 'should #log_issue' do
-        opts = { name: 'Test issue', url: @url }
-        @auditor.log_issue( opts )
+    describe :log_issue do
+        it 'should log an issue' do
+            opts = { name: 'Test issue', url: @url }
+            @auditor.log_issue( opts )
 
-        logged_issue = @framework.modules.results.first
-        logged_issue.name.should == opts[:name]
-        logged_issue.url.should  == opts[:url]
+            logged_issue = @framework.modules.results.first
+            logged_issue.name.should == opts[:name]
+            logged_issue.url.should  == opts[:url]
+        end
     end
 
-    context '#match_and_log' do
+    describe :match_and_log do
 
         before do
             @base_url = @url + '/match_and_log'
@@ -164,6 +181,8 @@ describe Arachni::Module::Auditor do
                     @auditor.match_and_log( regexp, res.body )
 
                     logged_issue = @framework.modules.results.first
+                    logged_issue.should be_true
+
                     logged_issue.url.should == @opts.url.to_s
                     logged_issue.elem.should == Arachni::Issue::Element::BODY
                     logged_issue.opts[:regexp].should == regexp.to_s
@@ -190,6 +209,8 @@ describe Arachni::Module::Auditor do
                 @auditor.match_and_log( regexp )
 
                 logged_issue = @framework.modules.results.first
+                logged_issue.should be_true
+
                 logged_issue.url.should == @opts.url.to_s
                 logged_issue.elem.should == Arachni::Issue::Element::BODY
                 logged_issue.opts[:regexp].should == regexp.to_s
@@ -206,5 +227,155 @@ describe Arachni::Module::Auditor do
         end
     end
 
+    describe :log do
+
+        before do
+            @log_opts = {
+                altered:  'foo',
+                injected: 'foo injected',
+                id: 'foo id',
+                regexp: /foo regexp/,
+                match: 'foo regexp match',
+                element: Arachni::Issue::Element::LINK
+            }
+        end
+
+
+        context 'when given a response' do
+
+            after { @framework.http.run }
+
+            it 'populates and logs an issue with response data' do
+                @framework.http.get( @opts.url.to_s ).on_complete {
+                    |res|
+
+                    @auditor.log( @log_opts, res )
+
+                    logged_issue = @framework.modules.results.first
+                    logged_issue.should be_true
+
+                    logged_issue.url.should == res.effective_url
+                    logged_issue.elem.should == Arachni::Issue::Element::LINK
+                    logged_issue.opts[:regexp].should == @log_opts[:regexp].to_s
+                    logged_issue.opts[:match].should == @log_opts[:match]
+                    logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
+                    logged_issue.regexp.should == @log_opts[:regexp].to_s
+                    logged_issue.verification.should be_false
+                }
+            end
+        end
+
+        context 'when it defaults to current page' do
+            it 'populates and logs an issue with page data' do
+                @auditor.log( @log_opts )
+
+                logged_issue = @framework.modules.results.first
+                logged_issue.should be_true
+
+                logged_issue.url.should == @auditor.page.url
+                logged_issue.elem.should == Arachni::Issue::Element::LINK
+                logged_issue.opts[:regexp].should == @log_opts[:regexp].to_s
+                logged_issue.opts[:match].should == @log_opts[:match]
+                logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
+                logged_issue.regexp.should == @log_opts[:regexp].to_s
+                logged_issue.verification.should be_false
+            end
+        end
+
+    end
+
+    describe :audit do
+
+        context 'when called with no opts' do
+            it 'should use the defaults' do
+                @auditor.load_page_from( @url + '/audit/link' )
+                @auditor.audit( 'this is what we inject' )
+                @framework.http.run
+                @framework.modules.results.size.should == 4
+            end
+        end
+
+        context 'when called with option' do
+            describe :format do
+                describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
+                    it 'should inject the seed as is'
+                end
+                describe 'Arachni::Module::Auditor::Format::APPEND' do
+                    it 'should append the seed to the existing value of the input'
+                end
+                describe 'Arachni::Module::Auditor::Format::NULL' do
+                    it 'should terminate the seed with a null character'
+                end
+                describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
+                    it 'should terminate the seed with a semicolon'
+                end
+            end
+
+            describe :elements do
+                describe 'Arachni::Module::Auditor::Element::LINK' do
+                    it 'should audit links'
+                end
+                describe 'Arachni::Module::Auditor::Element::FORM' do
+                    it 'should audit forms'
+                end
+                describe 'Arachni::Module::Auditor::Element::COOKIE' do
+                    it 'should audit cookies'
+                end
+                describe 'Arachni::Module::Auditor::Element::HEADER' do
+                    it 'should audit headers'
+                end
+            end
+
+            describe :regexp do
+                context 'with :match' do
+                    it 'should verify the matched data with the provided string'
+                end
+
+                context 'without :match' do
+                    it 'should try to match the provided pattern'
+                end
+            end
+
+            describe :substring do
+                it 'should try to match the provided substring'
+            end
+
+            describe :train do
+                context true do
+                    it 'should parse the responses and feed any new elements back to the framework to be audited'
+                end
+
+                context false do
+                    it 'should skip analysis'
+                end
+            end
+
+            describe :redundant do
+                context true do
+                    it 'should allow redundant requests/audits'
+                end
+
+                context false do
+                    it 'should not allow redundant requests/audits'
+                end
+            end
+
+            describe :async do
+                context true do
+                    it 'should perform all HTTP requests asynchronously'
+                end
+
+                context false do
+                    it 'should perform all HTTP requests asynchronously'
+                end
+            end
+
+        end
+
+        context 'when called with a block' do
+            it 'should delegate analysis and logging to caller'
+        end
+
+    end
 
 end
