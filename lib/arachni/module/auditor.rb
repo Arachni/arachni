@@ -233,6 +233,36 @@ module Auditor
     }
 
     #
+    # ABSTRACT - REQUIRED
+    #
+    # Must return an HTTP instance
+    #
+    # @return   [Arachni::HTTP]
+    #
+    def http
+    end
+
+    #
+    # ABSTRACT - REQUIRED
+    #
+    # Must return the Page object you wish to be audited
+    #
+    # @return   [Arachni::Parser::Page]
+    #
+    def page
+    end
+
+    #
+    # ABSTRACT - REQUIRED
+    #
+    # Must return the Framework
+    #
+    # @return   [Arachni::Framework]
+    #
+    def framework
+    end
+
+    #
     # ABSTRACT - OPTIONAL
     #
     # Prevents auditing elements that have been previously
@@ -286,7 +316,7 @@ module Auditor
     def log_remote_file_if_exists( url, silent = false, &block )
         return nil if !url
 
-        req  = @http.get( url )
+        req  = http.get( url )
         return false if !req
         req.on_complete {
             |res|
@@ -299,7 +329,7 @@ module Auditor
 
                 # if the file exists let the trainer parse it since it may
                 # contain brand new data to audit
-                @http.trainer.add_response( res )
+                http.trainer.add_response( res )
             end
         }
 
@@ -314,7 +344,7 @@ module Auditor
     # @param    [Typhoeus::Response]    res
     #
     def remote_file_exist?( res )
-        res.code == 200 && !@http.custom_404?( res )
+        res.code == 200 && !http.custom_404?( res )
     end
 
     #
@@ -357,17 +387,17 @@ module Auditor
     end
 
     #
-    # Matches the "string" (default string is the HTML code in @page.html) to
+    # Matches the "string" (default string is the HTML code in page.html) to
     # an array of regular expressions and logs the results.
     #
-    # For good measure, regexps will also be run against the page headers (@page.response_headers).
+    # For good measure, regexps will also be run against the page headers (page.response_headers).
     #
     # @param    [Array<Regexp>]     regexps     array of regular expressions to be tested
     # @param    [String]            string      string to
     # @param    [Block]             block       block to verify matches before logging,
     #                                           must return true/false
     #
-    def match_and_log( regexps, string = @page.html, &block )
+    def match_and_log( regexps, string = page.html, &block )
 
         # make sure that we're working with an array
         regexps = [regexps].flatten
@@ -391,9 +421,9 @@ module Auditor
                 )
             } if elems.include? Issue::Element::BODY
 
-            next if string == @page.html
+            next if string == page.html
 
-            @page.response_headers.each {
+            page.response_headers.each {
                 |k,v|
                 next if !v
 
@@ -419,17 +449,17 @@ module Auditor
     # Populates and logs an {Arachni::Issue} based on data from "opts" and "res".
     #
     # @param    [Hash]                  opts    as passed to blocks by audit methods
-    # @param    [Typhoeus::Response]    res     defaults to @page data
+    # @param    [Typhoeus::Response]    res     defaults to page data
     #
     def log( opts, res = nil )
 
         method = nil
 
         request_headers  = nil
-        response_headers = @page.response_headers
-        response         = @page.html
-        url              = @page.url
-        method           = @page.method.to_s.upcase if @page.method
+        response_headers = page.response_headers
+        response         = page.html
+        url              = page.url
+        method           = page.method.to_s.upcase if page.method
 
         if( res )
             request_headers  = res.request.headers
@@ -545,11 +575,11 @@ module Auditor
         redundant.map {
             |mod|
 
-            mod_name = @framework.modules[mod].info[:name]
+            mod_name = framework.modules[mod].info[:name]
 
-            set_id = @framework.modules.class.issue_set_id_from_elem( mod_name, elem )
-            return true if @framework.modules.issue_set.include?( set_id )
-        } if @framework
+            set_id = framework.modules.class.issue_set_id_from_elem( mod_name, elem )
+            return true if framework.modules.issue_set.include?( set_id )
+        } if framework
 
         return false
     end
@@ -753,7 +783,7 @@ module Auditor
             }
         }
 
-        @http.run
+        http.run
     end
 
     #
@@ -810,28 +840,28 @@ module Auditor
 
                 when  Element::LINK
                     next if !Options.instance.audit_links
-                    @page.links.each {
+                    page.links.each {
                         |c_elem|
                         audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::FORM
                     next if !Options.instance.audit_forms
-                    @page.forms.each {
+                    page.forms.each {
                         |c_elem|
                         audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::COOKIE
                     next if !Options.instance.audit_cookies
-                    @page.cookies.each {
+                    page.cookies.each {
                         |c_elem|
                         audit_rdiff_elem( c_elem, opts, &block )
                     }
 
                 when  Element::HEADER
                     next if !Options.instance.audit_headers
-                    @page.headers.each {
+                    page.headers.each {
                         |c_elem|
                         audit_rdiff_elem( c_elem, opts, &block )
                     }
@@ -948,7 +978,7 @@ module Auditor
         }
 
         # when this runs the 'responses' hash will have been populated
-        @http.after_run {
+        http.after_run {
 
             responses[:good].keys.each {
                 |key|
@@ -960,7 +990,7 @@ module Auditor
                         block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
                     elsif( responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
-                        !@http.custom_404?( res['res'] ) && res['res'].code == 200 )
+                        !http.custom_404?( res['res'] ) && res['res'].code == 200 )
 
                         url = res['res'].effective_url
 
@@ -1032,7 +1062,7 @@ module Auditor
         elem = sym.to_s.gsub!( 'audit_', '@' )
         raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args ) if !elem
 
-        elems = @page.instance_variable_get( elem )
+        elems = page.instance_variable_get( elem )
 
         if( elems && elem )
             raise ArgumentError.new( "Missing required argument 'injection_str'" +
@@ -1056,7 +1086,7 @@ module Auditor
     def audit_elems( elements, injection_str, opts = { }, &block )
 
         opts = OPTIONS.merge( opts )
-        url  = @page.url
+        url  = page.url
 
         opts[:injected_orig] = injection_str
 

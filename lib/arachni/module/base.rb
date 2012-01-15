@@ -121,6 +121,14 @@ class Base
     def clean_up
     end
 
+    def page
+        @page
+    end
+
+    def http
+        @http
+    end
+
     #
     # Provides access to the plugin manager
     #
