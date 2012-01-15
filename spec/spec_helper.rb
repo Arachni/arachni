@@ -7,6 +7,21 @@
 require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 
+@@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
+
+@@server_pids ||= []
+@@servers     ||= {}
+Dir.glob( @@root + 'servers/*' ) {
+    |path|
+
+    name = File.basename( path, '.rb' ).to_sym
+    next if name == :base
+
+    @@servers[name] = {
+        port: rand( 5555..9999 ),
+        path: path
+    }
+}
 
 def require_from_root( path )
     require Arachni::Options.instance.dir['lib'] + path
@@ -17,32 +32,45 @@ def require_testee!
     require Kernel::caller.first.split( ':' ).first.gsub( '/spec/arachni', '/lib/arachni' ).gsub( '_spec', '' )
 end
 
-def server_port
-    9999
+def server_port_for( name )
+    @@servers[name][:port]
 end
 
-def server_url
-    'http://localhost:' + server_port.to_s
+def server_url_for( name )
+    'http://localhost:' + server_port_for( name ).to_s
 end
 
-def start_server!
-    root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
-    @server_pid ||= fork {
-        exec 'ruby', root + 'servers/server.rb', '-p 9999'
+def start_servers!
+    @@servers.each {
+        |name, info|
+        @@server_pids << fork {
+            exec 'ruby', @@root + "servers/#{name}.rb", '-p ' + info[:port].to_s
+        }
     }
 
     require 'net/http'
     begin
         Timeout::timeout( 10 ) do
             loop do
-                begin
-                    response = Net::HTTP.get_response( URI.parse( server_url ) )
-                    if response.is_a?( Net::HTTPSuccess )
-                        puts 'Server is up!'
-                        return
+
+                up = 0
+                @@servers.keys.each {
+                    |name|
+
+                    url = server_url_for( name )
+                    begin
+                        response = Net::HTTP.get_response( URI.parse( url ) )
+                        up += 1 if response.is_a?( Net::HTTPSuccess )
+                    rescue SystemCallError => error
                     end
-                rescue SystemCallError => error
+
+                }
+
+                if up == @@servers.size
+                    puts 'Servers are up!'
+                    return
                 end
+
             end
         end
     rescue Timeout::Error => error
@@ -51,14 +79,14 @@ def start_server!
 end
 
 
-def reload_server!
-    kill_server!
-    start_server!
+def reload_servers!
+    kill_servers!
+    start_servers!
 end
 
 
-def kill_server!
-    Process.kill( 'INT', @server_pid ) if @server_pid
+def kill_servers!
+    @@server_pids.each { |pid| Process.kill( 'INT', pid ) if pid }
 end
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
@@ -70,10 +98,10 @@ RSpec.configure do |config|
     config.add_formatter :documentation
 
     config.before( :suite ) do
-        start_server!
+        start_servers!
     end
 
     config.after( :suite ) do
-        kill_server!
+        kill_servers!
     end
 end
