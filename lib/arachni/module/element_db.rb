@@ -77,7 +77,6 @@ module ElementDB
     # @param    [Array<Element::Form>] forms
     #
     def update_forms( forms )
-
         return [], 0 if forms.size == 0
 
         form_cnt = 0
