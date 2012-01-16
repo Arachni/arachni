@@ -1093,6 +1093,9 @@ module Auditor
         url  = page.url
 
         opts[:injected_orig] = injection_str
+        if !opts[:regexp] && ! opts[:substring]
+            opts[:substring] ||= injection_str
+        end
 
         elements.deep_clone.each {
             |elem|
