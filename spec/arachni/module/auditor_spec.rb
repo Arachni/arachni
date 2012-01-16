@@ -572,12 +572,10 @@ describe Arachni::Module::Auditor do
                         2.times {
                             |i|
                             @auditor.audit( @seed, @audit_opts.merge( redundant: true )){
-                                |res, opts, elem|
                                 audits[i] += 1
                             }
-                            @framework.http.run
                         }
-
+                        @framework.http.run
                         # since we've enabled redundant audits both should be performed
                         # the same amount of times (2)
                         audits.values.first.should == audits.values.last
@@ -592,12 +590,10 @@ describe Arachni::Module::Auditor do
                         2.times {
                             |i|
                             @auditor.audit( @seed, @audit_opts.merge( redundant: false )){
-                                |res, opts, elem|
                                 audits[i] += 1
                             }
-                            @framework.http.run
                         }
-
+                        @framework.http.run
                         # since we've disabled redundant audits only the first
                         # one should be performed
                         audits.size.should == 1
@@ -610,11 +606,10 @@ describe Arachni::Module::Auditor do
                         2.times {
                             |i|
                             @auditor.audit( @seed, @audit_opts ) {
-                                |res, opts, elem|
                                 audits[i] += 1
                             }
-                            @framework.http.run
                         }
+                        @framework.http.run
                         audits.size.should == 1
                     end
                 end
