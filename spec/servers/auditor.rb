@@ -1,18 +1,65 @@
 require 'sinatra'
+require "sinatra/cookies"
 require 'json'
-
+require 'digest/md5'
 set :logging, false
 
 get '/' do
     'OK'
 end
 
-get '/audit/link' do
+get '/elem_combo' do
+    cookies[:cookie_input] ||= 'cookie_blah'
+    html =<<EOHTML
+    <form method='get'>
+        <input name='form_input' value='form_blah' />
+    </form>
+    <a href='?link_input=link_blah'>Inject here</a>
+EOHTML
+    html + params.values.join( "\n" ) + cookies[:cookie_input] + (request.env['HTTP_REFERER'] || '')
+
+end
+
+get '/link' do
     <<EOHTML
     <a href='?input=blah'>Inject here</a>
     #{params[:input]}
 EOHTML
 end
+
+get '/train' do
+    default = 'form_blah'
+    cookies[:curveball] ||= Digest::MD5.hexdigest( rand( 99999 ).to_s )
+
+    html =<<EOHTML
+    <form method='get'>
+        <input name='step_1' value='#{default}_step_1' />
+    </form>
+EOHTML
+
+    if params[:step_1] == default + '_step_1'
+        html +=<<-EOHTML
+        <form method='get'>
+            <input name='step_2' value='#{default}_step_2' />
+            <input type="hidden" name="curveball" value="#{cookies[:curveball]}">
+        <form>
+
+        EOHTML
+    end
+
+    if (params[:step_2] == default + '_step_2') && (params[:curveball] == cookies[:curveball])
+        html +=<<-EOHTML
+            <a href='?you_made_it=to+the+end+of+the+training'>Inject here</a>
+        EOHTML
+    end
+
+    if params[:you_made_it]
+        html += params[:you_made_it]
+    end
+
+    html
+end
+
 
 get '/log_remote_file_if_exists/true' do
     'Success!'

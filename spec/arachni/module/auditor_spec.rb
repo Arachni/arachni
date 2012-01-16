@@ -50,6 +50,9 @@ describe Arachni::Module::Auditor do
     before :all do
         @opts = Arachni::Options.instance
         @opts.audit_links = true
+        @opts.audit_forms = true
+        @opts.audit_cookies = true
+        @opts.audit_headers = true
 
         @opts.url = @url = server_url_for( :auditor )
 
@@ -59,6 +62,7 @@ describe Arachni::Module::Auditor do
 
     after :each do
         @framework.modules.results.clear
+        Arachni::Element::Auditable.reset
     end
 
     it 'should #register_results' do
@@ -286,58 +290,187 @@ describe Arachni::Module::Auditor do
 
     describe :audit do
 
+        before do
+            @seed = 'my_seed'
+            @default_input_value = 'blah'
+         end
+
         context 'when called with no opts' do
             it 'should use the defaults' do
-                @auditor.load_page_from( @url + '/audit/link' )
-                @auditor.audit( 'this is what we inject' )
+                @auditor.load_page_from( @url + '/link' )
+                @auditor.audit( @seed )
                 @framework.http.run
                 @framework.modules.results.size.should == 4
             end
         end
 
         context 'when called with option' do
+
             describe :format do
+
+                before { @auditor.load_page_from( @url + '/link' ) }
+
                 describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
-                    it 'should inject the seed as is'
+                    it 'should inject the seed as is' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ] )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        @framework.modules.results.first.injected.should == @seed
+                    end
                 end
+
                 describe 'Arachni::Module::Auditor::Format::APPEND' do
-                    it 'should append the seed to the existing value of the input'
+                    it 'should append the seed to the existing value of the input' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::APPEND ] )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        @framework.modules.results.first.injected.should == @default_input_value + @seed
+                    end
                 end
+
                 describe 'Arachni::Module::Auditor::Format::NULL' do
-                    it 'should terminate the seed with a null character'
+                    it 'should terminate the seed with a null character' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::NULL ] )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        @framework.modules.results.first.injected.should == @seed + "\0"
+                    end
                 end
+
                 describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
-                    it 'should terminate the seed with a semicolon'
+                    it 'should prepend the seed with a semicolon' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::SEMICOLON ] )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        @framework.modules.results.first.injected.should == ';' + @seed
+                    end
                 end
             end
 
             describe :elements do
+
+                before { @auditor.load_page_from( @url + '/elem_combo' ) }
+
                 describe 'Arachni::Module::Auditor::Element::LINK' do
-                    it 'should audit links'
+                    it 'should audit links' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                            elements: [ Arachni::Module::Auditor::Element::LINK ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.var.should == 'link_input'
+                    end
                 end
                 describe 'Arachni::Module::Auditor::Element::FORM' do
-                    it 'should audit forms'
+                    it 'should audit forms' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                            elements: [ Arachni::Module::Auditor::Element::FORM ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::FORM
+                        issue.var.should == 'form_input'
+                    end
                 end
                 describe 'Arachni::Module::Auditor::Element::COOKIE' do
-                    it 'should audit cookies'
+                    it 'should audit cookies' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                            elements: [ Arachni::Module::Auditor::Element::COOKIE ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
+                        issue.var.should == 'cookie_input'
+                    end
                 end
                 describe 'Arachni::Module::Auditor::Element::HEADER' do
-                    it 'should audit headers'
+                    it 'should audit headers' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                            elements: [ Arachni::Module::Auditor::Element::HEADER ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::HEADER
+                        issue.var.should == 'referer'
+                    end
+                end
+
+                context 'when using default options' do
+                    it 'should audit all element types' do
+                        @auditor.audit( @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 4
+                    end
                 end
             end
 
-            describe :regexp do
-                context 'with :match' do
-                    it 'should verify the matched data with the provided string'
+            context 'for matching with' do
+                before { @auditor.load_page_from( @url + '/link' ) }
+
+                describe :regexp do
+                    context 'with valid :match' do
+                        it 'should verify the matched data with the provided string' do
+                            @auditor.audit( @seed,
+                                regexp: /my_.+d/,
+                                match: @seed,
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                             )
+                            @framework.http.run
+                            @framework.modules.results.size.should == 1
+                            @framework.modules.results.first.injected.should == @seed
+                        end
+                    end
+
+                    context 'with invalid :match' do
+                        it 'should not log issue' do
+                            @auditor.audit( @seed,
+                                regexp: @seed,
+                                match: 'blah',
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                             )
+                            @framework.http.run
+                            @framework.modules.results.should be_empty
+                        end
+                    end
+
+                    context 'without :match' do
+                        it 'should try to match the provided pattern' do
+                            @auditor.audit( @seed,
+                                regexp: @seed,
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                             )
+                            @framework.http.run
+                            @framework.modules.results.size.should == 1
+                            @framework.modules.results.first.injected.should == @seed
+                        end
+                    end
                 end
 
-                context 'without :match' do
-                    it 'should try to match the provided pattern'
+                describe :substring do
+                    it 'should try to find the provided substring' do
+                        @auditor.audit( @seed,
+                            substring: @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                         )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                    end
                 end
-            end
-
-            describe :substring do
-                it 'should try to match the provided substring'
             end
 
             describe :train do
@@ -366,7 +499,7 @@ describe Arachni::Module::Auditor do
                 end
 
                 context false do
-                    it 'should perform all HTTP requests asynchronously'
+                    it 'should perform all HTTP requests synchronously'
                 end
             end
 
