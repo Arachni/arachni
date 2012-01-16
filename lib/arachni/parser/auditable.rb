@@ -355,42 +355,41 @@ class Auditable
     #                                    HTTP response is received.
     #
     def on_complete( req, elem, &block )
-
         elem.opts[:injected] = elem.auditable[elem.altered].to_s
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
 
         if( !elem.opts[:async] )
-
             if( req && req.response )
-                block.call( req.response, elem.opts, elem )
+                after_complete( req.response, elem, &block )
             end
-
             return
         end
 
-        req.on_complete {
-            |res|
+        req.on_complete { |res| after_complete( res, elem, &block ) }
+    end
 
-            # make sure that we have a response before continuing
-            if !res
-                print_error( 'Failed to get response, backing out...' )
-                next
-            else
-                print_status( 'Analyzing response #' + res.request.id.to_s + '...' )  if elem.opts && !elem.opts[:silent]
+    def after_complete( response, element, &block )
+        # make sure that we have a response before continuing
+        if !response
+            print_error( 'Failed to get response, backing out...' )
+            return
+        else
+            if element.opts && !element.opts[:silent]
+                print_status( 'Analyzing response #' + response.request.id.to_s + '...' )
             end
+        end
 
-            # call the block, if there's one
-            if block_given?
-                block.call( res, elem.opts, elem )
-                next
-            end
+        # call the block, if there's one
+        if block
+            block.call( response, element.opts, element )
+            return
+        end
 
-            next if !res.body
+        return if !response.code
 
-            # get matches
-            get_matches( res.dup, elem.opts )
-        }
+        # get matches
+        get_matches( response.dup, element.opts )
     end
 
     #
