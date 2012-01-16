@@ -559,12 +559,64 @@ describe Arachni::Module::Auditor do
             end
 
             describe :redundant do
+                before do
+                    @audit_opts = {
+                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                        elements: [ Arachni::Module::Auditor::Element::LINK ]
+                    }
+                end
+
                 context true do
-                    it 'should allow redundant requests/audits'
+                    it 'should allow redundant requests/audits' do
+                        audits = Hash.new( 0 )
+                        2.times {
+                            |i|
+                            @auditor.audit( @seed, @audit_opts.merge( redundant: true )){
+                                |res, opts, elem|
+                                audits[i] += 1
+                            }
+                            @framework.http.run
+                        }
+
+                        # since we've enabled redundant audits both should be performed
+                        # the same amount of times (2)
+                        audits.values.first.should == audits.values.last
+                        audits.values.first.should == 2
+                        audits.size.should == 2
+                    end
                 end
 
                 context false do
-                    it 'should not allow redundant requests/audits'
+                    it 'should not allow redundant requests/audits' do
+                        audits = Hash.new( 0 )
+                        2.times {
+                            |i|
+                            @auditor.audit( @seed, @audit_opts.merge( redundant: false )){
+                                |res, opts, elem|
+                                audits[i] += 1
+                            }
+                            @framework.http.run
+                        }
+
+                        # since we've disabled redundant audits only the first
+                        # one should be performed
+                        audits.size.should == 1
+                    end
+                end
+
+                context 'default' do
+                    it 'should not allow redundant requests/audits' do
+                        audits = Hash.new( 0 )
+                        2.times {
+                            |i|
+                            @auditor.audit( @seed, @audit_opts ) {
+                                |res, opts, elem|
+                                audits[i] += 1
+                            }
+                            @framework.http.run
+                        }
+                        audits.size.should == 1
+                    end
                 end
             end
 
