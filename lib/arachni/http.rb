@@ -655,14 +655,27 @@ class HTTP
         if( !@_404[path]['file'] )
 
             # force a 404 and grab the html body
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '.foo'
             @_404[path]['file'] = Typhoeus::Request.get( force_404 ).body
+
+            # force another 404 and grab the html body
+            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '.bar'
+            not_found2  = Typhoeus::Request.get( force_404 ).body
+
+            @_404[path]['file_rdiff'] = @_404[path]['file'].rdiff( not_found2 )
+        end
+
+        if( !@_404[path]['file_without_ext'] )
+
+            # force a 404 and grab the html body
+            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+            @_404[path]['file_without_ext'] = Typhoeus::Request.get( force_404 ).body
 
             # force another 404 and grab the html body
             force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
             not_found2  = Typhoeus::Request.get( force_404 ).body
 
-            @_404[path]['file_rdiff'] = @_404[path]['file'].rdiff( not_found2 )
+            @_404[path]['file_without_ext_rdiff'] = @_404[path]['file_without_ext'].rdiff( not_found2 )
         end
 
         if( !@_404[path]['dir'] )
@@ -677,7 +690,8 @@ class HTTP
         end
 
         return @_404[path]['dir'].rdiff( res.body ) == @_404[path]['dir_rdiff'] ||
-            @_404[path]['file'].rdiff( res.body ) == @_404[path]['file_rdiff']
+            @_404[path]['file'].rdiff( res.body ) == @_404[path]['file_rdiff'] ||
+            @_404[path]['file_without_ext'].rdiff( res.body ) == @_404[path]['file_without_ext_rdiff']
     end
 
     private
