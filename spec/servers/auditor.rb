@@ -20,6 +20,14 @@ EOHTML
 
 end
 
+get '/sleep' do
+    sleep 2
+<<EOHTML
+    <a href='?input=blah'>Inject here</a>
+    #{params[:input]}
+EOHTML
+end
+
 get '/link' do
     <<EOHTML
     <a href='?input=blah'>Inject here</a>

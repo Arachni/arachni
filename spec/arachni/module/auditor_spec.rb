@@ -616,19 +616,72 @@ describe Arachni::Module::Auditor do
             end
 
             describe :async do
+                before do
+                    # will sleep 2 secs before each response
+                    @auditor.load_page_from( @url + '/sleep' )
+                end
+
                 context true do
-                    it 'should perform all HTTP requests asynchronously'
+                    it 'should perform all HTTP requests asynchronously' do
+                        before = Time.now
+                        @auditor.audit_links( @seed, async: true )
+                        @framework.http.run
+
+                        # should take as long as the longest request
+                        # and since we're doing this locally the longest
+                        # request must take less than a second.
+                        #
+                        # so it should be 2 when converted into an Int
+                        (Time.now - before).to_i.should == 2
+
+                        issue = @framework.modules.results.first
+                        issue.should be_true
+                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.var.should == 'input'
+                    end
                 end
 
                 context false do
-                    it 'should perform all HTTP requests synchronously'
+                    it 'should perform all HTTP requests synchronously' do
+                        before = Time.now
+                        @auditor.audit_links( @seed, async: false )
+                        @framework.http.run
+
+                        (Time.now - before).should > 4.0
+
+                        issue = @framework.modules.results.first
+                        issue.should be_true
+                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.var.should == 'input'
+                    end
                 end
+
+                context 'default' do
+                    it 'should perform all HTTP requests asynchronously' do
+                        before = Time.now
+                        @auditor.audit_links( @seed )
+                        @framework.http.run
+
+                        (Time.now - before).to_i.should == 2
+
+                        issue = @framework.modules.results.first
+                        issue.should be_true
+                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.var.should == 'input'
+                    end
+                end
+
             end
 
         end
 
         context 'when called with a block' do
-            it 'should delegate analysis and logging to caller'
+            it 'should delegate analysis and logging to caller' do
+                @auditor.load_page_from( @url + '/link' )
+                @auditor.audit( @seed ){}
+                @framework.http.run
+                @framework.modules.results.should be_empty
+            end
         end
 
     end
