@@ -65,15 +65,17 @@ describe Arachni::Module::Auditor do
         Arachni::Element::Auditable.reset
     end
 
-    it 'should #register_results' do
-        issue = Arachni::Issue.new( name: 'Test issue', url: @url )
-        @auditor.register_results( [ issue ] )
+    describe :register_results do
+        it 'should register issues with the framework' do
+            issue = Arachni::Issue.new( name: 'Test issue', url: @url )
+            @auditor.register_results( [ issue ] )
 
-        logged_issue = @framework.modules.results.first
-        logged_issue.should be_true
+            logged_issue = @framework.modules.results.first
+            logged_issue.should be_true
 
-        logged_issue.name.should == issue.name
-        logged_issue.url.should  == issue.url
+            logged_issue.name.should == issue.name
+            logged_issue.url.should  == issue.url
+        end
     end
 
     describe :log_remote_file_if_exists do
@@ -474,12 +476,85 @@ describe Arachni::Module::Auditor do
             end
 
             describe :train do
+                context 'default' do
+                    it 'should parse the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
+                        # flush any exisiting pages from the buffer
+                        @framework.http.trainer.flush_pages
+
+                        page = nil
+                        @framework.http.get( @url + '/train/default' ).on_complete {
+                            |res|
+                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                        }
+                        @framework.http.run
+
+                        # page feedback queue
+                        pages = [ page ]
+                        # audit until no more new elements appear
+                        while page = pages.pop
+                            auditor = Arachni::Module::Base.new( page )
+                            auditor.audit( @seed )
+                            # run audit requests
+                            @framework.http.run
+                            # feed the new pages/elements back to the queue
+                            pages |= @framework.http.trainer.flush_pages
+                        end
+
+                        issue = @framework.modules.results.first
+                        issue.should be_true
+                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.var.should == 'you_made_it'
+                    end
+                end
+
                 context true do
-                    it 'should parse the responses and feed any new elements back to the framework to be audited'
+                    it 'should parse all responses and feed any new elements back to the framework to be audited' do
+                        # flush any exisiting pages from the buffer
+                        @framework.http.trainer.flush_pages
+
+                        page = nil
+                        @framework.http.get( @url + '/train/true' ).on_complete {
+                            |res|
+                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                        }
+                        @framework.http.run
+
+                        # page feedback queue
+                        pages = [ page ]
+                        # audit until no more new elements appear
+                        while page = pages.pop
+                            auditor = Arachni::Module::Base.new( page )
+                            auditor.audit( @seed, train: true )
+                            # run audit requests
+                            @framework.http.run
+                            # feed the new pages/elements back to the queue
+                            pages |= @framework.http.trainer.flush_pages
+                        end
+
+                        issue = @framework.modules.results.first
+                        issue.should be_true
+                        issue.elem.should == Arachni::Module::Auditor::Element::FORM
+                        issue.var.should == 'you_made_it'
+                    end
                 end
 
                 context false do
-                    it 'should skip analysis'
+                    it 'should skip analysis' do
+                        # flush any exisiting pages from the buffer
+                        @framework.http.trainer.flush_pages
+
+                        page = nil
+                        @framework.http.get( @url + '/train/true' ).on_complete {
+                            |res|
+                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                        }
+                        @framework.http.run
+
+                        auditor = Arachni::Module::Base.new( page )
+                        auditor.audit( @seed, train: false )
+                        @framework.http.run
+                        @framework.http.trainer.flush_pages.should be_empty
+                    end
                 end
             end
 
