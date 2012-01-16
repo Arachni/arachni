@@ -10,7 +10,7 @@ end
 
 get '/elem_combo' do
     cookies[:cookie_input] ||= 'cookie_blah'
-    html =<<EOHTML
+    html =<<-EOHTML
     <form method='get'>
         <input name='form_input' value='form_blah' />
     </form>
@@ -20,16 +20,38 @@ EOHTML
 
 end
 
+get '/timeout/false' do
+    sleep 2
+<<-EOHTML
+    <a href='?sleep=0'>Inject here</a>
+    #{params[:input]}
+EOHTML
+end
+
+get '/timeout/true' do
+    sleep params[:sleep].to_i
+<<-EOHTML
+    <a href='?sleep=0'>Inject here</a>
+EOHTML
+end
+
+get '/timeout/high_response_time' do
+    sleep( params[:sleep].to_i + 2 )
+    <<-EOHTML
+        <a href='?sleep=0'>Inject here</a>
+EOHTML
+end
+
 get '/sleep' do
     sleep 2
-<<EOHTML
+<<-EOHTML
     <a href='?input=blah'>Inject here</a>
     #{params[:input]}
 EOHTML
 end
 
 get '/link' do
-    <<EOHTML
+    <<-EOHTML
     <a href='?input=blah'>Inject here</a>
     #{params[:input]}
 EOHTML
@@ -39,7 +61,7 @@ get '/train/default' do
     default = 'form_blah'
     cookies[:curveball] ||= Digest::MD5.hexdigest( rand( 99999 ).to_s )
 
-    html =<<EOHTML
+    html =<<-EOHTML
     <form method='get' action='?'>
         <input name='step_1' value='#{default}_step_1' />
     </form>
@@ -70,7 +92,7 @@ end
 
 get '/train/true' do
     default = 'form_blah'
-    html =<<EOHTML
+    html =<<-EOHTML
     <form method='get' action='?'>
         <input name='step_1' value='#{default}_step_1' />
     </form>

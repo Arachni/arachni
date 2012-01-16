@@ -686,4 +686,73 @@ describe Arachni::Module::Auditor do
 
     end
 
+    describe :audit_timeout do
+        before do
+            @timeout_opts = {
+                format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                elements: [ Arachni::Issue::Element::LINK ]
+            }
+
+            @timeout_url = @url + '/timeout/'
+        end
+
+        describe :timeout_divider do
+            context 'when set' do
+                it 'should modify the final timeout value' do
+                    @auditor.load_page_from( @timeout_url + 'true' )
+                    @auditor.audit_timeout( '__TIME__',
+                        @timeout_opts.merge(
+                            timeout_divider: 1000,
+                            timeout: 2000
+                        )
+                    )
+                    Arachni::Module::Auditor.timeout_audit_run
+
+                    @framework.modules.results.should be_any
+                    @framework.modules.results.first.injected.should == 4.to_s
+                end
+            end
+
+            context 'when not set' do
+                it 'should not modify the final timeout value' do
+                    @auditor.load_page_from( @timeout_url + 'true' )
+                    @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2 ))
+                    Arachni::Module::Auditor.timeout_audit_run
+
+                    @framework.modules.results.should be_any
+                    @framework.modules.results.first.injected.should == 4.to_s
+                end
+            end
+        end
+
+        context 'when a page has a high response time'do
+
+            before do
+                @delay_opts = {
+                    timeout_divider: 1000,
+                    timeout: 2000
+                }.merge( @timeout_opts )
+            end
+
+            context 'but isn\'t vulnerable' do
+                it 'should not log issue' do
+                    @auditor.load_page_from( @timeout_url + 'false' )
+                    @auditor.audit_timeout( '__TIME__', @delay_opts )
+                    Arachni::Module::Auditor.timeout_audit_run
+                    @framework.modules.results.should be_empty
+                end
+            end
+
+            context 'and is vulnerable' do
+                it 'should log issue' do
+                    @auditor.load_page_from( @timeout_url + 'high_response_time' )
+                    @auditor.audit_timeout( '__TIME__', @delay_opts )
+                    Arachni::Module::Auditor.timeout_audit_run
+                    @framework.modules.results.should be_any
+                end
+            end
+        end
+
+    end
+
 end
