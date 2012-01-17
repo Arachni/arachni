@@ -78,7 +78,8 @@ module Utilities
         end
 
         path << '/' if path[-1] != '/'
-        return uri.scheme + "://" + uri.host + path
+
+        return uri.scheme + "://" + uri.host + ':' + uri.port.to_s + path
     end
 
     def seed
