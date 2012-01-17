@@ -49,6 +49,12 @@ module ElementDB
     #
     @@cookies  ||= Set.new
 
+    def init_db_from_page( page )
+        init_links( page.links )
+        init_forms( page.forms )
+        init_cookies( page.cookies )
+    end
+
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
@@ -137,7 +143,7 @@ module ElementDB
         cookie_cnt = 0
         @new_cookies ||= []
 
-        cookies.each_with_index {
+        cookies.reverse.each_with_index {
             |cookie|
 
             @@cookies.each_with_index {
