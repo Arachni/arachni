@@ -122,7 +122,7 @@ class Link < Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action]
+        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || url
         @method = 'get'
 
         @auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
@@ -170,8 +170,17 @@ class Form < Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
-        @method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
+        begin
+            @action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
+        rescue
+            @action = url
+        end
+
+        begin
+            @method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
+        rescue
+            @method = 'post'
+        end
 
         @auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable'] || {}
         @orig      = @auditable.deep_clone
@@ -258,10 +267,14 @@ class Cookie < Base
         @action = @url
         @method = 'cookie'
 
-        if @raw['name']
+        if @raw['name'] && @raw['value']
             @auditable = { @raw['name'] => @raw['value'] }
         else
-            @auditable = @raw
+            @auditable = raw.dup
+            @raw = {
+                'name'  => @auditable.keys.first,
+                'value' => @auditable.values.first
+            }
         end
 
         @simple = @auditable.dup
