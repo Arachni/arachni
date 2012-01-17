@@ -653,14 +653,6 @@ class HTTP
         path  = get_path( res.effective_url )
         @_404[path] ||= []
 
-        body = res.body
-        (precision - 1).times {
-            get( res.effective_url, :remove_id => true ).on_complete {
-                |res|
-                body = body.rdiff( res.body )
-            }
-        }
-
         uri = uri_parse( res.effective_url )
         trv_back = File.dirname( uri.path )
         trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
@@ -685,38 +677,52 @@ class HTTP
         ]
 
         @_404_gathered ||= Hash.new( false )
+
         gathered = 0
-        already_called = false
-        generators.each.with_index {
-            |generator, i|
+        body = res.body
+        (precision - 1).times {
+            get( res.effective_url, :remove_id => true ).on_complete {
+                |c_res|
+                body = body.rdiff( c_res.body )
+                gathered += 1
+                if gathered == generators.size * precision + precision - 1
+                    block.call is_404?( path, body )
+                end
+            }
+        }
 
-            @_404[path][i] ||= {}
+        if !@_404_gathered[path]
+            generators.each.with_index {
+                |generator, i|
 
-            if !@_404[path][i]['body']
+                @_404[path][i] ||= {}
                 precision.times {
                     get( generator.call, :remove_id => true ).on_complete {
-                        |res|
-
-                        @_404[path][i]['body'] ||= res.body
-
-                        if !@_404[path][i]['rdiff']
-                            @_404[path][i]['rdiff'] = @_404[path][i]['body']
-                        else
-                            @_404[path][i]['rdiff'] = @_404[path][i]['rdiff'].rdiff( res.body )
-                        end
+                        |c_res|
 
                         gathered += 1
-                        if gathered == generators.size * precision
+                        if gathered == generators.size * precision + precision - 1
                             @_404_gathered[path] = true
-                            already_called = true
                             block.call is_404?( path, body )
+                        else
+                            @_404[path][i]['rdiff_now'] ||= false
+
+                            if !@_404[path][i]['body']
+                                @_404[path][i]['body'] = c_res.body
+                            else
+                                @_404[path][i]['rdiff_now'] = true
+                            end
+
+                            if @_404[path][i]['rdiff_now'] && !@_404[path][i]['rdiff']
+                                @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
+                            end
                         end
                     }
                 }
-            end
-        }
-
-        block.call is_404?( path, body ) if @_404_gathered[path] && !already_called
+            }
+        else
+            block.call is_404?( path, body )
+        end
     end
 
     private
