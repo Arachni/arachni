@@ -680,16 +680,16 @@ class HTTP
 
         gathered = 0
         body = res.body
-        (precision - 1).times {
-            get( res.effective_url, :remove_id => true ).on_complete {
-                |c_res|
-                body = body.rdiff( c_res.body )
-                gathered += 1
-                if gathered == generators.size * precision + precision - 1
-                    block.call is_404?( path, body )
-                end
-            }
-        }
+        # (precision - 1).times {
+            # get( res.effective_url, :remove_id => true ).on_complete {
+                # |c_res|
+                # body = body.rdiff( c_res.body )
+                # gathered += 1
+                # if gathered == generators.size * precision + precision - 1
+                    # block.call is_404?( path, body )
+                # end
+            # }
+        # }
 
         if !@_404_gathered[path]
             generators.each.with_index {
@@ -701,7 +701,7 @@ class HTTP
                         |c_res|
 
                         gathered += 1
-                        if gathered == generators.size * precision + precision - 1
+                        if gathered == generators.size * precision
                             @_404_gathered[path] = true
                             block.call is_404?( path, body )
                         else
