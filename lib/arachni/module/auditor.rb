@@ -316,14 +316,12 @@ module Auditor
     def log_remote_file_if_exists( url, silent = false, &block )
         return nil if !url
 
-        req  = http.get( url )
-        return false if !req
-        req.on_complete {
-            |res|
+        remote_file_exist?( url ) {
+            |bool, res|
 
             print_status( 'Analyzing response for: ' + url ) if !silent
 
-            if remote_file_exist?( res )
+            if bool
                 block.call( res ) if block_given?
                 log_remote_file( res )
 
@@ -343,8 +341,22 @@ module Auditor
     #
     # @param    [Typhoeus::Response]    res
     #
-    def remote_file_exist?( res )
-        res.code == 200 && !http.custom_404?( res )
+    def remote_file_exist?( url, &block )
+        req  = http.get( url, :remove_id => true )
+        return false if !req
+
+        req.on_complete {
+            |res|
+            if res.code != 200
+                block.call( false, res )
+            else
+                http.custom_404?( res ) {
+                    |bool|
+                    block.call( !bool, res )
+                }
+            end
+        }
+        return true
     end
 
     #
@@ -994,42 +1006,47 @@ module Auditor
                         block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
                     elsif( responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
-                        !http.custom_404?( res['res'] ) && res['res'].code == 200 )
+                        res['res'].code == 200 )
 
-                        url = res['res'].effective_url
+                        http.custom_404?( res['res'] ) {
+                            |bool|
+                            next if bool
 
-                        # since we bypassed the auditor completely we need to create
-                        # our own opts hash and pass it to the Vulnerability class.
-                        #
-                        # this is only required for Metasploitable vulnerabilities
-                        opts = {
-                            :injected_orig => res['str'],
-                            :combo         => res['elem'].auditable
+                            url = res['res'].effective_url
+
+                            # since we bypassed the auditor completely we need to create
+                            # our own opts hash and pass it to the Vulnerability class.
+                            #
+                            # this is only required for Metasploitable vulnerabilities
+                            opts = {
+                                :injected_orig => res['str'],
+                                :combo         => res['elem'].auditable
+                            }
+
+                            issue = Issue.new( {
+                                    :var          => key,
+                                    :url          => url,
+                                    :method       => res['res'].request.method.to_s,
+                                    :opts         => opts,
+                                    :injected     => res['str'],
+                                    :id           => res['str'],
+                                    :regexp       => 'n/a',
+                                    :regexp_match => 'n/a',
+                                    :elem         => res['elem'].type,
+                                    :response     => res['res'].body,
+                                    # :verification => true,
+                                    :headers      => {
+                                        :request    => res['res'].request.headers,
+                                        :response   => res['res'].headers,
+                                    }
+                                }.merge( self.class.info )
+                            )
+
+                            print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
+
+                            # register our results with the system
+                            register_results( [ issue ] )
                         }
-
-                        issue = Issue.new( {
-                                :var          => key,
-                                :url          => url,
-                                :method       => res['res'].request.method.to_s,
-                                :opts         => opts,
-                                :injected     => res['str'],
-                                :id           => res['str'],
-                                :regexp       => 'n/a',
-                                :regexp_match => 'n/a',
-                                :elem         => res['elem'].type,
-                                :response     => res['res'].body,
-                                # :verification => true,
-                                :headers      => {
-                                    :request    => res['res'].request.headers,
-                                    :response   => res['res'].headers,
-                                }
-                            }.merge( self.class.info )
-                        )
-
-                        print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
-
-                        # register our results with the system
-                        register_results( [ issue ] )
                     end
 
                 }

@@ -117,6 +117,19 @@ get '/log_remote_file_if_exists/false' do
     [ 404, 'Better luck next time...' ]
 end
 
+get '/log_remote_file_if_exists/custom_404/static/*' do
+    'This is a custom 404, try to catch it. ;)'
+end
+
+get '/log_remote_file_if_exists/custom_404/invalid/*' do
+    'This is a custom 404 which includes the requested resource, try to catch it. ;)' +
+    '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
+end
+
+get '/log_remote_file_if_exists/custom_404/dynamic/*' do
+    'This is a custom 404, try to catch it. ;)<br/> Random bit: ' + rand( 999 ).to_s
+end
+
 get '/match_and_log' do
     'Match this!'
 end

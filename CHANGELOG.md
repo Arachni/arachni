@@ -8,9 +8,12 @@
 - Modules
    - API
       - Updated to provide access to running plugins.
+      - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
    - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
 - Extras
    - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
+- HTTP
+   - Improved detection of custom 404 pages
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports

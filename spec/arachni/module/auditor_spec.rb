@@ -112,20 +112,58 @@ describe Arachni::Module::Auditor do
             @base_url = @url + '/log_remote_file_if_exists/'
         end
 
-        after { @framework.http.run }
-
         it 'should return true if file exists' do
-            @framework.http.get( @base_url + 'true' ).on_complete {
-                |res|
-                @auditor.remote_file_exist?( res ).should be_true
+            exists = false
+            @auditor.remote_file_exist?( @base_url + 'true' ) {
+                |bool|
+                exists = bool
             }
+            @framework.http.run
+            exists.should be_true
         end
 
-        it 'should return false if file doesn\'t exists' do
-            @framework.http.get( @base_url + 'false' ).on_complete {
-                |res|
-                @auditor.remote_file_exist?( res ).should be_false
+        it 'should return false if file doesn\'t exist' do
+            exists = true
+            @auditor.remote_file_exist?( @base_url + 'false' ) {
+                |bool|
+                exists = bool
             }
+            @framework.http.run
+            exists.should be_false
+        end
+
+        context 'when faced with a custom 404' do
+            before { @_404_url = @base_url + 'custom_404/' }
+
+            it 'should be able to handle it if it remains the same' do
+                exists = true
+                @auditor.remote_file_exist?( @_404_url + 'static/this_does_not_exist' ) {
+                    |bool|
+                    exists = bool
+                }
+                @framework.http.run
+                exists.should be_false
+            end
+
+            it 'should be able to handle it if the response contains the invalid request' do
+                exists = true
+                @auditor.remote_file_exist?( @_404_url + 'invalid/this_does_not_exist' ) {
+                    |bool|
+                    exists = bool
+                }
+                @framework.http.run
+                exists.should be_false
+            end
+
+            it 'should be able to handle it if the response contains dynamic data' do
+                exists = true
+                @auditor.remote_file_exist?( @_404_url + 'dynamic/this_does_not_exist' ) {
+                    |bool|
+                    exists = bool
+                }
+                @framework.http.run
+                exists.should be_false
+            end
         end
     end
 

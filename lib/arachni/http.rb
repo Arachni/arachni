@@ -646,55 +646,91 @@ class HTTP
     #
     # @param  [Bool]
     #
-    def custom_404?( res )
+    def custom_404?( res, &block )
+        precision = 2
 
         @_404 ||= {}
         path  = get_path( res.effective_url )
-        @_404[path] ||= {}
+        @_404[path] ||= []
 
-        if( !@_404[path]['file'] )
+        body = res.body
+        (precision - 1).times {
+            get( res.effective_url, :remove_id => true ).on_complete {
+                |res|
+                body = body.rdiff( res.body )
+            }
+        }
 
-            # force a 404 and grab the html body
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '.foo'
-            @_404[path]['file'] = Typhoeus::Request.get( force_404 ).body
+        uri = uri_parse( res.effective_url )
+        trv_back = File.dirname( uri.path )
+        trv_back_url = uri.scheme + '://' +  uri.host + ':' + uri.port.to_s + trv_back
+        trv_back_url += '/' if trv_back_url[-1] != '/'
 
-            # force another 404 and grab the html body
-            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '.bar'
-            not_found2  = Typhoeus::Request.get( force_404 ).body
+        # 404 probes
+        generators = [
+            # get a random path with an extension
+            proc{ path + random_string + '.' + random_string[0..precision] },
 
-            @_404[path]['file_rdiff'] = @_404[path]['file'].rdiff( not_found2 )
-        end
+            # get a random path without an extension
+            proc{ path + random_string },
 
-        if( !@_404[path]['file_without_ext'] )
+            # move up a dir and get a random file
+            proc{ trv_back_url + random_string },
 
-            # force a 404 and grab the html body
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
-            @_404[path]['file_without_ext'] = Typhoeus::Request.get( force_404 ).body
+            # move up a dir and get a random file with an extension
+            proc{ trv_back_url + random_string + '.' + random_string[0..precision] },
 
-            # force another 404 and grab the html body
-            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
-            not_found2  = Typhoeus::Request.get( force_404 ).body
+            # get a random directory
+            proc{ path + random_string + '/' }
+        ]
 
-            @_404[path]['file_without_ext_rdiff'] = @_404[path]['file_without_ext'].rdiff( not_found2 )
-        end
+        @_404_gathered ||= Hash.new( false )
+        gathered = 0
+        already_called = false
+        generators.each.with_index {
+            |generator, i|
 
-        if( !@_404[path]['dir'] )
+            @_404[path][i] ||= {}
 
-            force_404    = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            @_404[path]['dir'] = Typhoeus::Request.get( force_404 ).body
+            if !@_404[path][i]['body']
+                precision.times {
+                    get( generator.call, :remove_id => true ).on_complete {
+                        |res|
 
-            force_404   = path + Digest::SHA1.hexdigest( rand( 9999999 ).to_s ) + '/'
-            not_found2  = Typhoeus::Request.get( force_404 ).body
+                        @_404[path][i]['body'] ||= res.body
 
-            @_404[path]['dir_rdiff'] = @_404[path]['dir'].rdiff( not_found2 )
-        end
+                        if !@_404[path][i]['rdiff']
+                            @_404[path][i]['rdiff'] = @_404[path][i]['body']
+                        else
+                            @_404[path][i]['rdiff'] = @_404[path][i]['rdiff'].rdiff( res.body )
+                        end
 
-        return @_404[path]['dir'].rdiff( res.body ) == @_404[path]['dir_rdiff'] ||
-            @_404[path]['file'].rdiff( res.body ) == @_404[path]['file_rdiff'] ||
-            @_404[path]['file_without_ext'].rdiff( res.body ) == @_404[path]['file_without_ext_rdiff']
+                        gathered += 1
+                        if gathered == generators.size * precision
+                            @_404_gathered[path] = true
+                            already_called = true
+                            block.call is_404?( path, body )
+                        end
+                    }
+                }
+            end
+        }
+
+        block.call is_404?( path, body ) if @_404_gathered[path] && !already_called
     end
 
     private
+
+    def is_404?( path, body )
+        @_404[path].map {
+            |_404|
+             _404['body'].rdiff( body ) == _404['rdiff']
+        }.include?( true )
+    end
+
+    def random_string
+        Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+    end
 
     def redirect?( res )
         if loc = res.headers_hash['Location']
