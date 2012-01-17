@@ -167,7 +167,7 @@ describe Arachni::Module::Auditor do
 
             it 'should be able to handle a combination of the above with multiple requests' do
                 exist = []
-                500.times{
+                100.times{
                     @auditor.remote_file_exist?( @_404_url + 'combo/this_does_not_exist_' + rand( 9999 ).to_s ) {
                         |bool|
                         exist << bool
@@ -336,6 +336,41 @@ describe Arachni::Module::Auditor do
                 logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
                 logged_issue.regexp.should == @log_opts[:regexp].to_s
                 logged_issue.verification.should be_false
+            end
+        end
+
+    end
+
+    describe :audit_rdiff do
+        before do
+            @rdiff_opts = {
+                elements: [ Arachni::Issue::Element::LINK ],
+               :faults    => [ 'bad' ],
+               :bools     => [ 'good' ]
+            }
+
+            @rdiff_url = @url + '/rdiff/'
+        end
+
+        context 'when response behavior suggests a vuln' do
+            it 'should log issue' do
+                @auditor.load_page_from( @rdiff_url + 'true' )
+                @auditor.audit_rdiff( @rdiff_opts )
+                @framework.http.run
+                @framework.http.run
+
+                @framework.modules.results.should be_any
+                @framework.modules.results.first.var.should == 'rdiff'
+            end
+        end
+
+        context 'when responses are\'t consistent with vuln behavior' do
+            it 'should not log issue' do
+                @auditor.load_page_from( @rdiff_url + 'false' )
+                @auditor.audit_rdiff( @rdiff_opts )
+                @framework.http.run
+                @framework.http.run
+                @framework.modules.results.should be_empty
             end
         end
 
