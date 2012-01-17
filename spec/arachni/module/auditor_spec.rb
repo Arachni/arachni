@@ -1,5 +1,4 @@
 require_relative '../../spec_helper'
-require_from_root( 'framework' )
 
 class AuditorTest
     include Arachni::Module::Auditor
