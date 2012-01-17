@@ -164,6 +164,17 @@ describe Arachni::Module::Auditor do
                 @framework.http.run
                 exists.should be_false
             end
+
+            it 'should be able to handle a combination of the above' do
+                exists = true
+                @auditor.remote_file_exist?( @_404_url + 'combo/this_does_not_exist' ) {
+                    |bool|
+                    exists = bool
+                }
+                @framework.http.run
+                exists.should be_false
+            end
+
         end
     end
 
