@@ -165,14 +165,16 @@ describe Arachni::Module::Auditor do
                 exists.should be_false
             end
 
-            it 'should be able to handle a combination of the above' do
-                exists = true
-                @auditor.remote_file_exist?( @_404_url + 'combo/this_does_not_exist' ) {
-                    |bool|
-                    exists = bool
+            it 'should be able to handle a combination of the above with multiple requests' do
+                exist = []
+                500.times{
+                    @auditor.remote_file_exist?( @_404_url + 'combo/this_does_not_exist_' + rand( 9999 ).to_s ) {
+                        |bool|
+                        exist << bool
+                    }
                 }
                 @framework.http.run
-                exists.should be_false
+                exist.include?( true ).should be_false
             end
 
         end
