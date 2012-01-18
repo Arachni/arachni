@@ -14,6 +14,8 @@
    - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
    - Improved detection of custom 404 pages
+- Spider
+   - Fixed infitine loop bug.
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports

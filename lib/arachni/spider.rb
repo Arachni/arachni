@@ -28,7 +28,7 @@ module Arachni
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.3
+# @version: 0.2.4
 #
 class Spider
 
@@ -100,7 +100,7 @@ class Spider
     def run( parse = true, &block )
         return if @opts.link_count_limit == 0
 
-        visited = []
+        visited = Set.new
 
         opts = {
             :timeout    => nil,
@@ -121,7 +121,7 @@ class Spider
 
         while( !@paths.empty? )
             while( !@paths.empty? && url = parser.to_absolute( @paths.pop ) )
-                next if skip?( url )
+                next if skip?( url ) || visited.include?( url )|
 
                 wait_if_paused
 
@@ -151,7 +151,7 @@ class Spider
                             @redirects << res.request.url
                         end
 
-                        @paths   |= @sitemap - visited
+                        @paths   |= @sitemap - visited.to_a
                     end
 
                     # call the block...if we have one
