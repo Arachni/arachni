@@ -60,8 +60,7 @@ Gem::Specification.new do |s|
       s.add_dependency "eventmachine",    ">= 1.0.0.beta.4"
       s.add_dependency "em-synchrony",    ">= 1.0.0"
       s.add_dependency "arachni-rpc-em",  ">= 0.1.1"
-
-      s.add_development_dependency 'rspec', "~> 2.6"
+      s.add_dependency 'rspec',           "~> 2.8"
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
