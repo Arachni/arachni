@@ -121,7 +121,7 @@ class Spider
 
         while( !@paths.empty? )
             while( !@paths.empty? && url = parser.to_absolute( @paths.pop ) )
-                next if skip?( url ) || visited.include?( url )|
+                next if visited.include?( url ) || skip?( url )
 
                 wait_if_paused
 
