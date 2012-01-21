@@ -49,6 +49,10 @@ class KeyFiller
         'id'      => '1'
     }
 
+    def self.regexps
+        @@regexps
+    end
+
     #
     # Tries to fill a hash with values of appropriate type<br/>
     # based on the key of the parameter.
