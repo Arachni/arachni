@@ -21,7 +21,7 @@ module Module
 # KeyFiller class
 #
 # Included by {Module::Auditor}.<br/>
-# Tries to fill in webapp parameters with values of proper type
+# Tries to fill in input parameters with values of proper type
 # based on their name.
 #
 # @author: Tasos "Zapotek" Laskos
@@ -30,7 +30,7 @@ module Module
 # @version: 0.1.1
 #
 class KeyFiller
-  
+
     # Hash of regexps for the parameter keys
     # and the values to to fill in
     #
@@ -48,7 +48,7 @@ class KeyFiller
         'account' => '12',
         'id'      => '1'
     }
-        
+
     #
     # Tries to fill a hash with values of appropriate type<br/>
     # based on the key of the parameter.
@@ -58,35 +58,35 @@ class KeyFiller
     # @return   [Hash]
     #
     def self.fill( hash )
-        
+
         hash.keys.each{
             |key|
-            
+
             next if hash[key] && !hash[key].empty?
-            
+
             if val = self.match?( key )
                 hash[key] = val
             end
-            
+
             # moronic default value...
-            # will figure  out ssomething better in the future...
+            # will figure  out something better in the future...
             hash[key] = '1' if( !hash[key] || hash[key].empty? )
         }
-        
+
         return hash
     end
-    
+
     private
-    
+
     def self.match?( str )
       @@regexps.keys.each {
         |key|
         return @@regexps[key] if( str =~ Regexp.new( key, 'i' ) )
-        
+
       }
       return false
     end
-    
+
 end
 
 end
