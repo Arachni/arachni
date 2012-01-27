@@ -461,7 +461,7 @@ class Server < Sinatra::Base
 
             value = true if value == 'on'
 
-            if name == 'cookiejar'
+            if name == 'cookiejar' && value.is_a?( String )
                cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
             elsif name == 'extend_paths'
                cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
@@ -470,7 +470,7 @@ class Server < Sinatra::Base
             elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
 
-            elsif name == 'redundant'
+            elsif name == 'redundant' && value.is_a?( String )
                 cparams[name] = []
                 value.split( "\r\n" ).each {
                     |rule|
@@ -480,7 +480,7 @@ class Server < Sinatra::Base
                         'count'   => counter
                     }
                 }
-            elsif name == 'custom_headers'
+            elsif name == 'custom_headers' && value.is_a?( String )
                 cparams[name] = {}
                 value.split( "\r\n" ).each {
                     |line|
