@@ -61,7 +61,7 @@ class Manager < Arachni::ComponentManager
     # @param    [::Arachni::Framework]   framework  to be assigned to modules
     #
     def run( page, framework = nil )
-        keys.each { |mod| exception_jail( false ){ run_one( mod, page, framework ) } }
+        values.each { |mod| exception_jail( false ){ run_one( mod, page, framework ) } }
     end
 
     #
