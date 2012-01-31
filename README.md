@@ -20,14 +20,14 @@ Experimental/unstable branch -- used for integration.
     </tr>
     <tr>
         <th>Blog</th>
-        <td><a href="http://trainofthought.segfault.gr/category/projects/arachni/">http://trainofthought.segfault.gr/category/projects/arachni/</a></td>
+        <td><a href="http://arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
     <tr>
         <th>Github page</th>
         <td><a href="http://github.com/zapotek/arachni">http://github.com/zapotek/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
-        <td><a href="http://github.com/Zapotek/arachni/wiki">http://github.com/Zapotek/arachni/wiki</a></td>
+        <td><a href="http://arachni-scanner.com/wiki">http://arachni-scanner.com/wiki</a></td>
     </tr>
     <tr>
         <th>Code Documentation</th>
@@ -39,11 +39,11 @@ Experimental/unstable branch -- used for integration.
     </tr>
     <tr>
        <th>Author</th>
-       <td><a href="mailto:tasos.laskos@gmail.com">Tasos Laskos</a></td>
+       <td><a href="mailto:tasos.laskos@gmail.com">Tasos Laskos</a> (<a href="http://twitter.com/Zap0tek">@Zap0tek</a>)</td>
     </tr>
     <tr>
         <th>Twitter</th>
-        <td><a href="http://twitter.com/Zap0tek">@Zap0tek</a></td>
+        <td><a href="http://twitter.com/ArachniScanner">@ArachniScanner</a></td>
     </tr>
     <tr>
         <th>Copyright</th>
