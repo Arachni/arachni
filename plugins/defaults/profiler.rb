@@ -46,7 +46,7 @@ class Profiler < Arachni::Plugin::Base
     # @author: Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    # @version: 0.1.1
     #
     class Auditor < Arachni::Module::Base
 
@@ -105,7 +105,7 @@ class Profiler < Arachni::Plugin::Base
 
             res.headers_hash.each_pair {
                 |k, v|
-                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v } ) if v.substring?( @id )
+                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v } ) if v.to_s.substring?( @id )
             }
 
             return elems
