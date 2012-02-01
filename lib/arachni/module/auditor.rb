@@ -1003,7 +1003,9 @@ module Auditor
                     |res|
 
                     if block
-                        block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
+                        exception_jail( false ){
+                            block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
+                        }
                     elsif( responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
                         res['res'].code == 200 )
