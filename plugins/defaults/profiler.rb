@@ -105,7 +105,7 @@ class Profiler < Arachni::Plugin::Base
 
             res.headers_hash.each_pair {
                 |k, v|
-                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v } ) if v.to_s.substring?( @id )
+                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v.to_s } ) if v.to_s.substring?( @id )
             }
 
             return elems
