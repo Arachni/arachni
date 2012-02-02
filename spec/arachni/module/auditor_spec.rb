@@ -121,6 +121,16 @@ describe Arachni::Module::Auditor do
             exists.should be_true
         end
 
+        it 'should return false on redirect' do
+            exists = true
+            @auditor.remote_file_exist?( @base_url + 'redirect' ) {
+                |bool|
+                exists = bool
+            }
+            @framework.http.run
+            exists.should be_false
+        end
+
         it 'should return false if file doesn\'t exist' do
             exists = true
             @auditor.remote_file_exist?( @base_url + 'false' ) {

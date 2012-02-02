@@ -147,6 +147,14 @@ get '/log_remote_file_if_exists/true' do
     'Success!'
 end
 
+get '/log_remote_file_if_exists/redirect' do
+    redirect '/log_remote_file_if_exists/redirected'
+end
+
+get '/log_remote_file_if_exists/redirected' do
+    'Sucess!'
+end
+
 get '/log_remote_file_if_exists/false' do
     [ 404, 'Better luck next time...' ]
 end
