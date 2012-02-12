@@ -18,7 +18,7 @@ Dir.glob( @@root + 'servers/*' ) {
     next if name == :base
 
     @@servers[name] = {
-        port: rand( 5555..9999 ),
+        port: 5555 + rand( 9999 ),
         path: path
     }
 }
