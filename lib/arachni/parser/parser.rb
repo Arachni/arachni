@@ -300,7 +300,7 @@ class Parser
             forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
 
             # now remove them from html...
-            forms.each { |form| html.gsub!( form, '' ) }
+            forms.each { |form| html.gsub!( '<form' + form + '</form>', '' ) }
 
             # and get unclosed forms.
             forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
