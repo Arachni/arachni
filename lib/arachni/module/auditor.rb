@@ -688,7 +688,7 @@ module Auditor
         str = opts[:timing_string].gsub( '__TIME__',
             ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-        opts[:timeout] *= 0.7
+        opts[:timeout] *= 0.6
 
         elem.auditable = elem.orig
 
