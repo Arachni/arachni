@@ -794,6 +794,7 @@ describe Arachni::Module::Auditor do
         describe :timeout_divider do
             context 'when set' do
                 it 'should modify the final timeout value' do
+                    # @auditor.unmute!
                     @auditor.load_page_from( @timeout_url + 'true' )
                     @auditor.audit_timeout( '__TIME__',
                         @timeout_opts.merge(
@@ -810,12 +811,13 @@ describe Arachni::Module::Auditor do
 
             context 'when not set' do
                 it 'should not modify the final timeout value' do
-                    @auditor.load_page_from( @timeout_url + 'true' )
-                    @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2 ))
+                    # @auditor.unmute!
+                    @auditor.load_page_from( @timeout_url + 'true?mili=true' )
+                    @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
                     Arachni::Module::Auditor.timeout_audit_run
 
                     @framework.modules.results.should be_any
-                    @framework.modules.results.first.injected.should == 4.to_s
+                    @framework.modules.results.first.injected.should == 4000.to_s
                 end
             end
         end

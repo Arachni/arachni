@@ -29,9 +29,23 @@ EOHTML
 end
 
 get '/timeout/true' do
-    sleep params[:sleep].to_i + rand
+    wait = params[:sleep].to_f
+    wait /= 1000.0 if params[:mili] == 'true'
+
+    # p '--------'
+    # p before = Time.now
+    # p wait
+#
+    # now = Time.now
+    sleep( wait )
+
+    # p Time.now - now
+#
+    # p Time.now
+    # p '--------'
+
 <<-EOHTML
-    <a href='?sleep=0'>Inject here</a>
+    <a href='?sleep=0&mili=#{params[:mili]}'>Inject here</a>
 EOHTML
 end
 
