@@ -810,12 +810,12 @@ describe Arachni::Module::Auditor do
 
             context 'when not set' do
                 it 'should not modify the final timeout value' do
-                    # @auditor.load_page_from( @timeout_url + 'true' )
-                    # @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2 ))
-                    # Arachni::Module::Auditor.timeout_audit_run
-#
-                    # @framework.modules.results.should be_any
-                    # @framework.modules.results.first.injected.should == 4.to_s
+                    @auditor.load_page_from( @timeout_url + 'true' )
+                    @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2 ))
+                    Arachni::Module::Auditor.timeout_audit_run
+
+                    @framework.modules.results.should be_any
+                    @framework.modules.results.first.injected.should == 4.to_s
                 end
             end
         end
