@@ -29,8 +29,7 @@ EOHTML
 end
 
 get '/timeout/true' do
-    p time = params[:sleep].to_i + rand
-    sleep time
+    sleep params[:sleep].to_i + rand
 <<-EOHTML
     <a href='?sleep=0'>Inject here</a>
 EOHTML
