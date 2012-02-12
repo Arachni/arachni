@@ -90,6 +90,11 @@ class Manager < Arachni::ComponentManager
     end
     def do_not_store!() self.class.do_not_store! end
 
+    def self.store!
+        @@do_not_store = false
+    end
+    def store!() self.class.store! end
+
     #
     # Class method
     #
