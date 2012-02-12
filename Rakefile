@@ -22,7 +22,8 @@ begin
 
     RSpec::Core::RakeTask.new
 rescue LoadError => e
-    puts 'If you want to run the tests please install rspec first.'
+    puts 'If you want to run the tests please install rspec first:'
+    puts '  gem install rspec'
 end
 
 desc "Generate docs"
@@ -109,3 +110,6 @@ desc "Push a new version to Gemcutter"
 task :publish => [ :build ] do
     sh "gem push arachni-#{Arachni::VERSION}.gem"
 end
+
+desc "Build Arachni and run all the tests."
+task :default => [ :build, :spec ]

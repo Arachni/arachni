@@ -1,5 +1,5 @@
 require 'sinatra'
-require "sinatra/cookies"
+require 'sinatra/contrib'
 require 'json'
 require 'digest/md5'
 set :logging, false
