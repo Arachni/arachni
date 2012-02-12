@@ -72,6 +72,7 @@ describe Arachni::Module::Manager do
             @modules.do_not_store!
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be true
+            @modules.store!
         end
     end
 
