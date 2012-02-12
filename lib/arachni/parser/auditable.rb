@@ -97,6 +97,9 @@ class Auditable
         @auditor.print_debug( str )
     end
 
+    def print_debug_backtrace( str = '' )
+        @auditor.print_debug_backtrace( str )
+    end
 
     #
     # Callback invoked by {Arachni::Element::Auditable#audit} to submit
