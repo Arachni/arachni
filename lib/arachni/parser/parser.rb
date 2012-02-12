@@ -314,7 +314,12 @@ class Parser
             |form|
 
             elements[i] = Hash.new
-            elements[i]['attrs']    = form_attrs( form )
+
+            begin
+                elements[i]['attrs']    = form_attrs( form )
+            rescue
+                next
+            end
 
             if( !elements[i]['attrs'] || !elements[i]['attrs']['action'] )
                 action = @url.to_s
