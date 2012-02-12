@@ -688,7 +688,7 @@ module Auditor
         str = opts[:timing_string].gsub( '__TIME__',
             ( opts[:timeout] / opts[:timeout_divider] ).to_s )
 
-        opts[:timeout] *= 0.6
+        opts[:timeout] *= 0.7
 
         elem.auditable = elem.orig
 
@@ -696,6 +696,10 @@ module Auditor
         # that the web page is alive i.e won't time-out by default
         elem.get_auditor.http.get( elem.action ).on_complete {
             |res|
+
+            # ap elem.auditable
+            # ap res.effective_url
+            # ap res.request.params
 
             self.call_on_timing_blocks( res, elem )
 
@@ -705,6 +709,9 @@ module Auditor
 
                 elem.audit( str, opts ) {
                     |c_res, c_opts|
+
+                    # ap c_res.time
+                    # ap opts[:timeout]
 
                     if c_res.timed_out?
 
