@@ -1,4 +1,3 @@
-before_install: "gem install rspec; rake install"
 language: ruby
 script: "rake spec"
 rvm:
