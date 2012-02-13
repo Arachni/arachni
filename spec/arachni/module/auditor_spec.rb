@@ -6,7 +6,7 @@ class AuditorTest
 
     def initialize( framework )
         @framework = framework
-        http.trainer.set_page( page )
+        http.trainer.page = page
         mute!
     end
 
