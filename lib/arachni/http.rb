@@ -109,7 +109,6 @@ class HTTP
         @hydra_sync.disable_memoization
 
         @trainer = Arachni::Module::Trainer.new
-        @trainer.http = self
 
         @init_headers = {
             'cookie' => '',

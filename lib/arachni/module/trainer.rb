@@ -25,19 +25,13 @@ module Module
 #
 # Analyzes all HTTP responses looking for new auditable elements.
 #
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @author   Tasos Laskos <tasos.laskos@gmail.com>
 #
 class Trainer
 
     include Output
     include ElementDB
     include Utilities
-
-    attr_writer   :page
-    attr_accessor :http
-    attr_accessor :parser
 
     def initialize
       @opts     = Options.instance
@@ -46,8 +40,17 @@ class Trainer
       @pages = []
     end
 
-    def set_page( page )
+    def init_from_page( page )
+        init_db_from_page( page )
+        page=( page )
+    end
+
+    def page=( page )
         @page = page.deep_clone
+    end
+
+    def follow?( url )
+        !@parser.skip?( url )
     end
 
     #
@@ -58,73 +61,46 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        # non text files won't contain any auditable elements
-        type = @http.class.content_type( res.headers_hash )
-        if type.is_a?( String) && !type.substring?( 'text' )
-            return false
-        end
-
         @parser = Parser.new( Options.instance, res )
-        @parser.url = @page.url
+        return false if !@parser.text?
 
+        @parser.url = @page.url
         begin
             url = @parser.to_absolute( res.effective_url )
 
             return if !follow?( url )
 
             analyze( [ res, redir ] )
-
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
             print_error( "URL: #{res.effective_url}" )
             print_error_backtrace( e )
             raise e
         end
-
     end
-
-    def follow?( url )
-        !@parser.skip?( url )
-    end
-
-    #
-    # Returns an updated {Arachni::Parser::Page} object or nil if there waere no updates
-    #
-    # @return  [Page]
-    #
-    def page
-        if( @updated  )
-              @updated = false
-              return  @page
-          else
-              return nil
-        end
-    end
-
 
     #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Typhoeus::Response, Bool]  res
+    # @param   [Typhoeus::Response, Bool]  res  response, redirect?
     #
     def analyze( res )
 
-        print_debug( 'Started for response with request ID: #' +
-          res[0].request.id.to_s )
+        print_debug( 'Started for response with request ID: #' + res[0].request.id.to_s )
 
         @parser.url = @parser.to_absolute( url_sanitize( res[0].effective_url ) )
 
-        train_cookies( res[0] )
+        train_cookies!
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if( res[0].body == @page.html && !@updated )
+        if( res[0].body == @page.body && !@updated )
             print_debug( 'Page hasn\'t changed, skipping...' )
             return
         end
 
-        train_forms( res[0] )
-        train_links( res[0], res[1] )
+        train_forms!
+        train_links!( res[0], res[1] )
 
         if( @updated )
 
@@ -171,7 +147,7 @@ class Trainer
 
     private
 
-    def train_forms( res )
+    def train_forms!
         return [], 0 if !@opts.audit_forms
 
         cforms, form_cnt = update_forms( @parser.forms )
@@ -182,10 +158,9 @@ class Trainer
 
             print_info( 'Found ' + form_cnt.to_s + ' new forms.' )
         end
-
     end
 
-    def train_links( res, redir = false )
+    def train_links!( res, redir = false )
         return [], 0  if !@opts.audit_links
 
         links = @parser.links.deep_clone
@@ -206,11 +181,9 @@ class Trainer
 
             print_info( 'Found ' + link_cnt.to_s + ' new links.' )
         end
-
     end
 
-    def train_cookies( res )
-
+    def train_cookies!
         ccookies, cookie_cnt = update_cookies( @parser.cookies )
 
         if ( cookie_cnt > 0 )
@@ -219,7 +192,6 @@ class Trainer
 
             print_info( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
         end
-
     end
 
     def self.info

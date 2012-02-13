@@ -110,6 +110,7 @@ class Parser
         @url  = url_sanitize( res.effective_url )
         @html = res.body
         @response_headers = res.headers_hash
+        @response = res
 
         @doc   = nil
         @paths = nil
@@ -178,7 +179,7 @@ class Parser
     end
 
     def text?
-        type = Arachni::HTTP.content_type( @response_headers )
+        type = @response.content_type
         return false if !type
         return type.to_s.substring?( 'text' )
     end

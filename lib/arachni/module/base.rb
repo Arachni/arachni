@@ -69,12 +69,10 @@ class Base
 
         @page  = page
         @http  = Arachni::HTTP.instance
-        @http.trainer.set_page( @page )
+        @http.trainer.page = @page
 
         # update the cookies
-        if( !@page.cookiejar.empty? )
-            @http.update_cookies( @page.cookiejar )
-        end
+        @http.update_cookies( @page.cookiejar ) if( !@page.cookiejar.empty? )
 
         #
         # This is slightly tricky...
@@ -89,10 +87,7 @@ class Base
         #
         @@__last_url ||= ''
         if( @@__last_url != @page.url )
-            @http.trainer.page = @page.dup
-            @http.trainer.init_forms( @page.forms )
-            @http.trainer.init_links( @page.links )
-            @http.trainer.init_cookies( @page.cookies )
+            @http.trainer.init_from_page( @page )
             @@__last_url = @page.url
         end
     end
