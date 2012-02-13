@@ -70,7 +70,7 @@ class Trainer
 
             return if !follow?( url )
 
-            analyze( [ res, redir ] )
+            analyze( res, redir )
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
             print_error( "URL: #{res.effective_url}" )
@@ -82,37 +82,38 @@ class Trainer
     #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Typhoeus::Response, Bool]  res  response, redirect?
+    # @param   [Typhoeus::Response]  res
+    # @param   [Bool]  redir
     #
-    def analyze( res )
+    def analyze( res, redir )
 
-        print_debug( 'Started for response with request ID: #' + res[0].request.id.to_s )
+        print_debug( 'Started for response with request ID: #' + res.request.id.to_s )
 
-        @parser.url = @parser.to_absolute( url_sanitize( res[0].effective_url ) )
+        @parser.url = @parser.to_absolute( url_sanitize( res.effective_url ) )
 
         train_cookies!
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if( res[0].body == @page.body && !@updated )
+        if( res.body == @page.body && !@updated )
             print_debug( 'Page hasn\'t changed, skipping...' )
             return
         end
 
         train_forms!
-        train_links!( res[0], res[1] )
+        train_links!( res, redir )
 
-        if( @updated )
+        if @updated
 
             begin
-                url         = res[0].request.url
+                url         = res.request.url
                 # prepare the page url
                 @parser.url = @parser.to_absolute( url )
             rescue Exception => e
                 print_error( "Invalid URL, probably broken redirection. Ignoring..." )
 
                 begin
-                    print_error( "URL: #{res[0].request.url}" )
+                    print_error( "URL: #{res.request.url}" )
                 rescue
                 end
 
@@ -120,12 +121,12 @@ class Trainer
                 return
             end
 
-            @page.html = res[0].body.dup
-            @page.response_headers    = res[0].headers_hash
+            @page.html = res.body.dup
+            @page.response_headers    = res.headers_hash
             @page.query_vars = @parser.link_vars( @parser.url ).dup
             @page.url        = @parser.url.dup
-            @page.code       = res[0].code
-            @page.method     = res[0].request.method.to_s.upcase
+            @page.code       = res.code
+            @page.method     = res.request.method.to_s.upcase
 
             @page.forms      ||= []
             @page.links      ||= []
