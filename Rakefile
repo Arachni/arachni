@@ -14,6 +14,7 @@
     limitations under the License.
 =end
 
+require 'bundler'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
 begin
@@ -85,22 +86,24 @@ task :clean do
 end
 
 
+Bundler::GemHelper.install_tasks
+
 #
 # Building
 #
-desc "Build the arachni gem."
-task :build  => [ :clean ] do
-    sh "gem build arachni.gemspec"
-end
-
+# desc "Build the arachni gem."
+# task :build  => [ :clean ] do
+    # # sh "gem build arachni.gemspec"
+    # Bundler::GemHelper.new.build_gem
+# end
 
 #
 # Installing
 #
-desc "Build and install the arachni gem."
-task :install  => [ :build ] do
-    sh "gem install arachni-#{Arachni::VERSION}.gem"
-end
+# desc "Build and install the arachni gem."
+# task :install  => [ :build ] do
+    # sh "gem install arachni-#{Arachni::VERSION}.gem"
+# end
 
 
 #
