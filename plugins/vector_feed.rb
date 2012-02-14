@@ -38,10 +38,10 @@ class VectorFeed < Arachni::Plugin::Base
     def run
         pages = {}
 
-        feed = if @options['file']
-            IO.read( @options['file'] )
-        elsif @options['yaml']
-            @options['yaml']
+        feed = if @options['yaml_file']
+            IO.read( @options['yaml_file'] )
+        elsif @options['yaml_string']
+            @options['yaml_string']
         else
             ''
         end
@@ -97,9 +97,7 @@ class VectorFeed < Arachni::Plugin::Base
         action = vector['action']
         inputs = vector['inputs']
         method = vector['method'] || 'get'
-
         type   = vector['type'] || 'link'
-        type = 'form' if method == 'post'
 
         return if !inputs || inputs.empty?
 
@@ -140,8 +138,9 @@ class VectorFeed < Arachni::Plugin::Base
     Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
     Useful for unit-testing or a gazillion other things. :)
 
-    Note:
-        To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+    Notes:
+        * To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+        * Can handle multiple YAML documents.
 
     Example YAML file:
 -
@@ -153,7 +152,7 @@ class VectorFeed < Arachni::Plugin::Base
 
 -
   # if a method is post it'll default to a form type
-  #type: form
+  type: form
   method: post
   action: http://localhost/~zapotek/tests/links/xss.php
   inputs:
@@ -178,8 +177,8 @@ class VectorFeed < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                Arachni::OptString.new( 'yaml', [ false, 'A string of YAML serialized vectors (for configuration via RPC).' ] ),
-                Arachni::OptPath.new( 'file', [ false, 'A file containing the YAML serialized vectors.' ] )
+                Arachni::OptString.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration via RPC).' ] ),
+                Arachni::OptPath.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] )
             ]
         }
     end
