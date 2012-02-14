@@ -136,6 +136,9 @@ class VectorFeed < Arachni::Plugin::Base
     Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
     Useful for unit-testing or a gazillion other things. :)
 
+    Note:
+        To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+
     Example YAML file:
 -
   # default type is link which has method get
