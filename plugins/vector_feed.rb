@@ -19,7 +19,7 @@ module Plugins
 
 #
 # Vector feed plug-in.
-
+#
 # Can be used to perform extremely specialized/narrow audits
 # on a per vector/element basis.
 #
