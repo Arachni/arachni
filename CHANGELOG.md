@@ -16,6 +16,10 @@
    - Improved detection of custom 404 pages
 - Spider
    - Fixed infitine loop bug.
+- Plug-ins
+    - VectorFeed -- Reads in vector data from which it creates elements to be audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+        Useful for unit-testing or a gazillion other things. (**New**)
+
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports

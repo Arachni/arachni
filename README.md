@@ -229,6 +229,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
     - Manual verification -- Flags issues that require manual verification as untrusted in order to reduce the signal-to-noise ratio.
     - Resolver -- Resolves vulnerable hostnames to IP addresses.
+    - VectorFeed -- Reads in vector data from which it creates elements to be audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+        Useful for unit-testing or a gazillion other things.
 
 
 ### Trainer subsystem
