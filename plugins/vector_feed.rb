@@ -51,10 +51,9 @@ class VectorFeed < Arachni::Plugin::Base
             return
         end
 
-        feed = YAML.load( feed )
+        feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
 
         yaml_err = 'Invalid YAML syntax, bailing out..'
-
         begin
             if !feed.is_a? Array
                 print_bad yaml_err
@@ -68,24 +67,29 @@ class VectorFeed < Arachni::Plugin::Base
         print_status "Imported #{feed.size} vectors."
         feed.each {
             |vector|
-
-            element = nil
             begin
-                exception_jail{ next if !(element = hash_to_element( vector )) }
+                exception_jail{
+                    next if !(element = hash_to_element( vector ))
+
+                    pages[element.url] ||= Arachni::Parser::Page.new(
+                        code: 200,
+                        url: element.url
+                    )
+
+                    pages[element.url].instance_variable_get( "@#{element.type}s" ) << element
+                }
             rescue
                 next
             end
-
-            pages[element.url] ||= Arachni::Parser::Page.new(
-                code: 200,
-                url: element.url
-            )
-            pages[element.url].instance_variable_get( "@#{element.type}s" ) << element
         }
 
-        print_status 'Pushing the vectors to the audit queue...'
-        pages.values.each { |page| @framework.push_to_page_queue( page ) }
-        print_status 'Done!'
+        if !pages.empty?
+            print_status 'Pushing the vectors to the audit queue...'
+            pages.values.each { |page| @framework.push_to_page_queue( page ) }
+            print_status 'Done!'
+        else
+            print_bad 'Could not find any usable vectors.'
+        end
     end
 
     def hash_to_element( vector )
