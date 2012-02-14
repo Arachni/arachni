@@ -83,9 +83,9 @@ class Trainer
     # Analyzes a response looking for new links, forms and cookies.
     #
     # @param   [Typhoeus::Response]  res
-    # @param   [Bool]  redir
+    # @param   [Bool]  redir    was the response a result of a redirect?
     #
-    def analyze( res, redir )
+    def analyze( res, redir = false )
 
         print_debug( 'Started for response with request ID: #' + res.request.id.to_s )
 
