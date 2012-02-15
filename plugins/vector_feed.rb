@@ -36,8 +36,6 @@ class VectorFeed < Arachni::Plugin::Base
     end
 
     def run
-        pages = {}
-
         feed = if @options['yaml_file']
             IO.read( @options['yaml_file'] )
         elsif @options['yaml_string']
@@ -64,11 +62,20 @@ class VectorFeed < Arachni::Plugin::Base
             return
         end
 
+        pages = {}
+        page_buffer = []
         print_status "Imported #{feed.size} vectors."
         feed.each {
             |vector|
+
             begin
                 exception_jail{
+
+                    if is_page?( vector )
+                        page_buffer << page_from_body_vector( vector )
+                        next
+                    end
+
                     next if !(element = hash_to_element( vector ))
 
                     pages[element.url] ||= Arachni::Parser::Page.new(
@@ -83,13 +90,28 @@ class VectorFeed < Arachni::Plugin::Base
             end
         }
 
+        pages =  pages.values
+        pages |= page_buffer
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
-            pages.values.each { |page| @framework.push_to_page_queue( page ) }
+            pages.each { |page| @framework.push_to_page_queue( page ) }
             print_status 'Done!'
         else
             print_bad 'Could not find any usable vectors.'
         end
+    end
+
+    def is_page?( vector )
+        vector['type'] == 'page'
+    end
+
+    def page_from_body_vector( vector )
+        Arachni::Parser::Page.new(
+            code: vector['code'] || 200,
+            url: vector['url'] || @framework.opts.url.to_s,
+            body: vector['body'] || '',
+            response_headers: vector['headers'] || {}
+        )
     end
 
     def hash_to_element( vector )
@@ -143,6 +165,17 @@ class VectorFeed < Arachni::Plugin::Base
         * Can handle multiple YAML documents.
 
     Example YAML file:
+-
+  # you can pass pages to be audited by grep modules (and JS in the future)
+  type: page
+  url: http://localhost/~zapotek/tests/links/xss.php
+  # response code
+  code: 200
+  # response headers
+  headers:
+    Content-Type: "text/html; charset=utf-8"
+  body: "HTML code goes here"
+
 -
   # default type is link which has method get
   #type: link
