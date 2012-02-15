@@ -278,6 +278,7 @@ If you want to clone the repository and work with the source code then you'll ne
 
     git clone git://github.com/Zapotek/arachni.git
     cd arachni
+    gem install bundler
     rake install
 
 

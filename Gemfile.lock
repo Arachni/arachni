@@ -5,6 +5,7 @@ PATH
       arachni-rpc-em (>= 0.1.1)
       async_sinatra (>= 0.5.0)
       awesome_print
+      bundler (>= 1.0.0)
       data_objects (= 0.10.7)
       datamapper (= 1.1.0)
       dm-sqlite-adapter (= 1.1.0)

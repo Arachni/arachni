@@ -19,29 +19,18 @@ Gem::Specification.new do |s|
 
       s.name              = "arachni"
       s.version           = Arachni::VERSION
-      s.date              = Time.now.strftime('%Y-%m-%d')
+      s.date              = Time.now.strftime( '%Y-%m-%d' )
       s.summary           = "Arachni is a feature-full, modular, high-performance Ruby framework aimed towards helping penetration testers and administrators evaluate the security of web applications."
       s.homepage          = "https://github.com/Zapotek/arachni"
       s.email             = "tasos.laskos@gmail.com"
       s.authors           = [ "Tasos Laskos" ]
-
-      s.files             = %w( README.md ACKNOWLEDGMENTS.md Rakefile LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
-      s.files            += Dir.glob("data/**/**")
-      s.files            += Dir.glob("lib/**/**")
-      s.files            += Dir.glob("conf/**/**")
-      s.files            += Dir.glob("external/**/**")
-      s.files            += Dir.glob("logs/**/**")
-      s.files            += Dir.glob("extras/**/**")
-      s.files            += Dir.glob("modules/**/**")
-      s.files            += Dir.glob("path_extractors/**/**")
-      s.files            += Dir.glob("plugins/**/**")
-      s.files            += Dir.glob("profiles/**/**")
-      s.files            += Dir.glob("reports/**/**")
+      s.files             = `git ls-files`.split( "\n" )
       s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
 
-      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md )
+      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE )
       s.rdoc_options      = ["--charset=UTF-8"]
 
+      s.add_dependency 'bundler',         ">= 1.0.0"
       s.add_dependency "typhoeus",        ">= 0.3.3"
       s.add_dependency "awesome_print"
       s.add_dependency "json"
