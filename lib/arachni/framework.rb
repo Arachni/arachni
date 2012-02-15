@@ -416,10 +416,21 @@ class Framework
 
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
+
+            opts = {
+                :timeout    => nil,
+                :remove_id  => true,
+                :follow_location => true,
+                :update_cookies  => true,
+                :async => false
+            }
+            parser = Parser.new( @opts, http.get( @opts.url.to_s, opts ).response )
+            parser.url = @opts.url.to_s
+
             @sitemap = @opts.restrict_paths
             @sitemap.each {
                 |url|
-                push_to_url_queue( url_sanitize( url ) )
+                push_to_url_queue( url_sanitize( parser.to_absolute( url ) ) )
             }
         else
             # initiates the crawl
