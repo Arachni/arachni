@@ -25,7 +25,6 @@ class Parser
 # @author: Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
 #
 class Page
 
@@ -119,6 +118,8 @@ class Page
             |k, v|
             send( "#{k}=", v )
         }
+
+        @html ||= ''
     end
 
     def body
