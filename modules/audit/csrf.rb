@@ -234,6 +234,7 @@ class CSRF < Arachni::Module::Base
 
 
     def __log( form )
+        return if !form.raw['attrs']
 
         url  = form.action
         name = form.raw['attrs']['name'] || form.raw['attrs']['id']
