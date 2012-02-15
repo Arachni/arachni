@@ -5,6 +5,7 @@ Experimental/unstable branch -- used for integration.
     git clone git://github.com/Zapotek/arachni.git
     cd arachni
     git checkout experimental
+    gem install bundler
     rake install
 
 

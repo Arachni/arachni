@@ -14,9 +14,11 @@
     limitations under the License.
 =end
 
+require 'rubygems'
+require "bundler/setup"
+
 require 'ap'
 require 'pp'
-require 'rubygems'
 
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
 opts = Arachni::Options.instance
