@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 =begin
     Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
