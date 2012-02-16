@@ -34,10 +34,10 @@ class Trainer
     include Utilities
 
     def initialize( opts )
-      @opts     = opts
-      @updated  = false
+        @opts     = opts
+        @updated  = false
 
-      @pages = []
+        @pages = []
     end
 
     def init_from_page( page )
@@ -61,7 +61,7 @@ class Trainer
     #
     def add_response( res, redir = false )
 
-        @parser = Parser.new( Options.instance, res )
+        @parser = Parser.new( @opts, res )
         return false if !@parser.text?
 
         @parser.url = @page.url
