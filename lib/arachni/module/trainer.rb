@@ -33,8 +33,8 @@ class Trainer
     include ElementDB
     include Utilities
 
-    def initialize
-      @opts     = Options.instance
+    def initialize( opts )
+      @opts     = opts
       @updated  = false
 
       @pages = []
