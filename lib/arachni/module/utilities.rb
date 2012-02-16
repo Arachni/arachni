@@ -79,9 +79,10 @@ module Utilities
 
         path << '/' if path[-1] != '/'
 
-        return uri.scheme + "://" + uri.host + ':' + uri.port.to_s + path
+        uri_str = uri.scheme + "://" + uri.host
+        uri_str += ':' + uri.port.to_s if uri.port != 80
+        uri_str += path
     end
-
     def seed
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
