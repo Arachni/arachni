@@ -89,14 +89,31 @@ module Utilities
 
     def normalize_url( url )
 
-        # make sure we're working with the pure form of the URL
-        url = url_sanitize( url )
+        normalizer = Proc.new {
+            |url|
+            uri_encode(
+                uri_decode( url )
+                .encode( 'UTF-8',
+                    undef:   :replace,
+                    invalid: :replace
+                ),
+                Regexp.union( uri_parser.regexp[:UNSAFE], /[\[\]\\'" {};\|\$%]/ )
+            )
+        }
 
         begin
-            normalized = uri_encode( uri_decode( url.to_s ) ).to_s.gsub( '[', '%5B' ).gsub( ']', '%5D' )
+            begin
+                normalized = normalizer.call( url_sanitize( url ) )
+            rescue Exception => e
+                # ap e
+                # ap e.backtrace
+
+                normalized = normalizer.call( url )
+            end
         rescue Exception => e
             # ap e
             # ap e.backtrace
+
             begin
                 normalized = uri_encode( uri_decode( url.to_s ) ).to_s
             rescue Exception => e
@@ -106,16 +123,14 @@ module Utilities
             end
         end
 
-        #
         # prevent this: http://example.com#fragment
         # from becoming this: http://example.com%23fragment
-        #
         begin
             normalized.gsub!( '%23', '#' )
         rescue
-
         end
 
+        # ap normalized
         return normalized
     end
 
@@ -143,7 +158,6 @@ module Utilities
         }
 
         file.close
-
     end
 
     def hash_keys_to_str( hash )
@@ -153,7 +167,6 @@ module Utilities
             nh[k.to_s] = v
             nh[k.to_s] = hash_keys_to_str( v ) if v.is_a? Hash
         }
-
         return nh
     end
 
@@ -166,9 +179,12 @@ module Utilities
         begin
             block.call
         rescue Exception => e
-            err_name = !e.to_s.empty? ? e.to_s : e.class.name
-            print_error( err_name )
-            print_error_backtrace( e )
+            begin
+                err_name = !e.to_s.empty? ? e.to_s : e.class.name
+                print_error( err_name )
+                print_error_backtrace( e )
+            rescue
+            end
             raise e if raise_exception
         end
     end
