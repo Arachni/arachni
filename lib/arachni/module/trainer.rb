@@ -49,10 +49,6 @@ class Trainer
         @page = page.deep_clone
     end
 
-    def follow?( url )
-        !@parser.skip?( url )
-    end
-
     #
     # Passes the reponse to {#analyze} for analysis
     #
@@ -68,7 +64,7 @@ class Trainer
         begin
             url = @parser.to_absolute( res.effective_url )
 
-            return if !follow?( url )
+            return if @parser.skip?( url )
 
             analyze( res, redir )
         rescue Exception => e
