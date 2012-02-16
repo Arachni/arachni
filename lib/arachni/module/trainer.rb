@@ -42,11 +42,17 @@ class Trainer
 
     def init_from_page( page )
         init_db_from_page( page )
-        page=( page )
+        self.page= page
     end
 
     def page=( page )
         @page = page.deep_clone
+    end
+
+    def flush_pages
+        pages = @pages.dup
+        @pages = []
+        pages
     end
 
     #
@@ -64,16 +70,19 @@ class Trainer
         begin
             url = @parser.to_absolute( res.effective_url )
 
-            return if @parser.skip?( url )
+            return false if @parser.skip?( url )
 
-            analyze( res, redir )
+            analyze!( res, redir )
+
+            return true
         rescue Exception => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
             print_error( "URL: #{res.effective_url}" )
             print_error_backtrace( e )
-            raise e
         end
     end
+
+    private
 
     #
     # Analyzes a response looking for new links, forms and cookies.
@@ -81,7 +90,7 @@ class Trainer
     # @param   [Typhoeus::Response]  res
     # @param   [Bool]  redir    was the response a result of a redirect?
     #
-    def analyze( res, redir = false )
+    def analyze!( res, redir = false )
 
         print_debug( 'Started for response with request ID: #' + res.request.id.to_s )
 
@@ -91,7 +100,7 @@ class Trainer
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if( res.body == @page.body && !@updated )
+        if( res.body == @page.body && !@updated && !redir )
             print_debug( 'Page hasn\'t changed, skipping...' )
             return
         end
@@ -135,14 +144,6 @@ class Trainer
 
         print_debug( 'Training complete.' )
     end
-
-    def flush_pages
-        pages = @pages.dup
-        @pages = []
-        pages
-    end
-
-    private
 
     def train_forms!
         return [], 0 if !@opts.audit_forms
