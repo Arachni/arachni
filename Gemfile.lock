@@ -26,7 +26,7 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
-    addressable (2.2.6)
+    addressable (2.2.7)
     arachni-rpc (0.1.1)
     arachni-rpc-em (0.1.1)
       arachni-rpc (= 0.1.1)
@@ -38,7 +38,7 @@ GEM
     awesome_print (1.0.2)
     backports (2.3.0)
     bcrypt-ruby (2.1.4)
-    daemons (1.1.5)
+    daemons (1.1.8)
     data_objects (0.10.7)
       addressable (~> 2.1)
     datamapper (1.1.0)
@@ -93,9 +93,9 @@ GEM
     mime-types (1.17.2)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
-    net-ssh (2.2.2)
+    net-ssh (2.3.0)
     nokogiri (1.5.0)
-    rack (1.4.0)
+    rack (1.4.1)
     rack-protection (1.2.0)
       rack
     rack-test (0.6.1)
