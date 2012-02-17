@@ -187,7 +187,7 @@ class Auditable
         mutate( injection_str, opts ).each {
             |elem|
 
-            return if skip?( elem )
+            return if @auditor.skip?( elem )
 
             opts[:altered] = elem.altered.dup
 
@@ -206,10 +206,6 @@ class Auditable
         }
 
         audited( audit_id )
-    end
-
-    def skip?( elem )
-        return @auditor.skip?( elem )
     end
 
     #
