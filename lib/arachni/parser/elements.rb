@@ -130,8 +130,8 @@ class Link < Base
         @orig.freeze
     end
 
-    def http_request( url, opts )
-        return @auditor.http.get( url, opts )
+    def http_request( opts )
+        return @auditor.http.get( @action, opts )
     end
 
     def simple
@@ -187,7 +187,7 @@ class Form < Base
         @orig.freeze
     end
 
-    def http_request( url, opts )
+    def http_request( opts )
         params   = opts[:params]
         altered  = opts[:altered]
 
@@ -218,9 +218,9 @@ class Form < Base
 
 
         if( @method.downcase != 'get' )
-            return @auditor.http.post( url, opts )
+            return @auditor.http.post( @action, opts )
         else
-            return @auditor.http.get( url, opts )
+            return @auditor.http.get( @action, opts )
         end
     end
 
@@ -287,8 +287,8 @@ class Cookie < Base
         @orig.freeze
     end
 
-    def http_request( url, opts )
-        return @auditor.http.cookie( url, opts )
+    def http_request( opts )
+        return @auditor.http.cookie( @action, opts )
     end
 
     def simple
@@ -315,8 +315,8 @@ class Header < Base
         @orig.freeze
     end
 
-    def http_request( url, opts )
-        return @auditor.http.header( url, opts )
+    def http_request( opts )
+        return @auditor.http.header( @action, opts )
     end
 
     def simple

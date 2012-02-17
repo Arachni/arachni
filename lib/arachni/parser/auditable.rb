@@ -109,7 +109,7 @@ class Auditable
     #
     # @see #submit
     #
-    def http_request( url, opts )
+    def http_request( opts )
 
     end
 
@@ -128,7 +128,7 @@ class Auditable
 
         @auditor ||= opts[:auditor] if opts[:auditor]
 
-        return http_request( @action, opts )
+        return http_request( opts )
     end
 
     #
