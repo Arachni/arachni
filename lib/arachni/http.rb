@@ -80,12 +80,11 @@ class HTTP
 
     attr_reader :trainer
 
-    def initialize( )
-        reset
+    def initialize
+        reset!
     end
 
-    def reset
-
+    def reset!
         opts = Options.instance
 
         # someone wants to reset us although nothing has been *set* in the first place
