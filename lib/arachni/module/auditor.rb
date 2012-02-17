@@ -942,7 +942,7 @@ module Auditor
 
                 # get injection variations that will hopefully cause an internal/silent
                 # SQL error
-                variations = elem.injection_sets( str, opts )
+                variations = elem.mutate( str, opts )
 
                 responses[:bad_total] =  variations.size
 
@@ -970,7 +970,7 @@ module Auditor
             |str|
 
             # get injection variations that will not affect the outcome of the query
-            variations = elem.injection_sets( str, opts )
+            variations = elem.mutate( str, opts )
 
             responses[:good_total] =  variations.size
 

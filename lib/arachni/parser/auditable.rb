@@ -167,7 +167,7 @@ class Auditable
 
         results = []
         # iterate through all variation and audit each one
-        injection_sets( injection_str, opts ).each {
+        mutate( injection_str, opts ).each {
             |elem|
 
             opts[:altered] = elem.altered.dup
@@ -199,6 +199,8 @@ class Auditable
     # Injects the injecton_str in self's values according to formatting options
     # and returns an array of Element permutations.
     #
+    # TODO: Move type specific mutations into their respective classes.
+    #
     # @param    [String]  injection_str  the string to inject
     # @param    [Hash]    opts           formatting and permutation options
     #                                       * :skip_orig => skip submission with default/original values (for {Arachni::Parser::Element::Form} elements)
@@ -207,7 +209,7 @@ class Auditable
     #
     # @return    [Array]
     #
-    def injection_sets( injection_str, opts = { } )
+    def mutate( injection_str, opts = { } )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
         hash = auditable.dup
