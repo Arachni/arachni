@@ -61,7 +61,7 @@ describe Arachni::Module::Auditor do
 
     after :each do
         @framework.modules.results.clear
-        Arachni::Element::Auditable.reset!
+        Arachni::Parser::Element::Auditable.reset!
     end
 
     describe :register_results do

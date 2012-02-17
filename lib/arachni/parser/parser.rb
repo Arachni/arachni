@@ -18,7 +18,10 @@ module Arachni
 
 opts = Arachni::Options.instance
 require 'webrick'
-require opts.dir['lib'] + 'parser/elements'
+require opts.dir['lib'] + 'parser/element/link'
+require opts.dir['lib'] + 'parser/element/form'
+require opts.dir['lib'] + 'parser/element/cookie'
+require opts.dir['lib'] + 'parser/element/header'
 require opts.dir['lib'] + 'parser/page'
 require opts.dir['lib'] + 'module/utilities'
 require opts.dir['lib'] + 'component_manager'
