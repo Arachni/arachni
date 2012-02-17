@@ -65,8 +65,14 @@ class FormDicattack < Arachni::Plugin::Base
         total_req = @users.size * @passwds.size
         print_status( "Number of requests to be transmitted: #{total_req}" )
 
-        # register us as the auditor
-        form.auditor( self )
+        # we need a clean cookie slate for each request
+        opts = {
+            headers: {
+                'cookie'  => ''
+            },
+            update_cookies: true,
+            auditor: self
+        }
         @users.each {
             |user|
             @passwds.each {
@@ -79,14 +85,6 @@ class FormDicattack < Arachni::Plugin::Base
 
                 # merge the input fields of the form with our own params
                 form.auditable.merge!( params.dup )
-
-                # we need a clean cookie slate for each request
-                opts = {
-                    :headers => {
-                        'cookie'  => ''
-                    },
-                    :update_cookies => true
-                }
                 form.submit( opts ).on_complete {
                     |res|
 

@@ -26,11 +26,12 @@ class Auditable
 
     include Arachni::Module::Utilities
 
-    def self.reset
+    def self.reset!
         @@audited = Set.new
     end
 
     attr_accessor :altered
+    attr_accessor :auditor
     attr_reader   :opts
 
     #
@@ -59,14 +60,6 @@ class Auditable
       # Prefix the string with a ';', useful for command injection modules
       #
       SEMICOLON = 1 << 3
-    end
-
-    def auditor( auditor )
-        @auditor = auditor
-    end
-
-    def get_auditor
-        @auditor
     end
 
     def override_instance_scope!
@@ -133,6 +126,8 @@ class Auditable
         opts[:params]  = @auditable.dup
         @opts = opts
 
+        @auditor ||= opts[:auditor] if opts[:auditor]
+
         return http_request( @action, opts )
     end
 
@@ -156,6 +151,9 @@ class Auditable
 
         @@audited ||= Set.new
 
+        @auditor ||= opts[:auditor]
+        opts[:auditor] ||= @auditor
+
         opts            = Arachni::Module::Auditor::OPTIONS.merge( opts )
         opts[:element]  = self.type
 
@@ -172,7 +170,6 @@ class Auditable
         injection_sets( injection_str, opts ).each {
             |elem|
 
-            elem.auditor( get_auditor )
             opts[:altered] = elem.altered.dup
 
             return if skip?( elem )
@@ -213,10 +210,10 @@ class Auditable
     def injection_sets( injection_str, opts = { } )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
-        hash = auditable( ).dup
+        hash = auditable.dup
 
         var_combo = []
-        if( !hash || hash.size == 0 ) then return [] end
+        return [] if !hash || hash.size == 0
 
         if( self.is_a?( Arachni::Parser::Element::Form ) && !opts[:skip_orig] )
 
@@ -500,7 +497,7 @@ class Auditable
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
-        elsif !get_auditor.override_instance_scope? && !override_instance_scope? &&
+        elsif !@auditor.override_instance_scope? && !override_instance_scope? &&
             !@@restrict_to_elements.empty? &&
             !@@restrict_to_elements.include?( audit_id( nil, opts ) )
             msg = 'Skipping, out of instance scope.'

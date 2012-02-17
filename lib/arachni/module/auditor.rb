@@ -644,7 +644,7 @@ module Auditor
             timing_attack( strings, opts ) {
                 |res, c_opts, elem|
 
-                elem.auditor( self )
+                elem.auditor = self
 
                 print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
@@ -694,7 +694,7 @@ module Auditor
 
         # this is the control; request the URL of the element to make sure
         # that the web page is alive i.e won't time-out by default
-        elem.get_auditor.http.get( elem.action ).on_complete {
+        elem.auditor.http.get( elem.action ).on_complete {
             |res|
 
             # ap elem.auditable
@@ -705,7 +705,7 @@ module Auditor
 
             if !res.timed_out?
 
-                elem.get_auditor.print_info( 'Liveness check was successful, progressing to verification...' )
+                elem.auditor.print_info( 'Liveness check was successful, progressing to verification...' )
 
                 elem.audit( str, opts ) {
                     |c_res, c_opts|
@@ -718,20 +718,20 @@ module Auditor
                         # all issues logged by timing attacks need manual verification.
                         # end of story.
                         # c_opts[:verification] = true
-                        elem.get_auditor.log( c_opts, c_res )
+                        elem.auditor.log( c_opts, c_res )
 
                         self.audit_timeout_stabilize( elem )
 
                     else
-                        elem.get_auditor.print_info( 'Verification failed.' )
+                        elem.auditor.print_info( 'Verification failed.' )
                     end
                 }
             else
-                elem.get_auditor.print_info( 'Liveness check failed, bailing out...' )
+                elem.auditor.print_info( 'Liveness check failed, bailing out...' )
             end
         }
 
-        elem.get_auditor.http.run
+        elem.auditor.http.run
     end
 
     #
@@ -753,16 +753,16 @@ module Auditor
 
         orig_opts = elem.opts
 
-        elem.get_auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
-        elem.get_auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
+        elem.auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
+        elem.auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
 
         elem.auditable = elem.orig
         res = elem.submit( d_opts ).response
 
         if !res.timed_out?
-            elem.get_auditor.print_info( 'Server seems responsive again.' )
+            elem.auditor.print_info( 'Server seems responsive again.' )
         else
-            elem.get_auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
+            elem.auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
         end
 
         elem.opts.merge!( orig_opts )
@@ -925,10 +925,9 @@ module Auditor
             :good_total => 0
         }
 
-        elem.auditor( self )
         opts[:precision].times {
             # get the default responses
-            elem.audit( '', opts ) {
+            elem.audit( '', opts.merge( auditor: self ) ) {
                 |res|
                 responses[:orig] ||= res.body
                 # remove context-irrelevant dynamic content like banners and such
@@ -952,10 +951,8 @@ module Auditor
 
                     print_status( c_elem.get_status_str( c_elem.altered ) )
 
-                    # register us as the auditor
-                    c_elem.auditor( self )
                     # submit the link and get the response
-                    c_elem.submit( opts ).on_complete {
+                    c_elem.submit( opts.merge( auditor: self ) ).on_complete {
                         |res|
 
                         responses[:bad][c_elem.altered] ||= res.body.clone
@@ -982,10 +979,8 @@ module Auditor
 
                 print_status( c_elem.get_status_str( c_elem.altered ) )
 
-                # register us as the auditor
-                c_elem.auditor( self )
                 # submit the link and get the response
-                c_elem.submit( opts ).on_complete {
+                c_elem.submit( opts.merge( auditor: self ) ).on_complete {
                     |res|
 
                     responses[:good][c_elem.altered] ||= []
@@ -1125,8 +1120,7 @@ module Auditor
 
         elements.deep_clone.each {
             |elem|
-            elem.auditor( self )
-            elem.audit( injection_str, opts, &block )
+            elem.audit( injection_str, opts.merge( auditor: self ), &block )
         }
     end
 

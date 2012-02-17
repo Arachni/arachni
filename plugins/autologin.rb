@@ -76,9 +76,11 @@ class AutoLogin < Arachni::Plugin::Base
         # merge the input fields of the form with the user supplied parameters
         login_form.auditable.merge!( @params )
 
-        # register us as the auditor
-        login_form.auditor( self )
-        res = login_form.submit( :async => false, :update_cookies => true ).response
+        res = login_form.submit(
+            async: false,
+            update_cookies: true,
+            auditor: self
+        ).response
 
         if !res
             register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
