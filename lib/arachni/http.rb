@@ -87,19 +87,19 @@ class HTTP
     def reset!
         opts = Options.instance
 
-        # someone wants to reset us although nothing has been *set* in the first place
-        # otherwise we'd have a url in opts
-        return if !opts.url
-
-
         req_limit = opts.http_req_limit
 
         hydra_opts = {
             :max_concurrency               => req_limit,
-            :username                      => opts.url.user,
-            :password                      => opts.url.password,
-            :method                        => :auto,
+            :method                        => :auto
         }
+
+        if opts.url
+            hydra_opts.merge!(
+                :username => opts.url.user,
+                :password  => opts.url.password,
+            )
+        end
 
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
         @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( :max_concurrency => 1 ) )
