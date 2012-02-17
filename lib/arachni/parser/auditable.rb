@@ -23,7 +23,6 @@ require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
 module Element
 
 class Auditable
-
     include Arachni::Module::Utilities
 
     def self.reset!
@@ -33,6 +32,37 @@ class Auditable
     attr_accessor :altered
     attr_accessor :auditor
     attr_reader   :opts
+
+    #
+    # ABSTRACT
+    #
+    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
+    # the object via {Arachni::Module::HTTP}.
+    #
+    # Must be implemented by the extending class.
+    #
+    # @param    [String]    url
+    # @param    [Hash]      opts
+    #
+    # @return   [Typhoeus::Request]
+    #
+    # @see #submit
+    #
+    def http_request( opts )
+    end
+
+    #
+    # ABSTRACT
+    #
+    # Should return the type of the auditable element as a string
+    #
+    # By default, it returns the downcased name of the class.
+    #
+    # @return   [String]
+    #
+    def type
+        self.class.name.downcase.split( ':' ).last
+    end
 
     #
     # Holds constant bitfields that describe the preferred formatting
@@ -99,21 +129,6 @@ class Auditable
     end
 
     #
-    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
-    # the object via {Arachni::Module::HTTP}.
-    #
-    # Must be implemented by the extending class.
-    #
-    # @param    [String]    url
-    # @param    [Hash]      opts
-    #
-    # @see #submit
-    #
-    def http_request( opts )
-
-    end
-
-    #
     # Submits self using {#http_request}.
     #
     # @param  [Hash]  opts
@@ -127,6 +142,8 @@ class Auditable
         @opts = opts
 
         @auditor ||= opts[:auditor] if opts[:auditor]
+
+        opts.delete( :auditor )
 
         return http_request( opts )
     end
@@ -170,12 +187,12 @@ class Auditable
         mutate( injection_str, opts ).each {
             |elem|
 
-            opts[:altered] = elem.altered.dup
-
             return if skip?( elem )
 
+            opts[:altered] = elem.altered.dup
+
             # inform the user about what we're auditing
-            print_status( get_status_str( opts[:altered] ) )  if !opts[:silent]
+            print_status( elem.status_string ) if !opts[:silent]
 
             # submit the element with the injection values
             req = elem.submit( opts )
@@ -325,8 +342,8 @@ class Auditable
     #
     # @return  [String]
     #
-    def get_status_str( altered )
-        return "Auditing #{self.type} variable '" + altered + "' of " + @action
+    def status_string
+        return "Auditing #{self.type} variable '" + self.altered + "' of " + @action
     end
 
     #

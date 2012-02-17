@@ -949,7 +949,7 @@ module Auditor
                 variations.each {
                     |c_elem|
 
-                    print_status( c_elem.get_status_str( c_elem.altered ) )
+                    print_status( c_elem.status_string )
 
                     # submit the link and get the response
                     c_elem.submit( opts.merge( auditor: self ) ).on_complete {
@@ -977,7 +977,7 @@ module Auditor
             variations.each {
                 |c_elem|
 
-                print_status( c_elem.get_status_str( c_elem.altered ) )
+                print_status( c_elem.status_string )
 
                 # submit the link and get the response
                 c_elem.submit( opts.merge( auditor: self ) ).on_complete {
