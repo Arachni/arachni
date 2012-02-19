@@ -23,7 +23,7 @@ module Modules
 # Appends common backup extesions to the filename of the page under audit<br/>
 # and checks for its existence.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.1

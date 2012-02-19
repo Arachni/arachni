@@ -25,7 +25,7 @@ module Addons
 #
 # Allows users to automatically convert any SSH enabled Linux box into an Arachni Dispatcher.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #

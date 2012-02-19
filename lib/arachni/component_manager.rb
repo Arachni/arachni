@@ -26,7 +26,7 @@ require Options.instance.dir['lib'] + 'component_options'
 #
 # It is usually extended to fill-in for system specific functionality.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

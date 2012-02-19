@@ -23,7 +23,7 @@ module Reports
 #
 # It redirects stdout to an outfile and runs the default (stdout.rb) report.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

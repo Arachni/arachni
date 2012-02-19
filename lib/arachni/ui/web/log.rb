@@ -23,7 +23,7 @@ module Web
 #
 # A simple logger using DataMapper
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

@@ -22,7 +22,7 @@ class Parser
 #
 # It holds page data like elements, cookies, headers, etc...
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #

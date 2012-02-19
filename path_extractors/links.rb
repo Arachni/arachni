@@ -19,7 +19,7 @@ module Arachni::Parser::Extractors
 #
 # Extracts paths from "link" HTML elements.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

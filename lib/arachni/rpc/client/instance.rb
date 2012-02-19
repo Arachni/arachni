@@ -24,7 +24,7 @@ class Client
 #
 # RPC client for remote instances spawned by a remote dispatcher
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3

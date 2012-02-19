@@ -24,7 +24,7 @@ module Plugins
 # merges its input field with the user supplied parameters and sets the cookies
 # of the response as framework-wide cookies to be used by the spider later on.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

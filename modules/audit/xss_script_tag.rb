@@ -21,7 +21,7 @@ module Modules
 # XSS in HTML script tag. <br/>
 # It injects strings and checks if they appear inside HTML 'script' tags.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

@@ -22,7 +22,7 @@ module Modules
 #
 # Logs all non 200 (OK) and non 404 server responses.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3

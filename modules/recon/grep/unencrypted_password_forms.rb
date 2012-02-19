@@ -22,7 +22,7 @@ module Modules
 #
 # Looks for password inputs that don't submit data over an encrypted channel (HTTPS).
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.4

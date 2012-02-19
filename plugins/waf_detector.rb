@@ -29,7 +29,7 @@ module Plugins
 # Steps 1 to 3 will be repeated _precision_ times and the responses will be averaged using rDiff analysis.
 #
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

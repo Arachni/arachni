@@ -28,7 +28,7 @@ module Arachni
 # Implements the Singleton pattern and formally defines
 # all of Arachni's runtime options.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

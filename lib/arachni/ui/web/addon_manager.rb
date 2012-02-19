@@ -24,7 +24,7 @@ module Addons
     # Base class for all add-ons.
     #
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1
@@ -153,7 +153,7 @@ end
 # Add-on manager.
 #
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

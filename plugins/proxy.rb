@@ -23,7 +23,7 @@ module Plugins
 # Will gather data based on user actions and exchanged HTTP traffic and push that
 # data to the {Framework#push_to_page_queue} to be audited.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

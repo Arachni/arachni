@@ -20,7 +20,7 @@ module Arachni::Parser::Extractors
 # Extracts paths from "script" HTML elements.<br/>
 # Both from "src" and the text inside the scripts.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

@@ -28,7 +28,7 @@ module Database
     # It's not interchangeable with Ruby's Hash as it lacks a lot of the
     # stdlib methods.
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1

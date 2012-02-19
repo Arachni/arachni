@@ -44,7 +44,7 @@ module Modules
 # cookies just like a user would, so if there are forms that only appear
 # after a guest has performed a previous event it will check these too.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.2

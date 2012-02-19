@@ -25,7 +25,7 @@ module Web
 # Provides nice little wrapper for the Arachni::Report::Manager while also handling<br/>
 # conversions, storing etc.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

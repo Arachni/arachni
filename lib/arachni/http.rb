@@ -38,7 +38,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # Some are ignored, on others the HTTP session is refreshed.<br/>
 # Point is, you don't need to worry about it.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.7

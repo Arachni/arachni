@@ -22,7 +22,7 @@ module Modules
 #
 # Looks for resources served over HTTP when the HTML code is server over HTTPS.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

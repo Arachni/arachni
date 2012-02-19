@@ -29,7 +29,7 @@ module Report
 #
 # Holds and manages the registry of the reports.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
 # @version: 0.1.1

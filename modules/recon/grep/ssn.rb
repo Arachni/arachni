@@ -18,7 +18,7 @@ module Arachni
 module Modules
 
 #
-# @author:   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
+# @author   Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>, haliphax
 # @version:  0.1.1
 #
 class SSN < Arachni::Module::Base

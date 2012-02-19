@@ -21,7 +21,7 @@ module Arachni
 #
 # Not much to look at but it streamlines RPC server option handling.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

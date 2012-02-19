@@ -22,7 +22,7 @@ module Modules
 #
 # Can't take credit for this one, it's Michal's (lcamtuf's) method from Skipfish.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

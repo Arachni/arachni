@@ -50,7 +50,7 @@ require opts.dir['lib'] + 'component_manager'
 # === Cookies
 # Cookies are extracted from the HTTP headers and parsed by WEBrick::Cookie
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.2
@@ -66,7 +66,7 @@ class Parser
         # The aim of such modules is to extract paths from a webpage for the Spider to follow.
         #
         #
-        # @author: Tasos "Zapotek" Laskos
+        # @author Tasos "Zapotek" Laskos
         #                                      <tasos.laskos@gmail.com>
         #                                      <zapotek@segfault.gr>
         # @version: 0.1

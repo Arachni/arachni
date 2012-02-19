@@ -43,7 +43,7 @@ class Server
 # Once the client finishes using the RPC server it *must* shut it down.<br/>
 # If it doesn't the system will be eaten away by idle instances of RPC servers.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

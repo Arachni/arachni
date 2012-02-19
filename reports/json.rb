@@ -22,7 +22,7 @@ module Reports
 #
 # Converts the AuditStore to a Hash which it then dumps in JSON format into a file.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

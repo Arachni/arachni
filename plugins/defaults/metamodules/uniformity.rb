@@ -26,7 +26,7 @@ module Plugins
 #
 # If the above are all the same for more than 1 page we have a hit.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

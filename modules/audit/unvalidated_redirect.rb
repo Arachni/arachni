@@ -25,7 +25,7 @@ module Modules
 # the Location header field to determnine whether the attack was successful.
 #
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.3

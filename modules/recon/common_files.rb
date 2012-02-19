@@ -20,7 +20,7 @@ module Modules
 #
 # Looks for sensitive common files on the server.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.1

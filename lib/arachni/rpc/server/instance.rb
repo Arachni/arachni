@@ -36,7 +36,7 @@ class Server
 # Only instantiated by the Dispatcher to provide support for multiple
 # and concurent RPC clients/scans.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.5

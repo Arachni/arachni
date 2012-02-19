@@ -23,7 +23,7 @@
 # A serialized array holding instances of this class will be loaded by
 # the Metasploit Framework.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

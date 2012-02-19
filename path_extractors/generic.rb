@@ -23,7 +23,7 @@ module Arachni::Parser::Extractors
 # but the others can extract paths from HTML attributes, this one can only extract
 # full URLs.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

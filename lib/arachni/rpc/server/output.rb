@@ -24,7 +24,7 @@ module UI
 # It basically classifies and buffers all system messages until it's time to
 # flush the buffer and send them over the wire.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

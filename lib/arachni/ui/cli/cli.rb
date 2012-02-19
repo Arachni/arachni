@@ -30,7 +30,7 @@ module UI
 # Most of the logic is in the Framework class however profiles can only<br/>
 # be loaded and saved at this level.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.9

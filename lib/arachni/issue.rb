@@ -14,19 +14,14 @@
     limitations under the License.
 =end
 
-#
-# Vulnerability class.
-#
-# It represents a detected vulnerability.
-#
-#
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.1
-#
 module Arachni
 
+#
+# Represents a detected issues.
+#
+# @author Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#
 class Issue
 
     #

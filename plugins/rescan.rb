@@ -24,7 +24,7 @@ module Plugins
 # It basically sets the 'restrict_paths' framework option to the sitemap of
 # a previous report.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

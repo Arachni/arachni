@@ -23,7 +23,7 @@ module Modules
 # It uses reverse-diff analysis of HTML code in order to determine successful
 # blind SQL injections.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.3.1

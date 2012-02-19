@@ -26,7 +26,7 @@ module Database
     # It's pretty useful when you want to reduce memory footprint without
     # having to refactor any code since it behaves just like Ruby's implementation.
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1

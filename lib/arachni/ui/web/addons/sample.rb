@@ -23,7 +23,7 @@ module Addons
 #
 # Sample add-on, see the code for examples.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #

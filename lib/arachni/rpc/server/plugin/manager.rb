@@ -26,7 +26,7 @@ module Plugin
 # We need to extend the original Manager and redeclare its inherited methods
 # which are required over RPC.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

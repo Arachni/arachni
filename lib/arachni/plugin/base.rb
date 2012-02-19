@@ -46,7 +46,7 @@ end
 # An abstract class for the plugins.<br/>
 # All plugins must extend this.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.1

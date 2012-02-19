@@ -24,7 +24,7 @@ module PluginFormatters
     # Stdout formatter for the results of the AutoLogin plugin
     #
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1

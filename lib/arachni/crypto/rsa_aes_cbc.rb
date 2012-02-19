@@ -23,7 +23,7 @@ require "base64"
 #
 # RSA is used to encrypt the AES primitives which are used to encrypt the plaintext.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

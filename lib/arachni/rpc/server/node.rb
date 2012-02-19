@@ -35,7 +35,7 @@ class Dispatcher
 # Upon convergence there will be a grid of Dispatchers each one with its own copy
 # of all available Dispatcher URLs.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

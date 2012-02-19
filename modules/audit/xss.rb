@@ -23,7 +23,7 @@ module Modules
 # It doesn't just look for the injected XSS string in the HMTL code
 # but actually parses the code and looks for the injected element proper.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.3.1

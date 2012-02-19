@@ -25,7 +25,7 @@ module Plugins
 #
 # Useful for unit-testing or a gazillion other things. :)
 #
-# @author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class VectorFeed < Arachni::Plugin::Base
 

@@ -17,7 +17,7 @@
 #
 # Overloads the {Object} class providing a deep_clone() method
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

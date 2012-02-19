@@ -25,7 +25,7 @@ module Database
     # Provides helper methods for data structures to be implemented related to
     # objecting dumping, loading, unique filename generation, etc.
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
     # @version: 0.1

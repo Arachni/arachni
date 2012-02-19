@@ -21,7 +21,7 @@ module Plugins
 # Uses the libnotify library to send notifications for each discovered issue
 # and a summary at the end on the scan.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

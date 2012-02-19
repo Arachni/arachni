@@ -98,7 +98,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 # It's basically an RPC client for Dispatchers and Instances wearing a pretty frock.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2

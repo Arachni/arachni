@@ -26,7 +26,7 @@ require Options.instance.dir['lib'] + 'issue'
 # It holds information about the runtime environment,
 # the results of the audit etc...
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.2

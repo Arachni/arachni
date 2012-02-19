@@ -20,7 +20,7 @@ module Modules
 #
 # Left here for compatibility reasons, has been obsoleted by the xss_path module.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 #

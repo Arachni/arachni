@@ -23,7 +23,7 @@ module Modules
 #
 # Looks for common, possibly sensitive, directories on the server.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.2.1

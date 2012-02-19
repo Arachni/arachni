@@ -22,7 +22,7 @@ module Module
 # Provides output functionality to the modules via the {Arachni::UI::Output}<br/>
 # prepending the module name to the output message.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

@@ -21,7 +21,7 @@ module Plugins
 # Provides a notice for issues uncovered by timing attacks when the affected audited
 # pages returned unusually high response times to begin with.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1.4

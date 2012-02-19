@@ -21,7 +21,7 @@ module Plugins
 # Uses the Pony gem send a notification (and optionally report) at the end
 # of the scan over SMTP.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1

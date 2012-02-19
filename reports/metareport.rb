@@ -25,7 +25,7 @@ module Reports
 #
 # Creates a file to be used with the Arachni MSF plug-in.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
 # @version: 0.1
