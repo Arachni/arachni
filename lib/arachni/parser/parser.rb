@@ -30,19 +30,18 @@ require opts.dir['lib'] + 'component_manager'
 # Analyzer class
 #
 # Analyzes HTML code extracting forms, links and cookies
-# depending on user opts.<br/>
+# depending on user opts.
 #
-# It grabs <b>all</b> element attributes not just URLs and variables.<br/>
-# All URLs are converted to absolute and URLs outside the domain are ignored.<br/>
+# It grabs <b>all</b> element attributes not just URLs and variables.
+# All URLs are converted to absolute and URLs outside the domain are ignored.
 #
 # === Forms
-# Form analysis uses both regular expressions and the Nokogiri parser<br/>
-# in order to be able to handle badly written HTML code, such as not closed<br/>
+# Form analysis uses both regular expressions and the Nokogiri parser
+# in order to be able to handle badly written HTML code, such as not closed
 # tags and tag overlaps.
 #
-# In order to ease audits, in addition to parsing forms into data structures<br/>
-# like "select" and "option", all auditable inputs are put under the<br/>
-# "auditable" key.
+# In order to ease audits, in addition to parsing forms into data structures
+# like "select" and "option", all auditable inputs are put under the "auditable" key.
 #
 # === Links
 # Links are extracted using the Nokogiri parser.
