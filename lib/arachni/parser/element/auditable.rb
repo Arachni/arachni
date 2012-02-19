@@ -21,10 +21,22 @@ require Arachni::Options.instance.dir['lib'] + 'parser/element/mutable'
 module Arachni
 class Parser
 module Element
+
+# namespace for all analysis techniques
+module Analysis
+end
+
 module Auditable
 
     include Arachni::Module::Utilities
     include Arachni::Parser::Element::Mutable
+
+    lib = Options.instance.dir['lib'] + 'parser/element/analysis/*.rb'
+    Dir.glob( lib ).each { |f| require f }
+    Analysis.constants.each {
+        |technique|
+        include( Analysis.const_get( technique ) )
+    }
 
     def self.reset!
         @@audited = Set.new
@@ -70,6 +82,9 @@ module Auditable
         @auditor.print_error_backtrace( str )
     end
 
+    def type
+        self.class.name.split( ':' ).last.downcase
+    end
 
     #
     # ABSTRACT
@@ -89,6 +104,10 @@ module Auditable
     def http_request( opts )
     end
 
+    def http
+        @auditor.http
+    end
+
     #
     # Submits self using {#http_request}.
     #
@@ -97,7 +116,6 @@ module Auditable
     # @see #http_request
     #
     def submit( opts = {} )
-
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
         opts[:params]  = @auditable.dup
         @opts = opts
@@ -109,48 +127,31 @@ module Auditable
         return http_request( opts )
     end
 
-    #
-    # Audits self
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {Arachni::Module::Auditor#OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
-    #
     def audit( injection_str, opts = { }, &block )
-
-        # respect user audit options
-        audit_opt = "@audit_#{self.type}s"
-        return if !Arachni::Options.instance.instance_variable_get( audit_opt )
+        raise 'Block required.' if !block_given?
 
         @@audited ||= Set.new
-
-        @auditor ||= opts[:auditor]
-        opts[:auditor] ||= @auditor
-
-        opts            = Arachni::Module::Auditor::OPTIONS.merge( opts )
-        opts[:element]  = self.type
 
         opts[:injected_orig] = injection_str
 
         # if we don't have any auditable elements just return
         return if auditable.empty?
 
+        @auditor ||= opts[:auditor]
+        opts[:auditor] ||= @auditor
+
         audit_id = audit_id( injection_str, opts )
         return if !opts[:redundant] && audited?( audit_id )
 
         results = []
         # iterate through all variation and audit each one
-        mutate( injection_str, opts ).each {
+        mutations( injection_str, opts ).each {
             |elem|
 
             return if @auditor.skip?( elem )
 
             opts[:altered] = elem.altered.dup
+            opts[:element] = type
 
             # inform the user about what we're auditing
             print_status( elem.status_string ) if !opts[:silent]
@@ -263,84 +264,11 @@ module Auditable
             end
         end
 
-        # call the block, if there's one
-        if block
-            exception_jail( false ){
-                block.call( response, element.opts, element )
-            }
-            return
-        end
-
-        return if !response.code
-
-        # get matches
-        get_matches( response.dup, element.opts )
+        exception_jail( false ){
+            block.call( response, element.opts, element )
+        }
     end
 
-    #
-    # Tries to identify an issue through regexp pattern matching.
-    #
-    # If a issue is found a message will be printed and a hash
-    # will be returned describing the conditions under which
-    # the issue was discovered.
-    #
-    # @param  [Typhoeus::Response]
-    # @param  [Hash]  opts
-    #
-    # @return  [Hash]
-    #
-    def get_matches( res, opts )
-        [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
-        [opts[:substring]].flatten.compact.each { |substring| match_substring_and_log( substring, res, opts ) }
-    end
-
-    def match_substring_and_log( substring, res, opts )
-
-        verification = false
-
-        # an annoying encoding exception may be thrown by scan()
-        # the sob started occuring again....
-        begin
-            if( @auditor.page.html.substring?( substring ) )
-                verification = true
-            end
-        rescue
-        end
-
-        if res.body.substring?( substring )
-           opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
-           @auditor.log( opts, res )
-        end
-    end
-
-    def match_regexp_and_log( regexp, res, opts )
-        regexp = regexp.is_a?( Regexp ) ? regexp :
-            Regexp.new( regexp.to_s, Regexp::IGNORECASE )
-
-        match_data = res.body.scan( regexp )[0]
-        match_data = match_data.to_s
-
-        verification = false
-
-        # an annoying encoding exception may be thrown by scan()
-        # the sob started occuring again....
-        begin
-            if( @auditor.page.html.scan( regexp )[0] )
-                opts[:verification] = true
-            end
-        rescue
-        end
-
-        # fairly obscure condition...pardon me...
-        if ( opts[:match] && match_data == opts[:match] ) ||
-           ( !opts[:match] && match_data && match_data.size > 0 )
-
-           opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
-           opts[:regexp] = regexp
-
-           @auditor.log( opts, res )
-        end
-    end
 
     #
     # Checks whether or not an audit has been already performed.

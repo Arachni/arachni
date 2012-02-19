@@ -35,88 +35,26 @@ module Module
 #
 module Auditor
 
-    def self.included( mod )
-        # @@__timeout_audited      ||= Set.new
-
-        # holds timing-attack performing Procs to be run after all
-        # non-timing-attack modules have finished.
-        @@__timeout_audit_blocks   ||= Queue.new
-
-        @@__timeout_audit_operations_cnt ||= 0
-
-        # populated by timing attack phase 1 with
-        # candidate elements to be verified by phase 2
-        @@__timeout_candidates     ||= Queue.new
-
-        # modules which have called the timing attack audit method (audit_timeout)
-        # we're interested in the amount, not the names, and is used to
-        # determine scan progress
-        @@__timeout_loaded_modules ||= Set.new
-
-        @@__on_timing_attacks      ||= []
-
-        @@__running_timeout_attacks ||= false
-
-        # the rdiff attack performs it own redundancy checks so we need this to
-        # keep track audited elements
-        @@__rdiff_audited ||= Set.new
-    end
-
-    #
-    # Returns the names of all loaded modules that use timing attacks.
-    #
-    # @return   [Set]
-    #
-    def self.timeout_loaded_modules
-        @@__timeout_loaded_modules
-    end
-
-    #
-    # Holds timing-attack performing Procs to be run after all
-    # non-timing-attack modules have finished.
-    #
-    # @return   [Queue]
-    #
     def self.timeout_audit_blocks
-        @@__timeout_audit_blocks
+        Arachni::Parser::Element::Auditable.timeout_audit_blocks
     end
-
-    def self.current_timeout_audit_operations_cnt
-        @@__timeout_audit_blocks.size + @@__timeout_candidates.size
+    def self.timeout_loaded_modules
+        Arachni::Parser::Element::Auditable.timeout_loaded_modules
     end
-
-    def self.add_timeout_audit_block( &block )
-        @@__timeout_audit_operations_cnt += 1
-        @@__timeout_audit_blocks << block
-    end
-
-    def Auditor.add_timeout_candidate( elem )
-        @@__timeout_audit_operations_cnt += 1
-        @@__timeout_candidates << elem
-    end
-
-
-    def self.running_timeout_attacks?
-        @@__running_timeout_attacks
-    end
-
     def self.on_timing_attacks( &block )
-        @@__on_timing_attacks << block
+        Arachni::Parser::Element::Auditable.on_timing_attacks( &block )
     end
-
+    def self.running_timeout_attacks?
+        Arachni::Parser::Element::Auditable.running_timeout_attacks?
+    end
+    def self.timeout_audit_run
+        Arachni::Parser::Element::Auditable.timeout_audit_run
+    end
     def self.timeout_audit_operations_cnt
-        @@__timeout_audit_operations_cnt
+        Arachni::Parser::Element::Auditable.timeout_audit_operations_cnt
     end
-
-    def Auditor.call_on_timing_blocks( res, elem )
-        @@__on_timing_attacks.each {
-            |block|
-            block.call( res, elem )
-        }
-    end
-
-    def call_on_timing_blocks( res, elem )
-        Auditor.call_on_timing_blocks( res, elem )
+    def self.current_timeout_audit_operations_cnt
+        Arachni::Parser::Element::Auditable.current_timeout_audit_operations_cnt
     end
 
     #
@@ -124,52 +62,15 @@ module Auditor
     # of injection strings.
     #
     module Format
-
-      #
-      # Leaves the injection string as is.
-      #
-      STRAIGHT = 1 << 0
-
-      #
-      # Appends the injection string to the default value of the input vector.<br/>
-      # (If no default value exists Arachni will choose one.)
-      #
-      APPEND   = 1 << 1
-
-      #
-      # Terminates the injection string with a null character.
-      #
-      NULL     = 1 << 2
-
-      #
-      # Prefix the string with a ';', useful for command injection modules
-      #
-      SEMICOLON = 1 << 3
+        include Arachni::Parser::Element::Mutable::Format
     end
 
     #
     # Holds constants that describe the HTML elements to be audited.
     #
     module Element
-        LINK    = Issue::Element::LINK
-        FORM    = Issue::Element::FORM
-        COOKIE  = Issue::Element::COOKIE
-        HEADER  = Issue::Element::HEADER
-        BODY    = Issue::Element::BODY
-        PATH    = Issue::Element::PATH
-        SERVER  = Issue::Element::SERVER
+        include Arachni::Issue::Element
     end
-
-    RDIFF_OPTIONS =  {
-        # append our seeds to the default values
-        :format      => [ Format::APPEND ],
-
-        # allow duplicate requests
-        :redundant   => true,
-
-        # amount of rdiff iterations
-        :precision   => 2
-    }
 
     #
     # Default audit options.
@@ -467,11 +368,13 @@ module Auditor
 
         method = nil
 
-        request_headers  = nil
-        response_headers = page.response_headers
-        response         = page.html
-        url              = page.url
-        method           = page.method.to_s.upcase if page.method
+        if( page )
+            request_headers  = nil
+            response_headers = page.response_headers
+            response         = page.html
+            url              = page.url
+            method           = page.method.to_s.upcase if page.method
+        end
 
         if( res )
             request_headers  = res.request.headers
@@ -518,68 +421,6 @@ module Auditor
     end
 
     #
-    # Provides easy access to element auditing using simple injection and pattern
-    # matching.
-    #
-    # If a block has been provided analysis and logging will be delegated to it,
-    # otherwise, if a match is found it will be automatically logged.
-    #
-    # If no elements have been specified in 'opts' it will
-    # use the elements from the module's "self.info()" hash. <br/>
-    # If no elements have been specified in 'opts' or "self.info()" it will
-    # use the elements in {OPTIONS}. <br/>
-    #
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
-    #                                  * HTTP response
-    #                                  * options
-    #                                  * element
-    #                                  The block will be called as soon as the
-    #                                  HTTP response is received.
-    #
-    def audit( injection_str, opts = { }, &block )
-
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
-            opts[:elements] = self.class.info[:elements]
-        end
-
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
-            opts[:elements] = OPTIONS[:elements]
-        end
-
-        opts  = OPTIONS.merge( opts )
-
-        if !opts[:regexp] && ! opts[:substring]
-            opts[:substring] ||= injection_str
-        end
-
-        opts[:elements].each {
-            |elem|
-
-            case elem
-
-                when  Element::LINK
-                    audit_links( injection_str, opts, &block )
-
-                when  Element::FORM
-                    audit_forms( injection_str, opts, &block )
-
-                when  Element::COOKIE
-                    audit_cookies( injection_str, opts, &block )
-
-                when  Element::HEADER
-                    audit_headers( injection_str, opts, &block )
-                when  Element::BODY
-                else
-                    raise( 'Unknown element to audit:  ' + elem.to_s )
-            end
-
-        }
-    end
-
-    #
     # This is called right before an [Arachni::Parser::Element]
     # is submitted/audited and is used to determine whether to skip it or not.
     #
@@ -600,213 +441,73 @@ module Auditor
         return false
     end
 
-    #
-    # Audits elements using timing attacks and automatically logs results.
-    #
-    # Here's how it works:
-    # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
-    #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-    #   - Initial probing for candidates -- Any element that times out is added to a queue.
-    #   - Stabilization -- The candidate is submitted with its default values in
-    #     order to wait until the effects of the timing attack have worn off.
-    # * Loop 2 -- Verifies the candidates. This is much more delicate so the
-    #   concurrent requests are lowered to pairs.
-    #   - Liveness test -- Ensures that stabilization was successful before moving on.
-    #   - Verification using an increased timeout -- Any elements that time out again are logged.
-    #   - Stabilization
-    #
-    # Ideally, all requests involved with timing attacks would be run in sync mode
-    # but the performance penalties are too high, thus we compromise and make the best of it
-    # by running as little an amount of concurrent requests as possible for any given phase.
-    #
-    #    opts = {
-    #        :format  => [ Format::STRAIGHT ],
-    #        :timeout => 4000,
-    #        :timeout_divider => 1000
-    #    }
-    #
-    #    audit_timeout( [ 'sleep( __TIME__ );' ], opts )
-    #
-    #
-    # @param   [Array]     strings     injection strings
-    #                                       __TIME__ will be substituted with (timeout / timeout_divider)
-    # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
-    #                                   * :timeout -- milliseconds to wait for the request to complete
-    #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
-    #
-    def audit_timeout( strings, opts )
-        @@__timeout_loaded_modules << self.class.info[:name]
-
-        Auditor.add_timeout_audit_block {
-            delay = opts[:timeout]
-
-            audit_timeout_debug_msg( 1, delay )
-            timing_attack( strings, opts ) {
-                |res, c_opts, elem|
-
-                elem.auditor = self
-
-                print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
-
-                Arachni::Module::Auditor.audit_timeout_stabilize( elem )
-
-                Auditor.add_timeout_candidate( elem )
-            }
-        }
-    end
-
-    #
-    # Runs all blocks in {timeout_audit_blocks} and verifies
-    # and logs the candidate elements.
-    #
-    def self.timeout_audit_run
-        @@__running_timeout_attacks = true
-
-        while( !@@__timeout_audit_blocks.empty? )
-            @@__timeout_audit_blocks.pop.call
+    def candidate_elements( opts = {} )
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = self.class.info[:elements]
         end
 
-        while( !@@__timeout_candidates.empty? )
-            self.audit_timeout_phase_2( @@__timeout_candidates.pop )
+        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+            opts[:elements] = OPTIONS[:elements]
         end
-    end
 
-    #
-    # Runs phase 2 of the timing attack auditing an individual element
-    # (which passed phase 1) with a higher delay and timeout
-    #
-    def self.audit_timeout_phase_2( elem )
+        elements = []
+        opts[:elements].each {
+            |elem|
+            next if !Arachni::Options.instance.instance_variable_get( "@audit_#{elem}s".to_sym )
 
-        # reset the audited list since we're going to re-audit the elements
-        # @@__timeout_audited = Set.new
+            case elem
+                when Element::LINK
+                    elements |= page.links
 
-        opts = elem.opts
-        opts[:timeout] *= 2
-        # opts[:async]    = false
-        # self.audit_timeout_debug_msg( 2, opts[:timeout] )
+                when Element::FORM
+                    elements |= page.forms
 
-        str = opts[:timing_string].gsub( '__TIME__',
-            ( opts[:timeout] / opts[:timeout_divider] ).to_s )
+                when Element::COOKIE
+                    elements |= page.cookies
 
-        opts[:timeout] *= 0.7
+                when Element::HEADER
+                    elements |= page.headers
 
-        elem.auditable = elem.orig
-
-        # this is the control; request the URL of the element to make sure
-        # that the web page is alive i.e won't time-out by default
-        elem.auditor.http.get( elem.action ).on_complete {
-            |res|
-
-            # ap elem.auditable
-            # ap res.effective_url
-            # ap res.request.params
-
-            self.call_on_timing_blocks( res, elem )
-
-            if !res.timed_out?
-
-                elem.auditor.print_info( 'Liveness check was successful, progressing to verification...' )
-
-                elem.audit( str, opts ) {
-                    |c_res, c_opts|
-
-                    # ap c_res.time
-                    # ap opts[:timeout]
-
-                    if c_res.timed_out?
-
-                        # all issues logged by timing attacks need manual verification.
-                        # end of story.
-                        # c_opts[:verification] = true
-                        elem.auditor.log( c_opts, c_res )
-
-                        self.audit_timeout_stabilize( elem )
-
-                    else
-                        elem.auditor.print_info( 'Verification failed.' )
-                    end
-                }
-            else
-                elem.auditor.print_info( 'Liveness check failed, bailing out...' )
+                when Element::BODY
+                else
+                    raise( 'Unknown element to audit:  ' + elem.to_s )
             end
         }
 
-        elem.auditor.http.run
+        elements
     end
 
     #
-    # Submits an element which has just been audited using a timing attack
-    # with a high timeout in order to determine when the effects of a timing
-    # attack has worn off in order to safely continue the audit.
+    # Provides easy access to element auditing using simple taint analysis.
     #
-    # @param    [Arachni::Element::Auditable]   elem
+    # If a block has been provided analysis and logging will be delegated to it,
+    # otherwise, if a match is found it will be automatically logged.
     #
-    def self.audit_timeout_stabilize( elem )
-
-        d_opts = {
-            :skip_orig => true,
-            :redundant => true,
-            :timeout   => 120000,
-            :silent    => true,
-            :async     => false
+    # If no elements have been specified in 'opts' it will
+    # use the elements from the module's "self.info()" hash. <br/>
+    # If no elements have been specified in 'opts' or "self.info()" it will
+    # use the elements in {OPTIONS}. <br/>
+    #
+    #
+    # @param  [String]  injection_str  the string to be injected
+    # @param  [Hash]    opts           options as described in {OPTIONS}
+    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
+    #                                  * HTTP response
+    #                                  * options
+    #                                  * element
+    #                                  The block will be called as soon as the
+    #                                  HTTP response is received.
+    #
+    def audit( injection_str, opts = { }, &block )
+        candidate_elements( opts ).each {
+            |element|
+            element.auditor = self
+            if block_given?
+                element.audit( injection_str, opts, &block )
+            else
+                element.taint_analysis( injection_str, opts )
+            end
         }
-
-        orig_opts = elem.opts
-
-        elem.auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
-        elem.auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
-
-        elem.auditable = elem.orig
-        res = elem.submit( d_opts ).response
-
-        if !res.timed_out?
-            elem.auditor.print_info( 'Server seems responsive again.' )
-        else
-            elem.auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
-        end
-
-        elem.opts.merge!( orig_opts )
-    end
-
-    def audit_timeout_debug_msg( phase, delay )
-        print_debug( '---------------------------------------------' )
-        print_debug( "Running phase #{phase.to_s} of timing attack." )
-        print_debug( "Delay set to: #{delay.to_s} milliseconds" )
-        print_debug( '---------------------------------------------' )
-    end
-
-    #
-    # Audits elements using a timing attack.
-    #
-    # 'opts' needs to contain a :timeout value in milliseconds.</br>
-    # Optionally, you can add a :timeout_divider.
-    #
-    # @param   [Array]     strings     injection strings
-    #                                       '__TIME__' will be substituted with (timeout / timeout_divider)
-    # @param    [Hash]      opts        options as described in {OPTIONS}
-    # @param    [Block]     &block      block to call if a timeout occurs,
-    #                                       it will be passed the response and opts
-    #
-    def timing_attack( strings, opts, &block )
-
-        opts[:timeout_divider] ||= 1
-
-        [strings].flatten.each {
-            |str|
-
-            opts[:timing_string] = str
-            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
-            opts[:skip_orig] = true
-
-            audit( str, opts ) {
-                |res, c_opts, elem|
-
-                call_on_timing_blocks( res, elem )
-                block.call( res, c_opts, elem ) if block && res.timed_out?
-            }
-        }
-
-        http.run
     end
 
     #
@@ -847,280 +548,52 @@ module Auditor
     #                                   * fault injection response body
     #
     def audit_rdiff( opts = {}, &block )
-
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
-            opts[:elements] = self.class.info[:elements]
-        end
-
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
-            opts[:elements] = OPTIONS[:elements]
-        end
-
-        opts[:elements].each {
-            |elem|
-
-            case elem
-
-                when  Element::LINK
-                    next if !Options.instance.audit_links
-                    page.links.each {
-                        |c_elem|
-                        audit_rdiff_elem( c_elem, opts, &block )
-                    }
-
-                when  Element::FORM
-                    next if !Options.instance.audit_forms
-                    page.forms.each {
-                        |c_elem|
-                        audit_rdiff_elem( c_elem, opts, &block )
-                    }
-
-                when  Element::COOKIE
-                    next if !Options.instance.audit_cookies
-                    page.cookies.each {
-                        |c_elem|
-                        audit_rdiff_elem( c_elem, opts, &block )
-                    }
-
-                when  Element::HEADER
-                    next if !Options.instance.audit_headers
-                    page.headers.each {
-                        |c_elem|
-                        audit_rdiff_elem( c_elem, opts, &block )
-                    }
-                when  Element::BODY
-                else
-                    raise( 'Unknown element to audit:  ' + elem.to_s )
-
-            end
-
+        candidate_elements( opts ).each {
+            |element|
+            element.auditor = self
+            element.rdiff_analysis( opts, &block )
         }
     end
 
     #
-    # Audits a single element using an rdiff attack.
+    # Audits elements using timing attacks and automatically logs results.
     #
-    # @param   [Arachni::Element::Auditable]     elem     the element to audit
-    # @param    [Hash]      opts        same as for {#audit_rdiff}
-    # @param    [Block]     &block      same as for {#audit_rdiff}
+    # Here's how it works:
+    # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
+    #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
+    #   - Initial probing for candidates -- Any element that times out is added to a queue.
+    #   - Stabilization -- The candidate is submitted with its default values in
+    #     order to wait until the effects of the timing attack have worn off.
+    # * Loop 2 -- Verifies the candidates. This is much more delicate so the
+    #   concurrent requests are lowered to pairs.
+    #   - Liveness test -- Ensures that stabilization was successful before moving on.
+    #   - Verification using an increased timeout -- Any elements that time out again are logged.
+    #   - Stabilization
     #
-    def audit_rdiff_elem( elem, opts = {}, &block )
-
-        opts = RDIFF_OPTIONS.merge( opts )
-
-        # don't continue if there's a missing value
-        elem.auditable.values.each {
-            |val|
-            return if !val || val.empty?
-        }
-
-        return if __rdiff_audited?( elem )
-        __rdiff_audited!( elem )
-
-        responses = {
-            :orig => nil,
-            :good => {},
-            :bad  => {},
-            :bad_total  => 0,
-            :good_total => 0
-        }
-
-        opts[:precision].times {
-            # get the default responses
-            elem.audit( '', opts.merge( auditor: self ) ) {
-                |res|
-                responses[:orig] ||= res.body
-                # remove context-irrelevant dynamic content like banners and such
-                # from the error page
-                responses[:orig] = responses[:orig].rdiff( res.body )
-            }
-        }
-
-        opts[:precision].times {
-            opts[:faults].each {
-                |str|
-
-                # get injection variations that will hopefully cause an internal/silent
-                # SQL error
-                variations = elem.mutate( str, opts )
-
-                responses[:bad_total] =  variations.size
-
-                variations.each {
-                    |c_elem|
-
-                    print_status( c_elem.status_string )
-
-                    # submit the link and get the response
-                    c_elem.submit( opts.merge( auditor: self ) ).on_complete {
-                        |res|
-
-                        responses[:bad][c_elem.altered] ||= res.body.clone
-
-                        # remove context-irrelevant dynamic content like banners and such
-                        # from the error page
-                        responses[:bad][c_elem.altered] =
-                            responses[:bad][c_elem.altered].rdiff( res.body.clone )
-                    }
-                }
-            }
-        }
-
-        opts[:bools].each {
-            |str|
-
-            # get injection variations that will not affect the outcome of the query
-            variations = elem.mutate( str, opts )
-
-            responses[:good_total] =  variations.size
-
-            variations.each {
-                |c_elem|
-
-                print_status( c_elem.status_string )
-
-                # submit the link and get the response
-                c_elem.submit( opts.merge( auditor: self ) ).on_complete {
-                    |res|
-
-                    responses[:good][c_elem.altered] ||= []
-
-                    # save the response for later analysis
-                    responses[:good][c_elem.altered] << {
-                        'str'  => str,
-                        'res'  => res,
-                        'elem' => c_elem
-                    }
-                }
-            }
-        }
-
-        # when this runs the 'responses' hash will have been populated
-        http.after_run {
-
-            responses[:good].keys.each {
-                |key|
-
-                responses[:good][key].each {
-                    |res|
-
-                    if block
-                        exception_jail( false ){
-                            block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
-                        }
-                    elsif( responses[:orig] == res['res'].body &&
-                        responses[:bad][key] != res['res'].body &&
-                        res['res'].code == 200 )
-
-                        http.custom_404?( res['res'] ) {
-                            |bool|
-                            next if bool
-
-                            url = res['res'].effective_url
-
-                            # since we bypassed the auditor completely we need to create
-                            # our own opts hash and pass it to the Vulnerability class.
-                            #
-                            # this is only required for Metasploitable vulnerabilities
-                            opts = {
-                                :injected_orig => res['str'],
-                                :combo         => res['elem'].auditable
-                            }
-
-                            issue = Issue.new( {
-                                    :var          => key,
-                                    :url          => url,
-                                    :method       => res['res'].request.method.to_s,
-                                    :opts         => opts,
-                                    :injected     => res['str'],
-                                    :id           => res['str'],
-                                    :regexp       => 'n/a',
-                                    :regexp_match => 'n/a',
-                                    :elem         => res['elem'].type,
-                                    :response     => res['res'].body,
-                                    # :verification => true,
-                                    :headers      => {
-                                        :request    => res['res'].request.headers,
-                                        :response   => res['res'].headers,
-                                    }
-                                }.merge( self.class.info )
-                            )
-
-                            print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
-
-                            # register our results with the system
-                            register_results( [ issue ] )
-                        }
-                    end
-
-                }
-            }
-        }
-    end
-
-    def __rdiff_audited!( elem )
-        @@__rdiff_audited << __rdiff_audit_id( elem )
-    end
-
-    def __rdiff_audited?( elem )
-        @@__rdiff_audited.include?( __rdiff_audit_id( elem ) )
-    end
-
-    def __rdiff_audit_id( elem )
-        elem.action + elem.auditable.keys.to_s
-    end
-
+    # Ideally, all requests involved with timing attacks would be run in sync mode
+    # but the performance penalties are too high, thus we compromise and make the best of it
+    # by running as little an amount of concurrent requests as possible for any given phase.
     #
-    # Provides the following methods:
-    # * audit_links()
-    # * audit_forms()
-    # * audit_cookies()
-    # * audit_headers()
+    #    opts = {
+    #        :format  => [ Format::STRAIGHT ],
+    #        :timeout => 4000,
+    #        :timeout_divider => 1000
+    #    }
     #
-    # Metaprogrammed to avoid redundant code while maintaining compatibility
-    # and method shortcuts.
+    #    audit_timeout( [ 'sleep( __TIME__ );' ], opts )
     #
-    # @see #audit_elems
     #
-    def method_missing( sym, *args, &block )
-
-        elem = sym.to_s.gsub!( 'audit_', '@' )
-        raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args ) if !elem
-
-        elems = page.instance_variable_get( elem )
-
-        if( elems && elem )
-            raise ArgumentError.new( "Missing required argument 'injection_str'" +
-                " for audit_#{elem.gsub( '@', '' )}()." ) if( !args[0] )
-            audit_elems( elems, args[0], args[1] ? args[1]: {}, &block )
-        else
-            raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args )
-        end
-    end
-
+    # @param   [Array]     strings     injection strings
+    #                                       __TIME__ will be substituted with (timeout / timeout_divider)
+    # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
+    #                                   * :timeout -- milliseconds to wait for the request to complete
+    #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
-    # Audits Auditable HTML/HTTP elements
-    #
-    # @param  [Array<Arachni::Element::Auditable>]  elements    elements to audit
-    # @param  [String]  injection_str  same as for {#audit}
-    # @param  [Hash]    opts           same as for {#audit}
-    # @param  [Block]   &block         same as for {#audit}
-    #
-    # @see #method_missing
-    #
-    def audit_elems( elements, injection_str, opts = { }, &block )
-
-        opts = OPTIONS.merge( opts )
-        url  = page.url
-
-        opts[:injected_orig] = injection_str
-        if !opts[:regexp] && ! opts[:substring]
-            opts[:substring] ||= injection_str
-        end
-
-        elements.deep_clone.each {
-            |elem|
-            elem.audit( injection_str, opts.merge( auditor: self ), &block )
+    def audit_timeout( strings, opts = {} )
+        candidate_elements( opts ).each {
+            |element|
+            element.auditor = self
+            element.timeout_analysis( strings, opts )
         }
     end
 

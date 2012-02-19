@@ -6,8 +6,15 @@
 
 require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
+Arachni::UI::Output.mute!
+
+def issues
+    Arachni::Module::Manager.results
+end
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
+
+Dir.glob( @@root + 'helpers/*.rb' ).each { |f| require f }
 
 @@server_pids ||= []
 @@servers     ||= {}
@@ -50,27 +57,29 @@ def start_servers!
 
     require 'net/http'
     begin
+        up = []
         Timeout::timeout( 10 ) do
             loop do
 
-                up = 0
                 @@servers.keys.each {
                     |name|
 
+                    next if up.include? name
                     url = server_url_for( name )
                     begin
                         response = Net::HTTP.get_response( URI.parse( url ) )
-                        up += 1 if response.is_a?( Net::HTTPSuccess )
+                        up << name if response
                     rescue SystemCallError => error
                     end
 
                 }
 
-                if up == @@servers.size
+                if up.size == @@servers.size
                     puts 'Servers are up!'
                     return
                 end
 
+                sleep 0.1
             end
         end
     rescue Timeout::Error => error

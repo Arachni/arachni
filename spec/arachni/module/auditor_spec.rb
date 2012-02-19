@@ -350,46 +350,13 @@ describe Arachni::Module::Auditor do
 
     end
 
-    describe :audit_rdiff do
-        before do
-            @rdiff_opts = {
-                elements: [ Arachni::Issue::Element::LINK ],
-               :faults    => [ 'bad' ],
-               :bools     => [ 'good' ]
-            }
-
-            @rdiff_url = @url + '/rdiff/'
-        end
-
-        context 'when response behavior suggests a vuln' do
-            it 'should log issue' do
-                @auditor.load_page_from( @rdiff_url + 'true' )
-                @auditor.audit_rdiff( @rdiff_opts )
-                @framework.http.run
-                @framework.http.run
-
-                @framework.modules.results.should be_any
-                @framework.modules.results.first.var.should == 'rdiff'
-            end
-        end
-
-        context 'when responses are\'t consistent with vuln behavior' do
-            it 'should not log issue' do
-                @auditor.load_page_from( @rdiff_url + 'false' )
-                @auditor.audit_rdiff( @rdiff_opts )
-                @framework.http.run
-                @framework.http.run
-                @framework.modules.results.should be_empty
-            end
-        end
-
-    end
-
     describe :audit do
 
         before do
             @seed = 'my_seed'
             @default_input_value = 'blah'
+            issues.clear
+            Arachni::Parser::Element::Auditable.reset!
          end
 
         context 'when called with no opts' do
@@ -401,53 +368,7 @@ describe Arachni::Module::Auditor do
             end
         end
 
-        context 'when called with option' do
-
-            describe :format do
-
-                before { @auditor.load_page_from( @url + '/link' ) }
-
-                describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
-                    it 'should inject the seed as is' do
-                        @auditor.audit( @seed,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ] )
-                        @framework.http.run
-                        @framework.modules.results.size.should == 1
-                        @framework.modules.results.first.injected.should == @seed
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::APPEND' do
-                    it 'should append the seed to the existing value of the input' do
-                        @auditor.audit( @seed,
-                            format: [ Arachni::Module::Auditor::Format::APPEND ] )
-                        @framework.http.run
-                        @framework.modules.results.size.should == 1
-                        @framework.modules.results.first.injected.should == @default_input_value + @seed
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::NULL' do
-                    it 'should terminate the seed with a null character' do
-                        @auditor.audit( @seed,
-                            format: [ Arachni::Module::Auditor::Format::NULL ] )
-                        @framework.http.run
-                        @framework.modules.results.size.should == 1
-                        @framework.modules.results.first.injected.should == @seed + "\0"
-                    end
-                end
-
-                describe 'Arachni::Module::Auditor::Format::SEMICOLON' do
-                    it 'should prepend the seed with a semicolon' do
-                        @auditor.audit( @seed,
-                            format: [ Arachni::Module::Auditor::Format::SEMICOLON ] )
-                        @framework.http.run
-                        @framework.modules.results.size.should == 1
-                        @framework.modules.results.first.injected.should == ';' + @seed
-                    end
-                end
-            end
-
+        context 'when called with opts' do
             describe :elements do
 
                 before { @auditor.load_page_from( @url + '/elem_combo' ) }
@@ -512,60 +433,6 @@ describe Arachni::Module::Auditor do
                          )
                         @framework.http.run
                         @framework.modules.results.size.should == 4
-                    end
-                end
-            end
-
-            context 'for matching with' do
-                before { @auditor.load_page_from( @url + '/link' ) }
-
-                describe :regexp do
-                    context 'with valid :match' do
-                        it 'should verify the matched data with the provided string' do
-                            @auditor.audit( @seed,
-                                regexp: /my_.+d/,
-                                match: @seed,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                             )
-                            @framework.http.run
-                            @framework.modules.results.size.should == 1
-                            @framework.modules.results.first.injected.should == @seed
-                        end
-                    end
-
-                    context 'with invalid :match' do
-                        it 'should not log issue' do
-                            @auditor.audit( @seed,
-                                regexp: @seed,
-                                match: 'blah',
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                             )
-                            @framework.http.run
-                            @framework.modules.results.should be_empty
-                        end
-                    end
-
-                    context 'without :match' do
-                        it 'should try to match the provided pattern' do
-                            @auditor.audit( @seed,
-                                regexp: @seed,
-                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                             )
-                            @framework.http.run
-                            @framework.modules.results.size.should == 1
-                            @framework.modules.results.first.injected.should == @seed
-                        end
-                    end
-                end
-
-                describe :substring do
-                    it 'should try to find the provided substring' do
-                        @auditor.audit( @seed,
-                            substring: @seed,
-                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
-                         )
-                        @framework.http.run
-                        @framework.modules.results.size.should == 1
                     end
                 end
             end
@@ -652,204 +519,7 @@ describe Arachni::Module::Auditor do
                     end
                 end
             end
-
-            describe :redundant do
-                before do
-                    @audit_opts = {
-                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                        elements: [ Arachni::Module::Auditor::Element::LINK ]
-                    }
-                end
-
-                context true do
-                    it 'should allow redundant requests/audits' do
-                        audits = Hash.new( 0 )
-                        2.times {
-                            |i|
-                            @auditor.audit( @seed, @audit_opts.merge( redundant: true )){
-                                audits[i] += 1
-                            }
-                        }
-                        @framework.http.run
-                        # since we've enabled redundant audits both should be performed
-                        # the same amount of times (2)
-                        audits.values.first.should == audits.values.last
-                        audits.values.first.should == 2
-                        audits.size.should == 2
-                    end
-                end
-
-                context false do
-                    it 'should not allow redundant requests/audits' do
-                        audits = Hash.new( 0 )
-                        2.times {
-                            |i|
-                            @auditor.audit( @seed, @audit_opts.merge( redundant: false )){
-                                audits[i] += 1
-                            }
-                        }
-                        @framework.http.run
-                        # since we've disabled redundant audits only the first
-                        # one should be performed
-                        audits.size.should == 1
-                    end
-                end
-
-                context 'default' do
-                    it 'should not allow redundant requests/audits' do
-                        audits = Hash.new( 0 )
-                        2.times {
-                            |i|
-                            @auditor.audit( @seed, @audit_opts ) {
-                                audits[i] += 1
-                            }
-                        }
-                        @framework.http.run
-                        audits.size.should == 1
-                    end
-                end
-            end
-
-            describe :async do
-                before do
-                    # will sleep 2 secs before each response
-                    @auditor.load_page_from( @url + '/sleep' )
-                end
-
-                context true do
-                    it 'should perform all HTTP requests asynchronously' do
-                        before = Time.now
-                        @auditor.audit_links( @seed, async: true )
-                        @framework.http.run
-
-                        # should take as long as the longest request
-                        # and since we're doing this locally the longest
-                        # request must take less than a second.
-                        #
-                        # so it should be 2 when converted into an Int
-                        (Time.now - before).to_i.should == 2
-
-                        issue = @framework.modules.results.first
-                        issue.should be_true
-                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
-                        issue.var.should == 'input'
-                    end
-                end
-
-                context false do
-                    it 'should perform all HTTP requests synchronously' do
-                        before = Time.now
-                        @auditor.audit_links( @seed, async: false )
-                        @framework.http.run
-
-                        (Time.now - before).should > 4.0
-
-                        issue = @framework.modules.results.first
-                        issue.should be_true
-                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
-                        issue.var.should == 'input'
-                    end
-                end
-
-                context 'default' do
-                    it 'should perform all HTTP requests asynchronously' do
-                        before = Time.now
-                        @auditor.audit_links( @seed )
-                        @framework.http.run
-
-                        (Time.now - before).to_i.should == 2
-
-                        issue = @framework.modules.results.first
-                        issue.should be_true
-                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
-                        issue.var.should == 'input'
-                    end
-                end
-
-            end
-
         end
-
-        context 'when called with a block' do
-            it 'should delegate analysis and logging to caller' do
-                @auditor.load_page_from( @url + '/link' )
-                @auditor.audit( @seed ){}
-                @framework.http.run
-                @framework.modules.results.should be_empty
-            end
-        end
-
-    end
-
-    describe :audit_timeout do
-        before do
-            @timeout_opts = {
-                format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                elements: [ Arachni::Issue::Element::LINK ]
-            }
-
-            @timeout_url = @url + '/timeout/'
-        end
-
-        describe :timeout_divider do
-            context 'when set' do
-                it 'should modify the final timeout value' do
-                    # @auditor.unmute!
-                    @auditor.load_page_from( @timeout_url + 'true' )
-                    @auditor.audit_timeout( '__TIME__',
-                        @timeout_opts.merge(
-                            timeout_divider: 1000,
-                            timeout: 2000
-                        )
-                    )
-                    Arachni::Module::Auditor.timeout_audit_run
-
-                    @framework.modules.results.should be_any
-                    @framework.modules.results.first.injected.should == 4.to_s
-                end
-            end
-
-            context 'when not set' do
-                it 'should not modify the final timeout value' do
-                    # @auditor.unmute!
-                    @auditor.load_page_from( @timeout_url + 'true?mili=true' )
-                    @auditor.audit_timeout( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
-                    Arachni::Module::Auditor.timeout_audit_run
-
-                    @framework.modules.results.should be_any
-                    @framework.modules.results.first.injected.should == 4000.to_s
-                end
-            end
-        end
-
-        context 'when a page has a high response time'do
-
-            before do
-                @delay_opts = {
-                    timeout_divider: 1000,
-                    timeout: 2000
-                }.merge( @timeout_opts )
-            end
-
-            context 'but isn\'t vulnerable' do
-                it 'should not log issue' do
-                    @auditor.load_page_from( @timeout_url + 'false' )
-                    @auditor.audit_timeout( '__TIME__', @delay_opts )
-                    Arachni::Module::Auditor.timeout_audit_run
-                    @framework.modules.results.should be_empty
-                end
-            end
-
-            context 'and is vulnerable' do
-                it 'should log issue' do
-                    @auditor.load_page_from( @timeout_url + 'high_response_time' )
-                    @auditor.audit_timeout( '__TIME__', @delay_opts )
-                    Arachni::Module::Auditor.timeout_audit_run
-                    @framework.modules.results.should be_any
-                end
-            end
-        end
-
     end
 
 end

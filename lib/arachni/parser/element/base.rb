@@ -15,8 +15,8 @@
 =end
 
 opts = Arachni::Options.instance
-require opts.dir['lib'] + 'parser/element/auditable'
 require opts.dir['lib'] + 'parser/element/mutable'
+require opts.dir['lib'] + 'parser/element/auditable'
 
 module Arachni
 class Parser

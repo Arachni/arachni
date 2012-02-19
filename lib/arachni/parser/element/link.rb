@@ -35,7 +35,7 @@ class Link < Base
     end
 
     def http_request( opts )
-        return @auditor.http.get( @action, opts )
+        return http.get( @action, opts )
     end
 
     def simple

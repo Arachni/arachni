@@ -70,7 +70,7 @@ module Mutable
     #
     # @return    [Array]
     #
-    def mutate( injection_str, opts = { } )
+    def mutations( injection_str, opts = { } )
 
         opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
         hash = auditable.dup

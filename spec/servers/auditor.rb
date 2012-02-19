@@ -1,11 +1,17 @@
 require 'sinatra'
 require 'sinatra/contrib'
-require 'json'
 require 'digest/md5'
 set :logging, false
 
 get '/' do
     'OK'
+end
+
+get '/link' do
+    <<-EOHTML
+<a href='?input=blah'>Inject here</a>
+#{params[:input]}
+EOHTML
 end
 
 get '/elem_combo' do
@@ -17,92 +23,6 @@ get '/elem_combo' do
     <a href='?link_input=link_blah'>Inject here</a>
 EOHTML
     html + params.values.join( "\n" ) + cookies[:cookie_input] + (request.env['HTTP_REFERER'] || '')
-
-end
-
-get '/timeout/false' do
-    sleep 2
-<<-EOHTML
-    <a href='?sleep=0'>Inject here</a>
-    #{params[:input]}
-EOHTML
-end
-
-get '/timeout/true' do
-    wait = params[:sleep].to_f
-    wait /= 1000.0 if params[:mili] == 'true'
-
-    # p '--------'
-    # p before = Time.now
-    # p wait
-#
-    # now = Time.now
-    sleep( wait )
-
-    # p Time.now - now
-#
-    # p Time.now
-    # p '--------'
-
-<<-EOHTML
-    <a href='?sleep=0&mili=#{params[:mili]}'>Inject here</a>
-EOHTML
-end
-
-get '/timeout/high_response_time' do
-    sleep( params[:sleep].to_i + 2 )
-    <<-EOHTML
-        <a href='?sleep=0'>Inject here</a>
-EOHTML
-end
-
-get '/rdiff/true' do
-    out = case params[:rdiff]
-        when 'blahbad'
-            'Could not find any results, bugger off!'
-        when 'blahgood', 'blah'
-            '1 item found: Blah blah blah...'
-        else
-            'No idea what you want mate...'
-    end
-
-    <<-EOHTML
-    <a href='?rdiff=blah'>Inject here</a>
-    #{out}
-EOHTML
-
-end
-
-get '/rdiff/false' do
-    out = case params[:rdiff]
-        when 'blahgood', 'blahbad'
-            'Could not find any results, bugger off!'
-        when 'blah'
-            '1 item found: Blah blah blah...'
-        else
-            'No idea what you want mate...'
-    end
-
-<<-EOHTML
-    <a href='?rdiff=blah'>Inject here</a>
-    #{out}
-EOHTML
-end
-
-
-get '/sleep' do
-    sleep 2
-<<-EOHTML
-    <a href='?input=blah'>Inject here</a>
-    #{params[:input]}
-EOHTML
-end
-
-get '/link' do
-    <<-EOHTML
-    <a href='?input=blah'>Inject here</a>
-    #{params[:input]}
-EOHTML
 end
 
 get '/train/default' do
