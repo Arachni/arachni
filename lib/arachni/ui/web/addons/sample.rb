@@ -29,7 +29,7 @@ module Addons
 #
 # @see http://www.sinatrarb.com/intro.html
 #
-# @version: 0.1
+# @version 0.1
 #
 class Sample < Base
 

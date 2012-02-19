@@ -25,7 +25,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.3
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html

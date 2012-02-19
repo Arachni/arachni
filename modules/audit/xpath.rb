@@ -23,7 +23,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection

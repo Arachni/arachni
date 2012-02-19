@@ -23,7 +23,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version 0.1.1
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html

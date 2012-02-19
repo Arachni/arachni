@@ -27,7 +27,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.6
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting

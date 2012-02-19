@@ -47,7 +47,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version 0.2.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)

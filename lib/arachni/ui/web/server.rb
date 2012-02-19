@@ -101,7 +101,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version 0.2
 #
 # @see Arachni::RPC::Client::Instance
 # @see Arachni::RPC::Client::Dispatcher

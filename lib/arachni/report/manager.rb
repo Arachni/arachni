@@ -32,7 +32,7 @@ module Report
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1.1
+# @version 0.1.1
 #
 class Manager < Arachni::ComponentManager
 

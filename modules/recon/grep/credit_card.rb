@@ -23,7 +23,7 @@ module Modules
 # Scans every page for credit card numbers.
 #
 # @author morpheuslaw <msidagni@nopsec.com>, Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version: 0.2
+# @version 0.2
 #
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm

@@ -29,7 +29,7 @@ module PluginFormatters
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
     #                                      <zapotek@segfault.gr>
-    # @version: 0.2.1
+    # @version 0.2.1
     #
     class Profiler < Arachni::Plugin::Formatter
         include Arachni::Reports::HTML::Utils

@@ -24,7 +24,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version 0.1.1
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection

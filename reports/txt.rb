@@ -26,7 +26,7 @@ module Reports
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @version 0.2
 #
 class Text < Arachni::Report::Base
 

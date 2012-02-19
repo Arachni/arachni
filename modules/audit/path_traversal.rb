@@ -24,7 +24,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.5
+# @version 0.2.5
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal

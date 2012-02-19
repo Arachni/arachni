@@ -24,7 +24,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.2.2
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection

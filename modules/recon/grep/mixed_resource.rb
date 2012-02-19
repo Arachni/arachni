@@ -25,7 +25,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @version 0.1.1
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
 #

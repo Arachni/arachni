@@ -27,7 +27,7 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version: 0.1.4
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
