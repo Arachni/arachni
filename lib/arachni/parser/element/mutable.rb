@@ -56,6 +56,28 @@ module Mutable
       SEMICOLON = 1 << 3
     end
 
+    # Default formatting and permutation options
+    OPTIONS = {
+        #
+        # Formatting of the injection strings.
+        #
+        # A new set of audit inputs will be generated
+        # for each value in the array.
+        #
+        # Values can be OR'ed bitfields of all available constants
+        # of {Format}.
+        #
+        :format   => [ Format::STRAIGHT, Format::APPEND,
+                       Format::NULL, Format::APPEND | Format::NULL ],
+
+
+       # skip submission with default/original values (for {Arachni::Parser::Element::Form} elements)
+       :skip_orig => false,
+
+       # flip injection value and input name
+       :param_flip => false
+    }
+
     #
     # Injects the injecton_str in self's values according to formatting options
     # and returns an array of Element permutations.
@@ -63,16 +85,13 @@ module Mutable
     # TODO: Move type specific mutations into their respective classes.
     #
     # @param    [String]  injection_str  the string to inject
-    # @param    [Hash]    opts           formatting and permutation options
-    #                                       * :skip_orig => skip submission with default/original values (for {Arachni::Parser::Element::Form} elements)
-    #                                       * :format => {Format}
-    #                                       * :param_flip => flip injection value and input name
+    # @param    [Hash]    opts           {OPTIONS}
     #
     # @return    [Array]
     #
     def mutations( injection_str, opts = { } )
 
-        opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
+        opts = OPTIONS.merge( opts )
         hash = auditable.dup
 
         var_combo = []

@@ -23,9 +23,9 @@ module Module
 #
 # Trainer class
 #
-# Analyzes all HTTP responses looking for new auditable elements.
+# Analyzes key HTTP responses looking for new auditable elements.
 #
-# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @author Tasos Laskos <tasos.laskos@gmail.com>
 #
 class Trainer
 
@@ -33,6 +33,9 @@ class Trainer
     include ElementDB
     include Utilities
 
+    #
+    # @param    [Arachni::Options]
+    #
     def initialize( opts )
         @opts     = opts
         @updated  = false
@@ -40,15 +43,30 @@ class Trainer
         @pages = []
     end
 
-    def init_from_page( page )
-        init_db_from_page( page )
-        self.page= page
+    #
+    # Inits the element DB and sets the current working page.
+    #
+    # @param    [Arachni::Parser::Page]    page
+    #
+    def init_from_page!( page )
+        init_db_from_page!( page )
+        self.page = page
     end
 
+    #
+    # Sets the current working page.
+    #
+    # @param    [Arachni::Parser::Page]    page
+    #
     def page=( page )
         @page = page.deep_clone
     end
 
+    #
+    # Flushes the page buffer
+    #
+    # @return   [Array<Arachni::Parser::Page>]
+    #
     def flush_pages
         pages = @pages.dup
         @pages = []
@@ -56,10 +74,15 @@ class Trainer
     end
 
     #
-    # Passes the reponse to {#analyze} for analysis
+    # Passes the response on for analysis.
+    #
+    # If the response contains new elements it creates a new page
+    # with those elements and pushes it a buffer.
+    #
+    # These new pages can then be retrieved by flushing the buffer (#flush_pages).
     #
     # @param  [Typhoeus::Response]  res
-    # @param  [Bool]  redir  was the response forcing a redirection?
+    # @param  [Bool]                redir  was the response a result of redirection?
     #
     def add_response( res, redir = false )
 

@@ -20,18 +20,23 @@ module Module
 #
 # Auditor module
 #
-# Included by {Module::Base} and provides abstract audit methods.
+# Included by {Module::Base} and provides helper audit methods to all modules.
 #
-# There are 3 main types of audit techniques available:
-# * Pattern matching -- {#audit}
-# * Timing attacks -- {#audit_timeout}
-# * Differential analysis attacks -- {#audit_rdiff}
+# There are 3 main types of audit and analysis techniques available:
+# * Taint analysis -- {#audit}
+# * Timeout analysis -- {#audit_timeout}
+# * Differential analysis -- {#audit_rdiff}
 #
+# It should be noted that actual analysis takes place at the element level,
+# and to be more specific, the {Arachni::Parser::Element::Auditable} element level.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.3.1
+# The module also provides:
+# * discovery helpers for checking and logging the existence of remote files
+# * pattern matching helpers for checking and logging the existence of strings
+#   in responses or in the body of the page that's being audited
+# * general {Arachni::Issue} logging helpers
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditor
 
@@ -72,45 +77,16 @@ module Auditor
         include Arachni::Issue::Element
     end
 
-    #
-    # Default audit options.
-    #
     OPTIONS = {
-
         #
         # Elements to audit.
         #
-        # Only required when calling {#audit}.<br/>
-        # If no elements have been passed to audit it will
-        # use the elements in {#self.info}.
+        # If no elements have been passed to audit candidates will be
+        # determined by {#candidate_elements}.
         #
         :elements => [ Element::LINK, Element::FORM,
                        Element::COOKIE, Element::HEADER,
                        Issue::Element::BODY ],
-
-        #
-        # The regular expression to match against the response body.
-        #
-        :regexp   => nil,
-
-        #
-        # Verify the matched string with this value.
-        #
-        :match    => nil,
-
-        #
-        # Formatting of the injection strings.
-        #
-        # A new set of audit inputs will be generated
-        # for each value in the array.
-        #
-        # Values can be OR'ed bitfields of all available constants
-        # of {Auditor::Format}.
-        #
-        # @see  Auditor::Format
-        #
-        :format   => [ Format::STRAIGHT, Format::APPEND,
-                       Format::NULL, Format::APPEND | Format::NULL ],
 
         #
         # If 'train' is set to true the HTTP response will be
@@ -121,16 +97,6 @@ module Auditor
         # this option will be overridden to true.
         #
         :train     => false,
-
-        #
-        # Enable skipping of already audited inputs
-        #
-        :redundant => false,
-
-        #
-        # Make requests asynchronously
-        #
-        :async     => true
     }
 
     #
@@ -290,7 +256,6 @@ module Auditor
     # Helper method for issue logging.
     #
     # @param    [Hash]  opts    issue options ({Issue})
-    # @param    [Bool]  include_class_info    merge opts with module.info?
     #
     # @see Arachni::Module::Base#register_results
     #
@@ -441,6 +406,19 @@ module Auditor
         return false
     end
 
+    #
+    # Returns a list of prepared elements to be audited.
+    #
+    # If no element types have been specified in 'opts' it will
+    # use the elements from the module's "self.info()" hash.
+    #
+    # If no elements have been specified in 'opts' or "self.info()" it will
+    # use the elements in {OPTIONS}.
+    #
+    # @param  [Hash]    opts  options as described in {OPTIONS} -- only interested in opts[:elements]
+    #
+    # @return   [Array<Arachni::Parser::Element::Auditable]   array of auditable elements
+    #
     def candidate_elements( opts = {} )
         if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
             opts[:elements] = self.class.info[:elements]
@@ -474,83 +452,59 @@ module Auditor
             end
         }
 
-        elements
+        elements.map { |e| e.auditor = self; e }
+    end
+
+    #
+    # If a block has been provided it calls {Arachni::Parser::Element::Auditable#audit}
+    # for every element, otherwise, it defaults to {#audit_taint}.
+    #
+    # Uses {#candidate_elements} to decide which elements to audit.
+    #
+    # @see OPTIONS
+    # @see Arachni::Parser::Element::Auditable#audit
+    # @see #audit_taint
+    #
+    def audit( injection_str, opts = { }, &block )
+        opts = OPTIONS.merge( opts )
+        if !block_given?
+            audit_taint( injection_str, opts )
+        else
+            candidate_elements( opts ).each {
+                |element|
+                element.audit( injection_str, opts, &block )
+            }
+        end
     end
 
     #
     # Provides easy access to element auditing using simple taint analysis.
     #
-    # If a block has been provided analysis and logging will be delegated to it,
-    # otherwise, if a match is found it will be automatically logged.
+    # Uses {#candidate_elements} to decide which elements to audit.
     #
-    # If no elements have been specified in 'opts' it will
-    # use the elements from the module's "self.info()" hash. <br/>
-    # If no elements have been specified in 'opts' or "self.info()" it will
-    # use the elements in {OPTIONS}. <br/>
+    # @see OPTIONS
+    # @see Arachni::Parser::Element::Analysis::Taint
     #
-    #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
-    #                                  * HTTP response
-    #                                  * options
-    #                                  * element
-    #                                  The block will be called as soon as the
-    #                                  HTTP response is received.
-    #
-    def audit( injection_str, opts = { }, &block )
+    def audit_taint( taint, opts = { } )
+        opts = OPTIONS.merge( opts )
         candidate_elements( opts ).each {
             |element|
-            element.auditor = self
-            if block_given?
-                element.audit( injection_str, opts, &block )
-            else
-                element.taint_analysis( injection_str, opts )
-            end
+            element.taint_analysis( taint, opts )
         }
     end
 
     #
-    # Audits all elements types in opts[:elements] (or self.class.info[:elements]
-    # if there are none in opts) using differential analysis attacks.
+    # Audits elements using differential analysis attacks.
     #
-    #    opts = {
-    #        :precision => 3,
-    #        :faults    => [ 'fault injections' ],
-    #        :bools     => [ 'boolean injections' ]
-    #    }
+    # Uses {#candidate_elements} to decide which elements to audit.
     #
-    #    audit_rdiff( opts )
-    #
-    # Here's how it goes:
-    #   let default be the default/original response
-    #   let fault   be the response of the fault injection
-    #   let bool    be the response of the boolean injection
-    #
-    #   a vulnerability is logged if default == bool AND bool.code == 200 AND fault != bool
-    #
-    # The "bool" response is also checked in order to determine if it's a custom 404, if it is it'll be skipped.
-    #
-    # If a block has been provided analysis and logging will be delegated to it.
-    #
-    # @param    [Hash]      opts        available options:
-    #                                   * :format -- as seen in {OPTIONS}
-    #                                   * :elements -- as seen in {OPTIONS}
-    #                                   * :train -- as seen in {OPTIONS}
-    #                                   * :precision -- amount of rdiff iterations
-    #                                   * :faults -- array of fault injection strings (these are supposed to force erroneous conditions when interpreted)
-    #                                   * :bools -- array of boolean injection strings (these are supposed to not alter the webapp behavior when interpreted)
-    # @param    [Block]     &block      block to be used for custom analysis of responses; will be passed the following:
-    #                                   * injected string
-    #                                   * audited element
-    #                                   * default response body
-    #                                   * boolean response
-    #                                   * fault injection response body
+    # @see OPTIONS
+    # @see Arachni::Parser::Element::Analysis::RDiff
     #
     def audit_rdiff( opts = {}, &block )
+        opts = OPTIONS.merge( opts )
         candidate_elements( opts ).each {
             |element|
-            element.auditor = self
             element.rdiff_analysis( opts, &block )
         }
     end
@@ -558,41 +512,15 @@ module Auditor
     #
     # Audits elements using timing attacks and automatically logs results.
     #
-    # Here's how it works:
-    # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
-    #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-    #   - Initial probing for candidates -- Any element that times out is added to a queue.
-    #   - Stabilization -- The candidate is submitted with its default values in
-    #     order to wait until the effects of the timing attack have worn off.
-    # * Loop 2 -- Verifies the candidates. This is much more delicate so the
-    #   concurrent requests are lowered to pairs.
-    #   - Liveness test -- Ensures that stabilization was successful before moving on.
-    #   - Verification using an increased timeout -- Any elements that time out again are logged.
-    #   - Stabilization
+    # Uses {#candidate_elements} to decide which elements to audit.
     #
-    # Ideally, all requests involved with timing attacks would be run in sync mode
-    # but the performance penalties are too high, thus we compromise and make the best of it
-    # by running as little an amount of concurrent requests as possible for any given phase.
-    #
-    #    opts = {
-    #        :format  => [ Format::STRAIGHT ],
-    #        :timeout => 4000,
-    #        :timeout_divider => 1000
-    #    }
-    #
-    #    audit_timeout( [ 'sleep( __TIME__ );' ], opts )
-    #
-    #
-    # @param   [Array]     strings     injection strings
-    #                                       __TIME__ will be substituted with (timeout / timeout_divider)
-    # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
-    #                                   * :timeout -- milliseconds to wait for the request to complete
-    #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
+    # @see OPTIONS
+    # @see Arachni::Parser::Element::Analysis::Timeout
     #
     def audit_timeout( strings, opts = {} )
+        opts = OPTIONS.merge( opts )
         candidate_elements( opts ).each {
             |element|
-            element.auditor = self
             element.timeout_analysis( strings, opts )
         }
     end

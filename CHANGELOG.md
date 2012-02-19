@@ -2,24 +2,29 @@
 
 ## Version 0.4.1 _(Under development)_
 - License -- Moved from GPLv2 to Apache License Version 2.
-- Plugins
-   - Proxy -- Fixed typo in code which prevented headers from being properly.
-   forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
+- Major refactoring of Arachni::Parser::Element::Auditable and Arachni::Module::Auditor
+    - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
+      in order to increase audit granularity and ease scripting
+    - Auditor methods now simply iterate over candidate elements and delegate analysis to them
 - Modules
-   - API
-      - Updated to provide access to running plugins.
-      - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
-   - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
+    - API
+        - Updated to provide access to running plugins.
+        - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
+    - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
+- Plugins
+    - Proxy -- Fixed typo in code which prevented headers from being properly.
+      forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
+    - VectorFeed -- Reads in vector data from which it creates elements to be audited.
+      Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+      Useful for unit-testing or a gazillion other things. (**New**)
 - Extras
-   - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
+    - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
-   - Improved detection of custom 404 pages
+    - Improved detection of custom 404 pages
 - Spider
-   - Fixed infitine loop bug.
-- Plug-ins
-    - VectorFeed -- Reads in vector data from which it creates elements to be audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
-        Useful for unit-testing or a gazillion other things. (**New**)
-
+    - Fixed infitine loop bug.
+- Tests
+    - Added tests using RSpec
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports

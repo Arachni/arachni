@@ -16,6 +16,7 @@
 
 
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
+require Arachni::Options.instance.dir['lib'] + 'issue'
 require Arachni::Options.instance.dir['lib'] + 'parser/element/mutable'
 
 module Arachni
@@ -45,6 +46,29 @@ module Auditable
     attr_accessor :altered
     attr_accessor :auditor
     attr_reader   :opts
+
+    #
+    # Holds constants that describe the HTML elements to be audited.
+    #
+    module Element
+        include Arachni::Issue::Element
+    end
+
+    #
+    # Default audit options.
+    #
+    OPTIONS = {
+
+        #
+        # Enable skipping of already audited inputs
+        #
+        :redundant => false,
+
+        #
+        # Make requests asynchronously
+        #
+        :async     => true
+    }
 
     def override_instance_scope!
         @override_instance_scope = true
@@ -114,9 +138,10 @@ module Auditable
     # @param  [Hash]  opts
     #
     # @see #http_request
+    # @see OPTIONS
     #
     def submit( opts = {} )
-        opts = Arachni::Module::Auditor::OPTIONS.merge( opts )
+        opts = OPTIONS.merge( opts )
         opts[:params]  = @auditable.dup
         @opts = opts
 
@@ -127,6 +152,20 @@ module Auditable
         return http_request( opts )
     end
 
+    #
+    # Submits mutations of self and calls the block to handle the responses.
+    #
+    # @param  [String]  injection_str  the string to be injected
+    # @param  [Hash]    opts           options as described in {OPTIONS}
+    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
+    #                                  * HTTP response
+    #                                  * options
+    #                                  * element
+    #                                  The block will be called as soon as the
+    #                                  HTTP response is received.
+    #
+    # @see #submit
+    #
     def audit( injection_str, opts = { }, &block )
         raise 'Block required.' if !block_given?
 

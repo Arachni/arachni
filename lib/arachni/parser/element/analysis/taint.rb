@@ -17,19 +17,40 @@
 
 module Arachni::Parser::Element::Analysis::Taint
 
+    TAINT_OPTIONS = {
+        #
+        # The regular expression to match against the response body.
+        #
+        # Alternatively, you can use the :substring option.
+        #
+        :regexp   => nil,
+
+        #
+        # Verify the matched string with this value when using a regexp.
+        #
+        :match    => nil,
+
+        #
+        # The substring to look for the response body.
+        #
+        # Alternatively, you can use the :regexp option.
+        #
+        :substring => nil
+    }
+
     #
-    # Audits self
+    # Performs taint analysis on self and logs an issue should there be one.
     #
-    # @param  [String]  injection_str  the string to be injected
-    # @param  [Hash]    opts           options as described in {Arachni::Module::Auditor#OPTIONS}
-    # @param  [Block]   &block         block to be passed the:
-    #                                   * HTTP response
-    #                                   * name of the input vector
-    #                                   * updated opts
-    #                                    The block will be called as soon as the
-    #                                    HTTP response is received.
+    # @param  [String]  seed      the string to be injected
+    # @param  [Hash]    opts      options as described in {Arachni::Module::Auditor::OPTIONS} and {TAINT_OPTIONS}
+    # @param  [Block]   &block    block to be passed the:
+    #                               * HTTP response
+    #                               * name of the input vector
+    #                               * updated opts
+    #                               The block will be called as soon as the HTTP response is received.
     #
     def taint_analysis( seed, opts = { } )
+        opts = Arachni::Parser::Element::Auditable::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         opts[:substring] = seed if !opts[:regexp] && !opts[:substring]
         audit( seed, opts ) { |res, opts| get_matches( res, opts ) }
     end

@@ -30,10 +30,7 @@ module Module
 #
 # Defines basic structure and provides utilities to modules.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
 class Base
@@ -87,7 +84,7 @@ class Base
         #
         @@__last_url ||= ''
         if( @@__last_url != @page.url )
-            @http.trainer.init_from_page( @page )
+            @http.trainer.init_from_page!( @page )
             @@__last_url = @page.url
         end
     end

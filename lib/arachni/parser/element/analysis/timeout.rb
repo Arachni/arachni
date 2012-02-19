@@ -191,9 +191,6 @@ module Arachni::Parser::Element::Analysis::Timeout
             @@parent.call_on_timing_blocks( res, elem )
         end
 
-
-        # @@__timeout_audited      ||= Set.new
-
         # holds timing-attack performing Procs to be run after all
         # non-timing-attack modules have finished.
         @@__timeout_audit_blocks   ||= Queue.new
@@ -212,77 +209,16 @@ module Arachni::Parser::Element::Analysis::Timeout
         @@__on_timing_attacks      ||= []
 
         @@__running_timeout_attacks ||= false
-
-        # # the rdiff attack performs it own redundancy checks so we need this to
-        # # keep track audited elements
-        # @@__rdiff_audited ||= Set.new
     end
 
-    # #
-    # # Returns the names of all loaded modules that use timing attacks.
-    # #
-    # # @return   [Set]
-    # #
-    # def @@parent.timeout_loaded_modules
-        # @@__timeout_loaded_modules
-    # end
-#
-    # #
-    # # Holds timing-attack performing Procs to be run after all
-    # # non-timing-attack modules have finished.
-    # #
-    # # @return   [Queue]
-    # #
-    # def @@parent.timeout_audit_blocks
-        # @@__timeout_audit_blocks
-    # end
-#
-    # def @@parent.current_timeout_audit_operations_cnt
-        # @@__timeout_audit_blocks.size + @@__timeout_candidates.size
-    # end
-#
-    # def @@parent.add_timeout_audit_block( &block )
-        # @@__timeout_audit_operations_cnt += 1
-        # @@__timeout_audit_blocks << block
-    # end
-#
-    # def @@parent.add_timeout_candidate( elem )
-        # @@__timeout_audit_operations_cnt += 1
-        # @@__timeout_candidates << elem
-    # end
-#
-#
-    # def @@parent.running_timeout_attacks?
-        # @@__running_timeout_attacks
-    # end
-#
-    # def @@parent.on_timing_attacks( &block )
-        # @@__on_timing_attacks << block
-    # end
-#
-    # def @@parent.timeout_audit_operations_cnt
-        # @@__timeout_audit_operations_cnt
-    # end
-#
-    # def @@parent.call_on_timing_blocks( res, elem )
-        # @@__on_timing_attacks.each {
-            # |block|
-            # block.call( res, elem )
-        # }
-    # end
-#
-    # def call_on_timing_blocks( res, elem )
-        # @@parent.call_on_timing_blocks( res, elem )
-    # end
-#
     #
-    # Audits elements using timing attacks and automatically logs results.
+    # Performs timeout/time-delay analysis on self and logs an issue should there be one.
     #
     # Here's how it works:
     # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
     #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-    #   - Initial probing for candidates -- Any element that times out is added to a queue.
-    #   - Stabilization -- The candidate is submitted with its default values in
+    #   - Initial probing for candidates -- If element times out it is added to a queue.
+    #   - Stabilization -- The element is submitted with its default values in
     #     order to wait until the effects of the timing attack have worn off.
     # * Loop 2 -- Verifies the candidates. This is much more delicate so the
     #   concurrent requests are lowered to pairs.
@@ -300,12 +236,12 @@ module Arachni::Parser::Element::Analysis::Timeout
     #        :timeout_divider => 1000
     #    }
     #
-    #    audit_timeout( [ 'sleep( __TIME__ );' ], opts )
+    #    element.timeout_analysis( [ 'sleep( __TIME__ );' ], opts )
     #
     #
     # @param   [Array]     strings     injection strings
     #                                       __TIME__ will be substituted with (timeout / timeout_divider)
-    # @param  [Hash]        opts        options as described in {OPTIONS} with the following extra:
+    # @param  [Hash]        opts        options as described in {Arachni::Parser::Element::Mutable::OPTIONS} with the following extra:
     #                                   * :timeout -- milliseconds to wait for the request to complete
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
@@ -344,7 +280,7 @@ module Arachni::Parser::Element::Analysis::Timeout
     #
     # @param   [Array]     strings     injection strings
     #                                       '__TIME__' will be substituted with (timeout / timeout_divider)
-    # @param    [Hash]      opts        options as described in {OPTIONS}
+    # @param    [Hash]      opts        options as described in {Arachni::Parser::Element::Mutable::OPTIONS}
     # @param    [Block]     &block      block to call if a timeout occurs,
     #                                       it will be passed the response and opts
     #
