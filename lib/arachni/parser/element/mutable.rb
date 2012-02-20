@@ -25,8 +25,6 @@ module Mutable
     include Arachni::Module::Utilities
 
     attr_accessor :altered
-    attr_accessor :auditor
-    attr_reader   :opts
 
     #
     # Holds constant bitfields that describe the preferred formatting

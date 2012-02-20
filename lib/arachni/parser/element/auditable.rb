@@ -43,7 +43,6 @@ module Auditable
         @@audited = Set.new
     end
 
-    attr_accessor :altered
     attr_accessor :auditor
     attr_reader   :opts
 
