@@ -85,6 +85,10 @@ class Trainer
     # @param  [Bool]                redir  was the response a result of redirection?
     #
     def add_response( res, redir = false )
+        if !@page
+            print_debug( 'No page assigned yet.' )
+            return
+        end
 
         @parser = Parser.new( @opts, res )
         return false if !@parser.text?
