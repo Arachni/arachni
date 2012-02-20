@@ -14,7 +14,45 @@
     limitations under the License.
 =end
 
-
+#
+# Evaluates whether or not the injection of specific data affects the response
+# time of the web application.
+#
+# It takes into account unstable network conditions and server-side failures and
+# verifies the results before logging.
+#
+# == Methodology
+#
+# Here's how it works:
+# * Loop 1 ({#timeout_analysis}) -- Populates the candidate queue. We're picking the low hanging
+#   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
+#   - Initial probing for candidates -- If element times out it is added to a queue.
+#   - Stabilization ({#ensure_responsiveness!}) -- The element is submitted with its default values in
+#     order to wait until the effects of the timing attack have worn off.
+# * Loop 2 ({timeout_analysis_phase_2}) -- Verifies the candidates. This is much more delicate so the
+#   concurrent requests are lowered to pairs.
+#   - Liveness test -- Ensures that the webapp is alive and not just timing-out by default
+#   - Verification using an increased timeout delay -- Any elements that time out again are logged.
+#   - Stabilization ({#ensure_responsiveness!})
+#
+# Ideally, all requests involved with timing attacks would be run in sync mode
+# but the performance penalties are too high, thus we compromise and make the best of it
+# by running as little an amount of concurrent requests as possible for any given phase.
+#
+# == Usage
+#
+# Call {#timeout_analysis} to schedule a timeout audit and execute {timeout_audit_run}
+# to run the scheduled operations.
+#
+# This deviates from the normal framework structure because it is preferable
+# to run timeout audits separately in order to avoid interference by other
+# audit operations.
+#
+# If you want to be notified every time a timeout audit is performed you can pass
+# callback block to {on_timing_attacks}.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 module Arachni::Parser::Element::Analysis::Timeout
 
     def self.included( mod )
@@ -39,6 +77,10 @@ module Arachni::Parser::Element::Analysis::Timeout
             @@__timeout_audit_blocks
         end
 
+        #
+        # @return   [Integer]    amount of timeout-audit related operations
+        #                           (audit blocks + candidate elements)
+        #
         def @@parent.current_timeout_audit_operations_cnt
             @@__timeout_audit_blocks.size + @@__timeout_candidates.size
         end
@@ -53,15 +95,23 @@ module Arachni::Parser::Element::Analysis::Timeout
             @@__timeout_candidates << elem
         end
 
-
+        #
+        # @return   [Bool]  true if timeout attacks are currently running
+        #
         def @@parent.running_timeout_attacks?
             @@__running_timeout_attacks
         end
 
+        #
+        # Adds a block to be executed every time a timing attack is performed
+        #
         def @@parent.on_timing_attacks( &block )
             @@__on_timing_attacks << block
         end
 
+        #
+        # @return   [Integer]    amount of timeout-audit operations
+        #
         def @@parent.timeout_audit_operations_cnt
             @@__timeout_audit_operations_cnt
         end
@@ -85,15 +135,25 @@ module Arachni::Parser::Element::Analysis::Timeout
             end
 
             while( !@@__timeout_candidates.empty? )
-                self.audit_timeout_phase_2( @@__timeout_candidates.pop )
+                self.timeout_analysis_phase_2( @@__timeout_candidates.pop )
             end
         end
 
         #
-        # Runs phase 2 of the timing attack auditing an individual element
-        # (which passed phase 1) with a higher delay and timeout
+        # (Called by {timeout_audit_run}, do *NOT* call manually.)
         #
-        def @@parent.audit_timeout_phase_2( elem )
+        # Runs phase 2 of the timing attack auditing an individual element
+        # (which passed phase 1) with a higher delay and timeout.
+        #
+        # * Liveness check: Element is submitted as is to make sure that the page is alive and responsive
+        #   * If liveness check fails then phase 2 is aborted
+        #   * If liveness check succeeds it progresses to verification
+        # * Verification: Element is submitted with an increased delay to verify the vulnerability
+        #   * If verification fails it aborts
+        #   * If verification succeeds the issue is logged
+        # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
+        #
+        def @@parent.timeout_analysis_phase_2( elem )
 
             # reset the audited list since we're going to re-audit the elements
             # @@__timeout_audited = Set.new
@@ -112,7 +172,7 @@ module Arachni::Parser::Element::Analysis::Timeout
 
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
-            elem.auditor.http.get( elem.action ).on_complete {
+            elem.submit.on_complete {
                 |res|
 
                 # ap elem.auditable
@@ -137,9 +197,7 @@ module Arachni::Parser::Element::Analysis::Timeout
                             # end of story.
                             # c_opts[:verification] = true
                             elem.auditor.log( c_opts, c_res )
-
-                            self.audit_timeout_stabilize( elem )
-
+                            elem.ensure_responsiveness!
                         else
                             elem.auditor.print_info( 'Verification failed.' )
                         end
@@ -151,41 +209,6 @@ module Arachni::Parser::Element::Analysis::Timeout
 
             elem.auditor.http.run
         end
-
-        #
-        # Submits an element which has just been audited using a timing attack
-        # with a high timeout in order to determine when the effects of a timing
-        # attack has worn off in order to safely continue the audit.
-        #
-        # @param    [Arachni::Element::Auditable]   elem
-        #
-        def @@parent.audit_timeout_stabilize( elem )
-
-            d_opts = {
-                :skip_orig => true,
-                :redundant => true,
-                :timeout   => 120000,
-                :silent    => true,
-                :async     => false
-            }
-
-            orig_opts = elem.opts
-
-            elem.auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
-            elem.auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
-
-            elem.auditable = elem.orig
-            res = elem.submit( d_opts ).response
-
-            if !res.timed_out?
-                elem.auditor.print_info( 'Server seems responsive again.' )
-            else
-                elem.auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
-            end
-
-            elem.opts.merge!( orig_opts )
-        end
-
 
         def call_on_timing_blocks( res, elem )
             @@parent.call_on_timing_blocks( res, elem )
@@ -212,32 +235,7 @@ module Arachni::Parser::Element::Analysis::Timeout
     end
 
     #
-    # Performs timeout/time-delay analysis on self and logs an issue should there be one.
-    #
-    # Here's how it works:
-    # * Loop 1 -- Populates the candidate queue. We're picking the low hanging
-    #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-    #   - Initial probing for candidates -- If element times out it is added to a queue.
-    #   - Stabilization -- The element is submitted with its default values in
-    #     order to wait until the effects of the timing attack have worn off.
-    # * Loop 2 -- Verifies the candidates. This is much more delicate so the
-    #   concurrent requests are lowered to pairs.
-    #   - Liveness test -- Ensures that stabilization was successful before moving on.
-    #   - Verification using an increased timeout -- Any elements that time out again are logged.
-    #   - Stabilization
-    #
-    # Ideally, all requests involved with timing attacks would be run in sync mode
-    # but the performance penalties are too high, thus we compromise and make the best of it
-    # by running as little an amount of concurrent requests as possible for any given phase.
-    #
-    #    opts = {
-    #        :format  => [ Format::STRAIGHT ],
-    #        :timeout => 4000,
-    #        :timeout_divider => 1000
-    #    }
-    #
-    #    element.timeout_analysis( [ 'sleep( __TIME__ );' ], opts )
-    #
+    # Performs timeout/time-delay analysis and logs an issue should there be one.
     #
     # @param   [Array]     strings     injection strings
     #                                       __TIME__ will be substituted with (timeout / timeout_divider)
@@ -259,12 +257,44 @@ module Arachni::Parser::Element::Analysis::Timeout
 
                 @auditor.print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
-                @@parent.audit_timeout_stabilize( elem )
+                elem.ensure_responsiveness!
                 @@parent.add_timeout_candidate( elem )
             }
         }
     end
 
+    #
+    # Submits self with a high timeout value and blocks until it gets a response.
+    #
+    # That is to make sure that responsiveness has been restored before progressing further.
+    #
+    def ensure_responsiveness!
+        d_opts = {
+            :skip_orig => true,
+            :redundant => true,
+            :timeout   => 120000,
+            :silent    => true,
+            :async     => false
+        }
+
+        orig_opts = opts
+
+        @auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
+        @auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
+
+        @auditable = @orig
+        res = submit( d_opts ).response
+
+        if !res.timed_out?
+            @auditor.print_info( 'Server seems responsive again.' )
+        else
+            @auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
+        end
+
+        @opts.merge!( orig_opts )
+    end
+
+    private
     def audit_timeout_debug_msg( phase, delay )
         print_debug( '---------------------------------------------' )
         print_debug( "Running phase #{phase.to_s} of timing attack." )

@@ -14,7 +14,11 @@
     limitations under the License.
 =end
 
-
+#
+# Looks for specific substrings or patterns in response bodies.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 module Arachni::Parser::Element::Analysis::Taint
 
     TAINT_OPTIONS = {
@@ -39,7 +43,12 @@ module Arachni::Parser::Element::Analysis::Taint
     }
 
     #
-    # Performs taint analysis on self and logs an issue should there be one.
+    # Performs taint analysis and logs an issue should there be one.
+    #
+    # It logs an issue when:
+    # * _:match_ == nil AND _:regexp_ matches the response body
+    # * _:match_ == not nil AND  _:regexp_ match == _:match_
+    # * _:substring_ exists in the response body
     #
     # @param  [String]  seed      the string to be injected
     # @param  [Hash]    opts      options as described in {Arachni::Module::Auditor::OPTIONS} and {TAINT_OPTIONS}

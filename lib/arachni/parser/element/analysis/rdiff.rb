@@ -14,7 +14,15 @@
     limitations under the License.
 =end
 
-
+#
+# Performs boolean, fault injection and behavioral analysis (using the rDiff algorithm)
+# in order to determine whether the web application is responding to the injected data and how.
+#
+# If the behavior can be manipulated by the injected data in ways that it's not supposed to
+# (like when evaluating injected code) then the element is deemed vulnerable.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 module Arachni::Parser::Element::Analysis::RDiff
 
     def self.included( mod )
@@ -35,7 +43,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     }
 
     #
-    # Performs differential analysis on self and logs an issue should there be one.
+    # Performs differential analysis and logs an issue should there be one.
     #
     #    opts = {
     #        :precision => 3,
@@ -46,11 +54,12 @@ module Arachni::Parser::Element::Analysis::RDiff
     #    element.rdiff_analysis( opts )
     #
     # Here's how it goes:
-    #   * let default be the default/original response
-    #   * let fault   be the response of the fault injection
-    #   * let bool    be the response of the boolean injection
+    # * let _default_ be the default/original response
+    # * let _fault_   be the response of the fault injection
+    # * let _bool_    be the response of the boolean injection
     #
-    #   a vulnerability is logged if default == bool AND bool.code == 200 AND fault != bool
+    # A vulnerability is logged if:
+    #     default == bool AND bool.code == 200 AND fault != bool
     #
     # The "bool" response is also checked in order to determine if it's a custom 404, if it is it'll be skipped.
     #
@@ -217,6 +226,7 @@ module Arachni::Parser::Element::Analysis::RDiff
         }
     end
 
+    private
     def __rdiff_audited!
         @@__rdiff_audited << __rdiff_audit_id
     end
