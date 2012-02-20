@@ -149,12 +149,19 @@ module Auditable
     end
 
     #
-    # Returns the {#auditor}'s HTTP interface.
+    # Returns the {#auditor}'s HTTP interface or reverts to Arachni::HTTP.instance
     #
     # @return   [Arachni::HTTP]
     #
     def http
-        @auditor.http
+         orphan? ? Arachni::HTTP.instance : @auditor.http
+    end
+
+    #
+    # @return   [Bool]  true if it has no auditor
+    #
+    def orphan?
+        !@auditor
     end
 
     #
@@ -211,7 +218,7 @@ module Auditable
         mutations( injection_str, opts ).each {
             |elem|
 
-            return if @auditor.skip?( elem )
+            return if !orphan? && @auditor.skip?( elem )
 
             opts[:altered] = elem.altered.dup
             opts[:element] = type
@@ -257,7 +264,7 @@ module Auditable
         vars = auditable.keys.sort.to_s
 
         str = ''
-        str += !opts[:no_auditor] ? "#{@auditor.class.info[:name]}:" : ''
+        str += !opts[:no_auditor] && !orphan? ? "#{@auditor.class.info[:name]}:" : ''
 
         str += "#{@action}:" + "#{self.type}:#{vars}"
         str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
@@ -270,7 +277,7 @@ module Auditable
 
     # impersonate the auditor to the output methods
     def info
-        @auditor ? @auditor.class.info : { :name => '' }
+        !orphan? ? @auditor.class.info : { :name => '' }
     end
 
     #
@@ -282,23 +289,23 @@ module Auditable
     end
 
     def print_error( str = '' )
-        @auditor.print_error( str )
+        @auditor.print_error( str ) if !orphan?
     end
 
     def print_status( str = '' )
-        @auditor.print_status( str )
+        @auditor.print_status( str ) if !orphan?
     end
 
     def print_debug( str = '' )
-        @auditor.print_debug( str )
+        @auditor.print_debug( str ) if !orphan?
     end
 
     def print_debug_backtrace( str = '' )
-        @auditor.print_debug_backtrace( str )
+        @auditor.print_debug_backtrace( str ) if !orphan?
     end
 
     def print_error_backtrace( str = '' )
-        @auditor.print_error_backtrace( str )
+        @auditor.print_error_backtrace( str ) if !orphan?
     end
 
     #
@@ -367,7 +374,7 @@ module Auditable
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
-        elsif !@auditor.override_instance_scope? && !override_instance_scope? &&
+        elsif !orphan? && !@auditor.override_instance_scope? && !override_instance_scope? &&
             !@@restrict_to_elements.empty? &&
             !@@restrict_to_elements.include?( audit_id( nil, opts ) )
             msg = 'Skipping, out of instance scope.'

@@ -51,7 +51,7 @@ class Cookie < Base
     end
 
     def http_request( opts )
-        return @auditor.http.cookie( @action, opts )
+        return http.cookie( @action, opts )
     end
 
     def simple

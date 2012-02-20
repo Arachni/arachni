@@ -36,7 +36,7 @@ class Header < Base
     end
 
     def http_request( opts )
-        return @auditor.http.header( @action, opts )
+        return http.header( @action, opts )
     end
 
     def simple

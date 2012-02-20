@@ -79,9 +79,9 @@ class Form < Base
 
 
         if( @method.downcase != 'get' )
-            return @auditor.http.post( @action, opts )
+            return http.post( @action, opts )
         else
-            return @auditor.http.get( @action, opts )
+            return http.get( @action, opts )
         end
     end
 

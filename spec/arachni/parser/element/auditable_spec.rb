@@ -9,12 +9,27 @@ describe Arachni::Parser::Element::Auditable do
         @auditable = Arachni::Parser::Element::Link.new( @url, inputs: {'param' => 'val'} )
         @auditable.auditor = @auditor
 
+        @orphan = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'val' } )
+
         # will sleep 2 secs before each response
         @sleep = Arachni::Parser::Element::Link.new( @url + '/sleep', inputs: {'param' => 'val'} )
         @sleep.auditor = @auditor
 
         @seed = 'my_seed'
         @default_input_value = @auditable.auditable['param']
+    end
+
+    describe :orphan? do
+        context 'when it has no auditor' do
+            it 'should return true' do
+                @orphan.orphan?.should be_true
+            end
+        end
+        context 'when it has an auditor' do
+            it 'should return true' do
+                @auditable.orphan?.should be_false
+            end
+        end
     end
 
     describe :submit do
@@ -33,13 +48,29 @@ describe Arachni::Parser::Element::Auditable do
             got_response.should be_true
             has_submited_inputs.should be_true
         end
+
+        context 'when it has no auditor' do
+            it 'should revert to the HTTP interface singleton' do
+                got_response = false
+                has_submited_inputs = false
+
+                @orphan.submit( remove_id: true ).on_complete {
+                    |res|
+                    got_response = true
+
+                    body_should = res.request.params.map { |k, v| k.to_s + v.to_s }.join( "\n" )
+                    has_submited_inputs = (res.body == body_should)
+                }
+                @orphan.http.run
+                got_response.should be_true
+                has_submited_inputs.should be_true
+            end
+        end
     end
 
     describe :audit do
 
-        before do
-            Arachni::Parser::Element::Auditable.reset!
-         end
+        before { Arachni::Parser::Element::Auditable.reset! }
 
         context 'when called with no opts' do
             it 'should use the defaults' do
@@ -48,6 +79,17 @@ describe Arachni::Parser::Element::Auditable do
                     cnt += 1
                 }
                 @auditor.http.run
+                cnt.should == 4
+            end
+        end
+
+        context 'when it has no auditor' do
+            it 'should revert to the HTTP interface singleton' do
+                cnt = 0
+                @orphan.audit( @seed ) {
+                    cnt += 1
+                }
+                @orphan.http.run
                 cnt.should == 4
             end
         end

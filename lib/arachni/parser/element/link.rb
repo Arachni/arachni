@@ -51,7 +51,7 @@ class Link < Base
         url = @action.gsub( /\?.*/, '' )
 
         str = ''
-        str += !opts[:no_auditor] ? "#{@auditor.class.info[:name]}:" : ''
+        str += !opts[:no_auditor] && !orphan? ? "#{@auditor.class.info[:name]}:" : ''
 
         str += "#{url}:" + "#{self.type}:#{vars}"
         str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
