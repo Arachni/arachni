@@ -39,6 +39,7 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditor
+    include Arachni::UI::Output
 
     def self.timeout_audit_blocks
         Arachni::Parser::Element::Auditable.timeout_audit_blocks
