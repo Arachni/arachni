@@ -101,14 +101,14 @@ class Base
     # Must provide a simple hash representation of self
     #
     def simple
-
+        {}
     end
 
     #
     # Must provide the element type, one of {Arachni::Module::Auditor::Element}.
     #
     def type
-
+        self.class.name.split( ':' ).last.downcase
     end
 
     def dup

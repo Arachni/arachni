@@ -24,6 +24,10 @@ module Mutable
 
     include Arachni::Module::Utilities
 
+
+    #
+    # @return   [String]    name of the altered/mutated parameter
+    #
     attr_accessor :altered
 
     #
@@ -78,7 +82,7 @@ module Mutable
 
     #
     # Injects the injecton_str in self's values according to formatting options
-    # and returns an array of Element permutations.
+    # and returns an array of permutations of self.
     #
     # TODO: Move type specific mutations into their respective classes.
     #

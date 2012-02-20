@@ -23,10 +23,19 @@ module Arachni
 class Parser
 module Element
 
-# namespace for all analysis techniques
+#
+# Namespace for all analysis techniques
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 module Analysis
 end
 
+#
+# Provides audit functionality to {Arachni::Parser::Element::Mutable} elements.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 module Auditable
 
     include Arachni::Module::Utilities
@@ -39,11 +48,30 @@ module Auditable
         include( Analysis.const_get( technique ) )
     }
 
+    #
+    # Empties the de-duplication/uniqueness look-up table.
+    #
+    # Unless you're sure you need this, set the :redundant flag to true
+    # when calling audit methods to bypass it.
+    #
     def self.reset!
         @@audited = Set.new
     end
 
+    #
+    # Sets the auditor for this element.
+    #
+    # The auditor provides its output and issue logging interfaces to the
+    # auditable element.
+    #
+    # @param    [Arachni::Module::Auditor]
+    # @return   [Arachni::Module::Auditor]
+    #
     attr_accessor :auditor
+
+    #
+    # @return [Hash]    audit and general options for convinience's sake
+    #
     attr_reader   :opts
 
     #
@@ -69,64 +97,62 @@ module Auditable
         :async     => true
     }
 
+    #
+    # When working in High Performance Grid mode the instances have
+    # a very specific list of elements which they are allowed to audit.
+    #
+    # Elements which do not fit the scope are ignored.
+    #
+    # When called, the element will override the scope and be audited no-matter what.
+    #
+    # This is mainly used on elements discovered during audit-time by the trainer.
+    #
     def override_instance_scope!
         @override_instance_scope = true
     end
 
+    #
+    # Does this element override the instance scope?
+    #
+    # @see override_instance_scope!
+    #
     def override_instance_scope?
         @override_instance_scope ||= false
     end
 
     #
-    # Delegate output related methods to the auditor
+    # Restricts the audit to a specific set of elements.
     #
-
-    def debug?
-        @auditor.debug? rescue false
-    end
-
-    def print_error( str = '' )
-        @auditor.print_error( str )
-    end
-
-    def print_status( str = '' )
-        @auditor.print_status( str )
-    end
-
-    def print_debug( str = '' )
-        @auditor.print_debug( str )
-    end
-
-    def print_debug_backtrace( str = '' )
-        @auditor.print_debug_backtrace( str )
-    end
-
-    def print_error_backtrace( str = '' )
-        @auditor.print_error_backtrace( str )
-    end
-
-    def type
-        self.class.name.split( ':' ).last.downcase
+    # *Caution*: Each call overwrites the last.
+    #
+    # @param    [Array<String>]    elements     array of element/audit IDs by {#audit_id}
+    #
+    def self.restrict_to_elements!( elements )
+        @@restrict_to_elements = Set.new
+        elements.each { |elem| @@restrict_to_elements << elem }
     end
 
     #
-    # ABSTRACT
+    # Must be implemented by the including class and perform the appropriate
+    # HTTP request (get/post/whatever) for the current element.
     #
-    # Callback invoked by {Arachni::Element::Auditable#audit} to submit
-    # the object via {Arachni::Module::HTTP}.
+    # Invoked by {#submit} to submit the object.
     #
-    # Must be implemented by the extending class.
-    #
-    # @param    [String]    url
     # @param    [Hash]      opts
     #
     # @return   [Typhoeus::Request]
     #
     # @see #submit
+    # @abstract
     #
     def http_request( opts )
     end
 
+    #
+    # Returns the {#auditor}'s HTTP interface.
+    #
+    # @return   [Arachni::HTTP]
+    #
     def http
         @auditor.http
     end
@@ -137,7 +163,6 @@ module Auditable
     # @param  [Hash]  opts
     #
     # @see #http_request
-    # @see OPTIONS
     #
     def submit( opts = {} )
         opts = OPTIONS.merge( opts )
@@ -208,20 +233,11 @@ module Auditable
         audited( audit_id )
     end
 
-    # impersonate the auditor to the output methods
-    def info
-        @auditor ? @auditor.class.info : { :name => '' }
-    end
-
     #
-    # Returns a status string that explaining what's happening.
+    # Returns a status string explaining what's being audited.
     #
-    # The string contains the name of the input that is being audited
-    # the url and the type of the input (form, link, cookie...)
-    #
-    # @param  [String]  url  the url under audit
-    # @param  [Hash]  input
-    # @param  [Hash]  opts
+    # The string contains the name of the input that is being audited,
+    # the url and the type of the input (form, link, cookie...).
     #
     # @return  [String]
     #
@@ -230,10 +246,10 @@ module Auditable
     end
 
     #
-    # Returns am audit identifier string to be registered using {#audited}.
+    # Returns an audit ID string used to avoid redundant audits or identify the element.
     #
-    # @param  [Hash]  input
-    # @param  [Hash]  opts
+    # @param  [String]  injection_str
+    # @param  [Hash]    opts
     #
     # @return  [String]
     #
@@ -250,15 +266,40 @@ module Auditable
         return str
     end
 
-    def self.restrict_to_elements!( elements )
-        @@restrict_to_elements = Set.new
-        elements.each {
-            |elem|
-            @@restrict_to_elements << elem
-        }
+    private
+
+    # impersonate the auditor to the output methods
+    def info
+        @auditor ? @auditor.class.info : { :name => '' }
     end
 
-    private
+    #
+    # Delegate output related methods to the auditor
+    #
+
+    def debug?
+        @auditor.debug? rescue false
+    end
+
+    def print_error( str = '' )
+        @auditor.print_error( str )
+    end
+
+    def print_status( str = '' )
+        @auditor.print_status( str )
+    end
+
+    def print_debug( str = '' )
+        @auditor.print_debug( str )
+    end
+
+    def print_debug_backtrace( str = '' )
+        @auditor.print_debug_backtrace( str )
+    end
+
+    def print_error_backtrace( str = '' )
+        @auditor.print_error_backtrace( str )
+    end
 
     #
     # Registers a block to be executed as soon as the Typhoeus request (reg)

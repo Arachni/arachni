@@ -100,42 +100,50 @@ module Auditor
     }
 
     #
-    # ABSTRACT - REQUIRED
+    # REQUIRED
     #
     # Must return an HTTP instance
     #
     # @return   [Arachni::HTTP]
     #
+    # @abstract
+    #
     def http
     end
 
     #
-    # ABSTRACT - REQUIRED
+    # REQUIRED
     #
     # Must return the Page object you wish to be audited
     #
     # @return   [Arachni::Parser::Page]
     #
+    # @abstract
+    #
     def page
     end
 
     #
-    # ABSTRACT - REQUIRED
+    # REQUIRED
     #
     # Must return the Framework
     #
     # @return   [Arachni::Framework]
     #
+    # @abstract
+    #
     def framework
     end
 
     #
-    # ABSTRACT - OPTIONAL
+    # OPTIONAL
     #
     # Prevents auditing elements that have been previously
     # logged by any of the modules returned by this method.
     #
     # @return   [Array]     module names
+    #
+    # @abstract
     #
     def redundant
         # [ 'sqli', 'sqli_blind_rdiff' ]
@@ -143,13 +151,15 @@ module Auditor
     end
 
     #
-    # ABSTRACT - OPTIONAL
+    # OPTIONAL
     #
     # Allows modules to ignore HPG scope restrictions
     #
     # This way they can audit elements that are not on the Grid sanctioned whitelist.
     #
     # @return   [Bool]
+    #
+    # @abstract
     #
     def override_instance_scope?
         false

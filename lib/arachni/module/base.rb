@@ -90,25 +90,31 @@ class Base
     end
 
     #
-    # ABSTRACT - OPTIONAL
+    # OPTIONAL
     #
     # It provides you with a way to setup your module's data and methods.
+    #
+    # @abstract
     #
     def prepare
     end
 
     #
-    # ABSTRACT - REQUIRED
+    # REQUIRED
     #
     # This is used to deliver the module's payload whatever it may be.
+    #
+    # @abstract
     #
     def run
     end
 
     #
-    # ABSTRACT - OPTIONAL
+    # OPTIONAL
     #
     # This is called after run() has finished executing,
+    #
+    # @abstract
     #
     def clean_up
     end
@@ -146,10 +152,12 @@ class Base
     end
 
     #
-    # ABSTRACT - REQUIRED
+    # REQUIRED
     #
     # Provides information about the module.
     # Don't take this lightly and don't ommit any of the info.
+    #
+    # @abstract
     #
     def self.info
         {
