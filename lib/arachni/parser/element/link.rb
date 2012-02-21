@@ -14,14 +14,8 @@
     limitations under the License.
 =end
 
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'parser/element/base'
-
-module Arachni
-class Parser
-module Element
-
-class Link < Base
+require Arachni::Options.instance.dir['lib'] + 'parser/element/base'
+class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
 
     def initialize( url, raw = {} )
         super( url, raw )
@@ -35,11 +29,11 @@ class Link < Base
     end
 
     def http_request( opts )
-        return http.get( @action, opts )
+        http.get( @action, opts )
     end
 
     def simple
-        return { @action => @auditable }
+        { @action => @auditable }
     end
 
     def type
@@ -61,8 +55,4 @@ class Link < Base
     end
 
 
-end
-
-end
-end
 end

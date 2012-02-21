@@ -15,8 +15,34 @@ describe Arachni::Parser::Element::Auditable do
         @sleep = Arachni::Parser::Element::Link.new( @url + '/sleep', inputs: {'param' => 'val'} )
         @sleep.auditor = @auditor
 
+        @orig = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val'} )
+
         @seed = 'my_seed'
         @default_input_value = @auditable.auditable['param']
+    end
+
+    describe :orig do
+        it 'should be the same as auditable' do
+            @orig.orig.should == @orig.auditable
+        end
+        it 'should be frozen' do
+            orig_auditable = @orig.auditable.dup
+            is_frozen = false
+            begin
+                @orig.orig['ff'] = 'ffss'
+            rescue RuntimeError
+                is_frozen = true
+            end
+            is_frozen.should be_true
+            @orig.orig.should == orig_auditable
+        end
+        context 'when auditable has been modified' do
+            it 'should return original input name/vals' do
+                orig_auditable = @orig.auditable.dup
+                @orig.auditable = {}
+                @orig.orig.should == orig_auditable
+            end
+        end
     end
 
     describe :orphan? do
