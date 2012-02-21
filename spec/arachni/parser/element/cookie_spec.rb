@@ -8,11 +8,11 @@ describe Arachni::Parser::Element::Cookie do
         @http = Arachni::HTTP.instance
     end
 
-    describe :http_request do
-        it 'should provide the appropriate request' do
+    describe :submit do
+        it 'should perform the appropriate HTTP request with appropriate params' do
             body_should = @c.auditable.map { |k, v| k.to_s + v.to_s }.join( "\n" )
             body = nil
-            @c.http_request( params: @c.auditable ).on_complete {
+            @c.submit.on_complete {
                 |res|
                 body = res.body
             }

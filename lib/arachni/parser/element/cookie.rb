@@ -45,16 +45,17 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @orig.freeze
     end
 
-    def http_request( opts = {} )
-        http.cookie( @action, opts || {} )
-    end
-
     def simple
         @simple
     end
 
     def type
         Arachni::Module::Auditor::Element::COOKIE
+    end
+
+    private
+    def http_request( opts = {} )
+        http.cookie( @action, opts || {} )
     end
 
 end
