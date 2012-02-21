@@ -41,6 +41,7 @@ module Auditable
     include Arachni::Module::Utilities
     include Arachni::Parser::Element::Mutable
 
+    # load and include all available analysis/audit techniques
     lib = Options.instance.dir['lib'] + 'parser/element/analysis/*.rb'
     Dir.glob( lib ).each { |f| require f }
     Analysis.constants.each {
