@@ -94,6 +94,77 @@ describe Arachni::Parser::Element::Auditable do
             end
         end
 
+        describe :restrict_to_elements! do
+            after { Arachni::Parser::Element::Auditable.reset_instance_scope! }
+
+            context 'when set' do
+                it 'should restrict the audit to the provided elements' do
+                    scope_id_arr = [ @auditable.scope_audit_id ]
+                    Arachni::Parser::Element::Auditable.restrict_to_elements!( scope_id_arr )
+                    performed = false
+                    @sleep.audit( '' ){ performed = true }
+                    @sleep.http.run
+                    performed.should be_false
+
+                    performed = false
+                    @auditable.audit( '' ){ performed = true }
+                    @auditable.http.run
+                    performed.should be_true
+                end
+
+                describe :override_instance_scope! do
+
+                    after { @sleep.reset_scope_override! }
+
+                    context 'when called' do
+                        it 'should override scope restrictions' do
+                            scope_id_arr = [ @auditable.scope_audit_id ]
+                            Arachni::Parser::Element::Auditable.restrict_to_elements!( scope_id_arr )
+                            performed = false
+                            @sleep.audit( '' ){ performed = true }
+                            @sleep.http.run
+                            performed.should be_false
+
+                            @sleep.override_instance_scope!
+                            performed = false
+                            @sleep.audit( '' ){ performed = true }
+                            @sleep.http.run
+                            performed.should be_true
+                        end
+
+                        describe :override_instance_scope? do
+                            it 'should return true' do
+                                @sleep.override_instance_scope!
+                                @sleep.override_instance_scope?.should be_true
+                            end
+                        end
+                    end
+
+                    context 'when not called' do
+                        describe :override_instance_scope? do
+                            it 'should return false' do
+                                @sleep.override_instance_scope?.should be_false
+                            end
+                        end
+                    end
+                end
+            end
+
+            context 'when not set' do
+                it 'should not impose audit restrictions' do
+                    performed = false
+                    @sleep.audit( '' ){ performed = true }
+                    @sleep.http.run
+                    performed.should be_true
+
+                    performed = false
+                    @auditable.audit( '' ){ performed = true }
+                    @auditable.http.run
+                    performed.should be_true
+                end
+            end
+        end
+
         context 'when called with option' do
 
             describe :format do
@@ -252,6 +323,5 @@ describe Arachni::Parser::Element::Auditable do
 
             end
         end
-
     end
 end
