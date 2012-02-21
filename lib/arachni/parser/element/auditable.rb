@@ -183,7 +183,7 @@ module Auditable
     # @return   [Arachni::HTTP]
     #
     def http
-         orphan? ? Arachni::HTTP.instance : @auditor.http
+        orphan? ? Arachni::HTTP.instance : @auditor.http
     end
 
     #
