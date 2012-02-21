@@ -41,6 +41,7 @@ module Auditable
     include Arachni::Module::Utilities
     include Arachni::Parser::Element::Mutable
 
+    # load and include all available analysis/audit techniques
     lib = Options.instance.dir['lib'] + 'parser/element/analysis/*.rb'
     Dir.glob( lib ).each { |f| require f }
     Analysis.constants.each {
@@ -111,6 +112,10 @@ module Auditable
         @override_instance_scope = true
     end
 
+    def reset_scope_override!
+        @override_instance_scope = false
+    end
+
     #
     # Does this element override the instance scope?
     #
@@ -120,15 +125,39 @@ module Auditable
         @override_instance_scope ||= false
     end
 
+    def self.reset_instance_scope!
+        @@restrict_to_elements = Set.new
+    end
+
+    #
+    # Provides a more generalized audit ID which does not contain the
+    # auditor's name, timeout value of injection string.
+    #
+    # Right now only used when in HPG mode to generate a whitelist of
+    # element IDs that are allowed to be audited.
+    #
+    # @param    [Hash]  opts    {#audit}    opts
+    #
+    def scope_audit_id( opts = {} )
+        opts = {} if !opts
+        audit_id( nil, opts.merge(
+            :no_auditor => true,
+            :no_timeout => true,
+            :no_injection_str => true
+        ))
+    end
+
     #
     # Restricts the audit to a specific set of elements.
     #
     # *Caution*: Each call overwrites the last.
     #
-    # @param    [Array<String>]    elements     array of element/audit IDs by {#audit_id}
+    # @param    [Array<String>]    elements     array of element/audit IDs by {#scope_audit_id}
+    #
+    # @see scope_audit_id
     #
     def self.restrict_to_elements!( elements )
-        @@restrict_to_elements = Set.new
+        self.reset_instance_scope!
         elements.each { |elem| @@restrict_to_elements << elem }
     end
 
@@ -188,7 +217,7 @@ module Auditable
     #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be used for custom analysis of responses; will be passed the following:
+    # @param  [Block]   &block         block to be used for analysis of responses; will be passed the following:
     #                                  * HTTP response
     #                                  * options
     #                                  * element
@@ -213,11 +242,9 @@ module Auditable
         audit_id = audit_id( injection_str, opts )
         return if !opts[:redundant] && audited?( audit_id )
 
-        results = []
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each {
             |elem|
-
             return if !orphan? && @auditor.skip?( elem )
 
             opts[:altered] = elem.altered.dup
@@ -229,15 +256,10 @@ module Auditable
             # submit the element with the injection values
             req = elem.submit( opts )
             return if !req
-
             on_complete( req, elem, &block )
-            req.after_complete {
-                |result|
-                results << result.flatten[1] if result.flatten[1]
-            }
         }
 
-        audited( audit_id )
+        audited!( audit_id )
     end
 
     #
@@ -266,7 +288,7 @@ module Auditable
         str = ''
         str += !opts[:no_auditor] && !orphan? ? "#{@auditor.class.info[:name]}:" : ''
 
-        str += "#{@action}:" + "#{self.type}:#{vars}"
+        str += "#{@action}:" + "#{type}:#{vars}"
         str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
         str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
@@ -355,28 +377,26 @@ module Auditable
         }
     end
 
-
     #
     # Checks whether or not an audit has been already performed.
     #
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
     def audited?( elem_audit_id )
-
-        opts = {
-            :no_auditor => true,
-            :no_timeout => true,
-            :no_injection_str => true
-        }
-
         @@restrict_to_elements ||= Set.new
+
+        auditor_override_instance_scope = false
+        begin
+            auditor_override_instance_scope = @auditor.override_instance_scope?
+        rescue
+        end
 
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
-        elsif !orphan? && !@auditor.override_instance_scope? && !override_instance_scope? &&
+        elsif !auditor_override_instance_scope && !override_instance_scope? &&
             !@@restrict_to_elements.empty? &&
-            !@@restrict_to_elements.include?( audit_id( nil, opts ) )
+            !@@restrict_to_elements.include?( scope_audit_id( opts ) )
             msg = 'Skipping, out of instance scope.'
             ret = true
         else
@@ -394,7 +414,7 @@ module Auditable
     #
     # @param  [String]  audit_id  a string returned by {#audit_id}
     #
-    def audited( audit_id )
+    def audited!( audit_id )
         @@audited << audit_id
     end
 

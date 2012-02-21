@@ -57,7 +57,7 @@ class Form < Base
             orig_id = audit_id( FORM_VALUES_ORIGINAL )
 
             return if !opts[:redundant] && audited?( orig_id )
-            audited( orig_id )
+            audited!( orig_id )
 
             print_debug( 'Submitting form with original values;' +
                 ' overriding trainer option.' )
@@ -69,7 +69,7 @@ class Form < Base
             sample_id = audit_id( FORM_VALUES_SAMPLE )
 
             return if !opts[:redundant] && audited?( sample_id )
-            audited( sample_id )
+            audited!( sample_id )
 
             print_debug( 'Submitting form with sample values;' +
                 ' overriding trainer option.' )
