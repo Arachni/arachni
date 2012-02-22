@@ -17,11 +17,7 @@
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/element/base'
 
-module Arachni
-class Parser
-module Element
-
-class Form < Base
+class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
     include Arachni::Module::Utilities
 
@@ -48,6 +44,50 @@ class Form < Base
         @orig.freeze
     end
 
+    def id
+        id = simple['attrs'].to_s
+
+        auditable.each {
+            |name, value|
+            next if name.substring?( seed )
+            id +=  name
+        }
+
+        return id
+    end
+
+    def simple
+        form = {}
+
+        if @raw['attrs']
+            form['attrs'] = @raw['attrs']
+            form['auditable'] = {}
+            if @raw['auditable'] && !@raw['auditable'].empty?
+                @raw['auditable'].each {
+                    |item|
+                    if( !item['name'] ) then next end
+                    form['auditable'][item['name']] = item['value']
+                }
+            end
+        else
+            form = {
+                'attrs' => {
+                    'method' => @method,
+                    'action' => @action
+                },
+                'auditable' => @auditable
+            }
+        end
+
+        form['auditable'] ||= {}
+        form.dup
+    end
+
+    def type
+        Arachni::Module::Auditor::Element::FORM
+    end
+
+    private
     def http_request( opts )
         params   = opts[:params]
         altered  = opts[:altered]
@@ -78,47 +118,7 @@ class Form < Base
         end
 
 
-        if( @method.downcase != 'get' )
-            return http.post( @action, opts )
-        else
-            return http.get( @action, opts )
-        end
+        @method.downcase.to_s != 'get' ? http.post( @action, opts ) : http.get( @action, opts )
     end
 
-    def id
-        id = simple['attrs'].to_s
-
-        auditable.map {
-            |name, value|
-            next if name.substring?( seed )
-            id +=  name
-        }
-
-        return id
-    end
-
-    def simple
-        form = {}
-
-        return form if !@raw || !@raw['auditable'] || @raw['auditable'].empty?
-
-        form['attrs'] = @raw['attrs']
-        form['auditable'] = {}
-        @raw['auditable'].each {
-            |item|
-            if( !item['name'] ) then next end
-            form['auditable'][item['name']] = item['value']
-        }
-
-        return form.dup
-    end
-
-    def type
-        Arachni::Module::Auditor::Element::FORM
-    end
-
-end
-
-end
-end
 end
