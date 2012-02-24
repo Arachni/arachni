@@ -18,6 +18,7 @@
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.
       Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
       Useful for unit-testing or a gazillion other things. (**New**)
+    - Script -- Loads and runs an external Ruby script under the scope of a plugin, used for debugging and general hackery.
 - Extras
     - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
