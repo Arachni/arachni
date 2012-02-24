@@ -18,10 +18,6 @@ opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/element/mutable'
 require opts.dir['lib'] + 'parser/element/auditable'
 
-module Arachni
-class Parser
-module Element
-
 #
 # Base element class.
 #
@@ -34,7 +30,7 @@ module Element
 #
 # @abstract
 #
-class Base
+class Arachni::Parser::Element::Base
     include Arachni::Parser::Element::Auditable
 
     #
@@ -53,12 +49,8 @@ class Base
     #
     attr_accessor :action
 
-    attr_accessor :auditable
-
-    attr_accessor :orig
-
     #
-    # Relatively 'raw' hash holding the element's attributes, values, etc.
+    # Relatively 'raw' hash holding the element's HTML attributes, values, etc.
     #
     # @return  [Hash]
     #
@@ -84,8 +76,8 @@ class Base
     # @param    [Hash]    raw     {#raw}
     #
     def initialize( url, raw = {} )
-        @raw   = raw.dup
-        @url   = url.to_s
+        @raw = raw.dup
+        @url = url.to_s
     end
 
     #
@@ -94,7 +86,7 @@ class Base
     # @return  [String]
     #
     def id
-        return @raw.to_s
+        @raw.to_s
     end
 
     #
@@ -115,8 +107,4 @@ class Base
         self.class.new( @url.dup, @raw.dup )
     end
 
-end
-
-end
-end
 end

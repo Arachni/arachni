@@ -419,7 +419,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def cookie( url, opts = { } )
-        opts[:cookies] = opts[:params].dup || {}
+        opts[:cookies] = (opts[:params] || {}).dup
         opts[:params] = nil
         request( url, opts )
     end

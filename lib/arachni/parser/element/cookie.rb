@@ -17,12 +17,7 @@
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/element/base'
 
-module Arachni
-class Parser
-module Element
-
-class Cookie < Base
-
+class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
     def initialize( url, raw = {} )
         super( url, raw )
@@ -43,27 +38,24 @@ class Cookie < Base
         @simple = @auditable.dup
         @auditable.reject! {
             |cookie|
-            Options.instance.exclude_cookies.include?( cookie )
+            Arachni::Options.instance.exclude_cookies.include?( cookie )
         }
 
-        @orig      = @auditable.deep_clone
+        @orig = @auditable.deep_clone
         @orig.freeze
     end
 
-    def http_request( opts )
-        return http.cookie( @action, opts )
-    end
-
     def simple
-        return @simple
+        @simple
     end
 
     def type
         Arachni::Module::Auditor::Element::COOKIE
     end
 
-end
+    private
+    def http_request( opts = {} )
+        http.cookie( @action, opts || {} )
+    end
 
-end
-end
 end

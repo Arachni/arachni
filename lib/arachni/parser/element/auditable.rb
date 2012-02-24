@@ -71,6 +71,22 @@ module Auditable
     attr_accessor :auditor
 
     #
+    # Key=>value pair of inputs
+    #
+    # @param    [Hash]
+    # @return   [Hash]
+    #
+    attr_accessor :auditable
+
+    #
+    # Frozen version of {#auditable}, has all the original name/values
+    #
+    # @param    [Hash]
+    # @return   [Hash]
+    #
+    attr_accessor :orig
+
+    #
     # @return [Hash]    audit and general options for convinience's sake
     #
     attr_reader   :opts
@@ -183,7 +199,7 @@ module Auditable
     # @return   [Arachni::HTTP]
     #
     def http
-         orphan? ? Arachni::HTTP.instance : @auditor.http
+        orphan? ? Arachni::HTTP.instance : @auditor.http
     end
 
     #

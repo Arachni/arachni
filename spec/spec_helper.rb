@@ -14,11 +14,11 @@ end
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
-Dir.glob( @@root + 'helpers/*.rb' ).each { |f| require f }
+Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 
 @@server_pids ||= []
 @@servers     ||= {}
-Dir.glob( @@root + 'servers/*' ) {
+Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
     |path|
 
     name = File.basename( path, '.rb' ).to_sym
@@ -51,7 +51,7 @@ def start_servers!
     @@servers.each {
         |name, info|
         @@server_pids << fork {
-            exec 'ruby', @@root + "servers/#{name}.rb", '-p ' + info[:port].to_s
+            exec 'ruby', info[:path], '-p ' + info[:port].to_s
         }
     }
 
