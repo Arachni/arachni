@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require 'datamapper'
-
 module Arachni
 module UI
 module Web

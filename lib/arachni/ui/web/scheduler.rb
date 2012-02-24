@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-require 'datamapper'
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
 

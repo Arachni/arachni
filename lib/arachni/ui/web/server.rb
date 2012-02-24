@@ -14,6 +14,7 @@
     limitations under the License.
 =end
 
+require 'data_mapper'
 require 'eventmachine'
 require 'em-synchrony'
 require 'sinatra/async'
@@ -964,24 +965,6 @@ class Server < Sinatra::Base
         show :settings, true
     end
 
-    aget "/instance/:url" do |url|
-        params['url'] = url
-        instances.connect( params[:url], session ).framework.paused? {
-            |paused|
-
-            if !paused.rpc_connection_error?
-                body erb :instance, { :layout => true }, :paused => paused,
-                    :shutdown => false, :params => params
-            else
-                msg = "Instance at #{url} has been shutdown."
-                body erb :instance, { :layout => true }, :shutdown => true,
-                    :flash => { :notice => msg }
-            end
-
-        }
-
-    end
-
     aget "/instance/:url/output.json" do |url|
         content_type :json
 
@@ -996,6 +979,7 @@ class Server < Sinatra::Base
         instances.connect( params[:url], session ).framework.progress_data {
             |prog|
 
+            params = aparams
             if !prog.rpc_exception?
 
                 @@output_streams ||= {}
@@ -1032,6 +1016,8 @@ class Server < Sinatra::Base
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
         instances.connect( params[:url], session ).framework.pause!{
             |paused|
+
+            params = aparams
             if !paused.rpc_connection_error?
                 log.instance_paused( env, params[:url] )
                 msg = "Instance at #{params[:url]} will pause as soon as the current page is audited."
@@ -1051,6 +1037,7 @@ class Server < Sinatra::Base
         instances.connect( params[:url], session ).framework.resume!{
             |res|
 
+            params = aparams
             if !res.rpc_connection_error?
                 log.instance_resumed( env, params[:url] )
 
@@ -1071,6 +1058,7 @@ class Server < Sinatra::Base
         save_and_shutdown( params[:url] ){
             |res|
 
+            params = aparams
             if !res.rpc_connection_error?
                 log.instance_shutdown( env, params[:url] )
                 msg = {
@@ -1084,6 +1072,24 @@ class Server < Sinatra::Base
             end
 
             async_redirect redir, :flash => { msg.keys[0] => msg.values[0] }
+        }
+
+    end
+
+    aget "/instance/*:*" do
+        params['url'] = params[:url] = params[:splat].first + ':' + params[:splat].last
+        instances.connect( params[:url], session ).framework.paused? {
+            |paused|
+
+            params = aparams
+            if !paused.rpc_connection_error?
+                body erb :instance, { :layout => true }, :paused => paused,
+                    :shutdown => false, :params => params
+            else
+                msg = "Instance at #{params[:url]} has been shutdown."
+                body erb :instance, { :layout => true }, :shutdown => true,
+                    :flash => { :notice => msg }
+            end
         }
 
     end

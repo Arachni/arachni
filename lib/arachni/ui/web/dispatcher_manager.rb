@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-require 'datamapper'
 require 'socket'
 
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
