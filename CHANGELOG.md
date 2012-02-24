@@ -10,6 +10,7 @@
     - API
         - Updated to provide access to running plugins.
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
+        - Audit operations by default follow redirects
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
 - Plugins
     - Proxy -- Fixed typo in code which prevented headers from being properly.

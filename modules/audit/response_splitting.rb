@@ -46,7 +46,7 @@ class ResponseSplitting < Arachni::Module::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header, :param_flip => true ) {
+        audit( header, param_flip: true, follow_location: false ) {
             |res, opts|
             if res.headers_hash['X-CRLF-Safe'] &&
                !res.headers_hash['X-CRLF-Safe'].empty?
@@ -70,7 +70,7 @@ class ResponseSplitting < Arachni::Module::Base
                 Issue::Element::HEADER
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.6',
+            :version        => '0.1.7',
             :references     => {
                  'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
                  'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
