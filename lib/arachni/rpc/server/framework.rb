@@ -617,7 +617,7 @@ class Framework < ::Arachni::Framework
     def restrict_to_elements!( elements, token = nil )
         return false if high_performance? && !valid_token?( token )
 
-        ::Arachni::Element::Auditable.restrict_to_elements!( elements )
+        ::Arachni::Parser::Element::Auditable.restrict_to_elements!( elements )
         return true
     end
 
