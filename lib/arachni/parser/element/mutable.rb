@@ -73,7 +73,7 @@ module Mutable
                        Format::NULL, Format::APPEND | Format::NULL ],
 
 
-       # skip submission with default/original values (for {Arachni::Parser::Element::Form} elements)
+       # skip mutation with default/original values (for {Arachni::Parser::Element::Form} elements)
        :skip_orig => false,
 
        # flip injection value and input name
