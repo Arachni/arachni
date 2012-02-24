@@ -212,7 +212,82 @@ module Mutable
         append = default_str if ( format & Format::APPEND )   != 0
         semicolon = append = null = ''   if ( format & Format::STRAIGHT ) != 0
 
-        return semicolon + append + injection_str.to_s + null
+        semicolon + append + injection_str.to_s + null
+    end
+
+    def print_debug_injection_set( var_combo, opts )
+        return if !debug?
+
+        print_debug( )
+        print_debug_trainer( opts )
+        print_debug_formatting( opts )
+        print_debug_combos( var_combo )
+    end
+
+    def print_debug_formatting( opts )
+        print_debug( '------------' )
+
+        print_debug( 'Injection string format combinations set to:' )
+        print_debug( '|')
+        msg = []
+        opts[:format].each {
+            |format|
+
+            if( format & Format::NULL ) != 0
+                msg << 'null character termination (Format::NULL)'
+            end
+
+            if( format & Format::APPEND ) != 0
+                msg << 'append to default value (Format::APPEND)'
+            end
+
+            if( format & Format::STRAIGHT ) != 0
+                msg << 'straight, leave as is (Format::STRAIGHT)'
+            end
+
+            prep = msg.join( ' and ' ).capitalize + ". [Combo mask: #{format}]"
+            prep.gsub!( 'format::null', "Format::NULL [#{Format::NULL}]" )
+            prep.gsub!( 'format::append', "Format::APPEND [#{Format::APPEND}]" )
+            prep.gsub!( 'format::straight', "Format::STRAIGHT [#{Format::STRAIGHT}]" )
+            print_debug( "|----> " + prep )
+
+            msg.clear
+        }
+
+    end
+
+    def print_debug_combos( combos )
+
+        print_debug( )
+        print_debug( 'Prepared combinations:' )
+        print_debug('|' )
+
+        combos.each{
+          |elem|
+
+          altered = elem.altered
+          combo   = elem.auditable
+
+
+          print_debug( '|' )
+          print_debug( "|--> Auditing: " + altered )
+          print_debug( "|--> Combo: " )
+
+          combo.each {
+              |c_combo|
+              print_debug( "|------> " + c_combo.to_s )
+          }
+
+        }
+
+        print_debug( )
+        print_debug( '------------' )
+        print_debug( )
+
+    end
+
+    def print_debug_trainer( opts )
+        print_debug( 'Trainer set to: ' + ( opts[:train] ? 'ON' : 'OFF' ) )
     end
 
 end
