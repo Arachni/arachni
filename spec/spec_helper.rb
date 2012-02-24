@@ -8,10 +8,6 @@ require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 Arachni::UI::Output.mute!
 
-def issues
-    Arachni::Module::Manager.results
-end
-
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
 Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
@@ -29,74 +25,6 @@ Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
         path: path
     }
 }
-
-def require_from_root( path )
-    require Arachni::Options.instance.dir['lib'] + path
-end
-
-
-def require_testee!
-    require Kernel::caller.first.split( ':' ).first.gsub( '/spec/arachni', '/lib/arachni' ).gsub( '_spec', '' )
-end
-
-def server_port_for( name )
-    @@servers[name][:port]
-end
-
-def server_url_for( name )
-    'http://localhost:' + server_port_for( name ).to_s
-end
-
-def start_servers!
-    @@servers.each {
-        |name, info|
-        @@server_pids << fork {
-            exec 'ruby', info[:path], '-p ' + info[:port].to_s
-        }
-    }
-
-    require 'net/http'
-    begin
-        up = []
-        Timeout::timeout( 10 ) do
-            loop do
-
-                @@servers.keys.each {
-                    |name|
-
-                    next if up.include? name
-                    url = server_url_for( name )
-                    begin
-                        response = Net::HTTP.get_response( URI.parse( url ) )
-                        up << name if response
-                    rescue SystemCallError => error
-                    end
-
-                }
-
-                if up.size == @@servers.size
-                    puts 'Servers are up!'
-                    return
-                end
-
-                sleep 0.1
-            end
-        end
-    rescue Timeout::Error => error
-        abort "Server never started!"
-    end
-end
-
-
-def reload_servers!
-    kill_servers!
-    start_servers!
-end
-
-
-def kill_servers!
-    @@server_pids.each { |pid| Process.kill( 'INT', pid ) if pid }
-end
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
