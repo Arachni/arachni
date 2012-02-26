@@ -408,6 +408,7 @@ module Auditable
         rescue
         end
 
+        @@audited ||= Set.new
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
