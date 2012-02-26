@@ -10,7 +10,7 @@
                     <input type="submit" value="View formats" />
                 </form>
 
-                <form action="/reports/delete" method="post">
+                <form class="confirm" action="/reports/delete" method="post">
                     <%= csrf_tag %>
                     <input type="submit" value="Delete all" />
                 </form>
@@ -46,7 +46,7 @@
                 </td>
 
                 <td>
-                    <form action="/report/<%=report.id%>/delete" method="post">
+                    <form class="confirm" action="/report/<%=report.id%>/delete" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Delete" />
                     </form>
