@@ -10,6 +10,7 @@
     <script type="text/javascript" src="/js/jquery-1.4.4.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui-1.8.9.custom.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui-timepicker.js"></script>
+    <script type="text/javascript" src="/js/jquery.easy-confirm-dialog.js"></script>
 
     <script type="text/javascript">
         function checkAll( type ) {
@@ -19,6 +20,13 @@
         function uncheckAll( type ) {
             $( "." + type ).attr( "checked", false )
         }
+
+        $(document).ready(function() {
+            $('.confirm').easyconfirm();
+            $('.confirm').click(function() {
+                $('.confirm').submit();
+            });
+        });
     </script>
 
     </head>

@@ -50,7 +50,7 @@
                 <td><%=dispatcher['url']%></td>
                 <td><%=dispatcher['alive'].to_s.capitalize%></td>
                 <td>
-                    <form action="/dispatchers/<%=dispatcher['id']%>/delete" method="post">
+                    <form class="confirm" action="/dispatchers/<%=dispatcher['id']%>/delete" method="post">
                         <%= csrf_tag %>
                         <input type="submit" value="Delete" />
                     </form>
