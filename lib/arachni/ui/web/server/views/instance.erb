@@ -24,7 +24,7 @@
                 </form>
                 <%end%>
 
-                <form action="/instance/<%=remove_proto( params['url'] )%>/shutdown" method="post">
+                <form class="confirm" action="/instance/<%=remove_proto( params['url'] )%>/shutdown" method="post">
                     <%= csrf_tag %>
                     <input type="submit" value="Shutdown" />
                 </form>
