@@ -36,30 +36,35 @@ class VectorFeed < Arachni::Plugin::Base
     end
 
     def run
-        feed = if @options['yaml_file']
-            IO.read( @options['yaml_file'] )
-        elsif @options['yaml_string']
-            @options['yaml_string']
-        else
-            ''
-        end
 
-        if !feed || feed.empty?
-            print_bad 'The feed is empty, bailing out.'
-            return
-        end
+        if !@options['vectors'].is_a? Array
+            feed = if @options['yaml_file']
+                IO.read( @options['yaml_file'] )
+            elsif @options['yaml_string']
+                @options['yaml_string']
+            else
+                ''
+            end
 
-        feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
+            if !feed || feed.empty?
+                print_bad 'The feed is empty, bailing out.'
+                return
+            end
 
-        yaml_err = 'Invalid YAML syntax, bailing out..'
-        begin
-            if !feed.is_a? Array
+            feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
+
+            yaml_err = 'Invalid YAML syntax, bailing out..'
+            begin
+                if !feed.is_a? Array
+                    print_bad yaml_err
+                    return
+                end
+            rescue
                 print_bad yaml_err
                 return
             end
-        rescue
-            print_bad yaml_err
-            return
+        else
+            feed = @options['vectors']
         end
 
         pages = {}
@@ -210,8 +215,9 @@ class VectorFeed < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                Arachni::OptString.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration via RPC).' ] ),
-                Arachni::OptPath.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] )
+                Arachni::OptBase.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
+                Arachni::OptString.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
+                Arachni::OptPath.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
             ]
         }
     end
