@@ -310,7 +310,7 @@ module Auditor
                 )
             } if elems.include? Issue::Element::BODY
 
-            next if string == page.html
+            next if string != page.html
 
             page.response_headers.each {
                 |k,v|
