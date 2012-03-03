@@ -44,7 +44,7 @@ rvm pkg install openssl && \
 # rvm pkg install libxml2 && \
 
 # libxslt is a bit tricky, needs some extra work
-rvm pkg install libxslt && \
+rvm pkg install libxslt #&& \
 cd ~/.rvm/src/libxslt-* && \
 ./configure --prefix=~/.rvm/usr --with-libxml-prefix=~/.rvm/usr && make && make install && \
 cd - && \
