@@ -24,12 +24,22 @@
 #   * curl
 #   * build-essential
 #   * git
-#   * libsqlite3-dev
 #   * libxml2-dev
 #
 # Install them with:
-#   sudo apt-get install curl build-essential git libsqlite3-dev libxml2-dev
+#   sudo apt-get install curl build-essential git libxml2-dev
 #
+
+[[ -s "arachni-tmp"]] || mkdir arachni-tmp
+
+cd arachni-tmp
+
+wget http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
+tar xvf sqlite-autoconf-3071000.tar.gz
+cd sqlite-autoconf-3071000
+./configure && make && sudo make install
+
+rm -rf arachni-tmp
 
 # install RVM
 [[ -s "$HOME/.rvm/scripts/rvm" ]] || bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer) && \
@@ -42,7 +52,7 @@ source ~/.rvm/scripts/rvm && \
 ([[ -s "$HOME/.rvm/usr/lib/libz.so" ]] || rvm pkg install zlib) && \
 ([[ -s "$HOME/.rvm/usr/lib/libcurl.so" ]] || rvm pkg install curl) && \
 ([[ -s "$HOME/.rvm/usr/lib/libssl.so" ]] || rvm pkg install openssl) && \
-# ([[ -s "$HOME/.rvm/usr/lib/libxml2.so" ]] ||  rvm pkg install libxml2) && \
+([[ -s "$HOME/.rvm/usr/lib/libxml2.so" ]] ||  rvm pkg install libxml2) && \
 
 # libxslt is a bit tricky, needs some extra work
 if [[ ! -s "$HOME/.rvm/usr/lib/libxslt.so" ]]; then
