@@ -55,7 +55,7 @@ fi
 ([[ -s "$HOME/.rvm/usr/lib/libyaml.so" ]] || rvm pkg install libyaml) && \
 
 # download and install Ruby
-([[ ! `rvm list | grep ruby-1.9.3-p125` ]] && rvm install ruby-1.9.3-p125) && \
+([[ ! `rvm list | grep ruby-1.9.3-p125` ]] && rvm install ruby-1.9.3-p125)
 
 # setup the Ruby env
 # rvm use 1.9.3-p125 && rvm gemset create arachni && rvm gemset use arachni  && \
