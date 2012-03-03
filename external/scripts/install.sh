@@ -45,7 +45,7 @@ source ~/.rvm/scripts/rvm && \
 # ([[ -s "$HOME/.rvm/usr/lib/libxml2.so" ]] ||  rvm pkg install libxml2) && \
 
 # libxslt is a bit tricky, needs some extra work
-if [[ ! "$HOME/.rvm/usr/lib/libxslt.so" ]]; then
+if [[ ! -s "$HOME/.rvm/usr/lib/libxslt.so" ]]; then
     rvm pkg install libxslt #&& \
     cd ~/.rvm/src/libxslt-* && \
     ./configure --prefix=~/.rvm/usr --with-libxml-prefix=~/.rvm/usr && make && make install && \
