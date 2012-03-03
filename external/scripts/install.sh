@@ -30,7 +30,7 @@
 #   sudo apt-get install curl build-essential git libxml2-dev
 #
 
-[[ -s "arachni-tmp"]] || mkdir arachni-tmp
+[[ -s "./arachni-tmp" ]] || mkdir arachni-tmp
 
 cd arachni-tmp
 
