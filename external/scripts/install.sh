@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 #
@@ -31,37 +32,40 @@
 #
 
 # install RVM
-bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer) && \
+[[ -s "$HOME/.rvm/scripts/rvm" ]] || bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer) && \
 
 # load RVM
 source ~/.rvm/scripts/rvm && \
 
 # install all lib deps
-rvm pkg install iconv && \
-rvm pkg install zlib && \
-rvm pkg install curl && \
-rvm pkg install openssl && \
-# rvm pkg install libxml2 && \
+([[ -s "$HOME/.rvm/usr/lib/libiconv.so" ]] || rvm pkg install iconv) && \
+([[ -s "$HOME/.rvm/usr/lib/libz.so" ]] || rvm pkg install zlib) && \
+([[ -s "$HOME/.rvm/usr/lib/libcurl.so" ]] || rvm pkg install curl) && \
+([[ -s "$HOME/.rvm/usr/lib/libssl.so" ]] || rvm pkg install openssl) && \
+# ([[ -s "$HOME/.rvm/usr/lib/libxml2.so" ]] ||  rvm pkg install libxml2) && \
 
 # libxslt is a bit tricky, needs some extra work
-rvm pkg install libxslt #&& \
-cd ~/.rvm/src/libxslt-* && \
-./configure --prefix=~/.rvm/usr --with-libxml-prefix=~/.rvm/usr && make && make install && \
-cd - && \
+if [[ ! "$HOME/.rvm/usr/lib/libxslt.so" ]]; then
+    rvm pkg install libxslt #&& \
+    cd ~/.rvm/src/libxslt-* && \
+    ./configure --prefix=~/.rvm/usr --with-libxml-prefix=~/.rvm/usr && make && make install && \
+    cd -
+fi
 
-rvm pkg install libyaml && \
+([[ -s "$HOME/.rvm/usr/lib/libyaml.so" ]] || rvm pkg install libyaml) && \
 
 # download and install Ruby
-rvm install ruby-1.9.3-p125 && \
+([[ ! `rvm list | grep ruby-1.9.3-p125` ]] && rvm install ruby-1.9.3-p125) && \
 
 # setup the Ruby env
 # rvm use 1.9.3-p125 && rvm gemset create arachni && rvm gemset use arachni  && \
 
 # clone the Arachni repo
-git clone git://github.com/Zapotek/arachni.git && \
+([[ -s "./arachni" ]] || git clone git://github.com/Zapotek/arachni.git) && \
 
 # install Arachni and its deps
 cd arachni && \
+git pull && \
 git checkout experimental && \
 cd . && \
 gem install bundle && \
