@@ -58,7 +58,7 @@ fi
 ([[ ! `rvm list | grep ruby-1.9.3-p125` ]] && rvm install ruby-1.9.3-p125)
 
 # setup the Ruby env
-# rvm use 1.9.3-p125 && rvm gemset create arachni && rvm gemset use arachni  && \
+rvm use 1.9.3-p125 && rvm gemset create arachni && rvm gemset use arachni  && \
 
 # clone the Arachni repo
 ([[ -s "./arachni" ]] || git clone git://github.com/Zapotek/arachni.git) && \
