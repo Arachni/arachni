@@ -65,6 +65,18 @@ libs=(
     http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
 )
 
+libs_so=(
+    libz.so
+    libiconv.so
+    libssl.so
+    libsqlite3.so
+    libxml2.so
+    libxslt.so
+    libcurl.so
+    libyaml.so
+    ruby
+)
+
 # root path
 root="`pwd`/arachni"
 
@@ -170,9 +182,10 @@ handle_failure(){
 }
 
 download() {
+
     echo -n "  * Downloading $1"
     echo -n " -  0% ETA:      -s"
-    wget --progress=dot --no-check-certificate $1 $2 2>&1 | \
+    wget -c --progress=dot --no-check-certificate $1 $2 2>&1 | \
         while read line; do
             echo $line | grep "%" | sed -u -e "s/\.//g" | \
             awk '{printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%4s ETA: %6s", $2, $4)}'
@@ -197,6 +210,8 @@ download_archive() {
 # Extracts an archive (by name) under $src_path
 #
 extract_archive() {
+    trap "rm -rf $src_path/$1-*" INT
+
     echo "  * Extracting"
     tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
     handle_failure $1
@@ -251,11 +266,11 @@ get_name(){
 download_and_install() {
     name=`get_name $1`
 
-    if [[ ! -s `echo $archives_path/$name*` ]]; then
+    #if [[ ! -s `echo $archives_path/$name*` ]]; then
         download_archive $1 $name
-    else
-        echo "  * Already downloaded"
-    fi
+    #else
+        #    echo "  * Already downloaded"
+    #fi
 
     if [[ ! -s `echo $src_path/$name*` ]]; then
         extract_archive $name
@@ -274,11 +289,21 @@ install_libs() {
     libtotal=${#libs[@]}
 
     for (( i=0; i<$libtotal; i++ )); do
+        so=${libs_so[$i]}
         lib=${libs[$i]}
         idx=`expr $i + 1`
 
         echo "## ($idx/$libtotal) `get_name $lib`"
-        download_and_install $lib
+
+        so_files="$usr_path/lib/$so"
+        if [[ -s $so_files ]]; then
+            echo "  * Already installed, found:"
+            for so_file in `ls $so_files`; do
+                echo "    o $so_file"
+            done
+        else
+            download_and_install $lib
+        fi
     done
 }
 
@@ -399,6 +424,9 @@ install_bin_wrappers
 
 echo
 cat<<EOF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Installation has completed succesfully!
 
 You can add '$root/bin' to your path in order to be able to access the Arachni
