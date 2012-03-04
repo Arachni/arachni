@@ -122,6 +122,10 @@ class OptBase
         value
     end
 
+    def type
+        'abstract'
+    end
+
     #
     # Converts the Options object to hash
     #
