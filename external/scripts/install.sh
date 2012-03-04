@@ -378,7 +378,7 @@ echo "---------------------------------"
 setup_dirs
 
 echo
-echo "# (2/$total) Resolving dependencies"
+echo "# (2/$total) Installing dependencies"
 echo "-----------------------------------"
 install_libs
 
