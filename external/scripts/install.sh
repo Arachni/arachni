@@ -210,8 +210,6 @@ download_archive() {
 # Extracts an archive (by name) under $src_path
 #
 extract_archive() {
-    trap "rm -rf $src_path/$1-*" INT
-
     echo "  * Extracting"
     tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
     handle_failure $1
@@ -272,11 +270,11 @@ download_and_install() {
         #    echo "  * Already downloaded"
     #fi
 
-    if [[ ! -s `echo $src_path/$name*` ]]; then
+    #if [[ ! -s `echo $src_path/$name*` ]]; then
         extract_archive $name
-    else
-        echo "  * Already extracted"
-    fi
+    #else
+        #    echo "  * Already extracted"
+    #fi
 
     install_from_src $name
     echo
