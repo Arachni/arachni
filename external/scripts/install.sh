@@ -169,14 +169,25 @@ handle_failure(){
     fi
 }
 
+download() {
+    echo -n "  * Downloading $1"
+    echo -n " -  0% ETA:      -s"
+    wget --progress=dot --no-check-certificate $1 $2 2>&1 | \
+        while read line; do
+            echo $line | grep "%" | sed -u -e "s/\.//g" | \
+            awk '{printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%4s ETA: %6s", $2, $4)}'
+        done
+
+    echo -e "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b                "
+}
+
 #
 # Donwloads an archive (by url) and places it under $archives_path
 #
 download_archive() {
     cd $archives_path
 
-    echo "  * Downloading $1"
-    wget --no-check-certificate $1
+    download $1
     handle_failure $2
 
     cd - > /dev/null
@@ -313,23 +324,23 @@ EOF
 # Sets the environment, updates rubygems and installs vital gems
 #
 prepare_ruby() {
-    echo -n "Dumping environment configuration in $root/environment ... "
+    echo "  * Generating environment configuration ($root/environment)"
     get_ruby_environment > $root/environment
     source $root/environment
-    echo "Done."
-    echo
-    echo "Updating Rubygems:"
-    $usr_path/bin/gem update --system
 
-    echo
-    echo "Installing Bundler"
-    $usr_path/bin/gem install bundler --no-ri  --no-rdoc
+    echo "  * Updating Rubygems"
+    $usr_path/bin/gem update --system &>> "$logs_path/ruby"
+    handle_failure "ruby"
+
+    echo "  * Installing Bundler"
+    $usr_path/bin/gem install bundler --no-ri  --no-rdoc  &>> "$logs_path/ruby"
+    handle_failure "ruby"
 }
 
 install_arachni() {
     PATH="$orig_path:$PATH"
 
-    wget --no-check-certificate $arachni_tarball_url -O "$archives_path/arachni-pkg.tar.gz"
+    download $arachni_tarball_url "-O $archives_path/arachni-pkg.tar.gz"
     handle_failure "arachni"
 
     extract_archive "arachni"
@@ -341,7 +352,7 @@ install_arachni() {
     handle_failure "arachni"
 
     echo "  * Testing"
-    $gem_path/bin/bundle exec $usr_path/bin/rake spec
+    $gem_path/bin/bundle exec $usr_path/bin/rake spec  &>> "$logs_path/arachni"
     handle_failure "arachni"
 
     echo "  * Installing"
@@ -385,3 +396,27 @@ echo
 echo "# (5/$total) Installing bin wrappers"
 echo "------------------------------------"
 install_bin_wrappers
+
+echo
+cat<<EOF
+Installation has completed succesfully!
+
+You can add '$root/bin' to your path in order to be able to access the Arachni
+executables from anywhere:
+
+    echo 'export PATH=$root/bin:\$PATH' >> ~/.bash_profile
+
+Useful resources:
+    * Homepage     - http://arachni-scanner.com/
+    * Blog         - http://arachni-scanner.com/blog
+    * Wiki         - http://arachni-scanner.com/wiki
+    * GitHub page  - http://github.com/zapotek/arachni
+    * Google Group - http://groups.google.com/group/arachni
+    * Twitter      - http://twitter.com/ArachniScanner
+
+Have fun ;)
+
+Cheers,
+The Arachni team.
+
+EOF
