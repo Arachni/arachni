@@ -149,7 +149,7 @@ handle_failure(){
 download_archive() {
     cd $archives_path
 
-    echo "  * Downloading $1 ..."
+    echo "  * Downloading $1"
     curl -OL $1
     handle_failure $2
 
@@ -160,10 +160,9 @@ download_archive() {
 # Extracts an archive (by name) under $src_path
 #
 extract_archive() {
-    echo -n "  * Exracting $1 under $src_path..."
+    echo -n "  * Exracting under $src_path"
     tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
     handle_failure $1
-    echo "  Done."
 }
 
 #
@@ -235,13 +234,13 @@ download_and_install() {
 # Downloads and installs all $libs
 #
 install_libs() {
-    total=${#libs[@]}
+    libtotal=${#libs[@]}
 
-    for (( i=0; i<$total; i++ )); do
+    for (( i=0; i<$libtotal; i++ )); do
         lib=${libs[$i]}
         idx=`expr $i + 1`
 
-        echo "## ($idx/$total) `get_name $lib`"
+        echo "## ($idx/$libtotal) `get_name $lib`"
         download_and_install $lib
     done
 }
@@ -296,7 +295,7 @@ prepare_ruby() {
 
     echo
     echo "Installing Bundler"
-    $usr_path/bin/gem install bundler
+    $usr_path/bin/gem install bundler --no-ri  --no-rdoc
 }
 
 install_arachni() {
@@ -321,30 +320,30 @@ install_bin_wrappers(){
 total=5
 echo "
 # (1/$total) Creating directories
-------------------------"
+---------------------------------"
 
 setup_dirs
 
 echo "
 # (2/$total) Resolving dependencies
-------------------------"
+-----------------------------------"
 
 install_libs
 
 echo "
 # (3/$total) Configuring Ruby
-------------------------"
+-----------------------------"
 
 prepare_ruby
 
 echo "
 # (4/$total) Installing Arachni
-------------------------"
+-------------------------------"
 
 install_arachni
 
 echo "
 # (5/$total) Installing bin wrappers
-------------------------"
+------------------------------------"
 
 install_bin_wrappers
