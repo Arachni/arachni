@@ -363,6 +363,7 @@ prepare_ruby() {
 install_arachni() {
     PATH="$orig_path:$PATH"
 
+    rm "$archives_path/arachni-pkg.tar.gz"
     download $arachni_tarball_url "-O $archives_path/arachni-pkg.tar.gz"
     handle_failure "arachni"
 
