@@ -347,7 +347,7 @@ install_arachni() {
 
     cd $src_path/Zapotek-arachni*
 
-    echo "  * Preparing bundle"
+    echo "  * Preparing the bundle"
     $gem_path/bin/bundle install &>> "$logs_path/arachni"
     handle_failure "arachni"
 
@@ -383,8 +383,8 @@ echo "-----------------------------------"
 install_libs
 
 echo
-echo "# (3/$total) Configuring Ruby"
-echo "-----------------------------"
+echo "# (3/$total) Preparing the Ruby environment"
+echo "-------------------------------------------"
 prepare_ruby
 
 echo
