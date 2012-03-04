@@ -94,6 +94,8 @@ configure_curl="./configure \
 --enable-optimize --enable-nonblocking \
 --enable-threaded-resolver --enable-crypto-auth --enable-cookies"
 
+orig_path=$PATH
+
 #
 # Creates the directory structure for the env
 #
@@ -303,11 +305,17 @@ prepare_ruby() {
 }
 
 install_arachni() {
-    download_archive $arachni_tarball_url
+    PATH="$orig_path:$PATH"
+
+    wget $arachni_tarball_url -O "$archives_path/arachni-pkg.tar.gz"
+    handle_failure "arachni"
+
     extract_archive "arachni"
 
+    echo "  * Installing"
     cd $src_path/Zapotek-arachni*
-    $usr_path/bin/rake install
+    $usr_path/bin/rake install &>> "$logs_path/arachni"
+    handle_failure "arachni"
 }
 
 install_bin_wrappers(){
@@ -322,32 +330,28 @@ install_bin_wrappers(){
 }
 
 total=5
+
 echo "
 # (1/$total) Creating directories
 ---------------------------------"
-
 setup_dirs
 
 echo "
 # (2/$total) Resolving dependencies
 -----------------------------------"
-
 install_libs
 
 echo "
 # (3/$total) Configuring Ruby
 -----------------------------"
-
 prepare_ruby
 
 echo "
 # (4/$total) Installing Arachni
 -------------------------------"
-
 install_arachni
 
 echo "
 # (5/$total) Installing bin wrappers
 ------------------------------------"
-
 install_bin_wrappers
