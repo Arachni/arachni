@@ -57,12 +57,17 @@ src_path="$root/src"
 # holds STDERR and STDOUT
 logs_path="$root/logs"
 
+# --prefix value for 'configure' scripts
 configure_prefix="$root/usr"
 usr_path=$configure_prefix
 
+# PATH for our Ruby environment
 bin_path="$root_path/bin:$usr_path/bin"
+
+# Gem storage directories
 gem_home="$root/gems"
 gem_path=$gem_home
+
 my_ruby_home="$usr_path/ruby"
 irbrc="$my_ruby_home/.irbrc"
 
@@ -73,8 +78,17 @@ irbrc="$my_ruby_home/.irbrc"
 # For some reason assoc arrays don't work...
 #
 configure_libxslt="./configure --with-libxml-prefix=$configure_prefix"
-configure_ruby="./configure --with-opt-dir=$configure_prefix --with-libyaml-dir=$configure_prefix --with-zlib-dir=$configure_prefix --with-openssl-dir=$configure_prefix --disable-install-doc --enable-shared"
-configure_openssl="./config -I$usr_path/include -L$usr_path/lib zlib no-asm no-krb5 shared"
+
+configure_ruby="./configure --with-opt-dir=$configure_prefix \
+--with-libyaml-dir=$configure_prefix \
+--with-zlib-dir=$configure_prefix \
+--with-openssl-dir=$configure_prefix \
+--disable-install-doc --enable-shared"
+
+configure_openssl="./config -I$usr_path/include -L$usr_path/lib \
+zlib no-asm no-krb5 shared"
+
+configure_curl="./configure --with-ssl"
 
 #
 # Creates the directory structure for the env
@@ -232,6 +246,11 @@ install_libs() {
     done
 }
 
+#
+# Returns Bash environmental variable configuration as a string
+#
+# This should be used by our Ruby env.
+#
 get_ruby_environment() {
     cat<<EOF
 export PATH ; PATH="$bin_path"
@@ -245,6 +264,10 @@ unset RBXOPT
 EOF
 }
 
+#
+# Provides a wrapper for executables, it basically sets all relevant
+# env variables before calling the executable in question.
+#
 get_wrapper_template() {
     cat<<EOF
 #!/usr/bin/env bash
@@ -259,6 +282,9 @@ fi
 EOF
 }
 
+#
+# Sets the environment, updates rubygems and installs vital gems
+#
 prepare_ruby() {
     echo -n "Dumping environment configuration in $root/environment ... "
     get_ruby_environment > $root/environment
