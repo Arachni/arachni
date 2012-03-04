@@ -361,27 +361,27 @@ install_bin_wrappers() {
 
 total=5
 
-echo "
-# (1/$total) Creating directories
----------------------------------"
+echo
+echo "# (1/$total) Creating directories"
+echo "---------------------------------"
 setup_dirs
 
-echo "
-# (2/$total) Resolving dependencies
------------------------------------"
+echo
+echo "# (2/$total) Resolving dependencies"
+echo "-----------------------------------"
 install_libs
 
-echo "
-# (3/$total) Configuring Ruby
------------------------------"
+echo
+echo "# (3/$total) Configuring Ruby"
+echo "-----------------------------"
 prepare_ruby
 
-echo "
-# (4/$total) Installing Arachni
--------------------------------"
+echo
+echo "# (4/$total) Installing Arachni"
+echo "-------------------------------"
 install_arachni
 
-echo "
-# (5/$total) Installing bin wrappers
-------------------------------------"
+echo
+echo "# (5/$total) Installing bin wrappers"
+echo "------------------------------------"
 install_bin_wrappers
