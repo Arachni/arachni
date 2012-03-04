@@ -73,7 +73,7 @@ irbrc="$my_ruby_home/.irbrc"
 # For some reason assoc arrays don't work...
 #
 configure_libxslt="./configure --with-libxml-prefix=$configure_prefix"
-configure_ruby="./configure --with-opt-dir=$configure_prefix --with-libyaml-dir=$configure_prefix --with-zlib-dir=$configure_prefix --disable-install-doc --enable-shared"
+configure_ruby="./configure --with-opt-dir=$configure_prefix --with-libyaml-dir=$configure_prefix --with-zlib-dir=$configure_prefix --with-openssl-dir=$configure_prefix --disable-install-doc --enable-shared"
 configure_openssl="./config -I$usr_path/include -L$usr_path/lib zlib no-asm no-krb5 shared"
 
 #
