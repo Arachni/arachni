@@ -164,7 +164,7 @@ download_archive() {
 # Extracts an archive (by name) under $src_path
 #
 extract_archive() {
-    echo "  * Exracting"
+    echo "  * Extracting"
     tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
     handle_failure $1
 }
