@@ -66,14 +66,14 @@ libs=(
 )
 
 libs_so=(
-    libz.so
-    libiconv.so
-    libssl.so
-    libsqlite3.so
-    libxml2.so
-    libxslt.so
-    libcurl.so
-    libyaml.so
+    libz.so.1.2.6
+    libiconv.so.2.5.1
+    libssl.so.0.9.8
+    libsqlite3.so.0.8.6
+    libxml2.so.2.7.8
+    libxslt.so.1.1.26
+    libcurl.so.4.2.0
+    libyaml-0.so.2.0.2
     ruby
 )
 
