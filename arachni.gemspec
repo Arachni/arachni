@@ -37,10 +37,11 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("profiles/**/**")
       s.files            += Dir.glob("reports/**/**")
       s.files            += Dir.glob("spec/**/**")
+      s.files            += %w( Gemfile Gemfile.lock Rakefile arachni.gemspec )
 
       s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
 
-      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE Gemfile Gemfile.lock Rakefile )
+      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE )
       s.rdoc_options      = ["--charset=UTF-8"]
 
       s.add_dependency 'bundler',         ">= 1.0.0"
