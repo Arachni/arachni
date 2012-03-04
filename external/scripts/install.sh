@@ -28,6 +28,29 @@
 #   sudo apt-get install wget build-essential gcc-multilib g++-multilib
 #
 
+
+echo "# Checking for installation dependencies"
+echo '----------------------------------------'
+deps="
+    wget
+    gcc
+    g++
+"
+for dep in $deps; do
+    echo -n "  * $dep"
+    if [[ ! `which "$dep"` ]]; then
+        echo " -- FAIL"
+        fail=true
+    else
+        echo " -- OK"
+    fi
+done
+
+if [[ $fail ]]; then
+    echo "Please install the missing dependencies and try again."
+    exit
+fi
+
 arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
 
 #
@@ -156,7 +179,7 @@ download_archive() {
     cd $archives_path
 
     echo "  * Downloading $1"
-    wget $1
+    wget --no-check-certificate $1
     handle_failure $2
 
     cd - > /dev/null
@@ -307,19 +330,27 @@ prepare_ruby() {
 install_arachni() {
     PATH="$orig_path:$PATH"
 
-    wget $arachni_tarball_url -O "$archives_path/arachni-pkg.tar.gz"
+    wget --no-check-certificate $arachni_tarball_url -O "$archives_path/arachni-pkg.tar.gz"
     handle_failure "arachni"
 
     extract_archive "arachni"
 
-    echo "  * Installing"
     cd $src_path/Zapotek-arachni*
+
+    echo "  * Preparing bundle"
+    $gem_path/bin/bundle install &>> "$logs_path/arachni"
+    handle_failure "arachni"
+
+    echo "  * Testing"
+    $gem_path/bin/bundle exec $usr_path/bin/rake spec
+    handle_failure "arachni"
+
+    echo "  * Installing"
     $usr_path/bin/rake install &>> "$logs_path/arachni"
     handle_failure "arachni"
 }
 
-install_bin_wrappers(){
-
+install_bin_wrappers() {
     cd $root/gems/bin
     for bin in arachni*; do
         echo "  * $bin => $root/bin/$bin"
