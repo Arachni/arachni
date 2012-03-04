@@ -24,10 +24,23 @@ Gem::Specification.new do |s|
       s.homepage          = "https://github.com/Zapotek/arachni"
       s.email             = "tasos.laskos@gmail.com"
       s.authors           = [ "Tasos Laskos" ]
-      s.files             = `git ls-files`.split( "\n" )
+      s.files            += Dir.glob("conf/**/**")
+      s.files            += Dir.glob("data/**/**")
+      s.files            += Dir.glob("external/**/**")
+      s.files            += Dir.glob("extras/**/**")
+      s.files            += Dir.glob("gfx/**/**")
+      s.files            += Dir.glob("lib/**/**")
+      s.files            += Dir.glob("logs/**/**")
+      s.files            += Dir.glob("modules/**/**")
+      s.files            += Dir.glob("path_extractors/**/**")
+      s.files            += Dir.glob("plugins/**/**")
+      s.files            += Dir.glob("profiles/**/**")
+      s.files            += Dir.glob("reports/**/**")
+      s.files            += Dir.glob("spec/**/**")
+
       s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
 
-      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE )
+      s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE Gemfile Gemfile.lock Rakefile )
       s.rdoc_options      = ["--charset=UTF-8"]
 
       s.add_dependency 'bundler',         ">= 1.0.0"
