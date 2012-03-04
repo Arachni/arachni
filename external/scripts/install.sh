@@ -18,68 +18,307 @@
 # Experimental Arachni install script, it's supposed to take care of everything
 # including system library dependencies, Ruby, gem dependencies and Arachni itself.
 #
-# Doesn't do all that yet though...
-#
 # Requirements:
-#   * curl
-#   * build-essential
-#   * git
-#   * libxml2-dev
+#   * curl -- To download the necessary packages
+#   * build-essential -- For compilers, headers etc.
+#   * gcc-multilib --  For extra libs required by OpenSSL
+#   * g++-multilib --  For extra libs required by OpenSSL
 #
 # Install them with:
-#   sudo apt-get install curl build-essential git libxml2-dev
+#   sudo apt-get install curl build-essential gcc-multilib g++-multilib
 #
 
-[[ -s "./arachni-tmp" ]] || mkdir arachni-tmp
+arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
 
-cd arachni-tmp
+#
+# All system library dependencies in proper order
+#
+libs=(
+    http://zlib.net/zlib-1.2.6.tar.gz
+    http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
+    http://www.openssl.org/source/openssl-0.9.8n.tar.gz
+    http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
+    ftp://xmlsoft.org/libxml2/libxml2-2.7.8.tar.gz
+    ftp://xmlsoft.org/libxslt/libxslt-1.1.26.tar.gz
+    http://curl.haxx.se/download/curl-7.24.0.tar.gz
+    https://rvm.beginrescueend.com/src/yaml-0.1.4.tar.gz
+    http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
+)
 
-wget http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
-tar xvf sqlite-autoconf-3071000.tar.gz
-cd sqlite-autoconf-3071000
-./configure && make && sudo make install
+# root path
+root="`pwd`/arachni"
 
-rm -rf arachni-tmp
+# holds tarball archives
+archives_path="$root/archives"
 
-# install RVM
-[[ -s "$HOME/.rvm/scripts/rvm" ]] || bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer) && \
+# holds exracted archives
+src_path="$root/src"
 
-# load RVM
-source ~/.rvm/scripts/rvm && \
+# holds STDERR and STDOUT
+logs_path="$root/logs"
 
-# install all lib deps
-([[ -s "$HOME/.rvm/usr/lib/libiconv.so" ]] || rvm pkg install iconv) && \
-([[ -s "$HOME/.rvm/usr/lib/libz.so" ]] || rvm pkg install zlib) && \
-([[ -s "$HOME/.rvm/usr/lib/libcurl.so" ]] || rvm pkg install curl) && \
-([[ -s "$HOME/.rvm/usr/lib/libssl.so" ]] || rvm pkg install openssl) && \
-([[ -s "$HOME/.rvm/usr/lib/libxml2.so" ]] ||  rvm pkg install libxml2) && \
+configure_prefix="$root/usr"
+usr_path=$configure_prefix
 
-# libxslt is a bit tricky, needs some extra work
-if [[ ! -s "$HOME/.rvm/usr/lib/libxslt.so" ]]; then
-    rvm pkg install libxslt #&& \
-    cd $HOME/.rvm/src/libxslt-* && \
-    ./configure --prefix=$HOME/.rvm/usr --with-libxml-prefix=$HOME/usr && make && make install && \
-    cd -
+bin_path="$root_path/bin:$usr_path/bin"
+gem_home="$root/gems"
+gem_path=$gem_home
+my_ruby_home="$usr_path/ruby"
+irbrc="$my_ruby_home/.irbrc"
+
+#
+# Special config for packages that need something extra.
+# These are called dynamically using the obvious naming convention.
+#
+# For some reason assoc arrays don't work...
+#
+configure_libxslt="./configure --with-libxml-prefix=$configure_prefix"
+configure_ruby="./configure --with-opt-dir=$configure_prefix --with-libyaml-dir=$configure_prefix --with-zlib-dir=$configure_prefix --disable-install-doc --enable-shared"
+configure_openssl="./config -I$usr_path/include -L$usr_path/lib zlib no-asm no-krb5 shared"
+
+#
+# Creates the directory structure for the env
+#
+setup_dirs( ) {
+
+    echo -n "  * $root"
+    #rm -rf $root
+    if [[ ! -s $root ]]; then
+        echo
+        mkdir $root
+    else
+        echo " -- already exists."
+    fi
+
+    cd $root
+
+    dirs="
+        logs
+        archives
+        bin
+        gems
+        src
+        usr/bin
+        usr/include
+        usr/info
+        usr/lib
+        usr/man
+    "
+    for dir in $dirs
+    do
+        echo -n "  * $root/$dir"
+        if [[ ! -s $dir ]]; then
+            echo
+            mkdir -p $dir
+        else
+            echo " -- already exists."
+        fi
+    done
+
+    cd - > /dev/null
+}
+
+#
+# Checks the last return value and exits with an error msg on failure
+#
+handle_failure(){
+    rc=$?
+    if [[ $rc != 0 ]] ; then
+        echo "Installation failed, check $logs_path/$1 for details."
+        exit $rc
+    fi
+}
+
+#
+# Donwloads an archive (by url) and places it under $archives_path
+#
+download_archive() {
+    cd $archives_path
+
+    echo "  * Downloading $1 ..."
+    curl -OL $1
+    handle_failure $2
+
+    cd - > /dev/null
+}
+
+#
+# Extracts an archive (by name) under $src_path
+#
+extract_archive() {
+    echo -n "  * Exracting $1 under $src_path..."
+    tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
+    handle_failure $1
+    echo "  Done."
+}
+
+#
+# Installs a package from src by name
+#
+install_from_src() {
+    cd $src_path/$1-*
+
+    echo "  * Cleaning"
+    make clean &>> $logs_path/$1
+
+    eval special_config=\$$"configure_$1"
+    if [[ $special_config ]]; then
+        configure=$special_config
+    else
+        configure="./configure"
+    fi
+
+    configure="${configure} --prefix=$configure_prefix"
+
+    echo "  * Configuring ($configure)"
+    echo "Configuring with: $configure" &>> $logs_path/$1
+
+    $configure &>> $logs_path/$1
+    handle_failure $1
+
+    echo "  * Compilling"
+    make &>> $logs_path/$1
+    handle_failure $1
+
+    echo "  * Installing"
+    make install &>> $logs_path/$1
+    handle_failure $1
+
+    cd - > /dev/null
+}
+
+get_name(){
+    first_pass=`expr match "$1" '.*\/\(.*\)-'`
+    name=`expr "$first_pass" : '\(.*\)-'`
+
+    [[ ! $name ]] && name=$first_pass
+    echo $name
+}
+
+#
+# Downloads and install a package by URL
+#
+download_and_install() {
+    name=`get_name $1`
+
+    if [[ ! -s `echo $archives_path/$name*` ]]; then
+        download_archive $1 $name
+    else
+        echo "  * Already downloaded"
+    fi
+
+    if [[ ! -s `echo $src_path/$name*` ]]; then
+        extract_archive $name
+    else
+        echo "  * Already extracted"
+    fi
+
+    install_from_src $name
+    echo
+}
+
+#
+# Downloads and installs all $libs
+#
+install_libs() {
+    total=${#libs[@]}
+
+    for (( i=0; i<$total; i++ )); do
+        lib=${libs[$i]}
+        idx=`expr $i + 1`
+
+        echo "## ($idx/$total) `get_name $lib`"
+        download_and_install $lib
+    done
+}
+
+get_ruby_environment() {
+    cat<<EOF
+export PATH ; PATH="$bin_path"
+export RUBY_VERSION ; RUBY_VERSION='ruby-1.9.3-p125'
+export GEM_HOME ; GEM_HOME='$gem_home'
+export GEM_PATH ; GEM_PATH='$gem_path'
+export MY_RUBY_HOME ; MY_RUBY_HOME='$my_ruby_home'
+export IRBRC ; IRBRC='$irbrc'
+unset MAGLEV_HOME
+unset RBXOPT
+EOF
+}
+
+get_wrapper_template() {
+    cat<<EOF
+#!/usr/bin/env bash
+
+if [[ -s "$root/environment" ]]; then
+    source "$root/environment"
+    exec $1 "\$@"
+else
+    echo "ERROR: Missing environment file: '$root/environment" >&2
+    exit 1
 fi
+EOF
+}
 
-([[ -s "$HOME/.rvm/usr/lib/libyaml.so" ]] || rvm pkg install libyaml) && \
+prepare_ruby() {
+    echo -n "Dumping environment configuration in $root/environment ... "
+    get_ruby_environment > $root/environment
+    source $root/environment
+    echo "Done."
+    echo
+    echo "Updating Rubygems:"
+    $usr_path/bin/gem update --system
 
-# download and install Ruby
-([[ ! `rvm list | grep ruby-1.9.3-p125` ]] && rvm install ruby-1.9.3-p125)
+    echo
+    echo "Installing Bundler"
+    $usr_path/bin/gem install bundler
+}
 
-# setup the Ruby env
-rvm use 1.9.3-p125 && rvm gemset create arachni && rvm gemset use arachni  && \
+install_arachni() {
+    curl -L download_archive $arachni_tarball_url > "$archives_path/arachni-pkg.tar.gz"
+    extract_archive "arachni"
 
-# clone the Arachni repo
-([[ -s "./arachni" ]] || git clone git://github.com/Zapotek/arachni.git) && \
+    cd $src_path/Zapotek-arachni*
+    $usr_path/bin/rake install
+}
 
-# install Arachni and its deps
-cd arachni && \
-git pull && \
-git checkout experimental && \
-cd . && \
-gem install bundle && \
-bundle install && \
+install_bin_wrappers(){
 
-# run the specs to make sure that everything's working
-rake spec
+    cd $root/gems/bin
+    for bin in arachni*; do
+        echo "  * $bin => $root/bin/$bin"
+        get_wrapper_template "$root/usr/bin/ruby $root/gems/bin/$bin" > "$root/bin/$bin"
+        chmod +x "$root/bin/$bin"
+    done
+    cd - > /dev/null
+}
+
+total=5
+echo "
+# (1/$total) Creating directories
+------------------------"
+
+setup_dirs
+
+echo "
+# (2/$total) Resolving dependencies
+------------------------"
+
+install_libs
+
+echo "
+# (3/$total) Configuring Ruby
+------------------------"
+
+prepare_ruby
+
+echo "
+# (4/$total) Installing Arachni
+------------------------"
+
+install_arachni
+
+echo "
+# (5/$total) Installing bin wrappers
+------------------------"
+
+install_bin_wrappers
