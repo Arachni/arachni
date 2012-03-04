@@ -20,14 +20,11 @@
 #
 # Requirements:
 #   * wget -- To download the necessary packages
-#   * build-essential -- For compilers, headers etc.
-#   * gcc-multilib --  For extra libs required by OpenSSL
-#   * g++-multilib --  For extra libs required by OpenSSL
+#   * build-essential -- For compilers (gcc & g++), headers etc.
 #
 # Install them with:
-#   sudo apt-get install wget build-essential gcc-multilib g++-multilib
+#   sudo apt-get install wget build-essential
 #
-
 
 echo "# Checking for installation dependencies"
 echo '----------------------------------------'
