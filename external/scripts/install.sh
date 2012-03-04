@@ -426,12 +426,13 @@ cat<<EOF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Installation has completed succesfully!
+Installation completed succesfully!
 
 You can add '$root/bin' to your path in order to be able to access the Arachni
 executables from anywhere:
 
     echo 'export PATH=$root/bin:\$PATH' >> ~/.bash_profile
+    source ~/.bash_profile
 
 Useful resources:
     * Homepage     - http://arachni-scanner.com/
