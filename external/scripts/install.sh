@@ -19,13 +19,13 @@
 # including system library dependencies, Ruby, gem dependencies and Arachni itself.
 #
 # Requirements:
-#   * curl -- To download the necessary packages
+#   * wget -- To download the necessary packages
 #   * build-essential -- For compilers, headers etc.
 #   * gcc-multilib --  For extra libs required by OpenSSL
 #   * g++-multilib --  For extra libs required by OpenSSL
 #
 # Install them with:
-#   sudo apt-get install curl build-essential gcc-multilib g++-multilib
+#   sudo apt-get install wget build-essential gcc-multilib g++-multilib
 #
 
 arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
@@ -88,7 +88,11 @@ configure_ruby="./configure --with-opt-dir=$configure_prefix \
 configure_openssl="./config -I$usr_path/include -L$usr_path/lib \
 zlib no-asm no-krb5 shared"
 
-configure_curl="./configure --with-ssl"
+configure_curl="./configure \
+--with-ssl=$usr_path/ssl \
+--with-zlib=$usr_path \
+--enable-optimize --enable-nonblocking \
+--enable-threaded-resolver --enable-crypto-auth --enable-cookies"
 
 #
 # Creates the directory structure for the env
@@ -150,7 +154,7 @@ download_archive() {
     cd $archives_path
 
     echo "  * Downloading $1"
-    curl -OL $1
+    wget $1
     handle_failure $2
 
     cd - > /dev/null
@@ -160,7 +164,7 @@ download_archive() {
 # Extracts an archive (by name) under $src_path
 #
 extract_archive() {
-    echo -n "  * Exracting under $src_path"
+    echo "  * Exracting"
     tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
     handle_failure $1
 }
@@ -299,7 +303,7 @@ prepare_ruby() {
 }
 
 install_arachni() {
-    curl -L download_archive $arachni_tarball_url > "$archives_path/arachni-pkg.tar.gz"
+    download_archive $arachni_tarball_url
     extract_archive "arachni"
 
     cd $src_path/Zapotek-arachni*
