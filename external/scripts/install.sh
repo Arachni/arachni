@@ -287,8 +287,6 @@ export GEM_HOME ; GEM_HOME='$gem_home'
 export GEM_PATH ; GEM_PATH='$gem_path'
 export MY_RUBY_HOME ; MY_RUBY_HOME='$my_ruby_home'
 export IRBRC ; IRBRC='$irbrc'
-unset MAGLEV_HOME
-unset RBXOPT
 EOF
 }
 
@@ -300,9 +298,13 @@ get_wrapper_template() {
     cat<<EOF
 #!/usr/bin/env bash
 
+#
+# Slight RVM rip-off
+#
+
 if [[ -s "$root/environment" ]]; then
     source "$root/environment"
-    exec $1 "\$@"
+    exec ruby $1 "\$@"
 else
     echo "ERROR: Missing environment file: '$root/environment" >&2
     exit 1
@@ -354,7 +356,7 @@ install_bin_wrappers() {
     cd $root/gems/bin
     for bin in arachni*; do
         echo "  * $bin => $root/bin/$bin"
-        get_wrapper_template "$root/usr/bin/ruby $root/gems/bin/$bin" > "$root/bin/$bin"
+        get_wrapper_template "$root/gems/bin/$bin" > "$root/bin/$bin"
         chmod +x "$root/bin/$bin"
     done
     cd - > /dev/null
