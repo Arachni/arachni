@@ -45,7 +45,7 @@ done
 
 if [[ $fail ]]; then
     echo "Please install the missing dependencies and try again."
-    exit
+    exit 1
 fi
 
 arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
