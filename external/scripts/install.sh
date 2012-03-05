@@ -59,6 +59,12 @@ deps="
     wget
     gcc
     g++
+    readlink
+    awk
+    sed
+    grep
+    make
+    expr
 "
 for dep in $deps; do
     echo -n "  * $dep"
@@ -331,6 +337,7 @@ install_libs() {
             for so_file in `ls $so_files`; do
                 echo "    o $so_file"
             done
+            echo
         else
             download_and_install $lib
         fi
@@ -462,8 +469,12 @@ install_bin_wrappers
 echo
 echo '# Cleaning up'
 echo '----------------'
+echo "  * Removing logs"
+rm -rf "$root/logs"
+
 echo "  * Removing sources"
 rm -rf $src_path
+
 echo "  * Removing downloaded archives"
 rm -rf $archives_path
 
