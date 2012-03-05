@@ -38,7 +38,7 @@ EOF
 fi
 
 echo
-echo "# Checking for installation dependencies"
+echo "# Checking for script dependencies"
 echo '----------------------------------------'
 deps="
     tar
