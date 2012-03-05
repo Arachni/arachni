@@ -42,8 +42,8 @@ Provides a template for a self-extracting installer.
 Creates an installer using an build directory (as created by ```build.sh```) and
 the template in ```installer.sh.tpl```.
 
-The resulting installer is able to self-extract the installation directory under
-a specified directory (default: ```/opt/```) and create symlinks under ```/usr/local/bin/```.
+The resulting installer is able to self-extract under a specified directory
+(default: ```/opt/```) and create symlinks under ```/usr/local/bin/```.
 
 ```
             Arachni packager (experimental)
