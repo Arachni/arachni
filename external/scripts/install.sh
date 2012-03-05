@@ -152,7 +152,7 @@ configure_openssl="./config -I$usr_path/include -L$usr_path/lib \
 zlib no-asm no-krb5 shared"
 
 configure_curl="./configure \
---with-ssl=$usr_path/ssl \
+--with-ssl=$usr_path \
 --with-zlib=$usr_path \
 --enable-optimize --enable-nonblocking \
 --enable-threaded-resolver --enable-crypto-auth --enable-cookies"
