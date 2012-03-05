@@ -6,13 +6,13 @@ An explanation of each file follows.
 
 ## install.sh
 
-* Creates an directory environment to host a fresh Arachni installation
+* Creates a directory environment to host a fresh Arachni installation
 * Donwloads all system library dependencies and installs them in the environment
 * Donwloads Ruby and installs it in the environment
 * Configures Ruby and installs a few vital gems
 * Tests and installs Arachni
 
-The created environment is self-sufficient in providing the required runtime
+The created environment is self-sufficient in providing the required runtimes
 for Arachni and can be moved between systems of identical architecture without issue.
 
 ## installer.tpl.sh
