@@ -17,6 +17,6 @@
 module Arachni
 
     # the universal system version
-    VERSION      = '0.4.1'
+    VERSION = IO.read( File.dirname( __FILE__ ) + '/../version' ).strip
 
 end
