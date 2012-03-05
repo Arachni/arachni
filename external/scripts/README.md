@@ -60,6 +60,19 @@ Build directory defaults to 'arachni'.
 
 Provides a template for a self-extracting installer.
 
+```
+            Arachni installer (experimental)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ It extracts a pre-configured, self-contained installation.
+
+     by Tasos Laskos <tasos.laskos@gmail.com>
+-------------------------------------------------------------------------
+
+Usage: ./arachni-0.4.1-x86_64-linux-installer.sh [installation directory]
+
+Installation directory defaults to '/opt/arachni-<version>'.
+```
 
 ## build_and_package.sh
 
