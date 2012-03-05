@@ -4,30 +4,30 @@ This directory holds scripts used to build packages for Arachni.
 
 An explanation of each file follows.
 
-## install.sh
+## build.sh
 
-* Creates a directory environment to host a fresh Arachni installation
-* Donwloads all system library dependencies and installs them in the environment
+* Creates a directory structure to host a fresh environment
+* Donwloads all library dependencies and installs them in the environment
 * Donwloads Ruby and installs it in the environment
 * Configures Ruby and installs a few vital gems
-* Tests and installs Arachni
+* Tests and installs Arachni in the environment
 
 The created environment is self-sufficient in providing the required runtimes
 for Arachni and can be moved between systems of identical architecture without issue.
 
 ```
-             Arachni installer (experimental)
+            Arachni builder (experimental)
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- It will download and install all dependencies, configure the environment
- and install Arachni itself.
+ It will create an environment, download and install all dependencies in it,
+ configure it and install Arachni itself in it.
 
      by Tasos Laskos <tasos.laskos@gmail.com>
 -------------------------------------------------------------------------
 
-Usage: install.sh [installation directory]
+Usage: build.sh [build directory]
 
-Installation directory defaults to './arachni'.
+Build directory defaults to 'arachni'.
 
 If at any point you decide to cancel the process, re-running the script
 will continue from the point it left off.
@@ -62,6 +62,6 @@ Installation directory defaults to './arachni'.
 
 ```
 
-## build.sh
+## build_and_package.sh
 
-Drives ```install.sh``` and ```package.sh``` to create an installer.
+Drives ```build.sh``` and ```package.sh``` to create an installer.
