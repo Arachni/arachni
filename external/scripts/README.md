@@ -80,3 +80,14 @@ Drives ```build.sh``` and ```package.sh``` to generate an installer and an archi
 
 * ```arachni-<version>-<arch>-linux-installer.sh```
 * ```arachni-<version>-<arch>.tar.gz```
+
+## cross_build_and_package.sh
+
+Runs ```build_and_package.sh``` from inside a 32bit chroot environment in order
+to create 32bit packages.
+
+## build_all.sh
+
+Runs ```cross_build_and_package.sh``` and ```build_and_package.sh``` to create packages
+for both 64bit and 32bit architectures.
+
