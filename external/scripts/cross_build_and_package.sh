@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-chroot "/var/chroots/32bit" /bin/bash -c "cd /root
+chroot_path="/var/chroots/32bit"
+chroot $chroot_path /bin/bash -c "cd /root
 /workspace/arachni/external/scripts/build_and_package.sh
 "
 
-cp /var/chroots/32bit/root/arachni-*-x*.* .
+cp $chroot_path/root/arachni-*-x*.* .
