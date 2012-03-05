@@ -154,8 +154,17 @@ configure_ruby="./configure --with-opt-dir=$configure_prefix \
 --with-openssl-dir=$configure_prefix \
 --disable-install-doc --enable-shared"
 
-configure_openssl="./config -I$usr_path/include -L$usr_path/lib \
+common_configure_openssl="-I$usr_path/include -L$usr_path/lib \
 zlib no-asm no-krb5 shared"
+
+# openssl uses uname to determine os/arch which will return the truth
+# even when running in chroot, which is annoying when trying to cross-compile
+if [[ -e "/32bit-chroot" ]]; then
+    configure_openssl="./Configure $common_configure_openssl \
+--prefix=$configure_prefix linux-generic32"
+else
+    configure_openssl="./config $common_configure_openssl"
+fi
 
 configure_curl="./configure \
 --with-ssl=$usr_path \
