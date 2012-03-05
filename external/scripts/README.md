@@ -33,10 +33,6 @@ If at any point you decide to cancel the process, re-running the script
 will continue from the point it left off.
 ```
 
-## installer.tpl.sh
-
-Provides a template for a self-extracting installer.
-
 ## package.sh
 
 Creates an installer using an build directory (as created by ```build.sh```) and
@@ -59,6 +55,11 @@ Usage: package.sh [installer name] [build directory]
 Installer name defaults to 'arachni-installer.sh'.
 Build directory defaults to 'arachni'.
 ```
+
+### installer.tpl.sh
+
+Provides a template for a self-extracting installer.
+
 
 ## build_and_package.sh
 
