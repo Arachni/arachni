@@ -26,6 +26,33 @@
 #   sudo apt-get install wget build-essential
 #
 
+cat<<EOF
+
+             Arachni installer (experimental)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ It will download and install all dependencies, configure the environment
+ and install Arachni itself.
+
+     by Tasos Laskos <tasos.laskos@gmail.com>
+-------------------------------------------------------------------------
+
+EOF
+
+if [[ "$1" == '-h' ]] || [[ "$1" == '--help' ]]; then
+    cat <<EOF
+Usage: $0 [installation directory]
+
+Installation directory defaults to './arachni'.
+
+If at any point you decide to cancel the process, re-running the script
+will continue from the point it left off.
+
+EOF
+    exit
+fi
+
+echo
 echo "# Checking for installation dependencies"
 echo '----------------------------------------'
 deps="
@@ -77,8 +104,15 @@ libs_so=(
     ruby
 )
 
-# root path
-root="`pwd`/arachni"
+if [[ ! -z "$1" ]]; then
+    # root path
+    root="$1"
+else
+    # root path
+    root="arachni"
+fi
+
+root=`readlink -f $root`
 
 # holds tarball archives
 archives_path="$root/archives"
@@ -99,9 +133,6 @@ bin_path="$root_path/bin:$usr_path/bin"
 # Gem storage directories
 gem_home="$root/gems"
 gem_path=$gem_home
-
-my_ruby_home="$usr_path/ruby"
-irbrc="$my_ruby_home/.irbrc"
 
 #
 # Special config for packages that need something extra.
@@ -177,6 +208,7 @@ handle_failure(){
     rc=$?
     if [[ $rc != 0 ]] ; then
         echo "Installation failed, check $logs_path/$1 for details."
+        echo "When you resolve the issue you can run the script again to continue where the process left off."
         exit $rc
     fi
 }
@@ -312,12 +344,19 @@ install_libs() {
 #
 get_ruby_environment() {
     cat<<EOF
-export PATH ; PATH="$bin_path"
+
+echo \$LD_LIBRARY_PATH | egrep \$env_root > /dev/null
+if [ \$? -ne 0 ] ; then
+    export PATH ; PATH="\$env_root/usr/bin:\$PATH"
+    export LD_LIBRARY_PATH ; LD_LIBRARY_PATH="\$env_root/usr/lib:\$LD_LIBRARY_PATH"
+fi
+
 export RUBY_VERSION ; RUBY_VERSION='ruby-1.9.3-p125'
-export GEM_HOME ; GEM_HOME='$gem_home'
-export GEM_PATH ; GEM_PATH='$gem_path'
-export MY_RUBY_HOME ; MY_RUBY_HOME='$my_ruby_home'
-export IRBRC ; IRBRC='$irbrc'
+export GEM_HOME ; GEM_HOME="\$env_root/gems"
+export GEM_PATH ; GEM_PATH="\$env_root/gems"
+export MY_RUBY_HOME ; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
+export RUBYLIB ; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux
+export IRBRC ; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
 EOF
 }
 
@@ -332,12 +371,12 @@ get_wrapper_template() {
 #
 # Slight RVM rip-off
 #
-
-if [[ -s "$root/environment" ]]; then
-    source "$root/environment"
+env_root="\$(dirname "\$(readlink -f "\${0}")")"/..
+if [[ -s "\$env_root/environment" ]]; then
+    source "\$env_root/environment"
     exec ruby $1 "\$@"
 else
-    echo "ERROR: Missing environment file: '$root/environment" >&2
+    echo "ERROR: Missing environment file: '\$env_root/environment" >&2
     exit 1
 fi
 EOF
@@ -348,6 +387,8 @@ EOF
 #
 prepare_ruby() {
     echo "  * Generating environment configuration ($root/environment)"
+
+    env_root=$root
     get_ruby_environment > $root/environment
     source $root/environment
 
@@ -363,7 +404,7 @@ prepare_ruby() {
 install_arachni() {
     PATH="$orig_path:$PATH"
 
-    rm "$archives_path/arachni-pkg.tar.gz"
+    rm "$archives_path/arachni-pkg.tar.gz" &> /dev/null
     download $arachni_tarball_url "-O $archives_path/arachni-pkg.tar.gz"
     handle_failure "arachni"
 
@@ -388,38 +429,44 @@ install_bin_wrappers() {
     cd $root/gems/bin
     for bin in arachni*; do
         echo "  * $bin => $root/bin/$bin"
-        get_wrapper_template "$root/gems/bin/$bin" > "$root/bin/$bin"
+        get_wrapper_template "\$env_root/gems/bin/$bin" > "$root/bin/$bin"
         chmod +x "$root/bin/$bin"
     done
     cd - > /dev/null
 }
 
-total=5
-
 echo
-echo "# (1/$total) Creating directories"
-echo "---------------------------------"
+echo '# (1/5) Creating directories'
+echo '---------------------------------'
 setup_dirs
 
 echo
-echo "# (2/$total) Installing dependencies"
-echo "-----------------------------------"
+echo '# (2/5) Installing dependencies'
+echo '-----------------------------------'
 install_libs
 
 echo
-echo "# (3/$total) Preparing the Ruby environment"
-echo "-------------------------------------------"
+echo '# (3/5) Preparing the Ruby environment'
+echo '-------------------------------------------'
 prepare_ruby
 
 echo
-echo "# (4/$total) Installing Arachni"
-echo "-------------------------------"
+echo '# (4/5) Installing Arachni'
+echo '-------------------------------'
 install_arachni
 
 echo
-echo "# (5/$total) Installing bin wrappers"
-echo "------------------------------------"
+echo '# (5/5) Installing bin wrappers'
+echo '------------------------------------'
 install_bin_wrappers
+
+echo
+echo '# Cleaning up'
+echo '----------------'
+echo "  * Removing sources"
+rm -rf $src_path
+echo "  * Removing downloaded archives"
+rm -rf $archives_path
 
 echo
 cat<<EOF
