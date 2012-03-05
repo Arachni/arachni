@@ -69,7 +69,7 @@ Provides a template for a self-extracting installer.
      by Tasos Laskos <tasos.laskos@gmail.com>
 -------------------------------------------------------------------------
 
-Usage: ./arachni-0.4.1-x86_64-linux-installer.sh [installation directory]
+Usage: ./arachni-0.4.1-<cpu_arch>-linux-installer.sh [installation directory]
 
 Installation directory defaults to '/opt/arachni-<version>'.
 ```
