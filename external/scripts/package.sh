@@ -45,6 +45,9 @@ deps="
     tar
     awk
     tail
+    basename
+    dirname
+    readlink
 "
 for dep in $deps; do
     echo -n "  * $dep"
@@ -104,6 +107,9 @@ rm -f $instname
 
 echo "  * Copying installer template to '$instname'"
 cp -f $insttpl $instname
+
+pattern=`basename $instdir`
+sed -i "s/##DIR##/$pattern/g" $instname
 
 echo "  * Compressing installation dir ($instdir)"
 tar czf $tmp_archive $instdir
