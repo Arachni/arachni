@@ -51,7 +51,8 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
-mv "$installer_name.tar.gz" "$pkg_name-$arch.tar.gz"
+archive="$pkg_name-$arch.tar.gz"
+mv "$installer_name.tar.gz" $archive
 
 echo
 cat<<EOF
@@ -61,6 +62,7 @@ cat<<EOF
 
 Completed succesfully!
 
+Archive is at:   $archive
 Installer is at: $installer_name
 
 Cheers,
