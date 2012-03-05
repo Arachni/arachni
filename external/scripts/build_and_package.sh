@@ -18,7 +18,8 @@ root="$(dirname "$(readlink -f "${0}")")"
 version=`cat $root/../../lib/version`
 
 pkg_name="arachni-$version"
-installer_name="$pkg_name-`uname -m`-linux-installer.sh"
+arch=`uname -m`
+installer_name="$pkg_name-$arch-linux-installer.sh"
 
 cat<<EOF
 @@ Building
@@ -46,13 +47,15 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
+mv "$installer_name.tar.gz" "$pkg_name-$arch.tar.gz"
+
 echo
 cat<<EOF
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-Build completed succesfully!
+Completed succesfully!
 
 Installer is at: $installer_name
 
