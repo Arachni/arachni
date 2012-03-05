@@ -388,7 +388,7 @@ EOF
 prepare_ruby() {
     echo "  * Generating environment configuration ($root/environment)"
 
-    env_root=$root
+    export env_root=$root
     get_ruby_environment > $root/environment
     source $root/environment
 
@@ -402,7 +402,6 @@ prepare_ruby() {
 }
 
 install_arachni() {
-    PATH="$orig_path:$PATH"
 
     rm "$archives_path/arachni-pkg.tar.gz" &> /dev/null
     download $arachni_tarball_url "-O $archives_path/arachni-pkg.tar.gz"
