@@ -30,13 +30,15 @@ cat<<EOF
 
 EOF
 
-dir="/opt/##DIR##"
+pkg_name="##PKG_NAME##"
+instdir="/opt"
+binpath="/usr/local/bin"
 
 if [[ "$1" == '-h' ]] || [[ "$1" == '--help' ]]; then
     cat <<EOF
 Usage: $0 [installation directory]
 
-Installation directory defaults to '$dir'.
+Installation directory defaults to '$instdir'.
 
 EOF
     exit
@@ -70,11 +72,8 @@ fi
 
 
 if [[ ! -z "$1" ]]; then
-    dir="$1"
+    instdir=`readlink -f $1`
 fi
-
-basedir=`dirname $dir`
-binpath="/usr/local/bin"
 
 touch "$binpath/perm-check" &> /dev/null
 if [[ "$?" != 0 ]]; then
@@ -84,23 +83,23 @@ if [[ "$?" != 0 ]]; then
 fi
 rm "$binpath/perm-check"
 
-if [[ ! -s $basedir ]]; then
-    echo "'$basedir' does not exist."
+if [[ ! -s $instdir ]]; then
+    echo "Directory '$instdir' does not exist."
     exit 1
 fi
 
-touch "$basedir/perm-check" &> /dev/null
+touch "$instdir/perm-check" &> /dev/null
 if [[ "$?" != 0 ]]; then
-    echo "Could not write to '$basedir', make sure you have enough permissions and try again."
+    echo "Could not write to '$instdir', make sure you have enough permissions and try again."
     exit 1
 fi
-rm "$basedir/perm-check"
+rm "$instdir/perm-check"
 
 echo
 echo "# Installing"
 echo '----------------------------------------'
 
-echo "  * Extracting files in $dir"
+echo "  * Extracting files under $instdir"
 
 # searches for the line number where finish the script and start the tar.gz
 SKIP=`awk '/^__TARFILE_FOLLOWS__/ { print NR + 1; exit 0; }' $0`
@@ -109,10 +108,10 @@ SKIP=`awk '/^__TARFILE_FOLLOWS__/ { print NR + 1; exit 0; }' $0`
 THIS=`pwd`/$0
 
 # take the tarfile and pipe it into tar
-tail -n +$SKIP $THIS | tar -xz -C $basedir
+tail -n +$SKIP $THIS | tar -xz -C $instdir
 
 echo "  * Creating symlinks for executables"
-for bin in $dir/bin/*; do
+for bin in $instdir/$pkg_name/bin/*; do
     bin_name=`basename $bin`
     echo "    o $binpath/$bin_name => $bin"
 

@@ -108,7 +108,7 @@ echo "  * Copying installer template to '$instname'"
 cp -f $insttpl $instname
 
 pattern=`basename $instdir`
-sed -i "s/##DIR##/$pattern/g" $instname
+sed -i "s/##PKG_NAME##/$pattern/g" $instname
 
 echo "  * Compressing installation dir ($instdir)"
 tar czf $tmp_archive $instdir
