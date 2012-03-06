@@ -19,18 +19,17 @@
 # so we hack around it
 exec  <<END
 
-export xterm="xterm -geometry 80X10 -hold"
-
 echo "[>] Starting the Arachni Dispatch server..."
-xterm -T "Arachni Dispatch server" -e "arachni_rpcd" &
+(arachni_rpcd > arachni_rpcd.log) &
 sleep 5
 
 echo "[>] Starting the Arachni WebUI server..."
-xterm -T "Arachni WebUI server" -e "arachni_web" &
+(arachni_web > arachni_web.log) &
 sleep 5
 
-echo "[>] Opening browser..."
-xdg-open http://127.0.0.1:4567
+echo "[>] The web interface is at: http://127.0.0.1:4567"
+echo "[>] --- It may take a while to startup, try refreshing the page a couple of times."
+echo
 
 echo "[>] Hit Ctrl+C to shut everything down."
 
