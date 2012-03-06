@@ -443,7 +443,7 @@ install_arachni() {
 install_bin_wrappers() {
     cd $root/gems/bin
     for bin in arachni*; do
-        echo "  * $bin => $root/bin/$bin"
+        echo "  * $root/bin/$bin => $root/gems/bin/$bin"
         get_wrapper_template "\$env_root/gems/bin/$bin" > "$root/bin/$bin"
         chmod +x "$root/bin/$bin"
     done
