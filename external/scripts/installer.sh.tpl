@@ -30,8 +30,13 @@ cat<<EOF
 
 EOF
 
+# will be substituted by package.sh
 pkg_name="##PKG_NAME##"
+
+# default installation dir
 instdir="/opt"
+
+# where to put symlinks to the executables
 binpath="/usr/local/bin"
 
 if [[ "$1" == '-h' ]] || [[ "$1" == '--help' ]]; then
@@ -121,6 +126,7 @@ if [[ "$?" != 0 ]]; then
     echo "    source $rc"
 else
     rm "$binpath/perm-check"
+
     echo "  * Creating symlinks for executables"
     for bin in $instdir/$pkg_name/bin/*; do
         bin_name=`basename $bin`
