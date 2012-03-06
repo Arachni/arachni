@@ -16,8 +16,6 @@
 
 root="$(dirname "$(readlink -f "${0}")")"
 
-# build 32bit package
-xterm -T "Building the 32bit package" -e "bash $root/cross_build_and_package.sh" &
-
-# build 64bit package
-bash "$root/build_and_package.sh"
+export xterm="xterm -geometry 80X10 -hold"
+xterm -T "Building 32bit packages" -e "bash $root/cross_build_and_package.sh" &
+xterm -T "Building 64bit packages" -e "bash $root/build_and_package.sh" &
