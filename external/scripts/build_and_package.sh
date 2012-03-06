@@ -57,7 +57,7 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
-archive="$pkg_name-$arch.tar.gz"
+archive="$pkg_name-$arch-linux.tar.gz"
 mv "$installer_name.tar.gz" $archive
 
 echo
