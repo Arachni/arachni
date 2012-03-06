@@ -27,6 +27,8 @@
     - Fixed infitine loop bug.
 - Tests
     - Added tests using RSpec
+- Executables
+    - arachni_web_autostart -- removed calls to <em>xterm</em> and <em>xdg-open</em>
 
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports
