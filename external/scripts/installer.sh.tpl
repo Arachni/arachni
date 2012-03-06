@@ -70,18 +70,9 @@ if [[ $fail ]]; then
     exit 1
 fi
 
-
 if [[ ! -z "$1" ]]; then
     instdir=`readlink -f $1`
 fi
-
-touch "$binpath/perm-check" &> /dev/null
-if [[ "$?" != 0 ]]; then
-    echo "Can't write to '$binpath', make sure you have enough permissions and try again."
-    echo "(HINT: Run the script as 'root'.)"
-    exit 1
-fi
-rm "$binpath/perm-check"
 
 if [[ ! -s $instdir ]]; then
     echo "Directory '$instdir' does not exist."
@@ -90,7 +81,8 @@ fi
 
 touch "$instdir/perm-check" &> /dev/null
 if [[ "$?" != 0 ]]; then
-    echo "Could not write to '$instdir', make sure you have enough permissions and try again."
+    echo -n "Could not write to '$instdir', make sure you have enough "
+    echo "permissions or specify a different directory."
     exit 1
 fi
 rm "$instdir/perm-check"
@@ -110,15 +102,34 @@ THIS=`pwd`/$0
 # take the tarfile and pipe it into tar
 tail -n +$SKIP $THIS | tar -xz -C $instdir
 
-echo "  * Creating symlinks for executables"
-for bin in $instdir/$pkg_name/bin/*; do
-    bin_name=`basename $bin`
-    echo "    o $binpath/$bin_name => $bin"
+touch "$binpath/perm-check" &> /dev/null
+if [[ "$?" != 0 ]]; then
 
-    ln -fs $bin "$binpath/$bin_name"
-    chmod +x "$binpath/$bin_name"
-done
+    pkg_bin="$instdir/$pkg_name/bin"
+    rc="$HOME/.bashrc"
 
+    echo "  * Can't write to '$binpath', installing for current user only."
+    echo "    o Adding '$pkg_bin' to PATH using '$rc'."
+
+    egrep "$pkg_bin" $rc > /dev/null
+    if [ $? -ne 0 ] ; then
+        echo "export PATH=$pkg_bin:\$PATH" >> $rc
+    fi
+
+    echo
+    echo " ==== In order for the changes to take effect please execute:"
+    echo "    source $rc"
+else
+    rm "$binpath/perm-check"
+    echo "  * Creating symlinks for executables"
+    for bin in $instdir/$pkg_name/bin/*; do
+        bin_name=`basename $bin`
+        echo "    o $binpath/$bin_name => $bin"
+
+        ln -fs $bin "$binpath/$bin_name"
+        chmod +x "$binpath/$bin_name"
+    done
+fi
 
 # Any script here will happen after the tar file extract.
 echo
