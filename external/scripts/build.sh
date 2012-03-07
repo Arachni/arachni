@@ -99,14 +99,14 @@ libs=(
 )
 
 libs_so=(
-    libz.so.1.2.6
-    libiconv.so.2.5.1
-    libssl.so.0.9.8
-    libsqlite3.so.0.8.6
-    libxml2.so.2.7.8
-    libxslt.so.1.1.26
-    libcurl.so.4.2.0
-    libyaml-0.so.2.0.2
+    libz
+    libiconv
+    libssl
+    libsqlite3
+    libxml2
+    libxslt
+    libcurl
+    libyaml-0
     ruby
 )
 
@@ -118,6 +118,9 @@ else
     root="arachni"
 fi
 
+mkdir -p $root
+
+# *BSD's readlink doesn't like non-existent dirs
 root=`readlink -f $root`
 
 # holds tarball archives
@@ -178,16 +181,6 @@ orig_path=$PATH
 # Creates the directory structure for the env
 #
 setup_dirs( ) {
-
-    echo -n "  * $root"
-    #rm -rf $root
-    if [[ ! -s $root ]]; then
-        echo
-        mkdir $root
-    else
-        echo " -- already exists."
-    fi
-
     cd $root
 
     dirs="
@@ -234,7 +227,7 @@ download() {
     echo -n " -  0% ETA:      -s"
     wget -c --progress=dot --no-check-certificate $1 $2 2>&1 | \
         while read line; do
-            echo $line | grep "%" | sed -u -e "s/\.//g" | \
+            echo $line | grep "%" | sed -e "s/\.//g" | \
             awk '{printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b%4s ETA: %6s", $2, $4)}'
         done
 
@@ -298,11 +291,7 @@ install_from_src() {
 }
 
 get_name(){
-    first_pass=`expr match "$1" '.*\/\(.*\)-'`
-    name=`expr "$first_pass" : '\(.*\)-'`
-
-    [[ ! $name ]] && name=$first_pass
-    echo $name
+    basename $1 | awk -F- '{print $1}'
 }
 
 #
@@ -311,18 +300,8 @@ get_name(){
 download_and_install() {
     name=`get_name $1`
 
-    #if [[ ! -s `echo $archives_path/$name*` ]]; then
-        download_archive $1 $name
-    #else
-        #    echo "  * Already downloaded"
-    #fi
-
-    #if [[ ! -s `echo $src_path/$name*` ]]; then
-        extract_archive $name
-    #else
-        #    echo "  * Already extracted"
-    #fi
-
+    download_archive $1 $name
+    extract_archive $name
     install_from_src $name
     echo
 }
@@ -340,8 +319,9 @@ install_libs() {
 
         echo "## ($idx/$libtotal) `get_name $lib`"
 
-        so_files="$usr_path/lib/$so"
-        if [[ -s $so_files ]]; then
+        so_files="$usr_path/lib/$so"*
+        ls  $so_files &> /dev/null
+        if [[ $? == 0 ]] ; then
             echo "  * Already installed, found:"
             for so_file in `ls $so_files`; do
                 echo "    o $so_file"
