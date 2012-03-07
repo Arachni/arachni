@@ -66,7 +66,7 @@ cat<<EOF
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-Completed succesfully!
+Completed successfully!
 
 Archive is at:   $archive
 Installer is at: $installer_name

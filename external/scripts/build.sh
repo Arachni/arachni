@@ -472,7 +472,7 @@ cat<<EOF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Build completed succesfully!
+Build completed successfully!
 
 You can add '$root/bin' to your path in order to be able to access the Arachni
 executables from anywhere:
