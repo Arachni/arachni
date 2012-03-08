@@ -17,6 +17,8 @@
 root="$(dirname "$(readlink -f "${0}")")"
 version=`cat $root/../../lib/version`
 
+os=`uname -s | awk '{print tolower($0)}'`
+
 pkg_name="arachni-$version"
 
 if [[ -e "/32bit-chroot" ]]; then
@@ -25,7 +27,7 @@ else
     arch=`uname -m`
 fi
 
-installer_name="$pkg_name-$arch-linux-installer.sh"
+installer_name="$pkg_name-$arch-$os-installer.sh"
 
 cat<<EOF
 
