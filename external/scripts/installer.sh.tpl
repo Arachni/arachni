@@ -105,7 +105,7 @@ SKIP=`awk '/^__TARFILE_FOLLOWS__/ { print NR + 1; exit 0; }' $0`
 THIS=`pwd`/$0
 
 # take the tarfile and pipe it into tar
-tail -n +$SKIP $THIS | tar -xz -C $instdir
+tail -n +$SKIP $THIS | tar -xzf - -C $instdir
 
 touch "$binpath/perm-check" &> /dev/null
 if [[ "$?" != 0 ]]; then
