@@ -8,5 +8,6 @@ These are the people that helped improve Arachni either by submitting code, sugg
 - [Steve Pinkham](http://github.com/spinkham) for beta testing and patches.
 - [Aung Khant](mailto:aungkhant@yehg.net) for general suggestions.
 - [Herman Stevens](mailto:herman@astyran.com) for contributing recon modules.
+- [Edwin van Andel](mailto:evanandel@yafsec.com) for contributing *BSD patches and testing the build script.
 
 A big thanks to my buddy [Andreas](mailto:rainmakergr@gmail.com) for the original spider drawing used in the project graphics.
