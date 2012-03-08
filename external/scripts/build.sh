@@ -18,12 +18,9 @@
 # Experimental Arachni install script, it's supposed to take care of everything
 # including system library dependencies, Ruby, gem dependencies and Arachni itself.
 #
-# Requirements:
-#   * wget -- To download the necessary packages
-#   * build-essential -- For compilers (gcc & g++), headers etc.
-#
-# Install them with:
-#   sudo apt-get install wget build-essential
+# Credits:
+#     Tasos Laskos <tasos.laskos@gmail.com> -- Original Linux version
+#     Edwin van Andel -- *BSD testing and patching
 #
 
 cat<<EOF
@@ -163,8 +160,29 @@ zlib no-asm no-krb5 shared"
 # openssl uses uname to determine os/arch which will return the truth
 # even when running in chroot, which is annoying when trying to cross-compile
 if [[ -e "/32bit-chroot" ]]; then
+
     configure_openssl="./Configure $common_configure_openssl \
 --prefix=$configure_prefix linux-generic32"
+
+elif [[ "Darwin" == "$(uname)" ]]; then
+
+    hw_machine=$(sysctl hw.machine | awk -F: '{print $2}' | sed 's/^ //')
+    hw_cpu64bit=$(sysctl hw.cpu64bit_capable | awk '{print $2}')
+
+    if [[ "Power Macintosh" == "$hw_machine" ]] ; then
+        if [[ $hw_cpu64bit == 1 ]]; then
+            openssl_os="darwin64-ppc-cc"
+        else
+            openssl_os="darwin-ppc-cc"
+        fi
+    else
+        if [[ $hw_cpu64bit == 1 ]]; then
+            openssl_os="darwin64-x86_64-cc"
+        else
+            openssl_os="darwin-i386-cc"
+        fi
+    fi
+    configure_openssl="./Configure $openssl_os $common_configure_openssl"
 else
     configure_openssl="./config $common_configure_openssl"
 fi
