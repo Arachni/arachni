@@ -15,16 +15,18 @@
     limitations under the License.
 =end
 
+root = File.expand_path( File.dirname( __FILE__ ) )
+
 # the gemspec doesn't seem to able to handle shell scripts
 # so we hack around it
 exec  <<END
 
 echo "[>] Starting the Arachni Dispatch server..."
-(arachni_rpcd > arachni_rpcd.log) &
+(#{root}/arachni_rpcd > arachni_rpcd.log) &
 sleep 5
 
 echo "[>] Starting the Arachni WebUI server..."
-(arachni_web > arachni_web.log) &
+(#{root}/arachni_web > arachni_web.log) &
 sleep 5
 
 echo "[>] The web interface is at: http://127.0.0.1:4567"
