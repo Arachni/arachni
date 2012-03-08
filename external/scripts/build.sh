@@ -279,7 +279,7 @@ install_from_src() {
     $configure &>> $logs_path/$1
     handle_failure $1
 
-    echo "  * Compilling"
+    echo "  * Compiling"
     make &>> $logs_path/$1
     handle_failure $1
 
