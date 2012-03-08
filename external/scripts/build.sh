@@ -407,12 +407,25 @@ prepare_ruby() {
     source $root/environment
 
     echo "  * Updating Rubygems"
-    $usr_path/bin/gem update --system &>> "$logs_path/ruby"
+    $usr_path/bin/gem update --system &>> "$logs_path/ruby_rubygems"
     handle_failure "ruby"
 
+    echo "  * Installing sys-proctable"
+    download "https://github.com/djberg96/sys-proctable/tarball/master" "-O $archives_path/sys-proctable-pkg.tar.gz" &> /dev/null
+    extract_archive "sys-proctable" &> /dev/null
+
+    cd $src_path/*-sys-proctable*
+
+    $usr_path/bin/rake install &>> "$logs_path/ruby_sys-proctable"
+    handle_failure "ruby_sys-proctable"
+    $usr_path/bin/gem build sys-proctable.gemspec &>> "$logs_path/ruby_sys-proctable"
+    handle_failure "ruby_sys-proctable"
+    $usr_path/bin/gem install sys-proctable-*.gem &>> "$logs_path/ruby_sys-proctable"
+    handle_failure "ruby_sys-proctable"
+
     echo "  * Installing Bundler"
-    $usr_path/bin/gem install bundler --no-ri  --no-rdoc  &>> "$logs_path/ruby"
-    handle_failure "ruby"
+    $usr_path/bin/gem install bundler --no-ri  --no-rdoc  &>> "$logs_path/ruby_bundler"
+    handle_failure "ruby_bundler"
 }
 
 install_arachni() {
