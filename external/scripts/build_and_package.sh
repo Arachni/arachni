@@ -22,12 +22,12 @@ os=`uname -s | awk '{print tolower($0)}'`
 pkg_name="arachni-$version"
 
 if [[ -e "/32bit-chroot" ]]; then
-    arch="x86_32"
+    arch="i386"
 else
     arch=`uname -m`
 fi
 
-installer_name="$pkg_name-$arch-$os-installer.sh"
+installer_name="$pkg_name-$os-$arch-installer.sh"
 
 cat<<EOF
 
