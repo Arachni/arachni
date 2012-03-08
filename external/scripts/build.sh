@@ -20,7 +20,7 @@
 #
 # Credits:
 #     Tasos Laskos <tasos.laskos@gmail.com> -- Original Linux version
-#     Edwin van Andel -- *BSD testing and patching
+#     Edwin van Andel <evanandel@yafsec.com> -- Patches for *BSD and testing
 #
 
 cat<<EOF
