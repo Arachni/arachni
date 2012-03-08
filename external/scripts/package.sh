@@ -105,12 +105,11 @@ rm -f $tmp_archive
 rm -f $instname
 
 echo "  * Copying installer template to '$instname'"
-cp -f $insttpl $instname
 
 pattern=`basename $instdir`
-sed -i "s/##PKG_NAME##/$pattern/g" $instname
+cat $insttpl | sed "s/##PKG_NAME##/$pattern/g" > $instname
 
-echo "  * Compressing installation dir ($instdir)"
+echo "  * Compressing build dir ($instdir)"
 tar czf $tmp_archive $instdir
 
 echo "  * Appending the archive to the installer"
