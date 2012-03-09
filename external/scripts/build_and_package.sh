@@ -19,15 +19,16 @@ version=`cat $root/../../lib/version`
 
 os=`uname -s | awk '{print tolower($0)}'`
 
-pkg_name="arachni-$version"
-
 if [[ -e "/32bit-chroot" ]]; then
     arch="i386"
 else
     arch=`uname -m`
 fi
 
+pkg_name="arachni-$version"
+
 installer_name="$pkg_name-$os-$arch-installer.sh"
+archive="$pkg_name-$os-$arch.tar.gz"
 
 cat<<EOF
 
@@ -59,7 +60,6 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
-archive="$pkg_name-$arch-linux.tar.gz"
 mv "$installer_name.tar.gz" $archive
 
 echo
