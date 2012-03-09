@@ -38,7 +38,7 @@ module Utilities
     # @see CGI.escapeHTML
     #
     def escape( str )
-        CGI.escapeHTML( str )
+        CGI.escapeHTML( str || '' )
     end
 
     #
@@ -51,7 +51,7 @@ module Utilities
     # @see CGI.unescapeHTML
     #
     def unescape( str )
-        CGI.unescapeHTML( str )
+        CGI.unescapeHTML( str || '' )
     end
 
     #
