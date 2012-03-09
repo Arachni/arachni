@@ -110,7 +110,7 @@ pattern=`basename $instdir`
 cat $insttpl | sed "s/##PKG_NAME##/$pattern/g" > $instname
 
 echo "  * Compressing build dir ($instdir)"
-tar czf $tmp_archive $instdir
+tar czf $tmp_archive -C `dirname $instdir` `basename $instdir`
 
 echo "  * Appending the archive to the installer"
 cat $tmp_archive >> $instname
