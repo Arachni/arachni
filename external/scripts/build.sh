@@ -115,7 +115,17 @@ else
     root="arachni"
 fi
 
-mkdir -p $root
+clean_build="$root-clean"
+if [[ -d $clean_build ]]; then
+
+    echo
+    echo "==== Found backed up clean build ($clean_build), using it as base."
+
+    rm -rf $root
+    cp -R $clean_build $root
+else
+    mkdir -p $root
+fi
 
 # *BSD's readlink doesn't like non-existent dirs
 root=`readlink -f $root`
@@ -470,6 +480,14 @@ echo
 echo '# (2/5) Installing dependencies'
 echo '-----------------------------------'
 install_libs
+
+if [[ ! -d $clean_build ]]; then
+    echo "==== Backing up clean build directory ($clean_build)."
+    cp -R $root $clean_build
+    rm -rf "$clean_build/logs"
+    rm -rf "$clean_build/src"
+    rm -rf "$clean_build/archives"
+fi
 
 echo
 echo '# (3/5) Preparing the Ruby environment'
