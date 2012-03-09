@@ -164,7 +164,7 @@ configure_ruby="./configure --with-opt-dir=$configure_prefix \
 --with-libyaml-dir=$configure_prefix \
 --with-zlib-dir=$configure_prefix \
 --with-openssl-dir=$configure_prefix \
---disable-install-doc --enable-shared"
+--disable-install-doc --enable-shared --enable-pthread"
 
 common_configure_openssl="-I$usr_path/include -L$usr_path/lib \
 zlib no-asm no-krb5 shared"
