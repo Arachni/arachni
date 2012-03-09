@@ -127,6 +127,8 @@ else
     mkdir -p $root
 fi
 
+update_clean_dir=false
+
 # *BSD's readlink doesn't like non-existent dirs
 root=`readlink -f $root`
 
@@ -356,6 +358,7 @@ install_libs() {
             done
             echo
         else
+            update_clean_dir=true
             download_and_install $lib
         fi
     done
@@ -481,9 +484,9 @@ echo '# (2/5) Installing dependencies'
 echo '-----------------------------------'
 install_libs
 
-if [[ ! -d $clean_build ]]; then
+if [[ ! -d $clean_build ]] || [[ $update_clean_dir == true ]]; then
     echo "==== Backing up clean build directory ($clean_build)."
-    cp -R $root $clean_build
+    cp -R $root/* $clean_build/
     rm -rf "$clean_build/logs"
     rm -rf "$clean_build/src"
     rm -rf "$clean_build/archives"
