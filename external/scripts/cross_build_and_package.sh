@@ -19,4 +19,4 @@ chroot $chroot_path /bin/bash -c "cd /root
 /workspace/arachni/external/scripts/build_and_package.sh
 "
 
-cp $chroot_path/root/arachni-*-x*.* .
+mv $chroot_path/root/arachni*.* .
