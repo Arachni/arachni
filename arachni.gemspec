@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
       s.add_dependency "sinatra-flash",   ">= 0.3.0"
       s.add_dependency "async_sinatra",   ">= 0.5.0"
       s.add_dependency "thin",            ">= 1.2.11"
-      s.add_dependency "data_objects",    "= 0.10.7"
+      s.add_dependency "data_objects",    "= 0.10.8"
       s.add_dependency "datamapper",      "= 1.1.0"
       s.add_dependency "dm-sqlite-adapter", "= 1.1.0"
       s.add_dependency "net-ssh",         ">= 2.2.1"
