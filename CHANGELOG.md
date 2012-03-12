@@ -1,5 +1,8 @@
 # ChangeLog
 
+## Version 0.4.0.3 _(Monday 12, 2012)_
+- Gemspec -- Updated ```do_sqlite3``` dependency. [#166] ([kost](https://github.com/kost))
+
 ## Version 0.4.0.1 _(January 9, 2012)_
 - Reports
    - XML -- added missing Issue attributes
