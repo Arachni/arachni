@@ -52,7 +52,6 @@ require opts.dir['lib'] + 'component_manager'
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      <zapotek@segfault.gr>
-# @version 0.2.2
 #
 class Parser
     include Arachni::UI::Output
@@ -100,7 +99,6 @@ class Parser
     attr_reader :opts
 
     #
-    # Constructor <br/>
     # Instantiates Analyzer class with user options.
     #
     # @param  [Options] opts
@@ -124,24 +122,27 @@ class Parser
     # @return [Page]
     #
     def run
+        req_method = 'get'
+        begin
+            req_method = @response.request.method.to_s
+        rescue
+        end
+
+        self_link = Arachni::Parser::Element::Link.new( to_absolute( @url ),
+            inputs: link_vars( @url )
+        )
 
         # non text files won't contain any auditable elements
         if !text?
-            return Page.new( {
+            return Page.new(
                 :code        => @code,
                 :url         => @url,
-                :query_vars  => link_vars( @url ),
+                :method      => req_method,
+                :query_vars  => self_link.auditable,
                 :html        => @html,
-                :headers     => [],
-                :response_headers     => @response_headers,
-                :paths       => [],
-                :forms       => [],
-                :links       => [],
-                :cookies     => [],
-                :cookiejar   => []
-            } )
+                :response_headers => @response_headers,
+            )
         end
-
 
         cookies_arr = cookies
         cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
@@ -152,32 +153,20 @@ class Parser
         preped = {}
         cookies_arr.each{ |cookie| preped.merge!( cookie.simple ) }
 
-        jar = preped.merge( jar )
-
-        c_links = links
-
-        if !( vars = link_vars( @url ) ).empty?
-            url = to_absolute( @url )
-            c_links << Arachni::Parser::Element::Link.new( url, {
-                'href' => url,
-                'vars' => vars
-            } )
-        end
-
-        return Page.new( {
+        return Page.new(
             :code        => @code,
             :url         => @url,
-            :query_vars  => link_vars( @url ),
+            :query_vars  => self_link.auditable,
+            :method      => req_method,
             :html        => @html,
-            :headers     => headers(),
-            :response_headers     => @response_headers,
+            :response_headers => @response_headers,
             :paths       => paths(),
-            :forms       => @opts.audit_forms ? forms() : [],
-            :links       => @opts.audit_links ? c_links : [],
-            :cookies     => merge_with_cookiestore( merge_with_cookiejar( cookies_arr ) ),
-            :cookiejar   => jar
-        } )
-
+            :forms       => forms(),
+            :links       => links() | [self_link],
+            :cookies     => merge_with_cookiestore( cookies_arr ),
+            :headers     => headers(),
+            :cookiejar   => preped.merge( jar )
+        )
     end
 
     def text?
@@ -190,60 +179,6 @@ class Parser
       return @doc if @doc
       @doc = Nokogiri::HTML( @html ) if @html rescue nil
     end
-
-    def merge_with_cookiestore( cookies )
-
-        @cookiestore ||= []
-
-        if @cookiestore.empty?
-            @cookiestore = cookies
-        else
-            tmp = {}
-            @cookiestore.each {
-                |cookie|
-                tmp.merge!( cookie.simple )
-            }
-
-            cookies.each {
-                |cookie|
-                tmp.merge!( cookie.simple )
-            }
-
-            @cookiestore = tmp.map {
-                |name, value|
-                Element::Cookie.new( @url, {
-                    'name'    => name,
-                    'value'   => value
-                } )
-            }
-        end
-
-        return @cookiestore
-
-    end
-
-    #
-    # Merges 'cookies' with the cookiejar and returns it as an array
-    #
-    # @param    [Array<Hash>]  cookies
-    #
-    # @return   [Array<Element::Cookie>]  the merged cookies
-    #
-    def merge_with_cookiejar( cookies )
-        return cookies if !@opts.cookies
-
-        @opts.cookies.each_pair {
-            |name, value|
-            cookies << Element::Cookie.new( @url,
-                {
-                    'name'    => name,
-                    'value'   => value
-                } )
-        }
-
-        return cookies
-    end
-
 
     #
     # Returns a list of valid auditable HTTP header fields.
@@ -300,7 +235,7 @@ class Parser
             #
 
             # get properly closed forms
-            forms = html.scan( /<form(.*?)<\/form>/ixm ).flatten
+            forms = html.scan( /(<form)(.*)<\/form>/m ).flatten
 
             # now remove them from html...
             forms.each { |form| html.gsub!( '<form' + form + '</form>', '' ) }
@@ -319,7 +254,7 @@ class Parser
             elements[i] = Hash.new
 
             begin
-                elements[i]['attrs']    = form_attrs( form )
+                elements[i]['attrs'] = form_attrs( form )
             rescue
                 next
             end
@@ -383,7 +318,7 @@ class Parser
 
             link['href'] = to_absolute( link['href'] )
 
-            if !link['href'] then next end
+            next if !link['href']
             next if skip?( link['href'] )
 
             link['vars'] = {}
@@ -421,8 +356,8 @@ class Parser
         begin
             doc.search( "//meta[@http-equiv]" ).each {
                 |elem|
-
                 next if elem['http-equiv'].downcase != 'set-cookie'
+
                 k, v = elem['content'].split( ';' )[0].split( '=', 2 )
                 cookies_arr << Element::Cookie.new( @url, { 'name' => k, 'value' => v } )
             }
@@ -431,12 +366,13 @@ class Parser
             # ap e.backtrace
         end
 
-
-        # don't ask me why....
-        if @response_headers.to_s.downcase.substring?( 'set-cookie' )
+        cookies_from_header = [@response_headers['Set-Cookie']].flatten
+        if !cookies_from_header.empty?
             begin
-                cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['Set-Cookie'].to_s )
-                cookies << ::WEBrick::Cookie.parse_set_cookies( @response_headers['set-cookie'].to_s )
+                cookies_from_header.each {
+                    |c|
+                    cookies << ::WEBrick::Cookie.parse_set_cookies( c )
+                }
             rescue Exception => e
                 # ap e
                 # ap e.backtrace
@@ -445,8 +381,9 @@ class Parser
         end
 
         cookies.flatten.uniq.each_with_index {
-            |cookie, i|
-            cookies_arr[i] = Hash.new
+            |cookie, idx|
+            i = cookies_arr.size + idx
+            cookies_arr[i] = {}
 
             cookie.instance_variables.each {
                 |var|
@@ -460,22 +397,16 @@ class Parser
                 cookies_arr[i][key] = val
             }
 
-            # cookies.reject!{ |cookie| cookie['name'] == cookies_arr[i]['name'] }
-
             cookies_arr[i] = Element::Cookie.new( @url, cookies_arr[i] )
         }
         cookies_arr.flatten!
-        return cookies_arr
-    end
-
-    def dir( url )
-        URI( File.dirname( URI( url.to_s ).path ) + '/' )
+        return cookies_arr.compact
     end
 
     #
     # Array of distinct links to follow
     #
-    # @return   [Array<URI>]
+    # @return   [Array<String>]
     #
     def paths
       return @paths unless @paths.nil?
@@ -496,12 +427,12 @@ class Parser
     # @return [Hash]    name=>value pairs
     #
     def link_vars( link )
-        if !link then return {} end
+        return {}  if !link
 
         var_string = link.split( /\?/ )[1]
-        if !var_string then return {} end
+        return {} if !var_string
 
-        var_hash = Hash.new
+        var_hash = {}
         var_string.split( /&/ ).each {
             |pair|
             name, value = pair.split( /=/ )
@@ -511,7 +442,6 @@ class Parser
         }
 
         var_hash
-
     end
 
     #
@@ -558,7 +488,6 @@ class Parser
         end
     end
 
-
     def base
         begin
             tmp = doc.search( '//base[@href]' )
@@ -568,6 +497,22 @@ class Parser
         end
     end
 
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+        return false if !url.host
+
+        splits = url.host.split( /\./ )
+
+        return splits.first if splits.size == 1
+
+        splits[-2] + "." + splits[-1]
+    end
 
     def too_deep?( url )
         if @opts.depth_limit > 0 && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
@@ -582,32 +527,13 @@ class Parser
     # +false+ otherwise
     #
     def in_domain?( uri )
-
         curi = URI.parse( normalize_url( uri.to_s ) )
 
-        if( @opts.follow_subdomains )
+        if @opts.follow_subdomains
             return extract_domain( curi ) ==  extract_domain( URI( @url.to_s ) )
         end
 
         return curi.host == URI.parse( normalize_url( @url.to_s ) ).host
-    end
-
-    #
-    # Extracts the domain from a URI object
-    #
-    # @param [URI] url
-    #
-    # @return [String]
-    #
-    def extract_domain( url )
-
-        if !url.host then return false end
-
-        splits = url.host.split( /\./ )
-
-        if splits.length == 1 then return true end
-
-        splits[-2] + "." + splits[-1]
     end
 
     def exclude?( url )
@@ -638,12 +564,66 @@ class Parser
             return true if exclude?( path )
             return true if too_deep?( path )
             return true if !in_domain?( path )
+            false
         rescue
             true
         end
     end
 
     private
+
+    def merge_with_cookiestore( cookies )
+
+        @cookiestore ||= []
+
+        if @cookiestore.empty?
+            @cookiestore = cookies
+        else
+            tmp = {}
+            @cookiestore.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            cookies.each {
+                |cookie|
+                tmp.merge!( cookie.simple )
+            }
+
+            @cookiestore = tmp.map {
+                |name, value|
+                Element::Cookie.new( @url, {
+                    'name'    => name,
+                    'value'   => value
+                } )
+            }
+        end
+
+        return @cookiestore
+
+    end
+
+    #
+    # Merges 'cookies' with the cookiejar and returns it as an array
+    #
+    # @param    [Array<Hash>]  cookies
+    #
+    # @return   [Array<Element::Cookie>]  the merged cookies
+    #
+    def merge_with_cookiejar( cookies )
+        return cookies if !@opts.cookies
+
+        @opts.cookies.each_pair {
+            |name, value|
+            cookies << Element::Cookie.new( @url,
+                {
+                    'name'    => name,
+                    'value'   => value
+                } )
+        }
+
+        return cookies
+    end
 
     #
     # Runs all Spider (path extraction) modules and returns an array of paths
