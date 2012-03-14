@@ -96,6 +96,10 @@ class Arachni::Parser::Element::Base
         {}
     end
 
+    def ==( e )
+        @action + @method + @auditable.to_s == e.action + e.method + e.auditable.to_s
+    end
+
     #
     # Must provide the element type, one of {Arachni::Module::Auditor::Element}.
     #
