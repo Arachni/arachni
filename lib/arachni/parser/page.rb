@@ -130,39 +130,6 @@ class Page
         @html = str
     end
 
-    #
-    # Returns an array of forms from {#forms} with its attributes and<br/>
-    # its auditable inputs as a name=>value hash
-    #
-    # @return    [Array]
-    #
-    def forms_simple
-        @forms.map { |form| form.simple }
-    end
-
-    #
-    # Returns links from {#links} as a name=>value hash with href as key
-    #
-    # @return    [Hash]
-    #
-    def links_simple
-        @links.map { |link| link.simple }
-    end
-
-    #
-    # Returns cookies from {#cookies} as a name=>value hash
-    #
-    # @return    [Hash]    the cookie attributes, values, etc
-    #
-    def cookies_simple
-        cookies = {}
-        @cookies.each {
-            |cookie|
-            cookies.merge!( cookie.simple )
-        }
-        return cookies
-    end
-
 end
 end
 end
