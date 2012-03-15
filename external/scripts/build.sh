@@ -23,6 +23,8 @@
 #     Edwin van Andel <evanandel@yafsec.com> -- Patches for *BSD and testing
 #
 
+source `dirname $0`"/lib/readlink_f.sh"
+
 cat<<EOF
 
             Arachni builder (experimental)
@@ -56,7 +58,6 @@ deps="
     wget
     gcc
     g++
-    readlink
     awk
     sed
     grep
@@ -124,13 +125,14 @@ if [[ -d $clean_build ]]; then
     rm -rf $root
     cp -R $clean_build $root
 else
+    mkdir -p $clean_build
     mkdir -p $root
 fi
 
 update_clean_dir=false
 
 # *BSD's readlink doesn't like non-existent dirs
-root=`readlink -f $root`
+root=`readlink_f $root`
 
 # holds tarball archives
 archives_path="$root/archives"
@@ -395,10 +397,12 @@ get_wrapper_template() {
     cat<<EOF
 #!/usr/bin/env bash
 
+source "\$(dirname \$0)/readlink_f.sh"
+
 #
 # Slight RVM rip-off
 #
-env_root="\$(dirname "\$(readlink -f "\${0}")")"/..
+env_root="\$(dirname "\$(readlink_f "\${0}")")"/..
 if [[ -s "\$env_root/environment" ]]; then
     source "\$env_root/environment"
     exec ruby $1 "\$@"
@@ -466,6 +470,9 @@ install_arachni() {
 
 install_bin_wrappers() {
     cd $root/gems/bin
+
+    cat "$(dirname $0)/lib/readlink_f.sh" > "$root/bin/readlink_f.sh"
+
     for bin in arachni*; do
         echo "  * $root/bin/$bin => $root/gems/bin/$bin"
         get_wrapper_template "\$env_root/gems/bin/$bin" > "$root/bin/$bin"

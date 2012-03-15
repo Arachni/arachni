@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-root="$(dirname "$(readlink -f "${0}")")"
+source `dirname $0`"/lib/readlink_f.sh"
+
+root="$(dirname "$(readlink_f "${0}")")"
 
 export xterm="xterm -geometry 80X10 -hold"
 xterm -T "Building 32bit packages" -e "bash $root/cross_build_and_package.sh" &

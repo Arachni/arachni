@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+source `dirname $0`"/lib/readlink_f.sh"
+
 cat<<EOF
 
             Arachni packager (experimental)
@@ -86,7 +88,7 @@ if [[ ! -s $instdir ]]; then
     exit 1
 fi
 
-root="$(dirname "$(readlink -f "${0}")")"
+root="$(dirname "$(readlink_f "${0}")")"
 insttpl="$root/installer.sh.tpl"
 
 if [[ ! -s $insttpl ]]; then

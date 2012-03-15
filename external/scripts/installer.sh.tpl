@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+source `dirname $0`"/lib/readlink_f.sh"
+
 #
 # Based on: http://lembra.wordpress.com/2011/09/04/how-to-generate-a-bash-script-with-an-embeeded-tar-gz-self-extract/
 #
@@ -76,7 +78,7 @@ if [[ $fail ]]; then
 fi
 
 if [[ ! -z "$1" ]]; then
-    instdir=`readlink -f $1`
+    instdir=`readlink_f $1`
 fi
 
 if [[ ! -s $instdir ]]; then
