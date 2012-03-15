@@ -283,7 +283,7 @@ download_archive() {
 #
 extract_archive() {
     echo "  * Extracting"
-    tar xvf $archives_path/$1-*.tar.gz -C $src_path &>> $logs_path/$1
+    tar xvf $archives_path/$1-*.tar.gz -C $src_path 2>> $logs_path/$1 1>> $logs_path/$1
     handle_failure $1
 }
 
@@ -294,7 +294,7 @@ install_from_src() {
     cd $src_path/$1-*
 
     echo "  * Cleaning"
-    make clean &>> $logs_path/$1
+    make clean 2>> $logs_path/$1 1>> $logs_path/$1
 
     eval special_config=\$$"configure_$1"
     if [[ $special_config ]]; then
@@ -306,17 +306,17 @@ install_from_src() {
     configure="${configure} --prefix=$configure_prefix"
 
     echo "  * Configuring ($configure)"
-    echo "Configuring with: $configure" &>> $logs_path/$1
+    echo "Configuring with: $configure" 2>> $logs_path/$1 1>> $logs_path/$1
 
-    $configure &>> $logs_path/$1
+    $configure 2>> $logs_path/$1 1>> $logs_path/$1
     handle_failure $1
 
     echo "  * Compiling"
-    make &>> $logs_path/$1
+    make 2>> $logs_path/$1 1>> $logs_path/$1
     handle_failure $1
 
     echo "  * Installing"
-    make install &>> $logs_path/$1
+    make install 2>> $logs_path/$1 1>> $logs_path/$1
     handle_failure $1
 
     cd - > /dev/null
@@ -424,7 +424,7 @@ prepare_ruby() {
     source $root/environment
 
     echo "  * Updating Rubygems"
-    $usr_path/bin/gem update --system &>> "$logs_path/ruby_rubygems"
+    $usr_path/bin/gem update --system 2>> "$logs_path/ruby_rubygems" 1>> "$logs_path/ruby_rubygems"
     handle_failure "ruby"
 
     echo "  * Installing sys-proctable"
@@ -433,15 +433,15 @@ prepare_ruby() {
 
     cd $src_path/*-sys-proctable*
 
-    $usr_path/bin/rake install &>> "$logs_path/ruby_sys-proctable"
+    $usr_path/bin/rake install 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
     handle_failure "ruby_sys-proctable"
-    $usr_path/bin/gem build sys-proctable.gemspec &>> "$logs_path/ruby_sys-proctable"
+    $usr_path/bin/gem build sys-proctable.gemspec 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
     handle_failure "ruby_sys-proctable"
-    $usr_path/bin/gem install sys-proctable-*.gem &>> "$logs_path/ruby_sys-proctable"
+    $usr_path/bin/gem install sys-proctable-*.gem 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
     handle_failure "ruby_sys-proctable"
 
     echo "  * Installing Bundler"
-    $usr_path/bin/gem install bundler --no-ri  --no-rdoc  &>> "$logs_path/ruby_bundler"
+    $usr_path/bin/gem install bundler --no-ri  --no-rdoc  2>> "$logs_path/ruby_bundler" 1>> "$logs_path/ruby_bundler"
     handle_failure "ruby_bundler"
 }
 
@@ -456,15 +456,15 @@ install_arachni() {
     cd $src_path/Zapotek-arachni*
 
     echo "  * Preparing the bundle"
-    $gem_path/bin/bundle install &>> "$logs_path/arachni"
+    $gem_path/bin/bundle install 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 
     echo "  * Testing"
-    $gem_path/bin/bundle exec $usr_path/bin/rake spec  &>> "$logs_path/arachni"
+    $gem_path/bin/bundle exec $usr_path/bin/rake spec  2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 
     echo "  * Installing"
-    $usr_path/bin/rake install &>> "$logs_path/arachni"
+    $usr_path/bin/rake install 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 }
 
