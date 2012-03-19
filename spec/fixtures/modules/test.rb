@@ -19,9 +19,6 @@ module Modules
 
 class Test < Arachni::Module::Base
 
-    def initialize( * )
-    end
-
     def prepare
         @prepared = true
     end
