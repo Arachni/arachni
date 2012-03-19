@@ -67,34 +67,22 @@ class Base
         @options   = options
     end
 
-
     #
     # OPTIONAL
     #
-    def prepare( )
-
+    def prepare
     end
 
     #
     # REQUIRED
     #
-    def run( )
-
+    def run
     end
 
     #
     # OPTIONAL
     #
-    def clean_up( )
-
-    end
-
-    def wait_while_framework_running
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
-    end
-
-    def self.gems
-        [ ]
+    def clean_up
     end
 
     #
@@ -126,6 +114,15 @@ class Base
     end
 
     #
+    # Should return an array of plugin related gem dependencies.
+    #
+    # @return   [Array]
+    #
+    def self.gems
+        [ ]
+    end
+
+    #
     # REQUIRED
     #
     # Do not omit any of the info.
@@ -144,9 +141,22 @@ class Base
         }
     end
 
+    #
+    # Registers the plugin's results with the framework.
+    #
+    # @param    [Object]    results
+    #
     def register_results( results )
         @framework.plugin_store( self, results )
     end
+
+    #
+    # Will block until the scan finishes.
+    #
+    def wait_while_framework_running
+        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+    end
+
 end
 
 end
