@@ -197,7 +197,7 @@ describe Arachni::Parser do
                     "form_2",
                 ].map { |p| @opts.url.to_s + '/' + p }
 
-                (@parser.paths & paths).should == paths
+                (@parser.paths & paths).sort.should == paths.sort
             end
         end
     end
@@ -242,7 +242,7 @@ describe Arachni::Parser do
                     "link_with_base?link_input=link_val",
                 ].map { |p| @parser_with_base.base + '' + p }
 
-                (@parser_with_base.paths & paths).should == paths
+                (@parser_with_base.paths & paths).sort.should == paths.sort
             end
         end
     end
