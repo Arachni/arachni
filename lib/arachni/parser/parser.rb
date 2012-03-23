@@ -387,11 +387,8 @@ class Parser
 
             cookie.instance_variables.each {
                 |var|
-                value = cookie.instance_variable_get( var ).to_s
-                value.strip!
-
                 key = normalize_name( var )
-                val = value.gsub( /[\"\\\[\]]/, '' )
+                val = cookie.instance_variable_get( var )
 
                 next if val == seed
                 cookies_arr[i][key] = val
@@ -613,8 +610,11 @@ class Parser
     def merge_with_cookiejar( cookies )
         return cookies if !@opts.cookies
 
+        already_set = cookies.map { |c| c.simple.keys.first }
         @opts.cookies.each_pair {
             |name, value|
+            next if already_set.include?( name )
+
             cookies << Element::Cookie.new( @url,
                 {
                     'name'    => name,
