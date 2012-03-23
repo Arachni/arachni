@@ -48,4 +48,42 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
+    describe :secure? do
+        context 'when set' do
+            it 'should be return true' do
+                cookie = Arachni::Parser::Element::Cookie.new( @url,
+                    'name'   => 'mycookie',
+                    'value'  => 'myvalue',
+                    'secure' => true
+                )
+                cookie.secure?.should be_true
+            end
+        end
+
+        context 'when not set' do
+            it 'should be return false' do
+                @c.secure?.should be_false
+            end
+        end
+    end
+
+    describe :httponly? do
+        context 'when set' do
+            it 'should be return true' do
+                cookie = Arachni::Parser::Element::Cookie.new( @url,
+                    'name'   => 'mycookie',
+                    'value'  => 'myvalue',
+                    'httponly' => true
+                )
+                cookie.http_only?.should be_true
+            end
+        end
+
+        context 'when not set' do
+            it 'should be return false' do
+                @c.http_only?.should be_false
+            end
+        end
+    end
+
 end

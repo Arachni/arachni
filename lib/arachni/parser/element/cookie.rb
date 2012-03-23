@@ -45,6 +45,14 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @orig.freeze
     end
 
+    def secure?
+        @raw['secure'] == true
+    end
+
+    def http_only?
+        @raw['httponly'] == true
+    end
+
     def simple
         @simple
     end
