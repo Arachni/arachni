@@ -17,7 +17,7 @@
 require 'typhoeus'
 
 module Arachni
-
+require Options.instance.dir['lib'] + 'ruby/webrick'
 require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'

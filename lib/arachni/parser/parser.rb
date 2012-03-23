@@ -17,7 +17,7 @@
 module Arachni
 
 opts = Arachni::Options.instance
-require 'webrick'
+require opts.dir['lib'] + 'ruby/webrick'
 require opts.dir['lib'] + 'parser/element/link'
 require opts.dir['lib'] + 'parser/element/form'
 require opts.dir['lib'] + 'parser/element/cookie'
@@ -357,9 +357,7 @@ class Parser
             doc.search( "//meta[@http-equiv]" ).each {
                 |elem|
                 next if elem['http-equiv'].downcase != 'set-cookie'
-
-                k, v = elem['content'].split( ';' )[0].split( '=', 2 )
-                cookies_arr << Element::Cookie.new( @url, { 'name' => k, 'value' => v } )
+                cookies << ::WEBrick::Cookie.parse_set_cookies( elem['content'] )
             }
         rescue Exception => e
             # ap e
@@ -369,10 +367,7 @@ class Parser
         cookies_from_header = [@response_headers['Set-Cookie']].flatten
         if !cookies_from_header.empty?
             begin
-                cookies_from_header.each {
-                    |c|
-                    cookies << ::WEBrick::Cookie.parse_set_cookies( c )
-                }
+                cookies |= cookies_from_header.map { |c| ::WEBrick::Cookie.parse_set_cookies( c ) }
             rescue Exception => e
                 # ap e
                 # ap e.backtrace
