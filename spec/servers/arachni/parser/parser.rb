@@ -3,12 +3,20 @@ require 'sinatra/contrib'
 set :logging, false
 
 get '/' do
-    cookies['cookie_input'] = 'cookie_val'
-    cookies['cookie_input2'] = 'cookie_val2'
+    response.set_cookie( "cookie_input", {
+        :value => "cookie_val",
+        :secure   => true,
+        :httponly => true
+    })
+
+    response.set_cookie( "cookie_input2", {
+        :value => "cookie_val2",
+        :httponly => false
+    })
 <<EOHTML
 <html>
     <head>
-        <meta http-equiv="Set-Cookie" content="http_equiv_cookie_name=http_equiv_cookie_val">
+        <meta http-equiv="Set-Cookie" content="http_equiv_cookie_name=http_equiv_cookie_val; secure; httponly">
     </head>
     <body>
 
