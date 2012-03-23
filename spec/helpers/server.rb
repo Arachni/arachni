@@ -3,15 +3,15 @@ def server_port_for( name )
 end
 
 def server_url_for( name )
+    start_server!( name ) if !@@servers_running.include?( name )
     'http://localhost:' + server_port_for( name ).to_s
 end
 
-def start_servers!
-    @@servers.each {
-        |name, info|
-        @@server_pids << fork {
-            exec 'ruby', info[:path], '-p ' + info[:port].to_s
-        }
+def start_server!( name )
+    @@servers_running << name
+
+    @@server_pids << fork {
+        exec 'ruby', @@servers[name][:path], '-p ' + @@servers[name][:port].to_s
     }
 
     require 'net/http'
@@ -20,22 +20,11 @@ def start_servers!
         Timeout::timeout( 10 ) do
             loop do
 
-                @@servers.keys.each {
-                    |name|
-
-                    next if up.include? name
-                    url = server_url_for( name )
-                    begin
-                        response = Net::HTTP.get_response( URI.parse( url ) )
-                        up << name if response
-                    rescue SystemCallError => error
-                    end
-
-                }
-
-                if up.size == @@servers.size
-                    puts 'Servers are up!'
+                url = server_url_for( name )
+                begin
+                    response = Net::HTTP.get_response( URI.parse( url ) )
                     return
+                rescue SystemCallError => error
                 end
 
                 sleep 0.1
@@ -44,6 +33,10 @@ def start_servers!
     rescue Timeout::Error => error
         abort "Server never started!"
     end
+end
+
+def start_servers!
+    @@servers.each { |name, info| start_server!( name ) }
 end
 
 

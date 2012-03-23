@@ -12,6 +12,7 @@ Arachni::UI::Output.mute!
 
 Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 
+@@servers_running ||=[]
 @@server_pids ||= []
 @@servers     ||= {}
 Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
@@ -35,7 +36,7 @@ RSpec.configure do |config|
     config.add_formatter :documentation
 
     config.before( :suite ) do
-        start_servers!
+        # start_servers!
     end
 
     config.after( :suite ) do
