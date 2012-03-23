@@ -27,7 +27,7 @@ module Arachni::Parser::Element::Analysis::RDiff
 
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
-        # keep track audited elements
+        # keep track of audited elements
         @@__rdiff_audited ||= Set.new
     end
 
