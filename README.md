@@ -189,6 +189,8 @@ The analyzer can graciously handle badly written HTML code due to a combination 
         - US Social Security Number disclosure
         - Forceful directory listing
         - Mixed Resource/Scripting
+        - Insecure cookies
+        - HttpOnly cookies
 
 ### Report Management
 
