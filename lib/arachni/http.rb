@@ -132,6 +132,7 @@ class HTTP
 
         @opts = {
             :follow_location => false,
+            :max_redirects  =>  opts.redirect_limit,
             :disable_ssl_peer_verification => true,
             :timeout         => 50000
         }.merge( proxy_opts )
