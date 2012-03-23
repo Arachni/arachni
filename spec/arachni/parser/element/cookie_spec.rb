@@ -86,4 +86,17 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
+    describe :name do
+        it 'should return the name of the cookie' do
+            @c.name.should == 'mycookie'
+        end
+    end
+
+    describe :value do
+        it 'should return the name of the cookie' do
+            @c.value.should == 'myvalue'
+        end
+    end
+
+
 end

@@ -45,6 +45,14 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @orig.freeze
     end
 
+    def name
+        simple.keys.first
+    end
+
+    def value
+        simple.values.first
+    end
+
     def secure?
         @raw['secure'] == true
     end
