@@ -523,10 +523,9 @@ class HTTP
             if head && head.to_s.substring?( 'set-cookie' )
                 Nokogiri::HTML( head.to_s ).search( "//meta[@http-equiv]" ).each {
                     |elem|
-
                     next if elem['http-equiv'].downcase != 'set-cookie'
-                    k, v = elem['content'].split( ';' )[0].split( '=', 2 )
-                    cookie_hash[k] = v
+                    cookie = WEBrick::Cookie.parse_set_cookies( elem['content'] )
+                    cookie_hash[cookie.name] = cookie.value
                 }
             end
         rescue Exception => e
