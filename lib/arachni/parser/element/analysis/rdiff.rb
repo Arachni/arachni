@@ -190,10 +190,7 @@ module Arachni::Parser::Element::Analysis::RDiff
 
                             url = res['res'].effective_url
 
-                            # since we bypassed the auditor completely we need to create
-                            # our own opts hash and pass it to the Vulnerability class.
-                            #
-                            # this is only required for Metasploitable vulnerabilities
+                            # information for the Metareport report
                             opts = {
                                 :injected_orig => res['str'],
                                 :combo         => res['elem'].auditable
