@@ -141,7 +141,7 @@ describe Arachni::Parser do
     end
 
     describe :cookies do
-        it 'should return an array of links' do
+        it 'should return an array of cookies' do
             @parser.cookies.size.should == 3
 
             cookies = @parser.cookies
