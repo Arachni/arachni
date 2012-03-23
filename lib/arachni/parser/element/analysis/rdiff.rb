@@ -81,93 +81,93 @@ module Arachni::Parser::Element::Analysis::RDiff
         opts = Arachni::Parser::Element::Mutable::OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
-        @auditable.values.each {
-            |val|
-            return if !val || val.empty?
-        }
+        @auditable.values.each { |val| return if !val || val.empty? }
 
         return if __rdiff_audited?
         __rdiff_audited!
 
         responses = {
+            # will hold the original, default, response that results from submitting
             :orig => nil,
+
+            # will hold responses of boolean injections
             :good => {},
-            :bad  => {},
-            :bad_total  => 0,
-            :good_total => 0
+
+            # will hold responses of fault injections
+            :bad  => {}
         }
 
+        # submit the element, as is, opts[:precision] amount of times and
+        # rdiff the responses in order to arrive to a refined response without
+        # any superfluous dynamic content
         opts[:precision].times {
             # get the default responses
             audit( '', opts ) {
                 |res|
                 responses[:orig] ||= res.body
                 # remove context-irrelevant dynamic content like banners and such
-                # from the error page
                 responses[:orig] = responses[:orig].rdiff( res.body )
             }
         }
 
+        # perform fault injection opts[:precision] amount of times and
+        # rdiff the responses in order to arrive to a refined response without
+        # any superfluous dynamic content
         opts[:precision].times {
             opts[:faults].each {
                 |str|
 
-                # get injection variations that will hopefully cause an internal/silent
-                # SQL error
-                variations = mutations( str, opts )
+                # get mutations of self using the fault seed, which will
+                # cause an internal/silent error when evaluated
+                mutations( str, opts ).each {
+                    |elem|
 
-                responses[:bad_total] =  variations.size
+                    print_status( elem.status_string )
 
-                variations.each {
-                    |c_elem|
-
-                    print_status( c_elem.status_string )
-
-                    # submit the link and get the response
-                    c_elem.submit( opts ).on_complete {
+                    # submit the mutation and store the response
+                    elem.submit( opts ).on_complete {
                         |res|
 
-                        responses[:bad][c_elem.altered] ||= res.body.clone
+                        responses[:bad][elem.altered] ||= res.body.clone
 
                         # remove context-irrelevant dynamic content like banners and such
                         # from the error page
-                        responses[:bad][c_elem.altered] =
-                            responses[:bad][c_elem.altered].rdiff( res.body.clone )
+                        responses[:bad][elem.altered] =
+                            responses[:bad][elem.altered].rdiff( res.body.clone )
                     }
                 }
             }
         }
 
+        # get injection variations that will not affect the outcome of the query
         opts[:bools].each {
             |str|
 
-            # get injection variations that will not affect the outcome of the query
-            variations = mutations( str, opts )
+            # get mutations of self using the boolean seed, which will not
+            # alter the execution flow
+            mutations( str, opts ).each {
+                |elem|
 
-            responses[:good_total] =  variations.size
+                print_status( elem.status_string )
 
-            variations.each {
-                |c_elem|
-
-                print_status( c_elem.status_string )
-
-                # submit the link and get the response
-                c_elem.submit( opts ).on_complete {
+                # submit the mutation and store the response
+                elem.submit( opts ).on_complete {
                     |res|
 
-                    responses[:good][c_elem.altered] ||= []
+                    responses[:good][elem.altered] ||= []
 
-                    # save the response for later analysis
-                    responses[:good][c_elem.altered] << {
+                    # save the response and some data for analysis
+                    responses[:good][elem.altered] << {
                         'str'  => str,
                         'res'  => res,
-                        'elem' => c_elem
+                        'elem' => elem
                     }
                 }
             }
         }
 
-        # when this runs the 'responses' hash will have been populated
+        # when this runs the "responses" hash will have been populated and we
+        # can continue with analysis
         http.after_run {
 
             responses[:good].keys.each {
@@ -176,17 +176,28 @@ module Arachni::Parser::Element::Analysis::RDiff
                 responses[:good][key].each {
                     |res|
 
+                    # if there's a block passed then delegate analysis to it
                     if block
                         exception_jail( false ){
                             block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
                         }
+
+                    # if default_response_body == bool_response_body AND
+                    #    bool_response_code == 200 AND
+                    #    fault_response_body != bool_response_body
                     elsif( responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
                         res['res'].code == 200 )
 
+                        # check to see if the current boolean response we're analyzing
+                        # is a custom 404 page
                         http.custom_404?( res['res'] ) {
                             |bool|
+                            # if this is a custom 404 page bail out
                             next if bool
+
+                            # if this isn't a custom 404 page then it means that
+                            # the element is vulnerable, so go ahead and log the issue
 
                             url = res['res'].effective_url
 
