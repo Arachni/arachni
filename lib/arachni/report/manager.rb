@@ -72,17 +72,17 @@ class Manager < Arachni::ComponentManager
         report = self.[](name).new( audit_store.deep_clone,
             prep_opts( name, self.[](name), @opts.reports[name] ) )
 
-        report.run( )
+        report.run
     end
 
     def paths
         cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
-        return paths.reject { |path| helper?( path ) }
+        paths.reject { |path| helper?( path ) }
     end
 
 
     def extension
-        return EXTENSION
+        EXTENSION
     end
 
 end
