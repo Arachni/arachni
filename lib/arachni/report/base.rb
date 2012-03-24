@@ -80,7 +80,6 @@ class Base
     REPORT_FP = 'http://github.com/Zapotek/arachni/issues'
 
     module PluginFormatters
-
     end
 
     #
@@ -96,7 +95,6 @@ class Base
     # REQUIRED
     #
     def run
-
     end
 
     #
