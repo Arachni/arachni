@@ -74,15 +74,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns the results of the plug-ins
-    #
-    # @return   [Hash]  plugin name => result
-    #
-    def get_plugin_store
-        @plugin_store
-    end
-
-    #
     # Returns true if the system is scanning, false if {#run} hasn't been called yet or
     # if the scan has finished.
     #
@@ -320,7 +311,7 @@ class Framework < ::Arachni::Framework
             instance_conn = connect_to_instance( instance )
 
             instance_conn.framework.clean_up! {
-                instance_conn.framework.get_plugin_store {
+                instance_conn.plugins.results {
                     |res|
                     iter.return( !res.rpc_exception? ?  res : nil )
                 }
@@ -328,9 +319,7 @@ class Framework < ::Arachni::Framework
 
         }, proc {
             |results|
-            results.compact!
-            results << get_plugin_store
-            update_plugin_results!( results )
+            @plugins.merge_results!( results.compact )
             block.call
         })
     end
@@ -688,10 +677,6 @@ class Framework < ::Arachni::Framework
         @local_token == token
     end
 
-    def set_plugin_store( plugin_store )
-        @plugin_store = plugin_store
-    end
-
     #
     # Connects to a remote Instance.
     #
@@ -713,43 +698,6 @@ class Framework < ::Arachni::Framework
     def report_issues_to_master( issues )
         @master.framework.register_issues( issues, master_priv_token ){}
         return true
-    end
-
-    #
-    # Takes the plug-in results of all the instances, merges them together and
-    # resets the @plugin_store.
-    #
-    def update_plugin_results!( results )
-        info = {}
-        formatted = {}
-
-        results.each {
-            |plugins|
-
-            plugins.each {
-                |name, res|
-                next if !res
-
-                formatted[name] ||= []
-                formatted[name] << res[:results]
-
-                info[name] = res.reject{ |k, v| k == :results } if !info[name]
-            }
-        }
-
-        merged = {}
-        formatted.each {
-            |plugin, results|
-
-            if !@plugins[plugin].distributable?
-                res = results[0]
-            else
-                res = @plugins[plugin].merge( results )
-            end
-            merged[plugin] = info[plugin].merge( :results => res )
-        }
-
-        set_plugin_store( merged )
     end
 
     #

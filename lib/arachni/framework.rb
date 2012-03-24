@@ -71,7 +71,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.5'
+    REVISION     = '0.2.6'
 
     #
     # Instance options
@@ -180,7 +180,6 @@ class Framework
         @running = false
         @paused  = []
 
-        @plugin_store = {}
         @store = nil
 
         @auditmap = []
@@ -536,8 +535,8 @@ class Framework
                 :revision => REVISION,
                 :options  => opts,
                 :sitemap  => audit_store_sitemap || [],
-                :issues   => @modules.results( ).deep_clone,
-                :plugins  => @plugin_store
+                :issues   => @modules.results.deep_clone,
+                :plugins  => @plugins.results
             })
          end
     end
@@ -553,33 +552,6 @@ class Framework
     #
     def audit_store_sitemap
         @override_sitemap && !@override_sitemap.empty? ? @override_sitemap : @sitemap
-    end
-
-    #
-    # Adds an object to the plugin store.
-    #
-    # Should only be called once, if an entry for a plugin already exists
-    # it will just return.
-    #
-    # @param    [String]   plugin   plugin/owner name
-    # @param    [Object]   obj      object to store
-    #
-    def plugin_store( plugin, obj )
-        name = ''
-        @plugins.each_pair {
-            |k, v|
-
-            if plugin.class.name == v.name
-                name = k
-                break
-            end
-        }
-
-        return if @plugin_store[name]
-
-        @plugin_store[name] = {
-            :results => obj
-        }.merge( plugin.class.info )
     end
 
     #

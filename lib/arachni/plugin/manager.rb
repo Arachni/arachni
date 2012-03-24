@@ -40,6 +40,10 @@ class Manager < Arachni::ComponentManager
         'defaults/*'
     ]
 
+    @@results ||= {}
+    @@results_mutex ||= Mutex.new
+
+
     #
     # @param    [Arachni::Framework]    framework   framework instance
     #
@@ -57,24 +61,24 @@ class Manager < Arachni::ComponentManager
     #
     # Runs each plug-in in its own thread.
     #
-    def run
-        i = 0
+    def run!
         each {
             |name, plugin|
 
             if( ret = sane_env?( plugin ) ) != true
                 if !ret[:gem_errors].empty?
-                    print_error( "[#{name}] The following plug-in dependencies aren't satisfied:" )
+                    print_bad( "[#{name}] The following plug-in dependencies aren't satisfied:" )
                     ret[:gem_errors].each {
                        |gem|
-                        print_info( "\t* #{gem}" )
+                        print_bad( "\t* #{gem}" )
                     }
 
-                    print_info( "Try installing them by running:" )
-                    print_info( "\tgem install #{ret[:gem_errors].join( ' ' )}" )
+                    deps = ret[:gem_errors].join( ' ' )
+                    print_bad( "Try installing them by running:" )
+                    print_bad( "\tgem install #{deps}" )
                 end
 
-                raise
+                raise "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
             @jobs << Thread.new {
@@ -89,15 +93,14 @@ class Manager < Arachni::ComponentManager
                 }
 
             }
-
-            i += 1
         }
 
-        if i > 0
+        if @jobs.size > 0
             print_status( 'Waiting for plugins to settle...' )
             ::IO::select( nil, nil, nil, 1 )
         end
     end
+    alias :run :run!
 
     def sane_env?( plugin )
         gem_errors = []
@@ -173,8 +176,8 @@ class Manager < Arachni::ComponentManager
     #
     def kill( name )
         job = get( name )
-        return job.kill if job
-        return nil
+        return true if job && job.kill
+        return false
     end
 
     #
@@ -189,6 +192,31 @@ class Manager < Arachni::ComponentManager
         return
     end
 
+    #
+    # Registers plugin results
+    #
+    # @param    [Object]
+    #
+    def register_results( plugin, results )
+        @@results_mutex.synchronize {
+
+            name = nil
+            self.each {
+                |k, v|
+
+                if plugin.class.name == v.name
+                    name = k
+                    break
+                end
+            }
+
+            return if !name
+            @@results[name] = { :results => results }.merge( plugin.class.info )
+        }
+    end
+
+    def self.results() @@results end
+    def results() self.class.results end
 
 end
 end

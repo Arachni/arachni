@@ -34,8 +34,8 @@ module Plugin
 class Manager < ::Arachni::Plugin::Manager
 
     # make these inherited methods visible again
-    private :available
-    public  :available
+    private :available, :results
+    public  :available, :results
 
     def initialize( framework )
         super( framework )
@@ -54,6 +54,46 @@ class Manager < ::Arachni::Plugin::Manager
         self[name].new( @framework, prep_opts( name, self[name], @plugin_opts[name] ) )
     end
 
+    #
+    # Merges the plug-in results of self with the provided results.
+    #
+    # It uses each plugin's merge() class method to do it.
+    #
+    # @param    [Array]     results
+    #
+    def merge_results!( results )
+        info = {}
+        formatted = {}
+
+        results << @@results
+        results.each {
+            |plugins|
+
+            plugins.each {
+                |name, res|
+                next if !res
+
+                formatted[name] ||= []
+                formatted[name] << res[:results]
+
+                info[name] = res.reject{ |k, v| k == :results } if !info[name]
+            }
+        }
+
+        merged = {}
+        formatted.each {
+            |plugin, results|
+
+            if !self[plugin].distributable?
+                res = results[0]
+            else
+                res = self[plugin].merge( results )
+            end
+            merged[plugin] = info[plugin].merge( :results => res )
+        }
+
+        @@results = merged
+    end
 
 end
 

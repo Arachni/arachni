@@ -147,7 +147,7 @@ class Base
     # @param    [Object]    results
     #
     def register_results( results )
-        @framework.plugin_store( self, results )
+        @framework.plugins.register_results( self, results )
     end
 
     #
