@@ -4,7 +4,6 @@ describe Arachni::Module::Manager do
 
     before( :all ) do
         opts = Arachni::Options.instance
-        module_lib = opts.dir['modules']
         opts.dir['modules'] = File.dirname( __FILE__ ) + '/../../fixtures/modules/'
         @modules = Arachni::Module::Manager.new( Arachni::Options.instance )
 
