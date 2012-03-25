@@ -45,8 +45,6 @@ class Server
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.2
 #
 class Dispatcher
 
@@ -96,16 +94,18 @@ class Dispatcher
         @pool = Queue.new
         @replenisher = Queue.new
 
-        print_status( 'Warming up the pool...' )
-        @opts.pool_size.times{ add_instance_to_pool }
+        if @opts.pool_size > 0
+            print_status( 'Warming up the pool...' )
+            @opts.pool_size.times{ add_instance_to_pool }
 
-        # this thread will wait in the background and replenish the pool
-        Thread.new {
-            loop {
-                add_instance_to_pool
-                @replenisher.pop
+            # this thread will wait in the background and replenish the pool
+            Thread.new {
+                loop {
+                    add_instance_to_pool
+                    @replenisher.pop
+                }
             }
-        }
+        end
 
         @node = nil
 
@@ -232,7 +232,7 @@ class Dispatcher
 
         puts 'Arachni - Web Application Security Scanner Framework
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      
+
                (With the support of the community and the Arachni Team.)
 
        Website:       http://github.com/Zapotek/arachni
