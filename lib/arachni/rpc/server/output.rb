@@ -16,6 +16,9 @@
 
 module Arachni
 
+# get some basics from the CLI UI's output interface
+require Options.instance.dir['lib'] + 'ui/cli/output'
+
 module UI
 
 #
@@ -26,8 +29,6 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
 #
 module Output
 
@@ -305,22 +306,6 @@ module Output
 
     def reroute_to_file?
         @@reroute_to_file
-    end
-
-    private
-
-    # Prints a message prefixed with a colored sign.
-    #
-    # Disregards all flags.
-    #
-    # @param    [String]    sign
-    # @param    [Integer]   shell color number
-    # @param    [String]    the string to output
-    #
-    # @return    [void]
-    #
-    def print_color( sign, color, string, out = $stdout )
-        out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
     end
 
     extend self
