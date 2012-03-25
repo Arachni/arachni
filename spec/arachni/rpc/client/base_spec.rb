@@ -6,10 +6,10 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/base'
 require 'ostruct'
 
 class Server
-    def initialize( opts, &block )
+    def initialize( opts, token = nil, &block )
         @opts = opts
         @opts.rpc_address = 'localhost'
-        @server = Arachni::RPC::Server::Base.new( @opts )
+        @server = Arachni::RPC::Server::Base.new( @opts, token )
         @server.add_handler( "foo", self )
 
         if block_given?
@@ -123,6 +123,41 @@ describe Arachni::RPC::Client::Base do
                 end
             end
         end
+
+        context 'when a server requires a token' do
+            context 'with a valid token' do
+                it 'should be able to connect' do
+                    opts = OpenStruct.new
+                    opts.rpc_port = 9994
+                    token = 'secret!'
+
+                    Server.new( opts, token ) do |server|
+                        client = @client_class.new( opts, server.url, token )
+                        client.call( "foo.bar" ).should be_true
+                    end
+                end
+            end
+            context 'with invalid token' do
+                it 'should not be able to connect' do
+                    opts = OpenStruct.new
+                    opts.rpc_port = 9995
+                    token = 'secret!'
+
+                    Server.new( opts, token ) do |server|
+                        raised = false
+                        begin
+                            client = @client_class.new( OpenStruct.new, server.url )
+                            client.call( "foo.bar" )
+                        rescue Arachni::RPC::Exceptions::InvalidToken
+                            raised = true
+                        end
+
+                        raised.should be_true
+                    end
+                end
+            end
+        end
+
 
     end
 
