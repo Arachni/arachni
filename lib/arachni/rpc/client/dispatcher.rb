@@ -24,9 +24,8 @@ class Client
 #
 # RPC Dispatcher client
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 # @version 0.1.3
 #
 class Dispatcher
@@ -35,7 +34,6 @@ class Dispatcher
 
     def initialize( opts, url )
         @client = Base.new( opts, url )
-
         @node = RemoteObjectMapper.new( @client, 'node' )
     end
 
