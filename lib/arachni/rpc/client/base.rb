@@ -24,11 +24,19 @@ class Client
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class Base < ::Arachni::RPC::EM::Client
 
+    #
+    # @param    [Arachni::Options]    opts     relevant optionsfoo:
+    #                                          * ssl_ca -- CA file (.pem)
+    #                                          * node_ssl_pkey OR ssl_pkey -- private key file (.pem)
+    #                                          * node_ssl_cert OR ssl_cert -- cert file file (.pem)
+    # @param    [String]    url       server URL in <host>:<port> format
+    # @param    [String]    token     optional authentication token
+    #
     def initialize( opts, url, token = nil )
         host, port = url.split( ':' )
         super(
