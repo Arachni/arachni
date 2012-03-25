@@ -26,7 +26,7 @@ class Client
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.3
 #
 class Instance
@@ -44,9 +44,7 @@ class Instance
 
         def method_missing( sym, *args, &block )
             return super( sym, *args, &block ) if sym == :set
-
-            call = "#{@remote}.#{sym.to_s}="
-            @server.call( call, *args, &block )
+            @server.call( "#{@remote}.#{sym.to_s}=", *args, &block )
         end
 
     end
