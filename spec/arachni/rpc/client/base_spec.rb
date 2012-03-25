@@ -15,7 +15,7 @@ class Server
         if block_given?
             start
             block.call self
-            shutdown
+            self.class.shutdown
         end
     end
 
@@ -28,7 +28,7 @@ class Server
         sleep( 0.1 ) while !@server.ready?
     end
 
-    def shutdown
+    def self.shutdown
         while ::EM.reactor_running?
             ::EM.stop
             sleep( 0.1 )
@@ -42,6 +42,7 @@ end
 
 describe Arachni::RPC::Client::Base do
     before( :all ) do
+        Server.shutdown
         @client_class = Arachni::RPC::Client::Base
     end
 
