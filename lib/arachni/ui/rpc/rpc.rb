@@ -38,7 +38,7 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.2
 #
 class RPC
@@ -588,7 +588,7 @@ class RPC
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
+                                      
                (With the support of the community and the Arachni Team.)
 
        Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni

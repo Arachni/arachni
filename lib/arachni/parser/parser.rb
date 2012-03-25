@@ -51,7 +51,7 @@ require opts.dir['lib'] + 'component_manager'
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 #
 class Parser
     include Arachni::UI::Output
@@ -66,7 +66,7 @@ class Parser
         #
         # @author Tasos "Zapotek" Laskos
         #                                      <tasos.laskos@gmail.com>
-        #                                      <zapotek@segfault.gr>
+        #                                      
         # @version 0.1
         # @abstract
         #

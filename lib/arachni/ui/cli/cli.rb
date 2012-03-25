@@ -32,7 +32,7 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.1.9
 # @see Arachni::Framework
 #
@@ -624,7 +624,7 @@ class CLI
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @arachni.version + ' [' + @arachni.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
+                                      
                (With the support of the community and the Arachni Team.)
 
        Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni

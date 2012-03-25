@@ -46,7 +46,7 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.2.2
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery

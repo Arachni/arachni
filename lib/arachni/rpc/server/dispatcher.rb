@@ -45,7 +45,7 @@ class Server
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.2
 #
 class Dispatcher
@@ -232,7 +232,7 @@ class Dispatcher
 
         puts 'Arachni - Web Application Security Scanner Framework
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
+                                      
                (With the support of the community and the Arachni Team.)
 
        Website:       http://github.com/Zapotek/arachni

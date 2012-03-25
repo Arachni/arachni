@@ -48,7 +48,7 @@ end
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.1.1
 # @abstract
 #

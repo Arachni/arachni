@@ -26,7 +26,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.1.3
 #
 class Profiler < Arachni::Plugin::Base
@@ -45,7 +45,7 @@ class Profiler < Arachni::Plugin::Base
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
+    #                                      
     # @version 0.1.1
     #
     class Auditor < Arachni::Module::Base

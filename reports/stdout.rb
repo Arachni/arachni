@@ -26,7 +26,7 @@ module Reports
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.2.1
 #
 class Stdout < Arachni::Report::Base

@@ -40,7 +40,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.2.7
 #
 class HTTP

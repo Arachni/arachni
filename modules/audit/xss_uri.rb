@@ -22,7 +22,7 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 #
 class XSSURI < Arachni::Module::Base
 

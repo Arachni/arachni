@@ -30,7 +30,7 @@ class Proxy
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
+    #                                      
     # @version 0.1.2
     #
     class Server < WEBrick::HTTPProxyServer

@@ -25,7 +25,7 @@ module Addons
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 #
 # @see http://www.sinatrarb.com/intro.html
 #

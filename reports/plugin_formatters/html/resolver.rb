@@ -24,7 +24,7 @@ module PluginFormatters
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
+    #                                      
     # @version 0.1
     #
     class Resolver < Arachni::Plugin::Formatter

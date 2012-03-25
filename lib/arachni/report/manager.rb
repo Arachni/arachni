@@ -29,9 +29,7 @@ module Report
 #
 # Holds and manages the registry of the reports.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr> <br/>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1.1
 #
 class Manager < Arachni::ComponentManager

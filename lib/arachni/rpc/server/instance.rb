@@ -38,7 +38,7 @@ class Server
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
+#                                      
 # @version 0.1.5
 #
 class Instance
@@ -155,7 +155,7 @@ class Instance
         puts 'Arachni - Web Application Security Scanner Framework v' +
             @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
+                                      
                (With the support of the community and the Arachni Team.)
 
        Website:       http://github.com/Zapotek/arachni

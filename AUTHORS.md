@@ -1,6 +1,3 @@
 # Authors
 
-
-Tasos "Zapotek" Laskos
-        <zapotek@segfault.gr>
-        <tasos.laskos@gmail.com>
+Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
