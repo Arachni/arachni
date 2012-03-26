@@ -4,7 +4,7 @@ describe Arachni::Module::Manager do
 
     before( :all ) do
         opts = Arachni::Options.instance
-        opts.dir['modules'] = File.dirname( __FILE__ ) + '/../../fixtures/modules/'
+        opts.dir['modules'] = spec_path + 'fixtures/modules/'
         @modules = Arachni::Module::Manager.new( Arachni::Options.instance )
 
         @page  = Arachni::Parser::Page.new
