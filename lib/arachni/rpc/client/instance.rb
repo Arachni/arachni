@@ -44,7 +44,13 @@ class Instance
 
         def method_missing( sym, *args, &block )
             return super( sym, *args, &block ) if sym == :set
-            @server.call( "#{@remote}.#{sym.to_s}=", *args, &block )
+
+            call = "#{@remote}.#{sym.to_s}"
+            if !args.empty? && sym.to_s[-1] != '='
+                call += '='
+            end
+
+            @server.call( call, *args, &block )
         end
 
     end
