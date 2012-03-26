@@ -10,6 +10,7 @@ Arachni::UI::Output.mute!
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
+require @@root + 'helpers/misc'
 Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 
 @@servers_running ||=[]
@@ -22,7 +23,7 @@ Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
     next if name == :base
 
     @@servers[name] = {
-        port: 5555 + rand( 9999 ),
+        port: random_port,
         path: path
     }
 }
