@@ -109,8 +109,6 @@ class Dispatcher
 
         @node = nil
 
-        print_status( 'Done.' )
-
         print_status( 'Initialization complete.' )
 
         run
@@ -311,15 +309,14 @@ USAGE
 
     # Starts the dispatcher's server
     def run
-        print_status( 'Starting the server...' )
-        t = Thread.new { @server.run }
+        Arachni::RPC::EM.add_to_reactor{
+            @node = Node.new( @opts, @logfile )
+            @server.add_handler( "node", @node )
 
-        # wait for the server to settle
-        sleep( 0.1 ) while !@server.ready?
-
-        @node = Node.new( @opts, @logfile )
-        @server.add_handler( "node", @node )
-        t.join
+            print_status( 'Starting the server...' )
+            @server.run
+        }
+        Arachni::RPC::EM.block!
     end
 
     def shutdown
