@@ -27,24 +27,20 @@ module Module
 # We need to extend the original Manager and redeclare its inherited methods
 # which are required over RPC.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < ::Arachni::Module::Manager
 
     # make these inherited methods visible again
-    private :load, :available
-    public :load, :available
+    private :load, :available, :loaded
+    public :load, :available, :loaded
 
     def initialize( opts )
         super( opts )
     end
 
     def load( mods )
-        super( mods )
-        @opts.mods = mods
+        @opts.mods = super( mods )
     end
 
 end

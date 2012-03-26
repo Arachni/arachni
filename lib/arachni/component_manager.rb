@@ -28,7 +28,7 @@ require Options.instance.dir['lib'] + 'component_options'
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class ComponentManager < Hash
@@ -217,6 +217,15 @@ class ComponentManager < Hash
             components << name
         }
         return components
+    end
+
+    #
+    # Returns array of loaded component names.
+    #
+    # @return    [Array]
+    #
+    def loaded
+        keys
     end
 
     #

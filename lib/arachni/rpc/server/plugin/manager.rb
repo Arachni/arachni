@@ -28,14 +28,14 @@ module Plugin
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.1
 #
 class Manager < ::Arachni::Plugin::Manager
 
     # make these inherited methods visible again
-    private :available, :results
-    public  :available, :results
+    private :available, :results, :loaded
+    public  :available, :results, :loaded
 
     def initialize( framework )
         super( framework )
