@@ -29,10 +29,7 @@ class Server
     end
 
     def self.shutdown
-        while ::EM.reactor_running?
-            ::EM.stop
-            sleep( 0.1 )
-        end
+        kill_em!
     end
 
     def bar
@@ -50,7 +47,7 @@ describe Arachni::RPC::Client::Base do
         context 'without SSL options' do
             it 'should connect succesfully to a server' do
                 opts = OpenStruct.new
-                opts.rpc_port = 9990
+                opts.rpc_port = random_port
 
                 Server.new( opts ) do |server|
                     client = @client_class.new( opts, server.url )
@@ -62,7 +59,7 @@ describe Arachni::RPC::Client::Base do
         context 'with valid SSL options' do
             it 'should connect succesfully to an SSL server' do
                 opts = OpenStruct.new
-                opts.rpc_port = 9991
+                opts.rpc_port = random_port
 
                 opts.ca = spec_path + 'pems/cacert.pem'
                 opts.node_ssl_pkey = spec_path + 'pems/client/key.pem'
@@ -80,7 +77,7 @@ describe Arachni::RPC::Client::Base do
         context 'with invalid SSL options' do
             it 'should be unable to connect to an SSL server' do
                 opts = OpenStruct.new
-                opts.rpc_port = 9992
+                opts.rpc_port = random_port
 
                 opts.ssl_ca = spec_path + 'pems/cacert.pem'
                 opts.node_ssl_pkey = spec_path + 'pems/client/foo-key.pem'
@@ -105,7 +102,7 @@ describe Arachni::RPC::Client::Base do
         context 'with no SSL options' do
             it 'should be unable to connect to an SSL server' do
                 opts = OpenStruct.new
-                opts.rpc_port = 9993
+                opts.rpc_port = random_port
 
                 opts.ssl_ca = spec_path + 'pems/cacert.pem'
                 opts.ssl_pkey = spec_path + 'pems/server/key.pem'
@@ -129,7 +126,7 @@ describe Arachni::RPC::Client::Base do
             context 'with a valid token' do
                 it 'should be able to connect' do
                     opts = OpenStruct.new
-                    opts.rpc_port = 9994
+                    opts.rpc_port = random_port
                     token = 'secret!'
 
                     Server.new( opts, token ) do |server|
@@ -141,7 +138,7 @@ describe Arachni::RPC::Client::Base do
             context 'with invalid token' do
                 it 'should not be able to connect' do
                     opts = OpenStruct.new
-                    opts.rpc_port = 9995
+                    opts.rpc_port = random_port
                     token = 'secret!'
 
                     Server.new( opts, token ) do |server|

@@ -7,7 +7,7 @@ describe Arachni::RPC::Client::Instance do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.rpc_address = 'localhost'
-        @opts.rpc_port = 9000
+        @opts.rpc_port = random_port
 
         @token = 'secret!'
 

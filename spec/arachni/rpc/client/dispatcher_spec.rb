@@ -7,10 +7,10 @@ describe Arachni::RPC::Client::Dispatcher do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.rpc_address = 'localhost'
-        @opts.rpc_port = 9999
+        @opts.rpc_port = random_port
         @opts.pool_size = 0
 
-        @pid = fork { Arachni::RPC::Server::Dispatcher.new( @opts ) }
+        @pid = fork { ::EM.run { Arachni::RPC::Server::Dispatcher.new( @opts ) } }
         sleep 1
 
         @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}" )
