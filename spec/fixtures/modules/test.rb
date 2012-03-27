@@ -30,19 +30,13 @@ class Test < Arachni::Module::Base
 
     def clean_up
         return if !@ran
-        log_issue( url: 'http://blah' )
+        log_issue( url: 'http://blah', elem: 'link' )
     end
 
     def self.info
         {
             :name           => 'Test module',
             :description    => %q{Test description},
-            :elements       => [
-                Issue::Element::FORM,
-                Issue::Element::LINK,
-                Issue::Element::COOKIE,
-                Issue::Element::HEADER
-            ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             :version        => '0.1',
             :references     => {
