@@ -23,10 +23,7 @@ class Server
 #
 # RPC server class
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Base < ::Arachni::RPC::EM::Server
 
