@@ -32,10 +32,7 @@ class Server
 # remote slaves (when in High Performance Grid mode) into a neat, little,
 # easy to handle package.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
 
@@ -88,7 +85,7 @@ class Framework < ::Arachni::Framework
         busyness = [ extended_running? ]
 
         if @instances.empty? || !include_slaves
-            block.call( busyness[0] ) if block_given?
+            block.call( busyness[0] ? true : false ) if block_given?
             return
         end
 
