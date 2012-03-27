@@ -8,6 +8,7 @@ describe Arachni::RPC::Server::Module::Manager do
         @opts = Arachni::Options.instance
         @opts.dir['modules'] = spec_path + 'fixtures/modules/'
         @opts.rpc_address = 'localhost'
+        @opts.dir['logs'] = spec_path + 'logs'
 
         port1 = random_port
         port2 = random_port

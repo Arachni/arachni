@@ -9,6 +9,7 @@ describe Arachni::RPC::Client::Dispatcher do
         @opts.rpc_address = 'localhost'
         @opts.rpc_port = random_port
         @opts.pool_size = 0
+        @opts.dir['logs'] = spec_path + 'logs'
 
         @pid = fork { ::EM.run { Arachni::RPC::Server::Dispatcher.new( @opts ) } }
         sleep 1

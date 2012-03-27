@@ -8,6 +8,7 @@ describe Arachni::RPC::Client::Instance do
         @opts = Arachni::Options.instance
         @opts.rpc_address = 'localhost'
         @opts.rpc_port = random_port
+        @opts.dir['logs'] = spec_path + 'logs'
 
         @token = 'secret!'
 

@@ -8,7 +8,7 @@ describe Arachni::RPC::Server::Dispatcher do
         kill_em!
         @opts = Arachni::Options.instance
         @opts.rpc_address = 'localhost'
-        @opts.reroute_to_logfile = true
+        @opts.dir['logs'] = spec_path + 'logs'
         port1 = random_port
         port2 = random_port
 

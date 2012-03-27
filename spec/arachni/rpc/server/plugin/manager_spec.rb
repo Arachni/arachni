@@ -7,6 +7,7 @@ describe Arachni::RPC::Server::Plugin::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
         @opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
+        @opts.dir['logs'] = spec_path + 'logs'
 
         @opts.rpc_address = 'localhost'
 
