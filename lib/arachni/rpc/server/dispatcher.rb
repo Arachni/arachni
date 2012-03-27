@@ -92,19 +92,14 @@ class Dispatcher
 
         @jobs = []
         @pool = Queue.new
-        @replenisher = Queue.new
+        @replenisher = ::EM::Queue.new
 
         if @opts.pool_size > 0
             print_status( 'Warming up the pool...' )
-            @opts.pool_size.times{ add_instance_to_pool }
+            @opts.pool_size.times{ add_instance_to_pool! }
 
             # this thread will wait in the background and replenish the pool
-            Thread.new {
-                loop {
-                    add_instance_to_pool
-                    @replenisher.pop
-                }
-            }
+            ::EM.add_periodic_timer { @replenisher.pop { add_instance_to_pool! } }
         end
 
         @node = nil
@@ -127,6 +122,7 @@ class Dispatcher
     # @return   [Hash]      includes port number, owner, clock info and proc info
     #
     def dispatch( owner = 'unknown', helpers = {} )
+        return false if @opts.pool_size <= 0
 
         # just to make sure...
         owner = owner.to_s
@@ -324,7 +320,7 @@ USAGE
         @server.shutdown
     end
 
-    def add_instance_to_pool
+    def add_instance_to_pool!
 
         owner = 'dispatcher'
         exception_jail{
@@ -333,11 +329,9 @@ USAGE
             @opts.rpc_port = avail_port( )
             @token         = secret( )
 
-            pid = ::EM.fork_reactor {
-                exception_jail {
+            pid = fork { ::EM.run { exception_jail {
                     Arachni::RPC::Server::Instance.new( @opts, @token )
-                }
-            }
+            }}}
 
             print_status( "Instance added to pool -- PID: #{pid} - " +
                 "Port: #{@opts.rpc_port} - Owner: #{owner}" )
@@ -355,7 +349,6 @@ USAGE
             Process.detach( pid )
             @token = nil
         }
-
     end
 
     def prep_logging
