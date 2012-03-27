@@ -21,4 +21,6 @@ Arachni::Options.instance.parse!
 
 require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 
-Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance )
+::EM.run {
+    Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance )
+}

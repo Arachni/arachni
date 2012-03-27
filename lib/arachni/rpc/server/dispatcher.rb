@@ -91,15 +91,12 @@ class Dispatcher
         trap_interrupts { shutdown }
 
         @jobs = []
-        @pool = Queue.new
-        @replenisher = ::EM::Queue.new
+        @pool = ::EM::Queue.new
+        @replenisher = Queue.new
 
         if @opts.pool_size > 0
             print_status( 'Warming up the pool...' )
             @opts.pool_size.times{ add_instance_to_pool! }
-
-            # this thread will wait in the background and replenish the pool
-            ::EM.add_periodic_timer { @replenisher.pop { add_instance_to_pool! } }
         end
 
         @node = nil
@@ -121,24 +118,25 @@ class Dispatcher
     #
     # @return   [Hash]      includes port number, owner, clock info and proc info
     #
-    def dispatch( owner = 'unknown', helpers = {} )
-        return false if @opts.pool_size <= 0
+    def dispatch( owner = 'unknown', helpers = {}, &block )
+        block.call false if @opts.pool_size <= 0
 
         # just to make sure...
         owner = owner.to_s
-        cjob  = @pool.shift
-        cjob['owner']     = owner
-        cjob['starttime'] = Time.now
-        cjob['helpers']   = helpers
+        ::EM.next_tick{ add_instance_to_pool! }
+        @pool.pop {
+            |cjob|
+            cjob['owner']     = owner
+            cjob['starttime'] = Time.now
+            cjob['helpers']   = helpers
 
-        print_status( "Instance dispatched -- PID: #{cjob['pid']} - " +
-            "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
+            print_status( "Instance dispatched -- PID: #{cjob['pid']} - " +
+                "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
 
-        @replenisher << true
+            @jobs << cjob
 
-        @jobs << cjob
-
-        return cjob
+            block.call cjob
+        }
     end
 
     #
@@ -305,14 +303,11 @@ USAGE
 
     # Starts the dispatcher's server
     def run
-        Arachni::RPC::EM.add_to_reactor{
-            @node = Node.new( @opts, @logfile )
-            @server.add_handler( "node", @node )
+        @node = Node.new( @opts, @logfile )
+        @server.add_handler( "node", @node )
 
-            print_status( 'Starting the server...' )
-            @server.run
-        }
-        Arachni::RPC::EM.block!
+        print_status( 'Starting the server...' )
+        @server.start
     end
 
     def shutdown
@@ -329,9 +324,9 @@ USAGE
             @opts.rpc_port = avail_port( )
             @token         = secret( )
 
-            pid = fork { ::EM.run { exception_jail {
+            pid = ::EM.fork_reactor { exception_jail {
                     Arachni::RPC::Server::Instance.new( @opts, @token )
-            }}}
+            }}
 
             print_status( "Instance added to pool -- PID: #{pid} - " +
                 "Port: #{@opts.rpc_port} - Owner: #{owner}" )
