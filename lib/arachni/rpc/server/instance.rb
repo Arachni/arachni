@@ -58,6 +58,8 @@ class Instance
         @token = token
         @server = Base.new( @opts, token )
 
+        @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
+
         @opts.datastore[:token] = token
 
         debug! if @opts.debug

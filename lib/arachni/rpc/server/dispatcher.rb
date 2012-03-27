@@ -70,6 +70,7 @@ class Dispatcher
         end
 
         @server = Base.new( @opts )
+        @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
 
         @server.add_async_check {
             |method|
