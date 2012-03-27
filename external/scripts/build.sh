@@ -375,17 +375,24 @@ get_ruby_environment() {
     cat<<EOF
 
 echo \$LD_LIBRARY_PATH | egrep \$env_root > /dev/null
-if [ \$? -ne 0 ] ; then
-    export PATH ; PATH="\$env_root/usr/bin:\$PATH"
-    export LD_LIBRARY_PATH ; LD_LIBRARY_PATH="\$env_root/usr/lib:\$LD_LIBRARY_PATH"
+update_paths=\$?
+
+echo \$DYLD_LIBRARY_PATH | egrep \$env_root > /dev/null
+update_paths=`expr $update_paths + \$?`
+
+if [ \$update_paths -ne 0 ] ; then
+    export PATH; PATH="\$env_root/usr/bin:\$PATH"
+    export LD_LIBRARY_PATH; LD_LIBRARY_PATH="\$env_root/usr/lib:\$LD_LIBRARY_PATH"
+    export DYLD_LIBRARY_PATH; DYLD_LIBRARY_PATH="\$env_root/usr/lib:\$DYLD_LIBRARY_PATH"
 fi
 
-export RUBY_VERSION ; RUBY_VERSION='ruby-1.9.3-p125'
-export GEM_HOME ; GEM_HOME="\$env_root/gems"
-export GEM_PATH ; GEM_PATH="\$env_root/gems"
-export MY_RUBY_HOME ; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
-export RUBYLIB ; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux
-export IRBRC ; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
+export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p125'
+export GEM_HOME; GEM_HOME="\$env_root/gems"
+export GEM_PATH; GEM_PATH="\$env_root/gems"
+export MY_RUBY_HOME; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
+export RUBYLIB; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux
+export IRBRC; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
+
 EOF
 }
 
@@ -410,6 +417,7 @@ else
     echo "ERROR: Missing environment file: '\$env_root/environment" >&2
     exit 1
 fi
+
 EOF
 }
 
@@ -469,10 +477,9 @@ install_arachni() {
 }
 
 install_bin_wrappers() {
+    cp "$(dirname $0)/lib/readlink_f.sh" "$root/bin/"
+
     cd $root/gems/bin
-
-    cat "$(dirname $0)/lib/readlink_f.sh" > "$root/bin/readlink_f.sh"
-
     for bin in arachni*; do
         echo "  * $root/bin/$bin => $root/gems/bin/$bin"
         get_wrapper_template "\$env_root/gems/bin/$bin" > "$root/bin/$bin"
