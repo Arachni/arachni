@@ -349,7 +349,7 @@ USAGE
     def prep_logging
         # reroute all output to a logfile
         @logfile ||= reroute_to_file( @opts.dir['logs'] +
-            "Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
+            "/Dispatcher - #{Process.pid}-#{@opts.rpc_port}.log" )
     end
 
     def proc( pid )

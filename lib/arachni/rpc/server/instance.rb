@@ -36,10 +36,7 @@ class Server
 # Only instantiated by the Dispatcher to provide support for multiple
 # and concurent RPC clients/scans.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.5
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
 
@@ -68,7 +65,7 @@ class Instance
 
         if logfile = @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['logs'] +
-                "Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
+                "/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
         else
             reroute_to_file( false )
         end
@@ -155,7 +152,7 @@ class Instance
         puts 'Arachni - Web Application Security Scanner Framework v' +
             @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      
+
                (With the support of the community and the Arachni Team.)
 
        Website:       http://github.com/Zapotek/arachni
