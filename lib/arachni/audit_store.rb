@@ -20,16 +20,12 @@ module Arachni
 require Options.instance.dir['lib'] + 'issue'
 
 #
-# Arachni::AuditStore class
+# Represents a finished audit session.
 #
-# Represents a finished audit session.<br/>
 # It holds information about the runtime environment,
 # the results of the audit etc...
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class AuditStore
 
