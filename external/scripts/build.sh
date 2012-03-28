@@ -385,6 +385,11 @@ get_ruby_environment() {
         platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir"
     fi
 
+    arch_dir=$(echo i386*)
+    if [[ -d "$arch_dir" ]]; then
+        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir"
+    fi
+
     cat<<EOF
 echo "\$LD_LIBRARY_PATH-\$DYLD_LIBRARY_PATH" | egrep \$env_root > /dev/null
 if [[ \$? -ne 0 ]] ; then
