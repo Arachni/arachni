@@ -38,10 +38,7 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # Some are ignored, on others the HTTP session is refreshed.<br/>
 # Point is, you don't need to worry about it.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.2.7
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class HTTP
 
@@ -199,78 +196,22 @@ class HTTP
     end
 
     #
-    # Queues a Tyhpoeus::Request and applies an 'on_complete' callback
-    # on behalf of the trainer.
+    # Queues a Tyhpoeus::Request and calls the following callbacks:
+    # * on_queue() -- intersects a queued request and gets passed the original
+    #   and the async method. If the block returns one or more request
+    #   objects these will be queued instead of the original request.
+    # * on_complete() -- calls the block with the each requests as it arrives.
     #
     # @param  [Tyhpoeus::Request]  req  the request to queue
     # @param  [Bool]  async  run request async?
     #
     def queue( req, async = true )
+        requests = call_on_queue( req, async )
+        requests ||= req
 
-        req.id = @request_count
-
-        call_on_queue( req, async )
-
-        if( !async )
-            @hydra_sync.queue( req )
-        else
-            @hydra.queue( req )
-        end
-
-        @request_count += 1
-
-        print_debug( '------------' )
-        print_debug( 'Queued request.' )
-        print_debug( 'ID#: ' + req.id.to_s )
-        print_debug( 'URL: ' + req.url )
-        print_debug( 'Method: ' + req.method.to_s  )
-        print_debug( 'Params: ' + req.params.to_s  )
-        print_debug( 'Headers: ' + req.headers.to_s  )
-        print_debug( 'Train?: ' + req.train?.to_s  )
-        print_debug(  '------------' )
-
-        req.on_complete( true ) {
-            |res|
-
-            @response_count += 1
-            @curr_res_cnt   += 1
-            @curr_res_time  += res.start_transfer_time
-
-            call_on_complete( res )
-
-            parse_and_set_cookies( res ) if req.update_cookies?
-
-            print_debug( '------------' )
-            print_debug( 'Got response.' )
-            print_debug( 'Request ID#: ' + res.request.id.to_s )
-            print_debug( 'URL: ' + res.effective_url )
-            print_debug( 'Method: ' + res.request.method.to_s  )
-            print_debug( 'Params: ' + res.request.params.to_s  )
-            print_debug( 'Headers: ' + res.request.headers.to_s  )
-            print_debug( 'Train?: ' + res.request.train?.to_s  )
-            print_debug( '------------' )
-
-            if res.timed_out?
-                # print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
-                @time_out_count += 1
-            end
-
-            if( req.train? )
-                # handle redirections
-                if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
-                    req2 = get( redir, :remove_id => true )
-                    req2.on_complete {
-                        |res2|
-                        @trainer.add_response( res2, true )
-                    } if req2
-                else
-                    @trainer.add_response( res )
-                end
-            end
-        }
-
-        exception_jail {
-            @hydra_sync.run if !async
+        [ requests ].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
+            |request|
+            forward_request( request, async )
         }
     end
 
@@ -724,6 +665,72 @@ class HTTP
     end
 
     private
+
+    def forward_request( req, async = true )
+        req.id = @request_count
+
+        if( !async )
+            @hydra_sync.queue( req )
+        else
+            @hydra.queue( req )
+        end
+
+        @request_count += 1
+
+        print_debug( '------------' )
+        print_debug( 'Queued request.' )
+        print_debug( 'ID#: ' + req.id.to_s )
+        print_debug( 'URL: ' + req.url )
+        print_debug( 'Method: ' + req.method.to_s  )
+        print_debug( 'Params: ' + req.params.to_s  )
+        print_debug( 'Headers: ' + req.headers.to_s  )
+        print_debug( 'Train?: ' + req.train?.to_s  )
+        print_debug(  '------------' )
+
+        req.on_complete( true ) {
+            |res|
+
+            @response_count += 1
+            @curr_res_cnt   += 1
+            @curr_res_time  += res.start_transfer_time
+
+            call_on_complete( res )
+
+            parse_and_set_cookies( res ) if req.update_cookies?
+
+            print_debug( '------------' )
+            print_debug( 'Got response.' )
+            print_debug( 'Request ID#: ' + res.request.id.to_s )
+            print_debug( 'URL: ' + res.effective_url )
+            print_debug( 'Method: ' + res.request.method.to_s  )
+            print_debug( 'Params: ' + res.request.params.to_s  )
+            print_debug( 'Headers: ' + res.request.headers.to_s  )
+            print_debug( 'Train?: ' + res.request.train?.to_s  )
+            print_debug( '------------' )
+
+            if res.timed_out?
+                # print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                @time_out_count += 1
+            end
+
+            if( req.train? )
+                # handle redirections
+                if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
+                    req2 = get( redir, :remove_id => true )
+                    req2.on_complete {
+                        |res2|
+                        @trainer.add_response( res2, true )
+                    } if req2
+                else
+                    @trainer.add_response( res )
+                end
+            end
+        }
+
+        exception_jail {
+            @hydra_sync.run if !async
+        }
+    end
 
     def is_404?( path, body )
         @_404[path].map {
