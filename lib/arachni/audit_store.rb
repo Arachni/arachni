@@ -179,11 +179,12 @@ class AuditStore
         sorted = []
         issues.each {
             |issue|
-            sorted[ORDER.rindex( issue.severity )] ||= []
-            sorted[ORDER.rindex( issue.severity )] << issue
+            order = ORDER.rindex( issue.severity ) || ORDER.size
+            sorted[order] ||= []
+            sorted[order] << issue
         }
 
-        return sorted.flatten.reject{ |issue| issue.nil? }
+        return sorted.flatten.compact
     end
 
 
