@@ -8,6 +8,7 @@ describe Arachni::Report::Manager do
 
         @framework = Arachni::Framework.new( Arachni::Options.instance )
         @reports   = @framework.reports
+        @reports.load( '*' )
     end
 
     after( :all ) { Arachni::Options.instance.reset! }
@@ -15,7 +16,6 @@ describe Arachni::Report::Manager do
     describe :run! do
         context 'without the run_afr opt' do
             it 'should run loaded reports including the AFR one' do
-                @reports.load( '*' )
                 @reports.run!( @framework.auditstore )
 
                 File.exist?( 'afr' ).should be_true
