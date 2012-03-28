@@ -24,10 +24,7 @@ module Plugins
 # and performs taint analysis to determine which inputs affect the output.
 #
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.3
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Profiler < Arachni::Plugin::Base
 
@@ -43,10 +40,7 @@ class Profiler < Arachni::Plugin::Base
     #
     # Thus, we use this helper class to perform auditing duties.
     #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1.1
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
     class Auditor < Arachni::Module::Base
 
