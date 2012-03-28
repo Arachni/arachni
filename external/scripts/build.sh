@@ -381,13 +381,8 @@ install_libs() {
 get_ruby_environment() {
     cat<<EOF
 
-echo \$LD_LIBRARY_PATH | egrep \$env_root > /dev/null
-update_paths=\$?
-
-echo \$DYLD_LIBRARY_PATH | egrep \$env_root > /dev/null
-update_paths=`expr \$update_paths + \$?`
-
-if [[ \$update_paths -ne 0 ]] ; then
+echo "\$LD_LIBRARY_PATH-\$DYLD_LIBRARY_PATH" | egrep \$env_root > /dev/null
+if [[ \$? -ne 0 ]] ; then
     export PATH; PATH="\$env_root/usr/bin:\$PATH"
     export LD_LIBRARY_PATH; LD_LIBRARY_PATH="\$env_root/usr/lib:\$LD_LIBRARY_PATH"
     export DYLD_LIBRARY_PATH; DYLD_LIBRARY_PATH="\$env_root/usr/lib:\$DYLD_LIBRARY_PATH"
