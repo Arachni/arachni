@@ -385,7 +385,7 @@ echo \$LD_LIBRARY_PATH | egrep \$env_root > /dev/null
 update_paths=\$?
 
 echo \$DYLD_LIBRARY_PATH | egrep \$env_root > /dev/null
-update_paths=`expr $update_paths + \$?`
+update_paths=`expr \$update_paths + \$?`
 
 if [[ \$update_paths -ne 0 ]] ; then
     export PATH; PATH="\$env_root/usr/bin:\$PATH"
