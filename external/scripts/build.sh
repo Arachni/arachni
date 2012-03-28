@@ -428,7 +428,7 @@ get_wrapper_template() {
 }
 
 get_update_script() {
-    get_wrapper_environment 'gem install arachni'
+    get_wrapper_environment 'gem update arachni'
 }
 
 #
