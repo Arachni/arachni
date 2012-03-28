@@ -181,7 +181,6 @@ zlib no-asm no-krb5 shared"
 # openssl uses uname to determine os/arch which will return the truth
 # even when running in chroot, which is annoying when trying to cross-compile
 if [[ -e "/32bit-chroot" ]]; then
-
     configure_openssl="./Configure $common_configure_openssl \
 --prefix=$configure_prefix linux-generic32"
 
@@ -379,8 +378,14 @@ install_libs() {
 # This should be used by our Ruby env.
 #
 get_ruby_environment() {
-    cat<<EOF
 
+    cd "$env_root/usr/lib/ruby/1.9.1/"
+    arch_dir=$(echo x86_64*)
+    if [[ -d "$arch_dir" ]]; then
+        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir"
+    fi
+
+    cat<<EOF
 echo "\$LD_LIBRARY_PATH-\$DYLD_LIBRARY_PATH" | egrep \$env_root > /dev/null
 if [[ \$? -ne 0 ]] ; then
     export PATH; PATH="\$env_root/usr/bin:\$PATH"
@@ -392,7 +397,7 @@ export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p125'
 export GEM_HOME; GEM_HOME="\$env_root/gems"
 export GEM_PATH; GEM_PATH="\$env_root/gems"
 export MY_RUBY_HOME; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
-export RUBYLIB ; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux:\$MY_RUBY_HOME/1.9.1/x86_64-darwin10.8.0
+export RUBYLIB; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1$platform_lib
 export IRBRC; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
 
 EOF
