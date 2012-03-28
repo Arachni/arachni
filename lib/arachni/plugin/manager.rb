@@ -27,10 +27,7 @@ module Plugin
 #
 # Holds and manages the plugins.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::ComponentManager
 
@@ -62,8 +59,26 @@ class Manager < Arachni::ComponentManager
     # Runs each plug-in in its own thread.
     #
     def run!
-        each {
-            |name, plugin|
+
+        ordered = []
+        unordered = []
+        loaded.each {
+            |name|
+            ph = { name => self[name] }
+            if order = self[name].info[:order]
+                ordered[order] ||= []
+                ordered[order] << ph
+            else
+                unordered << ph
+            end
+        }
+        ordered << unordered
+        ordered.flatten!
+
+        ordered.each {
+            |ph|
+            name = ph.keys.first
+            plugin = ph.values.first
 
             if( ret = sane_env?( plugin ) ) != true
                 if !ret[:gem_errors].empty?
