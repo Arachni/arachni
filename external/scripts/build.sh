@@ -125,7 +125,6 @@ if [[ -d $clean_build ]]; then
     rm -rf $root
     cp -R $clean_build $root
 else
-    mkdir -p $clean_build
     mkdir -p $root
 fi
 
@@ -133,6 +132,8 @@ update_clean_dir=false
 
 # *BSD's readlink doesn't like non-existent dirs
 root=`readlink_f $root`
+
+scriptdir=`readlink_f $0`
 
 # holds tarball archives
 archives_path="$root/archives"
@@ -390,7 +391,7 @@ export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p125'
 export GEM_HOME; GEM_HOME="\$env_root/gems"
 export GEM_PATH; GEM_PATH="\$env_root/gems"
 export MY_RUBY_HOME; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
-export RUBYLIB; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux
+export RUBYLIB; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64*
 export IRBRC; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
 
 EOF
@@ -400,7 +401,7 @@ EOF
 # Provides a wrapper for executables, it basically sets all relevant
 # env variables before calling the executable in question.
 #
-get_wrapper_template() {
+get_wrapper_environment() {
     cat<<EOF
 #!/usr/bin/env bash
 
@@ -412,13 +413,21 @@ source "\$(dirname \$0)/readlink_f.sh"
 env_root="\$(dirname "\$(readlink_f "\${0}")")"/..
 if [[ -s "\$env_root/environment" ]]; then
     source "\$env_root/environment"
-    exec ruby $1 "\$@"
+    exec $1
 else
     echo "ERROR: Missing environment file: '\$env_root/environment" >&2
     exit 1
 fi
 
 EOF
+}
+
+get_wrapper_template() {
+    get_wrapper_environment "ruby $1 \"\$@\""
+}
+
+get_update_script() {
+    get_wrapper_environment 'gem install arachni'
 }
 
 #
@@ -477,7 +486,10 @@ install_arachni() {
 }
 
 install_bin_wrappers() {
-    cp "$(dirname $0)/lib/readlink_f.sh" "$root/bin/"
+    cp "`dirname $(readlink_f $scriptdir)`/lib/readlink_f.sh" "$root/bin/"
+
+    get_update_script > "$root/bin/arachni_update"
+    chmod +x "$root/bin/arachni_update"
 
     cd $root/gems/bin
     for bin in arachni*; do
@@ -499,6 +511,7 @@ echo '-----------------------------------'
 install_libs
 
 if [[ ! -d $clean_build ]] || [[ $update_clean_dir == true ]]; then
+    mkdir -p $clean_build
     echo "==== Backing up clean build directory ($clean_build)."
     cp -R $root/* $clean_build/
     rm -rf "$clean_build/logs"
