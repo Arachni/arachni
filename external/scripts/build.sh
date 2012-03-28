@@ -391,7 +391,7 @@ export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p125'
 export GEM_HOME; GEM_HOME="\$env_root/gems"
 export GEM_PATH; GEM_PATH="\$env_root/gems"
 export MY_RUBY_HOME; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
-export RUBYLIB; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64*
+export RUBYLIB ; RUBYLIB=\$MY_RUBY_HOME:\$MY_RUBY_HOME/site_ruby/1.9.1:\$MY_RUBY_HOME/1.9.1:\$MY_RUBY_HOME/1.9.1/x86_64-linux:\$MY_RUBY_HOME/1.9.1/x86_64-darwin10.8.0
 export IRBRC; IRBRC="\$env_root/usr/lib/ruby/.irbrc"
 
 EOF
