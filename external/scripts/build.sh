@@ -96,6 +96,12 @@ libs=(
     http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
 )
 
+#
+# The script will look for the existent of files whose name begins with the following
+# strings to see if a lib has already been installed.
+#
+# They should correspond with the entries in the 'libs' array.
+#
 libs_so=(
     libz
     libiconv
