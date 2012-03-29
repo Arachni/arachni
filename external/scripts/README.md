@@ -78,8 +78,8 @@ Installation directory defaults to '/opt/arachni-<version>'.
 
 Drives ```build.sh``` and ```package.sh``` to generate an installer and an archive in the form of:
 
-* ```arachni-<version>-<arch>-linux-installer.sh```
-* ```arachni-<version>-<arch>.tar.gz```
+* ```arachni-<version>-<os>-<arch>-installer.sh```
+* ```arachni-<version>-<os>-<arch>.tar.gz```
 
 ## cross_build_and_package.sh
 
