@@ -21,6 +21,7 @@
 # Credits:
 #     Tasos Laskos <tasos.laskos@gmail.com> -- Original Linux version
 #     Edwin van Andel <evanandel@yafsec.com> -- Patches for *BSD and testing
+#     Dan Woodruff <daniel.woodruff@gmail.com> -- Patches for OSX and testing
 #
 
 source `dirname $0`"/lib/readlink_f.sh"
@@ -86,7 +87,6 @@ arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
 #
 libs=(
     http://zlib.net/zlib-1.2.6.tar.gz
-    http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
     http://www.openssl.org/source/openssl-0.9.8n.tar.gz
     http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
     ftp://xmlsoft.org/libxml2/libxml2-2.7.8.tar.gz
@@ -104,7 +104,6 @@ libs=(
 #
 libs_so=(
     libz
-    libiconv
     libssl
     libsqlite3
     libxml2
@@ -524,10 +523,7 @@ install_libs
 if [[ ! -d $clean_build ]] || [[ $update_clean_dir == true ]]; then
     mkdir -p $clean_build
     echo "==== Backing up clean build directory ($clean_build)."
-    cp -R $root/* $clean_build/
-    rm -rf "$clean_build/logs"
-    rm -rf "$clean_build/src"
-    rm -rf "$clean_build/archives"
+    cp -R $usr_path $clean_build/
 fi
 
 echo
