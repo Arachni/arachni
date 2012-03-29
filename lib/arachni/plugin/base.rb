@@ -46,10 +46,8 @@ end
 # An abstract class for the plugins.<br/>
 # All plugins must extend this.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 # @abstract
 #
 class Base
@@ -137,7 +135,14 @@ class Base
                 #                        option name       required?       description                     default
                 # Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
                 # Arachni::OptString.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
-            ]
+            ],
+            # specify an execution order group
+            # plug-ins will be separated in groups based on this number
+            # and be run in the specified order
+            #
+            # if this option is omitted the plug-in will be run last
+            #
+            :order          => 0
         }
     end
 
