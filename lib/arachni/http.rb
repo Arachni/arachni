@@ -74,6 +74,7 @@ class HTTP
 
     attr_reader :curr_res_time
     attr_reader :curr_res_cnt
+    attr_reader :burst_runtime
 
     attr_reader :trainer
 
@@ -143,6 +144,7 @@ class HTTP
 
         @curr_res_time = 0
         @curr_res_cnt  = 0
+        @burst_runtime = 0
 
         @after_run = []
     end
@@ -155,7 +157,9 @@ class HTTP
     #
     def run
         exception_jail {
+            t = Time.now
             @hydra.run
+            @burst_runtime = Time.now - t
 
             @after_run.each {
                 |block|
@@ -185,6 +189,13 @@ class HTTP
     def average_res_time
         return 0 if @curr_res_cnt == 0
         return @curr_res_time / @curr_res_cnt
+    end
+
+    def curr_res_per_second
+        if @curr_res_cnt > 0 && @burst_runtime > 0
+            return (@curr_res_cnt / @burst_runtime).to_i
+        end
+        return 0
     end
 
     def max_concurrency!( max_concurrency )

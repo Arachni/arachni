@@ -284,11 +284,6 @@ class Framework
             @opts.delta_time = Time.now - @opts.start_datetime
         end
 
-        curr_avg = 0
-        if http.curr_res_cnt > 0 && http.curr_res_time > 0
-            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i
-        end
-
         avg = 0
         if res_cnt > 0
             avg = ( res_cnt / @opts.delta_time ).to_i
@@ -376,7 +371,7 @@ class Framework
             :progress      => progress,
             :curr_res_time => http.curr_res_time,
             :curr_res_cnt  => http.curr_res_cnt,
-            :curr_avg      => curr_avg,
+            :curr_avg      => http.curr_res_per_second,
             :average_res_time => http.average_res_time,
             :max_concurrency  => http.max_concurrency,
             :current_page     => @current_url,
