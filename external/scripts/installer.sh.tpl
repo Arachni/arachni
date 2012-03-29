@@ -116,7 +116,7 @@ if [[ "$?" != 0 ]]; then
     echo "  * Can't write to '$binpath', installing for current user only."
     echo "    o Adding '$pkg_bin' to PATH using '$rc'."
 
-    egrep "$pkg_bin" $rc > /dev/null
+    egrep "$pkg_bin" $rc &> /dev/null
     if [ $? -ne 0 ] ; then
         echo "export PATH=$pkg_bin:\$PATH" >> $rc
     fi
