@@ -25,6 +25,7 @@
     - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
     - Improved detection of custom 404 pages
+    - Updated <em>add_on_queue()</em> hook (called by <em>queue()</em>) which allows HTTP requests to be intercepted and modified before being fired.
 - Spider
     - Fixed infitine loop bug.
 - Tests
