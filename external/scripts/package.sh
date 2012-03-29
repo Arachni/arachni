@@ -110,6 +110,8 @@ echo "  * Copying installer template to '$instname'"
 
 instdir_name=`basename $instdir`
 cat $insttpl | sed "s/##PKG_NAME##/$instdir_name/g" > $instname
+echo "`cat $root/lib/readlink_f.sh` `cat $instname`" > $instname
+
 
 echo "  * Compressing build dir ($instdir)"
 tar czf $tmp_archive -C `dirname $instdir` $instdir_name
