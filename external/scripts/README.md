@@ -35,7 +35,7 @@ will continue from the point it left off.
 
 ## package.sh
 
-Creates an installer using an build directory (as created by ```build.sh```) and
+Creates an installer using a build directory (as created by ```build.sh```) and
 the template in ```installer.sh.tpl```.
 
 The resulting installer is able to self-extract under a specified directory
