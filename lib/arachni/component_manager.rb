@@ -204,6 +204,11 @@ class ComponentManager < Hash
         return
     end
 
+    def delete( k )
+        @namespace.send( :remove_const, self[k].to_s.split( ':' ).last.to_sym )
+        super( k )
+    end
+
     #
     # Returns array of available component names.
     #
