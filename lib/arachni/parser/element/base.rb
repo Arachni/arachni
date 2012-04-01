@@ -19,15 +19,9 @@ require opts.dir['lib'] + 'parser/element/mutable'
 require opts.dir['lib'] + 'parser/element/auditable'
 
 #
-# Base element class.
-#
 # Should be extended/implemented by all HTML/HTTP modules.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
 class Arachni::Parser::Element::Base
