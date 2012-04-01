@@ -125,6 +125,10 @@ class Parser
         super( base_url, relative_url )
     end
 
+    def skip?( path )
+        skip_path?( path )
+    end
+
     #
     # Runs the Analyzer and extracts forms, links and cookies
     #
