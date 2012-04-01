@@ -51,7 +51,7 @@ require opts.dir['lib'] + 'component_manager'
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 #
 class Parser
     include Arachni::UI::Output
@@ -66,7 +66,7 @@ class Parser
         #
         # @author Tasos "Zapotek" Laskos
         #                                      <tasos.laskos@gmail.com>
-        #                                      
+        #
         # @version 0.1
         # @abstract
         #
@@ -140,7 +140,7 @@ class Parser
                 :method      => req_method,
                 :query_vars  => self_link.auditable,
                 :html        => @html,
-                :response_headers => @response_headers,
+                :response_headers => @response_headers
             )
         end
 
@@ -341,58 +341,13 @@ class Parser
     end
 
     #
-    # Extracts cookies from an HTTP headers
+    # Extracts cookies from an HTTP headers and the response body
     #
-    # @param  [String] headers  HTTP headers
-    # @param  [String] html     the HTML code of the page
-    #
-    # @return [Array<Element::Cookie>] of cookies
+    # @return   [Array<Element::Cookie>]
     #
     def cookies
-
-        cookies_arr = []
-        cookies     = []
-
-        begin
-            doc.search( "//meta[@http-equiv]" ).each {
-                |elem|
-                next if elem['http-equiv'].downcase != 'set-cookie'
-                cookies << ::WEBrick::Cookie.parse_set_cookies( elem['content'] )
-            }
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-        end
-
-        cookies_from_header = [@response_headers['Set-Cookie']].flatten
-        if !cookies_from_header.empty?
-            begin
-                cookies |= cookies_from_header.map { |c| ::WEBrick::Cookie.parse_set_cookies( c ) }
-            rescue Exception => e
-                # ap e
-                # ap e.backtrace
-                return cookies_arr
-            end
-        end
-
-        cookies.flatten.uniq.each_with_index {
-            |cookie, idx|
-            i = cookies_arr.size + idx
-            cookies_arr[i] = {}
-
-            cookie.instance_variables.each {
-                |var|
-                key = normalize_name( var )
-                val = cookie.instance_variable_get( var )
-
-                next if val == seed
-                cookies_arr[i][key] = val
-            }
-
-            cookies_arr[i] = Element::Cookie.new( @url, cookies_arr[i] )
-        }
-        cookies_arr.flatten!
-        return cookies_arr.compact
+        ( Element::Cookie.from_document( @url, doc ) |
+          Element::Cookie.from_headers( @url, @response_headers ) )
     end
 
     #
