@@ -125,13 +125,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
         base_url = url
         begin
-            if !(base_url = document.search( '//base[@href]' )[0]['href'])
-                base_url = url
-            end
+            base_url = document.search( '//base[@href]' )[0]['href']
         rescue
             base_url = url
         end
-        base_url += '/' if base_url[-1] != '/'
         document.search( '//form' ).map {
             |form|
             form = form_from_element( base_url, form )

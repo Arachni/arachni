@@ -249,7 +249,7 @@ describe Arachni::Parser::Element::Form do
 
             context 'with a base attribute' do
                 it 'should respect it and adjust the action accordingly' do
-                    base_url = "#{@url}/this_is_the_base"
+                    base_url = "#{@url}/this_is_the_base/"
                     html = '
                     <html>
                         <head>
@@ -270,7 +270,7 @@ describe Arachni::Parser::Element::Form do
                     forms.size.should == 2
 
                     form = forms.shift
-                    form.action.should == base_url + '/form_action/is/here?ha=hoo'
+                    form.action.should == base_url + 'form_action/is/here?ha=hoo'
                     form.name.should == 'my_form!'
                     form.url.should == @url
                     form.method.should == 'get'
@@ -288,7 +288,7 @@ describe Arachni::Parser::Element::Form do
             context 'which are not properly closed' do
                 it 'should sanitize and return an array of forms' do
 
-                    base_url = "#{@url}/this_is_the_base"
+                    base_url = "#{@url}/this_is_the_base/"
                     html = '
                     <html>
                         <head>
@@ -319,7 +319,7 @@ describe Arachni::Parser::Element::Form do
                     forms.size.should == 3
 
                     form = forms.shift
-                    form.action.should == base_url + '/form_2'
+                    form.action.should == base_url + 'form_2'
                     form.name.should == 'my_form_2'
                     form.url.should == @url
                     form.method.should == 'get'
