@@ -195,7 +195,7 @@ module Utilities
         return false
     end
 
-    def skip?( path )
+    def skip_path?( path )
         return true if !path
 
         begin
