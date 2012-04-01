@@ -246,6 +246,11 @@ module Auditable
     def audit( injection_str, opts = { }, &block )
         raise 'Block required.' if !block_given?
 
+        if skip_path?( @action )
+            print_debug "Matched skip rule, will not audit element: #{id}"
+            return
+        end
+
         @@audited ||= Set.new
 
         opts[:injected_orig] = injection_str
