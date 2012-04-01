@@ -66,7 +66,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     # If a block has been provided analysis and logging will be delegated to it.
     #
     # @param    [Hash]      opts        available options:
-    #                                   * :format -- as seen in {Arachni::Parser::Element::Mutable::OPTIONS}
+    #                                   * :format -- as seen in {Arachni::Parser::Element::Mutable::MUTATION_OPTIONS}
     #                                   * :precision -- amount of rdiff iterations
     #                                   * :faults -- array of fault injection strings (these are supposed to force erroneous conditions when interpreted)
     #                                   * :bools -- array of boolean injection strings (these are supposed to not alter the webapp behavior when interpreted)
@@ -78,7 +78,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     #                                   * fault injection response body
     #
     def rdiff_analysis( opts = {}, &block )
-        opts = Arachni::Parser::Element::Mutable::OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
+        opts = Arachni::Parser::Element::Mutable::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
         @auditable.values.each { |val| return if !val || val.empty? }

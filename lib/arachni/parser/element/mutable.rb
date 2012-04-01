@@ -59,7 +59,7 @@ module Mutable
     end
 
     # Default formatting and permutation options
-    OPTIONS = {
+    MUTATION_OPTIONS = {
         #
         # Formatting of the injection strings.
         #
@@ -87,13 +87,13 @@ module Mutable
     # TODO: Move type specific mutations into their respective classes.
     #
     # @param    [String]  injection_str  the string to inject
-    # @param    [Hash]    opts           {OPTIONS}
+    # @param    [Hash]    opts           {MUTATION_OPTIONS}
     #
     # @return    [Array]
     #
     def mutations( injection_str, opts = { } )
 
-        opts = OPTIONS.merge( opts )
+        opts = MUTATION_OPTIONS.merge( opts )
         hash = auditable.dup
 
         var_combo = []
