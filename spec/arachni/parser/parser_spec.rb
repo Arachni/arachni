@@ -274,12 +274,12 @@ describe Arachni::Parser do
         end
     end
 
-    describe :too_deep? do
+    describe :path_too_deep? do
         before { @parser.opts.depth_limit = 3 }
 
         context 'when the path is above the threshold' do
             it 'should return true' do
-                @parser.too_deep?( @opts.url.to_s + '/test/test/test//test/test' )
+                @parser.path_too_deep?( @opts.url.to_s + '/test/test/test//test/test' )
                 .should be_true
 
                 @parser.skip?( @opts.url.to_s + '/test/test/test//test/test' )
@@ -288,7 +288,7 @@ describe Arachni::Parser do
         end
         context 'when the path is bellow the threshold' do
             it 'should return false' do
-                @parser.too_deep?( @opts.url.to_s + '/test/test/test' )
+                @parser.path_too_deep?( @opts.url.to_s + '/test/test/test' )
                 .should be_false
 
                 @parser.skip?( @opts.url.to_s + '/test/test/test' )
@@ -297,7 +297,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :in_domain? do
+    describe :path_in_domain? do
         before { @parser.url = 'http://bar.com' }
 
         context 'when follow subdomains is disabled' do
@@ -305,14 +305,14 @@ describe Arachni::Parser do
 
             context 'with a URL with a different domain' do
                 it 'should return false' do
-                    @parser.in_domain?( 'http://google.com' ).should be_false
+                    @parser.path_in_domain?( 'http://google.com' ).should be_false
                     @parser.skip?( 'http://google.com' ).should be_true
                 end
             end
 
             context 'with a URL with the same domain' do
                 it 'should return true' do
-                    @parser.in_domain?( 'http://bar.com/test/' ).should be_true
+                    @parser.path_in_domain?( 'http://bar.com/test/' ).should be_true
                     @parser.skip?( 'http://bar.com/test/' ).should be_false
                 end
             end
@@ -320,7 +320,7 @@ describe Arachni::Parser do
 
             context 'with a URL with a different subdomain' do
                 it 'should return false' do
-                    @parser.in_domain?( 'http://test.bar.com/test' ).should be_false
+                    @parser.path_in_domain?( 'http://test.bar.com/test' ).should be_false
                     @parser.skip?( 'http://test.bar.com/test' ).should be_true
                 end
             end
@@ -331,14 +331,14 @@ describe Arachni::Parser do
 
             context 'with a URL with a different domain' do
                 it 'should return false' do
-                    @parser.in_domain?( 'http://google.com' ).should be_false
+                    @parser.path_in_domain?( 'http://google.com' ).should be_false
                     @parser.skip?( 'http://google.com' ).should be_true
                 end
             end
 
             context 'with a URL with the same domain' do
                 it 'should return true' do
-                    @parser.in_domain?( 'http://bar.com/test/' ).should be_true
+                    @parser.path_in_domain?( 'http://bar.com/test/' ).should be_true
                     @parser.skip?( 'http://bar.com/test/' ).should be_false
                 end
             end
@@ -346,44 +346,44 @@ describe Arachni::Parser do
 
             context 'with a URL with a different subdomain' do
                 it 'should return true' do
-                    @parser.in_domain?( 'http://test.bar.com/test' ).should be_true
+                    @parser.path_in_domain?( 'http://test.bar.com/test' ).should be_true
                     @parser.skip?( 'http://test.bar.com/test' ).should be_false
                 end
             end
         end
     end
 
-    describe :exclude? do
+    describe :exclude_path? do
         before { @parser.opts.exclude << /skip_me/ }
 
         context 'when a path matches an exclude rule' do
             it 'should return true' do
-                @parser.exclude?( 'skip_me' ).should be_true
+                @parser.exclude_path?( 'skip_me' ).should be_true
                 @parser.skip?( 'http://bar.com/skip_me' ).should be_true
             end
         end
 
         context 'when a path does not match an exclude rule' do
             it 'should return false' do
-                @parser.exclude?( 'not_me' ).should be_false
+                @parser.exclude_path?( 'not_me' ).should be_false
                 @parser.skip?( 'http://bar.com/not_me' ).should be_false
             end
         end
     end
 
-    describe :include? do
+    describe :include_path? do
         before { @parser.opts.include << /include_me/ }
 
         context 'when a path matches an include rule' do
             it 'should return true' do
-                @parser.include?( 'include_me' ).should be_true
+                @parser.include_path?( 'include_me' ).should be_true
                 @parser.skip?( 'http://bar.com/include_me' ).should be_false
             end
         end
 
         context 'when a path does not match an include rule' do
             it 'should return false' do
-                @parser.include?( 'not_me' ).should be_false
+                @parser.include_path?( 'not_me' ).should be_false
                 @parser.skip?( 'http://bar.com/not_me' ).should be_true
             end
         end

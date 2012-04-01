@@ -116,6 +116,15 @@ class Parser
         @paths = nil
     end
 
+    def to_absolute( relative_url )
+        if url = base
+            base_url = url
+        else
+            base_url = @url
+        end
+        super( base_url, relative_url )
+    end
+
     #
     # Runs the Analyzer and extracts forms, links and cookies
     #
@@ -128,9 +137,7 @@ class Parser
         rescue
         end
 
-        self_link = Arachni::Parser::Element::Link.new( to_absolute( @url ),
-            inputs: link_vars( @url )
-        )
+        self_link = Arachni::Parser::Element::Link.new( @url, inputs: link_vars( @url ) )
 
         # non text files won't contain any auditable elements
         if !text?
@@ -176,8 +183,8 @@ class Parser
     end
 
     def doc
-      return @doc if @doc
-      @doc = Nokogiri::HTML( @html ) if @html rescue nil
+        return @doc if @doc
+        @doc = Nokogiri::HTML( @html ) if @html rescue nil
     end
 
     #
@@ -190,7 +197,6 @@ class Parser
     # @return    [Hash]    HTTP header fields
     #
     def headers
-        headers_arr  = []
         {
             'accept'          => 'text/html,application/xhtml+xml,application' +
                 '/xml;q=0.9,*/*;q=0.8',
@@ -201,104 +207,18 @@ class Parser
             'user-agent' => @opts.user_agent || '',
             'referer'    => @url,
             'pragma'     => 'no-cache'
-        }.each {
-            |k,v|
-            headers_arr << Element::Header.new( @url, { k => v } )
-        }
-
-        return headers_arr
+        }.map { |k, v| Element::Header.new( @url, { k => v } ) }
     end
 
-    # TODO: Add support for radio buttons.
     #
     # Extracts forms from HTML document
-    #
-    # @see #form_attrs
-    # @see #form_textareas
-    # @see #form_selects
-    # @see #form_inputs
-    # @see #merge_select_with_input
     #
     # @param  [String] html
     #
     # @return [Array<Element::Form>] array of forms
     #
     def forms( html = nil )
-
-        elements = []
-
-        begin
-            html = html || @html.clone
-            #
-            # This imitates Firefox's behavior when it comes to
-            # broken/unclosed form tags
-            #
-
-            # get properly closed forms
-            forms = html.scan( /(<form)(.*)<\/form>/m ).flatten
-
-            # now remove them from html...
-            forms.each { |form| html.gsub!( '<form' + form + '</form>', '' ) }
-
-            # and get unclosed forms.
-            forms |= html.scan( /<form (.*)(?!<\/form>)/ixm ).flatten
-
-        rescue Exception => e
-            return elements
-        end
-
-        i = 0
-        forms.each {
-            |form|
-
-            elements[i] = Hash.new
-
-            begin
-                elements[i]['attrs'] = form_attrs( form )
-            rescue
-                next
-            end
-
-            if( !elements[i]['attrs'] || !elements[i]['attrs']['action'] )
-                action = @url.to_s
-            else
-                action = url_sanitize( elements[i]['attrs']['action'] )
-            end
-            action = uri_encode( action ).to_s
-
-            elements[i]['attrs']['action'] = to_absolute( action.clone ).to_s
-
-            if( !elements[i]['attrs']['method'] )
-                elements[i]['attrs']['method'] = 'post'
-            else
-                elements[i]['attrs']['method'] =
-                    elements[i]['attrs']['method'].downcase
-            end
-
-            next if skip?( elements[i]['attrs']['action'] )
-
-            elements[i]['textarea'] = form_textareas( form )
-            elements[i]['select']   = form_selects( form )
-            elements[i]['input']    = form_inputs( form )
-
-            # merge the form elements to make auditing easier
-            elements[i]['auditable'] =
-                elements[i]['input'] | elements[i]['textarea']
-
-            elements[i]['auditable'] =
-                merge_select_with_input( elements[i]['auditable'],
-                    elements[i]['select'] )
-
-            elements[i] = Element::Form.new( @url, elements[i] )
-
-
-            i += 1
-        }
-
-        elements.reject {
-            |form|
-            !form.is_a?( Element::Form ) || form.auditable.empty?
-        }
+        Element::Form.from_document( @url, html || doc )
     end
 
     #
@@ -311,7 +231,6 @@ class Parser
     # @return [Array<Element::Link>] of links
     #
     def links
-
         link_arr = []
         elements_by_name( 'a' ).each_with_index {
             |link|
@@ -391,129 +310,12 @@ class Parser
         var_hash
     end
 
-    #
-    # Converts relative URL *link* into an absolute URL based on the
-    # location of the page
-    #
-    # @param [String] link
-    #
-    # @return [String]
-    #
-    def to_absolute( link )
-
-        begin
-            link = normalize_url( link )
-            if uri_parser.parse( link ).host
-                return link
-            end
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            return nil
-        end
-
-        begin
-            # remove anchor
-            link = uri_encode( link.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
-
-            if url = base
-                base_url = uri_parser.parse( url )
-            else
-                base_url = uri_parser.parse( @url )
-            end
-
-            relative = uri_parser.parse( link )
-            absolute = base_url.merge( relative )
-
-            absolute.path = '/' if absolute.path && absolute.path.empty?
-
-            return absolute.to_s
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            return nil
-        end
-    end
-
     def base
         begin
             tmp = doc.search( '//base[@href]' )
             return tmp[0]['href'].dup
         rescue
             return
-        end
-    end
-
-    #
-    # Extracts the domain from a URI object
-    #
-    # @param [URI] url
-    #
-    # @return [String]
-    #
-    def extract_domain( url )
-        return false if !url.host
-
-        splits = url.host.split( /\./ )
-
-        return splits.first if splits.size == 1
-
-        splits[-2] + "." + splits[-1]
-    end
-
-    def too_deep?( url )
-        if @opts.depth_limit > 0 && (@opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
-            return true
-        else
-            return false
-        end
-    end
-
-    #
-    # Returns +true+ if *uri* is in the same domain as the page, returns
-    # +false+ otherwise
-    #
-    def in_domain?( uri )
-        curi = URI.parse( normalize_url( uri.to_s ) )
-
-        if @opts.follow_subdomains
-            return extract_domain( curi ) ==  extract_domain( URI( @url.to_s ) )
-        end
-
-        return curi.host == URI.parse( normalize_url( @url.to_s ) ).host
-    end
-
-    def exclude?( url )
-        @opts.exclude.each {
-            |pattern|
-            return true if url.to_s =~ pattern
-        }
-
-        return false
-    end
-
-    def include?( url )
-        return true if @opts.include.empty?
-
-        @opts.include.each {
-            |pattern|
-            pattern = Regexp.new( pattern ) if pattern.is_a?( String )
-            return true if url.to_s =~ pattern
-        }
-        return false
-    end
-
-    def skip?( path )
-        return true if !path
-
-        begin
-            return true if !include?( path )
-            return true if exclude?( path )
-            return true if too_deep?( path )
-            return true if !in_domain?( path )
-            false
-        rescue
-            true
         end
     end
 
@@ -596,155 +398,6 @@ class Parser
             print_error( e.to_s )
             print_error_backtrace( e )
         end
-    end
-
-    #
-    # Merges an array of form inputs with an array of form selects
-    #
-    # @see #forms
-    #
-    # @param    [Array]  form inputs
-    # @param    [Array]  form selects
-    #
-    # @return   [Array]  merged array
-    #
-    def merge_select_with_input( inputs, selects )
-
-        new_arr = []
-        inputs.each {
-            |input|
-            new_arr << input
-        }
-
-        i = new_arr.size
-        selects.each {
-            |select|
-
-            begin
-                select['attrs']['value'] = select['options'][0]['value']
-            rescue
-            end
-            new_arr << select['attrs']
-        }
-
-        new_arr
-    end
-
-
-    #
-    # Parses the attributes inside the <form ....> tag
-    #
-    # @see #forms
-    # @see #attrs_from_tag
-    #
-    # @param  [String] form   HTML code for the form tag
-    #
-    # @return [Array<Hash<String, String>>]
-    #
-    def form_attrs( form )
-        form_attr_html = form.scan( /(.*?)>/ixm )
-        attrs_from_tag( 'form', '<form ' + form_attr_html[0][0] + '>' )[0]
-    end
-
-
-    #
-    # Extracts HTML select elements, their attributes and their options
-    #
-    # @see #forms
-    # @see #form_selects_options
-    #
-    # @param    [String]    HTML
-    #
-    # @return    [Array]    array of select elements
-    #
-    def form_selects( html )
-        selects = html.scan( /<select(.*?)>/ixm )
-
-        elements = []
-        selects.each_with_index {
-            |select, i|
-            elements[i] = Hash.new
-            elements[i]['options'] =  form_selects_options( html )
-
-            elements[i]['attrs'] =
-                attrs_from_tag( 'select',
-                    '<select ' + select[0] + '/>' )[0]
-
-        }
-
-        elements
-    end
-
-    #
-    # Extracts HTML option elements and their attributes
-    # from select elements
-    #
-    # @see #forms
-    # @see #form_selects
-    #
-    # @param    [String]    HTML selects
-    #
-    # @return    [Array]    array of option elements
-    #
-    def form_selects_options( html )
-        options = html.scan( /<option(.*?)>/ixm )
-
-        elements = []
-        options.each_with_index {
-            |option, i|
-            elements[i] =
-                attrs_from_tag( 'option',
-                    '<option ' + option[0] + '/>' )[0]
-
-        }
-
-        elements
-    end
-
-    #
-    # Extracts HTML textarea elements and their attributes
-    # from forms
-    #
-    # @see #forms
-    #
-    # @param    [String]    HTML
-    #
-    # @return    [Array]    array of textarea elements
-    #
-    def form_textareas( html )
-        inputs = html.scan( /<textarea(.*?)>/ixm )
-
-        elements = []
-        inputs.each_with_index {
-            |input, i|
-            elements[i] =
-                attrs_from_tag( 'textarea',
-                    '<textarea ' + input[0] + '/>' )[0]
-        }
-        elements
-    end
-
-    #
-    # Parses the attributes of input fields
-    #
-    # @see #forms
-    #
-    # @param  [String] html   HTML code for the form tag
-    #
-    # @return [Hash<Hash<String, String>>]
-    #
-    def form_inputs( html )
-        inputs = html.scan( /<input(.*?)>/ixm )
-
-        elements = []
-        inputs.each_with_index {
-            |input, i|
-            elements[i] =
-                attrs_from_tag( 'input',
-                    '<input ' + input[0] + '/>' )[0]
-        }
-
-        elements
     end
 
     #

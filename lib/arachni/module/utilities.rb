@@ -22,13 +22,10 @@ module Module
 
 
 #
-# Utilities class
-#
 # Includes some useful methods for the system, the modules etc...
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 # @version 0.1.3
 #
 module Utilities
@@ -132,6 +129,124 @@ module Utilities
 
         # ap normalized
         return normalized
+    end
+
+    #
+    # Extracts the domain from a URI object
+    #
+    # @param [URI] url
+    #
+    # @return [String]
+    #
+    def extract_domain( url )
+        return false if !url.host
+
+        splits = url.host.split( /\./ )
+
+        return splits.first if splits.size == 1
+
+        splits[-2] + "." + splits[-1]
+    end
+
+    def path_too_deep?( url )
+        opts = Arachni::Options.instance
+
+        if opts.depth_limit > 0 && (opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
+            return true
+        else
+            return false
+        end
+    end
+
+    #
+    # Returns +true+ if *uri* is in the same domain as the page, returns
+    # +false+ otherwise
+    #
+    def path_in_domain?( uri )
+        opts = Arachni::Options.instance
+        curi = URI.parse( normalize_url( uri.to_s ) )
+
+        if opts.follow_subdomains
+            return extract_domain( curi ) ==  extract_domain( URI( url.to_s ) )
+        end
+
+        return curi.host == URI.parse( normalize_url( url.to_s ) ).host
+    end
+
+    def exclude_path?( url )
+        opts = Arachni::Options.instance
+        opts.exclude.each {
+            |pattern|
+            return true if url.to_s =~ pattern
+        }
+
+        return false
+    end
+
+    def include_path?( url )
+        opts = Arachni::Options.instance
+        return true if opts.include.empty?
+
+        opts.include.each {
+            |pattern|
+            pattern = Regexp.new( pattern ) if pattern.is_a?( String )
+            return true if url.to_s =~ pattern
+        }
+        return false
+    end
+
+    def skip?( path )
+        return true if !path
+
+        begin
+            return true if !include_path?( path )
+            return true if exclude_path?( path )
+            return true if path_too_deep?( path )
+            return true if !path_in_domain?( path )
+            false
+        rescue
+            true
+        end
+    end
+
+    #
+    # Converts relative URL *link* into an absolute URL based on the
+    # location of the page
+    #
+    # @param    [String]    reference_url    absoslute url to use as a reference
+    # @param    [String]    relative_url
+    #
+    # @return [String]
+    #
+    def to_absolute( reference_url, relative_url )
+        begin
+            relative_url = normalize_url( relative_url )
+            if uri_parser.parse( relative_url ).host
+                return relative_url
+            end
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
+            return nil
+        end
+
+        begin
+            # remove anchor
+            relative_url = uri_encode( relative_url.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
+
+            base_url = uri_parser.parse( reference_url )
+
+            relative = uri_parser.parse( relative_url )
+            absolute = base_url.merge( relative )
+
+            absolute.path = '/' if absolute.path && absolute.path.empty?
+
+            return absolute.to_s
+        rescue Exception => e
+            # ap e
+            # ap e.backtrace
+            return nil
+        end
     end
 
     #
