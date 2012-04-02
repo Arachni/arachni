@@ -29,6 +29,9 @@
     - Fixed burst average requests/second calculation
 - Spider
     - Fixed infitine loop bug.
+- Parser
+    - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie)
+    - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
 - Tests
     - Added tests using RSpec
 - Executables

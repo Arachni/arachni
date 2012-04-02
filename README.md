@@ -138,8 +138,6 @@ Can extract and analyze:
  - Cookies
  - Headers
 
-The analyzer can graciously handle badly written HTML code due to a combination of regular expression analysis and the [Nokogiri](http://nokogiri.org/) HTML parser.
-
 ###  Module Management
 
  - Very simple and easy to use module API providing access to multiple levels of complexity.
