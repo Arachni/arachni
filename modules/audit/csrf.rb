@@ -15,7 +15,6 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
@@ -44,10 +43,9 @@ module Modules
 # cookies just like a user would, so if there are forms that only appear
 # after a guest has performed a previous event it will check these too.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.2.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.2.3
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -82,12 +80,8 @@ class CSRF < Arachni::Module::Base
         @http.get( @page.url, opts ).on_complete {
             |res|
 
-            # set-up the parser with the proper url so that it
-            # can fix broken 'action' attrs and the like
-            @parser = Arachni::Parser.new( Arachni::Options.instance, res )
-
             # extract forms from the body of the response
-            forms_logged_out = @parser.forms( res.body ).reject {
+            forms_logged_out = Arachni::Parser::Element::Form.from_response( res ).reject {
                 |form|
                 form.auditable.empty?
             }
@@ -133,7 +127,7 @@ class CSRF < Arachni::Module::Base
             found_token = true if( csrf_token?( str ) )
         }
 
-        link_vars = @parser.link_vars( form.action )
+        link_vars = Arachni::Parser::Element::Link.parse_query_vars( form.action )
         if( !link_vars.empty? )
             # and we also need to check for a token in the form action
             link_vars.values.each {
@@ -267,7 +261,7 @@ class CSRF < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.2',
+            :version        => '0.2.3',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
@@ -289,7 +283,7 @@ class CSRF < Arachni::Module::Base
                 :remedy_guidance    => %q{A unique token that guaranties freshness of submitted
                     data must be added to all web application elements that can affect
                     business logic.},
-                :remedy_code => '',
+                :remedy_code => ''
             }
 
         }
