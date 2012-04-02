@@ -164,6 +164,7 @@ module Utilities
     #
     def path_in_domain?( uri )
         opts = Arachni::Options.instance
+        url = opts.url.to_s
         curi = URI.parse( normalize_url( uri.to_s ) )
 
         if opts.follow_subdomains
