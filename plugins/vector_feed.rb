@@ -71,7 +71,13 @@ class VectorFeed < Arachni::Plugin::Base
         page_buffer = []
         print_status "Imported #{feed.size} vectors."
         feed.each {
-            |vector|
+            |obj|
+
+            if obj.respond_to?( :value )
+                vector = obj.value
+            else
+                vector = obj
+            end
 
             begin
                 exception_jail{
