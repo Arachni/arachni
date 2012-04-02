@@ -579,17 +579,6 @@ class HTTP
     end
 
     #
-    # Encodes and parses a URL String
-    #
-    # @param [String] url URL String
-    #
-    # @return [URI] URI object
-    #
-    def parse_url( url )
-        URI.parse( URI.encode( url ) )
-    end
-
-    #
     # Checks whether or not the provided response is a custom 404 page
     #
     # @param  [Typhoeus::Response]  res  the response to check
