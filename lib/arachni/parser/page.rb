@@ -15,16 +15,13 @@
 =end
 
 module Arachni
-
 class Parser
-#
-# Arachni::Page class
+
 #
 # It holds page data like elements, cookies, headers, etc...
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 #
 class Page
 
@@ -95,11 +92,12 @@ class Page
     #
     attr_accessor :cookiejar
 
-    def self.from_http_response( res, opts )
+    def self.from_response( res, opts )
         page = Arachni::Parser.new( opts, res ).run
         page.url = Arachni::Module::Utilities.url_sanitize( res.effective_url )
-        return page
+        page
     end
+    class << self; alias :from_http_response :from_response end
 
     def initialize( opts = {} )
 
