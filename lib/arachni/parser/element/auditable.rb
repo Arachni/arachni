@@ -219,7 +219,7 @@ module Auditable
     def submit( opts = {} )
         opts = OPTIONS.merge( opts )
         opts[:params]  = @auditable.dup
-        opts[:follow_location] ||= true
+        opts[:follow_location] = true if !opts.include?( :follow_location )
         @opts = opts
 
         @auditor ||= opts[:auditor] if opts[:auditor]
