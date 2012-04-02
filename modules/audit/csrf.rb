@@ -53,6 +53,7 @@ module Modules
 # @see http://cwe.mitre.org/data/definitions/352.html
 #
 class CSRF < Arachni::Module::Base
+    include Arachni::Module::Utilities
 
     def prepare
 
@@ -65,7 +66,6 @@ class CSRF < Arachni::Module::Base
     end
 
     def run
-
         print_status( 'Looking for CSRF candidates...' )
 
         print_status( 'Simulating logged-out user.' )
@@ -81,7 +81,7 @@ class CSRF < Arachni::Module::Base
             |res|
 
             # extract forms from the body of the response
-            forms_logged_out = Arachni::Parser::Element::Form.from_response( res ).reject {
+            forms_logged_out = forms_from_response( res ).reject {
                 |form|
                 form.auditable.empty?
             }
@@ -94,13 +94,8 @@ class CSRF < Arachni::Module::Base
 
             print_status( "Found #{csrf_forms.size.to_s} CSRF candidates." )
 
-            csrf_forms.each {
-                |form|
-                __log( form ) if unsafe?( form )
-            }
-
+            csrf_forms.each { |form| __log( form ) if unsafe?( form ) }
         }
-
     end
 
     #
@@ -117,7 +112,7 @@ class CSRF < Arachni::Module::Base
         # nobody says that tokens must be in a 'value' attribute,
         # they can just as well be in 'name'.
         # so we check them both...
-        form.simple['auditable'].to_a.flatten.each_with_index {
+        form.auditable.to_a.flatten.each_with_index {
             |str, i|
             next if !str
             next if !form.raw['auditable'][i]
@@ -127,7 +122,7 @@ class CSRF < Arachni::Module::Base
             found_token = true if( csrf_token?( str ) )
         }
 
-        link_vars = Arachni::Parser::Element::Link.parse_query_vars( form.action )
+        link_vars = parse_url_vars( form.action )
         if( !link_vars.empty? )
             # and we also need to check for a token in the form action
             link_vars.values.each {
@@ -137,7 +132,7 @@ class CSRF < Arachni::Module::Base
             }
         end
 
-        return !found_token
+        !found_token
     end
 
     #

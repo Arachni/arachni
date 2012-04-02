@@ -24,14 +24,11 @@ module Plugins
 # merges its input field with the user supplied parameters and sets the cookies
 # of the response as framework-wide cookies to be used by the spider later on.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.2
 #
 class AutoLogin < Arachni::Plugin::Base
-
-    attr_accessor :http
 
     MSG_SUCCESS     = 'Form submitted successfully.'
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
@@ -41,7 +38,7 @@ class AutoLogin < Arachni::Plugin::Base
         @framework.pause!
         print_info( "System paused." )
 
-        @params = parse_params
+        @params = parse_url_vars( '?' + @options['params'] )
 
         # we need to declared this in order to pass ourselves
         # as the auditor to the form later in order to submit it.
@@ -49,17 +46,12 @@ class AutoLogin < Arachni::Plugin::Base
     end
 
     def run
-
         # grab the page containing the login form
-        res  = @http.get( @options['url'], :async => false ).response
-
-        parser = Arachni::Parser.new( @framework.opts, res )
-        # parse the response as a Page object
-        page = parser.run
+        res = @http.get( @options['url'], async: false ).response
 
         # find the login form
         login_form = nil
-        page.forms.each {
+        forms_from_response( res ).each {
             |form|
             login_form = form if login_form?( form )
         }
@@ -70,7 +62,7 @@ class AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        name = login_form.raw['attrs']['name'] ? login_form.raw['attrs']['name'] : '<n/a>'
+        name = login_form.name ? login_form.name : '<n/a>'
         print_status( "Found log-in form with name: "  + name )
 
         # merge the input fields of the form with the user supplied parameters
@@ -79,7 +71,7 @@ class AutoLogin < Arachni::Plugin::Base
         res = login_form.submit(
             async: false,
             update_cookies: true,
-            auditor: self
+            follow_location: false
         ).response
 
         if !res
@@ -95,7 +87,6 @@ class AutoLogin < Arachni::Plugin::Base
                 print_info( '    * ' + name + ' = ' + val )
             }
         end
-
     end
 
     def clean_up
@@ -110,20 +101,8 @@ class AutoLogin < Arachni::Plugin::Base
             |name|
             return false if !avail.include?( name )
         }
-
-        return true
+        true
     end
-
-    def parse_params
-        params = {}
-        @options['params'].split( '&' ).each {
-            |param|
-            k, v = param.split( '=', 2 )
-            params[k] = v
-        }
-        return params
-    end
-
 
     def self.info
         {
@@ -133,11 +112,12 @@ class AutoLogin < Arachni::Plugin::Base
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :options        => [
                 Arachni::OptUrl.new( 'url', [ true, 'The URL that contains the login form.' ] ),
                 Arachni::OptString.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
-            ]
+            ],
+            :order          => 0
         }
     end
 

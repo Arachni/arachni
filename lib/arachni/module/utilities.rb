@@ -46,6 +46,34 @@ module Utilities
         uri_parser.unescape( *args )
     end
 
+    def forms_from_response( *args )
+        Arachni::Parser::Element::Form.from_response( *args )
+    end
+
+    def forms_from_document( *args )
+        Arachni::Parser::Element::Form.from_document( *args )
+    end
+
+    def links_from_response( *args )
+        Arachni::Parser::Element::Link.from_response( *args )
+    end
+
+    def links_from_document( *args )
+        Arachni::Parser::Element::Link.from_document( *args )
+    end
+
+    def parse_url_vars( *args )
+        Arachni::Parser::Element::Link.parse_query_vars( *args )
+    end
+
+    def cookies_from_response( *args )
+        Arachni::Parser::Element::Cookies.from_response( *args )
+    end
+
+    def cookies_from_document( *args )
+        Arachni::Parser::Element::Cookies.from_document( *args )
+    end
+
     #
     # Decodes URLs to reverse multiple encodes and removes NULL characters
     #
