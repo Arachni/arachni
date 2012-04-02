@@ -197,7 +197,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         c_form['auditable'] =
             merge_select_with_input( c_form['auditable'], c_form['select'] )
 
-        Arachni::Parser::Element::Form.new( url, c_form )
+        new( url, c_form )
     end
 
     def self.attributes_to_hash( attributes )
