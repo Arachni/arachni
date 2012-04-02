@@ -78,7 +78,6 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
                     |item|
                     next if !item['name']
                     form['auditable'][item['name']] = item['value']
-                    break if item.include?( 'selected' )
                 }
             end
         else
@@ -145,7 +144,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         c_form = {}
         c_form['attrs'] = attributes_to_hash( form.attributes )
 
-        if( !c_form['attrs'] || !c_form['attrs']['action'] )
+        if !c_form['attrs'] || !c_form['attrs']['action']
             action = url.to_s
         else
             action = utilities.url_sanitize( c_form['attrs']['action'] )
@@ -159,7 +158,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
         c_form['attrs']['action'] = action
 
-        if( !c_form['attrs']['method'] )
+        if !c_form['attrs']['method']
             c_form['attrs']['method'] = 'post'
         else
             c_form['attrs']['method'] = c_form['attrs']['method'].downcase
@@ -201,9 +200,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     def self.attributes_to_hash( attributes )
-        h = {}
-        attributes.each { |k, v| h[k] = v.to_s }
-        h
+        attributes.inject( {} ){ |h, (k, v)| h[k] = v.to_s; h }
     end
 
     #
@@ -215,17 +212,8 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [Array]  merged array
     #
     def self.merge_select_with_input( inputs, selects )
-
-        new_arr = []
-        inputs.each {
-            |input|
-            new_arr << input
-        }
-
-        i = new_arr.size
-
         selected = nil
-        selects.each {
+        inputs | selects.map {
             |select|
             select['options'].each {
                 |option|
@@ -236,11 +224,9 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             }
 
             select['attrs']['value'] = selected || select['options'].first['value']
-            new_arr << select['attrs']
+            select['attrs']
         }
-        new_arr
     end
-
 
     def http_request( opts )
         params   = opts[:params]
@@ -270,7 +256,6 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             opts[:train] = true
             print_debug_trainer( opts )
         end
-
 
         @method.downcase.to_s != 'get' ? http.post( @action, opts ) : http.get( @action, opts )
     end
