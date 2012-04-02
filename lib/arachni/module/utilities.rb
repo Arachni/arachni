@@ -162,16 +162,17 @@ module Utilities
     # Returns +true+ if *uri* is in the same domain as the page, returns
     # +false+ otherwise
     #
-    def path_in_domain?( uri )
+    def path_in_domain?( uri, ref_url = Arachni::Options.instance.url.to_s )
+        return true if !ref_url || ref_url.empty?
+
         opts = Arachni::Options.instance
-        url = opts.url.to_s
-        curi = URI.parse( normalize_url( uri.to_s ) )
+        curi = uri_parse( normalize_url( uri.to_s ) )
 
         if opts.follow_subdomains
-            return extract_domain( curi ) ==  extract_domain( URI( url.to_s ) )
+            return extract_domain( curi ) == extract_domain( uri_parse( ref_url.to_s ) )
         end
 
-        return curi.host == URI.parse( normalize_url( url.to_s ) ).host
+        return curi.host == uri_parse( normalize_url( ref_url.to_s ) ).host
     end
 
     def exclude_path?( url )

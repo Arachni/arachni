@@ -125,6 +125,10 @@ class Parser
         super( base_url, relative_url )
     end
 
+    def path_in_domain?( path )
+        super( path, @url )
+    end
+
     def skip?( path )
         skip_path?( path )
     end
