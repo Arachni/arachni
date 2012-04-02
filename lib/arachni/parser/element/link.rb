@@ -89,7 +89,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
 
             c_link['href'] = utilities.url_sanitize( c_link['href'] )
             new( url, c_link )
-        }
+        }.compact
     end
 
     #
