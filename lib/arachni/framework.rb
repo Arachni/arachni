@@ -417,13 +417,11 @@ class Framework
                 :update_cookies  => true,
                 :async => false
             }
-            parser = Parser.new( @opts, http.get( @opts.url.to_s, opts ).response )
-            parser.url = @opts.url.to_s
 
             @sitemap = @opts.restrict_paths
             @sitemap.each {
                 |url|
-                push_to_url_queue( url_sanitize( parser.to_absolute( url ) ) )
+                push_to_url_queue( url_sanitize( to_absolute( @opts.url.to_s, url ) ) )
             }
         else
             # initiates the crawl
