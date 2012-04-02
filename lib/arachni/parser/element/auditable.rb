@@ -210,6 +210,13 @@ module Auditable
     end
 
     #
+    # Resets the auditable inputs to their original format/values.
+    #
+    def reset!
+        @auditable = @orig.dup
+    end
+
+    #
     # Submits self using {#http_request}.
     #
     # @param  [Hash]  opts

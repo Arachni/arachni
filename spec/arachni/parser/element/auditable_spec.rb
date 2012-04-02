@@ -41,7 +41,18 @@ describe Arachni::Parser::Element::Auditable do
                 orig_auditable = @orig.auditable.dup
                 @orig.auditable = {}
                 @orig.orig.should == orig_auditable
+                @orig.auditable = orig_auditable.dup
             end
+        end
+    end
+
+    describe :reset! do
+        it 'should return the auitable inputs to their original state' do
+            orig = @orig.auditable.dup
+            @orig.auditable['new'] = 'value'
+            (@orig.auditable != orig).should be_true
+            @orig.reset!
+            @orig.auditable.should == orig
         end
     end
 
