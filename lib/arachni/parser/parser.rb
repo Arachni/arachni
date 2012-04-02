@@ -232,39 +232,25 @@ class Parser
     #
     # Extracts links from HTML document
     #
-    # @see #link_vars
-    #
     # @param  [String] html
     #
     # @return [Array<Element::Link>] of links
     #
     def links
-        link_arr = []
-        elements_by_name( 'a' ).each_with_index {
-            |link|
+        Element::Link.from_document( @url, doc )
+    end
 
-            link['href'] = to_absolute( link['href'] )
-
-            next if !link['href']
-            next if skip?( link['href'] )
-
-            link['vars'] = {}
-            link_vars( link['href'] ).each_pair {
-                |key, val|
-                begin
-                    link['vars'][key] = url_sanitize( val )
-                rescue
-                    link['vars'][key] = val
-                end
-            }
-
-            link['href'] = url_sanitize( link['href'] )
-
-            link_arr << Element::Link.new( @url, link )
-
-        }
-
-        return link_arr
+    #
+    # Extracts variables and their values from a link
+    #
+    # @see #links
+    #
+    # @param    [String]    url
+    #
+    # @return   [Hash]    name=>value pairs
+    #
+    def link_vars( url )
+        Element::Link.parse_query_vars( url )
     end
 
     #
@@ -291,37 +277,9 @@ class Parser
       return @paths
     end
 
-    #
-    # Extracts variables and their values from a link
-    #
-    # @see #links
-    #
-    # @param [String]    link
-    #
-    # @return [Hash]    name=>value pairs
-    #
-    def link_vars( link )
-        return {}  if !link
-
-        var_string = link.split( /\?/ )[1]
-        return {} if !var_string
-
-        var_hash = {}
-        var_string.split( /&/ ).each {
-            |pair|
-            name, value = pair.split( /=/ )
-
-            next if value == seed
-            var_hash[name] = value
-        }
-
-        var_hash
-    end
-
     def base
         begin
-            tmp = doc.search( '//base[@href]' )
-            return tmp[0]['href'].dup
+            doc.search( '//base[@href]' ).first['href']
         rescue
             return
         end
@@ -330,7 +288,6 @@ class Parser
     private
 
     def merge_with_cookiestore( cookies )
-
         @cookiestore ||= []
 
         if @cookiestore.empty?
@@ -355,9 +312,7 @@ class Parser
                 } )
             }
         end
-
-        return @cookiestore
-
+        @cookiestore
     end
 
     #
@@ -375,14 +330,12 @@ class Parser
             |name, value|
             next if already_set.include?( name )
 
-            cookies << Element::Cookie.new( @url,
-                {
-                    'name'    => name,
-                    'value'   => value
-                } )
+            cookies << Element::Cookie.new( @url,{
+                'name'    => name,
+                'value'   => value
+            })
         }
-
-        return cookies
+        cookies
     end
 
     #
@@ -408,65 +361,5 @@ class Parser
         end
     end
 
-    #
-    # Gets attributes from HTML code of a tag
-    #
-    # @param  [String] tag    tag name (a, form, input)
-    # @param  [String] html   HTML code for the form tag
-    #
-    # @return [Array<Hash<String, String>>]
-    #
-    def attrs_from_tag( tag, html )
-
-        elements = []
-        Nokogiri::HTML( html ).search( tag ).each_with_index {
-            |element, i|
-
-            elements[i] = Hash.new
-
-            element.each {
-                |attribute|
-                next if attribute[1] == seed
-                elements[i][attribute[0].downcase] = attribute[1]
-            }
-
-        }
-        elements
-    end
-
-    # Extracts elements by name from HTML document
-    #
-    # @param [String] name 'form', 'a', 'div', etc.
-    # @param  [String] html
-    #
-    # @return [Array<Hash <String, String> >] of elements
-    #
-    def elements_by_name( name )
-
-        elements = []
-        doc.search( name ).each_with_index do |input, i|
-
-            elements[i] = Hash.new
-            input.each {
-                |attribute|
-                elements[i][attribute[0]] = attribute[1]
-            }
-
-            input.children.each {
-                |child|
-                child.each{
-                    |attribute|
-                    elements[i][attribute[0]] = attribute[1]
-                }
-            }
-
-        end rescue []
-
-        return elements
-    end
-
-    def normalize_name( name )
-        name.to_s.gsub( /@/, '' )
-    end
 end
 end
