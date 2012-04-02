@@ -72,7 +72,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         document.search( '//a' ).map {
             |link|
             c_link = {}
-            c_link['href'] = utilities.to_absolute( base_url, link['href'] )
+            c_link['href'] = utilities.to_absolute( link['href'], base_url )
 
             next if !c_link['href']
             next if utilities.skip_path?( c_link['href'] )

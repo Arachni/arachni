@@ -153,7 +153,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         action = utilities.uri_encode( action ).to_s
 
         begin
-             action = utilities.to_absolute( url, action.clone ).to_s
+             action = utilities.to_absolute( action.clone, url ).to_s
         rescue
         end
 

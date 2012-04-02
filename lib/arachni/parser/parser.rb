@@ -122,7 +122,7 @@ class Parser
         else
             base_url = @url
         end
-        super( base_url, relative_url )
+        super( relative_url, base_url )
     end
 
     def path_in_domain?( path )

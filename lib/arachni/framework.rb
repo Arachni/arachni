@@ -421,7 +421,7 @@ class Framework
             @sitemap = @opts.restrict_paths
             @sitemap.each {
                 |url|
-                push_to_url_queue( url_sanitize( to_absolute( @opts.url.to_s, url ) ) )
+                push_to_url_queue( url_sanitize( to_absolute( url ) ) )
             }
         else
             # initiates the crawl

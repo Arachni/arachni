@@ -243,12 +243,12 @@ module Utilities
     # Converts relative URL *link* into an absolute URL based on the
     # location of the page
     #
-    # @param    [String]    reference_url    absoslute url to use as a reference
     # @param    [String]    relative_url
+    # @param    [String]    reference_url    absoslute url to use as a reference
     #
     # @return [String]
     #
-    def to_absolute( reference_url, relative_url )
+    def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
         begin
             relative_url = normalize_url( relative_url )
             if uri_parser.parse( relative_url ).host
