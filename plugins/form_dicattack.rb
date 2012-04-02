@@ -18,10 +18,9 @@ module Arachni
 module Plugins
 
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
 #
 class FormDicattack < Arachni::Plugin::Base
 
@@ -52,8 +51,7 @@ class FormDicattack < Arachni::Plugin::Base
     def run
 
         if !form = login_form
-            print_bad( 'Could not find a form suiting the provided params at: ' +
-                @url )
+            print_bad( 'Could not find a form suiting the provided params at: ' + @url )
             return
         end
 
@@ -71,7 +69,7 @@ class FormDicattack < Arachni::Plugin::Base
                 'cookie'  => ''
             },
             update_cookies: true,
-            auditor: self
+            follow_location: false
         }
         @users.each {
             |user|
@@ -113,7 +111,6 @@ class FormDicattack < Arachni::Plugin::Base
         print_status( "Waiting for the requests to complete..." )
         @http.run
         print_bad( "Couldn't find a match." )
-
     end
 
     def clean_up
@@ -128,17 +125,13 @@ class FormDicattack < Arachni::Plugin::Base
         # grab the page containing the login form
         res  = @http.get( @url, :async => false ).response
 
-        # parse the response as a Page object
-        page = Arachni::Parser.new( @framework.opts, res ).run
-
         # find the login form
         form = nil
-        page.forms.each {
+        forms_from_response( res ).each {
             |cform|
             form = cform if login_form?( cform )
         }
-
-        return form
+        form
     end
 
 
@@ -151,9 +144,8 @@ class FormDicattack < Arachni::Plugin::Base
             return false if !avail.include?( name )
         }
 
-        return true
+        true
     end
-
 
     def self.info
         {
@@ -163,7 +155,7 @@ class FormDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
                 Arachni::OptPath.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
                 Arachni::OptPath.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] ),
