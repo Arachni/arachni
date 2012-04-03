@@ -1,0 +1,2 @@
+.domain.com	TRUE	/path/to/somewhere	TRUE	Tue, 02 Oct 2012 19:25:57 GMT	first_name	first_value
+another-domain.com	FALSE	/	FALSE	Fri, 09 Sep 2011 13:22:57 GMT	second_name	second_value
