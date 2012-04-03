@@ -165,7 +165,31 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     # @return   [String]    to be used in a 'Cookie' request header. (name=value)
     #
     def to_s
-        "#{name}=#{value}"
+        "#{name}=#{uri_encode( uri_encode( value ), '+;' )}"
+    end
+
+    #
+    # Returns an array of cookies from an Netscape HTTP cookiejar file.
+    #
+    # @param   [String]    url          request URL
+    # @param   [String]    filepath     Netscape HTTP cookiejar file
+    #
+    # @return   [Array<Cookie>]
+    #
+    def self.from_file( url, filepath )
+        File.open( filepath, 'r' ).map {
+            |line|
+            # skip empty lines
+            next if (line = line.strip).empty? || line[0] == '#'
+
+            c = {}
+            c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
+                c['value'] = *line.split( "\t" )
+
+            c['expires'] = Time.parse( c['expires'] )
+            c['secure'] = (c['secure'] == 'TRUE') ? true : false
+            new( url, c )
+        }
     end
 
     #

@@ -35,7 +35,11 @@ module Utilities
     end
 
     def uri_parse( url )
-        uri_parser.parse( url )
+        begin
+            uri_parser.parse( url )
+        rescue URI::InvalidURIError
+            uri_parser.parse( WEBrick::HTTPUtils.escape( url ) )
+        end
     end
 
     def uri_encode( *args )
@@ -72,6 +76,10 @@ module Utilities
 
     def cookies_from_document( *args )
         Arachni::Parser::Element::Cookies.from_document( *args )
+    end
+
+    def cookies_from_file( *args )
+        Arachni::Parser::Element::Cookies.from_file( *args )
     end
 
     #
