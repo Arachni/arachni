@@ -27,6 +27,7 @@
     - Improved detection of custom 404 pages
     - Updated <em>add_on_queue()</em> hook (called by <em>queue()</em>) which allows HTTP requests to be intercepted and modified before being fired.
     - Fixed burst average requests/second calculation
+    - Implemented a new Cookiejar
 - Spider
     - Fixed infitine loop bug.
 - Parser
