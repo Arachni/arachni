@@ -79,6 +79,18 @@ class HTTP
             end
         end
 
+        def cookies( with_expired = false )
+            @domains.map do |domain, paths|
+                paths.map do |path, cookies|
+                    if !with_expired
+                        cookies.values.reject{ |c| c.expired? }
+                    else
+                        cookies.values
+                    end
+                end
+            end.flatten.compact
+        end
+
         def to_s( url )
             get_cookies( url ).map{ |c| c.to_s }.join( ';' )
         end
@@ -237,6 +249,10 @@ class HTTP
 
     def max_concurrency
         @hydra.max_concurrency
+    end
+
+    def current_cookies
+        @cookie_jar.cookies
     end
 
     #

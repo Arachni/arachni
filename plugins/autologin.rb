@@ -79,10 +79,13 @@ class AutoLogin < Arachni::Plugin::Base
             print_bad( MSG_NO_RESPONSE )
             return
         else
-            register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => @http.current_cookies.dup } )
+            cookies = @http.current_cookies.
+                inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
+
+            register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => cookies.dup } )
             print_ok( MSG_SUCCESS )
             print_info( 'Cookies set to:' )
-            @http.current_cookies.each_pair {
+            cookies.each_pair {
                 |name, val|
                 print_info( '    * ' + name + ' = ' + val )
             }
