@@ -235,6 +235,9 @@ class Framework
         rescue Exception
         end
 
+        # convert cookies to hashes for easier manipulation by the reports
+        @opts.cookies = @opts.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) }
+
         # run reports
         if( @opts.reports && !@opts.reports.empty? )
             exception_jail{ @reports.run( audit_store( ) ) }

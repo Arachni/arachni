@@ -8,7 +8,11 @@ describe Arachni::Parser do
         @opts.audit_forms = true
         @opts.audit_cookies = true
         @opts.audit_headers = true
-        @opts.cookies = { 'name_from_cookiejar' => 'val_from_cookiejar' }
+        @opts.cookies =[
+            Arachni::Parser::Element::Cookie.new( @url,
+                { 'name_from_cookiejar' => 'val_from_cookiejar' }
+            )
+        ]
 
         @url = @opts.url.to_s + '/?query_var_input=query_var_val'
         @response = Arachni::HTTP.instance.get(
@@ -47,16 +51,12 @@ describe Arachni::Parser do
             link = Arachni::Parser::Element::Link.new( @url,
                 inputs: @parser.link_vars( @url )
             )
-            cookie = Arachni::Parser::Element::Cookie.new( @url, @opts.cookies )
 
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
-            page.cookies.should == @parser.cookies | [cookie]
+            page.cookies.should == @parser.cookies | @opts.cookies
             page.headers.should == @parser.headers
-
-            h = {}
-            page.cookies.each { |c| h.merge!( c.simple ) }
-            page.cookiejar.should == h
+            page.cookiejar.should == @parser.cookies | @opts.cookies
         end
     end
 

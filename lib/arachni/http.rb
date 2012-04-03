@@ -48,22 +48,56 @@ class HTTP
     include Arachni::Mixins::Observable
 
     #
-    # @return [URI]
+    # TODO: Implement proper tailmatching
     #
-    attr_reader :last_url
+    class CookieJar
+        include Arachni::Module::Utilities
 
-    #
-    # The headers with which the HTTP client is initialized<br/>
-    # This is always kept updated.
+        def initialize
+            @domains = {}
+        end
+
+        def <<( cookie )
+            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie
+        end
+
+        def get_cookies( url )
+            uri = to_uri( url )
+            request_domain = uri.host
+            request_path = uri.path
+
+            return [] if !request_domain || !request_path
+
+            @domains.map do |domain, paths|
+                next if (request_domain != domain) && ( '.' + request_domain != domain)
+                paths.map do |path, cookies|
+                    next if !request_path.start_with?( path )
+                    cookies.values.reject{ |c| c.expired? }
+                end
+            end.flatten.compact.sort do |lhs, rhs|
+                rhs.path.length <=> lhs.path.length
+            end
+        end
+
+        def to_s( url )
+            get_cookies( url ).map{ |c| c.to_s }.join( ';' )
+        end
+
+        private
+
+        def to_uri( url )
+            url.is_a?( URI ) ? url : uri_parse( url )
+        end
+
+    end
+
     #
     # @return    [Hash]
     #
     attr_reader :init_headers
 
     #
-    # The user supplied cookie jar
-    #
-    # @return    [Hash]
+    # @return    [CookieJar]
     #
     attr_reader :cookie_jar
 
@@ -88,14 +122,14 @@ class HTTP
         req_limit = opts.http_req_limit
 
         hydra_opts = {
-            :max_concurrency               => req_limit,
-            :method                        => :auto
+            :max_concurrency => req_limit,
+            :method          => :auto
         }
 
         if opts.url
             hydra_opts.merge!(
                 :username => opts.url.user,
-                :password  => opts.url.password,
+                :password  => opts.url.password
             )
         end
 
@@ -108,17 +142,16 @@ class HTTP
         @trainer = Arachni::Module::Trainer.new( opts )
 
         @init_headers = {
-            'cookie' => '',
+            'Cookie' => '',
             'From'   => opts.authed_by || '',
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
         }.merge( opts.custom_headers )
 
-        cookies = {}
-        cookies.merge!( self.class.parse_cookiejar( opts.cookie_jar ) ) if opts.cookie_jar
-        cookies.merge!( opts.cookies ) if opts.cookies
+        @cookie_jar = CookieJar.new
 
-        set_cookies( cookies ) if !cookies.empty?
+        set_cookies( cookies_from_file( opts.cookie_jar ) ) if opts.cookie_jar
+        set_cookies( opts.cookies ) if opts.cookies
 
         proxy_opts = {}
         proxy_opts = {
@@ -246,7 +279,7 @@ class HTTP
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
-        cookies   = opts[:cookies]
+        cookies   = opts[:cookies] || {}
 
         update_cookies   = opts[:update_cookies]
 
@@ -266,7 +299,7 @@ class HTTP
         exception_jail {
 
             headers       = @init_headers.merge( headers )
-            headers['cookie'] = get_cookies_str( cookies, false ) if cookies
+            headers['Cookie'] = merge_with_cookiejar( url, cookies )
 
             params = params.merge( { @rand_seed => '' } ) if !remove_id
 
@@ -283,7 +316,7 @@ class HTTP
 
             if opts[:method] != :post
                 begin
-                    cparams = q_to_h( curl ).merge( cparams )
+                    cparams = parse_url_vars( curl ).merge( cparams )
                     curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
                 rescue
                     return
@@ -404,136 +437,21 @@ class HTTP
         return req
     end
 
-    def q_to_h( url )
-        params = {}
-
-        begin
-            query = URI( url.to_s ).query
-            return params if !query
-
-            query.split( '&' ).each {
-                |param|
-                k,v = param.split( '=', 2 )
-                params[k] = v
-            }
-        rescue
-        end
-
-        return params
-    end
-
-    def current_cookies
-        parse_cookie_str( @init_headers['cookie'] )
-    end
-
     def update_cookies( cookies )
-        set_cookies( current_cookies.merge( cookies ) )
+        cookies.each { |c| @cookie_jar << c }
     end
-
-    #
-    # Sets cookies for the HTTP session
-    #
-    # @param    [Hash]  cookies  name=>value pairs
-    #
-    # @return   [void]
-    #
-    def set_cookies( cookies )
-        @init_headers['cookie'] = ''
-        @cookie_jar = cookies.each_pair {
-            |name, value|
-            @init_headers['cookie'] += "#{name}=#{value};"
-        }
-    end
+    alias :set_cookies :update_cookies
 
     def parse_and_set_cookies( res )
         cookie_hash = {}
 
-        # extract cookies from the header field
-        begin
-            [res.headers_hash['Set-Cookie']].flatten.each {
-                |set_cookie_str|
-
-                break if !set_cookie_str.is_a?( String )
-                cookie_hash.merge!( WEBrick::Cookie.parse_set_cookies(set_cookie_str).inject({}) do |hash, cookie|
-                    hash[cookie.name] = cookie.value if !!cookie
-                    hash
-                end
-                )
-            }
-        rescue Exception => e
-            print_debug( e.to_s )
-            print_debug_backtrace( e )
-        end
-
-        # extract cookies from the META tags
-        begin
-
-            # get get the head in order to check if it has an http-equiv for set-cookie
-            head = res.body.match( /<head(.*)<\/head>/imx )
-
-            # if it does feed the head to the parser in order to extract the cookies
-            if head && head.to_s.substring?( 'set-cookie' )
-                Nokogiri::HTML( head.to_s ).search( "//meta[@http-equiv]" ).each {
-                    |elem|
-                    next if elem['http-equiv'].downcase != 'set-cookie'
-                    cookie = WEBrick::Cookie.parse_set_cookies( elem['content'] )
-                    cookie_hash[cookie.name] = cookie.value
-                }
-            end
-        rescue Exception => e
-            print_debug( e.to_s )
-            print_debug_backtrace( e )
-        end
-
-        return if cookie_hash.empty?
+        cookies = Arachni::Parser::Element::Cookie.from_response( res )
+        cookies.each { |c| @cookie_jar << c }
 
         # update framework cookies
-        Arachni::Options.instance.cookies = cookie_hash
+        Arachni::Options.instance.cookies = cookies
 
-        call_on_new_cookies( cookie_hash, res )
-
-        current = parse_cookie_str( @init_headers['cookie'] )
-        set_cookies( current.merge( cookie_hash ) )
-    end
-
-    #
-    # Returns a hash of cookies as a string (merged with the cookie-jar)
-    #
-    # @param    [Hash]  cookies  name=>value pairs
-    #
-    # @return   [string]
-    #
-    def get_cookies_str( cookies = { }, with_existing = true )
-
-        if with_existing
-            jar = parse_cookie_str( @init_headers['cookie'] )
-            cookies = jar.merge( cookies )
-        end
-
-        str = ''
-        cookies.each_pair {
-            |name, value|
-            value = '' if !value
-            val = uri_encode( uri_encode( value ), '+;' )
-            str += "#{name}=#{val};"
-        }
-        return str
-    end
-
-    #
-    # Converts HTTP cookies from string to Hash
-    #
-    # @param  [String]  str
-    #
-    # @return  [Hash]
-    #
-    def parse_cookie_str( str )
-        cookie_jar = Hash.new
-        str.split( ';' ).each {
-            |kvp|
-            cookie_jar[kvp.split( "=" )[0]] = kvp.split( "=" )[1]
-        }
-        return cookie_jar
+        call_on_new_cookies( cookies, res )
     end
 
     #
@@ -546,21 +464,17 @@ class HTTP
     # @return   [Hash]    cookies     in name=>value pairs
     #
     def self.parse_cookiejar( cookie_jar )
-
-        cookies = Hash.new
-
-        jar = File.open( cookie_jar, 'r' )
-        jar.each_line {
+        cookies = {}
+        File.open( cookie_jar, 'r' ).each_line {
             |line|
 
             # skip empty lines
-            if (line = line.strip).size == 0 then next end
+            next if (line = line.strip).empty?
 
             # skip comment lines
-            if line[0] == '#' then next end
+            next if line[0] == '#'
 
             cookie_arr = line.split( "\t" )
-
             cookies[cookie_arr[-2]] = cookie_arr[-1]
         }
 
@@ -569,12 +483,10 @@ class HTTP
 
     def self.content_type( headers_hash )
         return if !headers_hash.is_a?( Hash )
-
         headers_hash.each_pair {
             |key, val|
             return val if key.to_s.downcase == 'content-type'
         }
-
         return
     end
 
@@ -727,9 +639,17 @@ class HTTP
             end
         }
 
-        exception_jail {
-            @hydra_sync.run if !async
+        exception_jail { @hydra_sync.run } if !async
+    end
+
+    def merge_with_cookiejar( url, cookies )
+        str = ''
+        @cookie_jar.get_cookies( url ).each {
+            |c|
+            str += c.to_s if !cookies.include?( c.name )
         }
+        cookies.each { |k, v| str += "#{k}=#{v}" }
+        str
     end
 
     def is_404?( path, body )
@@ -751,7 +671,7 @@ class HTTP
     end
 
     def self.info
-      { :name => 'HTTP' }
+        { :name => 'HTTP' }
     end
 
 end

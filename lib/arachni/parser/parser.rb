@@ -86,6 +86,8 @@ class Parser
         end
     end
 
+    alias :skip? :skip_path?
+
     #
     # @return    [String]    the url of the page
     #
@@ -116,6 +118,11 @@ class Parser
         @paths = nil
     end
 
+    #
+    # Converts a relative URL to an absolute one.
+    #
+    # @return   [String]    absolute URL
+    #
     def to_absolute( relative_url )
         if url = base
             base_url = url
@@ -125,12 +132,13 @@ class Parser
         super( relative_url, base_url )
     end
 
-    def path_in_domain?( path )
-        super( path, @url )
-    end
-
-    def skip?( path )
-        skip_path?( path )
+    #
+    # @param    [String]    url     to check
+    #
+    # @return   [Bool]    true if URL is within domain limits, false if not
+    #
+    def path_in_domain?( url )
+        super( url, @url )
     end
 
     #
@@ -138,7 +146,7 @@ class Parser
     #
     # @return [Page]
     #
-    def run
+    def page
         req_method = 'get'
         begin
             req_method = @response.request.method.to_s
@@ -159,14 +167,17 @@ class Parser
             )
         end
 
-        cookies_arr = cookies
-        cookies_arr = merge_with_cookiejar( cookies_arr.flatten.uniq )
+        c_cookies = cookies
+        cookie_names = c_cookies.map{ |c| c.name }
 
-        jar = {}
-        jar = @opts.cookies = Arachni::HTTP.parse_cookiejar( @opts.cookie_jar ) if @opts.cookie_jar
-
-        preped = {}
-        cookies_arr.each{ |cookie| preped.merge!( cookie.simple ) }
+        from_jar = []
+        if @opts.cookie_jar
+            from_jar |= cookies_from_file( @opts.cookie_jar )
+                .reject { |c| cookie_names.include?( c.name ) }
+        end
+        if @opts.cookies
+            from_jar |= @opts.cookies.reject { |c| cookie_names.include?( c.name ) }
+        end
 
         return Page.new(
             :code        => @code,
@@ -178,11 +189,12 @@ class Parser
             :paths       => paths(),
             :forms       => forms(),
             :links       => links() | [self_link],
-            :cookies     => merge_with_cookiestore( cookies_arr ),
+            :cookies     => c_cookies | from_jar,
             :headers     => headers(),
-            :cookiejar   => preped.merge( jar )
+            :cookiejar   => c_cookies | from_jar
         )
     end
+    alias :run :page
 
     def text?
         type = @response.content_type
@@ -236,8 +248,8 @@ class Parser
     #
     # @return [Array<Element::Link>] of links
     #
-    def links
-        Element::Link.from_document( @url, doc )
+    def links( html = nil )
+        Element::Link.from_document( @url, html || doc )
     end
 
     #
@@ -277,6 +289,9 @@ class Parser
       return @paths
     end
 
+    #
+    # @return   [String]    base href if there is one
+    #
     def base
         begin
             doc.search( '//base[@href]' ).first['href']
@@ -286,57 +301,6 @@ class Parser
     end
 
     private
-
-    def merge_with_cookiestore( cookies )
-        @cookiestore ||= []
-
-        if @cookiestore.empty?
-            @cookiestore = cookies
-        else
-            tmp = {}
-            @cookiestore.each {
-                |cookie|
-                tmp.merge!( cookie.simple )
-            }
-
-            cookies.each {
-                |cookie|
-                tmp.merge!( cookie.simple )
-            }
-
-            @cookiestore = tmp.map {
-                |name, value|
-                Element::Cookie.new( @url, {
-                    'name'    => name,
-                    'value'   => value
-                } )
-            }
-        end
-        @cookiestore
-    end
-
-    #
-    # Merges 'cookies' with the cookiejar and returns it as an array
-    #
-    # @param    [Array<Hash>]  cookies
-    #
-    # @return   [Array<Element::Cookie>]  the merged cookies
-    #
-    def merge_with_cookiejar( cookies )
-        return cookies if !@opts.cookies
-
-        already_set = cookies.map { |c| c.simple.keys.first }
-        @opts.cookies.each_pair {
-            |name, value|
-            next if already_set.include?( name )
-
-            cookies << Element::Cookie.new( @url,{
-                'name'    => name,
-                'value'   => value
-            })
-        }
-        cookies
-    end
 
     #
     # Runs all Spider (path extraction) modules and returns an array of paths
