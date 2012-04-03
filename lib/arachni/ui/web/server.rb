@@ -101,7 +101,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.2
 #
 # @see Arachni::RPC::Client::Instance
@@ -450,6 +450,7 @@ class Server < Sinatra::Base
 
         need_to_split = [
             'exclude_cookies',
+            'exclude_vectors',
             'exclude',
             'include'
         ]

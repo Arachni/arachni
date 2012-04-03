@@ -74,6 +74,14 @@ class Arachni::Parser::Element::Base
         @url = url.to_s
     end
 
+    def skip?( elem )
+        if Arachni::Options.instance.exclude_vectors.include?( elem.altered )
+            auditor.print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+            return true
+        end
+        super( elem )
+    end
+
     #
     # Must provide a string uniquely identifying self.
     #

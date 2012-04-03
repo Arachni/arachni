@@ -33,7 +33,7 @@ module Arachni
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.2
 #
 class Options
@@ -327,11 +327,18 @@ class Options
     attr_accessor :exclude
 
     #
-    # Cookies to exclude from audit<br/>
+    # Cookies to exclude from the audit
     #
     # @return    [Array]
     #
     attr_accessor :exclude_cookies
+
+    #
+    # Vectors to exclude from the audit
+    #
+    # @return    [Array]
+    #
+    attr_accessor :exclude_vectors
 
     #
     # Include filters <br/>
@@ -448,6 +455,7 @@ class Options
 
         @exclude    = []
         @exclude_cookies    = []
+        @exclude_vectors    = []
 
         @include    = []
 
@@ -456,7 +464,6 @@ class Options
 
         @rpc_instance_port_range = [1025, 65535]
 
-        @exclude_cookies    = []
         @load_profile       = []
         @restrict_paths     = []
         @extend_paths       = []
@@ -501,6 +508,7 @@ class Options
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
             [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
@@ -686,6 +694,9 @@ class Options
 
                     when '--exclude-cookie'
                         @exclude_cookies << arg
+
+                    when '--exclude-vector'
+                        @exclude_vectors << arg
 
                     when '--follow-subdomains'
                         @follow_subdomains = true
@@ -897,6 +908,7 @@ class Options
         return if key == 'reports' && var.keys == ['stdout']
 
         key = 'exclude_cookie' if key == 'exclude_cookies'
+        key = 'exclude_vector' if key == 'exclude_vectors'
         key = 'report'         if key == 'reports'
 
         key = key.gsub( '_', '-' )

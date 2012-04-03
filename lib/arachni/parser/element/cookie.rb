@@ -70,13 +70,16 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @raw['max_age'] = @raw['max_age'] if @raw['max_age']
 
         @simple = @auditable.dup
-        @auditable.reject! {
-            |cookie|
-            Arachni::Options.instance.exclude_cookies.include?( cookie )
-        }
-
         @orig = @auditable.deep_clone
         @orig.freeze
+    end
+
+    def audit( *args )
+        if Arachni::Options.instance.exclude_cookies.include?( name )
+            auditor.print_info "Skipping audit of '#{name}' cookie."
+            return
+        end
+        super( *args )
     end
 
     #

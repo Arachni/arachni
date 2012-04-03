@@ -32,7 +32,7 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.9
 # @see Arachni::Framework
 #
@@ -624,7 +624,7 @@ class CLI
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @arachni.version + ' [' + @arachni.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      
+
                (With the support of the community and the Arachni Team.)
 
        Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
@@ -751,6 +751,9 @@ class CLI
 
     --exclude-cookie=<name>     cookies not to audit
                                   (You should exclude session cookies.)
+                                  (Can be used multiple times.)
+
+    --exclude-vector=<name>     input vector (parameter) not to audit by name
                                   (Can be used multiple times.)
 
     --audit-headers             audit HTTP headers

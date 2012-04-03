@@ -275,6 +275,7 @@ module Auditable
         mutations( injection_str, opts ).each {
             |elem|
             return if !orphan? && @auditor.skip?( elem )
+            return if skip?( elem )
 
             opts[:altered] = elem.altered.dup
             opts[:element] = type
@@ -289,6 +290,10 @@ module Auditable
         }
 
         audited!( audit_id )
+    end
+
+    def skip?( elem )
+        return false
     end
 
     #
