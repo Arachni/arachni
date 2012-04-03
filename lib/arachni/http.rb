@@ -295,7 +295,7 @@ class HTTP
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
-        cookies   = opts[:cookies] || {}
+        cookies   = opts[:cookies]
 
         update_cookies   = opts[:update_cookies]
 
@@ -314,8 +314,12 @@ class HTTP
         #
         exception_jail {
 
-            headers       = @init_headers.merge( headers )
-            headers['Cookie'] = merge_with_cookiejar( url, cookies )
+            headers           = @init_headers.merge( headers )
+            headers['Cookie'] =  if cookies
+                str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
+            else
+                @cookie_jar.to_s( url )
+            end
 
             params = params.merge( { @rand_seed => '' } ) if !remove_id
 
@@ -656,16 +660,6 @@ class HTTP
         }
 
         exception_jail { @hydra_sync.run } if !async
-    end
-
-    def merge_with_cookiejar( url, cookies )
-        str = ''
-        @cookie_jar.get_cookies( url ).each {
-            |c|
-            str += c.to_s if !cookies.include?( c.name )
-        }
-        cookies.each { |k, v| str += "#{k}=#{v}" }
-        str
     end
 
     def is_404?( path, body )
