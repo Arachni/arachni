@@ -26,8 +26,6 @@ module Module
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
-#
 module Utilities
 
     def uri_parser
