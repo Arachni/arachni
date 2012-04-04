@@ -189,7 +189,13 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
                 c['value'] = *line.split( "\t" )
 
-            c['expires'] = Time.parse( c['expires'] )
+            begin
+                c['expires'] = Time.parse( c['expires'] )
+            rescue
+                c['name'] = c['expires']
+                c['value'] = c['name']
+                c['expires'] = nil
+            end
             c['secure'] = (c['secure'] == 'TRUE') ? true : false
             new( url, c )
         }
