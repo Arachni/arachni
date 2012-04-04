@@ -216,6 +216,10 @@ module Auditable
         @auditable = @orig.dup
     end
 
+    def remove_auditor!
+        @auditor = nil
+    end
+
     #
     # Submits self using {#http_request}.
     #

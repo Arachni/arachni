@@ -56,6 +56,15 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
+    describe :remove_auditor! do
+        it 'should remove the auditor' do
+            @orig.auditor = :some_auditor
+            @orig.auditor.should == :some_auditor
+            @orig.remove_auditor!
+            @orig.auditor.should be_nil
+        end
+    end
+
     describe :orphan? do
         context 'when it has no auditor' do
             it 'should return true' do
