@@ -99,7 +99,12 @@ class Arachni::Parser::Element::Base
     end
 
     def ==( e )
-        @action + @method + @auditable.to_s == e.action + e.method + e.auditable.to_s
+        hash == e.hash
+    end
+    alias :eql? :==
+
+    def hash
+        (@action + @method + @auditable.to_s).hash
     end
 
     #
