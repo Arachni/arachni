@@ -167,16 +167,30 @@ class Parser
             )
         end
 
+        # extract cookies from the response
         c_cookies = cookies
+
+        # make a list of the response cookie names
         cookie_names = c_cookies.map{ |c| c.name }
 
         from_jar = []
+
+        # if there's a Netscape cookiejar file load cookies from it but only new ones,
+        # i.e. only if they weren't in the response
         if @opts.cookie_jar
             from_jar |= cookies_from_file( @opts.cookie_jar )
                 .reject { |c| cookie_names.include?( c.name ) }
         end
+
+        # if we somehow have any runtime configuration cookies load them too
+        # but only if they haven't already been seen
         if @opts.cookies
             from_jar |= @opts.cookies.reject { |c| cookie_names.include?( c.name ) }
+        end
+
+        # grab cookies from the HTTP cookiejar and filter out old ones, as usual
+        from_http_jar = Arachni::HTTP.instance.cookie_jar.cookies.reject do |c|
+            cookie_names.include?( c.name )
         end
 
         return Page.new(
@@ -186,11 +200,24 @@ class Parser
             :method      => req_method,
             :html        => @html,
             :response_headers => @response_headers,
+
+            # all paths seen in the page
             :paths       => paths(),
             :forms       => forms(),
+
+            # all href attributes from 'a' elements
             :links       => links() | [self_link],
-            :cookies     => c_cookies | from_jar,
+
+            # these cookies are to be audited and thus are dirty and anarchistic
+            # so they have to contain even cookies completely irrelevant to the
+            # current page, i.e. it contains all cookies that have been observed
+            # from the beginning of the scan
+            :cookies     => c_cookies | from_jar | from_http_jar,
             :headers     => headers(),
+
+            # this is the page cookiejar, each time the page is to be audited
+            # by a module the cookiejar of the HTTP class will be updated
+            # with the cookies specified here
             :cookiejar   => c_cookies | from_jar
         )
     end
