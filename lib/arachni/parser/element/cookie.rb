@@ -189,11 +189,12 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
                 c['value'] = *line.split( "\t" )
 
+            # expiry date is optional so if we don't have one push everything back
             begin
                 c['expires'] = Time.parse( c['expires'] )
             rescue
-                c['name'] = c['expires']
-                c['value'] = c['name']
+                c['value'] = c['name'].dup
+                c['name'] = c['expires'].dup
                 c['expires'] = nil
             end
             c['secure'] = (c['secure'] == 'TRUE') ? true : false

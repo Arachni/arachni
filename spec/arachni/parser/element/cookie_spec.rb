@@ -168,6 +168,7 @@ describe Arachni::Parser::Element::Cookie do
             form.domain.should == '.domain.com'
             form.path.should == '/path/to/somewhere'
             form.secure.should == true
+            form.session?.should == false
             form.expires.is_a?( Time ).should == true
             form.name.should == 'first_name'
             form.value.should == 'first_value'
@@ -180,7 +181,8 @@ describe Arachni::Parser::Element::Cookie do
             form.domain.should == 'another-domain.com'
             form.path.should == '/'
             form.secure.should == false
-            form.expires.is_a?( Time ).should == true
+            form.session?.should == true
+            form.expires.should be_nil
             form.name.should == 'second_name'
             form.value.should == 'second_value'
 
