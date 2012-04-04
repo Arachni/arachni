@@ -54,7 +54,7 @@ describe Arachni::Parser do
 
             page.links.should == @parser.links | [link]
             page.forms.should == @parser.forms
-            page.cookies.should == @parser.cookies | @opts.cookies
+            page.cookies.should == @parser.cookies | @opts.cookies | Arachni::HTTP.instance.cookie_jar.cookies
             page.headers.should == @parser.headers
             page.cookiejar.should == @parser.cookies | @opts.cookies
         end
