@@ -118,7 +118,7 @@ class VectorFeed < Arachni::Plugin::Base
 
     def page_from_body_vector( vector )
         Arachni::Parser::Page.new(
-            code: vector['code'] || 200,
+            code: Integer( vector['code'] || 200 ),
             url: vector['url'] || @framework.opts.url.to_s,
             body: vector['body'] || '',
             response_headers: vector['headers'] || {}
@@ -134,11 +134,11 @@ class VectorFeed < Arachni::Plugin::Base
 
         return if !inputs || inputs.empty?
 
-        case type
+        e = case type
             when Arachni::Issue::Element::LINK
                 Arachni::Parser::Element::Link.new( owner,
                     action: action,
-                    inputs: inputs
+                    inputs: inputs,
                 )
             when Arachni::Issue::Element::FORM
                 Arachni::Parser::Element::Form.new( owner,
@@ -156,6 +156,8 @@ class VectorFeed < Arachni::Plugin::Base
                     inputs: inputs
                 )
         end
+        (vector['skip'] || []).each { |i| e.immutables << i }
+        e
     end
 
     def clean_up
