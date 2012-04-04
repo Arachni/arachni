@@ -235,8 +235,12 @@ class Framework
         rescue Exception
         end
 
-        # convert cookies to hashes for easier manipulation by the reports
-        @opts.cookies = @opts.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) }
+        if @opts.cookies
+            # convert cookies to hashes for easier manipulation by the reports
+            @opts.cookies = @opts.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) }
+        else
+            @opts.cookies = {}
+        end
 
         # run reports
         if( @opts.reports && !@opts.reports.empty? )
