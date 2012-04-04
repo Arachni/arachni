@@ -12,8 +12,9 @@
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
         - Audit operations by default follow redirects
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
-    - Insecure cookies -- Logs cookies without the 'secure' flag
-    - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag
+    - SSN -- Improved regexp and logging. [Issue #170]
+    - Insecure cookies -- Logs cookies without the 'secure' flag (**New**)
+    - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag(**New**)
 - Plugins
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]

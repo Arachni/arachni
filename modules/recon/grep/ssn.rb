@@ -24,7 +24,10 @@ module Modules
 class SSN < Arachni::Module::Base
 
     def run
-        match_and_log( /\b(?!000)([0-6]\d{2}|7([0-6]\d|7[012]))([ -]?)(?!00)\d\d\3(?!0000)\d{4}\b/ )
+        match_and_log( /\b(((?!000)(?!666)(?:[0-6]\d{2}|7[0-2][0-9]|73[0-3]|7[5-6][0-9]|77[0-2]))-((?!00)\d{2})-((?!0000)\d{4}))\b/ ){
+            |m|
+            m.size >= 9 ? true : false
+        }
     end
 
     def self.info
