@@ -203,6 +203,10 @@ class VectorFeed < Arachni::Plugin::Base
   action: http://localhost/~zapotek/tests/links/xss.php
   inputs:
     post_this: "HUA!"
+    csrf: "my_csrf_token"
+  # do not fuzz/mutate/audit the following inputs (by name obviously)
+  skip:
+    - csrf
 
 # GET only
 -
