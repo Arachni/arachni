@@ -24,7 +24,6 @@ module Mutable
 
     include Arachni::Module::Utilities
 
-
     #
     # @return   [String]    name of the altered/mutated parameter
     #
@@ -77,8 +76,15 @@ module Mutable
         :skip_orig => false,
 
         # flip injection value and input name
-        :param_flip => false
+        :param_flip => false,
+
+        # array of parameter names remain untouched
+        :skip       => []
     }
+
+    def immutables
+        @immutables ||= Set.new
+    end
 
     #
     # Injects the injecton_str in self's values according to formatting options
@@ -123,13 +129,13 @@ module Mutable
             |k|
 
             # don't audit parameter flips
-            next if hash[k] == seed
+            next if hash[k] == seed || immutables.include?( k )
 
             chash = Arachni::Module::KeyFiller.fill( chash )
             opts[:format].each {
                 |format|
 
-                str  = format_str( injection_str, chash[k], format )
+                str = format_str( injection_str, chash[k], format )
 
                 elem = self.dup
                 elem.altered = k.dup
@@ -186,7 +192,7 @@ module Mutable
 
         print_debug_injection_set( var_combo, opts )
 
-        return var_combo
+        return var_combo.uniq
     end
 
     private
