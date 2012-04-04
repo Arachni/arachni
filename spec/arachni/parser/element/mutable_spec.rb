@@ -13,14 +13,43 @@ describe Arachni::Parser::Element::Mutable do
                 inputs = { inputs:
                     {
                         'param_name' => 'param_value',
-                        'another_param_name' => 'another_param_value'
+                        'email' => nil
                     }
                 }
-                Arachni::Parser::Element::Form.new( 'http://test.com', inputs ).mutations( @seed ).size.should == 10
+                Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
+                    .mutations( @seed ).size.should == 10
+            end
+        end
+
+        describe :immutables do
+            it 'should skip parameters which is contains' do
+                l = Arachni::Parser::Element::Link.new( 'http://test.com',
+                    inputs: {
+                        'input_one' => 'value 1',
+                        'input_two' => 'value 2'
+                    }
+                )
+                l.immutables << 'input_one'
+                l.mutations( @seed ).reject { |e| e.altered != 'input_one' }
+                    .should be_empty
+
+                l.immutables.clear
+                l.mutations( @seed ).reject { |e| e.altered != 'input_one' }
+                    .should be_any
             end
         end
 
         context 'with option' do
+            describe :skip do
+                it 'should skip mutation of parameters with these names' do
+                    Arachni::Parser::Element::Form.new( 'http://test.com',
+                        inputs: {
+                            'input_one' => 'value 1',
+                            'input_two' => 'value 2'
+                        }
+                    ).mutations( @seed, skip: [ 'input_one' ] )
+                end
+            end
             describe :skip_orig do
                 it 'should skip adding a mutation with original and default values' do
                     Arachni::Parser::Element::Form.new( 'http://test.com', inputs: @inputs )
