@@ -162,7 +162,7 @@ class HTTP
 
         @cookie_jar = CookieJar.new
 
-        set_cookies( cookies_from_file( opts.cookie_jar ) ) if opts.cookie_jar
+        set_cookies( cookies_from_file( opts.url.to_s, opts.cookie_jar ) ) if opts.cookie_jar
         set_cookies( opts.cookies ) if opts.cookies
 
         proxy_opts = {}
