@@ -69,15 +69,15 @@ module Utilities
     end
 
     def cookies_from_response( *args )
-        Arachni::Parser::Element::Cookies.from_response( *args )
+        Arachni::Parser::Element::Cookie.from_response( *args )
     end
 
     def cookies_from_document( *args )
-        Arachni::Parser::Element::Cookies.from_document( *args )
+        Arachni::Parser::Element::Cookie.from_document( *args )
     end
 
     def cookies_from_file( *args )
-        Arachni::Parser::Element::Cookies.from_file( *args )
+        Arachni::Parser::Element::Cookie.from_file( *args )
     end
 
     #
