@@ -106,7 +106,6 @@ class CSRF < Arachni::Module::Base
     # @return   [Bool]  true if the form if vulnerable, false otherwise
     #
     def unsafe?( form )
-
         found_token = false
 
         # nobody says that tokens must be in a 'value' attribute,
@@ -114,10 +113,9 @@ class CSRF < Arachni::Module::Base
         # so we check them both...
         form.auditable.to_a.flatten.each_with_index {
             |str, i|
-            next if !str
-            next if !form.raw['auditable'][i]
-            next if !form.raw['auditable'][i]['type']
-            next if form.raw['auditable'][i]['type'].downcase != 'hidden'
+            next if !str || !form.raw['auditable'] ||
+                !form.raw['auditable'][i] || !form.raw['auditable'][i]['type'] ||
+                form.raw['auditable'][i]['type'].downcase != 'hidden'
 
             found_token = true if( csrf_token?( str ) )
         }
