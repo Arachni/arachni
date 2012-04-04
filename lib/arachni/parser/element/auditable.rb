@@ -278,8 +278,8 @@ module Auditable
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each {
             |elem|
-            return if !orphan? && @auditor.skip?( elem )
-            return if skip?( elem )
+            next if !orphan? && @auditor.skip?( elem )
+            next if skip?( elem )
 
             opts[:altered] = elem.altered.dup
             opts[:element] = type
