@@ -58,7 +58,7 @@ class HTTP
         end
 
         def <<( cookie )
-            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie
+            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
         end
 
         def get_cookies( url )
