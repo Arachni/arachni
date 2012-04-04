@@ -4,8 +4,12 @@ require_relative '../../spec_helper'
 describe Arachni::Module::Utilities do
 
     before( :all ) do
+        @opts = Arachni::Options.instance
+        @opts.reset!
         @utils = Arachni::Module::Utilities
     end
+
+    after( :all ){ @opts.reset! }
 
     describe :url_parser do
         it 'should return a URI::Parser' do
@@ -58,6 +62,133 @@ describe Arachni::Module::Utilities do
             @utils.url_sanitize( multi ).should == sanitized
         end
     end
+
+    describe :to_absolute do
+        it 'should convert a relative path to absolute' do
+            @opts.url  = 'http://test2.com/blah/ha'
+            rel  = '/test'
+            rel2 = 'test2'
+            @utils.to_absolute( rel ).should == "http://test2.com" + rel
+            @utils.to_absolute( rel2 ).should == "http://test2.com/blah/" + rel2
+        end
+
+        context 'when called with a 2nd parameter' do
+            it 'should use it as a reference for the conversion' do
+                abs  = 'http://test.com/blah/ha'
+                rel  = '/test'
+                rel2 = 'test2'
+                @utils.to_absolute( rel, abs ).should == "http://test.com" + rel
+                @utils.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
+                @utils.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            end
+        end
+    end
+
+    describe :path_in_domain? do
+        before { @opts.url = 'http://bar.com' }
+
+        context 'when a second argument (reference URL) is provided' do
+            context 'with a path that is in the domain' do
+                it 'should return true' do
+                    @utils.path_in_domain?( 'http://yes.com/foo', 'http://yes.com' ).should be_true
+                end
+            end
+            context 'with a path that is outside the domain' do
+                it 'should return true' do
+                    @utils.path_in_domain?( 'http://no.com/foo', 'http://yes.com' ).should be_false
+                end
+            end
+        end
+
+        context 'when follow subdomains is disabled' do
+            before { @opts.follow_subdomains = false }
+
+            context 'with a URL with a different domain' do
+                it 'should return false' do
+                    @utils.path_in_domain?( 'http://google.com' ).should be_false
+                    @utils.skip_path?( 'http://google.com' ).should be_true
+                end
+            end
+
+            context 'with a URL with the same domain' do
+                it 'should return true' do
+                    @utils.path_in_domain?( 'http://bar.com/test/' ).should be_true
+                    @utils.skip_path?( 'http://bar.com/test/' ).should be_false
+                end
+            end
+
+
+            context 'with a URL with a different subdomain' do
+                it 'should return false' do
+                    @utils.path_in_domain?( 'http://test.bar.com/test' ).should be_false
+                    @utils.skip_path?( 'http://test.bar.com/test' ).should be_true
+                end
+            end
+        end
+
+        context 'when follow subdomains is disabled' do
+            before { @opts.follow_subdomains = true }
+
+            context 'with a URL with a different domain' do
+                it 'should return false' do
+                    @utils.path_in_domain?( 'http://google.com' ).should be_false
+                    @utils.skip_path?( 'http://google.com' ).should be_true
+                end
+            end
+
+            context 'with a URL with the same domain' do
+                it 'should return true' do
+                    @utils.path_in_domain?( 'http://bar.com/test/' ).should be_true
+                    @utils.skip_path?( 'http://bar.com/test/' ).should be_false
+                end
+            end
+
+
+            context 'with a URL with a different subdomain' do
+                it 'should return true' do
+                    @utils.path_in_domain?( 'http://test.bar.com/test' ).should be_true
+                    @utils.skip_path?( 'http://test.bar.com/test' ).should be_false
+                end
+            end
+        end
+    end
+
+    describe :exclude_path? do
+        before { @opts.exclude << /skip_me/ }
+
+        context 'when a path matches an exclude rule' do
+            it 'should return true' do
+                @utils.exclude_path?( 'skip_me' ).should be_true
+                @utils.skip_path?( 'http://bar.com/skip_me' ).should be_true
+            end
+        end
+
+        context 'when a path does not match an exclude rule' do
+            it 'should return false' do
+                @utils.exclude_path?( 'not_me' ).should be_false
+                @utils.skip_path?( 'http://bar.com/not_me' ).should be_false
+            end
+        end
+    end
+
+    describe :include_path? do
+        before { @opts.include << /include_me/ }
+
+        context 'when a path matches an include rule' do
+            it 'should return true' do
+                @utils.include_path?( 'include_me' ).should be_true
+                @utils.skip_path?( 'http://bar.com/include_me' ).should be_false
+            end
+        end
+
+        context 'when a path does not match an include rule' do
+            it 'should return false' do
+                @utils.include_path?( 'not_me' ).should be_false
+                @utils.skip_path?( 'http://bar.com/not_me' ).should be_true
+            end
+        end
+    end
+
 
     describe :get_path do
         context 'when the url only has a path' do
