@@ -23,7 +23,7 @@ module Modules
 # Scans every page for credit card numbers.
 #
 # @author morpheuslaw <msidagni@nopsec.com>, Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm
@@ -31,8 +31,6 @@ module Modules
 class CreditCards < Arachni::Module::Base
 
     def run
-        return if !text?
-
         ccNumber = /\b(((4\d{3})|(5[1-5]\d{2})|(6011))[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}|3[4,7][\d\s-]{15})\b/
 
         # match CC number candidates and verify matches before logging
@@ -102,7 +100,7 @@ class CreditCards < Arachni::Module::Base
                 # updated number checks and regexp
                 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>'
             ],
-            :version        => '0.2',
+            :version        => '0.2.1',
             :references     => {
                 'Wikipedia - Bank card number' => 'http://en.wikipedia.org/wiki/Bank_card_number',
                 'Wikipedia - Luhn algorithm' => 'http://en.wikipedia.org/wiki/Luhn_algorithm',
