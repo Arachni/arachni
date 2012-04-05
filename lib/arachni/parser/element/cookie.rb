@@ -199,7 +199,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             end
             c['secure'] = (c['secure'] == 'TRUE') ? true : false
             new( url, c )
-        }
+        }.flatten.compact
     end
 
     #
