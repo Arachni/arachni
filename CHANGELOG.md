@@ -6,6 +6,9 @@
     - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
       in order to increase audit granularity and ease scripting
     - Auditor methods now simply iterate over candidate elements and delegate analysis to them
+- Options
+    - <em>--cookie-string</em> -- Allows the specification of cookies as a string in the form of: <em>name=value; name2=value2</em>
+    - <em>--exclude-vectors</em> -- Excludes vectors (parameters), by name, from the audit.
 - Modules
     - API
         - Updated to provide access to running plugins.

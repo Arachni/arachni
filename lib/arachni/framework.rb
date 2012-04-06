@@ -152,6 +152,15 @@ class Framework
 
         @opts = opts
 
+        if @opts.cookie_string
+            @opts.cookies ||= []
+            @opts.cookies |= @opts.cookie_string.split( ';' ).map {
+                |cookie_pair|
+                k, v = *cookie_pair.split( '=', 2 )
+                Arachni::Parser::Element::Cookie.new( @opts.url.to_s, k => v )
+            }.flatten.compact
+        end
+
         @modules = Arachni::Module::Manager.new( @opts )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )

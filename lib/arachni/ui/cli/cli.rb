@@ -678,6 +678,9 @@ class CLI
 
     --cookie-jar=<cookiejar>    Netscape HTTP cookie file, use curl to create it
 
+    --cookie-string='<name>=<value>; <name2>=<value2>'
+
+                                Cookies, as a string, to be sent to the web application.
 
     --user-agent=<user agent>   specify user agent
 

@@ -77,6 +77,10 @@
                     <p>
                         Cookie jar: <input type="file" name="cookiejar" size="25" />
                     </p>
+                  <p>
+                      Cookie string: <input name="cookie_string" size="50" value="<%=session['opts']['settings']['cookie_string']%>"/>
+                      <br/>(In the form of: <pre style='display: inline'>cookie_name=cookie_value; cookie_name_2=cookie_value_2;</pre>)
+                  </p>
                     <p>
                         User agent: <input name="user_agent" value="<%=session['opts']['settings']['user_agent']%>"/>
                     </p>

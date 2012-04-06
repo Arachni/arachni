@@ -312,6 +312,11 @@ class Options
     attr_accessor :cookie_jar
 
     #
+    # @return    [String]   cookies in the form of "name=value; name2=value2"
+    #
+    attr_accessor :cookie_string
+
+    #
     # The HTTP user-agent to use
     #
     # @return    [String]
@@ -504,6 +509,7 @@ class Options
             [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--cookie-jar',        '-j', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--cookie-string'          , GetoptLong::REQUIRED_ARGUMENT ],
             [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
@@ -682,6 +688,9 @@ class Options
 
                     when '--cookie-jar'
                         @cookie_jar = arg.to_s
+
+                    when '--cookie-string'
+                        @cookie_string = arg.to_s
 
                     when '--user-agent'
                         @user_agent = arg.to_s
