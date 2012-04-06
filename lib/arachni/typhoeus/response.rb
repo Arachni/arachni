@@ -35,8 +35,6 @@ module Typhoeus
     #
     # Converts obj to hash
     #
-    # @param    [Object]  obj    instance of an object
-    #
     # @return    [Hash]
     #
     def to_hash

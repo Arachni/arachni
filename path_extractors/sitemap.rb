@@ -25,7 +25,7 @@ module Arachni::Parser::Extractors
 class Sitemap < Paths
 
     #
-    # @param    [Nokogiri]  Nokogiri document
+    # @param    [Nokogiri]  doc  Nokogiri document
     #
     # @return   [Array<String>]  paths
     #

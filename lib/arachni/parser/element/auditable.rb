@@ -374,9 +374,8 @@ module Auditable
     #
     # If no &block has been provided {#get_matches} will be called instead.
     #
-    # @param  [Typhoeus::Request]  req
-    # @param  [Arachni::Parser::Element::Auditable]    auditable element
-    # @param  [Hash]    opts           an updated hash of options
+    # @param  [Typhoeus::Request]  req    request
+    # @param  [Arachni::Parser::Element::Auditable]    elem    element
     # @param  [Block]   &block         block to be passed the:
     #                                   * HTTP response
     #                                   * name of the input vector

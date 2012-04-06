@@ -408,9 +408,9 @@ USAGE
     #
     # Checks whether the port number is available
     #
-    # @param    Fixnum  port
+    # @param    [Fixnum]  port
     #
-    # @return   Bool
+    # @return   [Bool]
     #
     def avail_port?( port )
         begin

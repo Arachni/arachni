@@ -22,12 +22,12 @@ module Modules
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
 #                                      
-# @version 0.1
+# @version 0.1.1
 #
 class HTMLObjects < Arachni::Module::Base
 
     def run
-        match_and_log( /\<object(.*)\>(.*)\<\/object\>/im )
+        match_and_log( /<object(.*)>(.*)<\/object>/im )
     end
 
     def self.info
@@ -35,7 +35,7 @@ class HTMLObjects < Arachni::Module::Base
             :name           => 'HTML objects',
             :description    => %q{Greps pages for HTML objects.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Found an HTML object.},

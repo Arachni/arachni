@@ -29,7 +29,7 @@ class Frames < Paths
     #
     # Returns an array of paths as plain strings
     #
-    # @param    [Nokogiri]  Nokogiri document
+    # @param    [Nokogiri]  doc  Nokogiri document
     #
     # @return   [Array<String>]  paths
     #

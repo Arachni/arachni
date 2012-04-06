@@ -340,7 +340,7 @@ class AuditStore
     #
     # Converts seconds to a (00:00:00) (hours:minutes:seconds) string
     #
-    # @param    [String,Float,Integer]    seconds
+    # @param    [String,Float,Integer]    secs    seconds
     #
     # @return    [String]     hours:minutes:seconds
     #

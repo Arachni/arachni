@@ -138,7 +138,7 @@ class CSRF < Arachni::Module::Base
     #
     # These are the forms that will most likely affect business logic.
     #
-    # @param  [Array]  forms_logged_out  forms that appear while logged-out
+    # @param  [Array]  logged_out  forms that appear while logged-out
     #                                      in order to eliminate them.
     #
     # @return  [Array]  forms to be checked for CSRF

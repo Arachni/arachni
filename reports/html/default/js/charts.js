@@ -1,8 +1,8 @@
 
 function pie( holder, title, data, colors ) {
 
-    container = $( '#' + holder )
-    container.empty()
+    container = $( '#' + holder );
+    container.empty();
 
     $.jqplot( holder,
         [ data ],

@@ -217,7 +217,7 @@ module Auditor
     # Checks that the response points to an existing file/page and not
     # an error or custom 404 response.
     #
-    # @param    [Typhoeus::Response]    res
+    # @param    [String]    url
     #
     def remote_file_exist?( url, &block )
         req  = http.get( url, :remove_id => true )

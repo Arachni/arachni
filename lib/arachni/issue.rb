@@ -223,7 +223,7 @@ class Issue
     #
     # Sets up the instance attributes
     #
-    # @param    Hash    configuration hash
+    # @param    [Hash]    opts  configuration hash
     #                     Usually the returned data of a module's
     #                     info() method for the references
     #                     merged with a name=>value pair hash holding

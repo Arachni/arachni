@@ -99,13 +99,13 @@
                 }
 
                 function showReport( html ){
-                    document.getElementById( 'control_buttons' ).innerHTML = ""
-                    document.getElementById( 'page_header' ).innerHTML = "Report"
+                    document.getElementById( 'control_buttons' ).innerHTML = "";
+                    document.getElementById( 'page_header' ).innerHTML = "Report";
                     document.getElementById( 'page_description' ).innerHTML =
                         "The scan has completed succesfully, you can review the results using this report.<br/>" +
-                        "This report has been saved and you can view or export it in various format via the Reports tab."
+                        "This report has been saved and you can view or export it in various format via the Reports tab.";
 
-                    document.getElementById( 'scan_data' ).innerHTML = "<iframe class='report' src=" + html + "></iframe>"
+                    document.getElementById( 'scan_data' ).innerHTML = "<iframe class='report' src=" + html + "></iframe>";
                 }
 
                 function setStats( stats ){
@@ -129,7 +129,7 @@
                         ' - ' + stats.instances[i].progress + '%' +
                         ' - Est. remaining time: ' + stats.instances[i].eta + '</strong> <br/>';
 
-                        status = stats.instances[i].status
+                        status = stats.instances[i].status;
                         if( status == 'busy' ) {
                             page = stats.instances[i].current_page;
 

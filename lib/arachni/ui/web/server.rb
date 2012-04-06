@@ -142,7 +142,7 @@ class Server < Sinatra::Base
         #
         # Converts seconds to a (00:00:00) (hours:minutes:seconds) string
         #
-        # @param    [String,Float,Integer]    seconds
+        # @param    [String,Float,Integer]    secs
         #
         # @return    [String]     hours:minutes:seconds
         #
@@ -647,7 +647,7 @@ class Server < Sinatra::Base
     #
     # Saves the report and shuts down the instance
     #
-    # @param    [Arachni::RPC::Client::Instance]   arachni
+    # @param    [String]   url  of the instance
     #
     def save_and_shutdown( url, &block )
         instance = instances.connect( url, session )

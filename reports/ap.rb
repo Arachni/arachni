@@ -29,18 +29,9 @@ module Reports
 #
 class AP < Arachni::Report::Base
 
-    #
-    # @param [AuditStore]  audit_store
-    # @param [Hash]   options    options passed to the report
-    # @param [String]    outfile    where to save the report
-    #
-    def initialize( audit_store, options )
-        @audit_store   = audit_store
-    end
+    def run
 
-    def run( )
-
-        print_line( )
+        print_line
         print_status( 'Awesome printing AuditStore as a Hash...' )
 
         ap @audit_store.to_h

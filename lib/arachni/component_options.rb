@@ -195,7 +195,7 @@ end
 ###
 class OptBool < OptBase
 
-    TrueRegex = /^(y|yes|t|1|true|on)$/i
+    TRUE_REGEX = /^(y|yes|t|1|true|on)$/i
 
     def type
         return 'bool'
@@ -214,7 +214,7 @@ class OptBool < OptBase
     end
 
     def normalize(value)
-        if(value.nil? or value.to_s.match(TrueRegex).nil?)
+        if(value.nil? or value.to_s.match(TRUE_REGEX).nil?)
             false
         else
             true

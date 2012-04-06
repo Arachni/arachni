@@ -288,8 +288,8 @@ module Utilities
     #
     # Gets module data files from 'modules/[modtype]/[modname]/[filename]'
     #
-    # @param    [String]    filename filename, without the path
-    # @param    [Block]     the block to be passed each line as it's read
+    # @param    [String]    filename  filename, without the path
+    # @param    [Block]     block     the block to be passed each line as it's read
     #
     def read_file( filename, &block )
 

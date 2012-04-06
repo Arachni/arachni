@@ -69,8 +69,8 @@ class Scheduler
     # Runs a job.
     #
     # @param    [Job]   job
-    # @param    [Hash]  Sinatra environment
-    # @param    [Hash]  Rack session
+    # @param    [Hash]  env  Sinatra environment
+    # @param    [Hash]  session  Rack session
     #
     # @return   [String]    URL of the laucnhed scanner instance
     #

@@ -94,7 +94,7 @@ module Output
     # It ignores all flags, error messages will be output under all
     # circumstances.
     #
-    # @param    [String]    error string
+    # @param    [String]    str    error string
     # @return    [void]
     #
     def print_error( str = '' )
@@ -111,7 +111,7 @@ module Output
     # Used mainly to draw attention to something that didn't behave as expected
     # rather than display an actual error.
     #
-    # @param    [String]    error string
+    # @param    [String]    str
     #
     def print_bad( str = '' )
         buffer( :red => str )
@@ -124,7 +124,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    status string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_status( str = '' )
@@ -139,7 +139,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    info string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_info( str = '' )
@@ -152,7 +152,7 @@ module Output
     #
     # Disregards all flags.
     #
-    # @param    [String]    ok string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_ok( str = '' )
@@ -166,7 +166,7 @@ module Output
     # @see #debug?
     # @see #debug!
     #
-    # @param    [String]    debugging string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_debug( str = '' )
@@ -217,7 +217,7 @@ module Output
     # @see #verbose?
     # @see #verbose!
     #
-    # @param    [String]    verbose string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_verbose( str = '' )
@@ -232,7 +232,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_line( str = '' )

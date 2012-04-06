@@ -55,7 +55,7 @@ module Output
     # It ignores all flags, error messages will be output under all
     # circumstances.
     #
-    # @param    [String]    error string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_error( str = '' )
@@ -89,7 +89,7 @@ module Output
     #
     # Used mainly to draw attention.
     #
-    # @param    [String]    error string
+    # @param    [String]    str
     #
     def print_bad( str = '', unmute = false )
         return if muted? && !unmute
@@ -103,7 +103,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    status string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_status( str = '', unmute = false )
@@ -118,7 +118,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    info string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_info( str = '', unmute = false )
@@ -131,7 +131,7 @@ module Output
     #
     # Disregards all flags.
     #
-    # @param    [String]    ok string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_ok( str = '', unmute = false )
@@ -145,7 +145,7 @@ module Output
     # @see #debug?
     # @see #debug!
     #
-    # @param    [String]    debugging string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_debug( str = '', unmute = false )
@@ -196,7 +196,7 @@ module Output
     # @see #verbose?
     # @see #verbose!
     #
-    # @param    [String]    verbose string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_verbose( str = '', unmute = false )
@@ -211,7 +211,7 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    string
+    # @param    [String]    str
     # @return    [void]
     #
     def print_line( str = '', unmute = false )
@@ -305,8 +305,8 @@ module Output
     # Disregards all flags.
     #
     # @param    [String]    sign
-    # @param    [Integer]   shell color number
-    # @param    [String]    the string to output
+    # @param    [Integer]   color   shell color number
+    # @param    [String]    string  the string to output
     #
     # @return    [void]
     #

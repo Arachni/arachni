@@ -178,7 +178,7 @@ class RPC
     # Loads an Arachni Framework Profile file and merges it with the
     # user supplied options.
     #
-    # @param    [String]    filename    the file to load
+    # @param    [Array<String>]    profiles    the files to load
     #
     def load_profile( profiles )
         exception_jail{
