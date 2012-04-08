@@ -14,12 +14,20 @@ adhere to the following guidelines:
     arr.each { |item| stuff( item ) }
 ```
 
-- For multi-line blocks, use:
+- For multi-line blocks which expect parameters use:
 
 ```ruby
     arr.each do |item|
         stuff( item )
     end
+```
+
+ - For multi-line blocks which don't expect parameters you can use '{}'
+
+```ruby
+    arr.something {
+        stuff( item )
+    }
 ```
 
  - Use space before, between, and after method parameters:
