@@ -135,19 +135,17 @@ class HTTP
         req_limit = opts.http_req_limit
 
         hydra_opts = {
-            :max_concurrency => req_limit,
-            :method          => :auto
+            max_concurrency: req_limit,
+            method:          :auto
         }
 
-        if opts.url
-            hydra_opts.merge!(
-                :username => opts.url.user,
-                :password  => opts.url.password
-            )
-        end
+        hydra_opts.merge!(
+            username: opts.url.user,
+            password: opts.url.password
+        ) if opts.url
 
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
-        @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( :max_concurrency => 1 ) )
+        @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( max_concurrency: 1 ) )
 
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
@@ -168,17 +166,17 @@ class HTTP
 
         proxy_opts = {}
         proxy_opts = {
-            :proxy           => "#{opts.proxy_addr}:#{opts.proxy_port}",
-            :proxy_username  => opts.proxy_user,
-            :proxy_password  => opts.proxy_pass,
-            :proxy_type      => opts.proxy_type
+            proxy:          "#{opts.proxy_addr}:#{opts.proxy_port}",
+            proxy_username: opts.proxy_user,
+            proxy_password: opts.proxy_pass,
+            proxy_type:     opts.proxy_type
         } if opts.proxy_addr
 
         @opts = {
-            :follow_location => false,
-            :max_redirects  =>  opts.redirect_limit,
-            :disable_ssl_peer_verification => true,
-            :timeout         => 50000
+            follow_location:               false,
+            max_redirects:                 opts.redirect_limit,
+            disable_ssl_peer_verification: true,
+            timeout:                       50000
         }.merge( proxy_opts )
 
         @request_count  = 0
@@ -207,10 +205,7 @@ class HTTP
             @hydra.run
             @burst_runtime = Time.now - t
 
-            @after_run.each {
-                |block|
-                block.call
-            }
+            @after_run.each { |block| block.call }
             @after_run.clear
 
             call_after_run_persistent
@@ -240,14 +235,25 @@ class HTTP
         0
     end
 
-    def max_concurrency=( max_concurrency )
-        @hydra.max_concurrency = max_concurrency
+    #
+    # Sets the maximum concurrency of HTTP requests
+    #
+    # @param   [Integer]   concurrency
+    #
+    def max_concurrency=( concurrency )
+        @hydra.max_concurrency = concurrency
     end
 
+    #
+    # @return   [Integer]   current maximum concurrency of HTTP requests
+    #
     def max_concurrency
         @hydra.max_concurrency
     end
 
+    #
+    # @return   [Array<Arachni::Parser::Element::Cookie>]   all cookies in the jar
+    #
     def current_cookies
         @cookie_jar.cookies
     end
@@ -263,10 +269,10 @@ class HTTP
     # @param  [Bool]  async  run request async?
     #
     def queue( req, async = true )
-        requests = call_on_queue( req, async )
+        requests   = call_on_queue( req, async )
         requests ||= req
 
-        [ requests ].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
+        [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
             |request|
             forward_request( request, async )
         }
@@ -310,12 +316,12 @@ class HTTP
 
             headers           = @init_headers.merge( headers )
             headers['Cookie'] =  if cookies
-                str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
-            else
-                @cookie_jar.to_s( url )
-            end
+                    str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
+                else
+                    @cookie_jar.to_s( url )
+                end
 
-            params = params.merge( { @rand_seed => '' } ) if !remove_id
+            params = params.merge( @rand_seed => '' ) if !remove_id
 
             #
             # There are cases where the url already has a query and we also have
@@ -338,14 +344,13 @@ class HTTP
             end
 
             opts = {
-                :headers       => headers,
-                :params        => cparams.empty? ? nil : cparams,
-                :method        => opts[:method].nil? ? :get : opts[:method]
+                headers: headers,
+                params:  cparams.empty? ? nil : cparams,
+                method:  opts[:method].nil? ? :get : opts[:method]
             }.merge( @opts )
 
             opts[:follow_location] = follow_location if follow_location
-
-            opts[:timeout] = timeout if timeout
+            opts[:timeout]         = timeout if timeout
 
             req = Typhoeus::Request.new( curl, opts )
             req.train! if train
@@ -386,7 +391,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def post( url, opts = { } )
-        request( url, opts.merge( :method => :post ) )
+        request( url, opts.merge( method: :post ) )
     end
 
     #
@@ -402,7 +407,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def trace( url, opts = { } )
-        request( url, opts.merge( :method => :trace ) )
+        request( url, opts.merge( method: :trace ) )
     end
 
 
@@ -420,7 +425,7 @@ class HTTP
     #
     def cookie( url, opts = { } )
         opts[:cookies] = (opts[:params] || {}).dup
-        opts[:params] = nil
+        opts[:params]  = nil
         request( url, opts )
     end
 
@@ -436,14 +441,12 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def header( url, opts = { } )
-
-        headers   = opts[:params] || {}
+        headers       = (opts[:params] || {}).dup
+        opts[:params] = nil
 
         orig_headers      = @init_headers.clone
         opts[:headers]    = @init_headers = @init_headers.merge( headers )
         opts[:user_agent] = @init_headers['User-Agent']
-
-        opts[:params] = nil
 
         req = request( url, opts )
 
@@ -501,7 +504,6 @@ class HTTP
             cookie_arr = line.split( "\t" )
             cookies[cookie_arr[-2]] = cookie_arr[-1]
         }
-
         cookies
     end
 
@@ -572,7 +574,7 @@ class HTTP
 
                 @_404[path][i] ||= {}
                 precision.times {
-                    get( generator.call, :remove_id => true ).on_complete {
+                    get( generator.call, remove_id: true ).on_complete {
                         |c_res|
 
                         gathered += 1
@@ -602,8 +604,13 @@ class HTTP
 
     private
 
+    #
+    # Performs the actual queueing of requests, passes them to Hydra and sets
+    # up callbacks and hooks.
+    #
     # @param    [Typhoeus::Request]     req
     # @param    [Bool]      async
+    #
     def forward_request( req, async = true )
         req.id = @request_count
 
@@ -650,7 +657,7 @@ class HTTP
             if req.train?
                 # handle redirections
                 if ( redir = redirect?( res.dup ) ).is_a?( String )
-                    req2 = get( redir, :remove_id => true )
+                    req2 = get( redir, remove_id: true )
                     req2.on_complete {
                         |res2|
                         @trainer.add_response( res2, true )
@@ -683,7 +690,7 @@ class HTTP
     end
 
     def self.info
-        { :name => 'HTTP' }
+        { name: 'HTTP' }
     end
 
 end

@@ -122,7 +122,7 @@ class Framework < ::Arachni::Framework
             plug_info << plugin
         }
 
-        return plug_info
+        plug_info
     end
 
     #
@@ -282,7 +282,7 @@ class Framework < ::Arachni::Framework
             end
         }
 
-        return true
+        true
     end
 
     #
@@ -330,7 +330,7 @@ class Framework < ::Arachni::Framework
             |instance, iter|
             connect_to_instance( instance ).framework.pause!{ iter.next }
         }
-        return true
+        true
     end
 
     #
@@ -342,7 +342,7 @@ class Framework < ::Arachni::Framework
             |instance, iter|
             connect_to_instance( instance ).framework.resume!{ iter.next }
         }
-        return true
+        true
     end
 
     #
@@ -399,13 +399,13 @@ class Framework < ::Arachni::Framework
     def status
         if( !@crawling_done && master.empty? && high_performance?) ||
             ( master.empty? && !high_performance? && stats[:current_page].empty? )
-            return 'crawling'
+            'crawling'
         elsif paused?
-            return 'paused'
+            'paused'
         elsif !extended_running?
-            return 'done'
+            'done'
         else
-            return 'busy'
+            'busy'
         end
     end
 
@@ -604,7 +604,7 @@ class Framework < ::Arachni::Framework
         return false if high_performance? && !valid_token?( token )
 
         ::Arachni::Parser::Element::Auditable.restrict_to_elements!( elements )
-        return true
+        true
     end
 
     #
@@ -628,7 +628,7 @@ class Framework < ::Arachni::Framework
             report_issues_to_master( results )
         }
 
-        return true
+        true
     end
 
     #
@@ -643,7 +643,7 @@ class Framework < ::Arachni::Framework
     def update_page_queue!( pages, token = nil )
         return false if high_performance? && !valid_token?( token )
         pages.each { |page| @page_queue << page }
-        return true
+        true
     end
 
     #
@@ -661,7 +661,7 @@ class Framework < ::Arachni::Framework
         return false if high_performance? && !valid_token?( token )
 
         @modules.class.register_results( issues )
-        return true
+        true
     end
 
     private
@@ -694,7 +694,7 @@ class Framework < ::Arachni::Framework
     #
     def report_issues_to_master( issues )
         @master.framework.register_issues( issues, master_priv_token ){}
-        return true
+        true
     end
 
     #
@@ -761,31 +761,25 @@ class Framework < ::Arachni::Framework
         }
 
         # set them in the same order as the original 'chunks' group
-        return unique_chunks.reverse
+        unique_chunks.reverse
     end
 
     def build_elem_list( page )
         list = []
 
-        opts = {
-            :no_auditor => true,
-            :no_timeout => true,
-            :no_injection_str => true
-        }
-
         if @opts.audit_links
-            list |= page.links.map { |elem| elem.audit_id( nil, opts ) }.uniq
+            list |= page.links.map { |elem| elem.scope_audit_id }.uniq
         end
 
         if @opts.audit_forms
-            list |= page.forms.map { |elem| elem.audit_id( nil, opts ) }.uniq
+            list |= page.forms.map { |elem| elem.scope_audit_id }.uniq
         end
 
         if @opts.audit_cookies
-            list |= page.cookies.map { |elem| elem.audit_id( nil, opts ) }.uniq
+            list |= page.cookies.map { |elem| elem.scope_audit_id }.uniq
         end
 
-        return list
+        list
     end
 
     #
@@ -886,7 +880,7 @@ class Framework < ::Arachni::Framework
             }
         }
 
-        return chunks
+        chunks
     end
 
     #
@@ -918,7 +912,7 @@ class Framework < ::Arachni::Framework
     def get_dispatcher_score( dispatcher )
         score = get_resource_consumption( dispatcher['running_jobs'] )
         score *= dispatcher['weight'] if dispatcher['weight']
-        return score
+        score
     end
 
     #
@@ -936,7 +930,7 @@ class Framework < ::Arachni::Framework
             cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
         }
 
-        return cpu + mem
+        cpu + mem
     end
 
     #
@@ -1088,8 +1082,7 @@ class Framework < ::Arachni::Framework
         end
 
         final_stats['sitemap_size'] = @override_sitemap.size
-
-        return final_stats
+        final_stats
     end
 
     def max_eta( eta1, eta2 )
