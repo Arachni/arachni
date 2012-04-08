@@ -87,7 +87,7 @@ module Auditable
     attr_accessor :orig
 
     #
-    # @return [Hash]    audit and general options for convinience's sake
+    # @return [Hash]    audit and general options for convenience's sake
     #
     attr_reader   :opts
 
@@ -102,16 +102,15 @@ module Auditable
     # Default audit options.
     #
     OPTIONS = {
-
         #
         # Enable skipping of already audited inputs
         #
-        :redundant => false,
+        redundant: false,
 
         #
         # Make requests asynchronously
         #
-        :async     => true
+        async:     true
     }
 
     #
@@ -149,7 +148,7 @@ module Auditable
     # Provides a more generalized audit ID which does not contain the
     # auditor's name, timeout value of injection string.
     #
-    # Right now only used when in HPG mode to generate a whitelist of
+    # Right now only used when in HPG mode to generate a white-list of
     # element IDs that are allowed to be audited.
     #
     # @param    [Hash]  opts    {#audit}    opts
@@ -237,7 +236,7 @@ module Auditable
 
         opts.delete( :auditor )
 
-        return http_request( opts )
+        http_request( opts )
     end
 
     #
@@ -297,7 +296,7 @@ module Auditable
     end
 
     def skip?( elem )
-        return false
+        false
     end
 
     #
@@ -309,7 +308,7 @@ module Auditable
     # @return  [String]
     #
     def status_string
-        return "Auditing #{self.type} variable '" + self.altered + "' of " + @action
+        "Auditing #{self.type} variable '" + self.altered + "' of " + @action
     end
 
     #
@@ -330,7 +329,7 @@ module Auditable
         str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
         str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
-        return str
+        str
     end
 
     private
@@ -388,10 +387,8 @@ module Auditable
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
 
-        if( !elem.opts[:async] )
-            if( req && req.response )
-                after_complete( req.response, elem, &block )
-            end
+        if !elem.opts[:async]
+            after_complete( req.response, elem, &block ) if req && req.response
             return
         end
 
@@ -444,7 +441,7 @@ module Auditable
 
         print_debug( msg )
 
-        return ret
+        ret
     end
 
     #
