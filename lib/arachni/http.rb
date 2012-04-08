@@ -15,6 +15,7 @@
 =end
 
 require 'typhoeus'
+require 'singleton'
 
 module Arachni
 require Options.instance.dir['lib'] + 'ruby/webrick'
@@ -80,8 +81,8 @@ class HTTP
         end
 
         def cookies( with_expired = false )
-            @domains.map do |domain, paths|
-                paths.map do |path, cookies|
+            @domains.values.map do |paths|
+                paths.values.map do |cookies|
                     if !with_expired
                         cookies.values.reject{ |c| c.expired? }
                     else
@@ -200,7 +201,7 @@ class HTTP
     # Should only be called by the framework
     # after all module threads have been joined!
     #
-    def run!
+    def run
         exception_jail {
             t = Time.now
             @hydra.run
@@ -212,39 +213,34 @@ class HTTP
             }
             @after_run.clear
 
-            call_after_run_persistent( )
+            call_after_run_persistent
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
         }
     end
-    alias :run :run!
 
     def fire_and_forget
-        exception_jail {
-            @hydra.fire_and_forget
-        }
+        exception_jail { @hydra.fire_and_forget }
     end
 
     def abort
-        exception_jail {
-            @hydra.abort
-        }
+        exception_jail { @hydra.abort }
     end
 
     def average_res_time
         return 0 if @curr_res_cnt == 0
-        return @curr_res_time / @curr_res_cnt
+        @curr_res_time / @curr_res_cnt
     end
 
     def curr_res_per_second
         if @curr_res_cnt > 0 && @burst_runtime > 0
             return (@curr_res_cnt / @burst_runtime).to_i
         end
-        return 0
+        0
     end
 
-    def max_concurrency!( max_concurrency )
+    def max_concurrency=( max_concurrency )
         @hydra.max_concurrency = max_concurrency
     end
 
@@ -292,20 +288,17 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def request( url, opts )
-        params    = opts[:params]    || {}
+        params    = opts[:params] || {}
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
         cookies   = opts[:cookies]
-
-        update_cookies   = opts[:update_cookies]
-
         async     = opts[:async]
-        async     = true if async == nil
+        async     = true if async.nil?
+        headers   = opts[:headers] || {}
 
-        follow_location    = opts[:follow_location]    || false
-
-        headers   = opts[:headers]   || {}
+        update_cookies  = opts[:update_cookies]
+        follow_location = opts[:follow_location] || false
 
         #
         # the exception jail function wraps the block passed to it
@@ -359,7 +352,7 @@ class HTTP
             req.update_cookies! if update_cookies
 
             queue( req, async )
-            return req
+            req
         }
     end
 
@@ -455,17 +448,27 @@ class HTTP
         req = request( url, opts )
 
         @init_headers = orig_headers.clone
-        return req
+        req
     end
 
+    #
+    # Updates the cookie-jar with the passed cookies
+    #
+    # @param    [Array<Arachni::Parser::Element::Cookie>]   cookies
+    #
     def update_cookies( cookies )
         cookies.each { |c| @cookie_jar << c }
     end
     alias :set_cookies :update_cookies
 
+    #
+    # Extracts cookies from an HTTP response and updates the cookie-jar
+    #
+    # It also executes callbacks added with "add_on_new_cookies( &block )".
+    #
+    # @param    [Typhoeus::Response]    res
+    #
     def parse_and_set_cookies( res )
-        cookie_hash = {}
-
         cookies = Arachni::Parser::Element::Cookie.from_response( res )
         cookies.each { |c| @cookie_jar << c }
 
@@ -599,14 +602,12 @@ class HTTP
 
     private
 
+    # @param    [Typhoeus::Request]     req
+    # @param    [Bool]      async
     def forward_request( req, async = true )
         req.id = @request_count
 
-        if( !async )
-            @hydra_sync.queue( req )
-        else
-            @hydra.queue( req )
-        end
+        !async ? @hydra_sync.queue( req ) : @hydra.queue( req )
 
         @request_count += 1
 
@@ -646,9 +647,9 @@ class HTTP
                 @time_out_count += 1
             end
 
-            if( req.train? )
+            if req.train?
                 # handle redirections
-                if( ( redir = redirect?( res.dup ) ).is_a?( String ) )
+                if ( redir = redirect?( res.dup ) ).is_a?( String )
                     req2 = get( redir, :remove_id => true )
                     req2.on_complete {
                         |res2|
@@ -678,7 +679,7 @@ class HTTP
         if loc = res.headers_hash['Location']
             return loc
         end
-        return res
+        res
     end
 
     def self.info

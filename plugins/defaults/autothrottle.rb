@@ -22,7 +22,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.2
 #
 class AutoThrottle < Arachni::Plugin::Base
@@ -59,12 +59,12 @@ class AutoThrottle < Arachni::Plugin::Base
                 end
 
                 print_debug( "Stepping down!: #{step}" )
-                http.max_concurrency!( http.max_concurrency + step )
+                http.max_concurrency = http.max_concurrency + step
 
             elsif http.average_res_time < HIGH_THRESHOLD && http.average_res_time > LOW_THREASHOLD
 
                 print_debug( "Stepping up!: +#{STEP_UP}" )
-                http.max_concurrency!( http.max_concurrency + STEP_UP )
+                http.max_concurrency = http.max_concurrency + STEP_UP
             end
         }
 
