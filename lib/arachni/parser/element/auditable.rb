@@ -46,7 +46,7 @@ module Auditable
     Dir.glob( lib ).each { |f| require f }
     Analysis.constants.each {
         |technique|
-        include( Analysis.const_get( technique ) )
+        include Analysis.const_get( technique )
     }
 
     #
