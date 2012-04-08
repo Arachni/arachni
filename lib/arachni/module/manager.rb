@@ -55,10 +55,9 @@ class Manager < Arachni::ComponentManager
     # @param    [::Arachni::Parser::Page]   page    page to audit
     # @param    [::Arachni::Framework]   framework  to be assigned to modules
     #
-    def run!( page, framework = nil )
+    def run( page, framework = nil )
         values.each { |mod| exception_jail( false ){ run_one( mod, page, framework ) } }
     end
-    alias :run :run!
 
     #
     # Runs a single module against 'page'.
@@ -67,14 +66,13 @@ class Manager < Arachni::ComponentManager
     # @param    [::Arachni::Parser::Page]   page    page to audit
     # @param    [::Arachni::Framework]   framework  to be assigned to the module
     #
-    def run_one!( mod, page, framework = nil )
+    def run_one( mod, page, framework = nil )
         mod_new = mod.new( page )
         mod_new.set_framework( framework ) if framework
         mod_new.prepare
         mod_new.run
         mod_new.clean_up
     end
-    alias :run_one :run_one!
 
     def self.on_register_results( &block )
         @@on_register_results << block

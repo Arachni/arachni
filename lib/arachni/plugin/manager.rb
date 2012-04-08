@@ -33,13 +33,10 @@ class Manager < Arachni::ComponentManager
 
     include Arachni::Module::Utilities
 
-    DEFAULT = [
-        'defaults/*'
-    ]
+    DEFAULT = %w(defaults/*)
 
     @@results ||= {}
     @@results_mutex ||= Mutex.new
-
 
     #
     # @param    [Arachni::Framework]    framework   framework instance
@@ -58,10 +55,10 @@ class Manager < Arachni::ComponentManager
     #
     # Runs each plug-in in its own thread.
     #
-    def run!
-
-        ordered = []
+    def run
+        ordered   = []
         unordered = []
+
         loaded.each {
             |name|
             ph = { name => self[name] }
@@ -77,16 +74,14 @@ class Manager < Arachni::ComponentManager
 
         ordered.each {
             |ph|
-            name = ph.keys.first
+            name   = ph.keys.first
             plugin = ph.values.first
 
             if( ret = sane_env?( plugin ) ) != true
+                deps = ''
                 if !ret[:gem_errors].empty?
                     print_bad( "[#{name}] The following plug-in dependencies aren't satisfied:" )
-                    ret[:gem_errors].each {
-                       |gem|
-                        print_bad( "\t* #{gem}" )
-                    }
+                    ret[:gem_errors].each { |gem| print_bad( "\t* #{gem}" ) }
 
                     deps = ret[:gem_errors].join( ' ' )
                     print_bad( "Try installing them by running:" )
@@ -99,9 +94,9 @@ class Manager < Arachni::ComponentManager
             @jobs << Thread.new {
 
                 exception_jail( false ) {
-                    Thread.current[:name] = name
-
+                    Thread.current[:name]     = name
                     Thread.current[:instance] = plugin_new = create( name )
+
                     plugin_new.prepare
                     plugin_new.run
                     plugin_new.clean_up
@@ -115,7 +110,6 @@ class Manager < Arachni::ComponentManager
             ::IO::select( nil, nil, nil, 1 )
         end
     end
-    alias :run :run!
 
     def sane_env?( plugin )
         gem_errors = []
@@ -124,16 +118,13 @@ class Manager < Arachni::ComponentManager
             |gem|
             begin
                 require gem
-            rescue Exception => e
+            rescue LoadError
                 gem_errors << gem
             end
         }
 
-        return {
-            :gem_errors => gem_errors
-        } if !gem_errors.empty?
-
-        return true
+        return { gem_errors: gem_errors } if !gem_errors.empty?
+        true
     end
 
     def create( name )
@@ -145,8 +136,7 @@ class Manager < Arachni::ComponentManager
     # Blocks until all plug-ins have finished executing.
     #
     def block!
-        while( !@jobs.empty? )
-
+        while !@jobs.empty?
             print_debug
             print_debug( "Waiting on the following (#{@jobs.size}) plugins to finish:" )
             print_debug( job_names.join( ', ' ) )
@@ -192,7 +182,7 @@ class Manager < Arachni::ComponentManager
     def kill( name )
         job = get( name )
         return true if job && job.kill
-        return false
+        false
     end
 
     #
@@ -204,7 +194,7 @@ class Manager < Arachni::ComponentManager
     #
     def get( name )
         @jobs.each { |job| return job if job[:name] == name }
-        return
+        nil
     end
 
     #
@@ -226,7 +216,7 @@ class Manager < Arachni::ComponentManager
             }
 
             return if !name
-            @@results[name] = { :results => results }.merge( plugin.class.info )
+            @@results[name] = { results: results }.merge( plugin.class.info )
         }
     end
 

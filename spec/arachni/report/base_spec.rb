@@ -14,7 +14,7 @@ describe Arachni::Report::Base do
             store = @framework.auditstore
             store.plugins["foobar"] = { :results => 'Blah!' }
 
-            @reports.run_one!( 'with_formatters', store )
+            @reports.run_one( 'with_formatters', store )
             IO.read( 'with_formatters' ).should == { 'foobar' => 'Blah!' }.to_s
             File.delete( 'with_formatters' )
         end

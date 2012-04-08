@@ -13,14 +13,14 @@ describe Arachni::Plugin::Manager do
     describe :load_defaults! do
         it 'should load all default plugins' do
             @plugins.load_defaults!
-            @plugins.include?( "default" ).should be_true
+            @plugins.include?( 'default' ).should be_true
         end
     end
 
     describe :run do
         context 'when gem dependencies are met' do
             it 'should run loaded plugins' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.results['default'][:results].should be_true
             end
@@ -30,7 +30,7 @@ describe Arachni::Plugin::Manager do
                 raised = false
                 begin
                     @plugins.load( 'bad' )
-                    @plugins.run!
+                    @plugins.run
                     @plugins.block!
                 rescue
                     raised = true
@@ -63,14 +63,14 @@ describe Arachni::Plugin::Manager do
     describe :busy? do
         context 'when plugins are running' do
             it 'should return true' do
-                @plugins.run!
+                @plugins.run
                 @plugins.busy?.should be_true
                 @plugins.block!
             end
         end
         context 'when plugins have finished' do
             it 'should return false' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.busy?.should be_false
             end
@@ -80,14 +80,14 @@ describe Arachni::Plugin::Manager do
     describe :job_names do
         context 'when plugins are running' do
             it 'should return the names of the running plugins' do
-                @plugins.run!
+                @plugins.run
                 @plugins.job_names.should == @plugins.keys
                 @plugins.block!
             end
         end
         context 'when plugins have finished' do
             it 'should return an empty array' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.job_names.should be_empty
             end
@@ -97,14 +97,14 @@ describe Arachni::Plugin::Manager do
     describe :jobs do
         context 'when plugins are running' do
             it 'should return the names of the running plugins' do
-                @plugins.run!
+                @plugins.run
                 @plugins.jobs.first.instance_of?( Thread ).should be_true
                 @plugins.block!
             end
         end
         context 'when plugins have finished' do
             it 'should return an empty array' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.jobs.should be_empty
             end
@@ -115,7 +115,7 @@ describe Arachni::Plugin::Manager do
         context 'when a plugin is running' do
             it 'should kill a running plugin' do
                 @plugins.load( 'loop' )
-                @plugins.run!
+                @plugins.run
                 ret = @plugins.kill( 'loop' )
                 @plugins.block!
 
@@ -126,7 +126,7 @@ describe Arachni::Plugin::Manager do
 
         context 'when plugin is not running' do
             it 'should return false' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.kill( 'default' ).should be_false
             end
@@ -137,7 +137,7 @@ describe Arachni::Plugin::Manager do
         context 'when a plugin is running' do
             it 'should return its thread' do
                 @plugins.load( 'loop' )
-                @plugins.run!
+                @plugins.run
                 @plugins.get( 'loop' ).is_a?( Thread ).should be_true
                 @plugins.kill( 'loop' )
                 @plugins.block!
@@ -148,7 +148,7 @@ describe Arachni::Plugin::Manager do
 
         context 'when plugin is not running' do
             it 'should return nil' do
-                @plugins.run!
+                @plugins.run
                 @plugins.block!
                 @plugins.get( 'default' ).should be_nil
             end

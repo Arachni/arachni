@@ -48,34 +48,28 @@ class Manager < Arachni::ComponentManager
     #
     # @param  [AuditStore]  audit_store
     #
-    def run!( audit_store, run_afr = true )
+    def run( audit_store, run_afr = true )
         if run_afr
             # run the default report first
             run_one( 'afr', audit_store.deep_clone )
             delete( 'afr' )
         end
 
-        self.each {
-            |name, report|
-            exception_jail( false ){
-                run_one( name, audit_store.deep_clone )
-            }
-        }
+        loaded.each do |name|
+            exception_jail( false ){ run_one( name, audit_store.deep_clone ) }
+        end
     end
-    alias :run :run!
 
-    def run_one!( name, audit_store )
+    def run_one( name, audit_store )
         report = self[name].new( audit_store.deep_clone,
             prep_opts( name, self[name], @opts.reports[name] ) )
 
         report.run
     end
-    alias :run_one :run_one!
 
     private
     def paths
-        cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
-        paths.reject { |path| helper?( path ) }
+        Dir.glob( File.join( "#{@lib}", "*.rb" ) ).reject { |path| helper?( path ) }
     end
 end
 
