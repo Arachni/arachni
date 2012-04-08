@@ -26,7 +26,7 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.2
 #
 module Output
@@ -273,6 +273,10 @@ module Output
     #
     def only_positives!
         @@only_positives = true
+    end
+
+    def disable_only_positives!
+        @@only_positives = false
     end
 
     # Returns the {@@only_positives} flag
