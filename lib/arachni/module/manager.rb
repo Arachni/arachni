@@ -26,14 +26,9 @@ end
 module Module
 
 #
-# Arachni::Module::Manager class
-#
 # Holds and manages the modules and their results.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::ComponentManager
 
