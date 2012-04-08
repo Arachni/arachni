@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require 'ap'
-require 'pp'
 require 'em-synchrony'
 
 module Arachni
