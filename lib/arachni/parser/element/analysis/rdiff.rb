@@ -33,13 +33,13 @@ module Arachni::Parser::Element::Analysis::RDiff
 
     RDIFF_OPTIONS =  {
         # append our seeds to the default values
-        :format      => [ Arachni::Parser::Element::Mutable::Format::APPEND ],
+        format:    [Arachni::Parser::Element::Mutable::Format::APPEND],
 
         # allow duplicate requests
-        :redundant   => true,
+        redundant: true,
 
         # amount of rdiff iterations
-        :precision   => 2
+        precision: 2
     }
 
     #
@@ -88,13 +88,13 @@ module Arachni::Parser::Element::Analysis::RDiff
 
         responses = {
             # will hold the original, default, response that results from submitting
-            :orig => nil,
+            orig: nil,
 
             # will hold responses of boolean injections
-            :good => {},
+            good: { },
 
             # will hold responses of fault injections
-            :bad  => {}
+            bad:  { }
         }
 
         # submit the element, as is, opts[:precision] amount of times and
@@ -185,9 +185,9 @@ module Arachni::Parser::Element::Analysis::RDiff
                     # if default_response_body == bool_response_body AND
                     #    bool_response_code == 200 AND
                     #    fault_response_body != bool_response_body
-                    elsif( responses[:orig] == res['res'].body &&
+                    elsif responses[:orig] == res['res'].body &&
                         responses[:bad][key] != res['res'].body &&
-                        res['res'].code == 200 )
+                        res['res'].code == 200
 
                         # check to see if the current boolean response we're analyzing
                         # is a custom 404 page
@@ -203,25 +203,25 @@ module Arachni::Parser::Element::Analysis::RDiff
 
                             # information for the Metareport report
                             opts = {
-                                :injected_orig => res['str'],
-                                :combo         => res['elem'].auditable
+                                injected_orig: res['str'],
+                                combo:         res['elem'].auditable
                             }
 
                             @auditor.log_issue(
-                                :var          => key,
-                                :url          => url,
-                                :method       => res['res'].request.method.to_s,
-                                :opts         => opts,
-                                :injected     => res['str'],
-                                :id           => res['str'],
-                                :regexp       => 'n/a',
-                                :regexp_match => 'n/a',
-                                :elem         => res['elem'].type,
-                                :response     => res['res'].body,
+                                var:          key,
+                                url:          url,
+                                method:       res['res'].request.method.to_s,
+                                opts:         opts,
+                                injected:     res['str'],
+                                id:           res['str'],
+                                regexp:       'n/a',
+                                regexp_match: 'n/a',
+                                elem:         res['elem'].type,
+                                response:     res['res'].body,
                                 # :verification => true,
-                                :headers      => {
-                                    :request    => res['res'].request.headers,
-                                    :response   => res['res'].headers,
+                                headers:      {
+                                    request:  res['res'].request.headers,
+                                    response: res['res'].headers,
                                 }
                             )
 
