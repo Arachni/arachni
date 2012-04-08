@@ -17,7 +17,7 @@
 =end
 
 require 'rubygems'
-require "bundler/setup"
+require 'bundler/setup'
 
 require 'ap'
 require 'pp'
@@ -119,26 +119,11 @@ class Framework
     attr_reader :page_queue_total_size
 
     #
-    # Current amount of pages in the audit queue
-    #
-    # @return   [Integer]
-    #
-    attr_reader :page_queue_size
-
-    #
     # Total number of urls added to their audit queue
     #
     # @return   [Integer]
     #
     attr_reader :url_queue_total_size
-
-    #
-    # Current amount of urls in the audit queue
-    #
-    # @return   [Integer]
-    #
-    attr_reader :url_queue_size
-
 
     #
     # Initializes system components.
@@ -176,8 +161,10 @@ class Framework
         @url_queue = Queue.new
         @url_queue_total_size = 0
 
-        prepare_cookie_jar( )
-        prepare_user_agent( )
+        prepare_cookie_jar!
+        prepare_user_agent!
+
+        @override_sitemap = false
 
         # deep clone the redundancy rules to preserve their counter
         # for the reports
@@ -228,21 +215,12 @@ class Framework
         prepare
 
         # catch exceptions so that if something breaks down or the user opted to
-        # exit the reports will still run with whatever results
-        # Arachni managed to gather
-        begin
-            # start the audit
-            exception_jail{ audit( ) }
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-        end
+        # exit the reports will still run with whatever results Arachni managed to gather
+
+        exception_jail( false ){ audit }
 
         clean_up!
-        begin
-            block.call if block
-        rescue Exception
-        end
+        exception_jail( false ){ block.call } if block_given?
 
         if @opts.cookies
             # convert cookies to hashes for easier manipulation by the reports
@@ -256,7 +234,7 @@ class Framework
             exception_jail{ @reports.run( audit_store( ) ) }
         end
 
-        return true
+        true
     end
 
     #
@@ -376,7 +354,7 @@ class Framework
         # which can cause a few strange stuff to happen
         progress = 100.0 if progress > 100.0
 
-        return {
+        {
             :requests   => req_cnt,
             :responses  => res_cnt,
             :time_out_count  => http.time_out_count,
@@ -426,14 +404,6 @@ class Framework
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
 
-            opts = {
-                :timeout    => nil,
-                :remove_id  => true,
-                :follow_location => true,
-                :update_cookies  => true,
-                :async => false
-            }
-
             @sitemap = @opts.restrict_paths
             @sitemap.each {
                 |url|
@@ -456,7 +426,7 @@ class Framework
                 print_status( 'Running timing attacks.' )
                 print_info( '---------------------------------------' )
                 Arachni::Module::Auditor.on_timing_attacks {
-                    |res, elem|
+                    |_, elem|
                     @current_url = elem.action if !elem.action.empty?
                 }
                 Arachni::Module::Auditor.timeout_audit_run
@@ -479,7 +449,7 @@ class Framework
         # responses of the spider to consume them here because there's no way
         # of knowing how big the site will be.
         #
-        while( !@url_queue.empty? && url = @url_queue.pop )
+        while !@url_queue.empty? && url = @url_queue.pop
 
             http.get( url, :remove_id => true ).on_complete {
                 |res|
@@ -495,14 +465,14 @@ class Framework
                 audit_page_queue
             }
 
-            harvest_http_responses if !@opts.http_harvest_last
+            harvest_http_responses! if !@opts.http_harvest_last
         end
 
-        harvest_http_responses if( @opts.http_harvest_last )
+        harvest_http_responses! if( @opts.http_harvest_last )
 
         audit_page_queue
 
-        harvest_http_responses if( @opts.http_harvest_last )
+        harvest_http_responses! if( @opts.http_harvest_last )
     end
 
     #
@@ -510,11 +480,11 @@ class Framework
     #
     def audit_page_queue
         # this will run until no new elements appear for the given page
-        while( !@page_queue.empty? && page = @page_queue.pop )
+        while !@page_queue.empty? && page = @page_queue.pop
 
             # audit the page
             exception_jail{ run_mods( page ) }
-            harvest_http_responses if !@opts.http_harvest_last
+            harvest_http_responses! if !@opts.http_harvest_last
         end
     end
 
@@ -533,10 +503,10 @@ class Framework
         opts = @opts.to_h
         opts['mods'] = @modules.keys
 
-        if( !fresh && @store )
-            return @store
+        if !fresh && @store
+            @store
         else
-            return @store = AuditStore.new( {
+            @store = AuditStore.new( {
                 :version  => version( ),
                 :revision => REVISION,
                 :options  => opts,
@@ -650,7 +620,7 @@ class Framework
     def pause!
         @spider.pause! if @spider
         @paused << caller
-        return true
+        true
     end
 
     #
@@ -659,7 +629,7 @@ class Framework
     def resume!
         @paused.delete( caller )
         @spider.resume! if @spider
-        return true
+        true
     end
 
     #
@@ -699,7 +669,7 @@ class Framework
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
         # make sure this is disabled or it'll break report output
-        @@only_positives = false
+        disable_only_positives!
 
         @running = false
 
@@ -712,19 +682,19 @@ class Framework
         # refresh the audit store
         audit_store( true )
 
-        return true
+        true
     end
 
     private
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
-            return Regexp.last_match[1]
+            Regexp.last_match[1]
         end
     end
 
     def wait_if_paused
-        while( paused? )
+        while paused?
             ::IO::select( nil, nil, nil, 1 )
         end
     end
@@ -733,19 +703,18 @@ class Framework
     #
     # Prepares the user agent to be used throughout the system.
     #
-    def prepare_user_agent
-        if( !@opts.user_agent )
-            @opts.user_agent = 'Arachni/' + version( )
-        end
+    def prepare_user_agent!
 
-        if( @opts.authed_by )
+        @opts.user_agent = 'Arachni/' + version if !@opts.user_agent
+
+        if @opts.authed_by
             authed_by         = " (Scan authorized by: #{@opts.authed_by})"
             @opts.user_agent += authed_by
         end
 
     end
 
-    def prepare_cookie_jar(  )
+    def prepare_cookie_jar!(  )
         return if !@opts.cookie_jar || !@opts.cookie_jar.is_a?( String )
 
         # make sure that the provided cookie-jar file exists
@@ -793,32 +762,23 @@ class Framework
         @sitemap.uniq!
 
 
-        if( !@opts.http_harvest_last )
-            harvest_http_responses( )
-        end
-
+        harvest_http_responses! if !@opts.http_harvest_last
     end
 
-    def harvest_http_responses
-
+    def harvest_http_responses!
         print_status( 'Harvesting HTTP responses...' )
         print_info( 'Depending on server responsiveness and network' +
             ' conditions this may take a while.' )
 
         # grab updated pages
-        http.trainer.flush_pages.each {
-            |page|
-            push_to_page_queue( page )
-        }
+        http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
 
         # run all the queued HTTP requests and harvest the responses
         http.run
 
-        http.trainer.flush_pages.each {
-            |page|
-            push_to_page_queue( page )
-        }
+        http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
     end
+    alias :harvest_http_responses :harvest_http_responses!
 
     #
     # Passes a page to the module and runs it.<br/>
@@ -870,7 +830,7 @@ class Framework
             return true if mod.info[:elements].include?( elem ) && expr
         }
 
-        return false
+        false
     end
 
     def lsrep_match?( path )
@@ -891,7 +851,7 @@ class Framework
             |filter|
             cnt += 1 if str =~ filter
         }
-        return true if cnt == regexps.size
+        true if cnt == regexps.size
     end
 
 end
