@@ -59,7 +59,7 @@ module Arachni::Parser::Element::Analysis::Taint
     #                               The block will be called as soon as the HTTP response is received.
     #
     def taint_analysis( seed, opts = { } )
-        opts = Arachni::Parser::Element::Auditable::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
+        opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         opts[:substring] = seed if !opts[:regexp] && !opts[:substring]
         audit( seed, opts ) { |res, opts| get_matches( res, opts ) }
     end

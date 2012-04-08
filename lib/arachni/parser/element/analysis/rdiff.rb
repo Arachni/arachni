@@ -78,7 +78,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     #                                   * fault injection response body
     #
     def rdiff_analysis( opts = {}, &block )
-        opts = Arachni::Parser::Element::Mutable::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
+        opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
         @auditable.values.each { |val| return if !val || val.empty? }
