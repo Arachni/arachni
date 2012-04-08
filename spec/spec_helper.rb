@@ -39,6 +39,8 @@ RSpec.configure do |config|
 
     config.before( :all ) do
         kill_em!
+        Arachni::Module::Manager.results.clear
+        Arachni::Plugin::Manager.results.clear
         opts = Arachni::Options.instance
         opts.reset!
         opts.rpc_address = 'localhost'

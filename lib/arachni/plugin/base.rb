@@ -35,7 +35,6 @@ class Formatter
     end
 
     def run
-
     end
 
 end

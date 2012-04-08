@@ -5,7 +5,6 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
 
 describe Arachni::RPC::Server::Framework do
     before( :all ) do
-
         @opts = Arachni::Options.instance
         @token = 'secret!'
 
@@ -70,8 +69,8 @@ describe Arachni::RPC::Server::Framework do
                 plugin[:description].should == 'Some description'
                 plugin[:author].size.should == 1
                 plugin[:author].first.should == 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>'
-                plugin[:version].should == "0.1"
-                plugin[:plug_name].should == "default"
+                plugin[:version].should == '0.1'
+                plugin[:plug_name].should == 'default'
                 plugin[:options].size.should== 1
                 opt = plugin[:options].first
                 opt['name'].should == 'int_opt'
@@ -100,13 +99,24 @@ describe Arachni::RPC::Server::Framework do
             end
         end
         describe :run do
-            it 'perform a scan' do
+            it 'should perform a scan' do
                 instance = @instance_clean
                 instance.opts.url = server_url_for( :framework )
                 instance.modules.load( 'test' )
                 instance.framework.run.should be_true
                 sleep( 1 ) while instance.framework.busy?
                 instance.framework.issues.should be_any
+            end
+        end
+        describe :auditstore do
+            it 'should return an auditstore object' do
+                auditstore = @instance_clean.framework.auditstore
+                auditstore.is_a?( Arachni::AuditStore ).should be_true
+                auditstore.issues.should be_any
+                issue = auditstore.issues.first
+                issue.is_a?( Arachni::Issue ).should be_true
+                issue.variations.should be_any
+                issue.variations.first.is_a?( Arachni::Issue ).should be_true
             end
         end
     end
