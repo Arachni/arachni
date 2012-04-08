@@ -5,7 +5,6 @@ describe Arachni::Report::Manager do
         opts = Arachni::Options.instance
         opts.dir['reports'] = File.dirname( __FILE__ ) + '/../../fixtures/reports/manager_spec/'
 
-
         @framework = Arachni::Framework.new( Arachni::Options.instance )
         @reports   = @framework.reports
         @reports.load( '*' )
@@ -19,11 +18,10 @@ describe Arachni::Report::Manager do
                 File.exist?( 'afr' ).should be_true
                 File.delete( 'afr' )
 
-                @reports.keys.each {
-                    |name|
+                @reports.keys.each do |name|
                     File.exist?( name ).should be_true
                     File.delete( name )
-                }
+                end
             end
         end
         context 'with the run_afr opt set to true' do
@@ -32,11 +30,10 @@ describe Arachni::Report::Manager do
                 File.exist?( 'afr' ).should be_true
                 File.delete( 'afr' )
 
-                @reports.keys.each {
-                    |name|
+                @reports.keys.each do |name|
                     File.exist?( name ).should be_true
                     File.delete( name )
-                }
+                end
             end
         end
         context 'with run_afr opt set to false' do
@@ -44,11 +41,10 @@ describe Arachni::Report::Manager do
                 @reports.run( @framework.auditstore, false )
                 File.exist?( 'afr' ).should be_false
 
-                @reports.keys.each {
-                    |name|
+                @reports.keys.each do |name|
                     File.exist?( name ).should be_true
                     File.delete( name )
-                }
+                end
             end
         end
     end
