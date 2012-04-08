@@ -89,9 +89,7 @@ module Arachni::Parser::Element::Analysis::Taint
         # an annoying encoding exception may be thrown by scan()
         # the sob started occuring again....
         begin
-            if( @auditor.page.html.substring?( substring ) )
-                verification = true
-            end
+            verification = true if @auditor.page.html.substring?( substring )
         rescue
         end
 
@@ -113,9 +111,7 @@ module Arachni::Parser::Element::Analysis::Taint
         # an annoying encoding exception may be thrown by scan()
         # the sob started occuring again....
         begin
-            if( @auditor.page.html.scan( regexp )[0] )
-                opts[:verification] = true
-            end
+            opts[:verification] = true if @auditor.page.html.scan( regexp )[0]
         rescue
         end
 

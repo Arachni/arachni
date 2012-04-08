@@ -15,7 +15,7 @@
 =end
 
 require 'rubygems'
-require "bundler/setup"
+require 'bundler/setup'
 
 require 'yaml'
 YAML::ENGINE.yamler = 'syck'
