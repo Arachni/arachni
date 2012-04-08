@@ -92,6 +92,7 @@ class Dispatcher
         trap_interrupts { shutdown }
 
         @jobs = []
+        @consumed_pids = []
         @pool = ::EM::Queue.new
         @replenisher = Queue.new
 
@@ -191,7 +192,8 @@ class Dispatcher
             'running_jobs'    => running,
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
-            'curr_pool_size'  => @pool.size
+            'curr_pool_size'  => @pool.size,
+            'consumed_pids'   => @consumed_pids
         }
 
         if @node
@@ -326,7 +328,7 @@ USAGE
             @token         = secret( )
 
             pid = ::EM.fork_reactor { exception_jail {
-                    Arachni::RPC::Server::Instance.new( @opts, @token )
+                Arachni::RPC::Server::Instance.new( @opts, @token )
             }}
 
             print_status( "Instance added to pool -- PID: #{pid} - " +
@@ -340,6 +342,8 @@ USAGE
                 'owner' => owner,
                 'birthdate' => Time.now
             }
+
+            @consumed_pids << pid
 
             # let the child go about his business
             Process.detach( pid )
