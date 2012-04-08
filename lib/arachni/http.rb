@@ -200,7 +200,7 @@ class HTTP
     # Should only be called by the framework
     # after all module threads have been joined!
     #
-    def run
+    def run!
         exception_jail {
             t = Time.now
             @hydra.run
@@ -218,6 +218,7 @@ class HTTP
             @curr_res_cnt  = 0
         }
     end
+    alias :run :run!
 
     def fire_and_forget
         exception_jail {
