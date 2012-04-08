@@ -5,16 +5,11 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
-        kill_em!
         @opts = Arachni::Options.instance
-        @opts.rpc_address = 'localhost'
-        @opts.dir['logs'] = spec_path + 'logs'
         port1 = random_port
         port2 = random_port
 
-
-        @pids = []
-        @pids << ::EM.fork_reactor {
+        fork_em {
             @opts.pool_size = 1
             @opts.rpc_port = port2
             Arachni::RPC::Server::Dispatcher.new( @opts )
@@ -28,10 +23,9 @@ describe Arachni::RPC::Server::Dispatcher do
            'age', 'runtime', 'proc' ]
     end
 
-    after( :all ){
-        @pids.each { |p| Process.kill( 'KILL', p ) }
-        @opts.reset!
-    }
+    after( :all ) do
+        @dispatcher.stats['consumed_pids'].each { |p| pids << p }
+    end
 
     describe :alive? do
         it 'should return true' do
@@ -51,22 +45,17 @@ describe Arachni::RPC::Server::Dispatcher do
 
             instance = Arachni::RPC::Client::Instance.new( @opts, info['url'], info['token'] )
             instance.service.alive?.should be_true
-
-            @pids << info['pid']
         end
         it 'should assign an optional owner' do
             owner = 'blah'
             info = @dispatcher.dispatch( owner )
             info['owner'].should == owner
-            @pids << info['pid']
         end
         it 'should replenish the pool' do
             10.times {
                 info = @dispatcher.dispatch
                 info['pid'].should be_true
-                @pids << info['pid']
             }
-
         end
     end
 
@@ -78,8 +67,6 @@ describe Arachni::RPC::Server::Dispatcher do
                 |k|
                 info[k].should be_true
             }
-
-            @pids << info['pid']
         end
     end
 
@@ -102,7 +89,7 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats = @dispatcher.stats
 
-            [ 'running_jobs', 'finished_jobs', 'init_pool_size', 'node' ].each {
+            [ 'running_jobs', 'finished_jobs', 'init_pool_size', 'node', 'consumed_pids' ].each {
                 |k|
                 stats[k].should be_true
             }

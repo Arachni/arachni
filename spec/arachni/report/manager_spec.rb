@@ -11,8 +11,6 @@ describe Arachni::Report::Manager do
         @reports.load( '*' )
     end
 
-    after( :all ) { Arachni::Options.instance.reset! }
-
     describe :run! do
         context 'without the run_afr opt' do
             it 'should run loaded reports including the AFR one' do

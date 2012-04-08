@@ -8,14 +8,13 @@ require 'ostruct'
 class Server
     def initialize( opts, token = nil, &block )
         @opts = opts
-        @opts.rpc_address = 'localhost'
         @server = Arachni::RPC::Server::Base.new( @opts, token )
         @server.add_handler( "foo", self )
 
         if block_given?
             start
             block.call self
-            self.class.shutdown
+            kill_em!
         end
     end
 
@@ -28,10 +27,6 @@ class Server
         sleep( 0.1 ) while !@server.ready?
     end
 
-    def self.shutdown
-        kill_em!
-    end
-
     def bar
         true
     end
@@ -39,26 +34,26 @@ end
 
 describe Arachni::RPC::Client::Base do
     before( :all ) do
-        Server.shutdown
+        @opts = OpenStruct.new
+        @opts.rpc_address = Arachni::Options.instance.rpc_address.dup
         @client_class = Arachni::RPC::Client::Base
     end
 
     describe :new do
         context 'without SSL options' do
-            it 'should connect succesfully to a server' do
-                opts = OpenStruct.new
+            it 'should connect successfully to a server' do
+                opts = @opts.dup
                 opts.rpc_port = random_port
-
                 Server.new( opts ) do |server|
                     client = @client_class.new( opts, server.url )
-                    client.call( "foo.bar" ).should be_true
+                    client.call( "foo.bar" ).should == true
                 end
             end
         end
 
         context 'with valid SSL options' do
-            it 'should connect succesfully to an SSL server' do
-                opts = OpenStruct.new
+            it 'should connect successfully to an SSL server' do
+                opts = @opts.dup
                 opts.rpc_port = random_port
 
                 opts.ca = spec_path + 'pems/cacert.pem'
@@ -76,7 +71,7 @@ describe Arachni::RPC::Client::Base do
 
         context 'with invalid SSL options' do
             it 'should be unable to connect to an SSL server' do
-                opts = OpenStruct.new
+                opts = @opts.dup
                 opts.rpc_port = random_port
 
                 opts.ssl_ca = spec_path + 'pems/cacert.pem'
@@ -101,7 +96,7 @@ describe Arachni::RPC::Client::Base do
 
         context 'with no SSL options' do
             it 'should be unable to connect to an SSL server' do
-                opts = OpenStruct.new
+                opts = @opts.dup
                 opts.rpc_port = random_port
 
                 opts.ssl_ca = spec_path + 'pems/cacert.pem'
@@ -125,7 +120,7 @@ describe Arachni::RPC::Client::Base do
         context 'when a server requires a token' do
             context 'with a valid token' do
                 it 'should be able to connect' do
-                    opts = OpenStruct.new
+                    opts = @opts.dup
                     opts.rpc_port = random_port
                     token = 'secret!'
 
@@ -137,7 +132,7 @@ describe Arachni::RPC::Client::Base do
             end
             context 'with invalid token' do
                 it 'should not be able to connect' do
-                    opts = OpenStruct.new
+                    opts = @opts.dup
                     opts.rpc_port = random_port
                     token = 'secret!'
 

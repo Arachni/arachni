@@ -3,7 +3,6 @@ require_relative '../../../../spec_helper'
 describe Arachni::Parser::Element::Analysis::Timeout do
 
     before :all do
-        Arachni::Options.instance.reset!
         @url     = server_url_for( :timeout )
         @auditor = Auditor.new( Arachni::HTTP.instance )
 

@@ -13,9 +13,7 @@ describe Arachni::Module::Manager do
 
     before( :each ) { @modules.results.clear }
 
-    after( :all ) do
-        Arachni::Options.instance.reset!
-    end
+    after( :all ) { @modules.clear }
 
     describe :load do
         it 'should load all modules' do

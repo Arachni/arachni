@@ -18,7 +18,6 @@ end
 describe Arachni::Parser::Element::Analysis::RDiff do
 
     before :all do
-        Arachni::Options.instance.reset!
         @url     = server_url_for( :rdiff )
         @auditor = Auditor.new( Arachni::HTTP.instance )
     end

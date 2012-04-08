@@ -6,6 +6,7 @@
 
 require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
+require 'eventmachine'
 Arachni::UI::Output.mute!
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
@@ -36,11 +37,24 @@ RSpec.configure do |config|
     config.color = true
     config.add_formatter :documentation
 
-    config.before( :suite ) do
-        # start_servers!
+    config.before( :all ) do
+        kill_em!
+        opts = Arachni::Options.instance
+        opts.reset!
+        opts.rpc_address = 'localhost'
+        opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
+        opts.dir['modules'] = spec_path + 'fixtures/modules/'
+
+        opts.dir['logs'] = spec_path + 'logs'
     end
+
+    #config.after( :all ) do
+    #    remove_constants( Arachni::Modules, true )
+    #    remove_constants( Arachni::Plugins, true )
+    #end
 
     config.after( :suite ) do
         kill_servers!
+        kill_processes!
     end
 end

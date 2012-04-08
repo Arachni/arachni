@@ -6,21 +6,16 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
 describe Arachni::RPC::Server::Module::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.dir['modules'] = spec_path + 'fixtures/modules/'
-        @opts.rpc_address = 'localhost'
-        @opts.dir['logs'] = spec_path + 'logs'
-
         port1 = random_port
         port2 = random_port
 
         @token = 'secret!'
 
-        @pids = []
-        @pids << ::EM::fork_reactor {
+        fork_em {
             @opts.rpc_port = port1
             Arachni::RPC::Server::Instance.new( @opts, @token )
         }
-        @pids << ::EM::fork_reactor {
+        fork_em {
             @opts.rpc_port = port2
             Arachni::RPC::Server::Instance.new( @opts, @token )
         }
@@ -34,12 +29,6 @@ describe Arachni::RPC::Server::Module::Manager do
             "#{@opts.rpc_address}:#{port2}", @token
         ).modules
     end
-
-    after( :all ){
-        @pids.each { |p| Process.kill( 'KILL', p ) }
-        @opts.reset!
-        kill_em!
-    }
 
     describe :available do
         it 'should return an array of available modules' do

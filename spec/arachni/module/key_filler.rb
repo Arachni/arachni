@@ -5,10 +5,7 @@ describe Arachni::Module::KeyFiller do
     before( :all ) do
         @filler = Arachni::Module::KeyFiller
         @seeds = {}
-        @filler.regexps.keys.each {
-            |k|
-            @seeds[k] = nil
-        }
+        @filler.regexps.keys.each { |k| @seeds[k] = nil }
     end
 
     it 'should fill in all inputs with appropriate seed values' do

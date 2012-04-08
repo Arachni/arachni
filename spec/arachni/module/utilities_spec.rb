@@ -5,11 +5,8 @@ describe Arachni::Module::Utilities do
 
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.reset!
         @utils = Arachni::Module::Utilities
     end
-
-    after( :all ){ @opts.reset! }
 
     describe :url_parser do
         it 'should return a URI::Parser' do

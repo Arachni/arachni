@@ -11,9 +11,6 @@ describe Arachni::Module::Trainer do
     end
 
     before( :all ) do
-
-        Arachni::Options.instance.reset!
-
         @opts = Arachni::Options.instance
         @opts.url = @base_url = server_url_for( :trainer )
         @opts.exclude << Regexp.new( 'exclude_me' )

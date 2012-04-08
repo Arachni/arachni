@@ -8,7 +8,7 @@ describe Arachni::Plugin::Manager do
         @plugins = Arachni::Framework.new( Arachni::Options.instance ).plugins
     end
 
-    after( :all ) { Arachni::Options.instance.reset! }
+    after( :all ) { @plugins.clear }
 
     describe :load_defaults! do
         it 'should load all default plugins' do

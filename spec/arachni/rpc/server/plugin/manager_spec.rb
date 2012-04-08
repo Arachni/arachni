@@ -6,22 +6,16 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
 describe Arachni::RPC::Server::Plugin::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
-        @opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
-        @opts.dir['logs'] = spec_path + 'logs'
-
-        @opts.rpc_address = 'localhost'
-
         port1 = random_port
         port2 = random_port
 
         @token = 'secret!'
 
-        @pids = []
-        @pids << ::EM::fork_reactor {
+        fork_em {
             @opts.rpc_port = port1
             Arachni::RPC::Server::Instance.new( @opts, @token )
         }
-        @pids << ::EM::fork_reactor {
+        fork_em {
             @opts.rpc_port = port2
             Arachni::RPC::Server::Instance.new( @opts, @token )
         }
@@ -35,12 +29,6 @@ describe Arachni::RPC::Server::Plugin::Manager do
             "#{@opts.rpc_address}:#{port2}", @token
         ).plugins
     end
-
-    after( :all ){
-        @pids.each { |p| Process.kill( 'KILL', p ) }
-        @opts.reset!
-        kill_em!
-    }
 
     describe :available do
         it 'should return an array of available plugins' do

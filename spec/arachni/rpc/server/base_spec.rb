@@ -7,14 +7,10 @@ require 'ostruct'
 
 describe Arachni::RPC::Server::Base do
     before( :all ) do
-        kill_em!
-        opts = OpenStruct.new
+        opts = Arachni::Options.instance
         opts.rpc_port = random_port
-        opts.rpc_address = 'localhost'
         @server = Arachni::RPC::Server::Base.new( opts )
     end
-
-    after( :all ) { kill_em! }
 
     describe :ready? do
         context 'when the server is not ready' do

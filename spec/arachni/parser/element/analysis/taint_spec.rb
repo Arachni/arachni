@@ -3,7 +3,6 @@ require_relative '../../../../spec_helper'
 describe Arachni::Parser::Element::Analysis::Taint do
 
     before :all do
-        Arachni::Options.instance.reset!
         @url = server_url_for( :taint )
         @auditor = Auditor.new( Arachni::HTTP.instance )
 
