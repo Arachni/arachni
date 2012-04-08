@@ -204,8 +204,15 @@ class ComponentManager < Hash
         return
     end
 
+    def clear
+        keys.each { |l| delete( l ) }
+    end
+
     def delete( k )
-        @namespace.send( :remove_const, self[k].to_s.split( ':' ).last.to_sym )
+        begin
+            @namespace.send( :remove_const, self[k].to_s.split( ':' ).last.to_sym )
+        rescue
+        end
         super( k )
     end
 
