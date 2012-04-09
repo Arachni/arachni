@@ -411,12 +411,7 @@ module Auditable
         }
     end
 
-    #
-    # Checks whether or not an audit has been already performed.
-    #
-    # @param  [String]  elem_audit_id  a string returned by {#audit_id}
-    #
-    def audited?( elem_audit_id )
+    def within_scope?
         @@restrict_to_elements ||= Set.new
 
         auditor_override_instance_scope = false
@@ -425,13 +420,22 @@ module Auditable
         rescue
         end
 
+        !(!auditor_override_instance_scope && !override_instance_scope? &&
+            !@@restrict_to_elements.empty? &&
+            !@@restrict_to_elements.include?( scope_audit_id ))
+    end
+
+    #
+    # Checks whether or not an audit has been already performed.
+    #
+    # @param  [String]  elem_audit_id  a string returned by {#audit_id}
+    #
+    def audited?( elem_audit_id )
         @@audited ||= Set.new
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
             ret = true
-        elsif !auditor_override_instance_scope && !override_instance_scope? &&
-            !@@restrict_to_elements.empty? &&
-            !@@restrict_to_elements.include?( scope_audit_id( opts ) )
+        elsif !within_scope?
             msg = 'Skipping, out of instance scope.'
             ret = true
         else
