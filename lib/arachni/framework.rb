@@ -171,6 +171,7 @@ class Framework
         @orig_redundant = @opts.redundant.deep_clone
 
         @running = false
+        @status = :ready
         @paused  = []
 
         @store = nil
@@ -216,11 +217,11 @@ class Framework
 
         # catch exceptions so that if something breaks down or the user opted to
         # exit the reports will still run with whatever results Arachni managed to gather
-
         exception_jail( false ){ audit }
 
         clean_up!
         exception_jail( false ){ block.call } if block_given?
+        @status = :done
 
         if @opts.cookies
             # convert cookies to hashes for easier manipulation by the reports
@@ -235,6 +236,23 @@ class Framework
         end
 
         true
+    end
+
+    #
+    # Returns the status of the instance as a string.
+    #
+    # Possible values are (in order):
+    #  o ready -- Just initialised and waiting for instructions
+    #  o crawling -- The instance is crawling the target webapp
+    #  o auditing-- The instance is currently auditing the webapp
+    #  o paused -- The instance has posed
+    #  o done -- The scan has completed
+    #
+    # @return   [String]
+    #
+    def status
+        return 'paused' if paused?
+        @status.to_s
     end
 
     #
@@ -399,6 +417,7 @@ class Framework
     def audit
         wait_if_paused
 
+        @status = :crawling
         @spider = Arachni::Spider.new( @opts )
 
         # if we're restricted to a given list of paths there's no reason to run the spider
@@ -418,6 +437,7 @@ class Framework
             }
         end
 
+        @status = :auditing
         audit_queue
 
         exception_jail {
@@ -434,7 +454,6 @@ class Framework
 
             audit_queue
         }
-
     end
 
     #
@@ -665,6 +684,8 @@ class Framework
     # @return   [True]
     #
     def clean_up!( skip_audit_queue = false )
+        @status = :cleanup
+
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
@@ -694,24 +715,17 @@ class Framework
     end
 
     def wait_if_paused
-        while paused?
-            ::IO::select( nil, nil, nil, 1 )
-        end
+        ::IO::select( nil, nil, nil, 1 ) while paused?
     end
-
 
     #
     # Prepares the user agent to be used throughout the system.
     #
     def prepare_user_agent!
-
         @opts.user_agent = 'Arachni/' + version if !@opts.user_agent
 
-        if @opts.authed_by
-            authed_by         = " (Scan authorized by: #{@opts.authed_by})"
-            @opts.user_agent += authed_by
-        end
-
+        return if !@opts.authed_by
+        @opts.user_agent += " (Scan authorized by: #{@opts.authed_by})"
     end
 
     def prepare_cookie_jar!(  )
@@ -722,7 +736,6 @@ class Framework
             raise( Arachni::Exceptions::NoCookieJar,
                 'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
         end
-
     end
 
 

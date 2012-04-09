@@ -37,8 +37,10 @@ class Framework < ::Arachni::Framework
     include Arachni::Module::Utilities
 
     # make this inherited methods visible again
-    private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision
-    public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision
+    private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
+            :status
+    public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
+            :status
 
     alias :old_clean_up! :clean_up!
     alias :auditstore    :audit_store
@@ -154,16 +156,16 @@ class Framework < ::Arachni::Framework
         # end
 
         @extended_running = true
-        ::EM.defer {
+        #
+        # if we're in HPG mode do fancy stuff like distributing and balancing workload
+        # as well as starting slave instances and deal with some lower level
+        # operations of the local instance like running plug-ins etc...
+        #
+        # otherwise just run the local instance, nothing special...
+        #
+        if high_performance?
 
-            #
-            # if we're in HPG mode do fancy stuff like distributing and balancing workload
-            # as well as starting slave instances and deal with some lower level
-            # operations of the local instance like running plug-ins etc...
-            #
-            # otherwise just run the local instance, nothing special...
-            #
-            if high_performance?
+            ::EM.defer {
 
                 #
                 # We're in HPG (High Performance Grid) mode,
@@ -190,7 +192,7 @@ class Framework < ::Arachni::Framework
                 #
                 pages = ::Arachni::Database::Hash.new
 
-                # prepare the local instance (runs plugins and start the timer)
+                # prepare the local instance (runs plugins and starts the timer)
                 prepare
 
                 # we need to take our cues from the local framework as some
@@ -198,6 +200,7 @@ class Framework < ::Arachni::Framework
                 # before moving on.
                 sleep( 0.2 ) while paused?
 
+                @status = :crawling
                 # start the crawl and extract all paths
                 Arachni::Spider.new( @opts ).run {
                     |page|
@@ -206,6 +209,7 @@ class Framework < ::Arachni::Framework
                 }
                 @crawling_done = true
 
+                @status = :distributing
                 # the plug-ins may have update the framework page queue
                 # so we need to distribute these pages as well
                 page_a = []
@@ -267,18 +271,19 @@ class Framework < ::Arachni::Framework
 
                         # ap 'DONE'
                         @extended_running = false
+                        @status = :done
                     }
                 }
-            else
-                # start the local instance
-                Thread.new {
-                    # ap 'AUDITING'
-                    super
-                    # ap 'DONE'
-                    @extended_running = false
-                }
-            end
-        }
+            }
+        else
+            # start the local instance
+            Thread.new {
+                # ap 'AUDITING'
+                super
+                # ap 'DONE'
+                @extended_running = false
+            }
+        end
 
         true
     end
@@ -294,10 +299,10 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  &block  block to be called once the cleanup has finished
     #
     def clean_up!( &block )
-        old_clean_up!( true )
+        ret = old_clean_up!( true )
 
         if @instances.empty?
-            block.call if block_given?
+            block.call( ret ) if block_given?
             return
         end
 
@@ -384,30 +389,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns the status of the instance as a string.
-    #
-    # Possible values are:
-    #  o crawling
-    #  o paused
-    #  o done
-    #  o busy
-    #
-    # @return   [String]
-    #
-    def status
-        if( !@crawling_done && master.empty? && high_performance?) ||
-            ( master.empty? && !high_performance? && stats[:current_page].empty? )
-            'crawling'
-        elsif paused?
-            'paused'
-        elsif !extended_running?
-            'done'
-        else
-            'busy'
-        end
-    end
-
-    #
     # Returns aggregated progress data and helps to limit the amount of calls
     # required in order to get an accurate depiction of a scan's progress and includes:
     #  o output messages
@@ -453,9 +434,9 @@ class Framework < ::Arachni::Framework
         end
 
         data = {
-            'stats'     => {},
-            'status'    => status,
-            'busy'      => extended_running?
+            'stats'  => {},
+            'status' => status,
+            'busy'   => extended_running?
         }
 
         data['messages']  = flush_buffer if include_messages
@@ -468,10 +449,7 @@ class Framework < ::Arachni::Framework
 
         stats = []
         stat_hash = {}
-        stats( true, true ).each {
-            |k, v|
-            stat_hash[k.to_s] = v
-        }
+        stats( true, true ).each { |k, v| stat_hash[k.to_s] = v }
 
         if @opts.datastore[:dispatcher_url] && include_slaves
             data['instances'][self_url] = stat_hash.dup
@@ -531,6 +509,7 @@ class Framework < ::Arachni::Framework
             block.call( data )
         })
     end
+    alias :progress :progress_data
 
     #
     # Returns the results of the audit as a hash.
@@ -563,10 +542,10 @@ class Framework < ::Arachni::Framework
     # @return   [Array<Arachni::Issue>]
     #
     def issues
-        audit_store.issues.map {
+        auditstore.issues.map {
             |issue|
             tmp_issue = issue.deep_clone
-            tmp_issue.variations = []
+            tmp_issue.variations.clear
             tmp_issue
         }
     end
@@ -600,7 +579,6 @@ class Framework < ::Arachni::Framework
     #
     def restrict_to_elements!( elements, token = nil )
         return false if high_performance? && !valid_token?( token )
-
         ::Arachni::Parser::Element::Auditable.restrict_to_elements!( elements )
         true
     end
@@ -621,11 +599,7 @@ class Framework < ::Arachni::Framework
         @master = connect_to_instance( { 'url' => url, 'token' => token } )
 
         @modules.class.do_not_store!
-        @modules.class.on_register_results {
-            |results|
-            report_issues_to_master( results )
-        }
-
+        @modules.class.on_register_results { |results| report_issues_to_master( results ) }
         true
     end
 
@@ -655,9 +629,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
     #
-    def register_issues( issues, token )
+    def register_issues( issues, token = nil )
         return false if high_performance? && !valid_token?( token )
-
         @modules.class.register_results( issues )
         true
     end
@@ -813,13 +786,13 @@ class Framework < ::Arachni::Framework
                         end
                     }
                 }, proc {
-                    |dispatchers|
+                    |reachable_dispatchers|
 
                     # get the Dispatchers with unique Pipe IDs and send them
                     # to the block
 
                     pref_dispatcher_urls = []
-                    pick_dispatchers( dispatchers ).each {
+                    pick_dispatchers( reachable_dispatchers ).each {
                         |dispatcher|
                         if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
                             @used_pipe_ids << dispatcher['node']['pipe_id']
@@ -982,15 +955,15 @@ class Framework < ::Arachni::Framework
             }
 
             instance.opts.set( opts ){
-                instance.framework.update_page_queue!( pages ) {
-                    instance.framework.restrict_to_elements!( elements ){
+                instance.framework.update_page_queue!( pages, self_token ) {
+                    instance.framework.restrict_to_elements!( elements, self_token ){
                         instance.framework.set_master( self_url, self_token ){
                             instance.modules.load( opts['mods'] ) {
                                 instance.plugins.load( opts['plugins'] ) {
                                     instance.framework.run {
-                                        block.call( {
-                                            'url' => instance_hash['url'],
-                                            'token' => instance_hash['token'] }
+                                        block.call(
+                                            'url'   => instance_hash['url'],
+                                            'token' => instance_hash['token']
                                         )
                                     }
                                 }

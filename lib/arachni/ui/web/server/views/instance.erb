@@ -130,7 +130,7 @@
                         ' - Est. remaining time: ' + stats.instances[i].eta + '</strong> <br/>';
 
                         status = stats.instances[i].status;
-                        if( status == 'busy' ) {
+                        if( status == 'auditing' ) {
                             page = stats.instances[i].current_page;
 
                             elem.innerHTML += 'Currently auditing: ' + '<a href="' +
