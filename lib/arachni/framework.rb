@@ -164,8 +164,6 @@ class Framework
         prepare_cookie_jar!
         prepare_user_agent!
 
-        @override_sitemap = false
-
         # deep clone the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = @opts.redundant.deep_clone
@@ -242,11 +240,13 @@ class Framework
     # Returns the status of the instance as a string.
     #
     # Possible values are (in order):
-    #  o ready -- Just initialised and waiting for instructions
-    #  o crawling -- The instance is crawling the target webapp
-    #  o auditing-- The instance is currently auditing the webapp
-    #  o paused -- The instance has posed
-    #  o done -- The scan has completed
+    # * ready -- Just initialised and waiting for instructions
+    # * crawling -- The instance is crawling the target webapp
+    # * auditing-- The instance is currently auditing the webapp
+    # * paused -- The instance has posed (if applicable)
+    # * cleanup -- The scan has completed and the instance is cleaning up
+    #   after itself (i.e. waiting for plugins to finish etc.).
+    # * done -- The scan has completed
     #
     # @return   [String]
     #
@@ -525,29 +525,17 @@ class Framework
         if !fresh && @store
             @store
         else
-            @store = AuditStore.new( {
-                :version  => version( ),
-                :revision => REVISION,
-                :options  => opts,
-                :sitemap  => audit_store_sitemap || [],
-                :issues   => @modules.results.deep_clone,
-                :plugins  => @plugins.results
-            })
+            @store = AuditStore.new(
+                version:  version,
+                revision: revision,
+                options:  opts,
+                sitemap:  auditstore_sitemap || [],
+                issues:   @modules.results.deep_clone,
+                plugins:  @plugins.results
+            )
          end
     end
     alias :auditstore :audit_store
-
-    #
-    # Special sitemap for the auditstore.
-    #
-    # Used only under special circumstances, will usually return the {#sitemap}
-    # but can be overridden by the {::Arachni::RPC::Framework}.
-    #
-    # @return   [Array]
-    #
-    def audit_store_sitemap
-        @override_sitemap && !@override_sitemap.empty? ? @override_sitemap : @sitemap
-    end
 
     #
     # Returns an array of hashes with information
@@ -707,6 +695,18 @@ class Framework
     end
 
     private
+
+    #
+    # Special sitemap for the {#auditstore}.
+    #
+    # Used only under special circumstances, will usually return the {#sitemap}
+    # but can be overridden by the {::Arachni::RPC::Framework}.
+    #
+    # @return   [Array]
+    #
+    def auditstore_sitemap
+        @sitemap
+    end
 
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]

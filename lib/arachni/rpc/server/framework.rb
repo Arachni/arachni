@@ -27,13 +27,17 @@ class Server
 
 #
 # Wraps the framework of the local instance and the frameworks of all
-# remote slaves (when in High Performance Grid mode) into a neat, little,
+# its slaves (when in High Performance Grid mode) into a neat, little,
 # easy to handle package.
+#
+# Disregard all:
+# * 'block' parameters, they are there for internal processing
+#   reasons and cannot be accessed via the API
+# * inherited methods and attributes
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
-
     include Arachni::Module::Utilities
 
     # make this inherited methods visible again
@@ -47,7 +51,11 @@ class Framework < ::Arachni::Framework
 
     private :old_clean_up!
 
-    attr_reader :instances, :opts, :modules, :plugins
+    #
+    # @return   [Array<String>]     URLs to all slaves, empty when not
+    #                                   running in HPG mode
+    #
+    attr_reader :instances
 
     MAX_CONCURRENCY = 20
     MIN_PAGES_PER_INSTANCE = 30
@@ -61,7 +69,6 @@ class Framework < ::Arachni::Framework
         # holds all running instances
         @instances = []
 
-        @crawling_done = nil
         @override_sitemap = []
 
         # if we're a slave this var will hold the URL of our master
@@ -70,11 +77,13 @@ class Framework < ::Arachni::Framework
         @local_token = gen_token
     end
 
+
+
     #
     # Returns true if the system is scanning, false if {#run} hasn't been called yet or
     # if the scan has finished.
     #
-    # @param    [Bool]  include_slaves  take slave status into account too? <br/>
+    # @param    [Bool]  include_slaves  take slave status into account too?
     #                                     If so, it will only return false if slaves
     #                                     are done too.
     #
@@ -104,32 +113,21 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns an array containing information about all available plug-ins.
-    #
-    # @return    [Array<Hash>]
+    # @return  [Array<Hash>]  information about all available plug-ins
     #
     def lsplug
-        plug_info = []
-
-        super.each {
-            |plugin|
-
-            plugin[:options] = [plugin[:options]].flatten.compact.map {
-                |opt|
+        super.map do |plugin|
+            plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
                 opt.to_h.merge( 'type' => opt.type )
-            }
-
-            plug_info << plugin
-        }
-
-        plug_info
+            end
+            plugin
+        end
     end
 
     #
-    # Returns true if running in HPG (High Performance Grid) mode and we're the master,
-    # false otherwise.
     #
-    # @return   [Bool]
+    # @return   [Bool]    true if running in HPG (High Performance Grid) mode
+    #                       and instance is the master, false otherwise.
     #
     def high_performance?
         @opts.grid_mode == 'high_performance'
@@ -207,7 +205,6 @@ class Framework < ::Arachni::Framework
                     @override_sitemap << page.url
                     pages[page.url] = page
                 }
-                @crawling_done = true
 
                 @status = :distributing
                 # the plug-ins may have update the framework page queue
@@ -349,23 +346,44 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns the master's URL
-    #
-    # @return   [String]
+    # @return   [String]   URL of the master instance
     #
     def master
         @master_url
     end
 
     #
-    # Returns the merged output of all running instances.
+    # Merged output of all running instances.
     #
     # This is going probably to be wildly out of sync and lack A LOT of messages.
     #
     # It's here to give the notion of scan progress to the end-user rather than
     # provide an accurate depiction of the actual progress.
     #
+    # The returned object will be in the form of:
+    #
+    #   [ { <type> => <message> } ]
+    #
+    # like:
+    #
+    #   [
+    #       { status: 'Initiating'},
+    #       {   info: 'Some informational msg...'},
+    #   ]
+    #
+    # Possible message types are:
+    # * status  -- Status messages, usually to denote progress.
+    # * info  -- Informational messages, like notices.
+    # * ok  -- Denotes a successful operation or a positive result.
+    # * verbose -- Verbose messages, extra information about whatever.
+    # * bad  -- Opposite of :ok, an operation didn't go as expected,
+    #   something has failed but it's recoverable.
+    # * error  -- An error has occurred, this is not good.
+    # * line  -- Generic message, no type.
+    #
     # @param    [Proc]  &block  block to which to pass the result
+    #
+    # @return   [Array<Hash>]
     #
     def output( &block )
 
@@ -391,11 +409,11 @@ class Framework < ::Arachni::Framework
     #
     # Returns aggregated progress data and helps to limit the amount of calls
     # required in order to get an accurate depiction of a scan's progress and includes:
-    #  o output messages
-    #  o discovered issues
-    #  o overall statistics
-    #  o overall scan status
-    #  o statistics of all instances individually
+    # * output messages
+    # * discovered issues
+    # * overall statistics
+    # * overall scan status
+    # * statistics of all instances individually
     #
     # @param    [Hash]  opts    contains info about what data to return:
     #                             * :messages -- include output messages
@@ -537,9 +555,7 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns a array containing summaries of all discovered issues (i.e. no variations).
-    #
-    # @return   [Array<Arachni::Issue>]
+    # @return  [Array<Arachni::Issue>]  all discovered issues albeit without any variations
     #
     def issues
         auditstore.issues.map {
@@ -551,9 +567,7 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Returns the return value of {#issues} as an Array of hashes
-    #
-    # @return   [Array<Hash>]
+    # @return   [Array<Hash>]   {#issues} as an array of hashes
     #
     # @see #issues
     #
@@ -571,9 +585,13 @@ class Framework < ::Arachni::Framework
     #
     # Restricts the scope of the audit to individual elements.
     #
-    # @param    [Array]     elements    list of element IDs
+    # @param    [Array<String>]     elements    list of element IDs (as created
+    #                                               by {Arachni::Parser::Element::Auditable#scope_audit_id})
     # @param    [String]    token       privileged token, prevents this method
-    #                                       from being called by 3rd parties.
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
     #
     # @return   [Bool]  true on success, false on invalid token
     #
@@ -584,31 +602,14 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Sets the URL and authentication token required to connect to our master.
-    #
-    # @param    [String]    url     master's URL in 'hostname:port' form
-    # @param    [String]    token   master's authentication token
-    #
-    # @return   [Bool]  true on success, false if this is the master of the HPG
-    #                       (in which case this is not applicable).
-    #
-    def set_master( url, token )
-        return false if high_performance?
-
-        @master_url = url
-        @master = connect_to_instance( { 'url' => url, 'token' => token } )
-
-        @modules.class.do_not_store!
-        @modules.class.on_register_results { |results| report_issues_to_master( results ) }
-        true
-    end
-
-    #
     # Updates the page queue with the provided pages.
     #
-    # @param    [Array]     pages       list of pages
+    # @param    [Array<Arachni::Parser::Page>]     pages       list of pages
     # @param    [String]    token       privileged token, prevents this method
-    #                                       from being called by 3rd parties.
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
     #
     # @return   [Bool]  true on success, false on invalid token
     #
@@ -624,8 +625,11 @@ class Framework < ::Arachni::Framework
     # Primarily used by slaves to register issues they find on the spot.
     #
     # @param    [Array<Arachni::Issue>]    issues
-    # @param    [String]                   token     privileged token, prevents this method
-    #                                                   from being called by 3rd parties.
+    # @param    [String]    token       privileged token, prevents this method
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
     #
     # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
     #
@@ -635,7 +639,40 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    #
+    # Sets the URL and authentication token required to connect to the instance's master.
+    #
+    # @param    [String]    url     master's URL in 'hostname:port' form
+    # @param    [String]    token   master's authentication token
+    #
+    # @return   [Bool]  true on success, false if the current instance is the master of the HPG
+    #                       (in which case this method is not applicable)
+    #
+    def set_master( url, token )
+        return false if high_performance?
+
+        @master_url = url
+        @master = connect_to_instance( { 'url' => url, 'token' => token } )
+
+        @modules.class.do_not_store!
+        @modules.class.on_register_results { |results| report_issues_to_master( results ) }
+        true
+    end
+
     private
+
+    #
+    # Special sitemap for the {#auditstore}.
+    #
+    # Overridden here to provide our own map as compiled by multiple insteances.
+    #
+    # @return   [Array]
+    #
+    # @see Arachni::Framework#auditstore_sitemap
+    #
+    def auditstore_sitemap
+        @override_sitemap
+    end
 
     def extended_running?
         @extended_running
