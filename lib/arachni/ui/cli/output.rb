@@ -73,8 +73,11 @@ module Output
 
                 f.puts "-" * 80
 
-                f.puts 'OPTIONS:'
-                f.puts Arachni::Options.instance.to_yaml
+                begin
+                    f.puts 'OPTIONS:'
+                    f.puts Arachni::Options.instance.to_yaml
+                rescue
+                end
 
                 f.puts "-" * 80
             end
