@@ -92,7 +92,7 @@ libs=(
     ftp://xmlsoft.org/libxml2/libxml2-2.7.8.tar.gz
     ftp://xmlsoft.org/libxslt/libxslt-1.1.26.tar.gz
     http://curl.haxx.se/download/curl-7.24.0.tar.gz
-    https://rvm.beginrescueend.com/src/yaml-0.1.4.tar.gz
+    https://rvm.io/src/yaml-0.1.4.tar.gz
     http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p125.tar.gz
 )
 
