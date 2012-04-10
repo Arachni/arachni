@@ -327,6 +327,11 @@ describe Arachni::RPC::Server::Framework do
                     @instance_clean.framework.auditstore_as_hash
             end
         end
+        describe :instances do
+            it 'should return an empty array' do
+                @instance_clean.framework.instances.should be_empty
+            end
+        end
         describe :serialized_auditstore do
             it 'should return a YAML serialized AuditStore' do
                 yaml_str = @instance_clean.framework.serialized_auditstore
