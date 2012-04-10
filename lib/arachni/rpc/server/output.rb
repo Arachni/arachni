@@ -114,7 +114,7 @@ module Output
     # @param    [String]    str
     #
     def print_bad( str = '' )
-        buffer( :red => str )
+        buffer( :bad => str )
     end
 
     # Prints a status message
