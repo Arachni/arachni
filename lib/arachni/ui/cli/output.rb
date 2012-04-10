@@ -323,9 +323,9 @@ module Output
         # we may get IO errors...freaky stuff...
         begin
             if out.tty?
-                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
+                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n"
             else
-                out.print "#{sign} #{string}\n";
+                out.print "#{sign} #{string}\n"
             end
         rescue
         end
