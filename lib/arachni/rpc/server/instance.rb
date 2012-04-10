@@ -75,10 +75,9 @@ class Instance
         set_handlers
 
         # trap interrupts and exit cleanly when required
-        [ 'QUIT', 'INT' ].each {
-            |signal|
+        %w(QUIT INT).each do |signal|
             trap( signal ){ shutdown } if Signal.list.has_key?( signal )
-        }
+        end
 
         run
     end
