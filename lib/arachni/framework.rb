@@ -139,11 +139,10 @@ class Framework
 
         if @opts.cookie_string
             @opts.cookies ||= []
-            @opts.cookies |= @opts.cookie_string.split( ';' ).map {
-                |cookie_pair|
+            @opts.cookies |= @opts.cookie_string.split( ';' ).map do |cookie_pair|
                 k, v = *cookie_pair.split( '=', 2 )
                 Arachni::Parser::Element::Cookie.new( @opts.url.to_s, k => v )
-            }.flatten.compact
+            end.flatten.compact
         end
 
         @modules = Arachni::Module::Manager.new( @opts )
@@ -297,9 +296,7 @@ class Framework
         end
 
         avg = 0
-        if res_cnt > 0
-            avg = ( res_cnt / @opts.delta_time ).to_i
-        end
+        avg = (res_cnt / @opts.delta_time).to_i if res_cnt > 0
 
         # we need to remove URLs that lead to redirects from the sitemap
         # when calculating the progress %.
@@ -309,11 +306,7 @@ class Framework
         # so the sitemap and auditmap will never match and the progress will
         # never get to 100% which may confuse users.
         #
-        if @spider
-            redir_sz = @spider.redirects.size
-        else
-            redir_sz = 0
-        end
+        redir_sz = @spider ? @spider.redirects.size : 0
 
         #
         # There are 2 audit phases:
@@ -344,14 +337,8 @@ class Framework
         #
         # This is not very granular but it's good enough for now...
         #
-        if Arachni::Module::Auditor.timeout_loaded_modules.size > 0
-            multi = 50
-        else
-            multi = 100
-        end
-
-        progress = (Float( auditmap_sz ) /
-            ( sitemap_sz - redir_sz ) ) * multi
+        multi = Arachni::Module::Auditor.timeout_loaded_modules.size > 0 ? 50 : 100
+        progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * multi
 
         if Arachni::Module::Auditor.running_timeout_attacks?
 
@@ -371,23 +358,23 @@ class Framework
         # sometimes progress may slightly exceed 100%
         # which can cause a few strange stuff to happen
         progress = 100.0 if progress > 100.0
-
+        pb = ::Arachni::Mixins::ProgressBar.eta( progress, @opts.start_datetime )
         {
-            :requests   => req_cnt,
-            :responses  => res_cnt,
-            :time_out_count  => http.time_out_count,
-            :time       => audit_store.delta_time,
-            :avg        => avg,
-            :sitemap_size  => @sitemap.size,
-            :auditmap_size => auditmap_sz,
-            :progress      => progress,
-            :curr_res_time => http.curr_res_time,
-            :curr_res_cnt  => http.curr_res_cnt,
-            :curr_avg      => http.curr_res_per_second,
-            :average_res_time => http.average_res_time,
-            :max_concurrency  => http.max_concurrency,
-            :current_page     => @current_url,
-            :eta           => ::Arachni::Mixins::ProgressBar.eta( progress, @opts.start_datetime )
+            requests:         req_cnt,
+            responses:        res_cnt,
+            time_out_count:   http.time_out_count,
+            time:             audit_store.delta_time,
+            avg:              avg,
+            sitemap_size:     @sitemap.size,
+            auditmap_size:    auditmap_sz,
+            progress:         progress,
+            curr_res_time:    http.curr_res_time,
+            curr_res_cnt:     http.curr_res_cnt,
+            curr_avg:         http.curr_res_per_second,
+            average_res_time: http.average_res_time,
+            max_concurrency:  http.max_concurrency,
+            current_page:     @current_url,
+            eta:              pb
         }
     end
 
@@ -424,17 +411,15 @@ class Framework
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
 
             @sitemap = @opts.restrict_paths
-            @sitemap.each {
-                |url|
+            @sitemap.each do |url|
                 push_to_url_queue( url_sanitize( to_absolute( url ) ) )
-            }
+            end
         else
             # initiates the crawl
-            @spider.run( false ) {
-                |response|
+            @spider.run( false ) do |response|
                 @sitemap |= @spider.sitemap
                 push_to_url_queue( url_sanitize( response.effective_url ) )
-            }
+            end
         end
 
         @status = :auditing
@@ -470,9 +455,7 @@ class Framework
         #
         while !@url_queue.empty? && url = @url_queue.pop
 
-            http.get( url, :remove_id => true ).on_complete {
-                |res|
-
+            http.get( url, :remove_id => true ).on_complete do |res|
                 page = Arachni::Parser::Page.from_http_response( res, @opts )
 
                 # audit the page
@@ -482,15 +465,13 @@ class Framework
                 # consume it as soon as possible because the pages are stored
                 # in the FS and thus take up precious system resources
                 audit_page_queue
-            }
+            end
 
             harvest_http_responses! if !@opts.http_harvest_last
         end
 
         harvest_http_responses! if( @opts.http_harvest_last )
-
         audit_page_queue
-
         harvest_http_responses! if( @opts.http_harvest_last )
     end
 
@@ -500,7 +481,6 @@ class Framework
     def audit_page_queue
         # this will run until no new elements appear for the given page
         while !@page_queue.empty? && page = @page_queue.pop
-
             # audit the page
             exception_jail{ run_mods( page ) }
             harvest_http_responses! if !@opts.http_harvest_last
@@ -544,18 +524,16 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsmod
-        @modules.available.map {
-            |name|
-
+        @modules.available.map do |name|
             path = @modules.name_to_path( name )
             next if !lsmod_match?( path )
 
             @modules[name].info.merge(
-                :mod_name => name,
-                :author   => [@modules[name].info[:author]].flatten.map { |a| a.strip },
-                :path     => path.strip
+                mod_name: name,
+                author:   [@modules[name].info[:author]].flatten.map { |a| a.strip },
+                path:     path.strip
             )
-        }.compact
+        end.compact
     ensure
         @modules.clear
     end
@@ -567,18 +545,16 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsrep
-        @reports.available.map {
-            |report|
-
+        @reports.available.map do |report|
             path = @reports.name_to_path( report )
             next if !lsrep_match?( path )
 
             @reports[report].info.merge(
-                :rep_name => report,
-                :path     => path,
-                :author   => [@reports[report].info[:author]].flatten.map { |a| a.strip }
+                rep_name: report,
+                path:     path,
+                author:   [@reports[report].info[:author]].flatten.map { |a| a.strip }
             )
-        }.compact
+        end.compact
     ensure
         @reports.clear
     end
@@ -590,18 +566,16 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsplug
-        @plugins.available.map {
-            |plugin|
-
+        @plugins.available.map do |plugin|
             path = @plugins.name_to_path( plugin )
             next if !lsplug_match?( path )
 
             @plugins[plugin].info.merge(
-                :plug_name => plugin,
-                :path      => path,
-                :author    => [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
+                plug_name: plugin,
+                path:      path,
+                author:    [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
             )
-        }.compact
+        end.compact
     ensure
         @plugins.clear
     end
@@ -764,11 +738,10 @@ class Framework
 
         @current_url = page.url.to_s
 
-        @modules.values.each {
-            |mod|
+        @modules.values.each do |mod|
             wait_if_paused
             run_mod( mod, page.deep_clone )
-        }
+        end
 
         @auditmap << page.url
         @sitemap |= @auditmap
@@ -838,10 +811,9 @@ class Framework
             Issue::Element::SERVER => true,
         }
 
-        elems.each_pair {
-            |elem, expr|
+        elems.each_pair do |elem, expr|
             return true if mod.info[:elements].include?( elem ) && expr
-        }
+        end
 
         false
     end
@@ -860,10 +832,7 @@ class Framework
 
     def regexp_array_match( regexps, str )
         cnt = 0
-        regexps.each {
-            |filter|
-            cnt += 1 if str =~ filter
-        }
+        regexps.each { |filter| cnt += 1 if str =~ filter }
         true if cnt == regexps.size
     end
 

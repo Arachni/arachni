@@ -35,6 +35,8 @@ class Server
 #   reasons and cannot be accessed via the API
 # * inherited methods and attributes
 #
+# TODO: Move identical EM iterators into 'each_instance()' or 'map_instance()'
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
@@ -52,12 +54,26 @@ class Framework < ::Arachni::Framework
     private :old_clean_up!
 
     #
-    # @return   [Array<String>]     URLs to all slaves, empty when not
-    #                                   running in HPG mode
+    # @return   [Array<Hash>]     connection info for all slaves,
+    #                               it should at least contain the url and token
     #
     attr_reader :instances
 
+    #
+    # Maximum concurrency when communicating with instances.
+    #
+    # Means that you should connect to MAX_CONCURRENCY instances at a time
+    # while iterating through them.
+    #
     MAX_CONCURRENCY = 20
+
+    #
+    # Minimum pages per instance.
+    #
+    # Prevents slaves from having fewer than MIN_PAGES_PER_INSTANCE pages each,
+    # the last slave could of course have less than that if the page count
+    # isn't a multiple of MIN_PAGES_PER_INSTANCE.
+    #
     MIN_PAGES_PER_INSTANCE = 30
 
     def initialize( opts )
@@ -69,15 +85,24 @@ class Framework < ::Arachni::Framework
         # holds all running instances
         @instances = []
 
+        # when in HPG mode we need to create our own sitemap which will be a
+        # composite of all sitemaps of all instances
+        #
+        # this var will hold the combined URLs and will returned by our
+        # auditstore_sitemap() override.
         @override_sitemap = []
 
         # if we're a slave this var will hold the URL of our master
         @master_url = ''
 
+        # some methods need to be accessible over RPC for instance management,
+        # restricting elements, adding more pages etc.
+        #
+        # however, when in HPG mode, the master should not be tampered with,
+        # so we generate a local token (which is not known to API clients)
+        # to be used server side by self to facilitate access control
         @local_token = gen_token
     end
-
-
 
     #
     # Returns true if the system is scanning, false if {#run} hasn't been called yet or
@@ -90,7 +115,6 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  &block          block to which to pass the result
     #
     def busy?( include_slaves = true, &block )
-
         busyness = [ extended_running? ]
 
         if @instances.empty? || !include_slaves
@@ -98,18 +122,17 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, @instances.size ).map( proc {
-            |instance, iter|
-            connect_to_instance( instance ).framework.busy? {
-                |res|
-                iter.return( res )
-            }
-        }, proc {
-            |res|
-            busyness << res
-            busyness.flatten!
-            block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
-        })
+        ::EM::Iterator.new( @instances, @instances.size ).map(
+            proc do |instance, iter|
+                connect_to_instance( instance ).framework.busy? do |res|
+                    iter.return( res )
+                end
+            end, proc do |res|
+                busyness << res
+                busyness.flatten!
+                block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
+            end
+        )
     end
 
     #
@@ -200,11 +223,10 @@ class Framework < ::Arachni::Framework
 
                 @status = :crawling
                 # start the crawl and extract all paths
-                Arachni::Spider.new( @opts ).run {
-                    |page|
+                Arachni::Spider.new( @opts ).run do |page|
                     @override_sitemap << page.url
                     pages[page.url] = page
-                }
+                end
 
                 @status = :distributing
                 # the plug-ins may have update the framework page queue
@@ -218,8 +240,7 @@ class Framework < ::Arachni::Framework
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
-                prefered_dispatchers {
-                    |pref_dispatchers|
+                prefered_dispatchers do |pref_dispatchers|
 
                     # split the URLs of the pages in equal chunks
                     chunks    = split_urls( pages.keys, pref_dispatchers )
@@ -246,16 +267,14 @@ class Framework < ::Arachni::Framework
                         # set the URLs to be audited by the local instance
                         @opts.restrict_paths = chunks.pop
 
-                        chunks.each_with_index {
-                            |chunk, i|
-
+                        chunks.each.with_index do |chunk, i|
                             # spawn a remote instance, assign a chunk of URLs
                             # and elements to it and run it
-                            spawn( chunk, page_chunks[i], elements[i], pref_dispatchers[i] ) {
-                                |inst|
+                            spawn( chunk, page_chunks[i], elements[i],
+                                   pref_dispatchers[i] ) do |inst|
                                 @instances << inst
-                            }
-                        }
+                            end
+                        end
                     end
 
                     # start the local instance
@@ -270,7 +289,7 @@ class Framework < ::Arachni::Framework
                         @extended_running = false
                         @status = :done
                     }
-                }
+                end
             }
         else
             # start the local instance
@@ -303,22 +322,18 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, @instances.size ).map( proc {
-            |instance, iter|
+        ::EM::Iterator.new( @instances, @instances.size ).map(
+            proc do |instance, iter|
             instance_conn = connect_to_instance( instance )
 
             instance_conn.framework.clean_up! {
-                instance_conn.plugins.results {
-                    |res|
-                    iter.return( !res.rpc_exception? ?  res : nil )
-                }
+                instance_conn.plugins.results do |res|
+                    iter.return( !res.rpc_exception? ? res : nil )
+                end
             }
-
-        }, proc {
-            |results|
-            @plugins.merge_results!( results.compact )
-            block.call
-        })
+            end,
+            proc { |results| @plugins.merge_results!( results.compact ); block.call }
+        )
     end
 
     #
@@ -326,10 +341,9 @@ class Framework < ::Arachni::Framework
     #
     def pause!
         super
-        ::EM::Iterator.new( @instances, @instances.size ).each {
-            |instance, iter|
+        ::EM::Iterator.new( @instances, @instances.size ).each do |instance, iter|
             connect_to_instance( instance ).framework.pause!{ iter.next }
-        }
+        end
         true
     end
 
@@ -338,10 +352,9 @@ class Framework < ::Arachni::Framework
     #
     def resume!
         super
-        ::EM::Iterator.new( @instances, @instances.size ).each {
-            |instance, iter|
+        ::EM::Iterator.new( @instances, @instances.size ).each do |instance, iter|
             connect_to_instance( instance ).framework.resume!{ iter.next }
-        }
+        end
         true
     end
 
@@ -386,7 +399,6 @@ class Framework < ::Arachni::Framework
     # @return   [Array<Hash>]
     #
     def output( &block )
-
         buffer = flush_buffer
 
         if @instances.empty?
@@ -394,16 +406,14 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
-            |instance, iter|
-            connect_to_instance( instance ).service.output {
-                |out|
-                iter.return( out )
-            }
-        }, proc {
-            |out|
-            block.call( (buffer | out).flatten )
-        })
+        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map(
+            proc do |instance, iter|
+                connect_to_instance( instance ).service.output do |out|
+                    iter.return( out )
+                end
+            end,
+            proc { |out| block.call( (buffer | out).flatten ) }
+        )
     end
 
     #
@@ -499,8 +509,7 @@ class Framework < ::Arachni::Framework
             |slave_data|
 
             slave_data.compact!
-            slave_data.each {
-                |slave|
+            slave_data.each do |slave|
                 data['messages']  |= slave['messages'] if include_messages
                 data['issues']    |= slave['issues'] if include_issues
 
@@ -512,14 +521,13 @@ class Framework < ::Arachni::Framework
                 end
 
                 stats << slave['stats']
-            }
+            end
 
             if include_slaves
                 sorted_data_instances = {}
-                data['instances'].keys.sort.each {
-                    |url|
+                data['instances'].keys.sort.each do |url|
                     sorted_data_instances[url] = data['instances'][url]
-                }
+                end
                 data['instances'] = sorted_data_instances.values
             end
 
@@ -558,12 +566,10 @@ class Framework < ::Arachni::Framework
     # @return  [Array<Arachni::Issue>]  all discovered issues albeit without any variations
     #
     def issues
-        auditstore.issues.map {
-            |issue|
-            tmp_issue = issue.deep_clone
-            tmp_issue.variations.clear
-            tmp_issue
-        }
+        auditstore.issues.deep_clone.map do |issue|
+            issue.variations.clear
+            issue
+        end
     end
 
     #
@@ -652,10 +658,10 @@ class Framework < ::Arachni::Framework
         return false if high_performance?
 
         @master_url = url
-        @master = connect_to_instance( { 'url' => url, 'token' => token } )
+        @master = connect_to_instance( 'url' => url, 'token' => token )
 
         @modules.class.do_not_store!
-        @modules.class.on_register_results { |results| report_issues_to_master( results ) }
+        @modules.class.on_register_results { |r| report_issues_to_master( r ) }
         true
     end
 
@@ -690,7 +696,6 @@ class Framework < ::Arachni::Framework
     #
     def connect_to_instance( instance )
         @tokens  ||= {}
-
         @tokens[instance['url']] = instance['token'] if instance['token']
         Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
@@ -718,15 +723,12 @@ class Framework < ::Arachni::Framework
 
         # groups together all the elements of all chunks
         elements_per_chunk = []
-        chunks.each_with_index {
-            |chunk, i|
-
+        chunks.each_with_index do |chunk, i|
             elements_per_chunk[i] ||= []
-            chunk.each {
-                |url|
+            chunk.each do |url|
                 elements_per_chunk[i] |= build_elem_list( pages[url] )
-            }
-        }
+            end
+        end
 
         # removes elements from each chunk
         # that are also included in other chunks too
@@ -735,13 +737,11 @@ class Framework < ::Arachni::Framework
         # but without duplicate elements across the chunks,
         # albeit with an non-optimal distribution amongst instances.
         #
-        unique_chunks = elements_per_chunk.map.with_index {
-            |chunk, i|
-            chunk.reject {
-                |item|
+        unique_chunks = elements_per_chunk.map.with_index do |chunk, i|
+            chunk.reject do |item|
                 elements_per_chunk[i..-1].flatten.count( item ) > 1
-            }
-        }
+            end
+        end
 
         # get them into proper order to be ready for proping up
         elements_per_chunk.reverse!
@@ -754,19 +754,16 @@ class Framework < ::Arachni::Framework
         # have been available in the destination to begin with since
         # we can't assign an element to an instance which won't
         # have a page containing that element
-        unique_chunks.each_with_index {
-            |chunk, i|
-
-            chunk.each {
-                |item|
+        unique_chunks.each.with_index do |chunk, i|
+            chunk.each do |item|
                 next_c = unique_chunks[i+1]
                 if next_c && (chunk.size > next_c.size ) &&
                     elements_per_chunk[i+1].include?( item )
                     unique_chunks[i].delete( item )
                     next_c << item
                 end
-            }
-        }
+            end
+        end
 
         # set them in the same order as the original 'chunks' group
         unique_chunks.reverse
@@ -775,17 +772,11 @@ class Framework < ::Arachni::Framework
     def build_elem_list( page )
         list = []
 
-        if @opts.audit_links
-            list |= page.links.map { |elem| elem.scope_audit_id }.uniq
-        end
+        scoppe_list = proc { |elems| elems.map { |e| e.scope_audit_id }.uniq }
 
-        if @opts.audit_forms
-            list |= page.forms.map { |elem| elem.scope_audit_id }.uniq
-        end
-
-        if @opts.audit_cookies
-            list |= page.cookies.map { |elem| elem.scope_audit_id }.uniq
-        end
+        list |= scoppe_list.call( page.links  )if @opts.audit_links
+        list |= scoppe_list.call( page.forms ) if @opts.audit_forms
+        list |= scoppe_list.call( page.cookies ) if @opts.audit_cookies
 
         list
     end
@@ -801,46 +792,44 @@ class Framework < ::Arachni::Framework
 
         # get the info of the local dispatcher since this will be our
         # frame of reference
-        dispatcher.node.info {
-            |info|
+        dispatcher.node.info do |info|
 
             # add the Pipe ID of the local Dispatcher in order to avoid it later on
             @used_pipe_ids << info['pipe_id']
 
             # grab the rest of the Dispatchers of the Grid
-            dispatcher.node.neighbours_with_info {
-                |dispatchers|
+            dispatcher.node.neighbours_with_info do |dispatchers|
 
                 # make sure that each Dispatcher is alive before moving on
-                ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map( proc {
-                    |dispatcher, iter|
-                    connect_to_dispatcher( dispatcher['url'] ).stats {
-                        |res|
-                        if !res.rpc_exception?
-                            iter.return( res )
-                        else
-                            iter.return( nil )
+                ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map(
+                    proc do |dispatcher, iter|
+                        connect_to_dispatcher( dispatcher['url'] ).stats do |res|
+                            if !res.rpc_exception?
+                                iter.return( res )
+                            else
+                                iter.return( nil )
+                            end
                         end
-                    }
-                }, proc {
-                    |reachable_dispatchers|
+                    end,
+                    proc do |reachable_dispatchers|
 
-                    # get the Dispatchers with unique Pipe IDs and send them
-                    # to the block
+                        # get the Dispatchers with unique Pipe IDs and send them
+                        # to the block
 
-                    pref_dispatcher_urls = []
-                    pick_dispatchers( reachable_dispatchers ).each {
-                        |dispatcher|
-                        if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
-                            @used_pipe_ids << dispatcher['node']['pipe_id']
-                            pref_dispatcher_urls << dispatcher['node']['url']
-                        end
-                    }
+                        pref_dispatcher_urls = []
+                        pick_dispatchers( reachable_dispatchers ).each {
+                            |dispatcher|
+                            if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
+                                @used_pipe_ids << dispatcher['node']['pipe_id']
+                                pref_dispatcher_urls << dispatcher['node']['url']
+                            end
+                        }
 
-                    block.call( pref_dispatcher_urls )
-                })
-            }
-        }
+                        block.call( pref_dispatcher_urls )
+                    end
+                )
+            end
+        end
     end
 
     #
@@ -873,21 +862,16 @@ class Framework < ::Arachni::Framework
         #
         # otherwise re-arrange the chunks into larger ones
         #
-        orig_chunks.each.with_index {
-            |chunk, i|
-
-            chunk.each {
-                |url|
-
+        orig_chunks.each.with_index do |chunk, i|
+            chunk.each do |url|
                 chunks[idx] ||= []
                 if chunks[idx].size < min_pages_per_instance
                     chunks[idx] << url
                 else
                     idx += 1
                 end
-            }
-        }
-
+            end
+        end
         chunks
     end
 
@@ -896,13 +880,11 @@ class Framework < ::Arachni::Framework
     # the instructed maximum amount of slaves.
     #
     def pick_dispatchers( dispatchers )
-        d = dispatchers.each.with_index {
-            |dispatcher, i|
+        d = dispatchers.each.with_index do |dispatcher, i|
             dispatchers[i]['score'] = get_dispatcher_score( dispatcher )
-        }.sort {
-            |dispatcher_1, dispatcher_2|
+        end.sort do |dispatcher_1, dispatcher_2|
             dispatcher_1['score'] <=> dispatcher_2['score']
-        }
+        end
 
         begin
             if @opts.max_slaves && @opts.max_slaves.to_i > 0
@@ -932,12 +914,10 @@ class Framework < ::Arachni::Framework
     def get_resource_consumption( jobs )
         mem = 0
         cpu = 0
-        jobs.each {
-            |job|
+        jobs.each do |job|
             mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
             cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
-        }
-
+        end
         cpu + mem
     end
 
@@ -956,8 +936,7 @@ class Framework < ::Arachni::Framework
             'rank'   => 'slave',
             'target' => @opts.url.to_s,
             'master' => self_url
-        }) {
-            |instance_hash|
+        }) do |instance_hash|
 
             instance = connect_to_instance( instance_hash )
 
@@ -974,22 +953,17 @@ class Framework < ::Arachni::Framework
 
             opts['datastore']['master_priv_token'] = @local_token
 
-            opts['exclude'].each_with_index {
-                |v, i|
+            opts['exclude'].each.with_index do |v, i|
                 opts['exclude'][i] = v.source
-            }
+            end
 
-            opts['include'].each_with_index {
-                |v, i|
+            opts['include'].each.with_index do |v, i|
                 opts['include'][i] = v.source
-            }
+            end
 
             # don't let the slaves run plug-ins that are not meant
             # to be distributed
-            opts['plugins'].reject! {
-                |k, v|
-                !@plugins[k].distributable?
-            }
+            opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
 
             instance.opts.set( opts ){
                 instance.framework.update_page_queue!( pages, self_token ) {
@@ -1009,15 +983,15 @@ class Framework < ::Arachni::Framework
                     }
                 }
             }
-        }
+        end
     end
 
     def self_url
         @self_url ||= nil
         return @self_url if @self_url
 
-        port = @opts.rpc_port
-        d_port = @opts.datastore[:dispatcher_url].split( ':', 2 )[1]
+        port      = @opts.rpc_port
+        d_port    = @opts.datastore[:dispatcher_url].split( ':', 2 )[1]
         @self_url = @opts.datastore[:dispatcher_url].gsub( d_port, port.to_s )
     end
 
@@ -1065,25 +1039,21 @@ class Framework < ::Arachni::Framework
         ]
 
         begin
-            stats.each {
-                |instats|
-
-                ( avg | total ).each {
-                    |k|
+            stats.each do |instats|
+                (avg | total).each do |k|
                     final_stats[k.to_s] += Float( instats[k.to_s] )
-                }
+                end
 
                 final_stats['current_pages'] << instats['current_page'] if instats['current_page']
 
                 final_stats['eta'] ||= instats['eta']
                 final_stats['eta']   = max_eta( final_stats['eta'], instats['eta'] )
-            }
+            end
 
-            avg.each {
-                |k|
+            avg.each do |k|
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
-            }
+            end
         rescue Exception => e
             # ap e
             # ap e.backtrace
@@ -1101,11 +1071,10 @@ class Framework < ::Arachni::Framework
         eta2_splits = eta2.split( ':' )
 
         # go through and compare the hours, mins, sec
-        eta1_splits.size.times {
-            |i|
+        eta1_splits.size.times do |i|
             return eta1 if eta1_splits[i].to_i > eta2_splits[i].to_i
             return eta2 if eta1_splits[i].to_i < eta2_splits[i].to_i
-        }
+        end
     end
 
 end
