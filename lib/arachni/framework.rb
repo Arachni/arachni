@@ -194,6 +194,7 @@ class Framework
     # Must be called just before calling {#audit}.
     #
     def prepare
+        @status = :preparing
         @running = true
         @opts.start_datetime = Time.now
 
@@ -240,6 +241,7 @@ class Framework
     #
     # Possible values are (in order):
     # * ready -- Just initialised and waiting for instructions
+    # * preparing -- Getting ready to start (i.e. initing plugins etc.)
     # * crawling -- The instance is crawling the target webapp
     # * auditing-- The instance is currently auditing the webapp
     # * paused -- The instance has posed (if applicable)
