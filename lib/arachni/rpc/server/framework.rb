@@ -35,8 +35,6 @@ class Server
 #   reasons and cannot be accessed via the API
 # * inherited methods and attributes
 #
-# TODO: Move identical EM iterators into 'each_instance()' or 'map_instance()'
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
@@ -73,7 +71,10 @@ class Framework < ::Arachni::Framework
     def initialize( opts )
         super( opts )
 
-        @modules = Arachni::RPC::Server::Module::Manager.new( opts )
+        # already inherited but lets make it explicit
+        @opts = opts
+
+        @modules = Arachni::RPC::Server::Module::Manager.new( @opts )
         @plugins = Arachni::RPC::Server::Plugin::Manager.new( self )
 
         # holds all running instances
@@ -116,17 +117,16 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, @instances.size ).map(
-            proc do |instance, iter|
-                connect_to_instance( instance ).framework.busy? do |res|
-                    iter.return( res )
-                end
-            end, proc do |res|
-                busyness << res
-                busyness.flatten!
-                block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
-            end
-        )
+        foreach = proc do |instance, iter|
+            instance.framework.busy? { |res| iter.return( res ) }
+        end
+        after = proc do |res|
+            busyness << res
+            busyness.flatten!
+            block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
+        end
+
+        map_slaves( foreach, after )
     end
 
     #
@@ -226,8 +226,7 @@ class Framework < ::Arachni::Framework
                 # the plug-ins may have update the framework page queue
                 # so we need to distribute these pages as well
                 page_a = []
-                page_q = @page_queue
-                while !page_q.empty? && page = page_q.pop
+                while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
                     pages[page.url] = page
                 end
@@ -309,25 +308,22 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  &block  block to be called once the cleanup has finished
     #
     def clean_up!( &block )
-        ret = old_clean_up!( true )
+        ret = super( true )
 
         if @instances.empty?
             block.call( ret ) if block_given?
             return
         end
 
-        ::EM::Iterator.new( @instances, @instances.size ).map(
-            proc do |instance, iter|
-            instance_conn = connect_to_instance( instance )
-
-            instance_conn.framework.clean_up! {
-                instance_conn.plugins.results do |res|
+        foreach = proc do |instance, iter|
+            instance.framework.clean_up! {
+                instance.plugins.results do |res|
                     iter.return( !res.rpc_exception? ? res : nil )
                 end
             }
-            end,
-            proc { |results| @plugins.merge_results!( results.compact ); block.call }
-        )
+        end
+        after = proc { |results| @plugins.merge_results!( results.compact ); block.call }
+        map_slaves( foreach, after )
     end
 
     #
@@ -335,9 +331,7 @@ class Framework < ::Arachni::Framework
     #
     def pause!
         super
-        ::EM::Iterator.new( @instances, @instances.size ).each do |instance, iter|
-            connect_to_instance( instance ).framework.pause!{ iter.next }
-        end
+        each_slave{ |instance, iter| instance.framework.pause!{ iter.next } }
         true
     end
 
@@ -346,9 +340,7 @@ class Framework < ::Arachni::Framework
     #
     def resume!
         super
-        ::EM::Iterator.new( @instances, @instances.size ).each do |instance, iter|
-            connect_to_instance( instance ).framework.resume!{ iter.next }
-        end
+        each_slave { |instance, iter| instance.framework.resume!{ iter.next } }
         true
     end
 
@@ -393,14 +385,11 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map(
-            proc do |instance, iter|
-                connect_to_instance( instance ).service.output do |out|
-                    iter.return( out )
-                end
-            end,
-            proc { |out| block.call( (buffer | out).flatten ) }
-        )
+        foreach = proc do |instance, iter|
+            instance.service.output { |out| iter.return( out ) }
+        end
+        after = proc { |out| block.call( (buffer | out).flatten ) }
+        map_slaves( foreach, after )
     end
 
     #
@@ -463,20 +452,18 @@ class Framework < ::Arachni::Framework
             return
         end
 
-        ::EM::Iterator.new( @instances, MAX_CONCURRENCY ).map( proc {
-            |instance, iter|
-            connect_to_instance( instance ).framework.progress_data( opts ) {
-                |tmp|
+        foreach = proc do |instance, iter|
+            instance.framework.progress_data( opts ) do |tmp|
                 if !tmp.rpc_exception?
-                    tmp['url'] = instance['url']
+                    tmp['url'] = instance.url
                     iter.return( tmp )
                 else
                     iter.return( nil )
                 end
-            }
-        }, proc {
-            |slave_data|
+            end
+        end
 
+        after = proc do |slave_data|
             slave_data.compact!
             slave_data.each do |slave|
                 data['messages']  |= slave['messages'] if include_messages
@@ -502,7 +489,9 @@ class Framework < ::Arachni::Framework
 
             data['stats'] = merge_stats( stats )
             block.call( data )
-        })
+        end
+
+        map_slaves( foreach, after )
     end
     alias :progress :progress_data
 
@@ -590,7 +579,7 @@ class Framework < ::Arachni::Framework
     #
     def update_page_queue!( pages, token = nil )
         return false if high_performance? && !valid_token?( token )
-        pages.each { |page| @page_queue << page }
+        pages.each { |page| push_to_page_queue( page )}
         true
     end
 
@@ -635,6 +624,28 @@ class Framework < ::Arachni::Framework
     end
 
     private
+
+    def map_slaves( foreach, after )
+        wrap = proc do |instance, iterator|
+            foreach.call( connect_to_instance( instance ), iterator )
+        end
+        slave_iterator.map( wrap, after )
+    end
+
+    def each_slave( &block )
+        wrap = proc do |instance, iterator|
+            block.call( connect_to_instance( instance ), iterator )
+        end
+        slave_iterator.each( &wrap )
+    end
+
+    def slave_iterator
+        iterator_for( @instances )
+    end
+
+    def iterator_for( arr )
+        ::EM::Iterator.new( arr, MAX_CONCURRENCY )
+    end
 
     #
     # Special sitemap for the {#auditstore}.
@@ -765,6 +776,31 @@ class Framework < ::Arachni::Framework
         # keep track of the Pipe IDs we've used
         @used_pipe_ids ||= []
 
+        foreach = proc do |dispatcher, iter|
+            connect_to_dispatcher( dispatcher['url'] ).stats do |res|
+                if !res.rpc_exception?
+                    iter.return( res )
+                else
+                    iter.return( nil )
+                end
+            end
+        end
+
+        after = proc do |reachable_dispatchers|
+            # get the Dispatchers with unique Pipe IDs and send them
+            # to the block
+            pref_dispatcher_urls = []
+            pick_dispatchers( reachable_dispatchers ).each {
+                |dispatcher|
+                if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
+                    @used_pipe_ids << dispatcher['node']['pipe_id']
+                    pref_dispatcher_urls << dispatcher['node']['url']
+                end
+            }
+
+            block.call( pref_dispatcher_urls )
+        end
+
         # get the info of the local dispatcher since this will be our
         # frame of reference
         dispatcher.node.info do |info|
@@ -774,35 +810,8 @@ class Framework < ::Arachni::Framework
 
             # grab the rest of the Dispatchers of the Grid
             dispatcher.node.neighbours_with_info do |dispatchers|
-
                 # make sure that each Dispatcher is alive before moving on
-                ::EM::Iterator.new( dispatchers, MAX_CONCURRENCY ).map(
-                    proc do |dispatcher, iter|
-                        connect_to_dispatcher( dispatcher['url'] ).stats do |res|
-                            if !res.rpc_exception?
-                                iter.return( res )
-                            else
-                                iter.return( nil )
-                            end
-                        end
-                    end,
-                    proc do |reachable_dispatchers|
-
-                        # get the Dispatchers with unique Pipe IDs and send them
-                        # to the block
-
-                        pref_dispatcher_urls = []
-                        pick_dispatchers( reachable_dispatchers ).each {
-                            |dispatcher|
-                            if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
-                                @used_pipe_ids << dispatcher['node']['pipe_id']
-                                pref_dispatcher_urls << dispatcher['node']['url']
-                            end
-                        }
-
-                        block.call( pref_dispatcher_urls )
-                    end
-                )
+                iterator_for( dispatchers ).map( foreach, after )
             end
         end
     end
@@ -837,7 +846,7 @@ class Framework < ::Arachni::Framework
         #
         # otherwise re-arrange the chunks into larger ones
         #
-        orig_chunks.each.with_index do |chunk, i|
+        orig_chunks.each do |chunk|
             chunk.each do |url|
                 chunks[idx] ||= []
                 if chunks[idx].size < min_pages_per_instance
@@ -1001,7 +1010,7 @@ class Framework < ::Arachni::Framework
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
             end
-        rescue Exception => e
+        rescue Exception# => e
             # ap e
             # ap e.backtrace
         end
