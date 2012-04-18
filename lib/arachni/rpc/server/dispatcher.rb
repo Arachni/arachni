@@ -20,7 +20,6 @@ require 'sys/proctable'
 module Arachni
 
 require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-
 require Options.instance.dir['lib'] + 'rpc/server/base'
 require Options.instance.dir['lib'] + 'rpc/server/instance'
 require Options.instance.dir['lib'] + 'rpc/server/output'
@@ -29,22 +28,21 @@ module RPC
 class Server
 
 #
-# Dispatcher class
-#
-# Dispatches RPC servers on demand providing a centralized environment
-# for multiple RPC clients and allows for extensive process monitoring.
+# Dispatches RPC Instances on demand providing a centralized environment
+# for multiple clients and allows for extensive process monitoring.
 #
 # The process goes something like this:
-#   * a client issues a 'dispatch' call
-#   * the dispatcher starts a new RPC server on a random port
-#   * the dispatcher returns the port of the RPC server to the client
-#   * the client connects to the RPC server listening on that port and does his business
+# * on init the Dispatcher populates an Instance pool
+# * a client issues a 'dispatch' call
+# * the Dispatcher pops an Instance from the pool
+#   * asynchronously replenishes the pool
+#   * gives the Instance credentials to the client (url, auth token, etc.)
+# * the client connects to the Instance using these credentials
 #
-# Once the client finishes using the RPC server it *must* shut it down.<br/>
-# If it doesn't the system will be eaten away by idle instances of RPC servers.
+# Once the client finishes using the RPC Instance he *must* shut it down otherwise
+# the system will be eaten away by zombie RPC Instance processes.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Dispatcher
 
@@ -55,7 +53,6 @@ class Dispatcher
     include ::Sys
 
     def initialize( opts )
-
         banner
 
         @opts = opts
@@ -72,11 +69,10 @@ class Dispatcher
         @server = Base.new( @opts )
         @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
 
-        @server.add_async_check {
-            |method|
+        @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include?( :block )
-        }
+        end
 
         # let the instances in the pool know who to ask for routing instructions
         # when we're in grid mode.
@@ -94,20 +90,21 @@ class Dispatcher
         @jobs = []
         @consumed_pids = []
         @pool = ::EM::Queue.new
-        @replenisher = Queue.new
 
         if @opts.pool_size > 0
             print_status( 'Warming up the pool...' )
             @opts.pool_size.times{ add_instance_to_pool! }
         end
 
-        @node = nil
-
         print_status( 'Initialization complete.' )
+
+        @node = Node.new( @opts, @logfile )
+        @server.add_handler( "node", @node )
 
         run
     end
 
+    # @return   [TrueClass]   true
     def alive?
         @server.alive?
     end
@@ -125,9 +122,8 @@ class Dispatcher
 
         # just to make sure...
         owner = owner.to_s
-        ::EM.next_tick{ add_instance_to_pool! }
-        @pool.pop {
-            |cjob|
+        ::EM.next_tick { add_instance_to_pool! }
+        @pool.pop do |cjob|
             cjob['owner']     = owner
             cjob['starttime'] = Time.now
             cjob['helpers']   = helpers
@@ -138,7 +134,7 @@ class Dispatcher
             @jobs << cjob
 
             block.call cjob
-        }
+        end
     end
 
     #
@@ -149,18 +145,17 @@ class Dispatcher
     # @return   [Hash]
     #
     def job( pid )
-        @jobs.each {
-            |i|
-            cjob = i.dup
-            if cjob['pid'] == pid
-                cjob['currtime'] = Time.now
-                cjob['age'] = cjob['currtime'] - cjob['birthdate']
-                cjob['runtime']  = cjob['currtime'] - cjob['starttime']
-                cjob['proc'] =  proc( cjob['pid'] )
+        @jobs.each do |j|
+            next if j['pid'] != pid
+            cjob = j.dup
 
-                return cjob
-            end
-        }
+            cjob['currtime'] = Time.now
+            cjob['age'] = cjob['currtime'] - cjob['birthdate']
+            cjob['runtime']  = cjob['currtime'] - cjob['starttime']
+            cjob['proc'] =  proc( cjob['pid'] )
+
+            return cjob
+        end
     end
 
     #
@@ -169,13 +164,7 @@ class Dispatcher
     # @return   [Array<Hash>]
     #
     def jobs
-        jobs = []
-        @jobs.each {
-            |cjob|
-            proc_info = job( cjob['pid'] )
-            jobs << proc_info if proc_info
-        }
-        return jobs
+        @jobs.map { |cjob| job( cjob['pid'] ) }.compact
     end
 
     #
@@ -185,10 +174,10 @@ class Dispatcher
     #
     def stats
         cjobs    = jobs( )
-        running  = cjobs.reject{ |job| job['proc'].empty? }
+        running  = cjobs.reject { |job| job['proc'].empty? }
         finished = cjobs - running
 
-        stats = {
+        stats_h = {
             'running_jobs'    => running,
             'finished_jobs'   => finished,
             'init_pool_size'  => @opts.pool_size,
@@ -196,35 +185,41 @@ class Dispatcher
             'consumed_pids'   => @consumed_pids
         }
 
-        if @node
-            stats.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
-        end
+        stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
 
-        return stats
+        stats_h['node']['score'] = resource_consumption_score
+        stats_h['node']['score'] *= dispatcher['weight'] if stats_h['node']['weight']
+
+        stats_h
     end
 
+    # @return   [String]    contents of the log file
     def log
         IO.read( prep_logging )
     end
 
+    # @return   [Hash]   the server's proc info
     def proc_info
-        p = proc( Process.pid )
-
-        if @node
-            p.merge!( 'node' => @node.info )
-        end
-
-        return p
+        proc( Process.pid ).merge( 'node' => @node.info )
     end
 
     private
+
+    def resource_consumption_score
+        mem = 0
+        cpu = 0
+        jobs.each do |job|
+            mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
+            cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
+        end
+        cpu + mem
+    end
 
     #
     # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
     #
     def banner
-
         puts 'Arachni - Web Application Security Scanner Framework
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
@@ -298,17 +293,13 @@ USAGE
 
 
     def trap_interrupts( &block )
-        [ 'QUIT', 'INT' ].each {
-            |signal|
+        %w(QUIT INT).each do |signal|
             trap( signal, &block || Proc.new{ } ) if Signal.list.has_key?( signal )
-        }
+        end
     end
 
     # Starts the dispatcher's server
     def run
-        @node = Node.new( @opts, @logfile )
-        @server.add_handler( "node", @node )
-
         print_status( 'Starting the server...' )
         @server.start
     end
@@ -319,9 +310,8 @@ USAGE
     end
 
     def add_instance_to_pool!
-
         owner = 'dispatcher'
-        exception_jail{
+        exception_jail {
 
             # get an available port for the child
             @opts.rpc_port = avail_port( )
@@ -363,16 +353,14 @@ USAGE
 
     def struct_to_h( struct )
         hash = {}
-
         return hash if !struct
 
-        struct.each_pair {
-            |k, v|
+        struct.each_pair do |k, v|
             v = v.to_s if v.is_a?( Bignum ) || v.is_a?( Fixnum )
             hash[k.to_s] = v
-        }
+        end
 
-        return hash
+        hash
     end
 
     #
@@ -381,13 +369,12 @@ USAGE
     # @return   Fixnum  port number
     #
     def avail_port
-
         port = rand_port
         while !avail_port?( port )
             port = rand_port
         end
 
-        return port
+        port
     end
 
     #
@@ -401,12 +388,9 @@ USAGE
     end
 
     def secret
-      secret = ''
-      1000.times {
-          secret += rand( 1000 ).to_s
-      }
-
-      return Digest::MD5.hexdigest( secret )
+        secret = ''
+        1000.times { secret += rand( 1000 ).to_s }
+        Digest::MD5.hexdigest( secret )
     end
 
     #
