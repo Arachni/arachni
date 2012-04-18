@@ -39,13 +39,11 @@ def start_servers!
     @@servers.each { |name, info| start_server!( name ) }
 end
 
-
 def reload_servers!
     kill_servers!
     start_servers!
 end
 
-
 def kill_servers!
-    @@server_pids.each { |pid| Process.kill( 'INT', pid ) if pid }
+    @@server_pids.compact.map { |pid| Process.kill( 'INT', pid ) }
 end
