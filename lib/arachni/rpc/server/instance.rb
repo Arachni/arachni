@@ -100,20 +100,16 @@ class Instance
         print_status( 'Shutting down...' )
 
         t = []
-        @framework.instances.each {
-            |instance|
-            # Don't know why but this works better than EM's stuff
-            t << Thread.new {
-                @framework.instance_eval{
-                    connect_to_instance( instance ).service.shutdown!
-                }
-            }
+        @framework.instance_eval {
+            @instances.each do |instance|
+                # Don't know why but this works better than EM's stuff
+                t << Thread.new { connect_to_instance( instance ).service.shutdown! }
+            end
         }
-
         t.join
 
         @server.shutdown
-        return true
+        true
     end
     alias :shutdown! :shutdown
 
@@ -149,18 +145,16 @@ class Instance
     # Displays version number, revision number, author details etc.
     #
     def banner
-
         puts 'Arachni - Web Application Security Scanner Framework v' +
             @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki'
+       Website:       http://arachni-scanner.com
+       Documentation: http://arachni-scanner.com/wiki'
         puts
         puts
-
     end
 
     #
@@ -168,11 +162,10 @@ class Instance
     # It also prepares all the RPC handlers.
     #
     def set_handlers
-        @server.add_async_check {
-            |method|
+        @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include?( :block )
-        }
+        end
 
         @server.add_handler( "service",   self )
         @server.add_handler( "framework", @framework )
