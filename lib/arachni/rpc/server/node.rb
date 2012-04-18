@@ -37,8 +37,6 @@ class Dispatcher
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
-#
 class Node
 
     include Arachni::UI::Output
@@ -67,22 +65,17 @@ class Node
             add_neighbour( neighbour )
 
             peer = connect_to_peer( neighbour )
-            peer.node.neighbours {
-                |urls|
-                urls.each {
-                    |url|
+            peer.node.neighbours do |urls|
+                urls.each do |url|
                     @neighbours << url if url != @opts.datastore[:dispatcher_url]
-                }
-            }
-
-            peer.node.add_neighbour( @opts.datastore[:dispatcher_url], true ){
-                |res|
-
-                if res.rpc_exception?
-                    print_info( 'Neighbour seems dead: ' + neighbour )
-                    remove_neighbour( neighbour )
                 end
-            }
+            end
+
+            peer.node.add_neighbour( @opts.datastore[:dispatcher_url], true ) do |res|
+                next if !res.rpc_exception?
+                print_info( 'Neighbour seems dead: ' + neighbour )
+                remove_neighbour( neighbour )
+            end
         end
 
         print_status( 'Node ready.' )
@@ -114,9 +107,8 @@ class Node
         log_updated_neighbours
         announce( node_url ) if propagate
 
-        return true
+        true
     end
-
 
     #
     # Returns all neighbour/node/peer URLs
@@ -176,7 +168,7 @@ class Node
     # @return    [Hash]
     #
     def info
-        return {
+        {
             'url'        => @opts.datastore[:dispatcher_url],
             'pipe_id'    => @opts.pipe_id,
             'weight'     => @opts.weight,
@@ -191,48 +183,37 @@ class Node
         print_info 'Updated neighbours:'
 
         if !neighbours.empty?
-            neighbours.each {
-                |node|
-                print_info( '---- ' + node )
-            }
+            neighbours.each { |node| print_info( '---- ' + node ) }
         else
             print_info( '<empty>' )
         end
     end
 
     def ping
-        neighbours.each {
-            |neighbour|
-            connect_to_peer( neighbour ).alive? {
-                |res|
-                if res.rpc_exception?
-                    remove_neighbour( neighbour )
-                    print_status( "Found dead neighbour: #{neighbour} " )
-                end
-            }
-        }
+        neighbours.each do |neighbour|
+            connect_to_peer( neighbour ).alive? do |res|
+                next if !res.rpc_exception?
+                remove_neighbour( neighbour )
+                print_status( "Found dead neighbour: #{neighbour} " )
+            end
+        end
     end
 
     def check_for_comebacks
-        d_nodes = @dead_nodes.dup
-        d_nodes.each {
-            |url|
-            connect_to_peer( url ).alive? {
-                |res|
+        @dead_nodes.dup.each do |url|
+            neighbour = connect_to_peer( url )
+            neighbour.alive? do |res|
+                next if res.rpc_exception?
 
-                if !res.rpc_exception?
-                    print_status( 'Dispatcher came back to life: ' + url )
-
-                    ([@opts.datastore[:dispatcher_url]] | neighbours ).each {
-                        |node|
-                        neighbour.node.add_neighbour( node ){}
-                    }
-
-                    add_neighbour( url )
-                    @dead_nodes -= [url]
+                print_status( 'Dispatcher came back to life: ' + url )
+                ([@opts.datastore[:dispatcher_url]] | neighbours).each do |node|
+                    neighbour.node.add_neighbour( node ){}
                 end
-            }
-        }
+
+                add_neighbour( url )
+                @dead_nodes -= [url]
+            end
+        end
     end
 
     #
@@ -243,19 +224,14 @@ class Node
     def announce( node )
         print_status 'Advertising: ' + node
 
-        neighbours.each {
-            |peer|
+        neighbours.each do |peer|
             next if peer == node
 
             print_info '---- to: ' + peer
-            connect_to_peer( peer ).node.add_neighbour( node ) {
-                |res|
-                if res.rpc_exception?
-                    remove_neighbour( peer )
-                end
-            }
-        }
-
+            connect_to_peer( peer ).node.add_neighbour( node ) do |res|
+                remove_neighbour( peer ) if res.rpc_exception?
+            end
+        end
     end
 
     def connect_to_peer( url )
