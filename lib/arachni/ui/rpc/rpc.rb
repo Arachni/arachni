@@ -38,7 +38,7 @@ module UI
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.2
 #
 class RPC
@@ -89,7 +89,7 @@ class RPC
 
 
         # Check for missing url
-        if( !@opts.url && @opts.lsmod.empty? )
+        if !@opts.url && @opts.lsmod.empty?
             print_bad( "Missing url argument." )
             exit 0
         end
@@ -155,7 +155,7 @@ class RPC
             print_line
 
             # grab the RPC server output while a scan is running
-            while( @server.framework.busy? )
+            while @server.framework.busy?
                 output
 
                 pause if @pause
@@ -588,11 +588,11 @@ class RPC
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @framework.version + ' [' + @framework.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      
+
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki'
+       Website:       http://arachni-scanner.com
+       Documentation: http://arachni-scanner.com/wiki'
         print_line
         print_line
 

@@ -225,8 +225,8 @@ class Dispatcher
 
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki'
+       Website:       http://arachni-scanner.com
+       Documentation: http://arachni-scanner.com/wiki'
         puts
         puts
 

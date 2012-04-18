@@ -62,7 +62,7 @@ class CLI
 
         # if we have a load profile load it and merge it with the
         # user supplied options
-        if( @opts.load_profile )
+        if @opts.load_profile
             load_profile( @opts.load_profile )
         end
 
@@ -76,7 +76,7 @@ class CLI
         # *do not* forget this check, otherwise the reports registry
         # will desync
         #
-        if( @opts.reports.empty? && @opts.lsrep.empty? )
+        if @opts.reports.empty? && @opts.lsrep.empty?
             @opts.reports['stdout'] = {}
         end
 
@@ -627,8 +627,8 @@ class CLI
 
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki'
+       Website:       http://arachni-scanner.com
+       Documentation: http://arachni-scanner.com/wiki'
         print_line
         print_line
 
