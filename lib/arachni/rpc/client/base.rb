@@ -28,9 +28,10 @@ class Client
 # @version 0.1
 #
 class Base < ::Arachni::RPC::EM::Client
+    attr_reader :url
 
     #
-    # @param    [Arachni::Options]    opts     relevant optionsfoo:
+    # @param    [Arachni::Options]   opts   relevant options:
     #                                          * ssl_ca -- CA file (.pem)
     #                                          * node_ssl_pkey OR ssl_pkey -- private key file (.pem)
     #                                          * node_ssl_cert OR ssl_cert -- cert file file (.pem)
@@ -38,6 +39,7 @@ class Base < ::Arachni::RPC::EM::Client
     # @param    [String]    token     optional authentication token
     #
     def initialize( opts, url, token = nil )
+        @url = url
         host, port = url.split( ':' )
         super(
             :host  => host,

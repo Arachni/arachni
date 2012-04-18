@@ -65,6 +65,10 @@ class Instance
         @service   = RemoteObjectMapper.new( @client, 'service' )
     end
 
+    def url
+        @client.url
+    end
+
 end
 
 end
