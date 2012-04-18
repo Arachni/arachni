@@ -17,6 +17,8 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require 'base64'
+
 require 'yaml'
 YAML::ENGINE.yamler = 'syck'
 
@@ -31,10 +33,7 @@ module Arachni
 # Implements the Singleton pattern and formally defines
 # all of Arachni's runtime options.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Options
 
@@ -522,6 +521,7 @@ class Options
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--serialized-opts',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
             [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
@@ -557,6 +557,9 @@ class Options
                     when '--help'
                         @help = true
 
+                    when '--serialized-opts'
+                        merge!( unserialize( arg ) )
+
                     when '--only-positives'
                         @only_positives = true
 
@@ -570,7 +573,7 @@ class Options
                         plugin, opt_str = arg.split( ':', 2 )
 
                         opts = {}
-                        if( opt_str )
+                        if opt_str
                             opt_arr = opt_str.split( ',' )
                             opt_arr.each {
                                 |c_opt|
@@ -776,6 +779,14 @@ class Options
 
     def root_path
         File.dirname( File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) ) + '/'
+    end
+
+    def serialize
+        Base64.encode64( to_yaml ).split( "\n" ).join
+    end
+
+    def unserialize( str )
+        YAML.load( Base64.decode64( str ) )
     end
 
     #
