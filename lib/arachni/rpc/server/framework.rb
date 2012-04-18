@@ -54,12 +54,6 @@ class Framework < ::Arachni::Framework
     private :old_clean_up!
 
     #
-    # @return   [Array<Hash>]     connection info for all slaves,
-    #                               it should at least contain the url and token
-    #
-    attr_reader :instances
-
-    #
     # Maximum concurrency when communicating with instances.
     #
     # Means that you should connect to MAX_CONCURRENCY instances at a time
@@ -186,7 +180,7 @@ class Framework < ::Arachni::Framework
         #
         if high_performance?
 
-            ::EM.defer {
+            ::Thread.new {
 
                 #
                 # We're in HPG (High Performance Grid) mode,
@@ -359,13 +353,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # @return   [String]   URL of the master instance
-    #
-    def master
-        @master_url
-    end
-
-    #
     # Merged output of all running instances.
     #
     # This is going probably to be wildly out of sync and lack A LOT of messages.
@@ -437,29 +424,11 @@ class Framework < ::Arachni::Framework
     #
     def progress_data( opts= {}, &block )
 
-        if opts[:messages].nil?
-            include_messages = true
-        else
-            include_messages = opts[:messages]
-        end
+        include_messages = opts[:messages].nil? ? true : opts[:messages]
+        include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
+        include_issues   = opts[:issues].nil? ? true : opts[:issues]
 
-        if opts[:slaves].nil?
-            include_slaves = true
-        else
-            include_slaves = opts[:slaves]
-        end
-
-        if opts[:issues].nil?
-            include_issues = true
-        else
-            include_issues = opts[:issues]
-        end
-
-        if opts[:as_hash]
-            as_hash = true
-        else
-            as_hash = opts[:as_hash]
-        end
+        as_hash = opts[:as_hash] ? true : opts[:as_hash]
 
         data = {
             'stats'  => {},
@@ -706,7 +675,13 @@ class Framework < ::Arachni::Framework
     # @param    [Array<Arachni::Issue>]     issues
     #
     def report_issues_to_master( issues )
-        @master.framework.register_issues( issues, master_priv_token ){}
+        retry_times = 3
+        begin
+            @master.framework.register_issues( issues, master_priv_token ){}
+        rescue
+            @master = connect_to_instance( 'url' => @master_url )
+            retry if ( retry_times -= 1 ) > 0
+        end
         true
     end
 
@@ -880,10 +855,8 @@ class Framework < ::Arachni::Framework
     # the instructed maximum amount of slaves.
     #
     def pick_dispatchers( dispatchers )
-        d = dispatchers.each.with_index do |dispatcher, i|
-            dispatchers[i]['score'] = get_dispatcher_score( dispatcher )
-        end.sort do |dispatcher_1, dispatcher_2|
-            dispatcher_1['score'] <=> dispatcher_2['score']
+        d = dispatchers.sort do |dispatcher_1, dispatcher_2|
+            dispatcher_1['node']['score'] <=> dispatcher_2['node']['score']
         end
 
         begin
@@ -893,32 +866,6 @@ class Framework < ::Arachni::Framework
         rescue
             return d
         end
-    end
-
-    #
-    # Returns the load balancing score of a dispatcher based
-    # on its resource consumption and weight.
-    #
-    def get_dispatcher_score( dispatcher )
-        score = get_resource_consumption( dispatcher['running_jobs'] )
-        score *= dispatcher['weight'] if dispatcher['weight']
-        score
-    end
-
-    #
-    # Returns a nominal resource consumption of a dispatcher.
-    #
-    # It's basically calculated as the sum of the CPU and Memory usage
-    # percentages of its running instances.
-    #
-    def get_resource_consumption( jobs )
-        mem = 0
-        cpu = 0
-        jobs.each do |job|
-            mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
-            cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
-        end
-        cpu + mem
     end
 
     #
