@@ -254,11 +254,11 @@ describe Arachni::RPC::Server::Framework do
             issue['variations'].first.is_a?( Hash ).should be_true
         end
 
-        it 'should be alised to #audit_store_as_hash' do
+        it 'should be aliased to #audit_store_as_hash' do
             @instance_clean.framework.report.should ==
                 @instance_clean.framework.audit_store_as_hash
         end
-        it 'should be alised to #auditstore_as_hash' do
+        it 'should be aliased to #auditstore_as_hash' do
             @instance_clean.framework.report.should ==
                 @instance_clean.framework.auditstore_as_hash
         end
