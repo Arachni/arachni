@@ -34,7 +34,7 @@ module Plugin
 class Manager < ::Arachni::Plugin::Manager
 
     # make these inherited methods visible again
-    private :available, :results, :loaded
+    private :available, :results, :loaded, :create
     public  :available, :results, :loaded
 
     def initialize( framework )
@@ -61,7 +61,7 @@ class Manager < ::Arachni::Plugin::Manager
     #
     # @param    [Array]     results
     #
-    def merge_results!( results )
+    def merge_results( results )
         info = {}
         formatted = {}
 

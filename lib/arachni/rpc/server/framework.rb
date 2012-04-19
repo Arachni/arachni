@@ -308,7 +308,7 @@ class Framework < ::Arachni::Framework
                 end
             }
         end
-        after = proc { |results| @plugins.merge_results!( results.compact ); block.call }
+        after = proc { |results| @plugins.merge_results( results.compact ); block.call }
         map_slaves( foreach, after )
     end
 
