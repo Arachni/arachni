@@ -666,7 +666,7 @@ class Framework < ::Arachni::Framework
     end
 
     def dispatcher
-       connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
+        connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 
 end
