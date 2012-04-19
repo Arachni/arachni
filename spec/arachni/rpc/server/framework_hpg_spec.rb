@@ -186,14 +186,20 @@ describe Arachni::RPC::Server::Framework do
                 data = instance.framework.progress
                 data.keys.sort.should == @progress_keys
 
+                keys = (@stat_keys | %w(url status)).flatten.map { |k| k.to_s }.sort
+
                 data['stats'].should be_any
-                data['stats'].keys.sort.should == (@stat_keys | %w(current_pages url status)).flatten.map { |k| k.to_s }.sort
+                data['stats'].keys.sort.should == (keys | %w(current_pages)).flatten.sort
                 data['instances'].should be_any
                 data['status'].should be_true
                 data['busy'].nil?.should be_false
                 data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
                 data['instances'].size.should == 2
+
+                keys = (keys | %w(current_page)).flatten.sort
+                data['instances'].first.keys.sort.should == keys
+                data['instances'].last.keys.sort.should == keys
             end
         end
 
@@ -234,8 +240,8 @@ describe Arachni::RPC::Server::Framework do
             describe :as_hash do
                 context 'when set to true' do
                     it 'should include issues as a hash' do
-                        @instance_clean.framework.
-                            progress( as_hash: true )['issues']
+                        @instance_clean.framework
+                            .progress( as_hash: true )['issues']
                         .first.is_a?( Hash ).should be_true
                     end
                 end
