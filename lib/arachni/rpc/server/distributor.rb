@@ -14,13 +14,18 @@
     limitations under the License.
 =end
 
+module Arachni
+module RPC
+class Server
+class Framework
+
 #
 # Contains utility methods used to connect to instances and dispatchers and
 # split and distribute the workload.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-module Arachni::RPC::Server::Framework::Distributor
+module Distributor
 
     #
     # Maximum concurrency when communicating with instances.
@@ -64,6 +69,12 @@ module Arachni::RPC::Server::Framework::Distributor
     #
     # Returns an array containing unique and evenly distributed elements per chunk
     # for each instance.
+    #
+    # @param    [Array<Array<String>>]     chunks   of URLs, each chuck corresponds to each slave
+    # @param    [Hash<Array>]     element_ids_per_page   hash with page urls for
+    #                                                        keys and arrays of element scope IDs
+    #                                                        ({Arachni::Parser::Element::Auditable#scope_audit_id})
+    #                                                        for values
     #
     def distribute_elements( chunks, element_ids_per_page )
 
@@ -399,4 +410,9 @@ module Arachni::RPC::Server::Framework::Distributor
     def connect_to_dispatcher( url )
         Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
+end
+
+end
+end
+end
 end
