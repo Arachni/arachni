@@ -153,22 +153,22 @@ describe Arachni::RPC::Server::Framework do
         end
     end
     describe :clean_up do
-        it 'should set the framework state to finished and wait for plugins to finish' do
-            instance = @instance
+        it 'should set the framework state to finished, wait for plugins to finish and merge their results' do
+            instance = @get_instance.call
             instance.opts.url = server_url_for( :framework_hpg )
             instance.modules.load( 'test' )
-            instance.plugins.load( { 'wait' => {} } )
+            instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
-            instance.framework.busy?.should be_true
             instance.framework.auditstore.plugins.should be_empty
+            instance.framework.busy?.should be_true
+            sleep( 1 ) while instance.framework.busy?
             instance.framework.clean_up!.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
+            results['distributable'][:results].should == { stuff: 2 }
         end
-
-        it 'should merge plugin results'
     end
     describe :progress do
         before { @progress_keys = %W(stats status busy issues instances messages).sort }
