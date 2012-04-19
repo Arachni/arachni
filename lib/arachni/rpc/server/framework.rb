@@ -294,10 +294,10 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  &block  block to be called once the cleanup has finished
     #
     def clean_up!( &block )
-        ret = super( true )
+        super( true )
 
         if @instances.empty?
-            block.call( ret ) if block_given?
+            block.call( true ) if block_given?
             return
         end
 
@@ -308,7 +308,7 @@ class Framework < ::Arachni::Framework
                 end
             }
         end
-        after = proc { |results| @plugins.merge_results( results.compact ); block.call }
+        after = proc { |results| @plugins.merge_results( results.compact ); block.call( true ) }
         map_slaves( foreach, after )
     end
 
