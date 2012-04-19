@@ -115,17 +115,15 @@ class Spider
         @paths |= parser.paths
         @paths.uniq!
 
-        while( !@paths.empty? )
-            while( !@paths.empty? && url = parser.to_absolute( @paths.shift ) )
+        while !@paths.empty?
+            while !@paths.empty? && url = parser.to_absolute( @paths.shift )
                 next if visited.include?( url ) || skip?( url )
 
                 wait_if_paused
 
                 visited << url
 
-                http.get( url, opts ).on_complete {
-                    |res|
-
+                http.get( url, opts ).on_complete do |res|
                     next if parser.skip?( res.effective_url )
 
                     print_status( "[HTTP: #{res.code}] " + res.effective_url )
@@ -147,7 +145,7 @@ class Spider
                             @redirects << res.request.url
                         end
 
-                        @paths   |= @sitemap - visited.to_a
+                        @paths |= @sitemap - visited.to_a
                     end
 
                     # call the block...if we have one
@@ -160,13 +158,13 @@ class Spider
                             end
                         }
                     end
-                }
+                end
 
                 # make sure we obey the link count limit and
                 # return if we have exceeded it.
-                if( @opts.link_count_limit &&
+                if @opts.link_count_limit &&
                     @opts.link_count_limit > 0 &&
-                    visited.size >= @opts.link_count_limit )
+                    visited.size >= @opts.link_count_limit
                     http.run
                     return @sitemap.uniq
                 end
@@ -176,7 +174,7 @@ class Spider
             http.run
         end
 
-        return @sitemap.uniq
+        @sitemap.uniq
     end
 
     def http
@@ -191,9 +189,9 @@ class Spider
         @opts.redundant.each_with_index {
             |redundant, i|
 
-            if( url =~ redundant['regexp'] )
+            if url =~ redundant['regexp']
 
-                if( @opts.redundant[i]['count'] == 0 )
+                if @opts.redundant[i]['count'] == 0
                     print_verbose( 'Discarding redundant page: \'' + url + '\'' )
                     return true
                 end
@@ -207,14 +205,12 @@ class Spider
                 @opts.redundant[i]['count'] -= 1
             end
         }
-        return false
+        false
     end
 
 
     def wait_if_paused
-        while( paused? )
-            ::IO::select( nil, nil, nil, 1 )
-        end
+        ::IO::select( nil, nil, nil, 1 ) while( paused? )
     end
 
     def pause!
@@ -227,7 +223,6 @@ class Spider
 
     def paused?
         @pause ||= false
-        return @pause
     end
 
 end
