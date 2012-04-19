@@ -205,7 +205,8 @@ class Framework < ::Arachni::Framework
                 # appear during the audit they will override these restrictions
                 # and each instance will audit them at will.
                 #
-                pages = ::Arachni::Database::Hash.new
+
+                element_ids_per_page = {}
 
                 # prepare the local instance (runs plugins and starts the timer)
                 prepare
@@ -219,16 +220,16 @@ class Framework < ::Arachni::Framework
                 # start the crawl and extract all paths
                 Arachni::Spider.new( @opts ).run do |page|
                     @override_sitemap << page.url
-                    pages[page.url] = page
+                    element_ids_per_page[page.url] = build_elem_list( page )
                 end
 
                 @status = :distributing
-                # the plug-ins may have update the framework page queue
+                # the plug-ins may have updated the page queue
                 # so we need to distribute these pages as well
                 page_a = []
                 while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
-                    pages[page.url] = page
+                    element_ids_per_page[page.url] = build_elem_list( page )
                 end
 
                 # get the Dispatchers with unique Pipe IDs
@@ -236,7 +237,7 @@ class Framework < ::Arachni::Framework
                 prefered_dispatchers do |pref_dispatchers|
 
                     # split the URLs of the pages in equal chunks
-                    chunks    = split_urls( pages.keys, pref_dispatchers )
+                    chunks    = split_urls( element_ids_per_page.keys, pref_dispatchers )
                     chunk_cnt = chunks.size
 
                     if chunk_cnt > 0
@@ -249,10 +250,7 @@ class Framework < ::Arachni::Framework
 
                         # remove duplicate elements across the (per instance) chunks
                         # while spreading them out evenly
-                        elements = distribute_elements( chunks, pages )
-
-                        # empty out the Hash and remove temporary files
-                        pages.clear
+                        elements = distribute_elements( chunks, element_ids_per_page )
 
                         # restrict the local instance to its assigned elements
                         restrict_to_elements!( elements.pop, @local_token )
@@ -650,7 +648,7 @@ class Framework < ::Arachni::Framework
     #
     # Special sitemap for the {#auditstore}.
     #
-    # Overridden here to provide our own map as compiled by multiple insteances.
+    # Overridden here to provide our own map as compiled by multiple instances.
     #
     # @return   [Array]
     #
@@ -700,7 +698,7 @@ class Framework < ::Arachni::Framework
     # Returns an array containing unique and evenly distributed elements per chunk
     # for each instance.
     #
-    def distribute_elements( chunks, pages )
+    def distribute_elements( chunks, element_ids_per_page )
 
         #
         # chunks = URLs to be assigned to each instance
@@ -712,7 +710,7 @@ class Framework < ::Arachni::Framework
         chunks.each_with_index do |chunk, i|
             elements_per_chunk[i] ||= []
             chunk.each do |url|
-                elements_per_chunk[i] |= build_elem_list( pages[url] )
+                elements_per_chunk[i] |= element_ids_per_page[url]
             end
         end
 
@@ -840,7 +838,7 @@ class Framework < ::Arachni::Framework
         orig_chunks = urls.chunk( dispatchers.size + 1 )
 
         # if the first chunk matches the minimum then they all do
-        # (except the last possibly) so return these as is...
+        # (except (possibly) for the last) so return these as is...
         return orig_chunks if orig_chunks[0].size >= min_pages_per_instance
 
         #
