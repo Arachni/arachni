@@ -85,7 +85,7 @@ class Framework < ::Arachni::Framework
         #
         # this var will hold the combined URLs and will returned by our
         # auditstore_sitemap() override.
-        @override_sitemap = []
+        @override_sitemap = Set.new
 
         # if we're a slave this var will hold the URL of our master
         @master_url = ''
@@ -229,6 +229,7 @@ class Framework < ::Arachni::Framework
                 page_a = []
                 while !@page_queue.empty? && page = @page_queue.pop
                     page_a << page
+                    @override_sitemap << page.url
                     element_ids_per_page[page.url] = build_elem_list( page )
                 end
 
@@ -655,7 +656,7 @@ class Framework < ::Arachni::Framework
     # @see Arachni::Framework#auditstore_sitemap
     #
     def auditstore_sitemap
-        @override_sitemap
+        @override_sitemap.to_a
     end
 
     def extended_running?
