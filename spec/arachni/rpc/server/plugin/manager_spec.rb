@@ -57,4 +57,17 @@ describe Arachni::RPC::Server::Plugin::Manager do
         end
     end
 
+    describe :merge_results do
+        it 'should merge the results of the distributable plugins' do
+            framework = Arachni::RPC::Server::Framework.new( Arachni::Options.instance )
+            plugins = framework.plugins
+            plugins.load( { 'distributable' => {}} )
+            plugins.loaded.should == ['distributable']
+
+            results = [ 'distributable' => { results: { stuff: 2 } } ]
+            plugins.register_results( Arachni::Plugins::Distributable.new( framework, {} ), stuff: 1 )
+            plugins.merge_results( results )['distributable'][:results][:stuff].should == 3
+        end
+    end
+
 end
