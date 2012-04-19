@@ -12,7 +12,7 @@ describe Arachni::RPC::Server::Framework do
             opts ||= @opts
             port = random_port
             opts.rpc_port = port
-            fork_em{ Arachni::RPC::Server::Instance.new( opts, @token ) }
+            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
             sleep 1
             Arachni::RPC::Client::Instance.new( opts,
                 "#{opts.rpc_address}:#{port}", @token
