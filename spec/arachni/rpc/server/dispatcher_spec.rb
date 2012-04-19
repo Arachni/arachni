@@ -6,21 +6,29 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
         @opts = Arachni::Options.instance
-        port1 = random_port
-        port2 = random_port
+
+        @opts.pool_size = 1
+        @opts.rpc_port = random_port
+        @opts.pipe_id = '#1'
+        @opts.weight = 4
+        @opts.nickname = 'blah'
+        @opts.cost = 12
 
         fork_em {
-            @opts.pool_size = 1
-            @opts.rpc_port = port2
             Arachni::RPC::Server::Dispatcher.new( @opts )
         }
         sleep 1
 
-        @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, "#{@opts.rpc_address}:#{port2}" )
+        @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}" )
 
-        @job_info_keys = [ 'token', 'pid', 'port', 'url', 'owner',
-           'birthdate', 'starttime', 'helpers', 'currtime',
-           'age', 'runtime', 'proc' ]
+        @job_info_keys = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)
+        @node_info = {
+            "url"      => "#{@opts.rpc_address}:#{@opts.rpc_port}",
+            "pipe_id"  => @opts.pipe_id,
+            "weight"   => @opts.weight,
+            "nickname" => @opts.nickname,
+            "cost"     => @opts.cost
+        }
     end
 
     after( :all ) do
@@ -37,11 +45,9 @@ describe Arachni::RPC::Server::Dispatcher do
         it 'should return valid Instance info' do
             info = @dispatcher.dispatch
 
-            [ 'token', 'pid', 'port', 'url', 'owner',
-                'birthdate', 'starttime', 'helpers' ].each {
-                |k|
+            %w(token pid port url owner birthdate starttime helpers).each do |k|
                 info[k].should be_true
-            }
+            end
 
             instance = Arachni::RPC::Client::Instance.new( @opts, info['url'], info['token'] )
             instance.service.alive?.should be_true
@@ -63,22 +69,19 @@ describe Arachni::RPC::Server::Dispatcher do
         it 'should return proc info by PID' do
             job = @dispatcher.dispatch
             info = @dispatcher.job( job['pid'] )
-            @job_info_keys.each {
-                |k|
+            @job_info_keys.each do |k|
                 info[k].should be_true
-            }
+            end
         end
     end
 
     describe :jobs do
         it 'should return proc info by PID for all jobs' do
-            @dispatcher.jobs.each {
-                |job|
-                @job_info_keys.each {
-                    |k|
+            @dispatcher.jobs.each do |job|
+                @job_info_keys.each do |k|
                     job[k].should be_true
-                }
-            }
+                end
+            end
         end
     end
 
@@ -89,13 +92,17 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats = @dispatcher.stats
 
-            [ 'running_jobs', 'finished_jobs', 'init_pool_size', 'node', 'consumed_pids' ].each {
-                |k|
+            %w(running_jobs finished_jobs init_pool_size node consumed_pids neighbours).each do |k|
                 stats[k].should be_true
-            }
+            end
 
             finished = stats['finished_jobs']
             finished.size.should == 1
+
+            stats['neighbours'].is_a?( Array ).should be_true
+
+            stats['node'].delete( 'score' ).is_a?( Float ).should be_true
+            stats['node'].should == @node_info
         end
     end
 
@@ -107,9 +114,11 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe :proc_info do
         it 'should return the proc info of the dispatcher' do
-            @dispatcher.proc_info.should be_true
+            info = @dispatcher.proc_info
+            info.should be_true
+
+            info['node'].should == @node_info
         end
     end
-
 
 end
