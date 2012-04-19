@@ -188,7 +188,7 @@ class Dispatcher
         stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
 
         stats_h['node']['score'] = resource_consumption_score
-        stats_h['node']['score'] *= dispatcher['weight'] if stats_h['node']['weight']
+        stats_h['node']['score'] *= stats_h['node']['weight'] if stats_h['node']['weight']
 
         stats_h
     end
