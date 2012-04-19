@@ -44,6 +44,14 @@ describe Arachni::RPC::Server::Framework do
 
         @instance_clean = @get_instance.call
         @framework_clean = @instance_clean.framework
+
+        @stat_keys = [
+            :requests, :responses, :time_out_count,
+            :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
+            :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
+            :current_page, :eta,
+        ]
+
     end
 
     after( :all ) do
@@ -90,7 +98,7 @@ describe Arachni::RPC::Server::Framework do
     describe :run do
         it 'should perform a scan' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_hpg )
             instance.modules.load( 'test' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -111,19 +119,13 @@ describe Arachni::RPC::Server::Framework do
     describe :stats do
         it 'should return a hash containing general runtime statistics' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_hpg )
             instance.modules.load( 'test' )
             instance.framework.run.should be_true
 
             stats = instance.framework.stats
-            stat_keys = [
-                :requests, :responses, :time_out_count,
-                :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
-                :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency,
-                :current_page, :eta
-            ]
-            stats.keys.should == stat_keys
-            stat_keys.each { |k| stats[k].should be_true }
+            stats.keys.should == @stat_keys
+            @stat_keys.each { |k| stats[k].should be_true }
         end
     end
     describe :paused? do
@@ -153,7 +155,7 @@ describe Arachni::RPC::Server::Framework do
     describe :clean_up do
         it 'should set the framework state to finished and wait for plugins to finish' do
             instance = @instance
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_hpg )
             instance.modules.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
@@ -165,6 +167,8 @@ describe Arachni::RPC::Server::Framework do
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
         end
+
+        it 'should merge plugin results'
     end
     describe :progress do
         before { @progress_keys = %W(stats status busy issues instances messages).sort }
@@ -183,13 +187,13 @@ describe Arachni::RPC::Server::Framework do
                 data.keys.sort.should == @progress_keys
 
                 data['stats'].should be_any
-                data['stats'].keys.should ==
-                    instance.framework.stats.keys.map { |s| s.to_s }
+                data['stats'].keys.sort.should == (@stat_keys | %w(current_pages url status)).flatten.map { |k| k.to_s }.sort
                 data['instances'].should be_any
                 data['status'].should be_true
                 data['busy'].nil?.should be_false
                 data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
+                data['instances'].size.should == 2
             end
         end
 

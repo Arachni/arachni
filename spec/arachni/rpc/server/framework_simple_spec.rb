@@ -94,7 +94,7 @@ describe Arachni::RPC::Server::Framework do
     describe :run do
         it 'should perform a scan' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_simple )
             instance.modules.load( 'test' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
@@ -115,7 +115,7 @@ describe Arachni::RPC::Server::Framework do
     describe :stats do
         it 'should return a hash containing general runtime statistics' do
             instance = @instance_clean
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_simple )
             instance.modules.load( 'test' )
             instance.framework.run.should be_true
 
@@ -157,7 +157,7 @@ describe Arachni::RPC::Server::Framework do
     describe :status do
         before( :all ) do
             @inst = @get_instance.call
-            @inst.opts.url = server_url_for( :framework ) + '/crawl'
+            @inst.opts.url = server_url_for( :framework_simple ) + '/crawl'
             @inst.modules.load( 'test' )
         end
         context 'after initialization' do
@@ -187,7 +187,7 @@ describe Arachni::RPC::Server::Framework do
                 @opts.dir['modules'] = spec_path + '/fixtures/wait_module/'
 
                 inst = @get_instance.call
-                inst.opts.url = server_url_for( :framework )
+                inst.opts.url = server_url_for( :framework_simple )
                 inst.opts.audit_headers = true
                 inst.modules.load( 'wait' )
                 inst.framework.run
@@ -200,7 +200,7 @@ describe Arachni::RPC::Server::Framework do
         context 'once the scan had completed' do
             it 'should return "done"' do
                 inst = @get_instance.call
-                inst.opts.url = server_url_for( :framework )
+                inst.opts.url = server_url_for( :framework_simple )
                 inst.modules.load( 'test' )
                 inst.framework.run
                 sleep 2
@@ -211,7 +211,7 @@ describe Arachni::RPC::Server::Framework do
     describe :clean_up do
         it 'should set the framework state to finished and wait for plugins to finish' do
             instance = @get_instance.call
-            instance.opts.url = server_url_for( :framework )
+            instance.opts.url = server_url_for( :framework_simple )
             instance.modules.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
@@ -358,7 +358,7 @@ describe Arachni::RPC::Server::Framework do
             @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
 
             inst = @get_instance.call( @opts)
-            inst.opts.url = server_url_for( :framework ) + '/restrict_to_elements'
+            inst.opts.url = server_url_for( :framework_simple ) + '/restrict_to_elements'
             inst.opts.audit_links = true
             inst.modules.load( 'taint' )
 
@@ -378,7 +378,7 @@ describe Arachni::RPC::Server::Framework do
     end
     describe :update_page_queue! do
         it 'should push the provided page objects to the page audit queue' do
-            url = server_url_for( :framework )
+            url = server_url_for( :framework_simple )
             inst = @get_instance.call
             inst.opts.url = url
             inst.opts.audit_links = true
@@ -399,7 +399,7 @@ describe Arachni::RPC::Server::Framework do
     end
     describe :register_issues do
         it 'should register an issue with the instance' do
-            url = server_url_for( :framework )
+            url = server_url_for( :framework_simple )
             inst = @get_instance.call
             inst.opts.url = url
 
