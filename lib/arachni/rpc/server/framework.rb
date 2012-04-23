@@ -224,7 +224,7 @@ class Framework < ::Arachni::Framework
                 prefered_dispatchers do |pref_dispatchers|
 
                     # split the URLs of the pages in equal chunks
-                    chunks    = split_urls( element_ids_per_page.keys, pref_dispatchers )
+                    chunks    = split_urls( element_ids_per_page.keys, pref_dispatchers.size + 1 )
                     chunk_cnt = chunks.size
 
                     if chunk_cnt > 0
@@ -663,10 +663,6 @@ class Framework < ::Arachni::Framework
 
     def gen_token
         Digest::SHA2.hexdigest( 10.times.map{ rand( 9999 ) }.join( '' ) )
-    end
-
-    def dispatcher
-        connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 
 end

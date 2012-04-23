@@ -44,6 +44,11 @@ module Distributor
     #
     MIN_PAGES_PER_INSTANCE = 30
 
+    #
+    # @param    [Proc]  foreach     invoked once for each slave instance and
+    #                                 creates an array from the returned values
+    # @param    [Proc]  after       to handle the resulting array
+    #
     def map_slaves( foreach, after )
         wrap = proc do |instance, iterator|
             foreach.call( connect_to_instance( instance ), iterator )
@@ -51,6 +56,7 @@ module Distributor
         slave_iterator.map( wrap, after )
     end
 
+    # @param    [Proc]  block     invoked once for each slave instance
     def each_slave( &block )
         wrap = proc do |instance, iterator|
             block.call( connect_to_instance( instance ), iterator )
@@ -58,10 +64,16 @@ module Distributor
         slave_iterator.each( &wrap )
     end
 
+    # @return   <::EM::Iterator>  iterator for all slave instances
     def slave_iterator
         iterator_for( @instances )
     end
 
+    #
+    # @param    [Array]    arr
+    #
+    # @return   <::EM::Iterator>  iterator for the provided array
+    #
     def iterator_for( arr )
         ::EM::Iterator.new( arr, MAX_CONCURRENCY )
     end
@@ -77,7 +89,6 @@ module Distributor
     #                                                        for values
     #
     def distribute_elements( chunks, element_ids_per_page )
-
         #
         # chunks = URLs to be assigned to each instance
         # pages = hash with URLs for key and Pages for values.
@@ -166,13 +177,12 @@ module Distributor
             # get the Dispatchers with unique Pipe IDs and send them
             # to the block
             pref_dispatcher_urls = []
-            pick_dispatchers( reachable_dispatchers ).each {
-                |dispatcher|
+            pick_dispatchers( reachable_dispatchers ).each do |dispatcher|
                 if !@used_pipe_ids.include?( dispatcher['node']['pipe_id'] )
                     @used_pipe_ids << dispatcher['node']['pipe_id']
                     pref_dispatcher_urls << dispatcher['node']['url']
                 end
-            }
+            end
 
             block.call( pref_dispatcher_urls )
         end
@@ -196,10 +206,12 @@ module Distributor
     # Splits URLs into chunks for each instance while taking into account a
     # minimum amount of URLs per instance.
     #
-    def split_urls( urls, dispatchers )
-        chunks = []
-        idx    = 0
-
+    # @param    [Array<String>]    urls     to split into chunks
+    # @param    [Integer]    max_chunks     maximum amount of chunks, must be > 1
+    #
+    # @return   [Array<Array<String>>]      array of chunks of URLS
+    #
+    def split_urls( urls, max_chunks )
         # figure out the min amount of pages per chunk
         begin
             if @opts.min_pages_per_instance && @opts.min_pages_per_instance.to_i > 0
@@ -213,12 +225,14 @@ module Distributor
 
         # first try a simplistic approach, just split the the URLs in
         # equally sized chunks for each instance
-        orig_chunks = urls.chunk( dispatchers.size + 1 )
+        orig_chunks = urls.chunk( max_chunks )
 
         # if the first chunk matches the minimum then they all do
         # (except (possibly) for the last) so return these as is...
         return orig_chunks if orig_chunks[0].size >= min_pages_per_instance
 
+        chunks = []
+        idx    = 0
         #
         # otherwise re-arrange the chunks into larger ones
         #
@@ -264,22 +278,23 @@ module Distributor
     #
     # @param    [Proc]      block   to be passed a hash containing the url and token of the instance
     #
-    def spawn( dispatcher_url, opts = {}, &block )
+    def spawn( dispatcher_url, auditables = {}, &block )
         opts = @opts.to_h.deep_clone
 
-        urls     = opts[:urls] || []
-        elements = opts[:elements] || []
-        pages    = opts[:pages] || []
+        urls     = auditables[:urls] || []
+        elements = auditables[:elements] || []
+        pages    = auditables[:pages] || []
 
-        self_token = @opts.datastore[:token]
-
-        pref_dispatcher = connect_to_dispatcher( dispatcher_url )
-
-        pref_dispatcher.dispatch( self_url,
+        connect_to_dispatcher( dispatcher_url ).dispatch( self_url,
             'rank'   => 'slave',
             'target' => @opts.url.to_s,
             'master' => self_url
         ) do |instance_hash|
+
+            if instance_hash.rpc_exception?
+                block.call( false )
+                next
+            end
 
             instance = connect_to_instance( instance_hash )
 
@@ -309,23 +324,17 @@ module Distributor
             opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
 
             instance.opts.set( opts ){
-                instance.framework.update_page_queue!( pages, self_token ) {
-                    instance.framework.restrict_to_elements!( elements, self_token ){
-                        instance.framework.set_master( self_url, self_token ){
-                            instance.modules.load( opts['mods'] ) {
-                                instance.plugins.load( opts['plugins'] ) {
-                                    instance.framework.run {
-                                        block.call(
-                                            'url'   => instance_hash['url'],
-                                            'token' => instance_hash['token']
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            instance.framework.update_page_queue!( pages ) {
+            instance.framework.restrict_to_elements!( elements ){
+            instance.framework.set_master( self_url, @opts.datastore[:token] ){
+            instance.modules.load( opts['mods'] ) {
+            instance.plugins.load( opts['plugins'] ) {
+            instance.framework.run {
+                block.call(
+                    'url'   => instance_hash['url'],
+                    'token' => instance_hash['token']
+                )
+            }}}}}}}
         end
     end
 
@@ -410,6 +419,11 @@ module Distributor
     def connect_to_dispatcher( url )
         Arachni::RPC::Client::Dispatcher.new( @opts, url )
     end
+
+    def dispatcher
+        connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
+    end
+
 end
 
 end
