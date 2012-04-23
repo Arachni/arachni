@@ -1,5 +1,4 @@
 require_relative '../../spec_helper'
-require_testee!
 
 class ObservableTest
     include Arachni::Mixins::Observable
