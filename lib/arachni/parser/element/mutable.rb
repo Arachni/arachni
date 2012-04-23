@@ -112,7 +112,6 @@ module Mutable
                 # are valid and present us with new attack vectors
                 elem = self.dup
                 elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
-                elem.override_instance_scope!
                 var_combo << elem
             end
 
@@ -121,7 +120,6 @@ module Mutable
                 elem = self.dup
                 elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
                 elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
-                elem.override_instance_scope!
                 var_combo << elem
             end
         end
