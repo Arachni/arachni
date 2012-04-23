@@ -20,7 +20,7 @@ module Modules
 class Taint < Arachni::Module::Base
 
     def run
-        audit( '--seed' )
+        audit( '--seed', train: true )
     end
 
     def self.info

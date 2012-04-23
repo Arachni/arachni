@@ -542,6 +542,30 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 exp_urls = %w(/vulnerable?vulnerable_20=stuff20 /vulnerable?vulnerable_30=stuff30)
                 vuln_urls.should == exp_urls.map { |u| @url + u }.sort.uniq
             end
+            context 'and new elements appear via the trainer' do
+                it 'should override the restrictions' do
+                    @opts.audit_forms = true
+                    @opts.url = server_url_for( :auditor ) + '/train/default'
+                    url = @opts.url.to_s
+
+                    id = Arachni::Parser::Element::Form.new( url + '?',
+                        inputs: { 'step_1' => 'form_blah_step_1' }
+                    ).scope_audit_id
+
+                    q = Queue.new
+                    @distributor.spawn( @dispatcher_url, elements: [id] ){ |i| q << i }
+                    slave_info = q.pop
+                    slave_info.should be_true
+
+                    slave = @distributor.connect_to_instance( slave_info )
+                    sleep 0.1 while slave.framework.busy?
+                    sleep 1
+
+                    @master.issues.size.should == 4
+                    @master.issues.first.url.should ==
+                        url + "?you_made_it=to+the+end+of+the+training"
+                end
+            end
         end
 
         context 'when called with extra page' do
