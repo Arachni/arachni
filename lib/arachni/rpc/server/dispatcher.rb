@@ -118,7 +118,10 @@ class Dispatcher
     # @return   [Hash]      includes port number, owner, clock info and proc info
     #
     def dispatch( owner = 'unknown', helpers = {}, &block )
-        block.call false if @opts.pool_size <= 0
+        if @opts.pool_size <= 0
+            block.call( false )
+            return
+        end
 
         # just to make sure...
         owner = owner.to_s
@@ -187,7 +190,7 @@ class Dispatcher
 
         stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
 
-        stats_h['node']['score'] = resource_consumption_score
+        stats_h['node']['score']  = (rs_score = resource_consumption_score) > 0 ? rs_score : 1
         stats_h['node']['score'] *= stats_h['node']['weight'] if stats_h['node']['weight']
 
         stats_h
