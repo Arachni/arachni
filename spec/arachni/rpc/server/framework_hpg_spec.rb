@@ -6,6 +6,7 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 describe Arachni::RPC::Server::Framework do
     before( :all ) do
         @opts = Arachni::Options.instance
+        @opts.audit_links = true
 
         @dispatchers = []
 
@@ -13,23 +14,19 @@ describe Arachni::RPC::Server::Framework do
         @get_instance = proc do |opts|
             opts ||= @opts
             port = random_port
-            fork_em {
-                opts.rpc_port = port
-                exec_dispatcher( opts )
-            }
-            sleep 3
-            fork_em {
-                opts.rpc_port = random_port
-                opts.neighbour = "#{opts.rpc_address}:#{port}"
-                opts.pipe_id = 'blah'
-                exec_dispatcher( opts )
-            }
-            sleep 1
+            opts.rpc_port = port
+            exec_dispatcher( opts )
 
-            @dispatchers << Arachni::RPC::Client::Dispatcher.new( opts,
+            port2 =  random_port
+            opts.rpc_port = port2
+            opts.neighbour = "#{opts.rpc_address}:#{port}"
+            opts.pipe_id = 'blah'
+            exec_dispatcher( opts )
+
+            dispatcher = Arachni::RPC::Client::Dispatcher.new( opts,
                 "#{opts.rpc_address}:#{port}" )
 
-            inst_info = @dispatchers.last.dispatch
+            inst_info = dispatcher.dispatch
             inst = Arachni::RPC::Client::Instance.new( opts,
                 inst_info['url'], inst_info['token']
             )
@@ -52,10 +49,6 @@ describe Arachni::RPC::Server::Framework do
             :current_page, :eta,
         ]
 
-    end
-
-    after( :all ) do
-        @dispatchers.each { |d| d.stats['consumed_pids'].each { |p| pids << p } }
     end
 
     describe :busy? do

@@ -14,7 +14,6 @@ Arachni::UI::Output.mute!
 require @@root + 'helpers/misc'
 Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 
-@@servers_running ||=[]
 @@server_pids ||= []
 @@servers     ||= {}
 Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
@@ -33,11 +32,12 @@ Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
 RSpec.configure do |config|
     config.treat_symbols_as_metadata_keys_with_true_values = true
     config.run_all_when_everything_filtered = true
-    config.filter_run :focus
     config.color = true
     config.add_formatter :documentation
 
     config.before( :all ) do
+        kill_processes!
+        kill_servers!
         kill_em!
         Arachni::Module::Manager.results.clear
         Arachni::Plugin::Manager.results.clear
@@ -57,7 +57,7 @@ RSpec.configure do |config|
     #end
 
     config.after( :suite ) do
-        kill_servers!
         kill_processes!
+        kill_servers!
     end
 end

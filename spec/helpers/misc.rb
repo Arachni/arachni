@@ -39,6 +39,15 @@ def random_port
     end
 end
 
+def kill( pid )
+    begin
+        10.times { Process.kill( 'KILL', pid ) }
+        return false
+    rescue Errno::ESRCH
+        return true
+    end
+end
+
 def kill_em!
     while ::EM.reactor_running?
         ::EM.stop
