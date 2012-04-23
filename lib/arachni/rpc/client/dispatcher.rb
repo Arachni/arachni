@@ -45,6 +45,9 @@ class Dispatcher
         @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end
 
+    def url
+        @client.url
+    end
 end
 
 end
