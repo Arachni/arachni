@@ -33,6 +33,7 @@ def exec_dispatcher( opts = Arachni::Options.instance, &block )
         pid = spawn( "#{opts.dir['root']}/bin/arachni_rpcd --serialized-opts='#{opts.serialize}'" )
         Process.detach( pid )
     }
+    #sleep 3
     url = opts.rpc_address + ':' + opts.rpc_port.to_s
     begin
         Timeout.timeout( 10 ) {
@@ -69,8 +70,8 @@ end
 
 def kill_dispatchers
     dispatchers.each do |url|
-        d = Arachni::RPC::Client::Dispatcher.new( OpenStruct.new, url )
         begin
+            d = Arachni::RPC::Client::Dispatcher.new( OpenStruct.new, url )
             d.stats['consumed_pids'].each { |p| pids << p }
             pids << d.proc_info['pid'].to_i
         rescue Exception
