@@ -127,7 +127,7 @@ class Trainer
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if( res.body == @page.body && !@updated && !redir )
+        if res.body == @page.body && !@updated && !redir
             print_debug( 'Page hasn\'t changed, skipping...' )
             return
         end
@@ -177,7 +177,7 @@ class Trainer
 
         cforms, form_cnt = update_forms( @parser.forms )
 
-        if ( form_cnt > 0 )
+        if form_cnt > 0
             @page.forms = cforms.flatten.map{ |elem| elem.override_instance_scope!; elem }
             @updated = true
 
@@ -189,8 +189,7 @@ class Trainer
         return [], 0  if !@opts.audit_links
 
         links = @parser.links.deep_clone
-        if( redir )
-
+        if redir
             url = @parser.to_absolute( url_sanitize( res.effective_url ) )
             links << Arachni::Parser::Element::Link.new( url, {
                 'href' => url,
@@ -200,7 +199,7 @@ class Trainer
 
         clinks, link_cnt = update_links( links )
 
-        if ( link_cnt > 0 )
+        if link_cnt > 0
             @page.links = clinks.flatten.map{ |elem| elem.override_instance_scope!; elem }
             @updated = true
 
@@ -211,7 +210,7 @@ class Trainer
     def train_cookies!
         ccookies, cookie_cnt = update_cookies( @parser.cookies )
 
-        if ( cookie_cnt > 0 )
+        if cookie_cnt > 0
             @page.cookies = ccookies.flatten.map{ |elem| elem.override_instance_scope!; elem }
             @updated = true
 

@@ -420,9 +420,8 @@ module Auditable
         rescue
         end
 
-        !(!auditor_override_instance_scope && !override_instance_scope? &&
-            !@@restrict_to_elements.empty? &&
-            !@@restrict_to_elements.include?( scope_audit_id ))
+        override_instance_scope? || auditor_override_instance_scope ||
+        @@restrict_to_elements.empty? || @@restrict_to_elements.include?( scope_audit_id )
     end
 
     #
@@ -431,6 +430,7 @@ module Auditable
     # @param  [String]  elem_audit_id  a string returned by {#audit_id}
     #
     def audited?( elem_audit_id )
+        ret = false
         @@audited ||= Set.new
         if @@audited.include?( elem_audit_id )
             msg = 'Skipping, already audited: ' + elem_audit_id
