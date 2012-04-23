@@ -549,8 +549,7 @@ class Options
         opts.quiet = true
 
         begin
-            opts.each {
-                |opt, arg|
+            opts.each do |opt, arg|
 
                 case opt
 
@@ -652,7 +651,7 @@ class Options
                         report, opt_str = arg.split( ':' )
 
                         opts = {}
-                        if( opt_str )
+                        if opt_str
                             opt_arr = opt_str.split( ',' )
                             opt_arr.each {
                                 |c_opt|
@@ -768,7 +767,7 @@ class Options
                         @webui_password = arg.to_s
 
                 end
-            }
+            end
         rescue Exception => e
             puts e.inspect
             exit
@@ -796,11 +795,17 @@ class Options
     #
     def save( file )
 
-        dir           = @dir.clone
+        dir = @dir.clone
+
+        load_profile  = nil
+        save_profile  = nil
+        authed_by     = nil
+        restrict_paths = nil
+        extend_paths   = nil
+
         load_profile  = @load_profile.clone if @load_profile
         save_profile  = @save_profile.clone if @save_profile
         authed_by     = @authed_by.clone if @authed_by
-
         restrict_paths = @restrict_paths.clone if @restrict_paths
         extend_paths   = @extend_paths.clone if @extend_paths
 
@@ -829,7 +834,7 @@ class Options
             @extend_paths   = extend_paths
         end
 
-        return f.path
+        f.path
     end
 
     def load( filename )
@@ -843,7 +848,7 @@ class Options
             opts.extend_paths   = paths_from_file( opts.extend_paths_filepath )
         end
 
-        return opts
+        opts
     end
 
     def url=( str )
@@ -861,7 +866,7 @@ class Options
             raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
-        return str
+        str
     end
 
     def restrict_paths=( urls )
@@ -874,11 +879,10 @@ class Options
     # @return    [Hash]
     #
     def to_h
-        hash = Hash.new
-        self.instance_variables.each {
-            |var|
+        hash = {}
+        self.instance_variables.each do |var|
             hash[normalize_name( var )] = self.instance_variable_get( var )
-        }
+        end
         hash
     end
 
@@ -888,36 +892,24 @@ class Options
     # @param    [Options]
     #
     def merge!( options )
-        options.to_h.each_pair {
-            |k, v|
-
+        options.to_h.each_pair do |k, v|
+            next if !v
             next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
-            send( "#{k}=", v ) if v
-        }
+            instance_variable_set( "@#{k}", v )
+        end
     end
 
     def to_args
-
         cli_args = ''
-
-        self.to_h.keys.each {
-            |key|
-
-            arg = self.to_arg( key )
-
-            cli_args += " #{arg.to_s}" if arg
-        }
-
-        return cli_args += " #{self.url}"
+        self.to_h.keys.each do |key|
+            cli_args += " #{to_arg( key ).to_s}" if arg
+        end
+        cli_args + " #{self.url}"
     end
 
     def to_arg( key )
 
-        do_not_parse = [
-            'show_profile',
-            'url',
-            'dir',
-        ]
+        do_not_parse = %w(show_profile url dir)
 
         var = self.instance_variable_get( "@#{key}" )
 
@@ -925,7 +917,7 @@ class Options
         return if ( var.is_a?( Array ) || var.is_a?( Hash ) ) && var.empty?
         return if do_not_parse.include?( key )
         return if key == 'include' && var == [/.*/]
-        return if key == 'reports' && var.keys == ['stdout']
+        return if key == 'reports' && var.keys == %w(stdout)
 
         key = 'exclude_cookie' if key == 'exclude_cookies'
         key = 'exclude_vector' if key == 'exclude_vectors'
@@ -953,16 +945,14 @@ class Options
                 key = 'verbosity'
 
             when 'redundant'
-                var.each {
-                    |rule|
+                var.each do |rule|
                     arg += " --#{key}=#{rule['regexp'].source}:#{rule['count']}"
-                }
+                end
                 return arg
 
             when 'plugins','report'
                 arg = ''
-                var.each {
-                    |opt, val|
+                var.each do |opt, val|
                     arg += " --#{key.chomp( 's' )}=#{opt}"
                     arg += ':' if !val.empty?
 
@@ -972,7 +962,7 @@ class Options
                     }
 
                     arg.chomp!( ',' )
-                }
+                end
                 return arg
 
             when 'proxy-port'
@@ -980,40 +970,24 @@ class Options
 
             when 'proxy-addr'
                 return "--proxy=#{self.proxy_addr}:#{self.proxy_port}"
-
-
         end
 
-        if( var.is_a?( TrueClass ) )
+        if var.is_a?( TrueClass )
             arg = "--#{key}"
-        end
-
-        if( var.is_a?( String ) || var.is_a?( Fixnum ) )
+        elsif var.is_a?( String ) || var.is_a?( Fixnum )
             arg = "--#{key}=#{var.to_s}"
-        end
-
-        if( var.is_a?( Array ) )
-
-            var.each {
-                |i|
-
+        elsif var.is_a?( Array )
+            var.each do |i|
                 i = i.source if i.is_a?( Regexp )
-
                 arg += " --#{key}=#{i}"
-            }
-
+            end
         end
 
-        return arg
+        arg
     end
 
     def paths_from_file( file )
-        IO.read( file ).lines.map {
-            |path|
-            path.gsub!( "\n", '' )
-            path.gsub!( "\r", '' )
-            path
-        }
+        IO.read( file ).lines.map { |p| p.strip }
     end
 
     private
@@ -1021,7 +995,6 @@ class Options
     def normalize_name( name )
         name.to_s.gsub( '@', '' )
     end
-
 
 end
 end
