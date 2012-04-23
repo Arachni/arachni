@@ -184,7 +184,7 @@ class Parser
 
         # if we somehow have any runtime configuration cookies load them too
         # but only if they haven't already been seen
-        if @opts.cookies
+        if @opts.cookies && !@opts.cookies.empty?
             from_jar |= @opts.cookies.reject { |c| cookie_names.include?( c.name ) }
         end
 
@@ -193,7 +193,7 @@ class Parser
             cookie_names.include?( c.name )
         end
 
-        return Page.new(
+        Page.new(
             :code        => @code,
             :url         => @url,
             :query_vars  => self_link.auditable,
@@ -226,7 +226,7 @@ class Parser
     def text?
         type = @response.content_type
         return false if !type
-        return type.to_s.substring?( 'text' )
+        type.to_s.substring?( 'text' )
     end
 
     def doc
@@ -313,7 +313,6 @@ class Parser
       return @paths if !doc
 
       @paths = run_extractors
-      return @paths
     end
 
     #
