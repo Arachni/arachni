@@ -129,7 +129,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         str += "=#{injection_str.to_s}" if !opts[:no_injection_str]
         str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
-        return str
+        str
     end
 
 end
