@@ -115,7 +115,9 @@ class Arachni::Parser::Element::Base
     end
 
     def dup
-        self.class.new( @url.dup, @raw.dup )
+        new = self.class.new( @url.dup, @raw.deep_clone )
+        new.override_instance_scope! if override_instance_scope?
+        new
     end
 
 end
