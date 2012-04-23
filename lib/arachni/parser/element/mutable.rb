@@ -105,13 +105,14 @@ module Mutable
         var_combo = []
         return [] if !hash || hash.size == 0
 
-        if( self.is_a?( Arachni::Parser::Element::Form ) && !opts[:skip_orig] )
+        if self.is_a?( Arachni::Parser::Element::Form ) && !opts[:skip_orig]
 
             if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
                 # this is the original hash, in case the default values
                 # are valid and present us with new attack vectors
                 elem = self.dup
                 elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
+                elem.override_instance_scope!
                 var_combo << elem
             end
 
@@ -120,6 +121,7 @@ module Mutable
                 elem = self.dup
                 elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
                 elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
+                elem.override_instance_scope!
                 var_combo << elem
             end
         end
@@ -189,10 +191,9 @@ module Mutable
             end
         end
 
-
         print_debug_injection_set( var_combo, opts )
 
-        return var_combo.uniq
+        var_combo.uniq
     end
 
     private
