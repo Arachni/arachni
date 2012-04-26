@@ -257,6 +257,10 @@ module Utilities
     def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
         begin
             relative_url = normalize_url( relative_url )
+
+            # remove anchor
+            relative_url = uri_encode( relative_url.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
+
             if uri_parser.parse( relative_url ).host
                 return relative_url
             end
@@ -267,9 +271,6 @@ module Utilities
         end
 
         begin
-            # remove anchor
-            relative_url = uri_encode( relative_url.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
-
             base_url = uri_parser.parse( reference_url )
 
             relative = uri_parser.parse( relative_url )
