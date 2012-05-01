@@ -56,7 +56,7 @@ Installer name defaults to 'arachni-installer.sh'.
 Build directory defaults to 'arachni'.
 ```
 
-### installer.tpl.sh
+### installer.sh.tpl
 
 Provides a template for a self-extracting installer.
 
