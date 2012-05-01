@@ -621,7 +621,7 @@ class Framework < ::Arachni::Framework
     # @see Arachni::Framework#auditstore_sitemap
     #
     def auditstore_sitemap
-        @override_sitemap.to_a
+        high_performance? ? @override_sitemap.to_a : super
     end
 
     def extended_running?
