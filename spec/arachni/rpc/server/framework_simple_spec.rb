@@ -222,7 +222,6 @@ describe Arachni::RPC::Server::Framework do
             results.should be_any
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
-            instance.framework.busy?.should be_false
         end
     end
     describe :progress do
