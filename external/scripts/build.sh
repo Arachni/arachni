@@ -272,7 +272,7 @@ download() {
 }
 
 #
-# Donwloads an archive (by url) and places it under $archives_path
+# Downloads an archive (by url) and places it under $archives_path
 #
 download_archive() {
     cd $archives_path
@@ -397,7 +397,7 @@ if [[ \$? -ne 0 ]] ; then
     export DYLD_LIBRARY_PATH; DYLD_LIBRARY_PATH="\$env_root/usr/lib:\$DYLD_LIBRARY_PATH"
 fi
 
-export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p125'
+export RUBY_VERSION; RUBY_VERSION='ruby-1.9.3-p194'
 export GEM_HOME; GEM_HOME="\$env_root/gems"
 export GEM_PATH; GEM_PATH="\$env_root/gems"
 export MY_RUBY_HOME; MY_RUBY_HOME="\$env_root/usr/lib/ruby"
@@ -438,6 +438,10 @@ get_wrapper_template() {
 
 get_update_script() {
     get_wrapper_environment 'gem update arachni'
+}
+
+get_test_script() {
+    get_wrapper_environment '$GEM_PATH/bin/rspec $(dirname $(dirname `gem which arachni`))'
 }
 
 #
@@ -500,6 +504,11 @@ install_bin_wrappers() {
 
     get_update_script > "$root/bin/arachni_update"
     chmod +x "$root/bin/arachni_update"
+    echo "  * $root/bin/arachni_update"
+
+    get_test_script > "$root/bin/arachni_test"
+    chmod +x "$root/bin/arachni_test"
+    echo "  * $root/bin/arachni_test"
 
     cd $root/gems/bin
     for bin in arachni*; do
