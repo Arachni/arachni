@@ -10,6 +10,9 @@ Experimental/unstable branch -- used for integration.
 
 
 # Arachni - Web Application Security Scanner Framework
+
+[![Build Status](https://secure.travis-ci.org/Zapotek/arachni.png?branch=experimental)](http://travis-ci.org/Zapotek/arachni)
+
 <table>
     <tr>
         <th>Version</th>
