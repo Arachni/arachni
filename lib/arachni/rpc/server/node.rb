@@ -38,8 +38,9 @@ class Dispatcher
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Node
-
     include Arachni::UI::Output
+
+    DEFAULT_PING_INTERVAL = 60
 
     #
     # Initializes the node by:
@@ -50,10 +51,11 @@ class Node
     # @param    [Arachni::Options]    opts
     # @param    [String]              logfile   were to send the output
     #
-    def initialize( opts, logfile )
+    def initialize( opts, logfile = nil )
         @opts = opts
+        @url  = "#{@opts.rpc_address}:#{@opts.rpc_port.to_s}"
 
-        reroute_to_file( logfile )
+        reroute_to_file( logfile ) if logfile
 
         print_status( 'Initing grid node...' )
 
@@ -65,16 +67,16 @@ class Node
             add_neighbour( neighbour )
 
             peer = connect_to_peer( neighbour )
-            peer.node.neighbours do |urls|
+            peer.neighbours do |urls|
                 urls.each do |url|
-                    @neighbours << url if url != @opts.datastore[:dispatcher_url]
+                    @neighbours << url if url != @url
                 end
             end
 
-            peer.node.add_neighbour( @opts.datastore[:dispatcher_url], true ) do |res|
+            peer.add_neighbour( @url, true ) do |res|
                 next if !res.rpc_exception?
                 print_info( 'Neighbour seems dead: ' + neighbour )
-                remove_neighbour( neighbour )
+                add_dead_neighbour( neighbour )
             end
         end
 
@@ -82,11 +84,9 @@ class Node
 
         log_updated_neighbours
 
-        ::EM.add_periodic_timer( 60 ) {
-            ::EM.defer {
-                ping
-                check_for_comebacks
-            }
+        ::EM.add_periodic_timer( @opts.node_ping_interval || DEFAULT_PING_INTERVAL ) {
+            ping
+            check_for_comebacks
         }
     end
 
@@ -99,9 +99,16 @@ class Node
     #
     def add_neighbour( node_url, propagate = false )
         # we don't want ourselves in the Set
-        return false if node_url == @opts.datastore[:dispatcher_url]
+        return false if node_url == @url
+        return false if @neighbours.include?( node_url )
 
         print_status 'Adding neighbour: ' + node_url
+
+        connect_to_peer( node_url ).add_neighbour( @url, propagate ) do |res|
+            next if !res.rpc_exception?
+            add_dead_neighbour( node_url )
+            print_status( "Found dead neighbour: #{node_url} " )
+        end
 
         @neighbours << node_url
         log_updated_neighbours
@@ -119,11 +126,6 @@ class Node
         @neighbours.to_a
     end
 
-    def remove_neighbour( node_url )
-        @neighbours -= [node_url]
-        @dead_nodes << node_url
-    end
-
     def neighbours_with_info( &block )
         raise( "This method requires a block!" ) if !block_given?
 
@@ -135,12 +137,12 @@ class Node
             ::EM::Iterator.new( neighbours ).map( proc {
                 |neighbour, iter|
 
-                connect_to_peer( neighbour ).node.info {
+                connect_to_peer( neighbour ).info {
                     |info|
 
                     if info.rpc_exception?
                         print_info( 'Neighbour seems dead: ' + neighbour )
-                        remove_neighbour( neighbour )
+                        add_dead_neighbour( neighbour )
                         log_updated_neighbours
 
                         iter.return( nil )
@@ -169,7 +171,7 @@ class Node
     #
     def info
         {
-            'url'        => @opts.datastore[:dispatcher_url],
+            'url'        => @url,
             'pipe_id'    => @opts.pipe_id,
             'weight'     => @opts.weight,
             'nickname'   => @opts.nickname,
@@ -177,7 +179,20 @@ class Node
         }
     end
 
+    def alive?
+        true
+    end
+
     private
+
+    def remove_neighbour( node_url )
+        @neighbours -= [node_url]
+    end
+
+    def add_dead_neighbour( url )
+        remove_neighbour( url )
+        @dead_nodes << url
+    end
 
     def log_updated_neighbours
         print_info 'Updated neighbours:'
@@ -193,7 +208,7 @@ class Node
         neighbours.each do |neighbour|
             connect_to_peer( neighbour ).alive? do |res|
                 next if !res.rpc_exception?
-                remove_neighbour( neighbour )
+                add_dead_neighbour( neighbour )
                 print_status( "Found dead neighbour: #{neighbour} " )
             end
         end
@@ -206,8 +221,8 @@ class Node
                 next if res.rpc_exception?
 
                 print_status( 'Dispatcher came back to life: ' + url )
-                ([@opts.datastore[:dispatcher_url]] | neighbours).each do |node|
-                    neighbour.node.add_neighbour( node ){}
+                ([@url] | neighbours).each do |node|
+                    neighbour.add_neighbour( node ){}
                 end
 
                 add_neighbour( url )
@@ -228,14 +243,14 @@ class Node
             next if peer == node
 
             print_info '---- to: ' + peer
-            connect_to_peer( peer ).node.add_neighbour( node ) do |res|
-                remove_neighbour( peer ) if res.rpc_exception?
+            connect_to_peer( peer ).add_neighbour( node ) do |res|
+                add_dead_neighbour( peer ) if res.rpc_exception?
             end
         end
     end
 
     def connect_to_peer( url )
-        Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        Arachni::RPC::Client::Dispatcher.new( @opts, url ).node
     end
 
 end
