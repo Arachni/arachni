@@ -317,30 +317,30 @@ USAGE
         exception_jail {
 
             # get an available port for the child
-            @opts.rpc_port = avail_port( )
-            @token         = secret( )
+            random_port = avail_port
+            token       = generate_token
 
             pid = ::EM.fork_reactor { exception_jail {
-                Arachni::RPC::Server::Instance.new( @opts, @token )
+                @opts.rpc_port = random_port
+                Arachni::RPC::Server::Instance.new( @opts, token )
             }}
 
             print_status( "Instance added to pool -- PID: #{pid} - " +
                 "Port: #{@opts.rpc_port} - Owner: #{owner}" )
 
             @pool << {
-                'token' => @token,
+                'token' => token,
                 'pid'   => pid,
-                'port'  => @opts.rpc_port,
-                'url'   => "#{@opts.rpc_address}:#{@opts.rpc_port}",
+                'port'  => random_port,
+                'url'   => "#{@opts.rpc_address}:#{random_port}",
                 'owner' => owner,
                 'birthdate' => Time.now
             }
 
             @consumed_pids << pid
 
-            # let the child go about his business
+            # let the child go about its business
             Process.detach( pid )
-            @token = nil
         }
     end
 
@@ -390,7 +390,7 @@ USAGE
         range[ rand( range.last - range.first ) ]
     end
 
-    def secret
+    def generate_token
         secret = ''
         1000.times { secret += rand( 1000 ).to_s }
         Digest::MD5.hexdigest( secret )
