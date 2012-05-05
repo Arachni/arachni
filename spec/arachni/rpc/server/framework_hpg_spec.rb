@@ -154,7 +154,15 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty
             instance.framework.busy?.should be_true
-            sleep( 1 ) while instance.framework.busy?
+
+            tries = 3
+            begin
+                sleep( 1 ) while instance.framework.busy?
+            rescue Exception
+                retry if tries > 0
+                tries -= 1
+            end
+
             instance.framework.clean_up!.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
