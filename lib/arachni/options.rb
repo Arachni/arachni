@@ -65,6 +65,11 @@ class Options
     attr_accessor :neighbour
 
     #
+    # @return   [Float]    how soon to check for neighbour node status
+    #
+    attr_accessor :node_ping_interval
+
+    #
     # @return   [Float]    cost of using the Dispatcher
     #
     attr_accessor :cost
