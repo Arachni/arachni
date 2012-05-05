@@ -79,6 +79,22 @@ def kill_dispatchers
     end
 end
 
+def kill( pid )
+    begin
+        10.times { Process.kill( 'KILL', pid ) }
+        return false
+    rescue Errno::ESRCH
+        return true
+    end
+end
+
+def kill_em!
+    while ::EM.reactor_running?
+        ::EM.stop
+        sleep( 0.1 )
+    end
+end
+
 def fork_em( *args, &b )
     wrap = proc {
         $stdout.reopen('/dev/null', 'w')
@@ -88,4 +104,5 @@ def fork_em( *args, &b )
     pids << ::EM.fork_reactor( *args, &wrap )
     Process.detach( pids.last )
     blocks[pids.last] = b
+    pids.last
 end
