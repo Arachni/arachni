@@ -34,7 +34,7 @@ class Server
 # Provides an RPC server to assist with general integration and UI development.
 #
 # Only instantiated by the Dispatcher to provide support for multiple
-# and concurent RPC clients/scans.
+# and concurrent RPC clients/scans.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
