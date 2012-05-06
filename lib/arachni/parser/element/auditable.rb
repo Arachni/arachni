@@ -293,6 +293,7 @@ module Auditable
         }
 
         audited!( audit_id )
+        true
     end
 
     def skip?( elem )
@@ -332,8 +333,6 @@ module Auditable
         str
     end
 
-    private
-
     # impersonate the auditor to the output methods
     def info
         !orphan? ? @auditor.class.info : { :name => '' }
@@ -355,6 +354,22 @@ module Auditable
         @auditor.print_status( str ) if !orphan?
     end
 
+    def print_info( str = '' )
+        @auditor.print_info( str ) if !orphan?
+    end
+
+    def print_line( str = '' )
+        @auditor.print_line( str ) if !orphan?
+    end
+
+    def print_ok( str = '' )
+        @auditor.print_ok( str ) if !orphan?
+    end
+
+    def print_bad( str = '' )
+        @auditor.print_bad( str ) if !orphan?
+    end
+
     def print_debug( str = '' )
         @auditor.print_debug( str ) if !orphan?
     end
@@ -367,6 +382,7 @@ module Auditable
         @auditor.print_error_backtrace( str ) if !orphan?
     end
 
+    private
     #
     # Registers a block to be executed as soon as the Typhoeus request (reg)
     # has been completed and a response has been received.
