@@ -21,23 +21,19 @@ module Arachni
 #
 # Not much to look at but it streamlines RPC server option handling.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Options
 
     def set( hash )
-        hash.each_pair {
-            |k, v|
+        hash.each_pair do |k, v|
             begin
                 send( "#{k.to_s}=", v )
             rescue Exception => e
                 # ap e
                 # ap e.backtrace
             end
-        }
+        end
         true
     end
 
@@ -54,7 +50,6 @@ class Options
     #
     def include=( arr )
         @include = arr.map{ |rule| Regexp.new( rule ) }
-        return true
     end
 
     #
@@ -66,7 +61,6 @@ class Options
     #
     def exclude=( arr )
         @exclude = arr.map{ |rule| Regexp.new( rule ) }
-        return true
     end
 
     #
@@ -88,13 +82,11 @@ class Options
     #
     def redundant=( arr )
         ruleset = []
-        arr.each {
-            |rule|
+        arr.each do |rule|
             rule['regexp'] = Regexp.new( rule['regexp'] )
             ruleset << rule
-        }
+        end
         @redundant = ruleset.dup
-        return true
     end
 
 end
