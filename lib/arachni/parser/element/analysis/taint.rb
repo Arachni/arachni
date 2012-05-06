@@ -27,19 +27,27 @@ module Arachni::Parser::Element::Analysis::Taint
         #
         # Alternatively, you can use the :substring option.
         #
-        :regexp   => nil,
+        regexp:    nil,
 
         #
         # Verify the matched string with this value when using a regexp.
         #
-        :match    => nil,
+        match:     nil,
 
         #
         # The substring to look for the response body.
         #
         # Alternatively, you can use the :regexp option.
         #
-        :substring => nil
+        substring: nil,
+
+        #
+        # Array of patterns to ignore.
+        #
+        # Useful when needing to narrow down what to log without
+        # having to construct overly complex match regexps.
+        #
+        ignore:    nil
     }
 
     #
@@ -84,18 +92,18 @@ module Arachni::Parser::Element::Analysis::Taint
     end
 
     def match_substring_and_log( substring, res, opts )
-        verification = false
+        opts[:verification] = false
 
         # an annoying encoding exception may be thrown by scan()
         # the sob started occuring again....
         begin
-            verification = true if @auditor.page.html.substring?( substring )
+            opts[:verification] = true if @auditor.page.html.substring?( substring )
         rescue
         end
 
-        if res.body.substring?( substring )
-           opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
-           @auditor.log( opts, res )
+        if res.body.substring?( substring ) && !ignore?( res, opts )
+            opts[:regexp] = opts[:id] = opts[:match]  = substring.clone
+            @auditor.log( opts, res )
         end
     end
 
@@ -106,7 +114,7 @@ module Arachni::Parser::Element::Analysis::Taint
         match_data = res.body.scan( regexp )[0]
         match_data = match_data.to_s
 
-        verification = false
+        opts[:verification] = false
 
         # an annoying encoding exception may be thrown by scan()
         # the sob started occuring again....
@@ -119,11 +127,21 @@ module Arachni::Parser::Element::Analysis::Taint
         if ( opts[:match] && match_data == opts[:match] ) ||
            ( !opts[:match] && match_data && match_data.size > 0 )
 
-           opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
-           opts[:regexp] = regexp
+            return if ignore?( res, opts )
 
-           @auditor.log( opts, res )
+            opts[:id] = opts[:match]  = opts[:match] ? opts[:match] : match_data
+            opts[:regexp] = regexp
+
+            @auditor.log( opts, res )
         end
+    end
+
+    def ignore?( res, opts )
+        [opts[:ignore]].flatten.compact.each do |r|
+            r = r.is_a?( Regexp ) ? r : Regexp.new( r.to_s, Regexp::IGNORECASE )
+            return true if res.body.scan( r ).first
+        end
+        return false
     end
 
 end

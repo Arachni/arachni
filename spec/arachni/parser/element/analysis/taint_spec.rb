@@ -95,6 +95,19 @@ describe Arachni::Parser::Element::Analysis::Taint do
                         issues.size.should == 1
                     end
                 end
+
+                describe :ignore do
+                    it 'should ignore matches whose response also matches them' do
+                        @positive.taint_analysis( @seed,
+                            substring: @seed,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                            ignore: @seed
+                        )
+                        @auditor.http.run
+                        issues.should be_empty
+                    end
+                end
+
             end
         end
 
