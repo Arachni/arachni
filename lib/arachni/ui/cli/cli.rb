@@ -85,21 +85,21 @@ class CLI
 
 
         # echo the banner
-        banner( )
+        banner
 
         # work on the user supplied arguments
-        parse_opts( )
+        parse_opts
 
         @interrupt_handler = nil
 
         # trap Ctrl+C interrupts
-        trap( 'INT' ) { handle_interrupt( ) }
+        trap( 'INT' ) { handle_interrupt }
     end
 
     #
     # Runs Arachni
     #
-    def run( )
+    def run
 
         print_status( 'Initing...' )
 
@@ -139,10 +139,7 @@ class CLI
     private
 
     def print_stats( refresh_time = false, unmute = false )
-
         stats   = @arachni.stats( refresh_time )
-
-        audited = stats[:auditmap_size]
         mapped  = stats[:sitemap_size]
 
         print_line( restr, unmute )
@@ -215,7 +212,7 @@ class CLI
     def handle_interrupt
         return if @interrupt_handler && @interrupt_handler.alive?
 
-        @only_positives_opt = only_positives_opt = only_positives?
+        @only_positives_opt = only_positives?
         @@only_positives = false
 
         @interrupt_handler = Thread.new {
@@ -314,18 +311,18 @@ class CLI
 
         if !@opts.repload && !@opts.help
 
-            if( !@opts.mods || @opts.mods.empty? )
+            if !@opts.mods || @opts.mods.empty?
                 print_info( "No modules were specified." )
                 print_info( " -> Will run all mods." )
 
-                @opts.mods = ['*']
+                @opts.mods = %w(*)
             end
 
-            if( !@opts.audit_links &&
+            if !@opts.audit_links &&
                 !@opts.audit_forms &&
                 !@opts.audit_cookies &&
                 !@opts.audit_headers
-              )
+
                 print_info( "No audit options were specified." )
                 print_info( " -> Will audit links, forms and cookies." )
 
@@ -337,8 +334,7 @@ class CLI
         end
 
         @arachni.plugins.load_defaults!
-        @opts.to_h.each {
-            |opt, arg|
+        @opts.to_h.each do |opt, arg|
 
             case opt.to_s
 
@@ -406,10 +402,10 @@ class CLI
                     exit 0
 
             end
-        }
+        end
 
         # Check for missing url
-        if( !@opts.url &&  !@opts.repload )
+        if !@opts.url &&  !@opts.repload
             print_error( "Missing url argument." )
             exit 0
         end
@@ -428,8 +424,7 @@ class CLI
         mods = @arachni.lsmod
 
         i = 0
-        mods.each {
-            |info|
+        mods.each do |info|
 
             print_status( "#{info[:mod_name]}:" )
             print_line( "--------------------" )
@@ -437,7 +432,7 @@ class CLI
             print_line( "Name:\t\t"       + info[:name] )
             print_line( "Description:\t"  + info[:description] )
 
-            if( info[:elements] && info[:elements].size > 0 )
+            if info[:elements] && info[:elements].size > 0
                 print_line( "Elements:\t" +
                     info[:elements].join( ', ' ).downcase )
             end
@@ -445,34 +440,31 @@ class CLI
             print_line( "Author:\t\t"     + info[:author].join( ", " ) )
             print_line( "Version:\t"      + info[:version] )
 
-            if( info[:references] )
+            if info[:references]
                 print_line( "References:" )
-                info[:references].keys.each {
-                    |key|
+                info[:references].keys.each do |key|
                     print_info( key + "\t\t" + info[:references][key] )
-                }
+                end
             end
 
             if info[:targets]
                 print_line( "Targets:" )
-                info[:targets].keys.each {
-                    |key|
+                info[:targets].keys.each do |key|
                     print_info( key + "\t\t" + info[:targets][key] )
-                }
+                end
             end
 
-            if( info[:issue] &&
-                ( sploit = info[:issue][:metasploitable] ) )
+            if info[:issue] && sploit = info[:issue][:metasploitable]
                 print_line( "Metasploitable:\t" + sploit )
             end
 
             print_line( "Path:\t"    + info[:path] )
 
-            i+=1
+            i += 1
 
             # pause every 3 modules to give the user time to read
             # (cheers to aungkhant@yehg.net for suggesting it)
-            if( i % 3 == 0 && i != mods.size )
+            if i % 3 == 0 && i != mods.size
                 print_line
                 print_line( 'Hit <space> <enter> to continue, any other key to exit. ' )
 
@@ -484,7 +476,7 @@ class CLI
             end
 
             print_line
-        }
+        end
 
     end
 
@@ -497,8 +489,7 @@ class CLI
         print_info( 'Available reports:' )
         print_line
 
-        @arachni.lsrep().each {
-            |info|
+        @arachni.lsrep.each do |info|
 
             print_status( "#{info[:rep_name]}:" )
             print_line( "--------------------" )
@@ -506,18 +497,17 @@ class CLI
             print_line( "Name:\t\t"       + info[:name] )
             print_line( "Description:\t"  + info[:description] )
 
-            if( info[:options] && !info[:options].empty? )
+            if info[:options] && !info[:options].empty?
                 print_line( "Options:\t" )
 
-                info[:options].each {
-                    |option|
+                info[:options].each do |option|
                     print_info( "\t#{option.name} - #{option.desc}" )
                     print_info( "\tType:        #{option.type}" )
                     print_info( "\tDefault:     #{option.default}" )
                     print_info( "\tRequired?:   #{option.required?}" )
 
                     print_line( )
-                }
+                end
             end
 
             print_line( "Author:\t\t"     + info[:author].join( ", " ) )
@@ -525,8 +515,7 @@ class CLI
             print_line( "Path:\t"         + info[:path] )
 
             print_line
-        }
-
+        end
     end
 
     #
@@ -538,8 +527,7 @@ class CLI
         print_info( 'Available plugins:' )
         print_line
 
-        @arachni.lsplug().each {
-            |info|
+        @arachni.lsplug.each do |info|
 
             print_status( "#{info[:plug_name]}:" )
             print_line( "--------------------" )
@@ -547,27 +535,25 @@ class CLI
             print_line( "Name:\t\t"       + info[:name] )
             print_line( "Description:\t"  + info[:description] )
 
-            if( info[:options] && !info[:options].empty? )
+            if info[:options] && !info[:options].empty?
                 print_line( "Options:\t" )
 
-                info[:options].each {
-                    |option|
+                info[:options].each do |option|
                     print_info( "\t#{option.name} - #{option.desc}" )
                     print_info( "\tType:        #{option.type}" )
                     print_info( "\tDefault:     #{option.default}" )
                     print_info( "\tRequired?:   #{option.required?}" )
 
-                    print_line( )
-                }
+                    print_line
+                end
             end
 
-            print_line( "Author:\t\t"     + info[:author].join( ", " ) )
-            print_line( "Version:\t"      + info[:version] )
-            print_line( "Path:\t"         + info[:path] )
+            print_line( "Author:\t\t" + info[:author].join( ", " ) )
+            print_line( "Version:\t"  + info[:version] )
+            print_line( "Path:\t"     + info[:path] )
 
             print_line
-        }
-
+        end
     end
 
 
@@ -580,10 +566,7 @@ class CLI
     def load_profile( profiles )
         exception_jail{
             @opts.load_profile = nil
-            profiles.each {
-                |filename|
-                @opts.merge!( @opts.load( filename ) )
-            }
+            profiles.each { |filename| @opts.merge!( @opts.load( filename ) ) }
         }
     end
 
@@ -594,18 +577,17 @@ class CLI
     # @param    [String]    filename
     #
     def save_profile( filename )
-
         if filename = @opts.save( filename )
             print_status( "Saved profile in '#{filename}'." )
-            print_line( )
+            print_line
         else
-            banner( )
+            banner
             print_error( 'Could not save profile.' )
             exit 0
         end
     end
 
-    def print_profile( )
+    def print_profile
         print_info( 'Running profile:' )
         print_info( @opts.to_args )
     end
@@ -620,7 +602,6 @@ class CLI
     # @return [void]
     #
     def banner
-
         print_line 'Arachni - Web Application Security Scanner Framework v' +
             @arachni.version + ' [' + @arachni.revision + ']
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
