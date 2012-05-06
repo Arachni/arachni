@@ -64,19 +64,13 @@ class Node
         @nodes_info_cache = []
 
         if neighbour = @opts.neighbour
-            add_neighbour( neighbour )
+            # add neighbour and announce him to everyone
+            add_neighbour( neighbour, true )
 
+            # grab the neighbour's neighbours
             peer = connect_to_peer( neighbour )
             peer.neighbours do |urls|
-                urls.each do |url|
-                    @neighbours << url if url != @url
-                end
-            end
-
-            peer.add_neighbour( @url, true ) do |res|
-                next if !res.rpc_exception?
-                print_info( 'Neighbour seems dead: ' + neighbour )
-                add_dead_neighbour( neighbour )
+                urls.each { |url| @neighbours << url if url != @url }
             end
         end
 
@@ -107,7 +101,7 @@ class Node
         connect_to_peer( node_url ).add_neighbour( @url, propagate ) do |res|
             next if !res.rpc_exception?
             add_dead_neighbour( node_url )
-            print_status( "Found dead neighbour: #{node_url} " )
+            print_status( "Neighbour seems dead: #{node_url} " )
         end
 
         @neighbours << node_url

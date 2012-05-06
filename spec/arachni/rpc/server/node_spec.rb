@@ -111,13 +111,29 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     end
 
     context 'when initialised with a neighbour' do
-        it 'should add that neighbour' do
+        it 'should add that neighbour and reach convergence' do
             n = @get_node.call
 
             @opts.neighbour = n.url
             c = @get_node.call
+            sleep 0.5
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
+
+            d = @get_node.call
+            sleep 0.5
+            d.neighbours.sort.should == [n.url, c.url].sort
+            c.neighbours.sort.should == [n.url, d.url].sort
+            n.neighbours.sort.should == [c.url, d.url].sort
+
+            @opts.neighbour = d.url
+            e = @get_node.call
+            sleep 0.5
+            e.neighbours.sort.should == [n.url, c.url, d.url].sort
+            d.neighbours.sort.should == [n.url, c.url, e.url].sort
+            c.neighbours.sort.should == [n.url, d.url, e.url].sort
+            n.neighbours.sort.should == [c.url, d.url, e.url].sort
+
             @opts.neighbour = nil
         end
     end
