@@ -628,8 +628,7 @@ class HTTP
         print_debug( 'Train?: ' + req.train?.to_s  )
         print_debug(  '------------' )
 
-        req.on_complete( true ) {
-            |res|
+        req.on_complete( true ) do |res|
 
             @response_count += 1
             @curr_res_cnt   += 1
@@ -666,7 +665,7 @@ class HTTP
                     @trainer.add_response( res )
                 end
             end
-        }
+        end
 
         exception_jail { @hydra_sync.run } if !async
     end
