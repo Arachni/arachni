@@ -22,11 +22,7 @@ module Modules
 #
 # Logs all non 200 (OK) and non 404 server responses.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.3
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class InterestingResponses < Arachni::Module::Base
 
@@ -36,6 +32,8 @@ class InterestingResponses < Arachni::Module::Base
         200,
         404
     ]
+
+    MAX_ENTRIES = 100
 
     def prepare
         # we need to run only once
@@ -48,11 +46,9 @@ class InterestingResponses < Arachni::Module::Base
         print_status( "Listening..." )
 
         # tell the HTTP interface to cal this block every-time a request completes
-        @http.add_on_complete {
-            |res|
+        @http.add_on_complete do |res|
             __log_results( res ) if !IGNORE_CODES.include?( res.code ) && !res.body.empty?
-        }
-
+        end
     end
 
     def clean_up
@@ -65,7 +61,7 @@ class InterestingResponses < Arachni::Module::Base
             :description    => %q{Logs all non 200 (OK) server responses.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :targets        => { 'Generic' => 'all' },
             :issue   => {
                 :name        => %q{Interesting server response.},
@@ -82,6 +78,8 @@ class InterestingResponses < Arachni::Module::Base
     end
 
     def __log_results( res )
+        @@entries ||= 0
+        return if @@entries > MAX_ENTRIES
 
         @@_loged ||= {
             :paths   => Set.new,
@@ -109,6 +107,7 @@ class InterestingResponses < Arachni::Module::Base
             }
         )
 
+        @@entries += 1
         # inform the user that we have a match
         print_ok( "Found an interesting response (Code: #{res.code.to_s})." )
     end
