@@ -17,10 +17,7 @@
 #
 # Overloads the {Object} class providing a deep_clone() method
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Object
 
@@ -29,9 +26,9 @@ class Object
     #
     def deep_clone
         begin
-            return Marshal.load( Marshal.dump( self  ) )
+            Marshal.load( Marshal.dump( self ) )
         rescue Exception
-            return self
+            self
         end
     end
 

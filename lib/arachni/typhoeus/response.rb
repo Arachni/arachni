@@ -15,15 +15,14 @@
 =end
 
 module Typhoeus
-  class Response
+class Response
 
     def content_type
         return if !headers_hash.is_a?( Hash )
 
-        headers_hash.each_pair {
-            |key, val|
+        headers_hash.each_pair do |key, val|
             return val if key.to_s.downcase == 'content-type'
-        }
+        end
 
         return
     end
@@ -38,25 +37,16 @@ module Typhoeus
     # @return    [Hash]
     #
     def to_hash
-        hash = Hash.new
-        instance_variables.each {
-            |var|
-            key       = var.to_s.gsub( /@/, '' )
-            hash[key] = instance_variable_get( var )
-
-        }
+        hash = {}
+        instance_variables.each do |var|
+            hash[var.to_s.gsub( /@/, '' )] = instance_variable_get( var )
+        end
 
         hash['headers_hash'] = {}
-        headers_hash.each_pair {
-            |k, v|
-            hash['headers_hash'][k] = v
-        }
+        headers_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
 
         hash.delete( 'request' )
-
-        return hash
+        hash
     end
-
-
-  end
+end
 end
