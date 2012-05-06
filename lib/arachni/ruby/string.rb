@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class String
@@ -28,18 +28,18 @@ class String
     # Gets the reverse diff between self and str on a word level.
     #
     #
-    #   self = <<END
+    #   str = <<END
     #   This is the first test.
     #   Not really sure what else to put here...
     #   END
     #
-    #   str = <<END
+    #   str2 = <<END
     #   This is the second test.
     #   Not really sure what else to put here...
     #   Boo-Yah!
     #   END
     #
-    #   self.rdiff( str )
+    #   str.rdiff( str2 )
     #   # => "This is the test.\nNot really sure what else to put here...\n"
     #
     #
@@ -48,7 +48,6 @@ class String
     # @return [String]
     #
     def rdiff( str )
-
         return self if self == str
 
         # get the words of the first text in an array
@@ -64,16 +63,15 @@ class String
         changes.flatten!
 
         # get what hasn't changed (the rdiff, so to speak) as a string
-        return ( words1 - changes ).join( '' )
-
+        ( words1 - changes ).join
     end
 
     def substring?( string )
         begin
-            match = match( Regexp.new( Regexp.escape( string ) ) )
-            match && !match.to_s.empty?
+            cmatch = match( Regexp.new( Regexp.escape( string ) ) )
+            cmatch && !cmatch.to_s.empty?
         rescue
-            return nil
+            nil
         end
     end
 
