@@ -132,11 +132,11 @@ module Arachni::Parser::Element::Analysis::Timeout
         def @@parent.timeout_audit_run
             @@__running_timeout_attacks = true
 
-            while( !@@__timeout_audit_blocks.empty? )
+            while !@@__timeout_audit_blocks.empty?
                 @@__timeout_audit_blocks.pop.call
             end
 
-            while( !@@__timeout_candidates.empty? )
+            while !@@__timeout_candidates.empty?
                 self.timeout_analysis_phase_2( @@__timeout_candidates.pop )
             end
         end
@@ -185,7 +185,7 @@ module Arachni::Parser::Element::Analysis::Timeout
 
                 if !res.timed_out?
 
-                    elem.auditor.print_info( 'Liveness check was successful, progressing to verification...' )
+                    elem.print_info( 'Liveness check was successful, progressing to verification...' )
 
                     elem.audit( str, opts ) {
                         |c_res, c_opts|
@@ -201,11 +201,11 @@ module Arachni::Parser::Element::Analysis::Timeout
                             elem.auditor.log( c_opts, c_res )
                             elem.ensure_responsiveness!
                         else
-                            elem.auditor.print_info( 'Verification failed.' )
+                            elem.print_info( 'Verification failed.' )
                         end
                     }
                 else
-                    elem.auditor.print_info( 'Liveness check failed, bailing out...' )
+                    elem.print_info( 'Liveness check failed, bailing out...' )
                 end
             }
 
@@ -257,7 +257,7 @@ module Arachni::Parser::Element::Analysis::Timeout
 
                 elem.auditor = @auditor
 
-                @auditor.print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
+                print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
                 elem.ensure_responsiveness!
                 @@parent.add_timeout_candidate( elem )
@@ -281,19 +281,20 @@ module Arachni::Parser::Element::Analysis::Timeout
 
         orig_opts = opts
 
-        @auditor.print_info( 'Waiting for the effects of the timing attack to wear off.' )
-        @auditor.print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
+        print_info( 'Waiting for the effects of the timing attack to wear off.' )
+        print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
 
         @auditable = @orig
         res = submit( d_opts ).response
 
         if !res.timed_out?
-            @auditor.print_info( 'Server seems responsive again.' )
+            print_info( 'Server seems responsive again.' )
         else
-            @auditor.print_error( 'Max waiting time exceeded, the server may be dead.' )
+            print_error( 'Max waiting time exceeded, the server may be dead.' )
         end
 
         @opts.merge!( orig_opts )
+        true
     end
 
     private

@@ -225,7 +225,7 @@ module Arachni::Parser::Element::Analysis::RDiff
                                 }
                             )
 
-                            @auditor.print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
+                            print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
                         }
                     end
 
