@@ -15,17 +15,14 @@
 =end
 
 module Arachni
-
 module Modules
 
 #
 # SQL Injection audit module.<br/>
 # It audits links, forms and cookies.
 #
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
 # @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
@@ -55,9 +52,11 @@ class SQLInjection < Arachni::Module::Base
         # to reduce file IO
         #
         @@__regexps ||= []
+        @@__regexps_to_ignore ||= []
 
         if @@__regexps.empty?
             read_file( 'regexp_ids.txt' ) { |regexp| @@__regexps << regexp }
+            read_file( 'regexp_ignore.txt' ) { |regexp| @@__regexps_to_ignore << regexp }
         end
 
         # prepare the string that will hopefully cause the webapp
@@ -68,9 +67,10 @@ class SQLInjection < Arachni::Module::Base
             ]
 
         @__opts = {
-            :format => [ Format::APPEND ],
-            :regexp => @@__regexps,
-            :param_flip => true
+            format:     [Format::APPEND],
+            regexp:     @@__regexps,
+            ignore:     @@__regexps_to_ignore,
+            param_flip: true
         }
 
     end
