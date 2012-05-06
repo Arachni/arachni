@@ -38,3 +38,12 @@ def random_port
         end
     end
 end
+
+def reset_options
+    opts = Arachni::Options.instance
+    opts.reset!
+    opts.rpc_address = 'localhost'
+    opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
+    opts.dir['modules'] = spec_path + 'fixtures/modules/'
+    opts.dir['logs']    = spec_path + 'logs'
+end

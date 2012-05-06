@@ -42,13 +42,7 @@ RSpec.configure do |config|
         Arachni::Module::Manager.results.clear
         Arachni::Plugin::Manager.results.clear
         Arachni::HTTP.instance.reset!
-        opts = Arachni::Options.instance
-        opts.reset!
-        opts.rpc_address = 'localhost'
-        opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
-        opts.dir['modules'] = spec_path + 'fixtures/modules/'
-
-        opts.dir['logs'] = spec_path + 'logs'
+        reset_options
     end
 
     #config.after( :all ) do
