@@ -155,12 +155,12 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.auditstore.plugins.should be_empty
             instance.framework.busy?.should be_true
 
-            tries = 3
+            tries = 4
             begin
                 sleep( 1 ) while instance.framework.busy?
             rescue Exception
-                retry if tries > 0
                 tries -= 1
+                retry if tries > 0
             end
 
             instance.framework.clean_up!.should be_true
