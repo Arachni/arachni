@@ -70,6 +70,7 @@ class Node
             # grab the neighbour's neighbours
             peer = connect_to_peer( neighbour )
             peer.neighbours do |urls|
+                raise "Neighbour '#{neighbour}' is unreachable." if urls.rpc_exception?
                 urls.each { |url| @neighbours << url if url != @url }
             end
         end
