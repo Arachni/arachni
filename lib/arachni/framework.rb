@@ -130,7 +130,7 @@ class Framework
     #
     # @param    [Options]    opts
     #
-    def initialize( opts )
+    def initialize( opts = Arachni::Options.instance )
 
         Encoding.default_external = "BINARY"
         Encoding.default_internal = "BINARY"
