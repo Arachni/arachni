@@ -24,13 +24,8 @@ class WEBrick::Cookie
 
     def self.parse_set_cookie( str )
         cookie = old_parse_set_cookie( str )
-
-        if str.split( ';' ).map { |f| f.downcase.strip }.include?( 'httponly' )
-            cookie.httponly = true
-        else
-            cookie.httponly = false
-        end
-
+        cookie.httponly = str.split( ';' ).map { |f| f.downcase.strip }.
+            include?( 'httponly' )
         cookie
     end
 end
