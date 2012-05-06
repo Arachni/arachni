@@ -45,5 +45,5 @@ def reset_options
     opts.rpc_address = 'localhost'
     opts.dir['plugins'] = spec_path + 'fixtures/plugins/'
     opts.dir['modules'] = spec_path + 'fixtures/modules/'
-    opts.dir['logs']    = spec_path + 'logs'
+    opts.dir['logs']    = spec_path + 'logs/'
 end

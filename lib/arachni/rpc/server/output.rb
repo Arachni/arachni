@@ -22,36 +22,39 @@ require Options.instance.dir['lib'] + 'ui/cli/output'
 module UI
 
 #
-# RPC deamon Output module
+# RPC Output module
 #
 # It basically classifies and buffers all system messages until it's time to
 # flush the buffer and send them over the wire.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Output
 
-    # verbosity flag
-    #
-    # if it's on verbose messages will be enabled
-    @@verbose = false
+    def self.reset_output_options
+        # verbosity flag
+        #
+        # if it's on verbose messages will be enabled
+        @@verbose = false
 
-    # debug flag
-    #
-    # if it's on debugging messages will be enabled
-    @@debug   = false
+        # debug flag
+        #
+        # if it's on debugging messages will be enabled
+        @@debug   = false
 
-    # only_positives flag
-    #
-    # if it's on status messages will be disabled
-    @@only_positives  = false
+        # only_positives flag
+        #
+        # if it's on status messages will be disabled
+        @@only_positives  = false
 
-    @@reroute_to_file = false
+        @@reroute_to_file = false
 
-    @@buffer_cap = 30
+        @@buffer_cap = 30
 
-    @@buffer ||= []
+        @@buffer ||= []
+    end
+
+    reset_output_options
 
     #
     # Empties the output buffer and returns all messages.
@@ -63,29 +66,14 @@ module Output
     def flush_buffer
         buf = @@buffer.dup
         @@buffer.clear
-        return buf
+        buf
     end
 
-    def buffer( msg )
-        if file = @@reroute_to_file
-            File.open( file, 'a+' ) {
-                |f|
-
-                type = msg.keys[0]
-                str  = msg.values[0]
-                next if str.empty?
-
-                f.write( "[#{Time.now.asctime}] [#{type}]  #{str}\n" )
-            }
-        else
-            @@buffer << msg
-            if @@buffer_cap.is_a? Integer
-                @@buffer.slice!( (@@buffer.size - @@buffer_cap)..@@buffer.size  )
-            end
-        end
+    def set_buffer_cap( cap )
+        @@buffer_cap = cap
     end
 
-    def uncap_buffer!
+    def uncap_buffer
         @@buffer_cap = nil
     end
 
@@ -114,7 +102,7 @@ module Output
     # @param    [String]    str
     #
     def print_bad( str = '' )
-        buffer( :bad => str )
+        buffer( bad: str )
     end
 
     # Prints a status message
@@ -128,8 +116,8 @@ module Output
     # @return    [void]
     #
     def print_status( str = '' )
-        if @@only_positives then return end
-        buffer( :status => str )
+        return if @@only_positives
+        buffer( status: str )
     end
 
     # Prints an info message
@@ -143,8 +131,8 @@ module Output
     # @return    [void]
     #
     def print_info( str = '' )
-        if @@only_positives then return end
-        buffer( :info => str )
+        return if @@only_positives
+        buffer( info: str )
     end
 
     # Prints a good message, something that went very very right,
@@ -156,7 +144,7 @@ module Output
     # @return    [void]
     #
     def print_ok( str = '' )
-        buffer( :ok => str )
+        buffer( ok: str )
     end
 
     # Prints a debugging message
@@ -170,10 +158,10 @@ module Output
     # @return    [void]
     #
     def print_debug( str = '' )
-        if !@@debug then return end
+        return if !@@debug
 
         if reroute_to_file?
-            buffer( :debug => str )
+            buffer( debug: str )
         else
             print_color( '[!]', 36, str, $stderr )
         end
@@ -191,7 +179,7 @@ module Output
     # @return    [void]
     #
     def print_debug_pp( obj = nil )
-        if !@@debug then return end
+        return if !@@debug
         pp obj
     end
 
@@ -206,7 +194,7 @@ module Output
     # @return    [void]
     #
     def print_debug_backtrace( e = nil )
-        if !@@debug then return end
+        return if !@@debug
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
@@ -221,8 +209,8 @@ module Output
     # @return    [void]
     #
     def print_verbose( str = '' )
-        if !@@verbose then return end
-        buffer( :verbose => str )
+        return if !@@verbose
+        buffer( verbose: str )
     end
 
     # Prints a line of message
@@ -236,8 +224,8 @@ module Output
     # @return    [void]
     #
     def print_line( str = '' )
-        if @@only_positives then return end
-        buffer( :line => str )
+        return if @@only_positives
+        buffer( line: str )
     end
 
     # Sets the {@@verbose} flag to true
@@ -306,6 +294,25 @@ module Output
 
     def reroute_to_file?
         @@reroute_to_file
+    end
+
+    private
+
+    def buffer( msg )
+        if file = @@reroute_to_file
+            File.open( file, 'a+' ) do |f|
+                type = msg.keys[0]
+                str  = msg.values[0]
+                next if str.empty?
+
+                f.write( "[#{Time.now.asctime}] [#{type}]  #{str}\n" )
+            end
+        else
+            @@buffer << msg
+            if @@buffer_cap.is_a?( Integer)
+                @@buffer.slice!( (@@buffer.size - @@buffer_cap)..@@buffer.size )
+            end
+        end
     end
 
     extend self
