@@ -14,6 +14,7 @@
     limitations under the License.
 =end
 
+require Arachni::Options.instance.dir['lib'] + 'ui/cli/output'
 require Arachni::Options.instance.dir['lib'] + 'module/utilities'
 require 'nokogiri'
 require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
