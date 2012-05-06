@@ -24,6 +24,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         @method = 'get'
 
         @auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
+        @auditable ||= {}
+
         @orig      = @auditable.deep_clone
         @orig.freeze
     end
