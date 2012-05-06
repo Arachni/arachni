@@ -256,7 +256,7 @@ class Issue
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
-        if( @cwe )
+        if @cwe
             @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
         end
 
