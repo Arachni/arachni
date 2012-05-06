@@ -28,7 +28,7 @@ class Response
     end
 
     def redirection?
-        (300...399).include?( @code )
+        (300..399).include?( @code )
     end
 
     #
