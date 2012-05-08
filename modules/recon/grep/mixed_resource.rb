@@ -22,14 +22,14 @@ module Modules
 #
 # Looks for resources served over HTTP when the HTML code is server over HTTPS.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.2
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
 #
 class MixedResource < Arachni::Module::Base
+    include Arachni::Module::Utilities
 
     def prepare
         @@__audited ||= Set.new
@@ -64,7 +64,7 @@ class MixedResource < Arachni::Module::Base
     end
 
     def https?( url )
-        URI( url ).scheme == 'https'
+        URI( to_absolute( url, @page.url ) ).scheme == 'https'
     end
 
     def log_resource( url )
@@ -83,7 +83,7 @@ class MixedResource < Arachni::Module::Base
                 Issue::Element::BODY
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
                 'Google Online Security Blog' =>
                     'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'
