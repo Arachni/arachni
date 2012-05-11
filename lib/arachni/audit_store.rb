@@ -83,28 +83,26 @@ class AuditStore
         ::Arachni::Issue::Severity::INFORMATIONAL
     ]
 
-    def initialize( audit = {} )
+    def initialize( opts = {} )
         @plugins = {}
         @sitemap = []
 
         # set instance variables from audit opts
-        audit.each {
-            |k, v|
-            self.instance_variable_set( '@' + k.to_s, v )
-        }
+        opts.each { |k, v| self.instance_variable_set( '@' + k.to_s, v ) }
 
-        @options         = prepare_options( @options )
-        @issues          = sort( prepare_variations( @issues ) )
-        if @options['start_datetime']
-            @start_datetime  = @options['start_datetime'].asctime
+        @options = prepare_options( @options )
+        @issues  = sort( prepare_variations( @issues ) )
+
+        @start_datetime  =  if @options['start_datetime']
+            @options['start_datetime'].asctime
         else
-            @start_datetime = Time.now.asctime
+            Time.now.asctime
         end
 
-        if @options['finish_datetime']
-            @finish_datetime = @options['finish_datetime'].asctime
+        @finish_datetime = if @options['finish_datetime']
+            @options['finish_datetime'].asctime
         else
-            @finish_datetime = Time.now.asctime
+            Time.now.asctime
         end
 
         @delta_time = secs_to_hms( @options['delta_time'] )
@@ -117,7 +115,7 @@ class AuditStore
     #
     # @return    [AuditStore]
     #
-    def AuditStore.load( file )
+    def self.load( file )
          begin
              r = YAML.load( IO.read( file ) )
              r.version
@@ -134,15 +132,9 @@ class AuditStore
     #
     def save( file )
         begin
-            File.open( file, 'w' ) {
-                |f|
-                f.write( YAML.dump( self ) )
-            }
+            File.open( file, 'w' ) { |f| f.write( YAML.dump( self ) ) }
         rescue
-            File.open( file, 'wb' ) {
-                |f|
-                f.write( Marshal.dump( self ) )
-            }
+            File.open( file, 'wb' ) { |f| f.write( Marshal.dump( self ) ) }
         end
     end
 
@@ -152,39 +144,33 @@ class AuditStore
     # @return    [Hash]
     #
     def to_h
-        hash = obj_to_hash( self ).dup
+        hash = obj_to_hash( self ).deep_clone
 
-        hash['issues'] = hash['issues'].map {
-            |issue|
+        hash['issues'] = hash['issues'].map do |issue|
             issue.variations = issue.variations.map { |var| obj_to_hash( var ) }
             obj_to_hash( issue )
-        }
+        end
 
-        hash['plugins'].each {
-            |plugin, results|
+        hash['plugins'].each do |plugin, results|
             next if !results[:options]
 
-            hash['plugins'][plugin][:options] = hash['plugins'][plugin][:options].map {
-                |opt|
-                opt.to_h
-            }
-        }
+            hash['plugins'][plugin][:options] =
+                hash['plugins'][plugin][:options].map { |opt| opt.to_h }
+        end
 
-        return hash
+        hash
     end
 
     private
 
     def sort( issues )
         sorted = []
-        issues.each {
-            |issue|
+        issues.each do |issue|
             order = ORDER.rindex( issue.severity ) || ORDER.size
             sorted[order] ||= []
             sorted[order] << issue
-        }
-
-        return sorted.flatten.compact
+        end
+        sorted.flatten.compact
     end
 
 
@@ -197,18 +183,16 @@ class AuditStore
     #
     def obj_to_hash( obj )
         hash = {}
-        obj.instance_variables.each {
-            |var|
-            key       = var.to_s.gsub( /@/, '' )
-            hash[key] = obj.instance_variable_get( var )
-        }
-        return hash
+        obj.instance_variables.each do |var|
+            hash[var.to_s.gsub( /@/, '' )] = obj.instance_variable_get( var )
+        end
+        hash
     end
 
     #
     # Prepares the hash to be stored in {AuditStore#options}
     #
-    # The 'options' dimention of the array that initializes AuditObjects<br/>
+    # The value of the 'options' key of the hash that initializes AuditObjects
     # needs some more processing before being saved in {AuditStore#options}.
     #
     # @param    [Hash]
@@ -216,38 +200,28 @@ class AuditStore
     # @return    [Hash]
     #
     def prepare_options( options )
-        options['url']    = options['url'].to_s
+        new_options = {}
 
-        new_options = Hash.new
-        options.each_pair {
-            |key, val|
-
-            new_options[key.to_s]    = val
+        options['url'] = options['url'].to_s
+        options.each_pair do |key, val|
+            new_options[key.to_s] = val
 
             case key
+                when 'redundant'
+                    new_options[key.to_s] = []
+                    val.each do |red|
+                        new_options[key.to_s] << {
+                            'regexp' => red['regexp'].to_s,
+                             'count' => red['count']
+                        }
+                    end
 
-            when 'redundant'
-                new_options[key.to_s] = []
-                val.each {
-                    |red|
-                    new_options[key.to_s] << {
-                        'regexp' => red['regexp'].to_s,
-                         'count' => red['count']
-                    }
-                }
-
-            when 'exclude', 'include'
-                new_options[key.to_s] = []
-                val.each {
-                    |regexp|
-                    new_options[key.to_s] << regexp.to_s
-                }
-
+                when 'exclude', 'include'
+                    new_options[key.to_s] = []
+                    val.each { |regexp| new_options[key.to_s] << regexp.to_s }
             end
-
-        }
-
-        return new_options
+        end
+        new_options
     end
 
     #
@@ -262,21 +236,10 @@ class AuditStore
     #                                        with populated {Issue#variations}
     #
     def prepare_variations( issues )
-
-        variation_keys = [
-            'injected',
-            'id',
-            'regexp',
-            'regexp_match',
-            'headers',
-            'response',
-            'opts'
-        ]
+        variation_keys = %w(injected id regexp regexp_match headers response opts)
 
         new_issues = {}
-        issues.each {
-            |issue|
-
+        issues.each do |issue|
             var = issue.var || ''
 
             __id  = issue.mod_name +
@@ -284,19 +247,17 @@ class AuditStore
                 var + '::' +
                 issue.url.split( /\?/ )[0].gsub( '//', '/' )
 
-            orig_url  = issue.url
             issue.url = issue.url.split( /\?/ )[0]
 
-            new_issues[__id] = issue         if !new_issues[__id]
-            new_issues[__id].variations = [] if !new_issues[__id].variations
+            new_issues[__id] ||= issue
+            new_issues[__id].variations ||= []
 
             issue.headers ||= {}
 
             issue.headers['request'] ||= {}
-            (issue.headers[:request] || {}).each {
-                |k, v|
+            (issue.headers[:request] || {}).each do |k, v|
                 issue.headers['request'][k] = v.dup if v
-            }
+            end
 
             issue.headers['response'] ||= {}
             issue.headers['response'] = (issue.headers[:response] || '').dup
@@ -309,32 +270,26 @@ class AuditStore
                 get_internal_module_name( new_issues[__id].mod_name )
             new_issues[__id].variations << issue.deep_clone
 
-            variation_keys.each {
-                |key|
-                if( new_issues[__id].instance_variable_defined?( '@' + key ) )
+            variation_keys.each do |key|
+                if new_issues[__id].instance_variable_defined?( '@' + key )
                     new_issues[__id].remove_instance_var( '@' + key )
                 end
-            }
+            end
 
-        }
+        end
 
         issue_keys = new_issues.keys
         new_issues = new_issues.to_a.flatten
 
-        issue_keys.each {
-            |key|
-            new_issues.delete( key )
-        }
-
+        issue_keys.each { |key| new_issues.delete( key ) }
         new_issues
     end
 
     def get_internal_module_name( modname )
-        MODULE_NAMESPACE.constants.each {
-            |mod|
+        MODULE_NAMESPACE.constants.each do |mod|
             klass = MODULE_NAMESPACE.const_get( mod )
             return mod.to_s if klass.info[:name] == modname
-        }
+        end
     end
 
     #
@@ -346,10 +301,7 @@ class AuditStore
     #
     def secs_to_hms( secs )
         secs = secs.to_i
-        return [secs/3600, secs/60 % 60, secs % 60].map {
-            |t|
-            t.to_s.rjust( 2, '0' )
-        }.join(':')
+        [secs/3600, secs/60 % 60, secs % 60].map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
     end
 
 end
