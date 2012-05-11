@@ -448,23 +448,23 @@ class Server < Sinatra::Base
     #
     def prep_opts( params )
 
-        need_to_split = [
-            'exclude_cookies',
-            'exclude_vectors',
-            'exclude',
-            'include'
-        ]
+        need_to_split = %w(exclude_cookies exclude_vectors exclude include)
 
         cparams = {}
         params.each_pair {
             |name, value|
 
-            next if [ '_csrf', 'modules', 'plugins' ].include?( name ) || ( value.is_a?( String ) && value.empty?)
+            next if %w(_csrf modules plugins).include?( name ) || ( value.is_a?( String ) && value.empty?)
 
             value = true if value == 'on'
 
-            if name == 'cookiejar' && value.is_a?( String )
-               cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
+            if name == 'cookiejar' && value[:tempfile]
+                cparams['cookies'] = {}
+                cparams['cookie_string'] = ''
+                Arachni::Parser::Element::Cookie.from_file( '', value[:tempfile] ).each do |c|
+                    cparams['cookies'][c.name] = c.value
+                    cparams['cookie_string'] += c.to_s + ';'
+                end
             elsif name == 'extend_paths'
                cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
             elsif name == 'restrict_paths'
