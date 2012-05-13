@@ -26,7 +26,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 class AutoLogin < Arachni::Plugin::Base
 
@@ -115,9 +115,9 @@ class AutoLogin < Arachni::Plugin::Base
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :options        => [
-                Arachni::OptUrl.new( 'url', [ true, 'The URL that contains the login form.' ] ),
+                Arachni::OptURL.new( 'url', [ true, 'The URL that contains the login form.' ] ),
                 Arachni::OptString.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
             ],
             :order          => 0
