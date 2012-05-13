@@ -24,7 +24,7 @@ require opts.dir['lib'] + 'parser/element/cookie'
 require opts.dir['lib'] + 'parser/element/header'
 require opts.dir['lib'] + 'parser/page'
 require opts.dir['lib'] + 'module/utilities'
-require opts.dir['lib'] + 'component_manager'
+require opts.dir['lib'] + 'component/manager'
 
 #
 # Analyzer class
@@ -336,7 +336,7 @@ class Parser
     def run_extractors
         begin
             @@manager ||=
-                ::Arachni::ComponentManager.new( @opts.dir['path_extractors'], Extractors )
+                ::Arachni::Component::Manager.new( @opts.dir['path_extractors'], Extractors )
 
             return @@manager.available.map {
                 |name|

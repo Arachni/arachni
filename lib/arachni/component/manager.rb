@@ -16,7 +16,9 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'component_options'
+require Options.instance.dir['lib'] + 'component/options'
+
+module Component
 
 #
 # Handles modules, reports, path extractor modules, plug-ins, pretty much
@@ -26,7 +28,7 @@ require Options.instance.dir['lib'] + 'component_options'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class ComponentManager < Hash
+class Manager < Hash
     include Arachni::UI::Output
 
     class InvalidOptions < RuntimeError
@@ -290,4 +292,5 @@ class ComponentManager < Hash
 
 end
 
+end
 end

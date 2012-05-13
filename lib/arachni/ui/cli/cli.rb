@@ -118,7 +118,7 @@ class CLI
             # if the user requested to exit the scan wait until the
             # Thread that takes care of the clean up to finish
             @exit_handler.join if @exit_handler
-        rescue Arachni::ComponentManager::InvalidOptions => e
+        rescue Arachni::Component::Manager::InvalidOptions => e
             e.to_s.split( "\n" ).each{ |s| print_error( s ) }
             print_line
             exit 0

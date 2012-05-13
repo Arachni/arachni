@@ -32,7 +32,7 @@ module Report
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @version 0.1.1
 #
-class Manager < Arachni::ComponentManager
+class Manager < Arachni::Component::Manager
 
     include Arachni::Module::Utilities
 

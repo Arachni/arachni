@@ -37,7 +37,7 @@ require opts.dir['lib'] + 'audit_store'
 require opts.dir['lib'] + 'http'
 require opts.dir['lib'] + 'report'
 require opts.dir['lib'] + 'database'
-require opts.dir['lib'] + 'component_manager'
+require opts.dir['lib'] + 'component/manager'
 require opts.dir['mixins'] + 'progress_bar'
 
 

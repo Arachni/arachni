@@ -15,7 +15,8 @@
 =end
 
 module Arachni
-
+module Component
+module Options
 #
 # The following are pretty much rip offs of Metasploit's
 # /lib/msf/core/option_container.rb
@@ -27,32 +28,27 @@ module Arachni
 # The base class for all options.
 #
 ###
-class OptBase
+class Base
 
     #
     # The name of the option.
     #
-    attr_reader   :name
+    attr_accessor :name
 
     #
     # Whether or not the option is required.
     #
-    attr_reader   :required
+    attr_reader :required
 
     #
     # The description of the option.
     #
-    attr_reader   :desc
+    attr_reader :desc
 
     #
     # The default value of the option.
     #
-    attr_reader   :default
-
-    #
-    # Storing the name of the option.
-    #
-    attr_writer   :name
+    attr_reader :default
 
     #
     # The component that owns this option.
@@ -89,21 +85,21 @@ class OptBase
     # Returns true if this is a required option.
     #
     def required?
-        return required
+        required
     end
 
     #
     # Returns true if the supplied type is equivalent to this option's type.
     #
     def type?( in_type )
-        return (type == in_type)
+        type == in_type
     end
 
     #
     # If it's required and the value is nil or empty, then it's not valid.
     #
     def valid?( value )
-        return ( required? && ( value == nil || value.to_s.empty? ) ) ? false : true
+        ( required? && ( value.nil? || value.to_s.empty? ) ) ? false : true
     end
 
     #
@@ -111,7 +107,7 @@ class OptBase
     # a valid value
     #
     def empty_required_value?( value )
-        return ( required? && value.nil? )
+        required? && value.nil?
     end
 
     #
@@ -132,18 +128,16 @@ class OptBase
     # @return    [Hash]
     #
     def to_h
-        hash = Hash.new
-        self.instance_variables.each {
-            |var|
+        hash = {}
+        self.instance_variables.each do |var|
             hash[var.to_s.gsub( /@/, '' )] = self.instance_variable_get( var )
-        }
-        return hash.merge( 'type' => type )
+        end
+        hash.merge( 'type' => type )
     end
 
-
 protected
+    attr_writer :required, :desc, :default # :nodoc:
 
-    attr_writer   :required, :desc, :default # :nodoc:
 end
 
 ###
@@ -164,16 +158,16 @@ end
 # Mult-byte character string option.
 #
 ###
-class OptString < OptBase
+class String < Base
     def type
-        return 'string'
+        'string'
     end
 
-    def normalize(value)
-        if (value =~ /^file:(.*)/)
+    def normalize( value )
+        if value =~ /^file:(.*)/
             path = $1
             begin
-                value = File.read(path)
+                value = File.read( path )
             rescue ::Errno::ENOENT, ::Errno::EISDIR
                 value = nil
             end
@@ -181,10 +175,10 @@ class OptString < OptBase
         value
     end
 
-    def valid?(value=self.value)
-        value = normalize(value)
-        return false if empty_required_value?(value)
-        return super
+    def valid?( value = self.value )
+        value = normalize( value )
+        return false if empty_required_value?( value )
+        super
     end
 end
 
@@ -193,40 +187,38 @@ end
 # Boolean option.
 #
 ###
-class OptBool < OptBase
-
+class Bool < Base
     TRUE_REGEX = /^(y|yes|t|1|true|on)$/i
 
     def type
-        return 'bool'
+        'bool'
     end
 
-    def valid?(value)
+    def valid?( value )
         return false if empty_required_value?(value)
 
-        if ((value != nil and
-            (value.to_s.empty? == false) and
-            (value.to_s.match(/^(y|yes|n|no|t|f|0|1|true|false|on)$/i) == nil)))
+        if value && !value.to_s.empty? &&
+            value.to_s.match( /^(y|yes|n|no|t|f|0|1|true|false|on)$/i )
             return false
         end
 
         true
     end
 
-    def normalize(value)
-        if(value.nil? or value.to_s.match(TRUE_REGEX).nil?)
+    def normalize( value )
+        if value.nil? || value.to_s.match( TRUE_REGEX ).nil?
             false
         else
             true
         end
     end
 
-    def is_true?(value)
-        return normalize(value)
+    def is_true?( value )
+        normalize( value )
     end
 
-    def is_false?(value)
-        return !is_true?(value)
+    def is_false?( value )
+        !is_true?( value )
     end
 
 end
@@ -236,41 +228,36 @@ end
 # Enum option.
 #
 ###
-class OptEnum < OptBase
+class Enum < Base
 
     def type
-        return 'enum'
+        'enum'
     end
 
-    def valid?(value=self.value)
-        return false if empty_required_value?(value)
-
-        (value and self.enums.include?(value.to_s))
+    def valid?( value=self.value )
+        return false if empty_required_value?( value )
+        value && self.enums.include?( value.to_s )
     end
 
-    def normalize(value=self.value)
-        return nil if not self.valid?(value)
-        return value.to_s
+    def normalize( value = self.value )
+        return nil if !self.valid?( value )
+        value.to_s
     end
 
-    def desc=(value)
+    def desc=( value )
         self.desc_string = value
-
         self.desc
     end
 
     def desc
         if self.enums
-            str = self.enums.join(', ')
+            str = self.enums.join( ', ' )
         end
         "#{self.desc_string || ''} (accepted: #{str})"
     end
 
-
 protected
-
     attr_accessor :desc_string # :nodoc:
-
 end
 
 ###
@@ -278,20 +265,20 @@ end
 # Network port option.
 #
 ###
-class OptPort < OptBase
+class Port < Base
     def type
-        return 'port'
+        'port'
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if ((value != nil and value.to_s.empty? == false) and
-            ((value.to_s.match(/^\d+$/) == nil or value.to_i < 0 or value.to_i > 65535)))
+        if value && !value.to_s.empty? &&
+            ((!value.to_s.match( /^\d+$/ ) || value.to_i < 0 || value.to_i > 65535))
             return false
         end
 
-        return super
+        super
     end
 end
 
@@ -300,15 +287,15 @@ end
 # URL option.
 #
 ###
-class OptUrl < OptBase
+class Url < Base
     def type
-        return 'url'
+        'url'
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if (value != nil and value.empty? == false)
+        if value && !value.empty?
             require 'uri'
             require 'socket'
             begin
@@ -318,7 +305,7 @@ class OptUrl < OptBase
             end
         end
 
-        return super
+        super
     end
 end
 
@@ -328,15 +315,15 @@ end
 # Network address option.
 #
 ###
-class OptAddress < OptBase
+class Address < Base
     def type
-        return 'address'
+        'address'
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if (value != nil and value.empty? == false)
+        if value && !value.empty?
             require 'socket'
             begin
                 ::IPSocket.getaddress( value )
@@ -345,7 +332,7 @@ class OptAddress < OptBase
             end
         end
 
-        return super
+        super
     end
 end
 
@@ -355,20 +342,19 @@ end
 # File system path option.
 #
 ###
-class OptPath < OptBase
+class Path < Base
     def type
-        return 'path'
+        'path'
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if ((value != nil and value.empty? == false) and
-            (File.exists?(value) == false))
+        if value && !value.empty? && !File.exists?( value )
             return false
         end
 
-        return super
+        super
     end
 end
 
@@ -377,27 +363,23 @@ end
 # Integer option.
 #
 ###
-class OptInt < OptBase
+class Int < Base
     def type
-        return 'integer'
+        'integer'
     end
 
-    def normalize(value)
-        if (value.to_s.match(/^0x[a-fA-F\d]+$/))
-            value.to_i(16)
-        else
-            value.to_i
-        end
+    def normalize( value )
+        value.to_s.match( /^0x[a-fA-F\d]+$/ ) ? value.to_i(16) : value.to_i
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if value and not normalize(value).to_s.match(/^\d+$/)
+        if value && !normalize( value ).to_s.match( /^\d+$/ )
             return false
         end
 
-        return super
+        super
     end
 end
 
@@ -406,12 +388,12 @@ end
 # Floating point option.
 #
 ###
-class OptFloat < OptBase
+class Float < Base
     def type
-        return 'float'
+        'float'
     end
 
-    def normalize(value)
+    def normalize( value )
         begin
             Float( value )
         rescue
@@ -419,16 +401,23 @@ class OptFloat < OptBase
         end
     end
 
-    def valid?(value)
-        return false if empty_required_value?(value)
+    def valid?( value )
+        return false if empty_required_value?( value )
 
-        if value and not normalize(value).to_s.match(/^\d+\.\d+$/)
+        if value && !normalize( value ).to_s.match( /^\d+\.\d+$/ )
             return false
         end
 
-        return super
+        super
     end
 end
 
+end
+end
+
+    # Compat hack, makes options accessible as Arachni::Opt<type>
+    Component::Options.constants.each do |sym|
+        const_set( ('Opt' + sym.to_s).to_sym, Component::Options.const_get( sym ) )
+    end
 
 end

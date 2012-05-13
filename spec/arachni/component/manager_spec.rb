@@ -1,11 +1,11 @@
-require_relative '../spec_helper'
+require_relative '../../spec_helper'
 
-describe Arachni::ComponentManager do
+describe Arachni::Component::Manager do
     before( :all ) do
         @opts = Arachni::Options.instance
         @lib = @opts.dir['plugins']
         @namespace = Arachni::Plugins
-        @components = Arachni::ComponentManager.new( @lib, @namespace )
+        @components = Arachni::Component::Manager.new( @lib, @namespace )
     end
 
     after( :each ) { @components.clear }
@@ -168,7 +168,7 @@ describe Arachni::ComponentManager do
                     c = 'with_options'
                     @components.load( c )
                     @components.prep_opts( c, @components[c], {} )
-                rescue Arachni::ComponentManager::InvalidOptions
+                rescue Arachni::Component::Manager::InvalidOptions
                     raised = true
                 end
 

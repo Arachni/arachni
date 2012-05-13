@@ -26,7 +26,7 @@ module Addons
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      
+    #
     # @version 0.1
     #
     class Base
@@ -155,7 +155,7 @@ end
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class AddonManager
@@ -169,7 +169,7 @@ class AddonManager
         property :name, String
     end
 
-    class RestrictedComponentManager < Arachni::ComponentManager
+    class RestrictedComponentManager < Arachni::Component::Manager
         def paths
             cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
             return paths.reject { |path| helper?( path ) }

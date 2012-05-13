@@ -16,7 +16,6 @@
 
 module Arachni
 
-
 #
 # The namespace under which all modules exist
 #
@@ -30,7 +29,7 @@ module Module
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Manager < Arachni::ComponentManager
+class Manager < Arachni::Component::Manager
 
     include Arachni::UI::Output
     include Arachni::Module::Utilities

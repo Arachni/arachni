@@ -23,7 +23,7 @@ module Report
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 module Options
@@ -48,11 +48,10 @@ module Options
 end
 
 
-class FormatterManager < ComponentManager
+class FormatterManager < Component::Manager
 
     def paths
-        cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
-        return paths.reject { |path| helper?( path ) }
+        Dir.glob( File.join( "#{@lib}", "*.rb" ) ).reject { |path| helper?( path ) }
     end
 
 end
@@ -65,7 +64,7 @@ end
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.1
 # @abstract
 #
