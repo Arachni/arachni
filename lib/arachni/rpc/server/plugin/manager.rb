@@ -26,10 +26,7 @@ module Plugin
 # We need to extend the original Manager and redeclare its inherited methods
 # which are required over RPC.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < ::Arachni::Plugin::Manager
 
@@ -37,21 +34,13 @@ class Manager < ::Arachni::Plugin::Manager
     private :available, :results, :loaded, :create
     public  :available, :results, :loaded
 
-    def initialize( framework )
-        super( framework )
-
-        @plugin_opts = {}
-    end
-
     def load( plugins )
-        @plugin_opts.merge!( plugins )
+        #@plugin_opts.merge!( plugins )
+        plugins.each do |plugin, opts|
+            prep_opts( plugin, self[plugin], opts )
+        end
+        @framework.opts.plugins.merge!( plugins )
         super( plugins.keys )
-
-        @framework.opts.plugins = plugins
-    end
-
-    def create( name )
-        self[name].new( @framework, prep_opts( name, self[name], @plugin_opts[name] ) )
     end
 
     #
@@ -66,31 +55,26 @@ class Manager < ::Arachni::Plugin::Manager
         formatted = {}
 
         results << @@results
-        results.each {
-            |plugins|
-
-            plugins.each {
-                |name, res|
+        results.each do |plugins|
+            plugins.each do |name, res|
                 next if !res
 
                 formatted[name] ||= []
                 formatted[name] << res[:results]
 
                 info[name] = res.reject{ |k, v| k == :results } if !info[name]
-            }
-        }
+            end
+        end
 
         merged = {}
-        formatted.each {
-            |plugin, results|
-
+        formatted.each do |plugin, c_results|
             if !self[plugin].distributable?
-                res = results[0]
+                res = c_results[0]
             else
-                res = self[plugin].merge( results )
+                res = self[plugin].merge( c_results )
             end
             merged[plugin] = info[plugin].merge( :results => res )
-        }
+        end
 
         @@results = merged
     end

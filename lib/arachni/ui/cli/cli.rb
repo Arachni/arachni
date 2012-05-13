@@ -100,7 +100,6 @@ class CLI
     # Runs Arachni
     #
     def run
-
         print_status( 'Initing...' )
 
         begin
@@ -119,6 +118,10 @@ class CLI
             # if the user requested to exit the scan wait until the
             # Thread that takes care of the clean up to finish
             @exit_handler.join if @exit_handler
+        rescue Arachni::ComponentManager::InvalidOptions => e
+            e.to_s.split( "\n" ).each{ |s| print_error( s ) }
+            print_line
+            exit 0
         rescue Arachni::Exceptions::NoMods => e
             print_error( e.to_s )
             print_info( "Run arachni with the '-h' parameter for help or " )

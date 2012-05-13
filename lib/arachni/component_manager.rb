@@ -19,22 +19,18 @@ module Arachni
 require Options.instance.dir['lib'] + 'component_options'
 
 #
-# Component Manager
-#
-# Handles modules, reports, path extrator modules, plug-ins, pretty much
+# Handles modules, reports, path extractor modules, plug-ins, pretty much
 # every modular aspect of the framework.
 #
 # It is usually extended to fill-in for system specific functionality.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class ComponentManager < Hash
-
     include Arachni::UI::Output
 
+    class InvalidOptions < RuntimeError
+    end
 
     #
     # The following are used by {#parse}:
@@ -43,6 +39,9 @@ class ComponentManager < Hash
     #
     WILDCARD = '*'
     EXCLUDE  = '-'
+
+    attr_reader :lib
+    attr_reader :namespace
 
     #
     # @param    [String]    lib       the path to the component library/folder
@@ -59,10 +58,7 @@ class ComponentManager < Hash
     # @param    [Array]    components    array of names of components to load
     #
     def load( components )
-        parse( [components].flatten ).each {
-            |component|
-            self.[]( component )
-        }
+        parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
     #
@@ -79,42 +75,39 @@ class ComponentManager < Hash
         return {} if !info.include?( :options ) || info[:options].empty?
 
         user_opts ||= {}
-        options = { }
-        errors  = { }
-        info[:options].each {
-            |opt|
+        options = {}
+        errors  = {}
+        info[:options].each do |opt|
+            name = opt.name
+            val  = user_opts[name] || opt.default
 
-            name  = opt.name
-            val   = user_opts[name] || opt.default
-
-            if( opt.empty_required_value?( val ) )
+            if opt.empty_required_value?( val )
                 errors[name] = {
-                    :opt   => opt,
-                    :value => val,
-                    :type  => :empty_required_value
+                    opt:   opt,
+                    value: val,
+                    type:  :empty_required_value
                 }
-            elsif( !opt.valid?( val ) )
+            elsif !opt.valid?( val )
                 errors[name] = {
-                    :opt   => opt,
-                    :value => val,
-                    :type  => :invalid
+                    opt:   opt,
+                    value: val,
+                    type:  :invalid
                 }
             end
 
-            val = !val.nil? ? val : opt.default
             options[name] = opt.normalize( val )
-        }
-
-        if( !errors.empty? )
-            print_errors( component_name, errors )
         end
 
-        return options
-    end
+        if !errors.empty?
+            raise InvalidOptions.new( format_error_string( component_name, errors ) )
+        end
 
+        options
+    end
 
     #
     # It parses the component array making sure that its structure is valid
+    # and takes into consideration wildcards and exclusion modifiers.
     #
     # @param    [Array]    components   array of component names
     #
@@ -124,10 +117,11 @@ class ComponentManager < Hash
         unload = []
         load   = []
 
+        components = [components].flatten
+
         return load if components[0] == EXCLUDE
 
-        components.each {
-            |component|
+        components.each do |component|
             if component[0] == EXCLUDE
                 component[0] = ''
 
@@ -138,38 +132,33 @@ class ComponentManager < Hash
                 end
 
             end
-        }
+        end
 
-        if( !components.include?( WILDCARD ) )
+        if !components.include?( WILDCARD )
 
             avail_components  = available(  )
 
-            components.each {
-                |component|
+            components.each do |component|
 
                 if component.substring?( WILDCARD )
                     load |= wilcard_to_names( component )
                 else
 
-                    if( avail_components.include?( component ) )
+                    if avail_components.include?( component )
                         load << component
                     else
                         raise( Arachni::Exceptions::ComponentNotFound,
                             "Error: Component #{component} wasn't found." )
                     end
                 end
+            end
 
-            }
             load.flatten!
-
         else
-            available(  ).map {
-                |component|
-                load << component
-            }
+            available.each{ |component| load << component }
         end
 
-        return load - unload
+        load - unload
     end
 
     #
@@ -180,28 +169,15 @@ class ComponentManager < Hash
     # @return   [Class]
     #
     def []( name )
-
         return fetch( name ) if include?( name )
 
-        paths.each {
+        paths.each do
             |path|
-
             next if name != path_to_name( path )
             self[path_to_name( path )] = load_from_path( path )
-        }
-
-        return fetch( name ) rescue nil
-    end
-
-    def wilcard_to_names( name )
-        if name[WILDCARD]
-            return paths.map {
-                |path|
-                path_to_name( path ) if path.match( Regexp.new( name ) )
-            }.compact
         end
 
-        return
+        fetch( name ) rescue nil
     end
 
     def clear
@@ -215,6 +191,7 @@ class ComponentManager < Hash
         end
         super( k )
     end
+    alias :unload :delete
 
     #
     # Returns array of available component names.
@@ -222,13 +199,7 @@ class ComponentManager < Hash
     # @return    [Array]
     #
     def available
-        components = []
-        paths.each {
-            |path|
-            name = path_to_name( path )
-            components << name
-        }
-        return components
+        paths.map{ |path| path_to_name( path ) }
     end
 
     #
@@ -248,10 +219,7 @@ class ComponentManager < Hash
     # @return   [String]
     #
     def name_to_path( name )
-        paths.each {
-            |path|
-            return path if name == path_to_name( path )
-        }
+        paths.each { |path| return path if name == path_to_name( path ) }
         return
     end
 
@@ -272,47 +240,52 @@ class ComponentManager < Hash
     # @return   [Array]
     #
     def paths
-        cpaths = paths = Dir.glob( File.join( "#{@lib}**", "*.rb" ) )
-        return paths.reject { |path| helper?( path ) }
+        Dir.glob( File.join( "#{@lib}**", "*.rb" ) ).reject{ |path| helper?( path ) }
     end
 
     private
 
-    def print_errors( name, errors )
+    def wilcard_to_names( name )
+        if name[WILDCARD]
+            paths.map do |path|
+                path_to_name( path ) if path.match( name.gsub( '*', '(.*)' ) )
+            end.compact
+        end
+    end
 
-        print_line
-        print_line
+    def format_error_string( name, errors )
+        #print_line
+        #print_line
+        #
+        #print_error( "Invalid options for component: #{name}" )
+        #
+        #errors.each do |optname, error|
+        #    val = error[:value].nil? ? '<empty>' : error[:value]
+        #    msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
+        #
+        #    print_error( " *  #{msg}: #{optname} => #{val}" )
+        #    print_error( " *  Expected type: #{error[:opt].type}" )
+        #    print_line
+        #end
 
-        print_error( "Invalid options for component: #{name}" )
-
-        errors.each {
-            |optname, error|
-
+        "Invalid options for component: #{name}\n" +
+        errors.map do |optname, error|
             val = error[:value].nil? ? '<empty>' : error[:value]
+            msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
 
-            if( error[:type] == :invalid )
-                msg = "Invalid type"
-            else
-                msg = "Empty required value"
-            end
-
-            print_error( " *  #{msg}: #{optname} => #{val}" )
-            print_error( " *  Expected type: #{error[:opt].type}" )
-
-            print_line
-        }
-
-        exit
+            " *  #{msg}: #{optname} => #{val}\n" +
+            " *  Expected type: #{error[:opt].type}"
+        end.join( "\n\n" )
     end
 
     def load_from_path( path )
         ::Kernel::load( path )
-        return @namespace.const_get( @namespace.constants[-1] )
+        @namespace.const_get( @namespace.constants[-1] )
     end
 
 
     def helper?( path )
-        return File.exist?( File.dirname( path ) + '.rb' )
+        File.exist?( File.dirname( path ) + '.rb' )
     end
 
 end

@@ -55,6 +55,18 @@ describe Arachni::RPC::Server::Plugin::Manager do
             @plugins_clean.load( { 'default' => {}} )
             @plugins_clean.loaded.should == ['default']
         end
+
+        context 'with invalid options' do
+            it 'should throw an exception' do
+                raised = false
+                begin
+                    @plugins_clean.load( { 'with_options' => {}} )
+                rescue Exception
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
     end
 
     describe :merge_results do

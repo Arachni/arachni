@@ -61,7 +61,7 @@ describe Arachni::RPC::Server::Framework do
     describe :lsplug do
         it 'should list all available plugins' do
             plugins = @framework_clean.lsplug
-            plugins.size.should == 5
+            plugins.size.should == 6
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'

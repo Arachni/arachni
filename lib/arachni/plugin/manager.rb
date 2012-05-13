@@ -59,8 +59,7 @@ class Manager < Arachni::ComponentManager
         ordered   = []
         unordered = []
 
-        loaded.each {
-            |name|
+        loaded.each do |name|
             ph = { name => self[name] }
             if order = self[name].info[:order]
                 ordered[order] ||= []
@@ -68,12 +67,11 @@ class Manager < Arachni::ComponentManager
             else
                 unordered << ph
             end
-        }
+        end
         ordered << unordered
         ordered.flatten!
 
-        ordered.each {
-            |ph|
+        ordered.each do |ph|
             name   = ph.keys.first
             plugin = ph.values.first
 
@@ -91,11 +89,14 @@ class Manager < Arachni::ComponentManager
                 raise "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
+            opts = @framework.opts.plugins[name]
+            opts = prep_opts( name, self[name], opts )
+
             @jobs << Thread.new {
 
                 exception_jail( false ) {
                     Thread.current[:name]     = name
-                    Thread.current[:instance] = plugin_new = create( name )
+                    Thread.current[:instance] = plugin_new = create( name, opts )
 
                     plugin_new.prepare
                     plugin_new.run
@@ -103,7 +104,7 @@ class Manager < Arachni::ComponentManager
                 }
 
             }
-        }
+        end
 
         if @jobs.size > 0
             print_status( 'Waiting for plugins to settle...' )
@@ -114,22 +115,20 @@ class Manager < Arachni::ComponentManager
     def sane_env?( plugin )
         gem_errors = []
 
-        plugin.gems.each {
-            |gem|
+        plugin.gems.each do |gem|
             begin
                 require gem
             rescue LoadError
                 gem_errors << gem
             end
-        }
+        end
 
         return { gem_errors: gem_errors } if !gem_errors.empty?
         true
     end
 
-    def create( name )
-        opts = @framework.opts.plugins[name]
-        self[name].new( @framework, prep_opts( name, self[name], opts ) )
+    def create( name, opts ={} )
+        self[name].new( @framework, opts )
     end
 
     #
@@ -204,16 +203,13 @@ class Manager < Arachni::ComponentManager
     #
     def register_results( plugin, results )
         @@results_mutex.synchronize {
-
             name = nil
-            self.each {
-                |k, v|
-
+            self.each do |k, v|
                 if plugin.class.name == v.name
                     name = k
                     break
                 end
-            }
+            end
 
             return if !name
             @@results[name] = { results: results }.merge( plugin.class.info )

@@ -74,7 +74,7 @@ describe Arachni::RPC::Server::Instance do
 
     describe :plugins do
         it 'should provide access to the plugin manager' do
-            @instance.plugins.available.sort.should == %w(wait bad distributable loop default).sort
+            @instance.plugins.available.sort.should == %w(wait bad distributable loop default with_options).sort
         end
     end
 end
