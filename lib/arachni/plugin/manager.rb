@@ -48,7 +48,7 @@ class Manager < Arachni::Component::Manager
         @jobs = []
     end
 
-    def load_defaults!
+    def load_defaults
         load( DEFAULT )
     end
 

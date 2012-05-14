@@ -325,7 +325,7 @@ module Distributor
 
             instance.opts.set( opts ){
             instance.framework.update_page_queue!( pages ) {
-            instance.framework.restrict_to_elements!( elements ){
+            instance.framework.restrict_to_elements( elements ){
             instance.framework.set_master( self_url, @opts.datastore[:token] ){
             instance.modules.load( opts['mods'] ) {
             instance.plugins.load( opts['plugins'] ) {

@@ -44,10 +44,7 @@ module Auditable
     # load and include all available analysis/audit techniques
     lib = Options.instance.dir['lib'] + 'parser/element/analysis/*.rb'
     Dir.glob( lib ).each { |f| require f }
-    Analysis.constants.each {
-        |technique|
-        include Analysis.const_get( technique )
-    }
+    Analysis.constants.each { |technique| include Analysis.const_get( technique ) }
 
     #
     # Empties the de-duplication/uniqueness look-up table.
@@ -55,7 +52,7 @@ module Auditable
     # Unless you're sure you need this, set the :redundant flag to true
     # when calling audit methods to bypass it.
     #
-    def self.reset!
+    def self.reset
         @@audited = Set.new
     end
 
@@ -123,24 +120,24 @@ module Auditable
     #
     # This is mainly used on elements discovered during audit-time by the trainer.
     #
-    def override_instance_scope!
+    def override_instance_scope
         @override_instance_scope = true
     end
 
-    def reset_scope_override!
+    def reset_scope_override
         @override_instance_scope = false
     end
 
     #
     # Does this element override the instance scope?
     #
-    # @see override_instance_scope!
+    # @see override_instance_scope
     #
     def override_instance_scope?
         @override_instance_scope ||= false
     end
 
-    def self.reset_instance_scope!
+    def self.reset_instance_scope
         @@restrict_to_elements = Set.new
     end
 
@@ -171,8 +168,8 @@ module Auditable
     #
     # @see scope_audit_id
     #
-    def self.restrict_to_elements!( elements )
-        self.reset_instance_scope!
+    def self.restrict_to_elements( elements )
+        self.reset_instance_scope
         elements.each { |elem| @@restrict_to_elements << elem }
     end
 
@@ -211,11 +208,11 @@ module Auditable
     #
     # Resets the auditable inputs to their original format/values.
     #
-    def reset!
+    def reset
         @auditable = @orig.dup
     end
 
-    def remove_auditor!
+    def remove_auditor
         @auditor = nil
     end
 
@@ -275,8 +272,7 @@ module Auditable
         return if !opts[:redundant] && audited?( audit_id )
 
         # iterate through all variation and audit each one
-        mutations( injection_str, opts ).each {
-            |elem|
+        mutations( injection_str, opts ).each do |elem|
             next if !orphan? && @auditor.skip?( elem )
             next if skip?( elem )
 
@@ -290,7 +286,7 @@ module Auditable
             req = elem.submit( opts )
             return if !req
             on_complete( req, elem, &block )
-        }
+        end
 
         audited!( audit_id )
         true
@@ -422,9 +418,7 @@ module Auditable
             end
         end
 
-        exception_jail( false ){
-            block.call( response, element.opts, element )
-        }
+        exception_jail( false ){ block.call( response, element.opts, element ) }
     end
 
     def within_scope?

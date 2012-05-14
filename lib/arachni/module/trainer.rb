@@ -178,7 +178,7 @@ class Trainer
         cforms, form_cnt = update_forms( @parser.forms )
 
         if form_cnt > 0
-            @page.forms = cforms.flatten.map{ |elem| elem.override_instance_scope!; elem }
+            @page.forms = cforms.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
 
             print_info( 'Found ' + form_cnt.to_s + ' new forms.' )
@@ -200,7 +200,7 @@ class Trainer
         clinks, link_cnt = update_links( links )
 
         if link_cnt > 0
-            @page.links = clinks.flatten.map{ |elem| elem.override_instance_scope!; elem }
+            @page.links = clinks.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
 
             print_info( 'Found ' + link_cnt.to_s + ' new links.' )
@@ -211,7 +211,7 @@ class Trainer
         ccookies, cookie_cnt = update_cookies( @parser.cookies )
 
         if cookie_cnt > 0
-            @page.cookies = ccookies.flatten.map{ |elem| elem.override_instance_scope!; elem }
+            @page.cookies = ccookies.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
 
             print_info( 'Found ' + cookie_cnt.to_s + ' new cookies.' )

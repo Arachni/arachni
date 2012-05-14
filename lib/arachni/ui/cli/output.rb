@@ -24,31 +24,34 @@ module UI
 # Provides a command line output interface to the framework.<br/>
 # All UIs should provide an Arachni::UI::Output module with these methods.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Output
 
-    # verbosity flag
-    #
-    # if it's on verbose messages will be enabled
-    @@verbose = false
+    def self.reset_output_options
+        # verbosity flag
+        #
+        # if it's on verbose messages will be enabled
+        @@verbose = false
 
-    # debug flag
-    #
-    # if it's on debugging messages will be enabled
-    @@debug   = false
+        # debug flag
+        #
+        # if it's on debugging messages will be enabled
+        @@debug   = false
 
-    # only_positives flag
-    #
-    # if it's on status messages will be disabled
-    @@only_positives  = false
+        @@mute = false
 
-    @@mute  = false
+        # only_positives flag
+        #
+        # if it's on status messages will be disabled
+        @@only_positives  = false
 
-    @@opened = false
+        @@reroute_to_file = false
+
+        @@opened = false
+    end
+
+    reset_output_options
 
     # Prints an error message
     #
@@ -110,7 +113,7 @@ module Output
     # @return    [void]
     #
     def print_status( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         print_color( '[*]', 34, str, $stdout, unmute )
     end
 
@@ -125,7 +128,7 @@ module Output
     # @return    [void]
     #
     def print_info( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         print_color( '[~]', 30, str, $stdout, unmute )
     end
 
@@ -146,13 +149,13 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_debug( str = '', unmute = false )
-        if !@@debug then return end
+        return if !debug?
         print_color( '[!]', 36, str, $stderr, unmute )
     end
 
@@ -162,13 +165,13 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
     # @param    [Object]
     # @return    [void]
     #
     def print_debug_pp( obj = nil )
-        if !@@debug then return end
+        return if !debug?
         pp obj
     end
 
@@ -177,13 +180,13 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
     # @param    [Exception]
     # @return    [void]
     #
     def print_debug_backtrace( e )
-        if !@@debug then return end
+        return if !debug?
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
@@ -203,7 +206,7 @@ module Output
     # @return    [void]
     #
     def print_verbose( str = '', unmute = false )
-        if !@@verbose then return end
+        return if !verbose?
         print_color( '[v]', 37, str, $stdout, unmute )
     end
 
@@ -218,7 +221,7 @@ module Output
     # @return    [void]
     #
     def print_line( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         return if muted? && !unmute
 
         # we may get IO errors...freaky stuff...
@@ -234,13 +237,13 @@ module Output
     #
     # @return    [void]
     #
-    def verbose!
+    def verbose
         @@verbose = true
     end
 
     # Returns the {@@verbose} flag
     #
-    # @see #verbose!
+    # @see #verbose
     #
     # @return    [Bool]    @@verbose
     #
@@ -254,13 +257,13 @@ module Output
     #
     # @return    [void]
     #
-    def debug!
+    def debug
         @@debug = true
     end
 
     # Returns the {@@debug} flag
     #
-    # @see #debug!
+    # @see #debug
     #
     # @return    [Bool]    @@debug
     #
@@ -274,11 +277,11 @@ module Output
     #
     # @return    [void]
     #
-    def only_positives!
+    def only_positives
         @@only_positives = true
     end
 
-    def disable_only_positives!
+    def disable_only_positives
         @@only_positives = false
     end
 
@@ -292,14 +295,13 @@ module Output
         @@only_positives
     end
 
-    def mute!
+    def mute
         @@mute = true
     end
 
-    def unmute!
+    def unmute
         @@mute = false
     end
-
 
     def muted?
         @@mute

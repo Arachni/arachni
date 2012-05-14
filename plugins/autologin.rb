@@ -35,7 +35,7 @@ class AutoLogin < Arachni::Plugin::Base
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
 
     def prepare
-        @framework.pause!
+        @framework.pause
         print_info( "System paused." )
 
         @params = parse_url_vars( '?' + @options['params'] )
@@ -51,10 +51,7 @@ class AutoLogin < Arachni::Plugin::Base
 
         # find the login form
         login_form = nil
-        forms_from_response( res ).each {
-            |form|
-            login_form = form if login_form?( form )
-        }
+        forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
 
         if !login_form
             register_results( { :code => 0, :msg => MSG_FAILURE + @options['url'] } )
@@ -84,26 +81,21 @@ class AutoLogin < Arachni::Plugin::Base
 
             register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => cookies.dup } )
             print_ok( MSG_SUCCESS )
+
             print_info( 'Cookies set to:' )
-            cookies.each_pair {
-                |name, val|
-                print_info( '    * ' + name + ' = ' + val )
-            }
+            cookies.each_pair { |name, val| print_info( '    * ' + name + ' = ' + val ) }
         end
     end
 
     def clean_up
-        @framework.resume!
+        @framework.resume
     end
 
     def login_form?( form )
         avail    = form.auditable.keys
         provided = @params.keys
 
-        provided.each {
-            |name|
-            return false if !avail.include?( name )
-        }
+        provided.each { |name| return false if !avail.include?( name ) }
         true
     end
 
@@ -117,8 +109,8 @@ class AutoLogin < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.3',
             :options        => [
-                Arachni::OptURL.new( 'url', [ true, 'The URL that contains the login form.' ] ),
-                Arachni::OptString.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
+                Component::Options::URL.new( 'url', [ true, 'The URL that contains the login form.' ] ),
+                Component::Options::String.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
             ],
             :order          => 0
         }

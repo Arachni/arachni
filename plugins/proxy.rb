@@ -23,10 +23,9 @@ module Plugins
 # Will gather data based on user actions and exchanged HTTP traffic and push that
 # data to the {Framework#push_to_page_queue} to be audited.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.3
 #
 class Proxy < Arachni::Plugin::Base
 
@@ -46,7 +45,7 @@ class Proxy < Arachni::Plugin::Base
 
     def prepare
         # don't let the framework run just yet
-        @framework.pause!
+        @framework.pause
         print_info( "System paused." )
 
         require @framework.opts.dir['plugins'] + '/proxy/server.rb'
@@ -85,13 +84,13 @@ class Proxy < Arachni::Plugin::Base
     #
     def handler( req, res )
 
-        if( res.header['content-encoding'] == 'gzip' )
+        if res.header['content-encoding'] == 'gzip'
             res.header.delete( 'content-encoding' )
             res.body = Zlib::GzipReader.new( StringIO.new( res.body ) ).read
         end
 
         headers = {}
-        headers.merge!( res.header.dup )     if res.header
+        headers.merge!( res.header.dup )    if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
         # proper initialization in order to parse the response into a page
@@ -115,51 +114,41 @@ class Proxy < Arachni::Plugin::Base
         update_framework_cookies( page, req )
         @framework.push_to_page_queue( page.dup )
 
-        return res
+        res
     end
 
     def update_framework_cookies( page, req )
-
         print_debug( 'Updating framework cookies...' )
 
         cookies = {}
 
         if req['Cookie']
-            req['Cookie'].split( ';' ).each{
-                |cookie|
+            req['Cookie'].split( ';' ).each do |cookie|
                 k, v = cookie.split( '=', 2 )
                 cookies[k.strip] = v.strip
-            }
+            end
         end
 
-        page.cookies.each {
-            |cookie|
-            cookies.merge!( cookie.simple )
-        }
+        page.cookies.each { |cookie| cookies.merge!( cookie.simple ) }
 
         if cookies.empty?
             print_debug( 'Could not extract cookies...' )
             return
         else
             print_debug( 'Extracted cookies:' )
-            cookies.each{
-                |k, v|
-                print_debug( "  * #{k} => #{v}" )
-            }
+            cookies.each { |k, v| print_debug( "  * #{k} => #{v}" ) }
         end
 
         @framework.http.update_cookies( cookies )
-
     end
 
     def update_forms( page, req )
         params = {}
 
-        uri_decode( req.body ).split( '&' ).each {
-            |param|
+        uri_decode( req.body ).split( '&' ).each do |param|
             k,v = param.split( '=', 2 )
             params[k] = v
-        }
+        end
 
         raw = {
             'attrs' => {
@@ -173,7 +162,7 @@ class Proxy < Arachni::Plugin::Base
 
         page.forms << form
 
-        return page
+        page
     end
 
     #
@@ -212,15 +201,15 @@ class Proxy < Arachni::Plugin::Base
             reasons << MSG_DISALOWED
         end
 
-        return reasons
+        reasons
     end
 
     def shutdown?( url )
-        return url.to_s == SHUTDOWN_URL
+        url.to_s == SHUTDOWN_URL
     end
 
     def clean_up
-        @framework.resume!
+        @framework.resume
     end
 
     def self.info
@@ -231,10 +220,10 @@ class Proxy < Arachni::Plugin::Base
                 It also updates the framework cookies with the cookies of the HTTP requests and
                 responses, thus it can also be used to login to a web application.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :options        => [
-                Arachni::OptPort.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
-                Arachni::OptAddress.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
+                Component::Options::Port.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
+                Component::Options::Address.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
             ]
         }
     end

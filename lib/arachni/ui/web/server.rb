@@ -651,7 +651,7 @@ class Server < Sinatra::Base
     #
     def save_and_shutdown( url, &block )
         instance = instances.connect( url, session )
-        instance.framework.clean_up!{
+        instance.framework.clean_up{
             |res|
 
             if !res.rpc_connection_error?
@@ -1015,7 +1015,7 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        instances.connect( params[:url], session ).framework.pause!{
+        instances.connect( params[:url], session ).framework.pause{
             |paused|
 
             params = aparams
@@ -1035,7 +1035,7 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        instances.connect( params[:url], session ).framework.resume!{
+        instances.connect( params[:url], session ).framework.resume{
             |res|
 
             params = aparams

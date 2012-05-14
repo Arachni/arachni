@@ -42,8 +42,6 @@ module Output
 
     @@mute  = false
 
-    @@opened = false
-
     def print_error(*)
     end
 
@@ -77,33 +75,32 @@ module Output
     def print_line(*)
     end
 
-    def verbose!
+    def verbose
     end
 
     def verbose?
     end
 
-    def debug!
+    def debug
     end
 
     def debug?
     end
 
-    def only_positives!
+    def only_positives
     end
 
-    def disable_only_positives!
+    def disable_only_positives
     end
 
     def only_positives?
     end
 
-    def mute!
+    def mute
     end
 
-    def unmute!
+    def unmute
     end
-
 
     def muted?
     end

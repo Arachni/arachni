@@ -45,14 +45,14 @@ class Framework < ::Arachni::Framework
 
     # make this inherited methods visible again
     private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status
+            :status, :clean_up!
     public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status
+            :status, :clean_up!
 
-    alias :old_clean_up! :clean_up!
+    alias :old_clean_up :clean_up
     alias :auditstore    :audit_store
 
-    private :old_clean_up!
+    private :old_clean_up
 
     def initialize( opts )
         super( opts )
@@ -145,18 +145,8 @@ class Framework < ::Arachni::Framework
         # return if we're already running
         return false if extended_running?
 
-        # EventMachine.add_periodic_timer( 1 ) do
-            # print "Arachni::RPC::Client::Handler objects: "
-            # puts ObjectSpace.each_object( Arachni::RPC::Client::Handler ) {}
-#
-            # print "Arachni::RPC::Server::Proxy objects: "
-            # puts ObjectSpace.each_object( Arachni::RPC::Server::Proxy ) {}
-#
-            # puts "Active connections: #{::EM.connection_count}"
-            # puts '--------------------------------------------'
-        # end
-
         @extended_running = true
+
         #
         # if we're in HPG mode do fancy stuff like distributing and balancing workload
         # as well as starting slave instances and deal with some lower level
@@ -240,7 +230,7 @@ class Framework < ::Arachni::Framework
                         elements = distribute_elements( chunks, element_ids_per_page )
 
                         # restrict the local instance to its assigned elements
-                        restrict_to_elements!( elements.pop, @local_token )
+                        restrict_to_elements( elements.pop, @local_token )
 
                         # set the URLs to be audited by the local instance
                         @opts.restrict_paths = chunks.pop
@@ -262,7 +252,7 @@ class Framework < ::Arachni::Framework
                         audit
 
                         # ap 'OLD CLEAN UP'
-                        old_clean_up!
+                        old_clean_up
 
                         # ap 'DONE'
                         @extended_running = false
@@ -293,7 +283,7 @@ class Framework < ::Arachni::Framework
     #
     # @param    [Proc]  &block  block to be called once the cleanup has finished
     #
-    def clean_up!( &block )
+    def clean_up( &block )
         super( true )
 
         if @instances.empty?
@@ -302,7 +292,7 @@ class Framework < ::Arachni::Framework
         end
 
         foreach = proc do |instance, iter|
-            instance.framework.clean_up! {
+            instance.framework.clean_up {
                 instance.plugins.results do |res|
                     iter.return( !res.rpc_exception? ? res : nil )
                 end
@@ -315,20 +305,22 @@ class Framework < ::Arachni::Framework
     #
     # Pauses the running scan on a best effort basis.
     #
-    def pause!
+    def pause
         super
-        each_slave{ |instance, iter| instance.framework.pause!{ iter.next } }
+        each_slave{ |instance, iter| instance.framework.pause{ iter.next } }
         true
     end
+    alias :pause! :pause
 
     #
     # Resumes a paused scan right away.
     #
-    def resume!
+    def resume
         super
-        each_slave { |instance, iter| instance.framework.resume!{ iter.next } }
+        each_slave { |instance, iter| instance.framework.resume{ iter.next } }
         true
     end
+    alias :resume! :resume
 
     #
     # Merged output of all running instances.
@@ -545,9 +537,9 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  true on success, false on invalid token
     #
-    def restrict_to_elements!( elements, token = nil )
+    def restrict_to_elements( elements, token = nil )
         return false if high_performance? && !valid_token?( token )
-        ::Arachni::Parser::Element::Auditable.restrict_to_elements!( elements )
+        ::Arachni::Parser::Element::Auditable.restrict_to_elements( elements )
         true
     end
 

@@ -7,7 +7,7 @@
 require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 require 'eventmachine'
-Arachni::UI::Output.mute!
+Arachni::UI::Output.mute
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
@@ -41,7 +41,7 @@ RSpec.configure do |config|
         kill_em!
         Arachni::Module::Manager.results.clear
         Arachni::Plugin::Manager.results.clear
-        Arachni::HTTP.instance.reset!
+        Arachni::HTTP.instance.reset
         reset_options
     end
 

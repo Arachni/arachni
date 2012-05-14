@@ -31,26 +31,13 @@ module UI
 #
 module Output
 
+    class << self
+        alias :old_reset_output_options :reset_output_options
+    end
+
     def self.reset_output_options
-        # verbosity flag
-        #
-        # if it's on verbose messages will be enabled
-        @@verbose = false
-
-        # debug flag
-        #
-        # if it's on debugging messages will be enabled
-        @@debug   = false
-
-        # only_positives flag
-        #
-        # if it's on status messages will be disabled
-        @@only_positives  = false
-
-        @@reroute_to_file = false
-
+        old_reset_output_options
         @@buffer_cap = 30
-
         @@buffer ||= []
     end
 
@@ -110,13 +97,13 @@ module Output
     # Obeys {@@only_positives}
     #
     # @see #only_positives?
-    # @see #only_positives!
+    # @see #only_positives
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_status( str = '' )
-        return if @@only_positives
+        return if only_positives?
         buffer( status: str )
     end
 
@@ -125,13 +112,13 @@ module Output
     # Obeys {@@only_positives}
     #
     # @see #only_positives?
-    # @see #only_positives!
+    # @see #only_positives
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_info( str = '' )
-        return if @@only_positives
+        return if only_positives?
         buffer( info: str )
     end
 
@@ -152,13 +139,13 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_debug( str = '' )
-        return if !@@debug
+        return if !debug?
 
         if reroute_to_file?
             buffer( debug: str )
@@ -167,49 +154,18 @@ module Output
         end
     end
 
-    # Pretty prints an object, used for debugging,
-    # needs some improvement but it'll do for now
-    #
-    # Obeys {@@debug}
-    #
-    # @see #debug?
-    # @see #debug!
-    #
-    # @param    [Object]
-    # @return    [void]
-    #
-    def print_debug_pp( obj = nil )
-        return if !@@debug
-        pp obj
-    end
-
-    # Prints the backtrace of an exception
-    #
-    # Obeys {@@debug}
-    #
-    # @see #debug?
-    # @see #debug!
-    #
-    # @param    [Exception]
-    # @return    [void]
-    #
-    def print_debug_backtrace( e = nil )
-        return if !@@debug
-        e.backtrace.each{ |line| print_debug( line ) }
-    end
-
     # Prints a verbose message
     #
     # Obeys {@@verbose}
     #
     # @see #verbose?
-    # @see #verbose!
+    # @see #verbose
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_verbose( str = '' )
-        return if !@@verbose
+        return if !verbose?
         buffer( verbose: str )
     end
 
@@ -218,74 +174,14 @@ module Output
     # Obeys {@@only_positives}
     #
     # @see #only_positives?
-    # @see #only_positives!
+    # @see #only_positives
     #
     # @param    [String]    str
     # @return    [void]
     #
     def print_line( str = '' )
-        return if @@only_positives
+        return if only_positives?
         buffer( line: str )
-    end
-
-    # Sets the {@@verbose} flag to true
-    #
-    # @see #verbose?
-    #
-    # @return    [void]
-    #
-    def verbose!
-        @@verbose = true
-    end
-
-    # Returns the {@@verbose} flag
-    #
-    # @see #verbose!
-    #
-    # @return    [Bool]    @@verbose
-    #
-    def verbose?
-        @@verbose
-    end
-
-    # Sets the {@@debug} flag to true
-    #
-    # @see #debug?
-    #
-    # @return    [void]
-    #
-    def debug!
-        @@debug = true
-    end
-
-    # Returns the {@@debug} flag
-    #
-    # @see #debug!
-    #
-    # @return    [Bool]    @@debug
-    #
-    def debug?
-        @@debug
-    end
-
-    # Sets the {@@only_positives} flag to true
-    #
-    # @see #only_positives?
-    #
-    # @return    [void]
-    #
-    def only_positives!
-        @@only_positives = true
-    end
-
-    # Returns the {@@only_positives} flag
-    #
-    # @see #only_positives!
-    #
-    # @return    [Bool]    @@only_positives
-    #
-    def only_positives?
-        @@only_positives
     end
 
     def reroute_to_file( file )

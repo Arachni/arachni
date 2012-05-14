@@ -22,7 +22,7 @@ class DispatcherMonitor
 
         @opts = opts
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
         # print banner message
         banner

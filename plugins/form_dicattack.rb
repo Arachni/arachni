@@ -20,10 +20,9 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
 class FormDicattack < Arachni::Plugin::Base
-
     attr_accessor :http
 
     def prepare
@@ -31,7 +30,7 @@ class FormDicattack < Arachni::Plugin::Base
         # @framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
-        @framework.pause!
+        @framework.pause
         print_info( "System paused." )
 
         @url     = @framework.opts.url.to_s
@@ -49,7 +48,6 @@ class FormDicattack < Arachni::Plugin::Base
     end
 
     def run
-
         if !form = login_form
             print_bad( 'Could not find a form suiting the provided params at: ' + @url )
             return
@@ -71,10 +69,9 @@ class FormDicattack < Arachni::Plugin::Base
             update_cookies: true,
             follow_location: false
         }
-        @users.each {
-            |user|
-            @passwds.each {
-                |pass|
+
+        @users.each do |user|
+            @passwds.each do |pass|
 
                 params = {
                     @user_field     => user,
@@ -83,9 +80,7 @@ class FormDicattack < Arachni::Plugin::Base
 
                 # merge the input fields of the form with our own params
                 form.auditable.merge!( params.dup )
-                form.submit( opts ).on_complete {
-                    |res|
-
+                form.submit( opts ).on_complete do |res|
                     next if @found
 
                     print_status( "#{@user_field}: '#{res.request.params[@user_field]}'" +
@@ -103,10 +98,10 @@ class FormDicattack < Arachni::Plugin::Base
                     clean_up
 
                     raise "Stopping the attack."
-                }
+                end
 
-            }
-        }
+            end
+        end
 
         print_status( "Waiting for the requests to complete..." )
         @http.run
@@ -118,7 +113,7 @@ class FormDicattack < Arachni::Plugin::Base
         @http.abort
 
         # continue with the scan
-        @framework.resume!
+        @framework.resume
     end
 
     def login_form
@@ -127,22 +122,15 @@ class FormDicattack < Arachni::Plugin::Base
 
         # find the login form
         form = nil
-        forms_from_response( res ).each {
-            |cform|
-            form = cform if login_form?( cform )
-        }
+        forms_from_response( res ).each { |cform| form = cform if login_form?( cform ) }
         form
     end
-
 
     def login_form?( form )
         avail    = form.auditable.keys
         provided = [ @user_field, @passwd_field ]
 
-        provided.each {
-            |name|
-            return false if !avail.include?( name )
-        }
+        provided.each { |name| return false if !avail.include?( name ) }
 
         true
     end
@@ -155,13 +143,13 @@ class FormDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :options        => [
-                Arachni::OptPath.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Arachni::OptPath.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] ),
-                Arachni::OptString.new( 'username_field', [ true, 'The name of the username form field.'] ),
-                Arachni::OptString.new( 'password_field', [ true, 'The name of the password form field.'] ),
-                Arachni::OptString.new( 'login_verifier', [ true, 'A string that will be used to verify a successful login.
+                Component::Options::Path.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
+                Component::Options::Path.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] ),
+                Component::Options::String.new( 'username_field', [ true, 'The name of the username form field.'] ),
+                Component::Options::String.new( 'password_field', [ true, 'The name of the password form field.'] ),
+                Component::Options::String.new( 'login_verifier', [ true, 'A string that will be used to verify a successful login.
                     For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] ),
             ]
         }

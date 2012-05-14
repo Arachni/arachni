@@ -22,7 +22,7 @@ describe Arachni::Parser::Element::Analysis::Taint do
         before do
             @seed = 'my_seed'
             issues.clear
-            Arachni::Parser::Element::Auditable.reset!
+            Arachni::Parser::Element::Auditable.reset
          end
 
         context 'when called with no opts' do

@@ -131,21 +131,21 @@ describe Arachni::RPC::Server::Framework do
         context 'when paused' do
             it 'should return true' do
                 instance = @instance_clean
-                instance.framework.pause!
+                instance.framework.pause
                 instance.framework.paused?.should be_true
             end
         end
     end
-    describe '#resume!' do
+    describe '#resume' do
         it 'should resume the scan' do
             instance = @instance_clean
-            instance.framework.pause!
+            instance.framework.pause
             instance.framework.paused?.should be_true
-            instance.framework.resume!.should be_true
+            instance.framework.resume.should be_true
             instance.framework.paused?.should be_false
         end
     end
-    describe '#clean_up!' do
+    describe '#clean_up' do
         it 'should set the framework state to finished, wait for plugins to finish and merge their results' do
             instance = @get_instance.call
             instance.opts.url = server_url_for( :framework_hpg )
@@ -163,7 +163,7 @@ describe Arachni::RPC::Server::Framework do
                 retry if tries > 0
             end
 
-            instance.framework.clean_up!.should be_true
+            instance.framework.clean_up.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
             results['wait'].should be_any
@@ -303,9 +303,9 @@ describe Arachni::RPC::Server::Framework do
         end
     end
 
-    describe '#restrict_to_elements!' do
+    describe '#restrict_to_elements' do
         it 'should return false' do
-            @instance_clean.framework.restrict_to_elements!( [] ).should be_false
+            @instance_clean.framework.restrict_to_elements( [] ).should be_false
         end
     end
     describe '#update_page_queue!' do

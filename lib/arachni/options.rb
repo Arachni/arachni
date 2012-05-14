@@ -416,15 +416,12 @@ class Options
 
 
     def initialize
-        reset!
+        reset
     end
 
-    def reset!
+    def reset
         # nil everything out
-        self.instance_variables.each {
-            |var|
-            instance_variable_set( var.to_s, nil )
-        }
+        self.instance_variables.each { |var| instance_variable_set( var.to_s, nil ) }
 
         @dir            = {}
         @dir['root']    = root_path

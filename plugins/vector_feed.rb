@@ -31,7 +31,7 @@ class VectorFeed < Arachni::Plugin::Base
 
     def prepare
         print_status 'Pausing the framework...'
-        @framework.pause!
+        @framework.pause
         print_status 'Done!'
     end
 
@@ -70,8 +70,7 @@ class VectorFeed < Arachni::Plugin::Base
         pages = {}
         page_buffer = []
         print_status "Imported #{feed.size} vectors."
-        feed.each {
-            |obj|
+        feed.each do |obj|
 
             if obj.respond_to?( :value )
                 vector = obj.value
@@ -99,9 +98,9 @@ class VectorFeed < Arachni::Plugin::Base
             rescue
                 next
             end
-        }
+        end
 
-        pages =  pages.values
+        pages  = pages.values
         pages |= page_buffer
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
@@ -162,7 +161,7 @@ class VectorFeed < Arachni::Plugin::Base
 
     def clean_up
         print_status 'Resuming the framework...'
-        @framework.resume!
+        @framework.resume
         print_status 'Done!'
     end
 
@@ -225,11 +224,11 @@ class VectorFeed < Arachni::Plugin::Base
 
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
-                Arachni::OptBase.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
-                Arachni::OptString.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
-                Arachni::OptPath.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
+                Components::Options::Base.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
+                Components::Options::String.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
+                Components::Options::Path.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
             ]
         }
     end

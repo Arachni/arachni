@@ -23,7 +23,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class Script < Arachni::Plugin::Base
@@ -50,7 +50,7 @@ class Script < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                Arachni::OptPath.new( 'path', [ true, 'Path to the script.' ] )
+                Component::Options::Path.new( 'path', [ true, 'Path to the script.' ] )
             ]
         }
     end

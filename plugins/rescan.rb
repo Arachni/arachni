@@ -24,15 +24,14 @@ module Plugins
 # It basically sets the 'restrict_paths' framework option to the sitemap of
 # a previous report.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
 #
 class ReScan < Arachni::Plugin::Base
 
     def prepare
-        @framework.pause!
+        @framework.pause
         print_status( "System paused." )
     end
 
@@ -42,7 +41,7 @@ class ReScan < Arachni::Plugin::Base
     end
 
     def clean_up
-        @framework.resume!
+        @framework.resume
         print_status( "System resumed." )
     end
 
@@ -53,9 +52,9 @@ class ReScan < Arachni::Plugin::Base
                 extract the sitemap in order to avoid a redundant crawl.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
-                Arachni::OptPath.new( 'afr', [ true, 'Path to the AFR report.' ] )
+                Component::Options::Path.new( 'afr', [ true, 'Path to the AFR report.' ] )
             ]
         }
     end

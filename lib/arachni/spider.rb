@@ -21,12 +21,9 @@ require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
 module Arachni
 
 #
-# Crawls the URL in opts[:url] and grabs the HTML code and headers.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Spider
-
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
@@ -150,7 +147,7 @@ class Spider
 
                     # call the block...if we have one
                     if block
-                        exception_jail{
+                        exception_jail {
                             if !skip?( check_url )
                                 block.call( parse ? page.clone : res )
                             else
@@ -186,25 +183,22 @@ class Spider
     end
 
     def redundant?( url )
-        @opts.redundant.each_with_index {
-            |redundant, i|
+        @opts.redundant.each_with_index do |redundant, i|
+            next if !(url =~ redundant['regexp'])
 
-            if url =~ redundant['regexp']
-
-                if @opts.redundant[i]['count'] == 0
-                    print_verbose( 'Discarding redundant page: \'' + url + '\'' )
-                    return true
-                end
-
-                print_info( 'Matched redundancy rule: ' +
-                redundant['regexp'].to_s + ' for page \'' +
-                url + '\'' )
-
-                print_info( 'Count-down: ' + @opts.redundant[i]['count'].to_s )
-
-                @opts.redundant[i]['count'] -= 1
+            if @opts.redundant[i]['count'] == 0
+                print_verbose( 'Discarding redundant page: \'' + url + '\'' )
+                return true
             end
-        }
+
+            print_info( 'Matched redundancy rule: ' +
+            redundant['regexp'].to_s + ' for page \'' +
+            url + '\'' )
+
+            print_info( 'Count-down: ' + @opts.redundant[i]['count'].to_s )
+
+            @opts.redundant[i]['count'] -= 1
+        end
         false
     end
 
@@ -213,11 +207,11 @@ class Spider
         ::IO::select( nil, nil, nil, 1 ) while( paused? )
     end
 
-    def pause!
+    def pause
         @pause = true
     end
 
-    def resume!
+    def resume
         @pause = false
     end
 

@@ -200,7 +200,7 @@ class CLI
     def kill_interrupt_handler
         @@only_positives = @only_positives_opt
         @interrupt_handler.exit if @interrupt_handler
-        unmute!
+        unmute
     end
 
     #
@@ -224,7 +224,7 @@ class CLI
 
                 c = gets[0]
                 clear_screen!
-                unmute!
+                unmute
                 case c
 
                     when 'e'
@@ -238,7 +238,7 @@ class CLI
                         @audit.exit
 
                         @exit_handler = Thread.new {
-                            @arachni.clean_up!( true )
+                            @arachni.clean_up( true )
                             @arachni.reports.run( @arachni.audit_store( true ) )
                             print_stats
                         }
@@ -251,7 +251,7 @@ class CLI
                 Thread.exit
             }
 
-            mute!
+            mute
             clear_screen!
             loop do
 
@@ -273,7 +273,7 @@ class CLI
                 ::IO::select( nil, nil, nil, 0.3 )
             end
 
-            unmute!
+            unmute
         }
 
     end
@@ -336,7 +336,7 @@ class CLI
 
         end
 
-        @arachni.plugins.load_defaults!
+        @arachni.plugins.load_defaults
         @opts.to_h.each do |opt, arg|
 
             case opt.to_s
@@ -346,13 +346,13 @@ class CLI
                     exit 0
 
                 when 'arachni_verbose'
-                    verbose!
+                    verbose
 
                 when 'debug'
-                    debug!
+                    debug
 
                 when 'only_positives'
-                    only_positives!
+                    only_positives
 
                 when 'lsmod'
                     next if arg.empty?

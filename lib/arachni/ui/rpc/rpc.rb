@@ -56,7 +56,7 @@ class RPC
             load_profile( @opts.load_profile )
         end
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
         # we don't need the framework for much,
         # in this case only for report generation, version number etc.
@@ -236,7 +236,7 @@ class RPC
     def pause( )
 
         print_status( 'Paused...' )
-        @server.framework.pause!
+        @server.framework.pause
 
         print_line
         print_info( 'Results thus far:' )
@@ -259,7 +259,7 @@ class RPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.framework.clean_up!
+            @server.framework.clean_up
             report
             shutdown
             print_info( 'Exiting...' )
@@ -267,7 +267,7 @@ class RPC
         end
 
         @pause = false
-        @server.framework.resume!
+        @server.framework.resume
     end
 
     #
@@ -361,7 +361,7 @@ class RPC
             opts.delete( 'cookie_jar' )
         end
 
-        @framework.plugins.load_defaults!.each {
+        @framework.plugins.load_defaults.each {
             |plugin|
             @opts.plugins[plugin] = {} if !@opts.plugins.include?( plugin )
         }

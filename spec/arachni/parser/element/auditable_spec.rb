@@ -46,21 +46,21 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe '#reset!' do
+    describe '#reset' do
         it 'should return the auditable inputs to their original state' do
             orig = @orig.auditable.dup
             @orig.auditable['new'] = 'value'
             (@orig.auditable != orig).should be_true
-            @orig.reset!
+            @orig.reset
             @orig.auditable.should == orig
         end
     end
 
-    describe '#remove_auditor!' do
+    describe '#remove_auditor' do
         it 'should remove the auditor' do
             @orig.auditor = :some_auditor
             @orig.auditor.should == :some_auditor
-            @orig.remove_auditor!
+            @orig.remove_auditor
             @orig.auditor.should be_nil
         end
     end
@@ -116,7 +116,7 @@ describe Arachni::Parser::Element::Auditable do
 
     describe '#audit' do
 
-        before { Arachni::Parser::Element::Auditable.reset! }
+        before { Arachni::Parser::Element::Auditable.reset }
 
         context 'when called with no opts' do
             it 'should use the defaults' do
@@ -140,13 +140,13 @@ describe Arachni::Parser::Element::Auditable do
             end
         end
 
-        describe '.restrict_to_elements!' do
-            after { Arachni::Parser::Element::Auditable.reset_instance_scope! }
+        describe '.restrict_to_elements' do
+            after { Arachni::Parser::Element::Auditable.reset_instance_scope }
 
             context 'when set' do
                 it 'should restrict the audit to the provided elements' do
                     scope_id_arr = [ @auditable.scope_audit_id ]
-                    Arachni::Parser::Element::Auditable.restrict_to_elements!( scope_id_arr )
+                    Arachni::Parser::Element::Auditable.restrict_to_elements( scope_id_arr )
                     performed = false
                     @sleep.audit( '' ){ performed = true }
                     @sleep.http.run
@@ -158,20 +158,20 @@ describe Arachni::Parser::Element::Auditable do
                     performed.should be_true
                 end
 
-                describe '#override_instance_scope!' do
+                describe '#override_instance_scope' do
 
-                    after { @sleep.reset_scope_override! }
+                    after { @sleep.reset_scope_override }
 
                     context 'when called' do
                         it 'should override scope restrictions' do
                             scope_id_arr = [ @auditable.scope_audit_id ]
-                            Arachni::Parser::Element::Auditable.restrict_to_elements!( scope_id_arr )
+                            Arachni::Parser::Element::Auditable.restrict_to_elements( scope_id_arr )
                             performed = false
                             @sleep.audit( '' ){ performed = true }
                             @sleep.http.run
                             performed.should be_false
 
-                            @sleep.override_instance_scope!
+                            @sleep.override_instance_scope
                             performed = false
                             @sleep.audit( '' ){ performed = true }
                             @sleep.http.run
@@ -180,7 +180,7 @@ describe Arachni::Parser::Element::Auditable do
 
                         describe '#override_instance_scope?' do
                             it 'should return true' do
-                                @sleep.override_instance_scope!
+                                @sleep.override_instance_scope
                                 @sleep.override_instance_scope?.should be_true
                             end
                         end

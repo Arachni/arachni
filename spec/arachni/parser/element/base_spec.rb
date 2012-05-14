@@ -60,13 +60,13 @@ describe Arachni::Parser::Element::Base do
             e.override_instance_scope?.should be_false
             e.override_instance_scope?.should == @elem.override_instance_scope?
 
-            e.override_instance_scope!
+            e.override_instance_scope
             c = e.dup
             e.override_instance_scope?.should be_true
             c.override_instance_scope?.should == e.override_instance_scope?
 
             a = @elem.dup
-            a.override_instance_scope!
+            a.override_instance_scope
             a.override_instance_scope?.should_not == @elem.override_instance_scope?
         end
     end

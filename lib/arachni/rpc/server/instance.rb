@@ -62,7 +62,7 @@ class Instance
 
         @opts.datastore[:token] = token
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
 
         if logfile = @opts.reroute_to_logfile

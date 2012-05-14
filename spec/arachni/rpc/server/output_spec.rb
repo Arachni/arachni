@@ -88,7 +88,7 @@ describe Arachni::UI::Output do
         end
 
         context 'when only_positives is enabled' do
-            before( :all ) { @out.only_positives! }
+            before( :all ) { @out.only_positives }
 
             describe '#only_positives?' do
                 it 'should return true' do
@@ -142,7 +142,7 @@ describe Arachni::UI::Output do
         end
 
         context 'with enabled verbosity' do
-            before { @out.verbose! }
+            before { @out.verbose }
 
             describe '#verbose?' do
                 it 'should return true' do
@@ -189,7 +189,7 @@ describe Arachni::UI::Output do
         end
 
         context 'when debugging is enabled' do
-            before( :all ) { @out.debug! }
+            before( :all ) { @out.debug }
 
             describe '#debug?' do
                 it 'should return true' do

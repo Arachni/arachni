@@ -18,20 +18,18 @@ module Arachni
 module Plugins
 
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
 #
 class HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
-
         # disable spidering and the subsequent audit
         # @framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
-        @framework.pause!
+        @framework.pause
         print_info( "System paused." )
 
         @url     = @framework.opts.url.to_s
@@ -42,7 +40,6 @@ class HTTPDicattack < Arachni::Plugin::Base
     end
 
     def run
-
         if !protected?( @url )
             print_info( "The URL you provided doesn't seem to be protected." )
             print_info( "Aborting..." )
@@ -56,16 +53,13 @@ class HTTPDicattack < Arachni::Plugin::Base
         total_req = @users.size * @passwds.size
         print_status( "Number of requests to be transmitted: #{total_req}" )
 
-        @users.each {
-            |user|
-
+        @users.each do |user|
             url.user = user
-            @passwds.each {
-                |pass|
 
+            @passwds.each do |pass|
                 url.password = pass
-                @framework.http.get( url.to_s ).on_complete {
-                    |res|
+
+                @framework.http.get( url.to_s ).on_complete do |res|
 
                     next if @found
 
@@ -85,10 +79,10 @@ class HTTPDicattack < Arachni::Plugin::Base
 
                     raise "Stopping the attack."
 
-                }
+                end
 
-            }
-        }
+            end
+        end
 
         print_status( "Waiting for the requests to complete..." )
         @framework.http.run
@@ -101,12 +95,11 @@ class HTTPDicattack < Arachni::Plugin::Base
         @framework.http.abort
 
         # continue with the scan
-        @framework.resume!
+        @framework.resume
     end
 
-
     def protected?( url )
-        @framework.http.get( url, :async => false ).response.code == 401
+        @framework.http.get( url, async: false ).response.code == 401
     end
 
     def self.info
@@ -117,10 +110,10 @@ class HTTPDicattack < Arachni::Plugin::Base
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
-                Arachni::OptPath.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Arachni::OptPath.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] )
+                Component::Options::Path.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
+                Component::Options::Path.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] )
             ]
         }
     end

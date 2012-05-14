@@ -217,7 +217,7 @@ class Framework
         # exit the reports will still run with whatever results Arachni managed to gather
         exception_jail( false ){ audit }
 
-        clean_up!
+        clean_up
         exception_jail( false ){ block.call } if block_given?
         @status = :done
 
@@ -600,20 +600,22 @@ class Framework
     # @return   [True]  pauses the framework on a best effort basis,
     #                       might take a while to take effect
     #
-    def pause!
-        @spider.pause! if @spider
+    def pause
+        @spider.pause if @spider
         @paused << caller
         true
     end
+    alias :pause! :pause
 
     #
     # @return   [True]  resumes the scan/audit
     #
-    def resume!
+    def resume
         @paused.delete( caller )
-        @spider.resume! if @spider
+        @spider.resume if @spider
         true
     end
+    alias :resume! :resume
 
     #
     # Returns the version of the framework
@@ -647,14 +649,14 @@ class Framework
     #
     # @return   [True]
     #
-    def clean_up!( skip_audit_queue = false )
+    def clean_up( skip_audit_queue = false )
         @status = :cleanup
 
         @opts.finish_datetime = Time.now
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
         # make sure this is disabled or it'll break report output
-        disable_only_positives!
+        disable_only_positives
 
         @running = false
 
@@ -669,6 +671,7 @@ class Framework
 
         true
     end
+    alias :clean_up! :clean_up
 
     private
 

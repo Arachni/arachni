@@ -10,9 +10,9 @@ describe Arachni::Plugin::Manager do
 
     after( :all ) { @plugins.clear }
 
-    describe '#load_defaults!' do
+    describe '#load_defaults' do
         it 'should load all default plugins' do
-            @plugins.load_defaults!
+            @plugins.load_defaults
             @plugins.include?( 'default' ).should be_true
         end
     end

@@ -126,10 +126,10 @@ class HTTP
     attr_reader :trainer
 
     def initialize
-        reset!
+        reset
     end
 
-    def reset!
+    def reset
         opts = Options.instance
 
         req_limit = opts.http_req_limit

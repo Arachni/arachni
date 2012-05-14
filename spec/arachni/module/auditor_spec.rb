@@ -7,7 +7,7 @@ class AuditorTest
     def initialize( framework )
         @framework = framework
         http.trainer.page = page
-        mute!
+        mute
     end
 
     def page
@@ -27,10 +27,9 @@ class AuditorTest
     end
 
     def load_page_from( url )
-        http.get( url ).on_complete {
-            |res|
+        http.get( url ).on_complete do |res|
             @page = Arachni::Parser::Page.from_http_response( res, framework.opts )
-        }
+        end
         http.run
     end
 
@@ -61,7 +60,7 @@ describe Arachni::Module::Auditor do
 
     after :each do
         @framework.modules.results.clear
-        Arachni::Parser::Element::Auditable.reset!
+        Arachni::Parser::Element::Auditable.reset
     end
 
     describe '#register_results' do
@@ -113,30 +112,21 @@ describe Arachni::Module::Auditor do
 
         it 'should return true if file exists' do
             exists = false
-            @auditor.remote_file_exist?( @base_url + 'true' ) {
-                |bool|
-                exists = bool
-            }
+            @auditor.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
             @framework.http.run
             exists.should be_true
         end
 
         it 'should return false on redirect' do
             exists = true
-            @auditor.remote_file_exist?( @base_url + 'redirect' ) {
-                |bool|
-                exists = bool
-            }
+            @auditor.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
             @framework.http.run
             exists.should be_false
         end
 
         it 'should return false if file doesn\'t exist' do
             exists = true
-            @auditor.remote_file_exist?( @base_url + 'false' ) {
-                |bool|
-                exists = bool
-            }
+            @auditor.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
             @framework.http.run
             exists.should be_false
         end
@@ -146,41 +136,33 @@ describe Arachni::Module::Auditor do
 
             it 'should be able to handle it if it remains the same' do
                 exists = true
-                @auditor.remote_file_exist?( @_404_url + 'static/this_does_not_exist' ) {
-                    |bool|
-                    exists = bool
-                }
+                url = @_404_url + 'static/this_does_not_exist'
+                @auditor.remote_file_exist?( url ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_false
             end
 
             it 'should be able to handle it if the response contains the invalid request' do
                 exists = true
-                @auditor.remote_file_exist?( @_404_url + 'invalid/this_does_not_exist' ) {
-                    |bool|
-                    exists = bool
-                }
+                url = @_404_url + 'invalid/this_does_not_exist'
+                @auditor.remote_file_exist?( url ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_false
             end
 
             it 'should be able to handle it if the response contains dynamic data' do
                 exists = true
-                @auditor.remote_file_exist?( @_404_url + 'dynamic/this_does_not_exist' ) {
-                    |bool|
-                    exists = bool
-                }
+                url = @_404_url + 'dynamic/this_does_not_exist'
+                @auditor.remote_file_exist?( url ) { |bool| exists = bool }
                 @framework.http.run
                 exists.should be_false
             end
 
             it 'should be able to handle a combination of the above with multiple requests' do
                 exist = []
-                100.times{
-                    @auditor.remote_file_exist?( @_404_url + 'combo/this_does_not_exist_' + rand( 9999 ).to_s ) {
-                        |bool|
-                        exist << bool
-                    }
+                100.times {
+                    url = @_404_url + 'combo/this_does_not_exist_' + rand( 9999 ).to_s
+                    @auditor.remote_file_exist?( url ) { |bool| exist << bool }
                 }
                 @framework.http.run
                 exist.include?( true ).should be_false
@@ -193,10 +175,7 @@ describe Arachni::Module::Auditor do
     describe '#log_remote_file' do
         it 'should log a remote file' do
             file = @url + '/log_remote_file_if_exists/true'
-            @framework.http.get( file ).on_complete {
-                |res|
-                @auditor.log_remote_file( res )
-            }
+            @framework.http.get( file ).on_complete { |res| @auditor.log_remote_file( res ) }
             @framework.http.run
 
             logged_issue = @framework.modules.results.first
@@ -239,11 +218,8 @@ describe Arachni::Module::Auditor do
             end
 
             it 'should log issue if pattern matches' do
-                @framework.http.get( @base_url ).on_complete {
-                    |res|
-
+                @framework.http.get( @base_url ).on_complete do |res|
                     regexp = @regex[:valid]
-
                     @auditor.match_and_log( regexp, res.body )
 
                     logged_issue = @framework.modules.results.first
@@ -256,15 +232,14 @@ describe Arachni::Module::Auditor do
                     logged_issue.opts[:element].should == Arachni::Issue::Element::BODY
                     logged_issue.regexp.should == regexp.to_s
                     logged_issue.verification.should be_false
-                }
+                end
             end
 
             it 'should not log issue if pattern doesn\'t match' do
-                @framework.http.get( @base_url ).on_complete {
-                    |res|
+                @framework.http.get( @base_url ).on_complete do |res|
                     @auditor.match_and_log( @regex[:invalid], res.body )
                     @framework.modules.results.should be_empty
-                }
+                end
             end
         end
 
@@ -312,8 +287,7 @@ describe Arachni::Module::Auditor do
             after { @framework.http.run }
 
             it 'populates and logs an issue with response data' do
-                @framework.http.get( @opts.url.to_s ).on_complete {
-                    |res|
+                @framework.http.get( @opts.url.to_s ).on_complete do |res|
 
                     @auditor.log( @log_opts, res )
 
@@ -327,7 +301,7 @@ describe Arachni::Module::Auditor do
                     logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
                     logged_issue.regexp.should == @log_opts[:regexp].to_s
                     logged_issue.verification.should be_false
-                }
+                end
             end
         end
 
@@ -356,7 +330,7 @@ describe Arachni::Module::Auditor do
             @seed = 'my_seed'
             @default_input_value = 'blah'
             issues.clear
-            Arachni::Parser::Element::Auditable.reset!
+            Arachni::Parser::Element::Auditable.reset
          end
 
         context 'when called with no opts' do
@@ -440,14 +414,13 @@ describe Arachni::Module::Auditor do
             describe :train do
                 context 'default' do
                     it 'should parse the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
-                        # flush any exisiting pages from the buffer
+                        # flush any existing pages from the buffer
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/default' ).on_complete {
-                            |res|
+                        @framework.http.get( @url + '/train/default' ).on_complete do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
-                        }
+                        end
                         @framework.http.run
 
                         # page feedback queue
@@ -471,14 +444,13 @@ describe Arachni::Module::Auditor do
 
                 context true do
                     it 'should parse all responses and feed any new elements back to the framework to be audited' do
-                        # flush any exisiting pages from the buffer
+                        # flush any existing pages from the buffer
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete {
-                            |res|
+                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
-                        }
+                        end
                         @framework.http.run
 
                         # page feedback queue
@@ -502,14 +474,13 @@ describe Arachni::Module::Auditor do
 
                 context false do
                     it 'should skip analysis' do
-                        # flush any exisiting pages from the buffer
+                        # flush any existing pages from the buffer
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete {
-                            |res|
+                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
-                        }
+                        end
                         @framework.http.run
 
                         auditor = Arachni::Module::Base.new( page )

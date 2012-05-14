@@ -25,7 +25,6 @@ module Plugin
 #
 #
 class Formatter
-
     # get the output interface
     include Arachni::UI::Output
 
@@ -40,20 +39,19 @@ class Formatter
 end
 
 #
-# Arachni::Plugin::Base class
-#
-# An abstract class for the plugins.<br/>
-# All plugins must extend this.
+# An abstract class which all plugins must extend.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @abstract
 #
 class Base
-
     # get the output interface
     include Arachni::Module::Output
     include Arachni::Module::Utilities
+
+    attr_reader :options
+    attr_reader :framework
 
     #
     # @param    [Arachni::Framework]    framework
@@ -131,9 +129,9 @@ class Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                #                        option name       required?       description                     default
-                # Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
-                # Arachni::OptString.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
+                #                                   option name        required?       description                        default
+                # Component::Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
+                # Component::Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
             ],
             # specify an execution order group
             # plug-ins will be separated in groups based on this number
@@ -151,14 +149,14 @@ class Base
     # @param    [Object]    results
     #
     def register_results( results )
-        @framework.plugins.register_results( self, results )
+        framework.plugins.register_results( self, results )
     end
 
     #
     # Will block until the scan finishes.
     #
     def wait_while_framework_running
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
+        ::IO.select( nil, nil, nil, 1 ) while( framework.running? )
     end
 
 end

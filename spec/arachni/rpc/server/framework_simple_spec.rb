@@ -140,17 +140,17 @@ describe Arachni::RPC::Server::Framework do
         context 'when paused' do
             it 'should return true' do
                 instance = @instance_clean
-                instance.framework.pause!
+                instance.framework.pause
                 instance.framework.paused?.should be_true
             end
         end
     end
-    describe '#resume!' do
+    describe '#resume' do
         it 'should resume the scan' do
             instance = @instance_clean
-            instance.framework.pause!
+            instance.framework.pause
             instance.framework.paused?.should be_true
-            instance.framework.resume!.should be_true
+            instance.framework.resume.should be_true
             instance.framework.paused?.should be_false
         end
     end
@@ -175,9 +175,9 @@ describe Arachni::RPC::Server::Framework do
             end
             context 'and the scanner is paused' do
                 it 'should return "paused"' do
-                    @inst.framework.pause!
+                    @inst.framework.pause
                     @inst.framework.status.should == 'paused'
-                    @inst.framework.resume!
+                    @inst.framework.resume
                 end
             end
         end
@@ -217,7 +217,7 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.run.should be_true
             instance.framework.busy?.should be_true
             instance.framework.auditstore.plugins.should be_empty
-            instance.framework.clean_up!.should be_true
+            instance.framework.clean_up.should be_true
             results = instance.framework.auditstore.plugins
             results.should be_any
             results['wait'].should be_any
@@ -351,7 +351,7 @@ describe Arachni::RPC::Server::Framework do
         end
     end
 
-    describe '#restrict_to_elements!' do
+    describe '#restrict_to_elements' do
         it 'should restrict the audit to the provided element signatures' do
             mod_lib = @opts.dir['modules'].dup
             @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
@@ -365,7 +365,7 @@ describe Arachni::RPC::Server::Framework do
             res = Arachni::HTTP.instance.get( inst.opts.url.to_s, opts ).response
 
             link = Arachni::Parser::Element::Link.from_response( res ).pop
-            inst.framework.restrict_to_elements!(  [ link.scope_audit_id ] ).should be_true
+            inst.framework.restrict_to_elements(  [ link.scope_audit_id ] ).should be_true
 
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
