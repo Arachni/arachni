@@ -18,10 +18,8 @@ module Arachni
 module Modules
 
 #
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
 # @version 0.1
 #
 class InsecureCookies < Arachni::Module::Base
@@ -64,7 +62,7 @@ class InsecureCookies < Arachni::Module::Base
                 :cwe         => '200',
                 :severity    => Issue::Severity::INFORMATIONAL,
                 :cvssv2      => '0',
-                :remedy_guidance    => %q{Set the 'HttpOnly' flag in the cookie.},
+                :remedy_guidance    => %q{Set the 'Secure' flag in the cookie.},
                 :remedy_code => '',
             }
         }
