@@ -226,9 +226,9 @@ class VectorFeed < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.1',
             :options        => [
-                Components::Options::Base.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
-                Components::Options::String.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
-                Components::Options::Path.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
+                Component::Options::Base.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
+                Component::Options::String.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
+                Component::Options::Path.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
             ]
         }
     end
