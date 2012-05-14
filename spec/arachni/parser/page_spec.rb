@@ -47,68 +47,68 @@ describe Arachni::Parser::Page do
     end
 
     context 'when called without options' do
-        describe :links do
+        describe '#links' do
             it 'should default to empty array' do
                 @empty_page.links.should == []
             end
         end
 
-        describe :forms do
+        describe '#forms' do
             it 'should default to empty array' do
                 @empty_page.forms.should == []
             end
         end
 
-        describe :cookies do
+        describe '#cookies' do
             it 'should default to empty array' do
                 @empty_page.cookies.should == []
             end
         end
 
-        describe :headers do
+        describe '#headers' do
             it 'should default to empty array' do
                 @empty_page.headers.should == []
             end
         end
 
-        describe :cookiejar do
+        describe '#cookiejar' do
             it 'should default to empty hash' do
                 @empty_page.cookiejar.should == {}
             end
         end
 
-        describe :paths do
+        describe '#paths' do
             it 'should default to empty array' do
                 @empty_page.paths.should == []
             end
         end
 
-        describe :response_headers do
+        describe '#response_headers' do
             it 'should default to empty array' do
                 @empty_page.paths.should == []
             end
         end
 
-        describe :query_vars do
+        describe '#query_vars' do
             it 'should default to empty hash' do
                 @empty_page.query_vars.should == {}
             end
         end
 
-        describe :html do
+        describe '#html' do
             it 'should default to empty hash' do
                 @empty_page.html.should == ''
             end
         end
 
-        describe :body do
+        describe '#body' do
             it 'should default to empty string' do
                 @empty_page.body.should == ''
             end
         end
     end
 
-    describe :from_http_response do
+    describe '.from_http_response' do
         it 'should return a page from an HTTP response and opts' do
             res = Typhoeus::Response.new( effective_url: 'http://url.com' )
             page = Arachni::Parser::Page.from_http_response( res, Arachni::Options.instance )

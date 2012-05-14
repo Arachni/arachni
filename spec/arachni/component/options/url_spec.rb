@@ -5,7 +5,7 @@ describe Arachni::Component::Options::URL do
         @opt = Arachni::Component::Options::URL.new( ' ')
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @opt.valid?( 'http://localhost' ).should be_true
@@ -27,7 +27,7 @@ describe Arachni::Component::Options::URL do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.type.should == 'url'
         end

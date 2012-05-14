@@ -22,20 +22,20 @@ describe Arachni::RPC::Server::Instance do
         @instance = @get_instance.call
     end
 
-    describe :service do
-        describe :alive? do
+    describe '#service' do
+        describe '#alive?' do
             it 'should return true' do
                 @instance.service.alive?.should == true
             end
         end
 
-        describe :output do
+        describe '#output' do
             it 'should return output messages' do
                 @instance.service.output.should be_any
             end
         end
 
-        describe :shutdown do
+        describe '#shutdown' do
             it 'should shutdown the instance' do
                 instance = @get_instance.call
                 instance.service.shutdown.should be_true
@@ -52,13 +52,13 @@ describe Arachni::RPC::Server::Instance do
         end
     end
 
-    describe :framework do
+    describe '#framework' do
         it 'should provide access to the framework' do
             @instance.framework.busy?.should be_false
         end
     end
 
-    describe :opts do
+    describe '#opts' do
         it 'should provide access to the options' do
             url = 'http://blah.com'
             @instance.opts.url = url
@@ -66,13 +66,13 @@ describe Arachni::RPC::Server::Instance do
         end
     end
 
-    describe :modules do
+    describe '#modules' do
         it 'should provide access to the module manager' do
             @instance.modules.available.should == %w(test)
         end
     end
 
-    describe :plugins do
+    describe '#plugins' do
         it 'should provide access to the plugin manager' do
             @instance.plugins.available.sort.should == %w(wait bad distributable loop default with_options).sort
         end

@@ -19,7 +19,7 @@ describe Arachni::RPC::Client::Dispatcher do
         @dispatcher.alive?.should be_true
     end
 
-    describe :node do
+    describe '#node' do
         it 'should provide access to the node data' do
             @dispatcher.node.info.is_a?( Hash ).should be_true
         end

@@ -41,7 +41,7 @@ describe Arachni::Module::ElementDB do
         @edb.init_db_from_page!( @page )
     end
 
-    describe :update_links do
+    describe '#update_links' do
         context 'when there are new links' do
             it 'should add them to the DB and return them' do
                 link = Arachni::Parser::Element::Link.new(
@@ -66,7 +66,7 @@ describe Arachni::Module::ElementDB do
         end
     end
 
-    describe :update_forms do
+    describe '#update_forms' do
         context 'when there are new forms' do
             it 'should add them to the DB and return them' do
                 form = Arachni::Parser::Element::Form.new(
@@ -91,7 +91,7 @@ describe Arachni::Module::ElementDB do
         end
     end
 
-    describe :update_cookies do
+    describe '#update_cookies' do
         context 'when there are new cookies' do
             it 'should add them to the DB, return all cookies but only return the count of the new ones' do
                 cookie = Arachni::Parser::Element::Cookie.new(

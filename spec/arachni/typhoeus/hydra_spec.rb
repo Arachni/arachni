@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Hydra do
 
-    describe :max_concurrency do
+    describe '#max_concurrency' do
         it 'should be accessible' do
             h = Typhoeus::Hydra.new
             h.max_concurrency.should be_true

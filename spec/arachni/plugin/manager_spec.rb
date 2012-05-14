@@ -10,14 +10,14 @@ describe Arachni::Plugin::Manager do
 
     after( :all ) { @plugins.clear }
 
-    describe :load_defaults! do
+    describe '#load_defaults!' do
         it 'should load all default plugins' do
             @plugins.load_defaults!
             @plugins.include?( 'default' ).should be_true
         end
     end
 
-    describe :run do
+    describe '#run' do
         context 'when gem dependencies are met' do
             it 'should run loaded plugins' do
                 @plugins.run
@@ -40,7 +40,7 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :sane_env? do
+    describe '#sane_env?' do
         context 'when gem dependencies are met' do
             it 'should return true' do
                 @plugins.sane_env?( @plugins['default'] ).should == true
@@ -54,13 +54,13 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :create do
+    describe '#create' do
         it 'should return a plugin instance' do
             @plugins.create( 'default' ).instance_of?( @plugins['default'] ).should be_true
         end
     end
 
-    describe :busy? do
+    describe '#busy?' do
         context 'when plugins are running' do
             it 'should return true' do
                 @plugins.run
@@ -77,7 +77,7 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :job_names do
+    describe '#job_names' do
         context 'when plugins are running' do
             it 'should return the names of the running plugins' do
                 @plugins.run
@@ -94,7 +94,7 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :jobs do
+    describe '#jobs' do
         context 'when plugins are running' do
             it 'should return the names of the running plugins' do
                 @plugins.run
@@ -111,7 +111,7 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :kill do
+    describe '#kill' do
         context 'when a plugin is running' do
             it 'should kill a running plugin' do
                 @plugins.load( 'loop' )
@@ -133,7 +133,7 @@ describe Arachni::Plugin::Manager do
         end
     end
 
-    describe :get do
+    describe '#get' do
         context 'when a plugin is running' do
             it 'should return its thread' do
                 @plugins.load( 'loop' )

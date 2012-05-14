@@ -9,7 +9,7 @@ describe Arachni::Parser::Element::Link do
         @link = Arachni::Parser::Element::Link.new( @url, @inputs )
     end
 
-    describe :submit do
+    describe '#submit' do
         it 'should perform a GET HTTP request' do
             body = nil
             @link.submit( remove_id: true ).on_complete {
@@ -21,25 +21,25 @@ describe Arachni::Parser::Element::Link do
         end
     end
 
-    describe :auditable do
+    describe '#auditable' do
         it 'should return the provided inputs' do
             @link.auditable.should == @inputs[:inputs]
         end
     end
 
-    describe :simple do
+    describe '#simple' do
         it 'should return a simplified version as a hash' do
             @link.simple.should == { @link.action => @link.auditable }
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should be "link"' do
             @link.type.should == 'link'
         end
     end
 
-    describe :from_document do
+    describe '.from_document' do
         context 'when the response does not contain any links' do
             it 'should return an empty array' do
                 Arachni::Parser::Element::Link.from_document( '', '' ).should be_empty

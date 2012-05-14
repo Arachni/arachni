@@ -5,35 +5,35 @@ describe Arachni::Component::Options::Base do
         @opt = Arachni::Component::Options::Base
     end
 
-    describe :name do
+    describe '#name' do
         it 'should return the name of the option' do
             name = 'a name'
             @opt.new( name ).name.should == name
         end
     end
 
-    describe :desc do
+    describe '#desc' do
         it 'should return the description' do
             desc = 'a description'
             @opt.new( '', [ false, desc ] ).desc.should == desc
         end
     end
 
-    describe :default do
+    describe '#default' do
         it 'should return the default value -- if there is one' do
             default = 'default value'
             @opt.new( '', [ false, '', default ] ).default.should == default
         end
     end
 
-    describe :enums do
+    describe '#enums' do
         it 'should return an array of possible, predefined, values' do
             enums = %w(1 2 3)
             @opt.new( '', [ false, '', nil, enums ] ).enums.should == enums
         end
     end
 
-    describe :required? do
+    describe '#required?' do
         context 'when the option is mandatory' do
             it 'should return true' do
                 @opt.new( '', [ true ] ).required?.should be_true
@@ -47,7 +47,7 @@ describe Arachni::Component::Options::Base do
         end
     end
 
-    describe :type? do
+    describe '#type?' do
         context 'when the type matches the param' do
             it 'should return true' do
                 @opt.new( '' ).type?( 'abstract' ).should be_true
@@ -60,7 +60,7 @@ describe Arachni::Component::Options::Base do
         end
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @opt.new( '' ).valid?( nil ).should be_true
@@ -77,7 +77,7 @@ describe Arachni::Component::Options::Base do
         end
     end
 
-    describe :empty_required_value? do
+    describe '#empty_required_value?' do
         context 'when a required value is empty' do
             it 'should return true' do
                 @opt.new( '', [ true ] ).empty_required_value?( nil ).should be_true
@@ -90,13 +90,13 @@ describe Arachni::Component::Options::Base do
         end
     end
 
-    describe :normalize do
+    describe '#normalize' do
         it 'should return the value as is' do
             @opt.new( '' ).normalize( 'blah' ).should == 'blah'
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.new( '' ).type.should == 'abstract'
         end

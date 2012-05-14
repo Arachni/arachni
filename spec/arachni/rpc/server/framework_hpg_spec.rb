@@ -51,7 +51,7 @@ describe Arachni::RPC::Server::Framework do
 
     end
 
-    describe :busy? do
+    describe '#busy?' do
         context 'when the scan is not running' do
             it 'should return false' do
                 @framework_clean.busy?.should be_false
@@ -66,29 +66,29 @@ describe Arachni::RPC::Server::Framework do
             end
         end
     end
-    describe :version do
+    describe '#version' do
         it 'should return the system version' do
             @framework_clean.version.should == Arachni::VERSION
         end
     end
-    describe :revision do
+    describe '#revision' do
         it 'should return the framework revision' do
             @framework_clean.revision.should == Arachni::Framework::REVISION
         end
     end
-    describe :high_performance? do
+    describe '#high_performance?' do
         it 'should return true' do
             @framework_clean.high_performance?.should be_true
         end
     end
-    describe :output do
+    describe '#output' do
         it 'should return the instance\'s output messages' do
             output = @framework_clean.output.first
             output.keys.first.is_a?( Symbol ).should be_true
             output.values.first.is_a?( String ).should be_true
         end
     end
-    describe :run do
+    describe '#run' do
         it 'should perform a scan' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
@@ -98,7 +98,7 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.issues.should be_any
         end
     end
-    describe :auditstore do
+    describe '#auditstore' do
         it 'should return an auditstore object' do
             auditstore = @instance_clean.framework.auditstore
             auditstore.is_a?( Arachni::AuditStore ).should be_true
@@ -109,7 +109,7 @@ describe Arachni::RPC::Server::Framework do
             issue.variations.first.is_a?( Arachni::Issue ).should be_true
         end
     end
-    describe :stats do
+    describe '#stats' do
         it 'should return a hash containing general runtime statistics' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
@@ -121,7 +121,7 @@ describe Arachni::RPC::Server::Framework do
             @stat_keys.each { |k| stats[k].should be_true }
         end
     end
-    describe :paused? do
+    describe '#paused?' do
         context 'when not paused' do
             it 'should return false' do
                 instance = @instance_clean
@@ -136,7 +136,7 @@ describe Arachni::RPC::Server::Framework do
             end
         end
     end
-    describe :resume! do
+    describe '#resume!' do
         it 'should resume the scan' do
             instance = @instance_clean
             instance.framework.pause!
@@ -145,7 +145,7 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.paused?.should be_false
         end
     end
-    describe :clean_up do
+    describe '#clean_up!' do
         it 'should set the framework state to finished, wait for plugins to finish and merge their results' do
             instance = @get_instance.call
             instance.opts.url = server_url_for( :framework_hpg )
@@ -171,7 +171,7 @@ describe Arachni::RPC::Server::Framework do
             results['distributable'][:results].should == { stuff: 2 }
         end
     end
-    describe :progress do
+    describe '#progress' do
         before { @progress_keys = %W(stats status busy issues instances messages).sort }
 
         it 'should be aliased to #progress_data' do
@@ -249,7 +249,7 @@ describe Arachni::RPC::Server::Framework do
             end
         end
     end
-    describe :report do
+    describe '#report' do
         it 'should return a hash report of the scan' do
             report = @instance_clean.framework.report
             report.is_a?( Hash ).should be_true
@@ -270,19 +270,19 @@ describe Arachni::RPC::Server::Framework do
                 @instance_clean.framework.auditstore_as_hash
         end
     end
-    describe :serialized_auditstore do
+    describe '#serialized_auditstore' do
         it 'should return a YAML serialized AuditStore' do
             yaml_str = @instance_clean.framework.serialized_auditstore
             YAML.load( yaml_str ).is_a?( Arachni::AuditStore ).should be_true
         end
     end
-    describe :serialized_report do
+    describe '#serialized_report' do
         it 'should return a YAML serialized report hash' do
             yaml_str = @instance_clean.framework.serialized_report
             YAML.load( yaml_str ).should == @instance_clean.framework.report
         end
     end
-    describe :issues do
+    describe '#issues' do
         it 'should return an array of issues without variations' do
             issues = @instance_clean.framework.issues
             issues.should be_any
@@ -292,7 +292,7 @@ describe Arachni::RPC::Server::Framework do
             issue.variations.should be_empty
         end
     end
-    describe :issues_as_hash do
+    describe '#issues_as_hash' do
         it 'should return an array of issues (as hash) without variations' do
             issues = @instance_clean.framework.issues_as_hash
             issues.should be_any
@@ -303,17 +303,17 @@ describe Arachni::RPC::Server::Framework do
         end
     end
 
-    describe :restrict_to_elements! do
+    describe '#restrict_to_elements!' do
         it 'should return false' do
             @instance_clean.framework.restrict_to_elements!( [] ).should be_false
         end
     end
-    describe :update_page_queue! do
+    describe '#update_page_queue!' do
         it 'should return false' do
             @instance_clean.framework.update_page_queue!( [] ).should be_false
         end
     end
-    describe :register_issues do
+    describe '#register_issues' do
         it 'should return false' do
             @instance_clean.framework.register_issues( [] ).should be_false
         end

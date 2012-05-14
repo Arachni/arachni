@@ -37,7 +37,7 @@ describe Arachni::RPC::Client::Instance do
         end
     end
 
-    describe :opts do
+    describe '#opts' do
         before {
             @rpc_opts = @instance.opts
             @foo_url = "http://test.com"
@@ -52,7 +52,7 @@ describe Arachni::RPC::Client::Instance do
                 @rpc_opts.url( val ).should == val
             end
 
-            describe :set do
+            describe '#set' do
                 it 'should allow batch assigning using a hash' do
                     val = @foo_url + '3'
                     @rpc_opts.set( url: val ).should be_true
@@ -68,21 +68,21 @@ describe Arachni::RPC::Client::Instance do
         end
     end
 
-    describe :framework do
+    describe '#framework' do
         before { @framework = @instance.framework }
         it 'should be able to access framework methods' do
             @framework.status.should be_true
         end
     end
 
-    describe :modules do
+    describe '#modules' do
         before { @modules = @instance.modules }
         it 'should be able to access framework methods' do
             @modules.available.should be_true
         end
     end
 
-    describe :plugins do
+    describe '#plugins' do
         before { @plugins = @instance.plugins }
         it 'should be able to access framework methods' do
             @plugins.available.should be_true

@@ -15,7 +15,7 @@ describe Arachni::Parser::Element::Base do
         @e.raw.should == @raw
     end
 
-    describe :== do
+    describe '#==' do
         it 'should assert equality based on method, action and inputs' do
             e = Arachni::Parser::Element::Link.new( @url, inputs: { 'name' => 'val' } )
             c = Arachni::Parser::Element::Link.new( @url, inputs: { 'name' => 'val' } )
@@ -43,7 +43,7 @@ describe Arachni::Parser::Element::Base do
         end
     end
 
-    describe :dup do
+    describe '#dup' do
         before do
             @elem = Arachni::Parser::Element::Link.new( @url, inputs: { 'name' => 'val' } )
         end

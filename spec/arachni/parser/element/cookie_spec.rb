@@ -8,7 +8,7 @@ describe Arachni::Parser::Element::Cookie do
         @http = Arachni::HTTP.instance
     end
 
-    describe :submit do
+    describe '#submit' do
         it 'should perform the appropriate HTTP request with appropriate params' do
             body_should = @c.auditable.map { |k, v| k.to_s + v.to_s }.join( "\n" )
             body = nil
@@ -23,7 +23,7 @@ describe Arachni::Parser::Element::Cookie do
 
     context 'when initialized' do
         context 'with hash key/pair' do
-            describe :simple do
+            describe '#simple' do
                 it 'should return name/val as a key/pair' do
                     raw = { 'name' => 'val' }
                     c = Arachni::Parser::Element::Cookie.new( @url, raw )
@@ -32,7 +32,7 @@ describe Arachni::Parser::Element::Cookie do
             end
         end
         context 'with attributes' do
-            describe :simple do
+            describe '#simple' do
                 it 'should return name/val as a key/pair' do
                     raw = { 'name' => 'myname', 'value' => 'myvalue' }
                     c = Arachni::Parser::Element::Cookie.new( @url, raw )
@@ -42,13 +42,13 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should be "cookie"' do
             @c.type.should == 'cookie'
         end
     end
 
-    describe :secure? do
+    describe '#secure?' do
         context 'when set' do
             it 'should return true' do
                 Arachni::Parser::Element::Cookie.new( @url,
@@ -66,7 +66,7 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :httponly? do
+    describe '#httponly?' do
         context 'when set' do
             it 'should return true' do
                 Arachni::Parser::Element::Cookie.new( @url,
@@ -84,7 +84,7 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :session? do
+    describe '#session?' do
         context 'when cookie is session cookie' do
             it 'should return true' do
                 Arachni::Parser::Element::Cookie.new( @url,
@@ -106,7 +106,7 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :expired? do
+    describe '#expired?' do
         context 'when expiry date is set' do
             context 'and has expired' do
                 it 'should return true' do
@@ -137,25 +137,25 @@ describe Arachni::Parser::Element::Cookie do
     end
 
 
-    describe :name do
+    describe '.name' do
         it 'should return the name of the cookie' do
             @c.name.should == 'mycookie'
         end
     end
 
-    describe :value do
+    describe '#value' do
         it 'should return the name of the cookie' do
             @c.value.should == 'myvalue'
         end
     end
 
-    describe :to_s do
+    describe '#to_s' do
         it 'should return a string representation of the cookie' do
             @c.to_s.should == "#{@c.name}=#{@c.value}"
         end
     end
 
-    describe :from_file do
+    describe '.from_file' do
         it 'should parse a Netscape cookiejar file and return an array of cookies' do
             forms =  Arachni::Parser::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
             forms.size.should == 2
@@ -189,7 +189,7 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :from_response do
+    describe '.from_response' do
         context 'when the response contains cookies' do
             it 'should return an array of cookies' do
                 response = @http.get( @url + '/set_cookie', async: false ).response
@@ -203,7 +203,7 @@ describe Arachni::Parser::Element::Cookie do
     end
 
 
-    describe :from_document do
+    describe '.from_document' do
         context 'when there are any set-cookie attributes in http-equiv' do
             context 'with a String document' do
                 it 'should return an array of cookies' do
@@ -243,7 +243,7 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe :from_headers do
+    describe '.from_headers' do
         context 'when there are any set-cookie attributes in http-equiv' do
             context 'with a String document' do
                 it 'should return an array of cookies' do

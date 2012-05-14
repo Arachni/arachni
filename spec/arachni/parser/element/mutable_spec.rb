@@ -7,7 +7,7 @@ describe Arachni::Parser::Element::Mutable do
         @mutable = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs  )
     end
 
-    describe :mutations do
+    describe '#mutations' do
         context 'with no options' do
             it 'should return all combinatios' do
                 inputs = { inputs:
@@ -21,7 +21,7 @@ describe Arachni::Parser::Element::Mutable do
             end
         end
 
-        describe :immutables do
+        describe '#immutables' do
             it 'should skip parameters which is contains' do
                 l = Arachni::Parser::Element::Link.new( 'http://test.com',
                     inputs: {
@@ -105,7 +105,7 @@ describe Arachni::Parser::Element::Mutable do
         end
     end
 
-    describe :altered do
+    describe '#altered' do
         it 'should return the name of the mutated input' do
             m = @mutable.mutations( @seed,
                 format: [Arachni::Parser::Element::Mutable::Format::STRAIGHT] ).first

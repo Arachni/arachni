@@ -20,7 +20,7 @@ describe Arachni::UI::Output do
             @out.flush_buffer.size == 30
         end
 
-        describe :uncap_buffer do
+        describe '#uncap_buffer' do
             it 'should remove the buffer limits' do
                 @out.uncap_buffer
                 500.times { @out.print_error( @msg ) }
@@ -28,7 +28,7 @@ describe Arachni::UI::Output do
             end
         end
 
-        describe :set_buffer_cap do
+        describe '#set_buffer_cap' do
             it 'should set a buffer limit' do
                 @out.set_buffer_cap( 50 )
                 500.times { @out.print_error( @msg ) }
@@ -36,21 +36,21 @@ describe Arachni::UI::Output do
             end
         end
 
-        describe :print_error do
+        describe '#print_error' do
             it 'should log an error' do
                 @out.print_error( @msg )
                 @out.flush_buffer.first.should == { error: @msg }
             end
         end
 
-        describe :print_error_backtrace do
+        describe '#print_error_backtrace' do
             it 'should log the backtrace from the provided exception' do
                 @out.print_error_backtrace( @e )
                 @out.flush_buffer.should == @e.backtrace.map { |l| { error: l } }
             end
         end
 
-        describe :print_bad do
+        describe '#print_bad' do
             it 'should log a bad msg' do
                 @out.print_bad( @msg )
                 @out.flush_buffer.first.should == { bad: @msg }
@@ -59,27 +59,27 @@ describe Arachni::UI::Output do
 
         context 'when only_positives is disabled' do
 
-            describe :only_positives? do
+            describe '#only_positives?' do
                 it 'should return true' do
                     @out.only_positives?.should be_false
                 end
             end
 
-            describe :print_status do
+            describe '#print_status' do
                 it 'should log a status msg' do
                     @out.print_status( @msg )
                     @out.flush_buffer.first.should == { status: @msg }
                 end
             end
 
-            describe :print_info do
+            describe '#print_info' do
                 it 'should log an informational msg' do
                     @out.print_info( @msg )
                     @out.flush_buffer.first.should == { info: @msg }
                 end
             end
 
-            describe :print_line do
+            describe '#print_line' do
                 it 'should log a regular msg' do
                     @out.print_line( @msg )
                     @out.flush_buffer.first.should == { line: @msg }
@@ -90,27 +90,27 @@ describe Arachni::UI::Output do
         context 'when only_positives is enabled' do
             before( :all ) { @out.only_positives! }
 
-            describe :only_positives? do
+            describe '#only_positives?' do
                 it 'should return true' do
                     @out.only_positives?.should be_true
                 end
             end
 
-            describe :print_status do
+            describe '#print_status' do
                 it 'should log a status msg' do
                     @out.print_status( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_info do
+            describe '#print_info' do
                 it 'should log an informational msg' do
                     @out.print_info( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_line do
+            describe '#print_line' do
                 it 'should log a regular msg' do
                     @out.print_line( @msg )
                     @out.flush_buffer.should be_empty
@@ -119,7 +119,7 @@ describe Arachni::UI::Output do
         end
 
 
-        describe :print_ok do
+        describe '#print_ok' do
             it 'should log an OK (successful) msg' do
                 @out.print_ok( @msg )
                 @out.flush_buffer.first.should == { ok: @msg }
@@ -127,13 +127,13 @@ describe Arachni::UI::Output do
         end
 
         context 'with disabled verbosity' do
-            describe :verbose? do
+            describe '#verbose?' do
                 it 'should return false' do
                     @out.verbose?.should be_false
                 end
             end
 
-            describe :print_verbose do
+            describe '#print_verbose' do
                 it 'should log an OK (successful) msg' do
                     @out.print_verbose( @msg )
                     @out.flush_buffer.should be_empty
@@ -144,13 +144,13 @@ describe Arachni::UI::Output do
         context 'with enabled verbosity' do
             before { @out.verbose! }
 
-            describe :verbose? do
+            describe '#verbose?' do
                 it 'should return true' do
                     @out.verbose?.should be_true
                 end
             end
 
-            describe :print_verbose do
+            describe '#print_verbose' do
                 it 'should log a verbose msg' do
                     @out.print_verbose( @msg )
                     @out.flush_buffer.first.should == { verbose: @msg }
@@ -160,27 +160,27 @@ describe Arachni::UI::Output do
 
         context 'when debugging is disabled' do
 
-            describe :debug? do
+            describe '#debug?' do
                 it 'should return false' do
                     @out.debug?.should be_false
                 end
             end
 
-            describe :print_debug do
+            describe '#print_debug' do
                 it 'should not log anything' do
                     @out.print_debug( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_debug_pp do
+            describe '#print_debug_pp' do
                 it 'should not log anything' do
                     @out.print_debug_pp( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_debug_backtrace do
+            describe '#print_debug_backtrace' do
                 it 'should not log anything' do
                     @out.print_debug_backtrace( @e )
                     @out.flush_buffer.should be_empty
@@ -191,27 +191,27 @@ describe Arachni::UI::Output do
         context 'when debugging is enabled' do
             before( :all ) { @out.debug! }
 
-            describe :debug? do
+            describe '#debug?' do
                 it 'should return true' do
                     @out.debug?.should be_true
                 end
             end
 
-            describe :print_debug do
+            describe '#print_debug' do
                 it 'should not log anything' do
                     @out.print_debug( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_debug_pp do
+            describe '#print_debug_pp' do
                 it 'should not log anything' do
                     @out.print_debug_pp( @msg )
                     @out.flush_buffer.should be_empty
                 end
             end
 
-            describe :print_debug_backtrace do
+            describe '#print_debug_backtrace' do
                 it 'should not log anything' do
                     @out.print_debug_backtrace( @e )
                     @out.flush_buffer.should be_empty

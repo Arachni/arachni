@@ -10,7 +10,7 @@ describe Arachni::Report::Manager do
         @reports.load( '*' )
     end
 
-    describe :run do
+    describe '#run' do
         context 'without the run_afr opt' do
             it 'should run loaded reports including the AFR one' do
                 @reports.run( @framework.auditstore )
@@ -49,7 +49,7 @@ describe Arachni::Report::Manager do
         end
     end
 
-    describe :run_one do
+    describe '#run_one' do
         it 'should run a report by name' do
             @reports.run_one( 'foo', @framework.auditstore )
 

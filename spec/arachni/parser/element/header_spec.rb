@@ -12,13 +12,13 @@ describe Arachni::Parser::Element::Header do
         @header.auditable.should == @inputs
     end
 
-    describe :simple do
+    describe '#simple' do
         it 'should return the inputs as is' do
             @header.simple.should == @inputs
         end
     end
 
-    describe :submit do
+    describe '#submit' do
         it 'should perform an appropriate request' do
             body = nil
             @header.submit( remove_id: true ).on_complete {
@@ -30,7 +30,7 @@ describe Arachni::Parser::Element::Header do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should be "header"' do
             @header.type.should == 'header'
         end

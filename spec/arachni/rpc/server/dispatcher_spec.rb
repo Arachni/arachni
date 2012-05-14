@@ -35,13 +35,13 @@ describe Arachni::RPC::Server::Dispatcher do
         @dispatcher.stats['consumed_pids'].each { |p| pids << p }
     end
 
-    describe :alive? do
+    describe '#alive?' do
         it 'should return true' do
             @dispatcher.alive?.should == true
         end
     end
 
-    describe :dispatch do
+    describe '#dispatch' do
         it 'should return valid Instance info' do
             info = @dispatcher.dispatch
 
@@ -65,7 +65,7 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe :job do
+    describe '#job' do
         it 'should return proc info by PID' do
             job = @dispatcher.dispatch
             info = @dispatcher.job( job['pid'] )
@@ -75,7 +75,7 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe :jobs do
+    describe '#jobs' do
         it 'should return proc info by PID for all jobs' do
             @dispatcher.jobs.each do |job|
                 @job_info_keys.each do |k|
@@ -85,7 +85,7 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe :stats do
+    describe '#stats' do
         it 'should return general statistics' do
             jobs = @dispatcher.jobs
             Process.kill( 'KILL', jobs.first['pid'] )
@@ -106,13 +106,13 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
-    describe :log do
+    describe '#log' do
         it 'should return the contents of the log file' do
             @dispatcher.log.should be_true
         end
     end
 
-    describe :proc_info do
+    describe '#proc_info' do
         it 'should return the proc info of the dispatcher' do
             info = @dispatcher.proc_info
             info.should be_true

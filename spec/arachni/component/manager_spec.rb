@@ -10,25 +10,25 @@ describe Arachni::Component::Manager do
 
     after( :each ) { @components.clear }
 
-    describe :lib do
+    describe '#lib' do
         it 'should return the component library' do
             @components.lib.should == @lib
         end
     end
 
-    describe :namespace do
+    describe '#namespace' do
         it 'should return the namespace under which all components are defined' do
             @components.namespace.should == @namespace
         end
     end
 
-    describe :available do
+    describe '#available' do
         it 'should return all available components' do
             @components.available.sort.should == %w(wait bad distributable loop default with_options).sort
         end
     end
 
-    describe :load do
+    describe '#load' do
         context 'when passed a string' do
             it 'should load components by name' do
                 @components.load( 'wait' )
@@ -86,7 +86,7 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :parse do
+    describe '#parse' do
         context 'when passed a string' do
             it 'should return components by name' do
                 @components.parse( 'wait' ).should == %w(wait)
@@ -140,7 +140,7 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :prep_opts do
+    describe '#prep_opts' do
         it 'should prepare options for passing to the component' do
             c = 'with_options'
 
@@ -185,7 +185,7 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :delete do
+    describe '#delete' do
         it 'should remove and unload a component' do
             @components.loaded.should be_empty
 
@@ -204,20 +204,20 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :available do
+    describe '#available' do
         it 'should return all available components' do
             @components.available.sort.should == %w(wait bad with_options distributable loop default).sort
         end
     end
 
-    describe :loaded do
+    describe '#loaded' do
         it 'should return all loaded components' do
             @components.load( '*' )
             @components.loaded.sort.should == %w(wait bad with_options distributable loop default).sort
         end
     end
 
-    describe :name_to_path do
+    describe '#name_to_path' do
         it 'should return a component\'s path from its name' do
             path = @components.name_to_path( 'wait' )
             File.exists?( path ).should be_true
@@ -225,14 +225,14 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :path_to_name do
+    describe '#path_to_name' do
         it 'should return a component\'s path from its name' do
             path = @components.name_to_path( 'wait' )
             @components.path_to_name( path ).should == 'wait'
         end
     end
 
-    describe :paths do
+    describe '#paths' do
         it 'should return all component paths' do
             paths = @components.paths
             paths.each { |p| File.exists?( p ).should be_true }
@@ -240,7 +240,7 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :clear do
+    describe '#clear' do
         it 'should unload all components' do
             @components.loaded.should be_empty
             @components.load( '*' )

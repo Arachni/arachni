@@ -7,7 +7,7 @@ describe Arachni::Component::Options::Bool do
         @falses = [ false, 'n', 'no', '0', 0, 'f', 'false', 'off', '' ]
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @trues.each { |v| @opt.new( '' ).valid?( v ).should be_true }
@@ -25,14 +25,14 @@ describe Arachni::Component::Options::Bool do
         end
     end
 
-    describe :normalize do
+    describe '#normalize' do
         it 'should convert the string input into a boolean value' do
             @trues.each { |v| @opt.new( '' ).normalize( v ).should be_true }
             @falses.each { |v| @opt.new( '' ).normalize( v ).should be_false }
         end
     end
 
-    describe :true? do
+    describe '#true?' do
         context 'when the value option represents true' do
             it 'should return true' do
                 @trues.each { |v| @opt.new( '' ).true?( v ).should be_true }
@@ -45,7 +45,7 @@ describe Arachni::Component::Options::Bool do
         end
     end
 
-    describe :false? do
+    describe '#false?' do
         context 'when the value option represents false' do
             it 'should return true' do
                 @falses.each { |v| @opt.new( '' ).false?( v ).should be_true }
@@ -58,7 +58,7 @@ describe Arachni::Component::Options::Bool do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.new( '' ).type.should == 'bool'
         end

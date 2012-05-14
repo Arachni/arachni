@@ -64,7 +64,7 @@ describe Arachni::Module::Auditor do
         Arachni::Parser::Element::Auditable.reset!
     end
 
-    describe :register_results do
+    describe '#register_results' do
         it 'should register issues with the framework' do
             issue = Arachni::Issue.new( name: 'Test issue', url: @url )
             @auditor.register_results( [ issue ] )
@@ -77,7 +77,7 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    describe :log_remote_file_if_exists do
+    describe '#log_remote_file_if_exists' do
         before do
             @base_url = @url + '/log_remote_file_if_exists/'
         end
@@ -106,7 +106,7 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    describe :remote_file_exist? do
+    describe '#remote_file_exist?' do
         before do
             @base_url = @url + '/log_remote_file_if_exists/'
         end
@@ -190,7 +190,7 @@ describe Arachni::Module::Auditor do
     end
 
 
-    describe :log_remote_file do
+    describe '#log_remote_file' do
         it 'should log a remote file' do
             file = @url + '/log_remote_file_if_exists/true'
             @framework.http.get( file ).on_complete {
@@ -212,7 +212,7 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    describe :log_issue do
+    describe '#log_issue' do
         it 'should log an issue' do
             opts = { name: 'Test issue', url: @url }
             @auditor.log_issue( opts )
@@ -223,7 +223,7 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    describe :match_and_log do
+    describe '#match_and_log' do
 
         before do
             @base_url = @url + '/match_and_log'
@@ -293,7 +293,7 @@ describe Arachni::Module::Auditor do
         end
     end
 
-    describe :log do
+    describe '#log' do
 
         before do
             @log_opts = {
@@ -350,7 +350,7 @@ describe Arachni::Module::Auditor do
 
     end
 
-    describe :audit do
+    describe '#audit' do
 
         before do
             @seed = 'my_seed'

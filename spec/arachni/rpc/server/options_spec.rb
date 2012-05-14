@@ -22,7 +22,7 @@ describe Arachni::Options do
         @instance = @get_instance.call
     end
 
-    describe :set do
+    describe '#set' do
         context 'when keys are strings' do
             it 'should set options by hash' do
                 opts = {
@@ -60,7 +60,7 @@ describe Arachni::Options do
         end
     end
 
-    describe :exclude do
+    describe '#exclude' do
         context 'when passed an array of strings' do
             it 'should set exclusion regexps' do
                 regexp = 'exclude'
@@ -78,7 +78,7 @@ describe Arachni::Options do
         end
     end
 
-    describe :include do
+    describe '#include' do
         context 'when passed an array of strings' do
             it 'should set exclusion regexps' do
                 regexp = 'include'
@@ -96,7 +96,7 @@ describe Arachni::Options do
         end
     end
 
-    describe :redundant do
+    describe '#redundant' do
         context 'when passed an array of strings' do
             it 'should set exclusion regexps' do
                 regexp = {

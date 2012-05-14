@@ -12,7 +12,7 @@ describe Arachni::RPC::Server::Base do
         @server = Arachni::RPC::Server::Base.new( opts )
     end
 
-    describe :ready? do
+    describe '#ready?' do
         context 'when the server is not ready' do
             it 'should be false' do
                 @server.ready?.should be_false

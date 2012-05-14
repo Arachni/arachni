@@ -23,19 +23,19 @@ describe Arachni::Parser do
         @parser = Arachni::Parser.new( @opts, @response )
     end
 
-    describe :url do
+    describe '#url' do
         it 'should hold the effective URL of the response' do
             @parser.url.should == @url
         end
     end
 
-    describe :opts do
+    describe '#opts' do
         it 'should hold the provided opts' do
             @parser.opts.should == @opts
         end
     end
 
-    describe :run do
+    describe '#run' do
         it 'should return a Page' do
             page = @parser.run
 
@@ -60,7 +60,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :text? do
+    describe '#text?' do
         context 'when the response is text based' do
             it { @parser.text?.should be_true }
         end
@@ -74,13 +74,13 @@ describe Arachni::Parser do
         end
     end
 
-    describe :doc do
+    describe '#doc' do
         it 'should return the parsed document' do
             @parser.doc.class == Nokogiri::HTML::Document
         end
     end
 
-    describe :forms do
+    describe '#forms' do
         it 'should return an array of parsed forms' do
             @parser.forms.size.should == 2
 
@@ -140,7 +140,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :cookies do
+    describe '#cookies' do
         it 'should return an array of cookies' do
             @parser.cookies.size.should == 3
 
@@ -173,19 +173,19 @@ describe Arachni::Parser do
     end
 
     context 'without base' do
-        describe :base do
+        describe '#base' do
             it 'should return nil' do
                 @parser.base.should == nil
             end
         end
 
-        describe :to_absolute do
+        describe '#to_absolute' do
             it 'should convert a relative path to absolute' do
                 @parser.to_absolute( 'relative/path' ).should == "#{@opts.url}/relative/path"
             end
         end
 
-        describe :links do
+        describe '#links' do
             it 'should return an array of links' do
                 link = @parser.links.first
                 link.action.should == @opts.url.to_s + '/link?link_input=link_val'
@@ -195,7 +195,7 @@ describe Arachni::Parser do
             end
         end
 
-        describe :paths do
+        describe '#paths' do
             it 'should return an array of all paths found in the page as absolute URLs' do
                 paths = [
                     "link?link_input=link_val",
@@ -219,19 +219,19 @@ describe Arachni::Parser do
             @parser_with_base = Arachni::Parser.new( @opts, res )
         }
 
-        describe :base do
+        describe '#base' do
             it 'should return the base href attr' do
                 @parser_with_base.base.should == "#{@opts.url.to_s}/this_is_the_base/"
             end
         end
 
-        describe :to_absolute do
+        describe '#to_absolute' do
             it 'should convert a relative path to absolute' do
                 @parser_with_base.to_absolute( 'relative/path' ).should == "#{@parser_with_base.base}relative/path"
             end
         end
 
-        describe :links do
+        describe '#links' do
             it 'should return an array of links' do
                 link = @parser_with_base.links.first
                 link.action.should == @parser_with_base.base + 'link_with_base?link_input=link_val'
@@ -241,7 +241,7 @@ describe Arachni::Parser do
             end
         end
 
-        describe :paths do
+        describe '#paths' do
             it 'should return an array of all paths found in the page as absolute URLs' do
                 paths = [
                     "",
@@ -253,7 +253,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :headers do
+    describe '#headers' do
         it 'should return an array of headers' do
             @parser.headers.each {
                 |h|
@@ -262,19 +262,19 @@ describe Arachni::Parser do
         end
     end
 
-    describe :link_vars do
+    describe '#link_vars' do
         it 'should return a hash of link query inputs' do
             @parser.link_vars( @url ).should == { "query_var_input" => "query_var_val" }
         end
     end
 
-    describe :extract_domain do
+    describe '#extract_domain' do
         it 'should return the domain name from a URI object' do
             @parser.extract_domain( URI( @url ) ).should == 'localhost'
         end
     end
 
-    describe :path_too_deep? do
+    describe '#path_too_deep?' do
         before { @parser.opts.depth_limit = 3 }
 
         context 'when the path is above the threshold' do
@@ -297,7 +297,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :path_in_domain? do
+    describe '#path_in_domain?' do
         before { @parser.url = 'http://bar.com' }
 
         context 'when follow subdomains is disabled' do
@@ -353,7 +353,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :exclude_path? do
+    describe '#exclude_path?' do
         before { @parser.opts.exclude << /skip_me/ }
 
         context 'when a path matches an exclude rule' do
@@ -371,7 +371,7 @@ describe Arachni::Parser do
         end
     end
 
-    describe :include_path? do
+    describe '#include_path?' do
         before { @parser.opts.include << /include_me/ }
 
         context 'when a path matches an include rule' do

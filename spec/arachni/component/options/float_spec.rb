@@ -5,7 +5,7 @@ describe Arachni::Component::Options::Float do
         @opt = Arachni::Component::Options::Float.new( '' )
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @opt.valid?( '1' ).should be_true
@@ -25,7 +25,7 @@ describe Arachni::Component::Options::Float do
         end
     end
 
-    describe :normalize do
+    describe '#normalize' do
         it 'should convert the string input into a boolean value' do
             @opt.normalize( '5' ).should == 5.0
             @opt.normalize( '5.3' ).should == 5.3
@@ -33,7 +33,7 @@ describe Arachni::Component::Options::Float do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.type.should == 'float'
         end

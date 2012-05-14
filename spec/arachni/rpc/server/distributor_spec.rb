@@ -113,7 +113,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :map_slaves do
+    describe '#map_slaves' do
         it 'should asynchronously iterate over all slaves' do
             q = Queue.new
 
@@ -132,7 +132,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :each_slave do
+    describe '#each_slave' do
         it 'should asynchronously iterate over all slaves' do
             q = Queue.new
 
@@ -154,7 +154,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :slave_iterator do
+    describe '#slave_iterator' do
         it 'should return an async iterator for the slave instances' do
             q = Queue.new
 
@@ -176,7 +176,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :iterator_for do
+    describe '#iterator_for' do
         it 'should return an async iterator for the provided array' do
             q = Queue.new
 
@@ -198,7 +198,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :split_urls do
+    describe '#split_urls' do
         it 'should evenly split urls into chunks for each instance' do
             @opts.min_pages_per_instance = 10
             splits = @distributor.split_urls( @urls, 4 )
@@ -222,7 +222,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :build_elem_list do
+    describe '#build_elem_list' do
         it 'should evenly distribute elements across instances' do
             @opts.url = server_url_for( :parser )
             @opts.audit_links = true
@@ -241,7 +241,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :distribute_elements do
+    describe '#distribute_elements' do
         it 'should evenly distribute elements across instances' do
             chunks = [[@url], [@url2]]
             elem_ids_per_page = {
@@ -372,7 +372,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :prefered_dispatchers do
+    describe '#prefered_dispatchers' do
         it 'should return a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
             @opts.pool_size = 1
             opts = @opts
@@ -441,7 +441,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :pick_dispatchers do
+    describe '#pick_dispatchers' do
         it 'should return a sorted list of dispatchers based on their load balancing metrics' do
             dispatchers = []
             dispatchers << { 'node' => { 'score' => 0 } }
@@ -459,7 +459,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe :spawn do
+    describe '#spawn' do
         before( :all ) do
             @opts.rpc_port = random_port
             @opts.dir['modules'] = spec_path + 'fixtures/taint_module/'

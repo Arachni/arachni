@@ -39,7 +39,7 @@ describe Arachni::RPC::Client::Base do
         @client_class = Arachni::RPC::Client::Base
     end
 
-    describe :new do
+    describe '.new' do
         context 'without SSL options' do
             it 'should connect successfully to a server' do
                 opts = @opts.dup

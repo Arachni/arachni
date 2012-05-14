@@ -22,7 +22,7 @@ describe Arachni::Parser::Element::Analysis::RDiff do
         @auditor = Auditor.new( Arachni::HTTP.instance )
     end
 
-    describe :rdiff_analysis do
+    describe '#rdiff_analysis' do
         before do
             @opts = {
                :faults    => [ 'bad' ],

@@ -5,7 +5,7 @@ describe Arachni::Component::Options::Int do
         @opt = Arachni::Component::Options::Int.new( '' )
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @opt.valid?( '1' ).should be_true
@@ -28,7 +28,7 @@ describe Arachni::Component::Options::Int do
         end
     end
 
-    describe :normalize do
+    describe '#normalize' do
         it 'should convert the string input into a boolean value' do
             @opt.normalize( '0xdd' ).should == 221
             @opt.normalize( '5dd' ).should be_nil
@@ -37,7 +37,7 @@ describe Arachni::Component::Options::Int do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.type.should == 'integer'
         end

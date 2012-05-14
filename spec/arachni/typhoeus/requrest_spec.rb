@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Request do
 
-    describe :id do
+    describe '#id' do
         it 'should be accessible' do
             req = Typhoeus::Request.new( '' )
             req.id = 1
@@ -10,7 +10,7 @@ describe Typhoeus::Request do
         end
     end
 
-    describe :on_complete do
+    describe '#on_complete' do
         context 'when multi is enabled' do
             it 'allow multiple callbacks' do
                 req = Typhoeus::Request.new( '' )
@@ -37,7 +37,7 @@ describe Typhoeus::Request do
         end
     end
 
-    describe :train! do
+    describe '#train!' do
         it 'should set train? to return true' do
             req = Typhoeus::Request.new( '' )
             req.train?.should be_false
@@ -46,7 +46,7 @@ describe Typhoeus::Request do
         end
     end
 
-    describe :update_cookies! do
+    describe '#update_cookies!' do
         it 'should set update_cookies? to return true' do
             req = Typhoeus::Request.new( '' )
             req.update_cookies?.should be_false

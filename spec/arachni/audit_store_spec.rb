@@ -36,19 +36,19 @@ describe Arachni::AuditStore do
         @clean = Arachni::AuditStore.new( @auditstore_opts )
     end
 
-    describe :version do
+    describe '#version' do
         it 'should return the version number' do
             @auditstore.version.should == '0.1'
         end
     end
 
-    describe :revision do
+    describe '#revision' do
         it 'should return the revision number' do
             @auditstore.revision.should == '0.2'
         end
     end
 
-    describe :options do
+    describe '#options' do
         it 'should return the options as a hash' do
             h = Arachni::Options.instance.to_h
             h['url'] = h['url'].to_s
@@ -56,25 +56,25 @@ describe Arachni::AuditStore do
         end
     end
 
-    describe :sitemap do
+    describe '#sitemap' do
         it 'should return the sitemap' do
             @auditstore.sitemap.should == [@opts.url.to_s]
         end
     end
 
-    describe :issues do
+    describe '#issues' do
         it 'should return the issues' do
             @auditstore.issues.should == [@issue]
         end
     end
 
-    describe :plugins do
+    describe '#plugins' do
         it 'should return the plugin results' do
             @auditstore.plugins.should == @plugin_results
         end
     end
 
-    describe :start_datetime do
+    describe '#start_datetime' do
         it 'should return the start datetime of the scan' do
             Time.parse( @auditstore.start_datetime ).is_a?( Time ).should be_true
         end
@@ -85,7 +85,7 @@ describe Arachni::AuditStore do
         end
     end
 
-    describe :finish_datetime do
+    describe '#finish_datetime' do
         it 'should return the start finish of the scan' do
             Time.parse( @auditstore.finish_datetime ).is_a?( Time ).should be_true
         end
@@ -96,7 +96,7 @@ describe Arachni::AuditStore do
         end
     end
 
-    describe :delta_time do
+    describe '#delta_time' do
         it 'should return the time difference between start and finish time' do
             Time.parse( @auditstore.delta_time ).is_a?( Time ).should be_true
         end
@@ -164,7 +164,7 @@ describe Arachni::AuditStore do
         sorted.map { |i| i.severity }.should == [high.severity, medium.severity, low.severity, info.severity]
     end
 
-    describe :save do
+    describe '#save' do
         it 'should serialize and save the object to a file' do
             filename = 'auditstore'
             auditstore = ::Arachni::AuditStore.new( @auditstore_opts )
@@ -183,7 +183,7 @@ describe Arachni::AuditStore do
         end
     end
 
-    describe :to_h do
+    describe '#to_h' do
         it 'should return the object as a hash' do
             h = @auditstore.to_h
             h.is_a?( Hash ).should be_true

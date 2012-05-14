@@ -5,7 +5,7 @@ describe Arachni::Component::Options::Port do
         @opt = Arachni::Component::Options::Port.new( '' )
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the path exists' do
             it 'should return true' do
                 (1..65535).each do |p|
@@ -29,7 +29,7 @@ describe Arachni::Component::Options::Port do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.type.should == 'port'
         end

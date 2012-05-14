@@ -15,7 +15,7 @@ describe Arachni::Module::Manager do
 
     after( :all ) { @modules.clear }
 
-    describe :load do
+    describe '#load' do
         it 'should load all modules' do
             all = @modules.load( [ '*' ] )
             all.size.should equal 1
@@ -23,7 +23,7 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe :run do
+    describe '#run' do
         it 'should run all modules' do
             @modules.run( @page )
             results = @modules.results
@@ -32,7 +32,7 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe :run_one do
+    describe '#run_one' do
         it 'should run a single module' do
             @modules.run_one( @modules.values.first, @page )
             results = @modules.results
@@ -41,7 +41,7 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe :register_results do
+    describe '#register_results' do
         it 'should register an array of issues' do
             @modules.register_results( [ @issue ] )
             @modules.results.any?.should be true
@@ -53,7 +53,7 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe :on_register_results do
+    describe '#on_register_results' do
         it 'should register callbacks to be executed on new results' do
             callback_called = false
             @modules.on_register_results {
@@ -64,7 +64,7 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe :do_not_store! do
+    describe '#do_not_store!' do
         it 'should not store results' do
             @modules.do_not_store!
             @modules.register_results( [ @issue ] )

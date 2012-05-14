@@ -24,7 +24,7 @@ describe Arachni::Module::Trainer do
         @trainer.init_from_page!( @page )
     end
 
-    describe :add_response do
+    describe '#add_response' do
 
         context 'when the page has not changed' do
             it 'should not analyze it' do

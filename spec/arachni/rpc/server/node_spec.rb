@@ -138,7 +138,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         end
     end
 
-    describe :add_neighbour do
+    describe '#add_neighbour' do
         before( :all ) do
             @n = @get_node.call
         end
@@ -177,13 +177,13 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         end
     end
 
-    describe :neighbours do
+    describe '#neighbours' do
         it 'should return an array of neighbours' do
             @node.neighbours.is_a?( Array ).should be_true
         end
     end
 
-    describe :neighbours_with_info do
+    describe '#neighbours_with_info' do
         it 'should return all neighbours accompanied by their node info' do
             @node.neighbours_with_info.size == @node.neighbours.size
             keys = @node.info.keys.sort
@@ -193,7 +193,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         end
     end
 
-    describe :info do
+    describe '#info' do
         it 'should return node info' do
             @opts.pipe_id = 'pipe_id'
             @opts.weight = 10
@@ -211,7 +211,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         end
     end
 
-    describe :alive? do
+    describe '#alive?' do
         it 'should return true' do
             @get_node.call.alive?.should be_true
         end

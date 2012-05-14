@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe String do
 
-    describe :rdiff do
+    describe '#rdiff' do
         it 'should return the common parts between self and another string' do
             str = <<-END
                 This is the first test.
@@ -20,7 +20,7 @@ describe String do
         end
     end
 
-    describe :substring? do
+    describe '#substring?' do
         it 'should return true if the substring exists in self' do
             str = 'my string'
             str.substring?( 'my' ).should be_true

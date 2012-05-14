@@ -29,7 +29,7 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
-    describe :submit do
+    describe '#submit' do
         context 'when method is post' do
             it 'should perform a POST HTTP request' do
                 body_should = @form.method + @form.auditable.to_s
@@ -61,7 +61,7 @@ describe Arachni::Parser::Element::Form do
 
     context 'when initialized' do
         context 'with attributes' do
-            describe :simple do
+            describe '#simple' do
                 it 'should return a simplified version of form attributes and auditables' do
                     f = Arachni::Parser::Element::Form.new( @url, @raw )
                     f.simple.should == { 'attrs' => @raw['attrs'], 'auditable' => f.auditable }
@@ -69,7 +69,7 @@ describe Arachni::Parser::Element::Form do
             end
         end
         context 'with hash key/pair' do
-            describe :simple do
+            describe '#simple' do
                 it 'should return a simplified version of form attributes and auditables' do
                     f = Arachni::Parser::Element::Form.new( @url, @inputs )
                     f.simple.should == {
@@ -84,13 +84,13 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should be "form"' do
             @form.type.should == 'form'
         end
     end
 
-    describe :from_document do
+    describe '.from_document' do
         context 'when the response does not contain any forms' do
             it 'should return an empty array' do
                 Arachni::Parser::Element::Form.from_document( '', '' ).should be_empty

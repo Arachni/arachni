@@ -5,7 +5,7 @@ describe Arachni::Component::Options::Address do
         @opt = Arachni::Component::Options::Address
     end
 
-    describe :valid? do
+    describe '#valid?' do
         context 'when the value is valid' do
             it 'should return true' do
                 @opt.new( '' ).valid?( 'localhost' ).should be_true
@@ -23,7 +23,7 @@ describe Arachni::Component::Options::Address do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.new( '' ).type.should == 'address'
         end

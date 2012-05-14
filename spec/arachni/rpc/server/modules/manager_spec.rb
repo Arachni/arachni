@@ -30,13 +30,13 @@ describe Arachni::RPC::Server::Module::Manager do
         ).modules
     end
 
-    describe :available do
+    describe '#available' do
         it 'should return an array of available modules' do
             @modules.available.should be_any
         end
     end
 
-    describe :loaded do
+    describe '#loaded' do
         context 'when there are loaded modules' do
             it 'should return an empty array' do
                 @modules.loaded.should be_empty
@@ -50,7 +50,7 @@ describe Arachni::RPC::Server::Module::Manager do
         end
     end
 
-    describe :load do
+    describe '#load' do
         it 'should load modules by name' do
             @modules_clean.load( 'test' )
             @modules_clean.loaded.should == ['test']

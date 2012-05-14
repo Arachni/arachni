@@ -6,7 +6,7 @@ describe Array do
         50.times { |i| @arr << i }
     end
 
-    describe :chunk do
+    describe '#chunk' do
 
         it 'should split the array into chunks' do
             chunks = @arr.chunk( 5 )

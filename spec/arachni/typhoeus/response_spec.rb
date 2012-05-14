@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Response do
 
-    describe :content_type do
+    describe '#content_type' do
         it 'should return the content-type' do
             Typhoeus::Response.new.content_type.should be_nil
 
@@ -15,7 +15,7 @@ describe Typhoeus::Response do
         end
     end
 
-    describe :redirection? do
+    describe '#redirection?' do
         context 'when the response is a redirection' do
             it 'should return true' do
                 300.upto( 399 ) do |c|
@@ -31,7 +31,7 @@ describe Typhoeus::Response do
         end
     end
 
-    describe :to_hash do
+    describe '#to_hash' do
         it 'should return a hash representation of self' do
             h = {
                 "code" => 200,

@@ -9,7 +9,7 @@ describe Arachni::Report::Base do
         @reports   = @framework.reports
     end
 
-    describe :format_plugin_results do
+    describe '#format_plugin_results' do
         it 'should run the formatters of appropriate plugin' do
             store = @framework.auditstore
             store.plugins["foobar"] = { :results => 'Blah!' }

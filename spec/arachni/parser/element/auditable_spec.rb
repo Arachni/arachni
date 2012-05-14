@@ -21,7 +21,7 @@ describe Arachni::Parser::Element::Auditable do
         @default_input_value = @auditable.auditable['param']
     end
 
-    describe :orig do
+    describe '#orig' do
         it 'should be the same as auditable' do
             @orig.orig.should == @orig.auditable
         end
@@ -46,7 +46,7 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe :reset! do
+    describe '#reset!' do
         it 'should return the auditable inputs to their original state' do
             orig = @orig.auditable.dup
             @orig.auditable['new'] = 'value'
@@ -56,7 +56,7 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe :remove_auditor! do
+    describe '#remove_auditor!' do
         it 'should remove the auditor' do
             @orig.auditor = :some_auditor
             @orig.auditor.should == :some_auditor
@@ -65,7 +65,7 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe :orphan? do
+    describe '#orphan?' do
         context 'when it has no auditor' do
             it 'should return true' do
                 @orphan.orphan?.should be_true
@@ -78,7 +78,7 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe :submit do
+    describe '#submit' do
         it 'should submit the element along with its auditable inputs' do
             got_response = false
             has_submited_inputs = false
@@ -114,7 +114,7 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe :audit do
+    describe '#audit' do
 
         before { Arachni::Parser::Element::Auditable.reset! }
 
@@ -140,7 +140,7 @@ describe Arachni::Parser::Element::Auditable do
             end
         end
 
-        describe :restrict_to_elements! do
+        describe '.restrict_to_elements!' do
             after { Arachni::Parser::Element::Auditable.reset_instance_scope! }
 
             context 'when set' do
@@ -158,7 +158,7 @@ describe Arachni::Parser::Element::Auditable do
                     performed.should be_true
                 end
 
-                describe :override_instance_scope! do
+                describe '#override_instance_scope!' do
 
                     after { @sleep.reset_scope_override! }
 
@@ -178,7 +178,7 @@ describe Arachni::Parser::Element::Auditable do
                             performed.should be_true
                         end
 
-                        describe :override_instance_scope? do
+                        describe '#override_instance_scope?' do
                             it 'should return true' do
                                 @sleep.override_instance_scope!
                                 @sleep.override_instance_scope?.should be_true
@@ -187,7 +187,7 @@ describe Arachni::Parser::Element::Auditable do
                     end
 
                     context 'when not called' do
-                        describe :override_instance_scope? do
+                        describe '#override_instance_scope?' do
                             it 'should return false' do
                                 @sleep.override_instance_scope?.should be_false
                             end

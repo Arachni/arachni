@@ -5,7 +5,7 @@ describe Arachni::Component::Options::String do
         @opt = Arachni::Component::Options::String.new( '' )
     end
 
-    describe :valid? do
+    describe '#valid?' do
         it 'should return true' do
             @opt.valid?( 'test' ).should be_true
             @opt.valid?( 999 ).should be_true
@@ -18,7 +18,7 @@ describe Arachni::Component::Options::String do
         end
     end
 
-    describe :normalize do
+    describe '#normalize' do
         it 'should return a string representation of the value' do
             @opt.normalize( 'test' ).should == 'test'
         end
@@ -29,7 +29,7 @@ describe Arachni::Component::Options::String do
         end
     end
 
-    describe :type do
+    describe '#type' do
         it 'should return the option type as a string' do
             @opt.type.should == 'string'
         end

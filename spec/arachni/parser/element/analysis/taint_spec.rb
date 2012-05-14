@@ -17,7 +17,7 @@ describe Arachni::Parser::Element::Analysis::Taint do
         @negative.auditor = @auditor
     end
 
-    describe :taint do
+    describe '.taint' do
 
         before do
             @seed = 'my_seed'
