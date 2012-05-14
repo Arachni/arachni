@@ -60,7 +60,7 @@ class Framework < ::Arachni::Framework
         # already inherited but lets make it explicit
         @opts = opts
 
-        @modules = Arachni::RPC::Server::Module::Manager.new( @opts )
+        @modules = Arachni::RPC::Server::Module::Manager.new( self )
         @plugins = Arachni::RPC::Server::Plugin::Manager.new( self )
 
         # holds all running instances
@@ -223,7 +223,7 @@ class Framework < ::Arachni::Framework
                         page_chunks = page_a.chunk( chunk_cnt )
 
                         # assign us our fair share of plug-in discovered pages
-                        update_page_queue!( page_chunks.pop, @local_token )
+                        update_page_queue( page_chunks.pop, @local_token )
 
                         # remove duplicate elements across the (per instance) chunks
                         # while spreading them out evenly
@@ -555,7 +555,7 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  true on success, false on invalid token
     #
-    def update_page_queue!( pages, token = nil )
+    def update_page_queue( pages, token = nil )
         return false if high_performance? && !valid_token?( token )
         pages.each { |page| push_to_page_queue( page )}
         true
@@ -596,7 +596,7 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
-        @modules.class.do_not_store!
+        @modules.class.do_not_store
         @modules.class.on_register_results { |r| report_issues_to_master( r ) }
         true
     end

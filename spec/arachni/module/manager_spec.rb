@@ -5,7 +5,7 @@ describe Arachni::Module::Manager do
     before( :all ) do
         opts = Arachni::Options.instance
         opts.dir['modules'] = spec_path + 'fixtures/modules/'
-        @modules = Arachni::Module::Manager.new( Arachni::Options.instance )
+        @modules = Arachni::Module::Manager.new( Arachni::Framework.new )
 
         @page  = Arachni::Parser::Page.new
         @issue = Arachni::Issue.new( url: 'http://blah' )
@@ -64,12 +64,12 @@ describe Arachni::Module::Manager do
         end
     end
 
-    describe '#do_not_store!' do
+    describe '#do_not_store' do
         it 'should not store results' do
-            @modules.do_not_store!
+            @modules.do_not_store
             @modules.register_results( [ @issue ] )
             @modules.results.empty?.should be true
-            @modules.store!
+            @modules.store
         end
     end
 

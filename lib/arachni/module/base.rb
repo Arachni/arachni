@@ -25,8 +25,7 @@ module Module
 
 
 #
-# Arachni's base module class<br/>
-# To be extended by Arachni::Modules.
+# Base module class to be extended by all modules.
 #
 # Defines basic structure and provides utilities to modules.
 #
@@ -37,22 +36,22 @@ class Base
 
     # get output module
     include Output
-
     include Auditor
 
-    #
-    # Arachni::HTTP instance for the modules
     #
     # @return [Arachni::Module::HTTP]
     #
     attr_reader :http
 
     #
-    # Arachni::Page instance
-    #
     # @return [Page]
     #
     attr_reader :page
+
+    #
+    # @return [Arachni::Framework]
+    #
+    attr_reader :framework
 
     #
     # Initializes the module attributes, HTTP client and {Trainer}
@@ -61,10 +60,12 @@ class Base
     # @see HTTP
     #
     # @param  [Page]  page
+    # @param  [Arachni::Framework]  framework
     #
-    def initialize( page )
-
+    def initialize( page, framework = nil )
         @page  = page
+        @framework  = framework
+
         @http  = Arachni::HTTP.instance
         @http.trainer.page = @page
 
@@ -83,7 +84,7 @@ class Base
         # for each page and not overwritten every single time a module is instantiated.
         #
         @@__last_url ||= ''
-        if( @@__last_url != @page.url )
+        if @@__last_url != @page.url
             @http.trainer.init_from_page!( @page )
             @@__last_url = @page.url
         end
@@ -119,14 +120,6 @@ class Base
     def clean_up
     end
 
-    def page
-        @page
-    end
-
-    def http
-        @http
-    end
-
     #
     # Provides access to the plugin manager
     #
@@ -141,14 +134,7 @@ class Base
     # @return   [Arachni::PluginManager]
     #
     def plugins
-        @framework.plugins
-    end
-
-    #
-    # Returns the framework.
-    #
-    def framework
-        @framework
+        framework.plugins if framework
     end
 
     #

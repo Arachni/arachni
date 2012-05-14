@@ -41,21 +41,21 @@ class Manager < Arachni::Component::Manager
     @@issue_mutex         ||= Mutex.new
 
     #
-    # @param    [Arachni::Options]  opts
+    # @param    [Arachni::Framework]  opts
     #
-    def initialize( opts )
-        super( opts.dir['modules'], Arachni::Modules )
-        @opts = opts
+    def initialize( framework )
+        @framework = framework
+        @opts = @framework.opts
+        super( @opts.dir['modules'], Arachni::Modules )
     end
 
     #
     # Runs all modules against 'page'.
     #
     # @param    [::Arachni::Parser::Page]   page    page to audit
-    # @param    [::Arachni::Framework]   framework  to be assigned to modules
     #
-    def run( page, framework = nil )
-        values.each { |mod| exception_jail( false ){ run_one( mod, page, framework ) } }
+    def run( page )
+        values.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
     end
 
     #
@@ -63,11 +63,9 @@ class Manager < Arachni::Component::Manager
     #
     # @param    [::Arachni::Module::Base]   mod    module to run as a class
     # @param    [::Arachni::Parser::Page]   page    page to audit
-    # @param    [::Arachni::Framework]   framework  to be assigned to the module
     #
-    def run_one( mod, page, framework = nil )
-        mod_new = mod.new( page )
-        mod_new.set_framework( framework ) if framework
+    def run_one( mod, page )
+        mod_new = mod.new( page, @framework )
         mod_new.prepare
         mod_new.run
         mod_new.clean_up
@@ -79,15 +77,15 @@ class Manager < Arachni::Component::Manager
     def on_register_results( &block ) self.class.on_register_results( &block ) end
 
 
-    def self.do_not_store!
+    def self.do_not_store
         @@do_not_store = true
     end
-    def do_not_store!() self.class.do_not_store! end
+    def do_not_store() self.class.do_not_store end
 
-    def self.store!
+    def self.store
         @@do_not_store = false
     end
-    def store!() self.class.store! end
+    def store() self.class.store end
 
     #
     # Registers module results with...well..us.
@@ -95,10 +93,8 @@ class Manager < Arachni::Component::Manager
     # @param    [Array]
     #
     def self.register_results( results )
-
         @@on_register_results.each { |block| block.call( results ) }
         return if @@do_not_store
-
 
         @@issue_mutex.synchronize {
             @@results |= results
@@ -124,9 +120,7 @@ class Manager < Arachni::Component::Manager
     def issue_set_id_from_elem( mod_name, elem ) self.class.issue_set_id_from_elem( mod_name, elem ) end
 
     def self.issue_set
-        @@issue_mutex.synchronize {
-            @@issue_set
-        }
+        @@issue_mutex.synchronize { @@issue_set }
     end
     def issue_set() self.class.issue_set end
 
@@ -138,9 +132,7 @@ class Manager < Arachni::Component::Manager
     # @param    [Array]
     #
     def self.results
-        @@issue_mutex.synchronize {
-            @@results
-        }
+        @@issue_mutex.synchronize { @@results }
     end
     def results() self.class.results end
 

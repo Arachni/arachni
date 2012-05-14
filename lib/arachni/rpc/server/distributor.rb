@@ -324,7 +324,7 @@ module Distributor
             opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
 
             instance.opts.set( opts ){
-            instance.framework.update_page_queue!( pages ) {
+            instance.framework.update_page_queue( pages ) {
             instance.framework.restrict_to_elements( elements ){
             instance.framework.set_master( self_url, @opts.datastore[:token] ){
             instance.modules.load( opts['mods'] ) {

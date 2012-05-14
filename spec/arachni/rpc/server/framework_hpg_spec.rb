@@ -308,9 +308,9 @@ describe Arachni::RPC::Server::Framework do
             @instance_clean.framework.restrict_to_elements( [] ).should be_false
         end
     end
-    describe '#update_page_queue!' do
+    describe '#update_page_queue' do
         it 'should return false' do
-            @instance_clean.framework.update_page_queue!( [] ).should be_false
+            @instance_clean.framework.update_page_queue( [] ).should be_false
         end
     end
     describe '#register_issues' do

@@ -93,23 +93,11 @@ class Framework
     attr_reader :plugins
 
     #
-    # @return   [Arachni::Spider]   spider
-    #
-    attr_reader :spider
-
-    #
     # URLs of all discovered pages
     #
     # @return   [Array]
     #
     attr_reader :sitemap
-
-    #
-    # Array of URLs that have been audited
-    #
-    # @return   [Array]
-    #
-    attr_reader :auditmap
 
     #
     # Total number of pages added to their audit queue
@@ -137,15 +125,7 @@ class Framework
 
         @opts = opts
 
-        if @opts.cookie_string
-            @opts.cookies ||= []
-            @opts.cookies |= @opts.cookie_string.split( ';' ).map do |cookie_pair|
-                k, v = *cookie_pair.split( '=', 2 )
-                Arachni::Parser::Element::Cookie.new( @opts.url.to_s, k => v )
-            end.flatten.compact
-        end
-
-        @modules = Arachni::Module::Manager.new( @opts )
+        @modules = Arachni::Module::Manager.new( self )
         @reports = Arachni::Report::Manager.new( @opts )
         @plugins = Arachni::Plugin::Manager.new( self )
 
@@ -160,8 +140,8 @@ class Framework
         @url_queue = Queue.new
         @url_queue_total_size = 0
 
-        prepare_cookie_jar!
-        prepare_user_agent!
+        prepare_cookies
+        prepare_user_agent
 
         # deep clone the redundancy rules to preserve their counter
         # for the reports
@@ -170,8 +150,6 @@ class Framework
         @running = false
         @status = :ready
         @paused  = []
-
-        @store = nil
 
         @auditmap = []
         @sitemap  = []
@@ -411,7 +389,6 @@ class Framework
 
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
-
             @sitemap = @opts.restrict_paths
             @sitemap.each do |url|
                 push_to_url_queue( url_sanitize( to_absolute( url ) ) )
@@ -469,12 +446,12 @@ class Framework
                 audit_page_queue
             end
 
-            harvest_http_responses! if !@opts.http_harvest_last
+            harvest_http_responses if !@opts.http_harvest_last
         end
 
-        harvest_http_responses! if( @opts.http_harvest_last )
+        harvest_http_responses if( @opts.http_harvest_last )
         audit_page_queue
-        harvest_http_responses! if( @opts.http_harvest_last )
+        harvest_http_responses if( @opts.http_harvest_last )
     end
 
     #
@@ -485,7 +462,7 @@ class Framework
         while !@page_queue.empty? && page = @page_queue.pop
             # audit the page
             exception_jail{ run_mods( page ) }
-            harvest_http_responses! if !@opts.http_harvest_last
+            harvest_http_responses if !@opts.http_harvest_last
         end
     end
 
@@ -498,11 +475,12 @@ class Framework
     # @return    [AuditStore]
     #
     def audit_store( fresh = true )
-
         # restore the original redundancy rules and their counters
         @opts.redundant = @orig_redundant
         opts = @opts.to_h
         opts['mods'] = @modules.keys
+
+        @store ||= nil
 
         if !fresh && @store
             @store
@@ -597,7 +575,7 @@ class Framework
     end
 
     #
-    # @return   [True]  pauses the framework on a best effort basis,
+    # @return   [TrueClass]  pauses the framework on a best effort basis,
     #                       might take a while to take effect
     #
     def pause
@@ -608,7 +586,7 @@ class Framework
     alias :pause! :pause
 
     #
-    # @return   [True]  resumes the scan/audit
+    # @return   [TrueClass]  resumes the scan/audit
     #
     def resume
         @paused.delete( caller )
@@ -639,7 +617,7 @@ class Framework
     # Cleans up the framework; should be called after running the audit or
     # after canceling a running scan.
     #
-    # It stops the clock, waits for the plugins to finish up, register
+    # It stops the clock, waits for the plugins to finish up, registers
     # their results and also refreshes the auditstore.
     #
     # It also runs {#audit_queue} in case any new pages have been added by the plugins.
@@ -700,14 +678,22 @@ class Framework
     #
     # Prepares the user agent to be used throughout the system.
     #
-    def prepare_user_agent!
+    def prepare_user_agent
         @opts.user_agent = 'Arachni/' + version if !@opts.user_agent
 
         return if !@opts.authed_by
         @opts.user_agent += " (Scan authorized by: #{@opts.authed_by})"
     end
 
-    def prepare_cookie_jar!(  )
+    def prepare_cookies
+        if @opts.cookie_string
+            @opts.cookies ||= []
+            @opts.cookies |= @opts.cookie_string.split( ';' ).map do |cookie_pair|
+                k, v = *cookie_pair.split( '=', 2 )
+                Arachni::Parser::Element::Cookie.new( @opts.url.to_s, k => v )
+            end.flatten.compact
+        end
+
         return if !@opts.cookie_jar || !@opts.cookie_jar.is_a?( String )
 
         # make sure that the provided cookie-jar file exists
@@ -753,10 +739,10 @@ class Framework
         @sitemap.uniq!
 
 
-        harvest_http_responses! if !@opts.http_harvest_last
+        harvest_http_responses if !@opts.http_harvest_last
     end
 
-    def harvest_http_responses!
+    def harvest_http_responses
         print_status( 'Harvesting HTTP responses...' )
         print_info( 'Depending on server responsiveness and network' +
             ' conditions this may take a while.' )
@@ -769,7 +755,6 @@ class Framework
 
         http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
     end
-    alias :harvest_http_responses :harvest_http_responses!
 
     #
     # Passes a page to the module and runs it.<br/>
@@ -784,7 +769,7 @@ class Framework
         return if !run_mod?( mod, page )
 
         begin
-            @modules.run_one( mod, page, self )
+            @modules.run_one( mod, page )
         rescue SystemExit
             raise
         rescue Exception => e
@@ -804,7 +789,7 @@ class Framework
     # @return   [Bool]
     #
     def run_mod?( mod, page )
-        return true if( !mod.info[:elements] || mod.info[:elements].empty? )
+        return true if !mod.info[:elements] || mod.info[:elements].empty?
 
         elems = {
             Issue::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,

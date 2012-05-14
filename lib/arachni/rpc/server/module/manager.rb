@@ -20,11 +20,10 @@ require Options.instance.dir['lib'] + 'module/manager'
 
 module RPC
 class Server
-
 module Module
 
 #
-# We need to extend the original Manager and redeclare its inherited methods
+# We need to extend the original Manager and re-declare its inherited methods
 # which are required over RPC.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -34,10 +33,6 @@ class Manager < ::Arachni::Module::Manager
     # make these inherited methods visible again
     private :load, :available, :loaded
     public :load, :available, :loaded
-
-    def initialize( opts )
-        super( opts )
-    end
 
     def load( mods )
         @opts.mods = super( mods )

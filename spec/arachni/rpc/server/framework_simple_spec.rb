@@ -375,7 +375,7 @@ describe Arachni::RPC::Server::Framework do
             issues.first.var.should == link.auditable.keys.first
         end
     end
-    describe '#update_page_queue!' do
+    describe '#update_page_queue' do
         it 'should push the provided page objects to the page audit queue' do
             url = server_url_for( :framework_simple )
             inst = @get_instance.call
@@ -388,7 +388,7 @@ describe Arachni::RPC::Server::Framework do
             res = Arachni::HTTP.instance.get( url_to_audit, opts ).response
 
             page = Arachni::Parser::Page.from_response( res, @opts )
-            inst.framework.update_page_queue!( [ page ] ).should be_true
+            inst.framework.update_page_queue( [ page ] ).should be_true
 
             inst.framework.run.should be_true
             sleep 0.1 while inst.framework.busy?
