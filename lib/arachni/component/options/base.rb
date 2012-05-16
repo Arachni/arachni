@@ -116,6 +116,10 @@ class Arachni::Component::Options::Base
         hash.merge( 'type' => type )
     end
 
+    def ==( opt )
+        to_h == opt.to_h
+    end
+
     protected
     attr_writer :required, :desc, :default # :nodoc:
 
