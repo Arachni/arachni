@@ -35,7 +35,11 @@ class Manager < ::Arachni::Plugin::Manager
     public  :available, :results, :loaded
 
     def load( plugins )
-        #@plugin_opts.merge!( plugins )
+        if plugins.is_a?( Array )
+            h = {}
+            plugins.each { |p| h[p] = @framework.opts.plugins[p] || {} }
+            plugins = h
+        end
         plugins.each do |plugin, opts|
             prep_opts( plugin, self[plugin], opts )
         end
