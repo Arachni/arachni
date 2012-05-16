@@ -79,6 +79,7 @@ describe Arachni::RPC::Server::Plugin::Manager do
             results = [ 'distributable' => { results: { stuff: 2 } } ]
             plugins.register_results( Arachni::Plugins::Distributable.new( framework, {} ), stuff: 1 )
             plugins.merge_results( results )['distributable'][:results][:stuff].should == 3
+            plugins.clear
         end
     end
 
