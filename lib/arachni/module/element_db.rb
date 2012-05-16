@@ -25,13 +25,9 @@ module Module
 #
 # For each page that is audited the database is reset.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.2.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module ElementDB
-
     include Arachni::Module::Utilities
 
     #
@@ -48,6 +44,12 @@ module ElementDB
     # page cookies
     #
     @@cookies  ||= Set.new
+
+    def self.reset
+        @@forms = Set.new
+        @@links = Set.new
+        @@cookies = Set.new
+    end
 
     def init_db_from_page!( page )
         init_links!( page.links )
