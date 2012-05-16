@@ -48,10 +48,11 @@ RSpec.configure do |config|
         reset_options
     end
 
-    #config.after( :all ) do
-    #    remove_constants( Arachni::Modules, true )
-    #    remove_constants( Arachni::Plugins, true )
-    #end
+    config.after( :all ) do
+        remove_constants( Arachni::Modules, true )
+        remove_constants( Arachni::Plugins, true )
+        remove_constants( Arachni::Reports, true )
+    end
 
     config.after( :suite ) do
         kill_processes!
