@@ -39,7 +39,10 @@ RSpec.configure do |config|
         kill_processes!
         kill_servers!
         kill_em!
+        Arachni::Module::ElementDB.reset
+        Arachni::Parser::Element::Auditable.reset
         Arachni::Module::Manager.results.clear
+        Arachni::Module::Manager.issue_set.clear
         Arachni::Plugin::Manager.results.clear
         Arachni::HTTP.instance.reset
         reset_options
