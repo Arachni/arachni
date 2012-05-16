@@ -163,7 +163,8 @@ describe Arachni::Framework do
     describe '#lsplug' do
         it 'should return info on all plugins' do
             loaded = @f.plugins.loaded
-            @f.lsplug.sort_by { |e| e[:name] }.should == YAML.load( '
+            @f.lsplug.map { |r| r.delete( :path ); r }.
+                sort_by { |e| e[:name] }.should == YAML.load( '
 ---
 - :name: Wait
   :description: ""
@@ -171,14 +172,12 @@ describe Arachni::Framework do
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: wait
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/wait.rb
 - :name: ""
   :description: ""
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: bad
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/bad.rb
 - :name: Component
   :description: Component with options
   :author:
@@ -207,21 +206,18 @@ describe Arachni::Framework do
     name: default_opt
     required: false
   :plug_name: with_options
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/with_options.rb
 - :name: Distributable
   :description: ""
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: distributable
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/distributable.rb
 - :name: ""
   :description: ""
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: loop
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/loop.rb
 - :name: Default
   :description: Some description
   :author:
@@ -236,7 +232,6 @@ describe Arachni::Framework do
     name: int_opt
     required: false
   :plug_name: default
-  :path: /home/zapotek/workspace/arachni/spec/fixtures/plugins/defaults/default.rb
 ' ).sort_by { |e| e[:name] }
             @f.plugins.loaded.should == loaded
         end
@@ -245,7 +240,8 @@ describe Arachni::Framework do
     describe '#lsrep' do
         it 'should return info on all reports' do
             loaded = @f.reports.loaded
-            @f.lsrep.sort_by { |e| e[:name] }.should == YAML.load( '
+            @f.lsrep.map { |r| r.delete( :path ); r }
+                .sort_by { |e| e[:name] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
   :options: []
@@ -255,7 +251,6 @@ describe Arachni::Framework do
   - zapotek
   :version: 0.1.1
   :rep_name: afr
-  :path: /home/zapotek/workspace/arachni/spec//fixtures/reports/manager_spec/afr.rb
 - :name: Report abstract class.
   :options: []
 
@@ -264,7 +259,6 @@ describe Arachni::Framework do
   - zapotek
   :version: 0.1.1
   :rep_name: foo
-  :path: /home/zapotek/workspace/arachni/spec//fixtures/reports/manager_spec/foo.rb
 ').sort_by { |e| e[:name] }
             @f.reports.loaded.should == loaded
         end
