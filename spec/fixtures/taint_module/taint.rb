@@ -27,7 +27,7 @@ class Taint < Arachni::Module::Base
         {
             :name           => 'Taint module',
             :description    => %q{Test description},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :references     => {
                 'Wikipedia'  => 'http://en.wikipedia.org/'
