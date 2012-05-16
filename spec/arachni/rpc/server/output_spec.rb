@@ -6,6 +6,7 @@ describe Arachni::UI::Output do
     before( :all ) do
         @opts = Arachni::Options.instance
         @out  = Arachni::UI::Output
+        @out.mute
         @@msg = 'This is a @msg!'
 
         @logfile = @opts.dir['logs'] + 'output_spec'
