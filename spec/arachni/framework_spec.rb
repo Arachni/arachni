@@ -164,7 +164,7 @@ describe Arachni::Framework do
         it 'should return info on all plugins' do
             loaded = @f.plugins.loaded
             @f.lsplug.map { |r| r.delete( :path ); r }
-                .sort_by { |e| e[:name] }.should == YAML.load( '
+                .sort_by { |e| e[:plug_name] }.should == YAML.load( '
 ---
 - :name: Wait
   :description: ""
@@ -232,7 +232,7 @@ describe Arachni::Framework do
     name: int_opt
     required: false
   :plug_name: default
-' ).sort_by { |e| e[:name] }
+' ).sort_by { |e| e[:plug_name] }
             @f.plugins.loaded.should == loaded
         end
     end
@@ -241,7 +241,7 @@ describe Arachni::Framework do
         it 'should return info on all reports' do
             loaded = @f.reports.loaded
             @f.lsrep.map { |r| r.delete( :path ); r }
-                .sort_by { |e| e[:name] }.should == YAML.load( '
+                .sort_by { |e| e[:rep_name] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
   :options: []
@@ -259,7 +259,7 @@ describe Arachni::Framework do
   - zapotek
   :version: 0.1.1
   :rep_name: foo
-').sort_by { |e| e[:name] }
+').sort_by { |e| e[:rep_name] }
             @f.reports.loaded.should == loaded
         end
     end
