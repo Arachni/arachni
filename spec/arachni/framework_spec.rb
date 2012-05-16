@@ -26,7 +26,7 @@ describe Arachni::Framework do
     describe '#report' do
         it 'should provide access to the report manager' do
             @f.reports.is_a?( Arachni::Report::Manager ).should be_true
-            @f.reports.available.should == %w(afr foo)
+            @f.reports.available.sort.should == %w(afr foo).sort
         end
     end
 
@@ -40,7 +40,7 @@ describe Arachni::Framework do
     describe '#plugins' do
         it 'should provide access to the plugin manager' do
             @f.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
-            @f.plugins.available.should == %w(wait bad with_options distributable loop default)
+            @f.plugins.available.sort.should == %w(wait bad with_options distributable loop default).sort
         end
     end
 
@@ -163,8 +163,8 @@ describe Arachni::Framework do
     describe '#lsplug' do
         it 'should return info on all plugins' do
             loaded = @f.plugins.loaded
-            @f.lsplug.map { |r| r.delete( :path ); r }.
-                sort_by { |e| e[:name] }.should == YAML.load( '
+            @f.lsplug.map { |r| r.delete( :path ); r }
+                .sort_by { |e| e[:name] }.should == YAML.load( '
 ---
 - :name: Wait
   :description: ""
