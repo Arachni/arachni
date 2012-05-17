@@ -86,7 +86,7 @@ arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
 # All system library dependencies in proper order
 #
 libs=(
-    http://zlib.net/zlib-1.2.6.tar.gz
+    http://zlib.net/zlib-1.2.7.tar.gz
     http://www.openssl.org/source/openssl-1.0.1a.tar.gz
     http://www.sqlite.org/sqlite-autoconf-3071000.tar.gz
     ftp://xmlsoft.org/libxml2/libxml2-2.7.8.tar.gz
