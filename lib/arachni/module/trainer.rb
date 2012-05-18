@@ -118,7 +118,6 @@ class Trainer
     # @param   [Bool]  redir    was the response a result of a redirect?
     #
     def analyze!( res, redir = false )
-
         print_debug( 'Started for response with request ID: #' + res.request.id.to_s )
 
         @parser.url = @parser.to_absolute( url_sanitize( res.effective_url ) )
