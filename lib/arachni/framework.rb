@@ -147,15 +147,12 @@ class Framework
         @url_queue = Queue.new
         @url_queue_total_size = 0
 
-        prepare_cookies
-        prepare_user_agent
-
         # deep clone the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = @opts.redundant.deep_clone
 
         @running = false
-        @status = :ready
+        @status  = :ready
         @paused  = []
 
         @auditmap = []
@@ -681,35 +678,6 @@ class Framework
     def wait_if_paused
         ::IO::select( nil, nil, nil, 1 ) while paused?
     end
-
-    #
-    # Prepares the user agent to be used throughout the system.
-    #
-    def prepare_user_agent
-        @opts.user_agent = 'Arachni/' + version if !@opts.user_agent
-
-        return if !@opts.authed_by
-        @opts.user_agent += " (Scan authorized by: #{@opts.authed_by})"
-    end
-
-    def prepare_cookies
-        if @opts.cookie_string
-            @opts.cookies ||= []
-            @opts.cookies |= @opts.cookie_string.split( ';' ).map do |cookie_pair|
-                k, v = *cookie_pair.split( '=', 2 )
-                Arachni::Parser::Element::Cookie.new( @opts.url.to_s, k => v )
-            end.flatten.compact
-        end
-
-        return if !@opts.cookie_jar || !@opts.cookie_jar.is_a?( String )
-
-        # make sure that the provided cookie-jar file exists
-        if !File.exist?( @opts.cookie_jar )
-            raise( Arachni::Exceptions::NoCookieJar,
-                'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
-        end
-    end
-
 
     #
     # Takes care of page audit and module execution

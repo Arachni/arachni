@@ -1,0 +1,550 @@
+require_relative '../spec_helper'
+
+describe Arachni::HTTP do
+
+    before( :all ) do
+        @opts = Arachni::Options.instance
+        @http = Arachni::HTTP.instance
+        @url = server_url_for( :http )
+    end
+    before( :each ){
+        @opts.reset
+        @opts.audit_links = true
+        @opts.url  = @url
+        @http.reset
+    }
+
+    describe '#url' do
+        it 'should return the URL in opts' do
+            @http.url.should == @opts.url.to_s
+        end
+    end
+
+    describe '#headers' do
+        it 'should provide access to default headers' do
+            headers = @http.headers
+            headers['Accept'].should == 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            headers['User-Agent'].should == 'Arachni/v' + Arachni::VERSION
+        end
+
+        context 'when provided with custom headers' do
+            it 'should include them' do
+                @opts.custom_headers = {
+                    'User-Agent' => 'My UA',
+                    'From'       => 'Some dude',
+                }
+                @http.reset
+                headers = @http.headers
+                headers['From'].should == @opts.custom_headers['From']
+                headers['Accept'].should == 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                headers['User-Agent'].should == @opts.custom_headers['User-Agent']
+            end
+        end
+
+        context 'when the authed_by option is set' do
+            it 'should include it in the From field' do
+                @opts.authed_by = 'The Dude'
+                @http.reset
+                @http.headers['From'].should == @opts.authed_by
+            end
+        end
+
+    end
+
+    describe '#cookie_jar' do
+        it 'should provide access to the Cookie-jar' do
+            @http.cookie_jar.is_a?( Arachni::HTTP::CookieJar ).should be_true
+        end
+
+        context 'when the cookie_jar option is set' do
+            it 'should add the contained cookies to the CookieJar' do
+                @opts.cookie_jar = spec_path + '/fixtures/cookies.txt'
+                @http.cookie_jar.cookies.should be_empty
+                @http.reset
+                cookies = @http.cookie_jar.cookies
+                cookies.size.should == 2
+                cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
+            end
+            context 'but the path is invalid' do
+                it 'should raise an exception' do
+                    @opts.cookie_jar = spec_path + '/fixtures/cookies.does_not_exist.txt'
+                    raised = false
+                    begin
+                        @http.reset
+                    rescue Arachni::Exceptions::NoCookieJar
+                        raised = true
+                    end
+                    raised.should be_true
+                end
+            end
+        end
+
+        context 'when the cookies option is set' do
+            it 'should add those cookies to the CookieJar' do
+                cookie_jar_file = spec_path + '/fixtures/cookies.txt'
+                @opts.cookies = Arachni::Module::Utilities.cookies_from_file( '', cookie_jar_file )
+                @http.cookie_jar.cookies.should be_empty
+                @http.reset
+                cookies = @http.cookie_jar.cookies
+                cookies.size.should == 2
+                cookies.should == @opts.cookies
+            end
+        end
+
+        context 'when the cookie_string option is set' do
+            it 'should parse the string and add those cookies to the CookieJar' do
+                @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
+                @http.cookie_jar.cookies.should be_empty
+                @http.reset
+                cookies = @http.cookie_jar.cookies
+                cookies.size.should == 3
+                cookies.first.name.should == 'my_cookie_name'
+                cookies.first.value.should == 'val1'
+                cookies[1].name.should == 'blah_name'
+                cookies[1].value.should == 'val2'
+                cookies.last.name.should == 'another_name'
+                cookies.last.value.should == 'another_val'
+            end
+        end
+    end
+
+    describe '#current_cookies' do
+        it 'should return the current cookies' do
+            @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
+            @http.cookie_jar.cookies.should be_empty
+            @http.reset
+            @http.current_cookies.size.should == 3
+            @http.current_cookies.should == @http.cookie_jar.cookies
+        end
+    end
+
+    describe '#run' do
+        it 'should perform the queues requests' do
+            @http.run
+        end
+
+        it 'should call the after_run callbacks ONCE' do
+            called = false
+            @http.after_run { called = true }
+            @http.run
+            called.should be_true
+            called = false
+            @http.run
+            called.should be_false
+        end
+
+        it 'should call the after_run_persistent callbacks EVERY TIME' do
+            called = false
+            @http.after_run_persistent { called = true }
+            @http.run
+            called.should be_true
+            called = false
+            @http.run
+            called.should be_true
+        end
+
+        it 'should calculate the burst average response time' do
+            @http.burst_runtime.should == 0
+            @http.run
+            @http.burst_runtime.should > 0
+        end
+
+        it 'should update curr_res_time, curr_res_cnt, average_res_time and curr_res_per_second' +
+               ' during runtime but reset them afterwards' do
+            @http.curr_res_time.should == 0
+            @http.curr_res_cnt.should == 0
+            @http.average_res_time.should == 0
+            @http.curr_res_per_second.should == 0
+
+            curr_res_cnt = 0
+            curr_res_time = 0
+            average_res_time = 0
+            curr_res_per_second = 0
+            20.times{
+                @http.get {
+                    curr_res_time = @http.curr_res_time
+                    curr_res_cnt = @http.curr_res_cnt
+                    average_res_time = @http.average_res_time
+                    curr_res_per_second = @http.curr_res_per_second
+                }
+            }
+            @http.run
+            curr_res_time.should > 0
+            curr_res_cnt.should > 0
+            average_res_time.should > 0
+            curr_res_per_second.should > 0
+            @http.curr_res_time.should == 0
+            @http.curr_res_cnt.should == 0
+        end
+    end
+
+    describe '#abort' do
+        it 'should abort the running requests on a best effort basis' do
+            cnt = 0
+            n = 50
+            n.times do |i|
+                @http.get {
+                    cnt += 1
+                    @http.abort
+                }
+            end
+            @http.run
+            cnt.should < n
+        end
+    end
+
+    describe '#max_concurrency' do
+        it 'should default to 20' do
+            @http.max_concurrency.should == 20
+        end
+        it 'should respect the http_req_limit option' do
+            @opts.http_req_limit = 50
+            @http.reset
+            @http.max_concurrency.should == 50
+        end
+    end
+
+    describe '#max_concurrency=' do
+        it 'should set the max_concurrency setting' do
+            @http.max_concurrency.should_not == 30
+            @http.max_concurrency = 30
+            @http.max_concurrency.should == 30
+        end
+    end
+
+    describe '#request' do
+        it 'should use the URL in Arachni::Options.instance.url as a default' do
+            url = nil
+            @http.request{ |res| url = res.effective_url }
+            @http.run
+            url.start_with?( @opts.url.to_s ).should be_true
+        end
+        it 'should raise exception when no URL is available' do
+            @opts.reset
+            @http.reset
+            raised = false
+            begin
+                @http.request
+            rescue
+                raised = true
+            end
+            raised.should be_true
+        end
+
+        describe :method do
+            describe 'nil' do
+                it 'should perform a GET HTTP request' do
+                    body = nil
+                    @http.request( @url ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'GET'
+                end
+            end
+            describe :get do
+                it 'should perform a GET HTTP request' do
+                    body = nil
+                    @http.request( @url, method: :get ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'GET'
+                end
+
+                context 'when there are both query string and hash params' do
+                    it 'should merge them while giving priority to the hash params' do
+                        body = nil
+                        params = {
+                            'param1' => 'value1_updated',
+                            'param2' => 'value 2'
+                        }
+                        url = @url + '/echo?param1=value1&param3=value3'
+                        @http.request( url,
+                            remove_id: true, params: params, method: :get
+                        ){ |res| body = res.body }
+                        @http.run
+                        body.should == params.merge( 'param3' => 'value3' ).to_s
+                    end
+                end
+            end
+            describe :post do
+                it 'should perform a POST HTTP request' do
+                    body = nil
+                    @http.request( @url, method: :post ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'POST'
+                end
+            end
+            describe :put do
+                it 'should perform a PUT HTTP request' do
+                    body = nil
+                    @http.request( @url, method: :put ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'PUT'
+                end
+            end
+            describe :options do
+                it 'should perform a OPTIONS HTTP request' do
+                    body = nil
+                    @http.request( @url, method: :options ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'OPTIONS'
+                end
+            end
+            describe :delete do
+                it 'should perform a POST HTTP request' do
+                    body = nil
+                    @http.request( @url, method: :delete ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'DELETE'
+                end
+            end
+        end
+        describe :params do
+            it 'should specify the query params as a hash' do
+                body = nil
+                params = { 'param' => 'value' }
+                @http.request( @url + '/echo',
+                    params: params,
+                    remove_id: true
+                ) { |res| body = res.body }
+                @http.run
+                params.to_s.should == body
+            end
+        end
+        describe :remove_id do
+            describe 'nil' do
+                it 'should include the framework-wide hash ID in the params' do
+                    body = nil
+                    @http.request( @url + '/echo' ) { |res| body = res.body }
+                    @http.run
+                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+                end
+            end
+            describe false do
+                it 'should include the framework-wide hash ID in the params' do
+                    body = nil
+                    @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
+                    @http.run
+                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+                end
+            end
+            describe true do
+                it 'should remove the framework-wide hash ID from the params' do
+                    body = nil
+                    @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
+                    @http.run
+                    body.should == {}.to_s
+                end
+            end
+        end
+
+        describe :train do
+            before( :all ) do
+                res = @http.get( @url, async: false, remove_id: true ).response
+                @page = Arachni::Parser::Page.from_response( res, @opts )
+            end
+            describe 'nil' do
+                it 'should not pass the response to the Trainer' do
+                    @http.trainer.init_from_page!( @page )
+                    @http.request( @url + '/elems' )
+                    @http.run
+                    @http.trainer.flush_pages.should be_empty
+                end
+            end
+            describe false do
+                it 'should not pass the response to the Trainer' do
+                    @http.trainer.init_from_page!( @page )
+                    @http.request( @url + '/elems', train: false )
+                    @http.run
+                    @http.trainer.flush_pages.should be_empty
+                end
+            end
+            describe true do
+                it 'should pass the response to the Trainer' do
+                    @http.trainer.init_from_page!( @page )
+                    @http.request( @url + '/elems', train: true )
+                    @http.run
+                    @http.trainer.flush_pages.should be_any
+                end
+            end
+        end
+
+        describe :timeout do
+            describe 'nil' do
+                it 'should not set a timeout value' do
+                    timed_out = false
+                    @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                    @http.run
+                    timed_out.should be_false
+                end
+            end
+            describe Numeric do
+                it 'should not set a timeout value' do
+                    timed_out = false
+                    @http.request( @url + '/sleep', timeout: 1.3 ) { |res| timed_out = res.timed_out? }
+                    @http.run
+                    timed_out.should be_true
+                end
+            end
+        end
+
+        describe :cookies do
+            describe 'nil' do
+                it 'should use te cookies in the CookieJar' do
+                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @http.cookie_jar.cookies.should be_empty
+                    @http.reset
+
+                    body = nil
+                    @http.request( @url + '/cookies' ) { |res| body = res.body }
+                    @http.run
+                    body.should == @opts.cookie_string
+                end
+
+                it 'should only send the appropriate cookies for the domain' do
+                    cookies = []
+                    cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com',
+                        'key1' => 'val1' )
+                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                        'key2' => 'val2' )
+
+                    @http.cookie_jar.update( cookies )
+                    body = nil
+                    @http.request( @url + '/cookies' ) { |res| body = res.body }
+                    @http.run
+                    body.should == 'key2=val2'
+                end
+            end
+            describe Hash do
+                it 'should use the key-value pairs as cookies' do
+                    cookies = { 'name' => 'val' }
+                    body = nil
+                    @http.request( @url + '/cookies', cookies: cookies ) { |res| body = res.body }
+                    @http.run
+                    body.should == cookies.keys.first.to_s  + '=' + cookies.values.first.to_s
+                end
+            end
+        end
+
+        describe :async do
+            describe 'nil' do
+                it 'should perform the request asynchronously' do
+                    performed = false
+                    @http.request( @url ) { performed = true }
+                    @http.run
+                    performed.should be_true
+                end
+            end
+            describe true do
+                it 'should perform the request asynchronously' do
+                    performed = false
+                    @http.request( @url, async: true ) { performed = true }
+                    @http.run
+                    performed.should be_true
+                end
+            end
+            describe false do
+                it 'should not perform the request asynchronously' do
+                    performed = false
+                    @http.request( @url, async: false ) { performed = true }
+                    performed.should be_true
+                end
+            end
+        end
+
+        describe :headers do
+            describe 'nil' do
+                it 'should use the default headers' do
+                    body = nil
+                    @http.request( @url + '/headers' ) { |res| body = res.body }
+                    @http.run
+                    sent_headers = YAML.load( body )
+                    @http.headers.each { |k, v| sent_headers[k].should == v }
+                end
+            end
+
+            describe Hash do
+                it 'should merge them with the default headers' do
+                    headers = { 'My-Header' => 'my value'}
+                    body = nil
+                    @http.request( @url + '/headers', headers: headers ) { |res| body = res.body }
+                    @http.run
+                    header_str = @http.headers.merge( headers ).
+                        map { |k, v| k + '=' + v }.join( ';' )
+                    sent_headers = YAML.load( body )
+                    @http.headers.merge( headers ).each { |k, v| sent_headers[k].should == v }
+                end
+            end
+        end
+
+        describe :update_cookies do
+            describe 'nil' do
+                it 'should not update the cookiejar' do
+                    cookies = []
+                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                        'key2' => 'val2' )
+                    @http.update_cookies( cookies )
+                    body = nil
+                    @http.request( @url + '/update_cookies' ) { |res| body = res.body }
+                    @http.run
+                    @http.current_cookies.should == cookies
+                end
+            end
+
+            describe false do
+                it 'should not update the cookiejar' do
+                    cookies = []
+                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                        'key2' => 'val2' )
+                    @http.update_cookies( cookies )
+                    body = nil
+                    @http.request( @url + '/update_cookies', update_cookies: false ) { |res| body = res.body }
+                    @http.run
+                    @http.current_cookies.should == cookies
+                end
+            end
+
+            describe true do
+                it 'should not update the cookiejar' do
+                    cookies = []
+                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                        'key2' => 'val2' )
+                    @http.update_cookies( cookies )
+                    body = nil
+                    @http.request( @url + '/update_cookies', update_cookies: true ) { |res| body = res.body }
+                    @http.run
+                    @http.current_cookies.first.value.should == cookies.first.value + ' [UPDATED!]'
+                end
+            end
+        end
+
+        describe :follow_location do
+            describe 'nil' do
+                it 'should not follow redirects' do
+                    res = nil
+                    @http.request( @url + '/follow_location' ) { |c_res| res = c_res }
+                    @http.run
+                    res.effective_url.start_with?( @url + '/follow_location' ).should be_true
+                    res.body.should == ''
+                end
+            end
+            describe false do
+                it 'should not follow redirects' do
+                    res = nil
+                    @http.request( @url + '/follow_location', follow_location: false ) { |c_res| res = c_res }
+                    @http.run
+                    res.effective_url.start_with?( @url + '/follow_location' ).should be_true
+                    res.body.should == ''
+                end
+            end
+            describe true do
+                it 'should follow redirects' do
+                    res = nil
+                    @http.request( @url + '/follow_location', follow_location: true ) { |c_res| res = c_res }
+                    @http.run
+                    res.effective_url.should == @url + '/redir_2'
+                    res.body.should == "Welcome to redir_2!"
+                end
+            end
+        end
+    end
+
+end

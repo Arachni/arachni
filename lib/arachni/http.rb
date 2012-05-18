@@ -25,6 +25,7 @@ require Options.instance.dir['lib'] + 'typhoeus/response'
 require Options.instance.dir['lib'] + 'module/utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 require Options.instance.dir['lib'] + 'mixins/observable'
+require Options.instance.dir['lib'] + 'http/cookie_jar'
 
 #
 # Arachni::Module::HTTP class
@@ -42,72 +43,15 @@ require Options.instance.dir['lib'] + 'mixins/observable'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class HTTP
-
     include Arachni::UI::Output
     include Singleton
     include Arachni::Module::Utilities
     include Arachni::Mixins::Observable
 
-    #
-    # TODO: Implement proper tailmatching
-    #
-    class CookieJar
-        include Arachni::Module::Utilities
+    attr_reader :url
 
-        def initialize
-            @domains = {}
-        end
-
-        def <<( cookie )
-            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
-        end
-
-        def get_cookies( url )
-            uri = to_uri( url )
-            request_domain = uri.host
-            request_path = uri.path
-
-            return [] if !request_domain || !request_path
-
-            @domains.map do |domain, paths|
-                next if (request_domain != domain) && ( '.' + request_domain != domain)
-                paths.map do |path, cookies|
-                    next if !request_path.start_with?( path )
-                    cookies.values.reject{ |c| c.expired? }
-                end
-            end.flatten.compact.sort do |lhs, rhs|
-                rhs.path.length <=> lhs.path.length
-            end
-        end
-
-        def cookies( with_expired = false )
-            @domains.values.map do |paths|
-                paths.values.map do |cookies|
-                    if !with_expired
-                        cookies.values.reject{ |c| c.expired? }
-                    else
-                        cookies.values
-                    end
-                end
-            end.flatten.compact
-        end
-
-        def to_s( url )
-            get_cookies( url ).map{ |c| c.to_s }.join( ';' )
-        end
-
-        private
-
-        def to_uri( url )
-            url.is_a?( URI ) ? url : uri_parse( url )
-        end
-
-    end
-
-    #
-    # @return    [Hash]
-    #
-    attr_reader :init_headers
+    # @return    [Hash]   default headers
+    attr_reader :headers
 
     #
     # @return    [CookieJar]
@@ -132,7 +76,7 @@ class HTTP
     def reset
         opts = Options.instance
 
-        req_limit = opts.http_req_limit
+        req_limit = opts.http_req_limit || 20
 
         hydra_opts = {
             max_concurrency: req_limit,
@@ -144,6 +88,9 @@ class HTTP
             password: opts.url.password
         ) if opts.url
 
+        @url = opts.url.to_s
+        @url = nil if @url.empty?
+
         @hydra      = Typhoeus::Hydra.new( hydra_opts )
         @hydra_sync = Typhoeus::Hydra.new( hydra_opts.merge( max_concurrency: 1 ) )
 
@@ -152,17 +99,24 @@ class HTTP
 
         @trainer = Arachni::Module::Trainer.new( opts )
 
-        @init_headers = {
-            'Cookie' => '',
-            'From'   => opts.authed_by || '',
+        @headers = {
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'    => opts.user_agent
-        }.merge( opts.custom_headers )
+            'User-Agent'    => opts.user_agent || 'Arachni/v' + Arachni::VERSION.to_s
+        }
+        @headers['From'] = opts.authed_by if opts.authed_by
 
-        @cookie_jar = CookieJar.new
+        @headers.merge!( opts.custom_headers )
 
-        set_cookies( cookies_from_file( opts.url.to_s, opts.cookie_jar ) ) if opts.cookie_jar
-        set_cookies( opts.cookies ) if opts.cookies
+        @cookie_jar = CookieJar.new( opts.cookie_jar )
+        update_cookies( opts.cookies ) if opts.cookies
+
+        if opts.cookie_string
+            cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
+                k, v = *cookie_pair.split( '=', 2 )
+                Arachni::Parser::Element::Cookie.new( opts.url.to_s, k.strip => v.strip )
+            end.flatten.compact
+            update_cookies( cookies )
+        end
 
         proxy_opts = {}
         proxy_opts = {
@@ -191,6 +145,7 @@ class HTTP
         @burst_runtime = 0
 
         @after_run = []
+        self
     end
 
     #
@@ -201,9 +156,10 @@ class HTTP
     #
     def run
         exception_jail {
-            t = Time.now
+            @burst_runtime = nil
+            @burst_runtime_start = Time.now
             @hydra.run
-            @burst_runtime = Time.now - t
+            @burst_runtime = Time.now - @burst_runtime_start
 
             @after_run.each { |block| block.call }
             @after_run.clear
@@ -215,12 +171,12 @@ class HTTP
         }
     end
 
-    def fire_and_forget
-        exception_jail { @hydra.fire_and_forget }
-    end
-
     def abort
         exception_jail { @hydra.abort }
+    end
+
+    def burst_runtime
+        @burst_runtime || (Time.now - @burst_runtime_start)
     end
 
     def average_res_time
@@ -229,8 +185,8 @@ class HTTP
     end
 
     def curr_res_per_second
-        if @curr_res_cnt > 0 && @burst_runtime > 0
-            return (@curr_res_cnt / @burst_runtime).to_i
+        if @curr_res_cnt > 0 && burst_runtime > 0
+            return (@curr_res_cnt / burst_runtime).to_i
         end
         0
     end
@@ -259,30 +215,14 @@ class HTTP
     end
 
     #
-    # Queues a Tyhpoeus::Request and calls the following callbacks:
-    # * on_queue() -- intersects a queued request and gets passed the original
-    #   and the async method. If the block returns one or more request
-    #   objects these will be queued instead of the original request.
-    # * on_complete() -- calls the block with the each requests as it arrives.
-    #
-    # @param  [Tyhpoeus::Request]  req  the request to queue
-    # @param  [Bool]  async  run request async?
-    #
-    def queue( req, async = true )
-        requests   = call_on_queue( req, async )
-        requests ||= req
-
-        [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
-            |request|
-            forward_request( request, async )
-        }
-    end
-
-    #
     # Gets called each time a hydra run finishes
     #
     def after_run( &block )
         @after_run << block
+    end
+
+    def after_run_persistent( &block )
+        add_after_run_persistent( &block )
     end
 
     #
@@ -290,10 +230,13 @@ class HTTP
     #
     # @param  [URI]  url
     # @param  [Hash] opts
+    # @param  [Block] block     callback
     #
     # @return [Typhoeus::Request]
     #
-    def request( url, opts )
+    def request( url = @url, opts = {}, &block )
+        raise 'URL cannot be empty.' if !url
+
         params    = opts[:params] || {}
         remove_id = opts[:remove_id]
         train     = opts[:train]
@@ -314,12 +257,13 @@ class HTTP
         #
         exception_jail {
 
-            headers           = @init_headers.merge( headers )
+            headers           = @headers.merge( headers )
             headers['Cookie'] =  if cookies
                     str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
                 else
                     @cookie_jar.to_s( url )
                 end
+            headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 
             params = params.merge( @rand_seed => '' ) if !remove_id
 
@@ -336,8 +280,9 @@ class HTTP
 
             if opts[:method] != :post
                 begin
+                    parsed = uri_parse( curl )
                     cparams = parse_url_vars( curl ).merge( cparams )
-                    curl.gsub!( "?#{URI(curl).query}", '' ) if URI(curl).query
+                    curl.gsub!( "?#{parsed.query}", '' ) if parsed.query
                 rescue
                     return
                 end
@@ -355,8 +300,7 @@ class HTTP
             req = Typhoeus::Request.new( curl, opts )
             req.train! if train
             req.update_cookies! if update_cookies
-
-            queue( req, async )
+            queue( req, async, &block )
             req
         }
     end
@@ -372,10 +316,12 @@ class HTTP
     #                         * :headers => HTTP request headers  || {}
     #                         * :follow_location => follow redirects || false
     #
+    # @param    [Block] block   callback to be passed the response
+    #
     # @return [Typhoeus::Request]
     #
-    def get( url, opts = { } )
-        request( url, opts )
+    def get( url = @url, opts = { }, &block )
+        request( url, opts, &block )
     end
 
     #
@@ -388,10 +334,12 @@ class HTTP
     #                          * :async   => make the request async? || true
     #                          * :headers => HTTP request headers  || {}
     #
+    # @param    [Block] block   callback to be passed the response
+    #
     # @return [Typhoeus::Request]
     #
-    def post( url, opts = { } )
-        request( url, opts.merge( method: :post ) )
+    def post( url = @url, opts = { }, &block )
+        request( url, opts.merge( method: :post ), &block )
     end
 
     #
@@ -404,10 +352,12 @@ class HTTP
     #                          * :async   => make the request async? || true
     #                          * :headers => HTTP request headers  || {}
     #
+    # @param    [Block] block   callback to be passed the response
+    #
     # @return [Typhoeus::Request]
     #
-    def trace( url, opts = { } )
-        request( url, opts.merge( method: :trace ) )
+    def trace( url = @url, opts = { }, &block )
+        request( url, opts.merge( method: :trace ), &block )
     end
 
 
@@ -421,12 +371,14 @@ class HTTP
     #                          * :async   => make the request async? || true
     #                          * :headers => HTTP request headers  || {}
     #
+    # @param    [Block] block   callback to be passed the response
+    #
     # @return [Typhoeus::Request]
     #
-    def cookie( url, opts = { } )
+    def cookie( url = @url, opts = { }, &block )
         opts[:cookies] = (opts[:params] || {}).dup
         opts[:params]  = nil
-        request( url, opts )
+        request( url, opts, &block )
     end
 
     #
@@ -438,20 +390,14 @@ class HTTP
     #                          * :train   => force Arachni to analyze the HTML code || false
     #                          * :async   => make the request async? || true
     #
+    # @param    [Block] block   callback to be passed the response
+    #
     # @return [Typhoeus::Request]
     #
-    def header( url, opts = { } )
-        headers       = (opts[:params] || {}).dup
-        opts[:params] = nil
-
-        orig_headers      = @init_headers.clone
-        opts[:headers]    = @init_headers = @init_headers.merge( headers )
-        opts[:user_agent] = @init_headers['User-Agent']
-
-        req = request( url, opts )
-
-        @init_headers = orig_headers.clone
-        req
+    def header( url = @url, opts = { }, &block )
+        opts[:headers] = (opts[:params] || {}).dup
+        opts[:params]  = nil
+        request( url, opts, &block )
     end
 
     #
@@ -460,7 +406,7 @@ class HTTP
     # @param    [Array<Arachni::Parser::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
-        cookies.each { |c| @cookie_jar << c }
+        @cookie_jar.update( cookies )
     end
     alias :set_cookies :update_cookies
 
@@ -473,7 +419,7 @@ class HTTP
     #
     def parse_and_set_cookies( res )
         cookies = Arachni::Parser::Element::Cookie.from_response( res )
-        cookies.each { |c| @cookie_jar << c }
+        update_cookies( cookies )
 
         # update framework cookies
         Arachni::Options.instance.cookies = cookies
@@ -605,13 +551,35 @@ class HTTP
     private
 
     #
+    # Queues a Tyhpoeus::Request and calls the following callbacks:
+    # * on_queue() -- intersects a queued request and gets passed the original
+    #   and the async method. If the block returns one or more request
+    #   objects these will be queued instead of the original request.
+    # * on_complete() -- calls the block with the each requests as it arrives.
+    #
+    # @param  [Tyhpoeus::Request]  req  the request to queue
+    # @param  [Bool]  async  run request async?
+    # @param  [Block]  block  callback
+    #
+    def queue( req, async = true, &block )
+        requests   = call_on_queue( req, async )
+        requests ||= req
+
+        [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
+            |request|
+            forward_request( request, async, &block )
+        }
+    end
+
+    #
     # Performs the actual queueing of requests, passes them to Hydra and sets
     # up callbacks and hooks.
     #
     # @param    [Typhoeus::Request]     req
     # @param    [Bool]      async
+    # @param  [Block]  block  callback
     #
-    def forward_request( req, async = true )
+    def forward_request( req, async = true, &block )
         req.id = @request_count
 
         !async ? @hydra_sync.queue( req ) : @hydra.queue( req )
@@ -666,6 +634,8 @@ class HTTP
                 end
             end
         end
+
+        req.on_complete( &block ) if block_given?
 
         exception_jail { @hydra_sync.run } if !async
     end

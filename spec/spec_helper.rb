@@ -44,8 +44,8 @@ RSpec.configure do |config|
         Arachni::Module::Manager.results.clear
         Arachni::Module::Manager.issue_set.clear
         Arachni::Plugin::Manager.results.clear
-        Arachni::HTTP.instance.reset
         reset_options
+        Arachni::HTTP.instance.reset
     end
 
     config.after( :all ) do
