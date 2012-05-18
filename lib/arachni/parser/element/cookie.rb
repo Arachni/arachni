@@ -57,6 +57,9 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         end
 
         @raw.merge!( DEFAULT.merge( @raw ) )
+        if @raw['value'] && !@raw['value'].empty?
+            @raw['value'] = uri_decode( @raw['value'].gsub( '+', ' ' ) )
+        end
 
         parsed_uri = uri_parse( @url )
         if !@raw['path']
