@@ -99,7 +99,7 @@ class Framework < ::Arachni::Framework
         busyness = [ extended_running? ]
 
         if @instances.empty? || !include_slaves
-            block.call( busyness[0] ? true : false ) if block_given?
+            block.call( busyness[0] )
             return
         end
 
@@ -109,7 +109,7 @@ class Framework < ::Arachni::Framework
         after = proc do |res|
             busyness << res
             busyness.flatten!
-            block.call( !busyness.reject{ |is_busy| !is_busy }.empty? )
+            block.call( busyness.include?( true ) )
         end
 
         map_slaves( foreach, after )
