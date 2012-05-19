@@ -99,16 +99,15 @@ class Node
 
         print_status 'Adding neighbour: ' + node_url
 
+        @neighbours << node_url
+        log_updated_neighbours
+        announce( node_url ) if propagate
+
         connect_to_peer( node_url ).add_neighbour( @url, propagate ) do |res|
             next if !res.rpc_exception?
             add_dead_neighbour( node_url )
             print_status( "Neighbour seems dead: #{node_url} " )
         end
-
-        @neighbours << node_url
-        log_updated_neighbours
-        announce( node_url ) if propagate
-
         true
     end
 
