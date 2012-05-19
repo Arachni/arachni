@@ -70,21 +70,21 @@ describe Arachni::RPC::Client::Instance do
 
     describe '#framework' do
         before { @framework = @instance.framework }
-        it 'should be able to access framework methods' do
+        it 'should provide access to framework methods' do
             @framework.status.should be_true
         end
     end
 
     describe '#modules' do
         before { @modules = @instance.modules }
-        it 'should be able to access framework methods' do
+        it 'should provide access to module manager methods' do
             @modules.available.should be_true
         end
     end
 
     describe '#plugins' do
         before { @plugins = @instance.plugins }
-        it 'should be able to access framework methods' do
+        it 'should provide  access to plugin manager methods' do
             @plugins.available.should be_true
         end
     end
