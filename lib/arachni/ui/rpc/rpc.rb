@@ -416,7 +416,9 @@ class RPC
                 'Cookie-jar \'' + jar + '\' doesn\'t exist.' )
         end
 
-        return Arachni::Module::HTTP.parse_cookiejar( jar )
+        Arachni::Parser::Element::Cookie.from_file( @opts.url.to_s, jar ).inject({}) do |h, e|
+            h.merge!( e.simple ); h
+        end
     end
 
     #
