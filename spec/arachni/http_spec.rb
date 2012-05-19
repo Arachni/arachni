@@ -547,4 +547,88 @@ describe Arachni::HTTP do
         end
     end
 
+    describe '#get' do
+        it 'should perform a GET request' do
+            body = nil
+            @http.get { |res| body = res.body }
+            @http.run
+            body.should == 'GET'
+        end
+    end
+
+    describe '#post' do
+        it 'should perform a GET request' do
+            body = nil
+            @http.post { |res| body = res.body }
+            @http.run
+            body.should == 'POST'
+        end
+    end
+
+    describe '#cookie' do
+        it 'should perform a GET request' do
+            body = nil
+            cookies = { 'name' => 'val' }
+            @http.cookie( @url + '/cookies', params: cookies ) { |res| body = res.body }
+            @http.run
+            body.should == cookies.keys.first + '=' + cookies.values.first
+        end
+    end
+
+    describe '#headers' do
+        it 'should perform a GET request' do
+            body = nil
+            headers = { 'name' => 'val' }
+            @http.header( @url + '/headers', params: headers ) { |res| body = res.body }
+            @http.run
+            YAML.load( body )['Name'].should == headers.values.first
+        end
+    end
+
+    describe '#update_cookies' do
+        it 'should update the cookies' do
+            cookies = []
+            cookies << Arachni::Parser::Element::Cookie.new( @url,
+                'key2' => 'val2' )
+            @http.current_cookies.should be_empty
+            @http.update_cookies( cookies )
+            @http.current_cookies.should == cookies
+        end
+    end
+
+    describe '#on_new_cookies' do
+        it 'should add blocks to be called when new cookies arrive' do
+            cookies = []
+            cookies << Arachni::Parser::Element::Cookie.new( @url,
+                'name' => 'value' )
+            res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
+
+            callback_cookies  = nil
+            callback_response = nil
+            @http.on_new_cookies do |cookies, res|
+                callback_cookies  = cookies
+                callback_response = res
+            end
+            @http.parse_and_set_cookies( res )
+
+            callback_cookies.should == cookies
+            callback_response.should == res
+        end
+    end
+
+    describe '#parse_and_set_cookies' do
+        it 'should update the cookies from a response and call on_new_cookies blocks' do
+            cookies = []
+            cookies << Arachni::Parser::Element::Cookie.new( @url,
+                'name' => 'value' )
+            res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
+
+            @opts.cookies.should be_nil
+            @http.current_cookies.should be_empty
+            @http.parse_and_set_cookies( res )
+            @http.current_cookies.should == cookies
+            @opts.cookies.should == cookies
+        end
+    end
+
 end

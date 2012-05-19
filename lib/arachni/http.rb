@@ -428,6 +428,13 @@ class HTTP
     end
 
     #
+    # @param    [Block] block   to be passed the new cookies and the response that set them
+    #
+    def on_new_cookies( &block )
+        add_on_new_cookies( &block )
+    end
+
+    #
     # Class method
     #
     # Parses netscape HTTP cookie files
