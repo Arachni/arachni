@@ -35,11 +35,13 @@ def exec_dispatcher( opts = Arachni::Options.instance, &block )
     }
     #sleep 3
     url = opts.rpc_address + ':' + opts.rpc_port.to_s
+    d_opts = OpenStruct.new
+    d_opts.max_retries = 0
     begin
         Timeout.timeout( 10 ) {
             while sleep( 0.1 )
                 begin
-                    Arachni::RPC::Client::Dispatcher.new( OpenStruct.new, url ).alive?
+                    Arachni::RPC::Client::Dispatcher.new( d_opts, url ).alive?
                     break
                 rescue Exception
                 end
@@ -69,9 +71,11 @@ def detach_dispatcher( dispatcher )
 end
 
 def kill_dispatchers
+    d_opts = OpenStruct.new
+    d_opts.max_retries = 0
     dispatchers.each do |url|
         begin
-            d = Arachni::RPC::Client::Dispatcher.new( OpenStruct.new, url )
+            d = Arachni::RPC::Client::Dispatcher.new( d_opts, url )
             d.stats['consumed_pids'].each { |p| pids << p }
             pids << d.proc_info['pid'].to_i
         rescue Exception

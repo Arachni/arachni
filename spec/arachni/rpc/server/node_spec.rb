@@ -71,6 +71,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             port = random_port
             n.add_neighbour( 'localhost:' + port.to_s )
 
+            sleep 2
             n.neighbours.should be_empty
 
             c = @get_node.call( port )
@@ -105,7 +106,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
                 n.shutdown
             rescue Exception
             end
-            sleep 1
+            sleep 2
             c.neighbours.should be_empty
         end
     end

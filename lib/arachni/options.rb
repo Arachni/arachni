@@ -57,6 +57,9 @@ class Options
     #
     attr_reader   :datastore
 
+    # @return [Integer] maximum retries for failed RPC calls
+    attr_accessor :max_retries
+
     attr_accessor :grid_mode
 
     #

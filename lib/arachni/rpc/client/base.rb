@@ -42,13 +42,13 @@ class Base < ::Arachni::RPC::EM::Client
         @url = url
         host, port = url.split( ':' )
         super(
-            :host  => host,
-            :port  => port,
-            :token => token,
-            :keep_alive => false,
-            :ssl_ca     => opts.ssl_ca,
-            :ssl_pkey   => opts.node_ssl_pkey || opts.ssl_pkey,
-            :ssl_cert   => opts.node_ssl_cert || opts.ssl_cert
+            host:        host,
+            port:        port,
+            token:       token,
+            max_retries: opts.max_retries,
+            ssl_ca:      opts.ssl_ca,
+            ssl_pkey:    opts.node_ssl_pkey || opts.ssl_pkey,
+            ssl_cert:    opts.node_ssl_cert || opts.ssl_cert
         )
     end
 

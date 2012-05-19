@@ -630,13 +630,7 @@ class Framework < ::Arachni::Framework
     # @param    [Array<Arachni::Issue>]     issues
     #
     def report_issues_to_master( issues )
-        retry_times = 3
-        begin
-            @master.framework.register_issues( issues, master_priv_token ){}
-        rescue
-            @master = connect_to_instance( 'url' => @master_url )
-            retry if ( retry_times -= 1 ) > 0
-        end
+        @master.framework.register_issues( issues, master_priv_token ){}
         true
     end
 
