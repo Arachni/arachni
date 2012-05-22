@@ -435,41 +435,6 @@ class HTTP
     end
 
     #
-    # Class method
-    #
-    # Parses netscape HTTP cookie files
-    #
-    # @param    [String]  cookie_jar  the location of the cookie file
-    #
-    # @return   [Hash]    cookies     in name=>value pairs
-    #
-    def self.parse_cookiejar( cookie_jar )
-        cookies = {}
-        File.open( cookie_jar, 'r' ).each_line {
-            |line|
-
-            # skip empty lines
-            next if (line = line.strip).empty?
-
-            # skip comment lines
-            next if line[0] == '#'
-
-            cookie_arr = line.split( "\t" )
-            cookies[cookie_arr[-2]] = cookie_arr[-1]
-        }
-        cookies
-    end
-
-    def self.content_type( headers_hash )
-        return if !headers_hash.is_a?( Hash )
-        headers_hash.each_pair {
-            |key, val|
-            return val if key.to_s.downcase == 'content-type'
-        }
-        return
-    end
-
-    #
     # Checks whether or not the provided response is a custom 404 page
     #
     # @param  [Typhoeus::Response]  res  the response to check

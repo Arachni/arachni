@@ -631,4 +631,69 @@ describe Arachni::HTTP do
         end
     end
 
+
+    describe '#custom_404?' do
+        before { @custom_404 = @url + '/custom_404/' }
+
+        context 'when not dealing with a custom 404 handler' do
+            it 'should not identify the responses as custom 404s' do
+                res = nil
+                @http.get( @custom_404 + 'not' ) { |c_res| res = c_res }
+                @http.run
+                bool = false
+                @http.custom_404?( res ) { |c_bool| bool = c_bool }
+                @http.run
+                bool.should be_false
+            end
+        end
+
+        context 'when dealing with a static handler' do
+            it 'should identify custom 404 (Not Found) responses' do
+                res = nil
+                @http.get( @custom_404 + 'static/crap' ) { |c_res| res = c_res }
+                @http.run
+                bool = false
+                @http.custom_404?( res ) { |c_bool| bool = c_bool }
+                @http.run
+                bool.should be_true
+            end
+        end
+
+        context 'when dealing with a dynamic handler' do
+            context 'which includes the required resource in the response' do
+                it 'should identify custom 404 (Not Found) responses' do
+                    res = nil
+                    @http.get( @custom_404 + 'dynamic/crap' ) { |c_res| res = c_res }
+                    @http.run
+                    bool = false
+                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
+                    @http.run
+                    bool.should be_true
+                end
+            end
+            context 'which includes constantly changing text in the response' do
+                it 'should identify custom 404 (Not Found) responses' do
+                    res = nil
+                    @http.get( @custom_404 + 'random/crap' ) { |c_res| res = c_res }
+                    @http.run
+                    bool = false
+                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
+                    @http.run
+                    bool.should be_true
+                end
+            end
+            context 'which returns a combination of the above' do
+                it 'should identify custom 404 (Not Found) responses' do
+                    res = nil
+                    @http.get( @custom_404 + 'combo/crap' ) { |c_res| res = c_res }
+                    @http.run
+                    bool = false
+                    @http.custom_404?( res ) { |c_bool| bool = c_bool }
+                    @http.run
+                    bool.should be_true
+                end
+            end
+        end
+    end
+
 end
