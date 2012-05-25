@@ -39,9 +39,15 @@ describe Arachni::RPC::Server::Framework do
                 @instance.opts.url = server_url_for( :auditor )
                 @modules.load( 'test' )
                 @framework.run.should be_true
-                was_busy = @framework.busy?
-                sleep( 0.5 )
-                was_busy ||= @framework.busy?
+
+                was_busy = false
+                Timeout.timeout( 10 ) {
+                    loop {
+                        was_busy ||= @framework.busy?
+                        break if was_busy
+                        sleep 0.1
+                    }
+                }
                 was_busy.should be_true
             end
         end
