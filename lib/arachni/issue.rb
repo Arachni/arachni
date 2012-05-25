@@ -19,8 +19,7 @@ module Arachni
 #
 # Represents a detected issues.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Issue
 
@@ -80,7 +79,7 @@ class Issue
     #
     # The headers exchanged during the attack
     #
-    # @return [Hash<String, Hash>]  request and reply headers
+    # @return [Hash<Symbol, Hash>]  :request and :reply headers
     #
     attr_accessor :headers
 
@@ -214,10 +213,14 @@ class Issue
     #
     attr_accessor :metasploitable
 
+    # @return [Hash]    audit options associated with the issue
     attr_reader   :opts
 
     attr_accessor :internal_modname
+
+    # @return [Array<String>]
     attr_accessor :tags
+
     attr_accessor :_hash
 
     #
@@ -231,22 +234,23 @@ class Issue
     #
     def initialize( opts = {} )
         @verification = false
+        @references   = {}
+        @opts         = { regexp: '' }
 
-        opts.each {
-            |k, v|
+        opts.each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
             rescue Exception => e
             end
-        }
+        end
 
-        opts[:issue].each {
-            |k, v|
+        opts[:regexp] = opts[:regexp].to_s if opts[:regexp]
+        opts[:issue].each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
             rescue Exception => e
             end
-        } if opts[:issue]
+        end if opts[:issue]
 
         if opts[:headers] && opts[:headers][:request]
             @headers[:request] = {}.merge( opts[:headers][:request] )
@@ -256,23 +260,30 @@ class Issue
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
-        if @cwe
-            @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
-        end
+        @mod_name = opts[:name]
+    end
 
-        @mod_name   = opts[:name]
-        @references = opts[:references] || {}
+    def cwe=( v )
+        return if !v || v.to_s.empty?
+        @cwe = v.to_s
+        @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
+        @cwe
+    end
+
+    def references=( refs )
+        @references = refs || {}
     end
 
     def regexp=( regexp )
-        return if !regexp
         @regexp = regexp.to_s
     end
 
     def opts=( hash )
-        return if !hash
+        if !hash
+            @opts = { regexp: '' }
+            return
+        end
         hash[:regexp] = hash[:regexp].to_s
-        hash[:match]  ||= false
         @opts = hash.dup
     end
 
@@ -289,27 +300,20 @@ class Issue
         end
     end
 
+    def each( &block )
+        to_h.each( &block )
+    end
+
+    def each_pair( &block )
+        to_h.each_pair( &block )
+    end
+
     def to_h
         h = {}
-        each_pair {
-            |k, v|
-            h[k] = v
-        }
+        self.instance_variables.each do |var|
+            h[normalize_name( var )] = instance_variable_get( var )
+        end
         h
-    end
-
-    def each
-        self.instance_variables.each {
-            |var|
-            yield( { normalize_name( var ) => instance_variable_get( var ) } )
-        }
-    end
-
-    def each_pair
-        self.instance_variables.each {
-            |var|
-            yield normalize_name( var ), instance_variable_get( var )
-        }
     end
 
     def remove_instance_var( var )
@@ -319,7 +323,7 @@ class Issue
     private
 
     def encode( str )
-        return str if !str || !str.is_a?( String )
+        return str if !str.is_a?( String )
         str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
     end
 
