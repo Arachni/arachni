@@ -72,8 +72,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         end
 
         utilities = Arachni::Module::Utilities
-        document.search( '//a' ).map {
-            |link|
+        document.search( '//a' ).map do |link|
             c_link = {}
             c_link['href'] = utilities.to_absolute( link['href'], base_url )
 
@@ -81,18 +80,17 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
             next if utilities.skip_path?( c_link['href'] )
 
             c_link['vars'] = {}
-            parse_query_vars( c_link['href'] ).each_pair {
-                |key, val|
+            parse_query_vars( c_link['href'] ).each_pair do |key, val|
                 begin
                     c_link['vars'][key] = utilities.url_sanitize( val )
                 rescue
                     c_link['vars'][key] = val
                 end
-            }
+            end
 
             c_link['href'] = utilities.url_sanitize( c_link['href'] )
             new( url, c_link )
-        }.compact
+        end.compact
     end
 
     #
@@ -109,13 +107,12 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         return {} if !var_string
 
         var_hash = {}
-        var_string.split( /&/ ).each {
-            |pair|
+        var_string.split( /&/ ).each do |pair|
             name, value = pair.split( /=/ )
 
             next if value == Arachni::Module::Utilities.seed
             var_hash[name] = value
-        }
+        end
 
         var_hash
     end

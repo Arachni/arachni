@@ -68,18 +68,18 @@ module Mutable
         # Values can be OR'ed bitfields of all available constants
         # of {Format}.
         #
-        :format   => [ Format::STRAIGHT, Format::APPEND,
-                       Format::NULL, Format::APPEND | Format::NULL ],
+        format:     [ Format::STRAIGHT, Format::APPEND,
+                     Format::NULL, Format::APPEND | Format::NULL ],
 
 
         # skip mutation with default/original values (for {Arachni::Parser::Element::Form} elements)
-        :skip_orig => false,
+        skip_orig:  false,
 
         # flip injection value and input name
-        :param_flip => false,
+        param_flip: false,
 
         # array of parameter names remain untouched
-        :skip       => []
+        skip:       []
     }
 
     def immutables
@@ -98,7 +98,6 @@ module Mutable
     # @return    [Array]
     #
     def mutations( injection_str, opts = { } )
-
         opts = MUTATION_OPTIONS.merge( opts )
         hash = auditable.dup
 
@@ -125,25 +124,21 @@ module Mutable
         end
 
         chash = hash.dup
-        hash.keys.each {
-            |k|
-
+        hash.keys.each do |k|
             # don't audit parameter flips
             next if hash[k] == seed || immutables.include?( k )
 
             chash = Arachni::Module::KeyFiller.fill( chash )
-            opts[:format].each {
-                |format|
-
+            opts[:format].each do |format|
                 str = format_str( injection_str, chash[k], format )
 
                 elem = self.dup
                 elem.altered = k.dup
                 elem.auditable = chash.merge( { k => str } )
                 var_combo << elem
-            }
+            end
 
-        }
+        end
 
         if opts[:param_flip] #&& !self.is_a?( Arachni::Parser::Element::Cookie )
             elem = self.dup
@@ -167,21 +162,18 @@ module Mutable
             delem = self.dup
 
             add = false
-            @raw['auditable'].each {
-                |input|
-
+            @raw['auditable'].each do |input|
                 if input['type'] == 'password'
                     delem.altered = input['name']
 
-                    opts[:format].each {
-                        |format|
+                    opts[:format].each do |format|
                         chash[input['name']] =
                             format_str( injection_str, chash[input['name']], format )
-                    }
+                    end
 
                     add = true
                 end
-            } if @raw['auditable']
+            end if @raw['auditable']
 
             if add
                 delem.auditable = chash
@@ -209,7 +201,6 @@ module Mutable
     # @return  [String]
     #
     def format_str( injection_str, default_str, format  )
-
         semicolon = null = append = ''
 
         null   = "\0"        if ( format & Format::NULL )     != 0
@@ -235,9 +226,7 @@ module Mutable
         print_debug( 'Injection string format combinations set to:' )
         print_debug( '|')
         msg = []
-        opts[:format].each {
-            |format|
-
+        opts[:format].each do |format|
             if( format & Format::NULL ) != 0
                 msg << 'null character termination (Format::NULL)'
             end
@@ -257,38 +246,29 @@ module Mutable
             print_debug( "|----> " + prep )
 
             msg.clear
-        }
-
+        end
+        nil
     end
 
     def print_debug_combos( combos )
-
-        print_debug( )
+        print_debug
         print_debug( 'Prepared combinations:' )
-        print_debug('|' )
+        print_debug( '|' )
 
-        combos.each{
-          |elem|
-
+        combos.each do |elem|
           altered = elem.altered
           combo   = elem.auditable
-
 
           print_debug( '|' )
           print_debug( "|--> Auditing: " + altered )
           print_debug( "|--> Combo: " )
 
-          combo.each {
-              |c_combo|
-              print_debug( "|------> " + c_combo.to_s )
-          }
+          combo.each { |c_combo| print_debug( "|------> " + c_combo.to_s ) }
+        end
 
-        }
-
-        print_debug( )
+        print_debug
         print_debug( '------------' )
-        print_debug( )
-
+        print_debug
     end
 
     def print_debug_trainer( opts )

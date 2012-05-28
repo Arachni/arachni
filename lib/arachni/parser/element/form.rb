@@ -55,11 +55,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     #
     def id
         id = simple['attrs'].to_s
-        auditable.each {
-            |name, value|
+        auditable.each do |name, _|
             next if name.substring?( seed )
             id +=  name
-        }
+        end
         return id
     end
 
@@ -73,11 +72,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             form['attrs'] = @raw['attrs']
             form['auditable'] = {}
             if @raw['auditable'] && !@raw['auditable'].empty?
-                @raw['auditable'].each {
-                    |item|
+                @raw['auditable'].each do |item|
                     next if !item['name']
                     form['auditable'][item['name']] = item['value']
-                }
+                end
             end
         else
             form = {
@@ -161,32 +159,28 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             c_form['attrs']['method'] = c_form['attrs']['method'].downcase
         end
 
-        %w(textarea input select).each {
-            |attr|
+        %w(textarea input select).each do |attr|
             c_form[attr] ||= []
-            form.search( ".//#{attr}" ).each {
-                |elem|
+            form.search( ".//#{attr}" ).each do |elem|
 
                 elem_attrs = attributes_to_hash( elem.attributes )
                 c_form[elem.name] ||= []
                 if elem.name != 'select'
                     c_form[elem.name] << elem_attrs
                 else
-                    auditables = []
-                    elem.children.each {
-                        |child|
+                    auditables = elem.children.map do |child|
                         h = attributes_to_hash( child.attributes )
                         h['value'] ||= child.text
-                        auditables << h
-                    }
+                        h
+                    end
 
                     c_form[elem.name] << {
                         'attrs'   => elem_attrs,
                         'options' => auditables
                     }
                 end
-            }
-        }
+            end
+        end
 
         # merge the form elements to make auditing easier
         c_form['auditable'] = c_form['input'] | c_form['textarea']
@@ -210,19 +204,17 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     #
     def self.merge_select_with_input( inputs, selects )
         selected = nil
-        inputs | selects.map {
-            |select|
-            select['options'].each {
-                |option|
+        inputs | selects.map do |select|
+            select['options'].each do |option|
                 if option.include?( 'selected' )
                     selected = option['value']
                     break
                 end
-            }
+            end
 
             select['attrs']['value'] = selected || select['options'].first['value']
             select['attrs']
-        }
+        end
     end
 
     def http_request( opts )
@@ -230,7 +222,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         altered  = opts[:altered]
 
         curr_opts = opts.dup
-        if( altered == FORM_VALUES_ORIGINAL )
+        if altered == FORM_VALUES_ORIGINAL
             orig_id = audit_id( FORM_VALUES_ORIGINAL )
 
             return if !opts[:redundant] && audited?( orig_id )
@@ -242,7 +234,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             print_debug_trainer( opts )
         end
 
-        if( altered == FORM_VALUES_SAMPLE )
+        if altered == FORM_VALUES_SAMPLE
             sample_id = audit_id( FORM_VALUES_SAMPLE )
 
             return if !opts[:redundant] && audited?( sample_id )
