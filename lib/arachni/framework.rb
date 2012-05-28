@@ -616,7 +616,6 @@ class Framework
     # Audits the URL and Page queues
     #
     def audit_queue
-
         # goes through the URLs discovered by the spider, repeats the request
         # and parses the responses into page objects
         #
@@ -625,7 +624,7 @@ class Framework
         # of knowing how big the site will be.
         #
         while !@url_queue.empty? && url = @url_queue.pop
-            http.get( url, :remove_id => true ).on_complete do |res|
+            http.get( url, remove_id: true ) do |res|
                 page = Arachni::Parser::Page.from_http_response( res, @opts )
 
                 # audit the page
@@ -640,9 +639,9 @@ class Framework
             harvest_http_responses if !@opts.http_harvest_last
         end
 
-        harvest_http_responses if( @opts.http_harvest_last )
+        harvest_http_responses if @opts.http_harvest_last
         audit_page_queue
-        harvest_http_responses if( @opts.http_harvest_last )
+        harvest_http_responses if @opts.http_harvest_last
     end
 
     #
