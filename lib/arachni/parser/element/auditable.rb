@@ -153,9 +153,9 @@ module Auditable
     def scope_audit_id( opts = {} )
         opts = {} if !opts
         audit_id( nil, opts.merge(
-            :no_auditor => true,
-            :no_timeout => true,
-            :no_injection_str => true
+            no_auditor:       true,
+            no_timeout:       true,
+            no_injection_str: true
         ))
     end
 
