@@ -2,6 +2,19 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Response do
 
+    describe '#location' do
+        it 'should return the content-type' do
+            Typhoeus::Response.new.location.should be_nil
+
+            ct = 'http://test.com'
+            h = { headers_hash: { 'location' => ct } }
+            Typhoeus::Response.new( h ).location.should == ct
+
+            h = { headers_hash: { 'Location' => ct } }
+            Typhoeus::Response.new( h ).location.should == ct
+        end
+    end
+
     describe '#content_type' do
         it 'should return the content-type' do
             Typhoeus::Response.new.content_type.should be_nil

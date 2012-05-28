@@ -18,24 +18,18 @@ module Typhoeus
 class Response
 
     def content_type
-        return if !headers_hash.is_a?( Hash )
+        find_header_field( 'content-type' )
+    end
 
-        headers_hash.each_pair do |key, val|
-            return val if key.to_s.downcase == 'content-type'
-        end
-
-        return
+    def location
+        find_header_field( 'location' )
     end
 
     def redirection?
-        (300..399).include?( @code )
+        (300..399).include?( @code ) || !location.nil?
     end
 
-    #
-    # Converts obj to hash
-    #
-    # @return    [Hash]
-    #
+    # @return    [Hash]   converts self to hash
     def to_hash
         hash = {}
         instance_variables.each do |var|
@@ -48,5 +42,12 @@ class Response
         hash.delete( 'request' )
         hash
     end
+
+    private
+    def find_header_field( field )
+        return if !headers_hash.is_a?( Hash ) || headers_hash[field].empty?
+        headers_hash[field]
+    end
+
 end
 end
