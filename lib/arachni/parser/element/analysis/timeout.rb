@@ -119,10 +119,7 @@ module Arachni::Parser::Element::Analysis::Timeout
         end
 
         def @@parent.call_on_timing_blocks( res, elem )
-            @@__on_timing_attacks.each {
-                |block|
-                block.call( res, elem )
-            }
+            @@__on_timing_attacks.each { |block| block.call( res, elem ) }
         end
 
         #
@@ -174,27 +171,15 @@ module Arachni::Parser::Element::Analysis::Timeout
 
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
-            elem.submit.on_complete {
-                |res|
-
-                # ap elem.auditable
-                # ap res.effective_url
-                # ap res.request.params
-
+            elem.submit.on_complete do |res|
                 self.call_on_timing_blocks( res, elem )
 
                 if !res.timed_out?
 
                     elem.print_info( 'Liveness check was successful, progressing to verification...' )
 
-                    elem.audit( str, opts ) {
-                        |c_res, c_opts|
-
-                        # ap c_res.time
-                        # ap opts[:timeout]
-
+                    elem.audit( str, opts ) do |c_res, c_opts|
                         if c_res.timed_out?
-
                             # all issues logged by timing attacks need manual verification.
                             # end of story.
                             # c_opts[:verification] = true
@@ -203,11 +188,11 @@ module Arachni::Parser::Element::Analysis::Timeout
                         else
                             elem.print_info( 'Verification failed.' )
                         end
-                    }
+                    end
                 else
                     elem.print_info( 'Liveness check failed, bailing out...' )
                 end
-            }
+            end
 
             elem.auditor.http.run
         end
@@ -252,16 +237,14 @@ module Arachni::Parser::Element::Analysis::Timeout
             delay = opts[:timeout]
 
             audit_timeout_debug_msg( 1, delay )
-            timing_attack( strings, opts ) {
-                |res, c_opts, elem|
-
+            timing_attack( strings, opts ) do |res, c_opts, elem|
                 elem.auditor = @auditor
 
                 print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
 
                 elem.ensure_responsiveness!
                 @@parent.add_timeout_candidate( elem )
-            }
+            end
         }
     end
 
@@ -272,11 +255,11 @@ module Arachni::Parser::Element::Analysis::Timeout
     #
     def ensure_responsiveness!
         d_opts = {
-            :skip_orig => true,
-            :redundant => true,
-            :timeout   => 120000,
-            :silent    => true,
-            :async     => false
+            skip_orig: true,
+            redundant: true,
+            timeout:   120000,
+            silent:    true,
+            async:     false
         }
 
         orig_opts = opts
@@ -321,20 +304,17 @@ module Arachni::Parser::Element::Analysis::Timeout
 
         opts[:timeout_divider] ||= 1
 
-        [strings].flatten.each {
-            |str|
+        [strings].flatten.each do |str|
 
             opts[:timing_string] = str
             str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
             opts[:skip_orig] = true
 
-            audit( str, opts ) {
-                |res, c_opts, elem|
+            audit( str, opts ) do |res, c_opts, elem|
                 call_on_timing_blocks( res, elem )
-
                 block.call( res, c_opts, elem ) if block && res.timed_out?
-            }
-        }
+            end
+        end
 
         @auditor.http.run
     end
