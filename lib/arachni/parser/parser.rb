@@ -231,7 +231,7 @@ class Parser
 
     def doc
         return @doc if @doc
-        @doc = Nokogiri::HTML( @html ) if @html rescue nil
+        @doc = Nokogiri::HTML( @html ) if text? rescue nil
     end
 
     #
@@ -319,10 +319,9 @@ class Parser
     # @return   [String]    base href if there is one
     #
     def base
-        begin
+        @base ||= begin
             doc.search( '//base[@href]' ).first['href']
         rescue
-            return
         end
     end
 
@@ -342,9 +341,8 @@ class Parser
                 |name|
                 exception_jail( false ){ @@manager[name].new.run( doc ) }
             }.flatten.uniq.compact.
-            map { |path| to_absolute( url_sanitize( path ) ) }.
+            map { |path| to_absolute( path ) }.compact.uniq.
             reject { |path| skip?( path ) }
-
         rescue ::Exception => e
             print_error( e.to_s )
             print_error_backtrace( e )
