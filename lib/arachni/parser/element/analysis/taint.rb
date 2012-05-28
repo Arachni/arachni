@@ -69,7 +69,7 @@ module Arachni::Parser::Element::Analysis::Taint
     def taint_analysis( seed, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
         opts[:substring] = seed if !opts[:regexp] && !opts[:substring]
-        audit( seed, opts ) { |res, opts| get_matches( res, opts ) }
+        audit( seed, opts ) { |res, c_opts| get_matches( res, c_opts ) }
     end
 
     private
@@ -141,7 +141,7 @@ module Arachni::Parser::Element::Analysis::Taint
             r = r.is_a?( Regexp ) ? r : Regexp.new( r.to_s, Regexp::IGNORECASE )
             return true if res.body.scan( r ).first
         end
-        return false
+        false
     end
 
 end
