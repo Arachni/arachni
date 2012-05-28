@@ -19,8 +19,6 @@ require opts.dir['lib'] + 'parser/element/base'
 
 class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
-    include Arachni::Module::Utilities
-
     FORM_VALUES_ORIGINAL  = '__original_values__'
     FORM_VALUES_SAMPLE    = '__sample_values__'
 
@@ -29,8 +27,9 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
         begin
             @action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
+            @action = normalize_url( @action )
         rescue
-            @action = url
+            @action = @url
         end
 
         begin
@@ -128,12 +127,11 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         rescue
             base_url = url
         end
-        document.search( '//form' ).map {
-            |form|
+        document.search( '//form' ).map do |form|
             form = form_from_element( base_url, form )
             form.url = url
             form
-        }
+        end.compact
     end
 
     private
@@ -149,10 +147,9 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         else
             action = utilities.url_sanitize( c_form['attrs']['action'] )
         end
-        action = utilities.uri_encode( action ).to_s
 
         begin
-             action = utilities.to_absolute( action.clone, url ).to_s
+             action = utilities.to_absolute( action.dup, url ).to_s
         rescue
         end
 
@@ -164,7 +161,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             c_form['attrs']['method'] = c_form['attrs']['method'].downcase
         end
 
-        [ 'textarea', 'input', 'select' ].each {
+        %w(textarea input select).each {
             |attr|
             c_form[attr] ||= []
             form.search( ".//#{attr}" ).each {

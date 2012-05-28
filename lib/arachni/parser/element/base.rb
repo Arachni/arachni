@@ -71,7 +71,7 @@ class Arachni::Parser::Element::Base
     #
     def initialize( url, raw = {} )
         @raw = raw.dup
-        @url = url.to_s
+        @url = normalize_url( url.to_s )
 
         @opts = {}
     end

@@ -20,7 +20,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || url
+        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || @url
+        @action = normalize_url( @action )
         @method = 'get'
 
         @auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
