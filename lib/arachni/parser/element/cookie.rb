@@ -183,8 +183,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     # @return   [Array<Cookie>]
     #
     def self.from_file( url, filepath )
-        File.open( filepath, 'r' ).map {
-            |line|
+        File.open( filepath, 'r' ).map do |line|
             # skip empty lines
             next if (line = line.strip).empty? || line[0] == '#'
 
@@ -202,7 +201,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             end
             c['secure'] = (c['secure'] == 'TRUE') ? true : false
             new( url, c )
-        }.flatten.compact
+        end.flatten.compact
     end
 
     #
@@ -243,12 +242,11 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             document = Nokogiri::HTML( head.to_s )
         end
 
-        Arachni::Module::Utilities.exception_jail{
-            document.search( "//meta[@http-equiv]" ).map {
-                |elem|
+        Arachni::Module::Utilities.exception_jail {
+            document.search( "//meta[@http-equiv]" ).map do |elem|
                 next if elem['http-equiv'].downcase != 'set-cookie'
                 parse_set_cookies( url, elem['content'] )
-            }.flatten.compact
+            end.flatten.compact
         } rescue []
     end
 
@@ -264,13 +262,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     #
     def self.from_headers( url, headers )
         set_strings = []
-        headers.each {
-            |k, v|
-            set_strings = [v].flatten if k.downcase == 'set-cookie'
-        }
+        headers.each { |k, v| set_strings = [v].flatten if k.downcase == 'set-cookie' }
 
         return set_strings if set_strings.empty?
-        Arachni::Module::Utilities.exception_jail{
+        Arachni::Module::Utilities.exception_jail {
             set_strings.map { |c| parse_set_cookies( url, c ) }.flatten
         } rescue []
     end
@@ -284,16 +279,14 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     # @return   [Array<Cookie>]
     #
     def self.parse_set_cookies( url, str )
-        WEBrick::Cookie.parse_set_cookies( str ).flatten.uniq.map {
-            |cookie|
+        WEBrick::Cookie.parse_set_cookies( str ).flatten.uniq.map do |cookie|
             cookie_hash = {}
-            cookie.instance_variables.each {
-                |var|
+            cookie.instance_variables.each do |var|
                 cookie_hash[var.to_s.gsub( /@/, '' )] = cookie.instance_variable_get( var )
-            }
+            end
             cookie_hash['expires'] = cookie.expires
             new( url.to_s, cookie_hash )
-        }.flatten.compact
+        end.flatten.compact
     end
 
     private
