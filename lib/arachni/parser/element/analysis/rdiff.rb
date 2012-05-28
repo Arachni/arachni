@@ -102,97 +102,80 @@ module Arachni::Parser::Element::Analysis::RDiff
         # any superfluous dynamic content
         opts[:precision].times {
             # get the default responses
-            audit( '', opts ) {
-                |res|
+            audit( '', opts ) do |res|
                 responses[:orig] ||= res.body
                 # remove context-irrelevant dynamic content like banners and such
                 responses[:orig] = responses[:orig].rdiff( res.body )
-            }
+            end
         }
 
         # perform fault injection opts[:precision] amount of times and
         # rdiff the responses in order to arrive to a refined response without
         # any superfluous dynamic content
         opts[:precision].times {
-            opts[:faults].each {
-                |str|
-
+            opts[:faults].each do |str|
                 # get mutations of self using the fault seed, which will
                 # cause an internal/silent error when evaluated
-                mutations( str, opts ).each {
-                    |elem|
-
+                mutations( str, opts ).each do |elem|
                     print_status( elem.status_string )
 
                     # submit the mutation and store the response
-                    elem.submit( opts ).on_complete {
-                        |res|
-
+                    elem.submit( opts ).on_complete do |res|
                         responses[:bad][elem.altered] ||= res.body.clone
-
                         # remove context-irrelevant dynamic content like banners and such
                         # from the error page
                         responses[:bad][elem.altered] =
                             responses[:bad][elem.altered].rdiff( res.body.clone )
-                    }
-                }
-            }
+                    end
+                end
+            end
         }
 
         # get injection variations that will not affect the outcome of the query
-        opts[:bools].each {
-            |str|
+        opts[:bools].each do |str|
 
             # get mutations of self using the boolean seed, which will not
             # alter the execution flow
-            mutations( str, opts ).each {
-                |elem|
-
+            mutations( str, opts ).each do |elem|
                 print_status( elem.status_string )
 
                 # submit the mutation and store the response
-                elem.submit( opts ).on_complete {
-                    |res|
-
+                elem.submit( opts ).on_complete do |res|
                     responses[:good][elem.altered] ||= []
-
                     # save the response and some data for analysis
                     responses[:good][elem.altered] << {
                         'str'  => str,
                         'res'  => res,
                         'elem' => elem
                     }
-                }
-            }
-        }
+                end
+            end
+        end
 
         # when this runs the "responses" hash will have been populated and we
         # can continue with analysis
         http.after_run {
 
-            responses[:good].keys.each {
-                |key|
-
-                responses[:good][key].each {
-                    |res|
+            responses[:good].keys.each do |key|
+                responses[:good][key].each do |res|
 
                     # if there's a block passed then delegate analysis to it
                     if block
                         exception_jail( false ){
-                            block.call( res['str'], res['elem'], responses[:orig], res['res'], responses[:bad][key] )
+                            block.call( res['str'], res['elem'], responses[:orig],
+                                        res['res'], responses[:bad][key] )
                         }
 
                     # if default_response_body == bool_response_body AND
                     #    bool_response_code == 200 AND
                     #    fault_response_body != bool_response_body
                     elsif responses[:orig] == res['res'].body &&
-                        responses[:bad][key] != res['res'].body &&
-                        res['res'].code == 200
+                            responses[:bad][key] != res['res'].body &&
+                            res['res'].code == 200
 
                         # check to see if the current boolean response we're analyzing
                         # is a custom 404 page
-                        http.custom_404?( res['res'] ) {
-                            |bool|
+                        http.custom_404?( res['res'] ) do |bool|
                             # if this is a custom 404 page bail out
                             next if bool
 
@@ -226,11 +209,11 @@ module Arachni::Parser::Element::Analysis::RDiff
                             )
 
                             print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
-                        }
+                        end
                     end
 
-                }
-            }
+                end
+            end
         }
     end
 
