@@ -99,9 +99,10 @@ class HTTP
 
         @trainer = Arachni::Module::Trainer.new( opts )
 
+        opts.user_agent ||= 'Arachni/v' + Arachni::VERSION.to_s
         @headers = {
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'    => opts.user_agent || 'Arachni/v' + Arachni::VERSION.to_s
+            'User-Agent'    => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
 
