@@ -57,15 +57,10 @@ class FormatterManager < Component::Manager
 end
 
 #
-# Arachni::Report::Base class
+# An abstract class for the reports, all reports must extend this.
 #
-# An abstract class for the reports.<br/>
-# All reports must extend this.
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
 # @abstract
 #
 class Base
@@ -128,17 +123,16 @@ class Base
         @@formatters[ancestor].load( ['*'] ) if @@formatters[ancestor].empty?
 
         # run the formatters and gather the formatted data they return
-        @@formatters[ancestor].each_pair {
-            |name, formatter|
+        @@formatters[ancestor].each_pair do |name, formatter|
             plugin_results = plugins[name]
             next if !plugin_results || plugin_results[:results].empty?
 
             exception_jail( false ) {
                 formatted[name] = formatter.new( plugin_results.deep_clone ).run
             }
-        }
+        end
 
-        return formatted
+        formatted
     end
 
     #
@@ -148,15 +142,15 @@ class Base
     #
     def self.info
         {
-            :name           => 'Report abstract class.',
-            :options        => [
+            name:        'Report abstract class.',
+            options:     [
                 #                    option name    required?       description                         default
                 # Arachni::OptBool.new( 'html',    [ false, 'Include the HTML responses in the report?', true ] ),
                 # Arachni::OptBool.new( 'headers', [ false, 'Include the headers in the report?', true ] ),
             ],
-            :description    => %q{This class should be extended by all reports.},
-            :author         => 'zapotek',
-            :version        => '0.1.1',
+            description: %q{This class should be extended by all reports.},
+            author:      'zapotek',
+            version:     '0.1.1',
         }
     end
 

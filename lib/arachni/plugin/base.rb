@@ -114,7 +114,7 @@ class Base
     # @return   [Array]
     #
     def self.gems
-        [ ]
+        []
     end
 
     #
@@ -124,11 +124,11 @@ class Base
     #
     def self.info
         {
-            :name           => 'Abstract plugin class',
-            :description    => %q{Abstract plugin class.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [
+            name:        'Abstract plugin class',
+            description: %q{Abstract plugin class.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1',
+            options:     [
                 #                                   option name        required?       description                        default
                 # Component::Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
                 # Component::Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
@@ -139,7 +139,7 @@ class Base
             #
             # if this option is omitted the plug-in will be run last
             #
-            :order          => 0
+            order:       0
         }
     end
 

@@ -135,7 +135,6 @@ class Trainer
         train_links!( res, redir )
 
         if @updated
-
             begin
                 url         = res.request.url
                 # prepare the page url

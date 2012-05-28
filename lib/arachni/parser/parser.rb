@@ -158,12 +158,12 @@ class Parser
         # non text files won't contain any auditable elements
         if !text?
             return Page.new(
-                :code        => @code,
-                :url         => @url,
-                :method      => req_method,
-                :query_vars  => self_link.auditable,
-                :html        => @html,
-                :response_headers => @response_headers
+                code:             @code,
+                url:              @url,
+                method:           req_method,
+                query_vars:       self_link.auditable,
+                html:             @html,
+                response_headers: @response_headers
             )
         end
 
@@ -171,7 +171,7 @@ class Parser
         c_cookies = cookies
 
         # make a list of the response cookie names
-        cookie_names = c_cookies.map{ |c| c.name }
+        cookie_names = c_cookies.map { |c| c.name }
 
         from_jar = []
 
@@ -194,31 +194,31 @@ class Parser
         end
 
         Page.new(
-            :code        => @code,
-            :url         => @url,
-            :query_vars  => self_link.auditable,
-            :method      => req_method,
-            :html        => @html,
-            :response_headers => @response_headers,
+            code:             @code,
+            url:              @url,
+            query_vars:       self_link.auditable,
+            method:           req_method,
+            html:             @html,
+            response_headers: @response_headers,
 
             # all paths seen in the page
-            :paths       => paths(),
-            :forms       => forms(),
+            paths:            paths(),
+            forms:            forms(),
 
             # all href attributes from 'a' elements
-            :links       => links() | [self_link],
+            links:            links() | [self_link],
 
             # these cookies are to be audited and thus are dirty and anarchistic
             # so they have to contain even cookies completely irrelevant to the
             # current page, i.e. it contains all cookies that have been observed
             # from the beginning of the scan
-            :cookies     => c_cookies | from_jar | from_http_jar,
-            :headers     => headers(),
+            cookies:          c_cookies | from_jar | from_http_jar,
+            headers:          headers(),
 
             # this is the page cookiejar, each time the page is to be audited
             # by a module the cookiejar of the HTTP class will be updated
             # with the cookies specified here
-            :cookiejar   => c_cookies | from_jar
+            cookiejar:        c_cookies | from_jar
         )
     end
     alias :run :page
@@ -337,10 +337,9 @@ class Parser
             @@manager ||=
                 ::Arachni::Component::Manager.new( @opts.dir['path_extractors'], Extractors )
 
-            return @@manager.available.map {
-                |name|
+            return @@manager.available.map do |name|
                 exception_jail( false ){ @@manager[name].new.run( doc ) }
-            }.flatten.uniq.compact.
+            end.flatten.uniq.compact.
             map { |path| to_absolute( path ) }.compact.uniq.
             reject { |path| skip?( path ) }
         rescue ::Exception => e

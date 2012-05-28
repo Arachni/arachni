@@ -20,7 +20,6 @@ require 'cgi'
 module Arachni
 module Module
 
-
 #
 # Includes some useful methods for the system, the modules etc...
 #
@@ -33,11 +32,15 @@ module Utilities
     end
 
     def uri_parse( url )
+        @@uri_parse_cache ||= {}
+        return @@uri_parse_cache[url].dup if @@uri_parse_cache.include?( url )
+
         begin
-            uri_parser.parse( url )
+            @@uri_parse_cache[url] = uri_parser.parse( url )
         rescue URI::InvalidURIError
-            uri_parser.parse( WEBrick::HTTPUtils.escape( url ) )
+            @@uri_parse_cache[url] = uri_parser.parse( WEBrick::HTTPUtils.escape( url ) )
         end
+        @@uri_parse_cache[url].dup
     end
 
     def uri_encode( *args )
@@ -81,18 +84,6 @@ module Utilities
     end
 
     #
-    # Decodes URLs to reverse multiple encodes and removes NULL characters
-    #
-    def url_sanitize( url )
-
-        while( url =~ /%[a-fA-F0-9]{2}/ )
-            url = ( uri_decode( url ).to_s.unpack( 'A*' )[0] )
-        end
-
-        return uri_encode( CGI.unescapeHTML( url ) )
-    end
-
-    #
     # Gets path from URL
     #
     # @param   [String]   url
@@ -100,8 +91,7 @@ module Utilities
     # @return  [String]   path
     #
     def get_path( url )
-
-        uri  = uri_parser.parse( uri_encode( url ) )
+        uri  = uri_parse( uri_encode( url ) )
         path = uri.path
 
         if !File.extname( path ).empty?
@@ -112,57 +102,95 @@ module Utilities
 
         uri_str = uri.scheme + "://" + uri.host
         uri_str += ':' + uri.port.to_s if uri.port != 80
-        uri_str += path
+        uri_str + path
     end
+
     def seed
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
 
     def normalize_url( url )
+        return if !url
 
-        normalizer = Proc.new {
-            |url|
-            uri_encode(
-                uri_decode( url )
-                .encode( 'UTF-8',
-                    undef:   :replace,
-                    invalid: :replace
-                ),
-                Regexp.union( uri_parser.regexp[:UNSAFE], /[\[\]\\'" {};\|\$%]/ )
-            )
-        }
+        #@@normalize_url_cache ||= {}
+        #return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url.dup )
+        #
+        #@@normalize_url_cache[url] = Addressable::URI.parse( url ).normalize.to_s
+        #@@normalize_url_cache[url].dup
 
-        begin
-            begin
-                normalized = normalizer.call( url_sanitize( url ) )
-            rescue Exception => e
-                # ap e
-                # ap e.backtrace
+        #@@cnt ||= 0
+        #ap @@cnt += 1
+        #ap caller
 
-                normalized = normalizer.call( url )
-            end
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
+        url = url.to_s.dup
+        url.gsub!( /#.*$/, '' )
 
-            begin
-                normalized = uri_encode( uri_decode( url.to_s ) ).to_s
-            rescue Exception => e
-                # ap e
-                # ap e.backtrace
-                normalized = url
-            end
+        @@normalize_url_cache ||= {}
+        return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url )
+
+        c_url = url.to_s.dup
+        # remove fragment
+        c_url.gsub!( /#.*$/, '' )
+        c_url = uri_decode( c_url )
+        c_url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
+        @@normalize_url_cache[url] = uri_parse( uri_encode( c_url) ).to_s
+        @@normalize_url_cache[url].dup
+    rescue Exception => e
+        #ap url
+        #ap e
+        #ap e.backtrace
+        return nil
+
+        #normalizer = Proc.new do |c_url|
+        #    uri_encode(
+        #        c_url.encode( 'UTF-8',
+        #            undef:   :replace,
+        #            invalid: :replace
+        #        ),
+        #        Regexp.union( uri_parser.regexp[:UNSAFE], /[\[\]\\'" {};\|\$%]/ )
+        #    )
+        #end
+        #
+        #begin
+        #    begin
+        #        normalized = normalizer.call( url_sanitize( url ) )
+        #    rescue Exception => e
+        #        # ap e
+        #        # ap e.backtrace
+        #
+        #        normalized = normalizer.call( url )
+        #    end
+        #rescue Exception => e
+        #    # ap e
+        #    # ap e.backtrace
+        #
+        #    begin
+        #        normalized = uri_encode( url.to_s ).to_s
+        #    rescue Exception => e
+        #        # ap e
+        #        # ap e.backtrace
+        #        normalized = url
+        #    end
+        #end
+        #
+        #@@normalize_url_cache[url] = normalized
+        #@@normalize_url_cache[url].dup
+    end
+
+    #
+    # Decodes URLs to reverse multiple encodes and removes NULL characters
+    #
+    def url_sanitize( url )
+        @@url_sanitize_cache ||= {}
+        c_url = url.to_s.dup
+        return @@url_sanitize_cache[c_url].dup if @@url_sanitize_cache.include?( c_url )
+
+        while url =~ /%[a-fA-F0-9]{2}/
+            url = ( uri_decode( url ).to_s.unpack( 'A*' )[0] )
         end
 
-        # prevent this: http://example.com#fragment
-        # from becoming this: http://example.com%23fragment
-        begin
-            normalized.gsub!( '%23', '#' )
-        rescue
-        end
-
-        # ap normalized
-        return normalized
+        @@url_sanitize_cache[c_url] = uri_encode( CGI.unescapeHTML( url ) )
+        @@url_sanitize_cache[c_url].dup
     end
 
     #
@@ -184,12 +212,7 @@ module Utilities
 
     def path_too_deep?( url )
         opts = Arachni::Options.instance
-
-        if opts.depth_limit > 0 && (opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
-            return true
-        else
-            return false
-        end
+        opts.depth_limit > 0 && (opts.depth_limit + 1) <= URI(url.to_s).path.count( '/' )
     end
 
     #
@@ -206,29 +229,24 @@ module Utilities
             return extract_domain( curi ) == extract_domain( uri_parse( ref_url.to_s ) )
         end
 
-        return curi.host == uri_parse( normalize_url( ref_url.to_s ) ).host
+        curi.host == uri_parse( ref_url.to_s ).host
     end
 
     def exclude_path?( url )
         opts = Arachni::Options.instance
-        opts.exclude.each {
-            |pattern|
-            return true if url.to_s =~ pattern
-        }
-
-        return false
+        opts.exclude.each { |pattern| return true if url.to_s =~ pattern }
+        false
     end
 
     def include_path?( url )
         opts = Arachni::Options.instance
-        return true if opts.include.empty?
+        return true if !opts.include || opts.include.empty?
 
-        opts.include.each {
-            |pattern|
+        opts.include.each do |pattern|
             pattern = Regexp.new( pattern ) if pattern.is_a?( String )
             return true if url.to_s =~ pattern
-        }
-        return false
+        end
+        false
     end
 
     def skip_path?( path )
@@ -255,14 +273,18 @@ module Utilities
     # @return [String]
     #
     def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
+        return if !relative_url
+
+        @@to_absolute_cache ||= {}
+        key = relative_url + ' :: ' + reference_url
+        return @@to_absolute_cache[key].dup if @@to_absolute_cache.include?( key )
+
         begin
             relative_url = normalize_url( relative_url )
 
-            # remove anchor
-            relative_url = uri_encode( relative_url.to_s.gsub( /#[a-zA-Z0-9_-]*$/,'' ) )
-
-            if uri_parser.parse( relative_url ).host
-                return relative_url
+            if uri_parse( relative_url ).host
+                @@to_absolute_cache[key] = relative_url
+                return @@to_absolute_cache[key].dup
             end
         rescue Exception => e
             # ap e
@@ -271,14 +293,14 @@ module Utilities
         end
 
         begin
-            base_url = uri_parser.parse( reference_url )
+            base_url = uri_parse( reference_url )
 
-            relative = uri_parser.parse( relative_url )
+            relative = uri_parse( relative_url )
             absolute = base_url.merge( relative )
 
             absolute.path = '/' if absolute.path && absolute.path.empty?
-
-            return absolute.to_s
+            @@to_absolute_cache[key] = absolute.to_s
+            @@to_absolute_cache[key].dup
         rescue Exception => e
             # ap e
             # ap e.backtrace
@@ -304,22 +326,17 @@ module Utilities
         path    = File.expand_path( File.dirname( mod_path ) ) +
             '/' + mod_name + '/'
 
-        file = File.open( path + '/' + filename ).each {
-            |line|
-            yield line.strip
-        }
-
+        file = File.open( path + '/' + filename ).each { |line| yield line.strip }
         file.close
     end
 
     def hash_keys_to_str( hash )
         nh = {}
-        hash.each_pair {
-            |k, v|
+        hash.each_pair do |k, v|
             nh[k.to_s] = v
             nh[k.to_s] = hash_keys_to_str( v ) if v.is_a? Hash
-        }
-        return nh
+        end
+        nh
     end
 
     #

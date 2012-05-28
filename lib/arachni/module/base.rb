@@ -23,7 +23,6 @@ require Arachni::Options.instance.dir['lib'] + 'module/auditor'
 module Arachni
 module Module
 
-
 #
 # Base module class to be extended by all modules.
 #
@@ -147,8 +146,8 @@ class Base
     #
     def self.info
         {
-            :name           => 'Base module abstract class',
-            :description    => %q{Provides an abstract class the modules should implement.},
+            name:        'Base module abstract class',
+            description: %q{Provides an abstract class the modules should implement.},
             #
             # Arachni needs to know what elements the module plans to audit
             # before invoking it.
@@ -164,15 +163,14 @@ class Base
             #     Issue::Element::COOKIE,
             #     Issue::Element::HEADER
             # ],
-            :elements       => [],
-            :author         => 'zapotek',
-            :version        => '0.1',
-            :references     => {
-            },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :description => %q{},
-                :cwe         => '',
+            elements:    [],
+            author:      'zapotek',
+            version:     '0.1',
+            references:  {},
+            targets:     { 'Generic' => 'all' },
+            issue:       {
+                 description:    %q{},
+                 cwe:            '',
                 #
                 # Severity can be:
                 #
@@ -181,10 +179,10 @@ class Base
                 # Issue::Severity::LOW
                 # Issue::Severity::INFORMATIONAL
                 #
-                :severity    => '',
-                :cvssv2       => '',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+                severity:        '',
+                cvssv2:          '',
+                remedy_guidance: '',
+                remedy_code:     '',
             }
         }
     end

@@ -90,9 +90,7 @@ module ElementDB
         form_cnt = 0
         new_forms ||= []
 
-        forms.each {
-            |form|
-
+        forms.each do |form|
             next if form.action.include?( seed )
             next if form.auditable.size == 0
 
@@ -101,9 +99,9 @@ module ElementDB
                 new_forms << form
                 form_cnt += 1
             end
-        }
+        end
 
-        return new_forms, form_cnt
+        [new_forms, form_cnt]
     end
 
     #
@@ -117,9 +115,7 @@ module ElementDB
 
       link_cnt = 0
       new_links ||= []
-      links.each {
-          |link|
-
+      links.each do |link|
           next if !link
           next if link.action.include?( seed )
 
@@ -128,9 +124,9 @@ module ElementDB
               new_links << link
               link_cnt += 1
           end
-      }
+      end
 
-      return new_links, link_cnt
+      [new_links, link_cnt]
     end
 
     #
@@ -145,33 +141,26 @@ module ElementDB
         cookie_cnt = 0
         @new_cookies ||= []
 
-        cookies.reverse.each_with_index {
-            |cookie|
-
-            @@cookies.each_with_index {
-                |page_cookie, i|
-
-                if( page_cookie.raw['name'] == cookie.raw['name'] )
+        cookies.reverse.each do |cookie|
+            @@cookies.each_with_index do |page_cookie, i|
+                if page_cookie.raw['name'] == cookie.raw['name']
                     @@cookies[i] = cookie
                 elsif !cookie_in_jar?( cookie )
                     @new_cookies << cookie
                     cookie_cnt += 1
                 end
-            }
-        }
+            end
+        end
 
         @@cookies.flatten!
         @@cookies |= @new_cookies
 
-        return [ @@cookies, cookie_cnt ]
+        [@@cookies, cookie_cnt]
     end
 
     def cookie_in_jar?( cookie )
-        @@cookies.each {
-            |c|
-            return true if c.raw['name'] == cookie.raw['name']
-        }
-        return false
+        @@cookies.each { |c| return true if c.raw['name'] == cookie.raw['name'] }
+        false
     end
 
 end

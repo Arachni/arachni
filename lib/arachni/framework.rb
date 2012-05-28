@@ -577,15 +577,13 @@ class Framework
         wait_if_paused
 
         @status = :crawling
-        @spider = Arachni::Spider.new( @opts )
 
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
             @sitemap = @opts.restrict_paths
-            @sitemap.each do |url|
-                push_to_url_queue( url_sanitize( to_absolute( url ) ) )
-            end
+            @sitemap.each { |url| push_to_url_queue( to_absolute( url ) ) }
         else
+            @spider = Arachni::Spider.new( @opts )
             # initiates the crawl
             @spider.run( false ) do |response|
                 @sitemap |= @spider.sitemap
@@ -601,10 +599,9 @@ class Framework
                 print_line
                 print_status( 'Running timing attacks.' )
                 print_info( '---------------------------------------' )
-                Arachni::Module::Auditor.on_timing_attacks {
-                    |_, elem|
+                Arachni::Module::Auditor.on_timing_attacks do |_, elem|
                     @current_url = elem.action if !elem.action.empty?
-                }
+                end
                 Arachni::Module::Auditor.timeout_audit_run
             end
 

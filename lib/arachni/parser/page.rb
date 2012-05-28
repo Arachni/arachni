@@ -100,7 +100,6 @@ class Page
     class << self; alias :from_http_response :from_response end
 
     def initialize( opts = {} )
-
         @forms = []
         @links = []
         @cookies = []
@@ -112,10 +111,7 @@ class Page
         @response_headers = {}
         @query_vars       = {}
 
-        opts.each {
-            |k, v|
-            send( "#{k}=", v )
-        }
+        opts.each { |k, v| send( "#{k}=", v ) }
 
         @html ||= ''
     end

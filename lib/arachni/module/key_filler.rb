@@ -26,7 +26,7 @@ module Module
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.1
 #
 class KeyFiller
@@ -62,10 +62,7 @@ class KeyFiller
     # @return   [Hash]
     #
     def self.fill( hash )
-
-        hash.keys.each{
-            |key|
-
+        hash.keys.each do |key|
             next if hash[key] && !hash[key].empty?
 
             if val = self.match?( key )
@@ -75,20 +72,16 @@ class KeyFiller
             # moronic default value...
             # will figure  out something better in the future...
             hash[key] = '1' if( !hash[key] || hash[key].empty? )
-        }
+        end
 
-        return hash
+        hash
     end
 
     private
 
     def self.match?( str )
-      @@regexps.keys.each {
-        |key|
-        return @@regexps[key] if( str =~ Regexp.new( key, 'i' ) )
-
-      }
-      return false
+      @@regexps.keys.each { |key| return @@regexps[key] if str =~ Regexp.new( key, 'i' ) }
+      false
     end
 
 end
