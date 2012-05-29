@@ -894,7 +894,7 @@ class Options
     #
     # Merges self with the object in 'options'
     #
-    # @param    [Options]
+    # @param    [Arachni::Options]   options
     #
     def merge!( options )
         options.to_h.each_pair do |k, v|

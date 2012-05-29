@@ -166,7 +166,7 @@ class Framework
     #
     # It parses the instance options, {#prepare}, runs the {#audit} and {#clean_up!}.
     #
-    # @param   [Block]     &block  a block to call after the audit has finished
+    # @param   [Block]  block  a block to call after the audit has finished
     #                                   but before running the reports
     #
     def run( &block )

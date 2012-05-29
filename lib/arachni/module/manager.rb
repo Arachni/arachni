@@ -40,9 +40,7 @@ class Manager < Arachni::Component::Manager
     @@do_not_store        ||= false
     @@issue_mutex         ||= Mutex.new
 
-    #
-    # @param    [Arachni::Framework]  opts
-    #
+    # @param    [Arachni::Framework]  framework
     def initialize( framework )
         @framework = framework
         @opts = @framework.opts
@@ -90,7 +88,7 @@ class Manager < Arachni::Component::Manager
     #
     # Registers module results with...well..us.
     #
-    # @param    [Array]
+    # @param    [Array<Arachni::Issue>] results
     #
     def self.register_results( results )
         @@on_register_results.each { |block| block.call( results ) }

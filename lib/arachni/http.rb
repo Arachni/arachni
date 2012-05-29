@@ -439,8 +439,7 @@ class HTTP
     # Checks whether or not the provided response is a custom 404 page
     #
     # @param  [Typhoeus::Response]  res  the response to check
-    #
-    # @param  [Bool]
+    # @param  [Block]   block   to be passed true or false depending on the result
     #
     def custom_404?( res, &block )
         precision = 2

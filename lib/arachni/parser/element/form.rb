@@ -197,8 +197,8 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     #
     # Merges an array of form inputs with an array of form selects
     #
-    # @param    [Array]  form inputs
-    # @param    [Array]  form selects
+    # @param    [Array]  inputs
+    # @param    [Array]  selects
     #
     # @return   [Array]  merged array
     #

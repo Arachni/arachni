@@ -70,7 +70,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     #                                   * :precision -- amount of rdiff iterations
     #                                   * :faults -- array of fault injection strings (these are supposed to force erroneous conditions when interpreted)
     #                                   * :bools -- array of boolean injection strings (these are supposed to not alter the webapp behavior when interpreted)
-    # @param    [Block]     &block      block to be used for custom analysis of responses; will be passed the following:
+    # @param    [Block]     block      block to be used for custom analysis of responses; will be passed the following:
     #                                   * injected string
     #                                   * audited element
     #                                   * default response body

@@ -199,7 +199,8 @@ class Manager < Arachni::Component::Manager
     #
     # Registers plugin results
     #
-    # @param    [Object]
+    # @param    [Arachni::Plugin::Base]    plugin   instance of a plugin
+    # @param    [Object]    results
     #
     def register_results( plugin, results )
         @@results_mutex.synchronize {

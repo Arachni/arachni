@@ -59,7 +59,6 @@ module Output
     # circumstances.
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
@@ -96,6 +95,7 @@ module Output
     # Used mainly to draw attention.
     #
     # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_bad( str = '', unmute = false )
         return if muted? && !unmute
@@ -110,7 +110,7 @@ module Output
     # @see #only_positives!
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_status( str = '', unmute = false )
         return if only_positives?
@@ -125,7 +125,7 @@ module Output
     # @see #only_positives!
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_info( str = '', unmute = false )
         return if only_positives?
@@ -138,7 +138,7 @@ module Output
     # Disregards all flags.
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_ok( str = '', unmute = false )
         print_color( '[+]', 32, str, $stdout, unmute )
@@ -152,7 +152,7 @@ module Output
     # @see #debug
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_debug( str = '', unmute = false )
         return if !debug?
@@ -167,8 +167,7 @@ module Output
     # @see #debug?
     # @see #debug
     #
-    # @param    [Object]
-    # @return    [void]
+    # @param    [Object]    obj
     #
     def print_debug_pp( obj = nil )
         return if !debug?
@@ -182,8 +181,7 @@ module Output
     # @see #debug?
     # @see #debug
     #
-    # @param    [Exception]
-    # @return    [void]
+    # @param    [Exception] e
     #
     def print_debug_backtrace( e )
         return if !debug?
@@ -203,7 +201,7 @@ module Output
     # @see #verbose!
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_verbose( str = '', unmute = false )
         return if !verbose?
@@ -218,7 +216,7 @@ module Output
     # @see #only_positives!
     #
     # @param    [String]    str
-    # @return    [void]
+    # @param    [Bool]    unmute    override mute
     #
     def print_line( str = '', unmute = false )
         return if only_positives?
@@ -314,8 +312,10 @@ module Output
     # Disregards all flags.
     #
     # @param    [String]    sign
-    # @param    [Integer]   color   shell color number
-    # @param    [String]    string  the string to output
+    # @param    [Integer]   color     shell color number
+    # @param    [String]    string    the string to output
+    # @param    [IO]        out        output stream
+    # @param    [Bool]      unmute    override mute
     #
     # @return    [void]
     #

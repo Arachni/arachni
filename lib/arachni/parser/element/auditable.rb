@@ -62,7 +62,6 @@ module Auditable
     # The auditor provides its output and issue logging interfaces to the
     # auditable element.
     #
-    # @param    [Arachni::Module::Auditor]
     # @return   [Arachni::Module::Auditor]
     #
     attr_accessor :auditor
@@ -70,7 +69,6 @@ module Auditable
     #
     # Key=>value pair of inputs
     #
-    # @param    [Hash]
     # @return   [Hash]
     #
     attr_accessor :auditable
@@ -78,7 +76,6 @@ module Auditable
     #
     # Frozen version of {#auditable}, has all the original name/values
     #
-    # @param    [Hash]
     # @return   [Hash]
     #
     attr_accessor :orig
@@ -241,7 +238,7 @@ module Auditable
     #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
-    # @param  [Block]   &block         block to be used for analysis of responses; will be passed the following:
+    # @param  [Block]   block         block to be used for analysis of responses; will be passed the following:
     #                                  * HTTP response
     #                                  * options
     #                                  * element
@@ -387,7 +384,7 @@ module Auditable
     #
     # @param  [Typhoeus::Request]  req    request
     # @param  [Arachni::Parser::Element::Auditable]    elem    element
-    # @param  [Block]   &block         block to be passed the:
+    # @param  [Block]   block         block to be passed the:
     #                                   * HTTP response
     #                                   * name of the input vector
     #                                   * updated opts

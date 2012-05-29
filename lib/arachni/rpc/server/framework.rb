@@ -93,7 +93,7 @@ class Framework < ::Arachni::Framework
     #                                     If so, it will only return false if slaves
     #                                     are done too.
     #
-    # @param    [Proc]  &block          block to which to pass the result
+    # @param    [Proc]  block          block to which to pass the result
     #
     def busy?( include_slaves = true, &block )
         busyness = [ extended_running? ]
@@ -281,7 +281,7 @@ class Framework < ::Arachni::Framework
     # running in HPG mode as it will take care of merging the plug-in results
     # of all instances.
     #
-    # @param    [Proc]  &block  block to be called once the cleanup has finished
+    # @param    [Proc]  block  block to be called once the cleanup has finished
     #
     def clean_up( &block )
         super( true )
@@ -351,7 +351,7 @@ class Framework < ::Arachni::Framework
     # * error  -- An error has occurred, this is not good.
     # * line  -- Generic message, no type.
     #
-    # @param    [Proc]  &block  block to which to pass the result
+    # @param    [Proc]  block  block to which to pass the result
     #
     # @return   [Array<Hash>]
     #
@@ -387,7 +387,7 @@ class Framework < ::Arachni::Framework
     #
     #                             * :as_hash  -- if set to true will convert issues to hashes before returning
     #
-    # @param    [Proc]  &block  block to which to pass the result
+    # @param    [Proc]  block  block to which to pass the result
     #
     def progress_data( opts= {}, &block )
 

@@ -226,7 +226,7 @@ module Arachni::Parser::Element::Analysis::Timeout
     #
     # @param   [Array]     strings     injection strings
     #                                       __TIME__ will be substituted with (timeout / timeout_divider)
-    # @param  [Hash]        opts        options as described in {Arachni::Parser::Element::Mutable::OPTIONS} with the following extra:
+    # @param   [Hash]      opts        options as described in {Arachni::Parser::Element::Mutable::OPTIONS} with the following extra:
     #                                   * :timeout -- milliseconds to wait for the request to complete
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
@@ -296,8 +296,8 @@ module Arachni::Parser::Element::Analysis::Timeout
     #
     # @param   [Array]     strings     injection strings
     #                                       '__TIME__' will be substituted with (timeout / timeout_divider)
-    # @param    [Hash]      opts        options as described in {Arachni::Parser::Element::Mutable::OPTIONS}
-    # @param    [Block]     &block      block to call if a timeout occurs,
+    # @param    [Hash]      opts       options as described in {Arachni::Parser::Element::Mutable::OPTIONS}
+    # @param    [Block]     block      block to call if a timeout occurs,
     #                                       it will be passed the response and opts
     #
     def timing_attack( strings, opts, &block )

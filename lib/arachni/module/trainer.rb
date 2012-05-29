@@ -28,14 +28,11 @@ module Module
 # @author Tasos Laskos <tasos.laskos@gmail.com>
 #
 class Trainer
-
     include Output
     include ElementDB
     include Utilities
 
-    #
-    # @param    [Arachni::Options]
-    #
+    # @param    [Arachni::Options]  opts
     def initialize( opts )
         @opts     = opts
         @updated  = false

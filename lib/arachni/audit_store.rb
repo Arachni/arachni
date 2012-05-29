@@ -195,7 +195,7 @@ class AuditStore
     # The value of the 'options' key of the hash that initializes AuditObjects
     # needs some more processing before being saved in {AuditStore#options}.
     #
-    # @param    [Hash]
+    # @param    [Hash]  options
     #
     # @return    [Hash]
     #

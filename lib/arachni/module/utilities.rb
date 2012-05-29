@@ -342,7 +342,8 @@ module Utilities
     #
     # Wraps the "block" in exception handling code and runs it.
     #
-    # @param    [Block]
+    # @param    [Bool]  raise_exception  re-raise exception
+    # @param    [Block]     block   to call
     #
     def exception_jail( raise_exception = true, &block )
         begin

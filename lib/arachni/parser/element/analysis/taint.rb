@@ -60,11 +60,6 @@ module Arachni::Parser::Element::Analysis::Taint
     #
     # @param  [String]  seed      the string to be injected
     # @param  [Hash]    opts      options as described in {Arachni::Module::Auditor::OPTIONS} and {TAINT_OPTIONS}
-    # @param  [Block]   &block    block to be passed the:
-    #                               * HTTP response
-    #                               * name of the input vector
-    #                               * updated opts
-    #                               The block will be called as soon as the HTTP response is received.
     #
     def taint_analysis( seed, opts = { } )
         opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
@@ -81,7 +76,7 @@ module Arachni::Parser::Element::Analysis::Taint
     # will be returned describing the conditions under which
     # the issue was discovered.
     #
-    # @param  [Typhoeus::Response]
+    # @param  [Typhoeus::Response]  res
     # @param  [Hash]  opts
     #
     # @return  [Hash]

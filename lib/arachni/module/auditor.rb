@@ -85,9 +85,9 @@ module Auditor
         # If no elements have been passed to audit candidates will be
         # determined by {#candidate_elements}.
         #
-        :elements => [ Element::LINK, Element::FORM,
-                       Element::COOKIE, Element::HEADER,
-                       Issue::Element::BODY ],
+        elements: [Element::LINK, Element::FORM,
+                   Element::COOKIE, Element::HEADER,
+                   Issue::Element::BODY],
 
         #
         # If 'train' is set to true the HTTP response will be
@@ -97,7 +97,7 @@ module Auditor
         # When the Auditor submits a form with original or sample values
         # this option will be overridden to true.
         #
-        :train     => false,
+        train:    false,
     }
 
     #
@@ -183,7 +183,7 @@ module Auditor
     # @param    [String]    url
     # @param    [Bool]      silent  if false, a message will be sent to stdout
     #                               containing the status of the operation.
-    # @param    [Proc]      &block  called if the file exists, just before logging
+    # @param    [Proc]      block  called if the file exists, just before logging
     #
     # @return   [Object]    - nil if no URL was provided
     #                       - false if the request couldn't be fired
@@ -194,9 +194,7 @@ module Auditor
     def log_remote_file_if_exists( url, silent = false, &block )
         return nil if !url
 
-        remote_file_exist?( url ) {
-            |bool, res|
-
+        remote_file_exist?( url ) do |bool, res|
             print_status( 'Analyzing response for: ' + url ) if !silent
 
             if bool
@@ -207,9 +205,8 @@ module Auditor
                 # contain brand new data to audit
                 http.trainer.add_response( res )
             end
-        }
-
-        return true
+        end
+         true
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -220,21 +217,17 @@ module Auditor
     # @param    [String]    url
     #
     def remote_file_exist?( url, &block )
-        req  = http.get( url, :remove_id => true )
+        req  = http.get( url, remove_id: true )
         return false if !req
 
-        req.on_complete {
-            |res|
+        req.on_complete do |res|
             if res.code != 200
                 block.call( false, res )
             else
-                http.custom_404?( res ) {
-                    |bool|
-                    block.call( !bool, res )
-                }
+                http.custom_404?( res ) { |bool| block.call( !bool, res ) }
             end
-        }
-        return true
+        end
+        true
     end
 
     #
@@ -249,17 +242,16 @@ module Auditor
         filename = File.basename( URI( res.effective_url ).path )
 
         log_issue(
-            :url          => url,
-            :injected     => filename,
-            :id           => filename,
-            :elem         => Issue::Element::PATH,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
+            url:      url,
+            injected: filename,
+            id:       filename,
+            elem:     Issue::Element::PATH,
+            response: res.body,
+            headers:  {
+                request:  res.request.headers,
+                response: res.headers,
             }
         )
-
     end
     alias :log_remote_directory :log_remote_file
 
@@ -287,51 +279,44 @@ module Auditor
     #                                           must return true/false
     #
     def match_and_log( regexps, string = page.html, &block )
-
         # make sure that we're working with an array
         regexps = [regexps].flatten
 
         elems = self.class.info[:elements]
         elems = OPTIONS[:elements] if !elems || elems.empty?
 
-        regexps.each {
-            |regexp|
-
-            string.scan( regexp ).flatten.uniq.each {
-                |match|
+        regexps.each do |regexp|
+            string.scan( regexp ).flatten.uniq.each do |match|
 
                 next if !match
                 next if block && !block.call( match )
 
                 log(
-                    :regexp  => regexp,
-                    :match   => match,
-                    :element => Issue::Element::BODY
+                    regexp:  regexp,
+                    match:   match,
+                    element: Issue::Element::BODY
                 )
-            } if elems.include? Issue::Element::BODY
+            end if elems.include? Issue::Element::BODY
 
             next if string != page.html
 
-            page.response_headers.each {
-                |k,v|
+            page.response_headers.each do |k,v|
                 next if !v
 
-                v.to_s.scan( regexp ).flatten.uniq.each {
-                    |match|
-
+                v.to_s.scan( regexp ).flatten.uniq.each do |match|
                     next if !match
                     next if block && !block.call( match )
 
                     log(
-                        :var => k,
-                        :regexp  => regexp,
-                        :match   => match,
-                        :element => Issue::Element::HEADER
+                        var:     k,
+                        regexp:  regexp,
+                        match:   match,
+                        element: Issue::Element::HEADER
                     )
-                }
-            } if elems.include? Issue::Element::HEADER
+                end
+            end if elems.include? Issue::Element::HEADER
 
-        }
+        end
     end
 
     #
@@ -341,10 +326,12 @@ module Auditor
     # @param    [Typhoeus::Response]    res     defaults to page data
     #
     def log( opts, res = nil )
+        response_headers = {}
+        request_headers  = {}
+        response = nil
+        method   = nil
 
-        method = nil
-
-        if( page )
+        if page
             request_headers  = nil
             response_headers = page.response_headers
             response         = page.html
@@ -352,7 +339,7 @@ module Auditor
             method           = page.method.to_s.upcase if page.method
         end
 
-        if( res )
+        if res
             request_headers  = res.request.headers
             response_headers = res.headers
             response         = res.body
@@ -378,20 +365,20 @@ module Auditor
 
         # Instantiate a new Issue class and append it to the results array
         log_issue(
-            :var          => opts[:altered],
-            :url          => url,
-            :injected     => opts[:injected],
-            :id           => opts[:id],
-            :regexp       => opts[:regexp],
-            :regexp_match => opts[:match],
-            :elem         => opts[:element],
-            :verification => opts[:verification] || false,
-            :method       => method,
-            :response     => response,
-            :opts         => opts,
-            :headers      => {
-                :request    => request_headers,
-                :response   => response_headers,
+            var:          opts[:altered],
+            url:          url,
+            injected:     opts[:injected],
+            id:           opts[:id],
+            regexp:       opts[:regexp],
+            regexp_match: opts[:match],
+            elem:         opts[:element],
+            verification: !!opts[:verification],
+            method:       method,
+            response:     response,
+            opts:         opts,
+            headers:      {
+                request:  request_headers,
+                response: response_headers,
             }
         )
     end
@@ -405,16 +392,14 @@ module Auditor
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
-        redundant.map {
-            |mod|
-
+        redundant.map do |mod|
             mod_name = framework.modules[mod].info[:name]
 
             set_id = framework.modules.class.issue_set_id_from_elem( mod_name, elem )
             return true if framework.modules.issue_set.include?( set_id )
-        } if framework
+        end if framework
 
-        return false
+        false
     end
 
     #
@@ -431,37 +416,36 @@ module Auditor
     # @return   [Array<Arachni::Parser::Element::Auditable]   array of auditable elements
     #
     def candidate_elements( opts = {} )
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+        if !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty?
             opts[:elements] = self.class.info[:elements]
         end
 
-        if( !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty? )
+        if !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty?
             opts[:elements] = OPTIONS[:elements]
         end
 
         elements = []
-        opts[:elements].each {
-            |elem|
+        opts[:elements].each do |elem|
             next if !Arachni::Options.instance.instance_variable_get( "@audit_#{elem}s".to_sym )
 
-            case elem
+            elements |= case elem
                 when Element::LINK
-                    elements |= page.links
+                    page.links
 
                 when Element::FORM
-                    elements |= page.forms
+                    page.forms
 
                 when Element::COOKIE
-                    elements |= page.cookies
+                    page.cookies
 
                 when Element::HEADER
-                    elements |= page.headers
+                    page.headers
 
                 when Element::BODY
                 else
                     raise( 'Unknown element to audit:  ' + elem.to_s )
             end
-        }
+        end
 
         elements.map { |e| e.auditor = self; e }
     end
@@ -476,15 +460,12 @@ module Auditor
     # @see Arachni::Parser::Element::Auditable#audit
     # @see #audit_taint
     #
-    def audit( injection_str, opts = { }, &block )
+    def audit( injection_str, opts = {}, &block )
         opts = OPTIONS.merge( opts )
         if !block_given?
             audit_taint( injection_str, opts )
         else
-            candidate_elements( opts ).each {
-                |element|
-                element.audit( injection_str, opts, &block )
-            }
+            candidate_elements( opts ).each { |e| e.audit( injection_str, opts, &block ) }
         end
     end
 
@@ -496,12 +477,9 @@ module Auditor
     # @see OPTIONS
     # @see Arachni::Parser::Element::Analysis::Taint
     #
-    def audit_taint( taint, opts = { } )
+    def audit_taint( taint, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each {
-            |element|
-            element.taint_analysis( taint, opts )
-        }
+        candidate_elements( opts ).each { |e| e.taint_analysis( taint, opts ) }
     end
 
     #
@@ -514,10 +492,7 @@ module Auditor
     #
     def audit_rdiff( opts = {}, &block )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each {
-            |element|
-            element.rdiff_analysis( opts, &block )
-        }
+        candidate_elements( opts ).each { |e| e.rdiff_analysis( opts, &block ) }
     end
 
     #
@@ -530,10 +505,7 @@ module Auditor
     #
     def audit_timeout( strings, opts = {} )
         opts = OPTIONS.merge( opts )
-        candidate_elements( opts ).each {
-            |element|
-            element.timeout_analysis( strings, opts )
-        }
+        candidate_elements( opts ).each { |e| e.timeout_analysis( strings, opts ) }
     end
 
 end

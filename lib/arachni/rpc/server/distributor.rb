@@ -271,10 +271,10 @@ module Distributor
     # Spawns, configures and runs a new remote Instance
     #
     # @param    [String]    dispatcher_url
-    # @param    [Hash]      opts
-    #                        * [:urls]    Array<String>    urls to audit -- will be passed to restrict_paths
-    #                        * [:elements]    Array<String>    scope IDs of elements to audit
-    #                        * [:pages]    Array<Arachni::Parser::Page>    pages to audit
+    # @param    [Hash]      auditables
+    #                        * urls:     Array<String>    urls to audit -- will be passed to restrict_paths
+    #                        * elements: Array<String>    scope IDs of elements to audit
+    #                        * pages:    Array<Arachni::Parser::Page>    pages to audit
     #
     # @param    [Proc]      block   to be passed a hash containing the url and token of the instance
     #
