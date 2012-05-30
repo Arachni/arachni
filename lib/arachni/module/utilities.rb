@@ -141,24 +141,6 @@ module Utilities
     #
     # @return   [String]    normalized URL
     #
-    #def normalize_url( url )
-    #    return if !url
-    #
-    #    @@normalize_url_cache ||= {}
-    #    return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url.dup )
-    #
-    #    n = Addressable::URI.parse( url ).normalize
-    #
-    #    # remove multiple slashes from path:
-    #    #  http://test.com//path//with///meaningless//slashes
-    #    n.path.gsub!( /\/+/, '/' )
-    #
-    #    @@normalize_url_cache[url] = n.to_s
-    #    @@normalize_url_cache[url].dup
-    #rescue
-    #    nil
-    #end
-
     def normalize_url( url )
         return if !url
 
