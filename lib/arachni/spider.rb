@@ -21,167 +21,246 @@ require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
 module Arachni
 
 #
+# Crawls the target webapp until there are no new paths left.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Spider
     include Arachni::UI::Output
     include Arachni::Module::Utilities
 
-    #
-    #
-    # @return [Options]
-    #
+    # @return [Arachni::Options]
     attr_reader :opts
 
-    #
-    # Discovered paths
-    #
-    # @return [Array]
-    #
-    attr_reader :sitemap
+    # @return [String]  seed url
+    attr_reader :url
 
-    #
-    # URLs that caused redirects
-    #
-    # @return [Array]
-    #
+    # @return [Array<String>]   URLs that caused redirects
     attr_reader :redirects
 
     #
-    # Constructor <br/>
     # Instantiates Spider class with user options.
     #
-    # @param  [Options] opts
+    # @param  [Arachni::Options] opts
     #
-    def initialize( opts )
+    def initialize( opts = Arachni::Options.instance )
         @opts = opts
+        @url  = @opts.url.to_s
 
-        @sitemap   = []
+        @sitemap   = {}
         @redirects = []
-        @on_every_page_blocks = []
+        @visited   = Set.new
 
-        @seed_url = @opts.url.to_s
+        @on_each_page_blocks = []
+        @on_complete_blocks  = []
 
-        @extend_paths   = @opts.extend_paths   || []
-        @restrict_paths = @opts.restrict_paths || []
+        @pass_pages       = true
+        @pending_requests = 0
 
-        @paths = [ @seed_url ]
+        @paths = dedup( @url )
+        push( @opts.extend_paths )
+    end
 
-        if restricted_to_paths?
-            @paths |= @sitemap = @restrict_paths
-        else
-            @paths |= @extend_paths
+    # @return   [Array<String>]  Working paths, paths that haven't yet been followed.
+    #                                You'll actually get a copy of the working paths
+    #                                and not the actual object itself;
+    #                                if you want to add more paths use {#push}.
+    def paths
+        @paths.clone
+    end
+
+    # @return   [Array<String>] list of crawled URLs
+    def sitemap
+        @sitemap.keys
+    end
+
+    # @return   [Hash<Integer, String>] list of crawled URLs with their HTTP codes
+    def fancy_sitemap
+        @sitemap
+    end
+
+    #
+    # Runs the Spider and passes the requested object to the block.
+    #
+    # @param [Bool] pass_pages_to_block  decides weather the block should be passed [Arachni::Parser::Page]s
+    #                           or [Typhoeus::Response]s
+    # @param [Block] block  to be passed each page as visited
+    #
+    # @return [Array<String>]   sitemap
+    #
+    def run( pass_pages_to_block = pass_pages?, &block )
+        return if limit_reached?
+
+        if block_given?
+            pass_pages_to_block ? pass_pages : pass_responses
+            on_each_page( &block )
         end
 
-        # if we have no 'include' patterns create one that will match
-        # everything, like '.*'
-        @opts.include =[ Regexp.new( '.*' ) ] if @opts.include.empty?
-    end
-
-    def restricted_to_paths?
-        !@restrict_paths.empty?
-    end
-
-    #
-    # Runs the Spider and passes parsed page to the block
-    #
-    # @param [Block] block
-    #
-    # @return [Arachni::Parser::Page]
-    #
-    def run( parse = true, &block )
-        return if @opts.link_count_limit == 0
-
-        visited = Set.new
-
-        opts = {
-            :timeout    => nil,
-            :remove_id  => true,
-            :follow_location => true,
-            :update_cookies  => true
-        }
-
-        # we need a parser in order to have access to skip() in case
-        # there's a redirect that shouldn't be followed
-        seed_page = http.get( @seed_url, opts.merge( :async => false ) ).response
-
-        print_status( "[HTTP: #{seed_page.code}] " + seed_page.effective_url )
-
-        parser = Parser.new( @opts, seed_page )
-        parser.url = @seed_url
-        @paths |= parser.paths
-        @paths.uniq!
-
-        while !@paths.empty?
-            while !@paths.empty? && url = parser.to_absolute( @paths.shift )
-                next if visited.include?( url ) || skip?( url )
-
+        while !done?
+            wait_if_paused
+            while !done? && url = @paths.shift
                 wait_if_paused
 
-                visited << url
-
-                http.get( url, opts ).on_complete do |res|
-                    next if parser.skip?( res.effective_url )
-
-                    print_status( "[HTTP: #{res.code}] " + res.effective_url )
-
-                    if parse
-                        page = Arachni::Parser::Page.from_http_response( res, @opts )
-                        paths = page.paths
-                        check_url = page.url
+                visit( url ) do |res|
+                    obj = if pass_pages?
+                        Arachni::Parser::Page.from_http_response( res, @opts )
                     else
-                        c_parser = Parser.new( @opts, res )
-                        paths = c_parser.text? ? c_parser.paths : []
-                        check_url = c_parser.url
+                        Parser.new( @opts, res )
                     end
 
-                    if !restricted_to_paths?
-                        @sitemap |= paths
-
-                        if !res.headers_hash['Location'].empty?
-                            @redirects << res.request.url
-                        end
-
-                        @paths |= @sitemap - visited.to_a
-                    end
-
-                    # call the block...if we have one
-                    if block
-                        exception_jail {
-                            if !skip?( check_url )
-                                block.call( parse ? page.clone : res )
-                            else
-                                print_info( 'Matched skip rule.' )
-                            end
-                        }
-                    end
+                    call_on_each_page_blocks( pass_pages? ? obj.dup : res )
+                    push( obj.paths )
                 end
-
-                # make sure we obey the link count limit and
-                # return if we have exceeded it.
-                if @opts.link_count_limit &&
-                    @opts.link_count_limit > 0 &&
-                    visited.size >= @opts.link_count_limit
-                    http.run
-                    return @sitemap.uniq
-                end
-
             end
 
             http.run
         end
 
-        @sitemap.uniq
+        http.run
+
+        call_on_complete_blocks
+
+        sitemap
     end
 
+    # Tells the crawler to pass [Arachni::Parser::Page]s to {#on_each_page} blocks.
+    def pass_pages
+        @pass_pages = true
+    end
+
+    # @return   [Bool]  true unless {#pass_responses} has been called
+    def pass_pages?
+        @pass_pages
+    end
+
+    # Tells the crawler to pass [Typhoeus::Responses]s to {#on_each_page} blocks.
+    def pass_responses
+        @pass_pages = false
+    end
+
+    #
+    # Sets blocks to be called every time a page is visited.
+    #
+    # By default, the blocks will be passed [Arachni::Parser::Page]s;
+    # if you want HTTP responses you need to call {#pass_responses}.
+    #
+    # @param    [Block]     block
+    #
+    def on_each_page( &block )
+        raise 'Block is mandatory!' if !block_given?
+        @on_each_page_blocks << block
+        self
+    end
+
+    #
+    # Sets blocks to be called once the crawler is done.
+    #
+    # @param    [Block]    block
+    #
+    def on_complete( &block )
+        raise 'Block is mandatory!' if !block_given?
+        @on_complete_blocks << block
+        self
+    end
+
+    #
+    # Pushes new paths for the crawler to follow; if the crawler has finished
+    # it will be awaken when new paths are pushed.
+    #
+    # The paths will be sanitized and normalized (cleaned up and converted to absolute ones).
+    #
+    # @param    [String, Array<String>] paths
+    #
+    # @return   [Bool]  true if push was successful,
+    #                       false otherwise (provided empty or paths that must be skipped)
+    #
+    def push( paths )
+        paths = dedup( paths )
+        return false if paths.empty?
+
+        @paths |= paths
+        @paths.uniq!
+
+        Thread.new { run } if done? # wake the crawler up
+        true
+    end
+
+    # @return [TrueClass, FalseClass] true if crawl is done, false otherwise
+    def done?
+        (@paths.empty? && @pending_requests == 0) || limit_reached?
+    end
+
+    # @return [TrueClass] pauses the system on a best effort basis
+    def pause
+        @pause = true
+    end
+
+    # @return [TrueClass] resumes the system on a best effort basis
+    def resume
+        @pause = false
+        true
+    end
+
+    # @return [Bool] true if the system it paused, false otherwise
+    def paused?
+        @pause ||= false
+    end
+
+    private
+
+    def call_on_each_page_blocks( obj )
+        @on_each_page_blocks.each { |b| exception_jail { b.call( obj ) } }
+    end
+
+    def call_on_complete_blocks
+        @on_complete_blocks.each { |b| exception_jail { b.call } }
+    end
+
+    # @return   [Arachni::HTTP]   HTTP interface
     def http
         Arachni::HTTP.instance
     end
 
+    #
+    # Decides if a URL should be skipped based on weather it:
+    # * has previously been {#visited?}
+    # * matches a {#redundant?} filter
+    # * matches universal {#skip_path?} options like inclusion and exclusion filters
+    #
+    # @param    [String]    url to check
+    #
+    # @return   [Bool]  true if any of the 3 filters returns true, false otherwise
+    #
     def skip?( url )
-        redundant?( url )
+        visited?( url ) || redundant?( url ) || skip_path?( url )
     end
 
+    #
+    # @param    [String]    url
+    #
+    # @return   [Bool]  true if the url has already been visited, false otherwise
+    #
+    def visited?( url )
+        @visited.include?( url )
+    end
+
+    # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
+    def limit_reached?
+        return true if @opts.link_count_limit == 0
+        @opts.link_count_limit && @opts.link_count_limit > 0 &&
+            @visited.size >= @opts.link_count_limit
+    end
+
+    #
+    # Checks is the provided URL matches a redundant filter
+    # and decreases its counter if so.
+    #
+    # If a filter's counter has reached 0 the method returns true.
+    #
+    # @param    [String]    url
+    #
+    # @return   [Bool]  true if the url is redundant, false otherwise
+    #
     def redundant?( url )
         @opts.redundant.each_with_index do |redundant, i|
             next if !(url =~ redundant['regexp'])
@@ -192,9 +271,7 @@ class Spider
             end
 
             print_info( 'Matched redundancy rule: ' +
-            redundant['regexp'].to_s + ' for page \'' +
-            url + '\'' )
-
+                            redundant['regexp'].to_s + ' for page \'' + url + '\'' )
             print_info( 'Count-down: ' + @opts.redundant[i]['count'].to_s )
 
             @opts.redundant[i]['count'] -= 1
@@ -202,21 +279,48 @@ class Spider
         false
     end
 
+    def dedup( paths )
+        return [] if !paths || paths.empty?
+
+        [paths].flatten.uniq.compact.map { |p| to_absolute( p, @url ) }.
+            reject { |p| skip?( p ) }.uniq.compact
+    end
 
     def wait_if_paused
         ::IO::select( nil, nil, nil, 1 ) while( paused? )
     end
 
-    def pause
-        @pause = true
+    def visit( url, opts = {}, &block )
+        return if skip?( url )
+        visited( url )
+
+        @pending_requests += 1
+
+        opts = {
+            timeout:         nil,
+            remove_id:       true,
+            follow_location: true,
+            update_cookies:  true
+        }.merge( opts )
+
+        wrap = proc do |res|
+            @pending_requests -= 1
+
+            if res.redirection?
+                @redirects << res.request.url
+                next if skip?( res.location )
+            end
+
+            print_status( "[HTTP: #{res.code}] " + res.effective_url )
+            @sitemap[res.effective_url] = res.code
+            block.call( res )
+        end
+
+        http.get( url, opts, &wrap )
     end
 
-    def resume
-        @pause = false
-    end
-
-    def paused?
-        @pause ||= false
+    def visited( url )
+        @visited << url
     end
 
 end

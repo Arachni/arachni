@@ -2,19 +2,20 @@ require_relative '../../spec_helper'
 
 describe Arachni::Parser do
     before( :all ) do
+        @utils = Arachni::Module::Utilities
         @opts = Arachni::Options.instance
-        @opts.url = server_url_for( :parser )
+        @opts.url = @utils.normalize_url( server_url_for( :parser ) )
         @opts.audit_links = true
         @opts.audit_forms = true
         @opts.audit_cookies = true
         @opts.audit_headers = true
-        @opts.cookies =[
+        @opts.cookies = [
             Arachni::Parser::Element::Cookie.new( @url,
                 { 'name_from_cookiejar' => 'val_from_cookiejar' }
             )
         ]
 
-        @url = @opts.url.to_s + '/?query_var_input=query_var_val'
+        @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
         @response = Arachni::HTTP.instance.get(
             @url,
             async: false,
@@ -85,7 +86,7 @@ describe Arachni::Parser do
             @parser.forms.size.should == 2
 
             form = @parser.forms.first
-            form.action.should == @opts.url.to_s + '/form'
+            form.action.should == @utils.normalize_url( @opts.url + '/form' )
             form.url.should == @url
 
             form.auditable.should == {
@@ -134,7 +135,7 @@ describe Arachni::Parser do
             }
 
             form = @parser.forms.last
-            form.action.should == @opts.url.to_s + '/form_2'
+            form.action.should == @utils.normalize_url( @opts.url + '/form_2')
             form.url.should == @url
             form.auditable.should == { "form_2_input_1" => "form_2_val_1" }
         end
@@ -181,14 +182,14 @@ describe Arachni::Parser do
 
         describe '#to_absolute' do
             it 'should convert a relative path to absolute' do
-                @parser.to_absolute( 'relative/path' ).should == "#{@opts.url}/relative/path"
+                @parser.to_absolute( 'relative/path' ).should == @utils.normalize_url( "#{@opts.url}/relative/path" )
             end
         end
 
         describe '#links' do
             it 'should return an array of links' do
                 link = @parser.links.first
-                link.action.should == @opts.url.to_s + '/link?link_input=link_val'
+                link.action.should == @utils.normalize_url( @opts.url + '/link?link_input=link_val' )
                 link.auditable.should == { 'link_input' => 'link_val' }
                 link.method.should == 'get'
                 link.url.should == @url
@@ -201,7 +202,7 @@ describe Arachni::Parser do
                     "link?link_input=link_val",
                     "form",
                     "form_2",
-                ].map { |p| @opts.url.to_s + '/' + p }
+                ].map { |p| @utils.normalize_url( @opts.url.to_s + '/' + p ) }
 
                 (@parser.paths & paths).sort.should == paths.sort
             end
@@ -210,7 +211,7 @@ describe Arachni::Parser do
 
     context 'with base' do
         before {
-            @url_with_base = @opts.url.to_s + '/with_base'
+            @url_with_base = @utils.normalize_url( @opts.url + '/with_base' )
             res = Arachni::HTTP.instance.get(
                 @url_with_base,
                 async: false,
@@ -221,13 +222,13 @@ describe Arachni::Parser do
 
         describe '#base' do
             it 'should return the base href attr' do
-                @parser_with_base.base.should == "#{@opts.url.to_s}/this_is_the_base/"
+                @parser_with_base.base.should == @utils.normalize_url( "#{@opts.url.to_s}/this_is_the_base/" )
             end
         end
 
         describe '#to_absolute' do
             it 'should convert a relative path to absolute' do
-                @parser_with_base.to_absolute( 'relative/path' ).should == "#{@parser_with_base.base}relative/path"
+                @parser_with_base.to_absolute( 'relative/path' ).should == @utils.normalize_url( "#{@parser_with_base.base}relative/path" )
             end
         end
 

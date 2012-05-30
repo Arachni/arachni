@@ -83,10 +83,13 @@ class HTTP
             method:          :auto
         }
 
-        hydra_opts.merge!(
-            username: opts.url.user,
-            password: opts.url.password
-        ) if opts.url
+        if opts.url
+            parsed_url = uri_parse( opts.url )
+            hydra_opts.merge!(
+                username: parsed_url.user,
+                password: parsed_url.password
+            )
+        end
 
         @url = opts.url.to_s
         @url = nil if @url.empty?
@@ -277,7 +280,9 @@ class HTTP
             # params of the url query and remove the latter from the url.
             #
             cparams = params.dup
-            curl    = normalize_url( url.dup )
+
+            # avoid double-escaping
+            curl    = url.include?( '%' ) ? url.dup : normalize_url( url )
 
             if opts[:method] != :post
                 begin
@@ -487,13 +492,11 @@ class HTTP
         # }
 
         if !@_404_gathered[path]
-            generators.each.with_index {
-                |generator, i|
-
+            generators.each.with_index do |generator, i|
                 @_404[path][i] ||= {}
+
                 precision.times {
-                    get( generator.call, remove_id: true ).on_complete {
-                        |c_res|
+                    get( generator.call, remove_id: true ).on_complete do |c_res|
 
                         gathered += 1
                         if gathered == generators.size * precision
@@ -512,9 +515,9 @@ class HTTP
                                 @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
                             end
                         end
-                    }
+                    end
                 }
-            }
+            end
         else
             block.call is_404?( path, body )
         end
@@ -537,10 +540,10 @@ class HTTP
         requests   = call_on_queue( req, async )
         requests ||= req
 
-        [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.each {
-            |request|
-            forward_request( request, async, &block )
-        }
+        [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.
+            each do |request|
+                forward_request( request, async, &block )
+        end
     end
 
     #
@@ -595,12 +598,10 @@ class HTTP
 
             if req.train?
                 # handle redirections
-                if ( redir = redirect?( res.dup ) ).is_a?( String )
-                    req2 = get( redir, remove_id: true )
-                    req2.on_complete {
-                        |res2|
+                if res.redirection?
+                    get( res.location, remove_id: true ) do |res2|
                         @trainer.add_response( res2, true )
-                    } if req2
+                    end
                 else
                     @trainer.add_response( res )
                 end
@@ -613,21 +614,12 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].map {
-            |_404|
-             _404['body'].rdiff( body ) == _404['rdiff']
-        }.include?( true )
+        @_404[path].map { |_404| _404['body'].rdiff( body ) == _404['rdiff'] }.
+            include?( true )
     end
 
     def random_string
         Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
-    end
-
-    def redirect?( res )
-        if loc = res.headers_hash['Location']
-            return loc
-        end
-        res
     end
 
     def self.info

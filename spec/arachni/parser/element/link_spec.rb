@@ -4,6 +4,7 @@ describe Arachni::Parser::Element::Link do
     before( :all ) do
         @url = server_url_for( :link )
         Arachni::Options.instance.url = @url
+        @url = Arachni::Options.instance.url
 
         @inputs = { inputs: { 'param_name' => 'param_value' } }
         @link = Arachni::Parser::Element::Link.new( @url, @inputs )
@@ -55,7 +56,7 @@ describe Arachni::Parser::Element::Link do
                 </html>'
 
                 link = Arachni::Parser::Element::Link.from_document( @url, html ).first
-                link.action.should == @url + '/test2?param_one=value_one&param_two=value_two'
+                link.action.should == @url + 'test2?param_one=value_one&param_two=value_two'
                 link.url.should == @url
                 link.auditable.should == {
                     'param_one'  => 'value_one',
@@ -64,7 +65,7 @@ describe Arachni::Parser::Element::Link do
             end
             context 'and includes a base attribute' do
                 it 'should return an array of links with adjusted URIs' do
-                    base_url = "#{@url}/this_is_the_base/"
+                    base_url = "#{@url}this_is_the_base/"
                     html = '
                     <html>
                         <head>

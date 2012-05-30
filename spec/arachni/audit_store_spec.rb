@@ -21,7 +21,7 @@ describe Arachni::AuditStore do
             version:  '0.1',
             revision: '0.2',
             options:  @opts.to_h,
-            sitemap:  [url],
+            sitemap:  [@opts.url],
             issues:   [@issue],
             plugins:  @plugin_results,
         }

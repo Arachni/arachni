@@ -167,11 +167,16 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @raw.include?( sym.to_s ) || super( sym )
     end
 
+    def encoded_value
+        require 'uri'
+        URI.encode( URI.encode( value ), '+;' )
+    end
+
     #
     # @return   [String]    to be used in a 'Cookie' request header. (name=value)
     #
     def to_s
-        "#{name}=#{uri_encode( uri_encode( value ), '+;' )}"
+        "#{name}=#{encoded_value}"
     end
 
     #

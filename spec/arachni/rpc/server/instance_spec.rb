@@ -19,6 +19,7 @@ describe Arachni::RPC::Server::Instance do
             )
         end
 
+        @utils = Arachni::Module::Utilities
         @instance = @get_instance.call
     end
 
@@ -62,7 +63,7 @@ describe Arachni::RPC::Server::Instance do
         it 'should provide access to the options' do
             url = 'http://blah.com'
             @instance.opts.url = url
-            @instance.opts.url.to_s.should == url
+            @instance.opts.url.to_s.should == @utils.normalize_url( url )
         end
     end
 

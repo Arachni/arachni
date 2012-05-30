@@ -29,7 +29,6 @@ describe Arachni::Module::Utilities do
 
             parsed_uri = @utils.uri_parse( uri )
 
-            parsed_uri.class.should == URI::HTTP
             parsed_uri.to_s.should == uri
 
             parsed_uri.scheme.should == scheme
@@ -46,17 +45,6 @@ describe Arachni::Module::Utilities do
         it 'should decode a URI' do
             uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
             @utils.uri_decode( uri ).should == "my test.asp?name=ståle&car=saab"
-        end
-    end
-
-    describe '#url_sanitize' do
-        it 'should iteratively decode a uri' do
-            uri = "my test.asp?name=ståle&car=saab"
-            multi = sanitized = @utils.uri_encode( uri )
-
-            3.times { multi = @utils.uri_encode( multi ) }
-
-            @utils.url_sanitize( multi ).should == sanitized
         end
     end
 

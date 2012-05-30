@@ -364,6 +364,16 @@ describe Arachni::HTTP do
                     @http.run
                     @http.trainer.flush_pages.should be_any
                 end
+
+                context 'when a redirection leads to new elements' do
+                    it 'should pass the response to the Trainer' do
+                        @http.trainer.init_from_page!( @page )
+                        @http.request( @url + '/train/redirect', train: true )
+                        @http.run
+                        page = @http.trainer.flush_pages.first
+                        page.links.first.auditable.include?( 'msg' ).should be_true
+                    end
+                end
             end
         end
 

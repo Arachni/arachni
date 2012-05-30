@@ -65,6 +65,13 @@ get '/redir_2' do
     'Welcome to redir_2!'
 end
 
+get '/train/redirect' do
+    redirect '/train/redirected?msg=some crap'
+end
+
+get '/train/redirected' do
+end
+
 get '/custom_404/not' do
     'This is not a custom 404, watch out.'
 end

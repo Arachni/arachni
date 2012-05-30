@@ -859,19 +859,18 @@ class Options
     def url=( str )
         return if !str
 
-        require 'uri'
         require @dir['lib'] + 'exceptions'
         require @dir['lib'] + 'module/utilities'
 
-        begin
-            @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
+        utils = Arachni::Module::Utilities
+
+        @url = utils.normalize_url( str.to_s )
+        parsed = utils.uri_parse( @url )
+        if !parsed.absolute? || !%w(http https).include?( parsed.scheme )
+            fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
-        str
+        @url
     end
 
     def restrict_paths=( urls )

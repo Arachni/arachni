@@ -93,9 +93,7 @@ class Page
     attr_accessor :cookiejar
 
     def self.from_response( res, opts )
-        page = Arachni::Parser.new( opts, res ).run
-        page.url = Arachni::Module::Utilities.url_sanitize( res.effective_url )
-        page
+        Arachni::Parser.new( opts, res ).run
     end
     class << self; alias :from_http_response :from_response end
 
@@ -113,6 +111,7 @@ class Page
 
         opts.each { |k, v| send( "#{k}=", v ) }
 
+        @url = Arachni::Module::Utilities.normalize_url( @url )
         @html ||= ''
     end
 

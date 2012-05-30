@@ -19,6 +19,8 @@ describe Arachni::Options do
             )
         end
 
+        @utils = Arachni::Module::Utilities
+
         @instance = @get_instance.call
     end
 
@@ -34,7 +36,7 @@ describe Arachni::Options do
                 }
                 @instance.opts.set( opts )
 
-                @instance.opts.url.to_s.should == opts['url']
+                @instance.opts.url.to_s.should == @utils.normalize_url( opts['url'] )
                 @instance.opts.exclude.should == [/exclude me/]
                 @instance.opts.include.should == [/include me/]
                 @instance.opts.datastore.should == opts['datastore']
@@ -52,7 +54,7 @@ describe Arachni::Options do
                 }
                 @instance.opts.set( opts )
 
-                @instance.opts.url.to_s.should == opts[:url]
+                @instance.opts.url.to_s.should == @utils.normalize_url( opts[:url] )
                 @instance.opts.exclude.should == [/exclude me2/]
                 @instance.opts.include.should == [/include me2/]
                 @instance.opts.datastore.should == opts[:datastore]

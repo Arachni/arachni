@@ -3,7 +3,7 @@ require_relative '../../spec_helper'
 describe Arachni::Parser::Page do
     before( :all ) do
         @page_data = {
-            url: 'http://a-url.com',
+            url: 'http://a-url.com/',
             code: 200,
             method: 'get',
             query_vars: {
@@ -39,10 +39,9 @@ describe Arachni::Parser::Page do
 
     context 'when called with options' do
         it 'should retain its options' do
-            @page_data.each {
-                |k, v|
+            @page_data.each do |k, v|
                 @page.instance_variable_get( "@#{k}".to_sym ).should == v
-            }
+            end
         end
     end
 

@@ -2,10 +2,15 @@
 
 ## Version 0.4.1 _(Under development)_
 - License -- Moved from GPLv2 to Apache License Version 2.
-- Major refactoring of Arachni::Parser::Element::Auditable and Arachni::Module::Auditor
-    - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
-      in order to increase audit granularity and ease scripting
-    - Auditor methods now simply iterate over candidate elements and delegate analysis to them
+- Major refactoring
+    - Arachni::Parser::Element::Auditable and Arachni::Module::Auditor.
+        - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
+          in order to increase audit granularity and ease scripting.
+        - Auditor methods now simply iterate over candidate elements and delegate analysis to them.
+    - Updated URL normalization methods and added caching to resource intensive parsing operations,
+      leading to massive overall improvements, especially during the initial crawling process (up to 2x).
+    - Moved from Ruby's URI lib to Addressable::URI.
+    - Project-wide code clean-up, documentation and style improvements.
 - Options
     - <em>--cookie-string</em> -- Allows the specification of cookies as a string in the form of: <em>name=value; name2=value2</em>
     - <em>--exclude-vectors</em> -- Excludes vectors (parameters), by name, from the audit.
@@ -16,8 +21,8 @@
         - Audit operations by default follow redirects
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
     - SSN -- Improved regexp and logging. [Issue #170]
-    - Insecure cookies -- Logs cookies without the 'secure' flag (**New**)
-    - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag(**New**)
+    - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
+    - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag. (**New**)
 - Plugins
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
@@ -32,8 +37,7 @@
     - Updated <em>add_on_queue()</em> hook (called by <em>queue()</em>) which allows HTTP requests to be intercepted and modified before being fired.
     - Fixed burst average requests/second calculation
     - Implemented a new Cookiejar
-- Spider
-    - Fixed infitine loop bug.
+- Spider -- Re-written, much cleaner design and code.
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie)
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.

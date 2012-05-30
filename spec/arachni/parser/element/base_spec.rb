@@ -2,7 +2,7 @@ require_relative '../../../spec_helper'
 
 describe Arachni::Parser::Element::Base do
     before( :all ) do
-        @url = 'http://test.com'
+        @url = Arachni::Module::Utilities.normalize_url( 'http://test.com' )
         @raw = { raw: { hash: 'stuff' } }
         @e = Arachni::Parser::Element::Base.new( @url, @raw )
     end

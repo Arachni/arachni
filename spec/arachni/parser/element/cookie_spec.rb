@@ -2,7 +2,7 @@ require_relative '../../../spec_helper'
 
 describe Arachni::Parser::Element::Cookie do
     before( :all ) do
-        @url = server_url_for( :cookie )
+        @url = server_url_for( :cookie ) + '/'
         @raw = { 'mycookie' => 'myvalue' }
         @c = Arachni::Parser::Element::Cookie.new( @url, @raw )
         @http = Arachni::HTTP.instance
@@ -12,10 +12,7 @@ describe Arachni::Parser::Element::Cookie do
         it 'should perform the appropriate HTTP request with appropriate params' do
             body_should = @c.auditable.map { |k, v| k.to_s + v.to_s }.join( "\n" )
             body = nil
-            @c.submit.on_complete {
-                |res|
-                body = res.body
-            }
+            @c.submit.on_complete { |res| body = res.body }
             @http.run
             body_should.should == body
         end
@@ -137,7 +134,7 @@ describe Arachni::Parser::Element::Cookie do
     end
 
 
-    describe '.name' do
+    describe '#name' do
         it 'should return the name of the cookie' do
             @c.name.should == 'mycookie'
         end
@@ -149,9 +146,21 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
+    describe '#encoded_value' do
+        it 'should return the name of the cookie' do
+            c = Arachni::Parser::Element::Cookie.new( @url,
+                'name'  => '',
+                'value' => 'some stuff ;',
+            )
+
+            c.value.should == 'some stuff ;'
+            c.encoded_value.should == 'some%20stuff%20%3B'
+        end
+    end
+
     describe '#to_s' do
         it 'should return a string representation of the cookie' do
-            @c.to_s.should == "#{@c.name}=#{@c.value}"
+            @c.to_s.should == "#{@c.name}=#{@c.encoded_value}"
         end
     end
 

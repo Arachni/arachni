@@ -46,7 +46,7 @@ class HTTPDicattack < Arachni::Plugin::Base
             return
         end
 
-        url = URI( @url )
+        url = uri_parse( @url )
 
         print_status( "Building the request queue..." )
 

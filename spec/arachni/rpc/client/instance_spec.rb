@@ -40,7 +40,7 @@ describe Arachni::RPC::Client::Instance do
     describe '#opts' do
         before {
             @rpc_opts = @instance.opts
-            @foo_url = "http://test.com"
+            @foo_url = Arachni::Module::Utilities.normalize_url( "http://test.com" )
         }
         context 'when assigning values' do
             it 'should be able to use setters' do
@@ -62,7 +62,7 @@ describe Arachni::RPC::Client::Instance do
         end
 
         it 'should be able to retrieve values' do
-            val = "http://test.com4"
+            val = Arachni::Module::Utilities.normalize_url( "http://test.com4" )
             @rpc_opts.url = val
             @rpc_opts.url.to_s.should == val
         end

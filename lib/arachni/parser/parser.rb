@@ -91,7 +91,7 @@ class Parser
     #
     # @return    [String]    the url of the page
     #
-    attr_accessor :url
+    attr_reader :url
 
     #
     # Options instance
@@ -109,13 +109,17 @@ class Parser
         @opts = opts
 
         @code = res.code
-        @url  = url_sanitize( res.effective_url )
+        self.url  = normalize_url( res.effective_url )
         @html = res.body
         @response_headers = res.headers_hash
         @response = res
 
         @doc   = nil
         @paths = nil
+    end
+
+    def url=( str )
+        @url = normalize_url( str )
     end
 
     #
