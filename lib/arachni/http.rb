@@ -280,9 +280,7 @@ class HTTP
             # params of the url query and remove the latter from the url.
             #
             cparams = params.dup
-
-            # avoid double-escaping
-            curl    = url.include?( '%' ) ? url.dup : normalize_url( url )
+            curl    = normalize_url( url )
 
             if opts[:method] != :post
                 begin
