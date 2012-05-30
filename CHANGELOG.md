@@ -8,7 +8,7 @@
           in order to increase audit granularity and ease scripting.
         - Auditor methods now simply iterate over candidate elements and delegate analysis to them.
     - Updated URL normalization methods and added caching to resource intensive parsing operations,
-      leading to massive overall improvements, especially during the initial crawling process (up to 2x).
+      leading to overall improvements, especially during the initial crawling process.
     - Moved from Ruby's URI lib to Addressable::URI.
     - Project-wide code clean-up, documentation and style improvements.
 - Options
