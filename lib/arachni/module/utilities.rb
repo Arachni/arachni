@@ -38,6 +38,7 @@ module Utilities
     # @return   [Addressable::URI]
     #
     def uri_parse( url )
+        return if !url
         @@uri_parse_cache ||= {}
         return @@uri_parse_cache[url].dup if @@uri_parse_cache.include?( url )
 
@@ -55,7 +56,7 @@ module Utilities
     # @return   [String]    encoded string
     #
     def uri_encode( string, bad_characters = nil )
-        Addressable::URI.encode_component( *[string, bad_characters] )
+        Addressable::URI.encode_component( *[string, bad_characters].compact )
     end
 
     #
@@ -140,21 +141,64 @@ module Utilities
     #
     # @return   [String]    normalized URL
     #
+    #def normalize_url( url )
+    #    return if !url
+    #
+    #    @@normalize_url_cache ||= {}
+    #    return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url.dup )
+    #
+    #    n = Addressable::URI.parse( url ).normalize
+    #
+    #    # remove multiple slashes from path:
+    #    #  http://test.com//path//with///meaningless//slashes
+    #    n.path.gsub!( /\/+/, '/' )
+    #
+    #    @@normalize_url_cache[url] = n.to_s
+    #    @@normalize_url_cache[url].dup
+    #rescue
+    #    nil
+    #end
+
     def normalize_url( url )
         return if !url
+
+        url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
+        begin
+            url = uri_decode( url ) while url =~ /%[a-fA-F0-9]{2}/
+        rescue
+        end
 
         @@normalize_url_cache ||= {}
         return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url.dup )
 
-        n = Addressable::URI.parse( url ).normalize
+        escaped = Addressable::URI.encode( url )
+        p  = uri_parse( escaped )
 
-        # remove multiple slashes from path:
-        #  http://test.com//path//with///meaningless//slashes
-        n.path.gsub!( /\/+/, '/' )
+        p.scheme = p.scheme.downcase if p.scheme
+        p.host   = p.host.downcase if p.host
+        p.port   = nil unless p.port != 80
 
-        @@normalize_url_cache[url] = n.to_s
+        if p.host && !p.host.empty?
+            p.path = p.path && !p.path.empty? ? p.path.gsub(/\/+/, '/') : '/'
+        end
+
+        p.fragment = nil
+
+        @@normalize_url_cache[url] = p.to_s
+
+        #addr = Addressable::URI.parse( url ).normalize.to_s
+        #if addr != p.to_s
+        #    ap '~~~'
+        #    ap p
+        #    ap url
+        #    ap addr
+        #    ap p.to_s
+        #    ap '---'
+        #end
         @@normalize_url_cache[url].dup
-    rescue
+    rescue => e
+        #ap e
+        #ap e.backtrace
         nil
     end
 
@@ -237,7 +281,7 @@ module Utilities
     # location of the page
     #
     # @param    [String]    relative_url
-    # @param    [String]    reference_url    absoslute url to use as a reference
+    # @param    [String]    reference_url    absolute url to use as a reference
     #
     # @return [String]
     #

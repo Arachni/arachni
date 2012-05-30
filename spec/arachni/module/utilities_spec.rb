@@ -217,9 +217,11 @@ describe Arachni::Module::Utilities do
 
     describe '#normalize_url' do
         it 'should clean the URL' do
-            uri = %w{http://ba.com/%$35453464634\ [][4\'4]5454$%%43576876879'["{|['[.l?;]]}"]'?var=val\!~`1#dcddrtrtr%&65&46576\ 6'7\ 6'\ '/'}.first
+            uri = 'hTTp://tEsT.com//with/////path/another weird path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment'
+            encoded = "http://test.com/with/path/another%20weird%20path%20%25%22&*%5B$)?query=crap&other=$54$5466%5D%5B('%22"
             begin
                 normalized = @utils.normalize_url( uri )
+                normalized.should == encoded
                 @utils.uri_parse( normalized ).to_s
                 true.should be_true
             rescue
