@@ -143,6 +143,11 @@ module Utilities
     #
     def normalize_url( url )
         return if !url
+        @@normalize_url_cache ||= {}
+
+        if @@normalize_url_cache.include?( url )
+            return @@normalize_url_cache[url] ? @@normalize_url_cache[url].dup : @@normalize_url_cache[url]
+        end
 
         url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
         begin
@@ -150,8 +155,9 @@ module Utilities
         rescue
         end
 
-        @@normalize_url_cache ||= {}
-        return @@normalize_url_cache[url].dup if @@normalize_url_cache.include?( url.dup )
+        if @@normalize_url_cache.include?( url )
+            return @@normalize_url_cache[url] ? @@normalize_url_cache[url].dup : @@normalize_url_cache[url]
+        end
 
         escaped = Addressable::URI.encode( url )
         p  = uri_parse( escaped )
@@ -161,19 +167,21 @@ module Utilities
         p.port   = nil unless p.port != 80
 
         if p.host && !p.host.empty?
-            p.path = p.path && !p.path.empty? ? p.path.gsub(/\/+/, '/') : '/'
+            p.path = p.path && !p.path.empty? ? p.path.gsub( /\/+/, '/' ) : '/'
         end
 
         p.fragment = nil
 
         @@normalize_url_cache[url] = p.to_s
 
-        #addr = Addressable::URI.parse( url ).normalize.to_s
-        #if addr != p.to_s
+        #addr = Addressable::URI.parse( url ).normalize
+        #addr.fragment = nil
+        #addr.path.gsub!( /\/+/, '/' )
+        #if addr.to_s != p.to_s
         #    ap '~~~'
         #    ap p
         #    ap url
-        #    ap addr
+        #    ap addr.to_s
         #    ap p.to_s
         #    ap '---'
         #end
@@ -181,7 +189,7 @@ module Utilities
     rescue => e
         #ap e
         #ap e.backtrace
-        nil
+        @@normalize_url_cache[url] = nil
     end
 
     # @see normalize_url
@@ -272,7 +280,10 @@ module Utilities
 
         @@to_absolute_cache ||= {}
         key = relative_url + ' :: ' + reference_url
-        return @@to_absolute_cache[key].dup if @@to_absolute_cache.include?( key )
+
+        if @@to_absolute_cache.include?( key )
+            return @@to_absolute_cache[key] ? @@to_absolute_cache[key].dup : @@to_absolute_cache[key]
+        end
 
         relative  = uri_parse( normalize_url( relative_url ) )
         reference = uri_parse( reference_url )
@@ -280,7 +291,7 @@ module Utilities
         @@to_absolute_cache[key] = reference.join( relative ).to_s
         @@to_absolute_cache[key].dup
     rescue
-        nil
+        @@normalize_url_cache[url] = nil
     end
 
     #
