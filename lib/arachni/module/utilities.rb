@@ -154,6 +154,8 @@ module Utilities
 
         @@normalize_url_cache[url] = n.to_s
         @@normalize_url_cache[url].dup
+    rescue
+        nil
     end
 
     # @see normalize_url
@@ -251,6 +253,8 @@ module Utilities
 
         @@to_absolute_cache[key] = reference.join( relative ).to_s
         @@to_absolute_cache[key].dup
+    rescue
+        nil
     end
 
     #
