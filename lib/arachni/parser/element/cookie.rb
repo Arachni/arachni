@@ -15,6 +15,7 @@
 =end
 
 require 'webrick'
+require 'uri'
 
 opts = Arachni::Options.instance
 require opts.dir['lib'] + 'parser/element/base'
@@ -168,7 +169,6 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def encoded_value
-        require 'uri'
         URI.encode( URI.encode( value ), '+;' )
     end
 
