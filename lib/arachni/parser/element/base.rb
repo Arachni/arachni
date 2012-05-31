@@ -106,7 +106,7 @@ class Arachni::Parser::Element::Base
     alias :eql? :==
 
     def hash
-        (@action + @method + @auditable.to_s).hash
+        (@action.to_s + @method + @auditable.to_s).hash
     end
 
     #
@@ -117,7 +117,7 @@ class Arachni::Parser::Element::Base
     end
 
     def dup
-        new = self.class.new( @url.dup, @raw.deep_clone )
+        new = self.class.new( @url ? @url.dup : nil, @raw.deep_clone )
         new.override_instance_scope if override_instance_scope?
         new
     end
