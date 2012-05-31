@@ -59,7 +59,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             next if name.substring?( seed )
             id +=  name
         end
-        return id
+        id
     end
 
     #
