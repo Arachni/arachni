@@ -17,23 +17,93 @@
 require Arachni::Options.instance.dir['lib'] + 'parser/element/base'
 class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
 
+    #
+    # Creates a new Link element from a URL or more complex data.
+    #
+    # @param    [String]    url     owner URL -- URL of the page which contained the
+    # @param    [String, Hash]    raw
+    #   If empty, the owner URL will be treated as the actionable URL and
+    #   auditable inputs will be extracted from its query component.
+    #
+    #   If a +String+ is passed, it will be treated as the actionable
+    #   URL and auditable inputs will be extracted from its query component.
+    #
+    #   If a +Hash+ is passed, it will look for an actionable URL
+    #   +String+ in the following keys:
+    #   * 'href'
+    #   * :href
+    #   * 'action'
+    #   * :action
+    #
+    #   and for an auditable inputs <pre>Hash</pre> in:
+    #   * 'vars'
+    #   * :vars
+    #   * 'inputs'
+    #   * :inputs
+    #
+    #   these should contain inputs in name=>value pairs.
+    #
+    #   If the +Hash+ doesn't contain any of the following keys,
+    #   its contents will be used as auditable inputs instead and +url+ will be
+    #   used as the actionable URL.
+    #
+    #   If no inputs have been provided it will try to extract some from the
+    #   actionable URL, if empty inputs (empty +Hash+) )have been provided the URL will not be
+    #   parsed and the Link will instead be configured without any auditable inputs/vectors.
+    #
+    #
     def initialize( url, raw = {} )
         super( url, raw )
 
-        self.action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || self.url
-        self.method = 'get'
+        if !@raw || @raw.empty?
+            self.action = self.url
+        elsif raw.is_a?( String )
+            self.action = @raw
+        elsif raw.is_a?( Hash )
+            keys = raw.keys
+            has_input_hash  = (keys & ['vars', :vars, 'inputs', :inputs]).any?
+            has_action_hash = (keys & ['href', :href, 'action', :action]).any?
 
-        self.auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
-        self.auditable ||= {}
+            if !has_input_hash && !has_action_hash
+                self.auditable = @raw
+            else
+                self.auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
+            end
+            self.action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action]
+        end
+
+        self.auditable ||= self.class.parse_query_vars( self.action )
+
+        if @raw.is_a?( String )
+            @raw = {
+                action: self.action,
+                inputs: self.auditable
+            }
+        end
+
+        self.method = 'get'
 
         @orig = self.auditable.dup
         @orig.freeze
     end
 
+    # @return   [Hash]  Simple representation of self in the form of { {#action} => {#auditable} }
     def simple
-        { @action => @auditable }
+        { self.action => self.auditable }
     end
 
+    #
+    # @return   [String]
+    #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
+    #
+    def to_s
+        uri = uri_parse( self.action )
+        query_vars = self.class.parse_query_vars( '?' + uri.query )
+        uri.query = query_vars.merge( self.auditable ).map { |k, v| "#{k}=#{v}" }.join( '&' )
+        uri.to_s
+    end
+
+    # @return [String]  'link'
     def type
         Arachni::Module::Auditor::Element::LINK
     end
@@ -70,21 +140,10 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         document.search( '//a' ).map do |link|
             c_link = {}
             c_link['href'] = utilities.to_absolute( link['href'], base_url )
-
             next if !c_link['href']
             next if utilities.skip_path?( c_link['href'] )
 
-            c_link['vars'] = {}
-            parse_query_vars( c_link['href'] ).each_pair do |key, val|
-                begin
-                    c_link['vars'][key] = utilities.url_sanitize( val )
-                rescue
-                    c_link['vars'][key] = val
-                end
-            end
-
-            c_link['href'] = utilities.url_sanitize( c_link['href'] )
-            new( url, c_link )
+            new( url, c_link['href'] )
         end.compact
     end
 
@@ -96,22 +155,25 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     # @return   [Hash]    name=>value pairs
     #
     def self.parse_query_vars( url )
-        return {}  if !url
+        return {} if !url
 
-        var_string = url.split( /\?/ )[1]
-        return {} if !var_string
+        utilities = Arachni::Module::Utilities
+
+        query = utilities.uri_parse( url ).query
+        return {} if !query || query.empty?
 
         var_hash = {}
-        var_string.split( /&/ ).each do |pair|
+        query.split( /&/ ).each do |pair|
             name, value = pair.split( /=/ )
 
-            next if value == Arachni::Module::Utilities.seed
+            next if value == utilities.seed
             var_hash[name] = value
         end
 
         var_hash
     end
 
+    # @see Base#action=
     def action=( url )
         v = super( url )
         @audit_id_url = self.action.gsub( /\?.*/, '' )

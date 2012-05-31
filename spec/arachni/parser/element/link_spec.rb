@@ -10,6 +10,87 @@ describe Arachni::Parser::Element::Link do
         @link = Arachni::Parser::Element::Link.new( @url, @inputs )
     end
 
+    describe '#new' do
+        context 'when only a url is provided' do
+            it 'should be used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
+                url = 'http://test.com/?one=2&three=4'
+                e = Arachni::Parser::Element::Link.new( url )
+                e.url.should == url
+                e.action.should == url
+                e.auditable.should == { 'one' => '2', 'three' => '4' }
+                e.raw.should == {}
+            end
+        end
+        context 'when the raw option is a string' do
+            it 'should be treated as an #action URL and parsed in order to extract #auditable inputs' do
+                url    = 'http://test.com/test'
+                action = '?one=2&three=4'
+                e = Arachni::Parser::Element::Link.new( url, action )
+                e.url.should == url
+                e.action.should == url + action
+                e.auditable.should == { 'one' => '2', 'three' => '4' }
+                e.raw.should == { action: e.action, inputs: e.auditable }
+            end
+        end
+        context "when the raw hash option contains a url in 'href', :href, 'action' or :action" do
+            it 'should be treated as an #action URL and parsed in order to extract #auditable inputs' do
+                ['href', :href, 'action', :action].each do |k|
+                    action = '?one=2&three=4'
+                    raw    = { k => action }
+                    url    = 'http://test.com/test'
+
+                    e = Arachni::Parser::Element::Link.new( url, raw )
+                    e.url.should == url
+                    e.action.should == url + action
+                    e.auditable.should == { 'one' => '2', 'three' => '4' }
+                    e.raw.should == raw
+                end
+            end
+        end
+        context "when the raw hash option contains a auditable inputs in 'vars', :vars, 'inputs' or :inputs" do
+            it 'should be used as auditable inputs' do
+                ['vars', :vars, 'inputs', :inputs].each do |k|
+                    raw    = { k => { 'one' => '2', 'three' => '4' } }
+                    url    = 'http://test.com/test'
+
+                    e = Arachni::Parser::Element::Link.new( url, raw )
+                    e.url.should == url
+                    e.action.should == url
+                    e.auditable.should == { 'one' => '2', 'three' => '4' }
+                    e.raw.should == raw
+                end
+            end
+        end
+        context "when the raw hash option contains a auditable inputs in :action and :inputs" do
+            it 'should be treated as an #action URL and #auditable inputs respectively' do
+                url    = 'http://test.com/test/'
+                action = 'some/path'
+                raw = {
+                    :action => action,
+                    :inputs => { 'one' => '2', 'three' => '4' }
+                }
+
+                e = Arachni::Parser::Element::Link.new( url, raw )
+                e.url.should == url
+                e.action.should == url + action
+                e.auditable.should == { 'one' => '2', 'three' => '4' }
+                e.raw.should == raw
+            end
+        end
+        context "when the raw hash option contains a auditable inputs in :action and :inputs" do
+            it 'should be treated as an #action URL and #auditable inputs respectively' do
+                url = 'http://test.com/test/'
+                raw = { 'one' => '2', 'three' => '4' }
+
+                e = Arachni::Parser::Element::Link.new( url, raw )
+                e.url.should == url
+                e.action.should == url
+                e.auditable.should == { 'one' => '2', 'three' => '4' }
+                e.raw.should == raw
+            end
+        end
+    end
+
     describe '#submit' do
         it 'should perform a GET HTTP request' do
             body = nil
@@ -28,6 +109,16 @@ describe Arachni::Parser::Element::Link do
     describe '#simple' do
         it 'should return a simplified version as a hash' do
             @link.simple.should == { @link.action => @link.auditable }
+        end
+    end
+
+    describe '#to_s' do
+        it 'should return a URL' do
+            url = Arachni::Parser::Element::Link.new(
+                'http://test.com/test?one=two&three=four',
+                { 'one' => 2, '5' => 'six' }
+            ).to_s
+            url.should == 'http://test.com/test?one=2&three=four&5=six'
         end
     end
 
