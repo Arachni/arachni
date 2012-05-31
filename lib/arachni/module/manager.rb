@@ -30,8 +30,6 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-
-    include Arachni::UI::Output
     include Arachni::Module::Utilities
 
     @@results             ||= []
@@ -102,7 +100,7 @@ class Manager < Arachni::Component::Manager
     def register_results( results ) self.class.register_results( results ) end
 
     def self.issue_set_id_from_issue( issue )
-        issue_url = URI( issue.url )
+        issue_url = Arachni::Module::Utilities.uri_parse( issue.url )
         issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
         return "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
     end
@@ -110,8 +108,8 @@ class Manager < Arachni::Component::Manager
 
 
     def self.issue_set_id_from_elem( mod_name, elem )
-        elem_url  = URI( elem.action )
-        elem_url_str  = elem_url.scheme + "://" + elem_url.host + elem_url.path
+        elem_url = Arachni::Module::Utilities.uri_parse( elem.action )
+        elem_url_str = elem_url.scheme + "://" + elem_url.host + elem_url.path
 
         return "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
     end

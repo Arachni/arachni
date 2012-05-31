@@ -20,16 +20,13 @@ module Modules
 #
 # Left here for compatibility reasons, has been obsoleted by the xss_path module.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class XSSURI < Arachni::Module::Base
 
     def prepare
-        if @framework && !@framework.modules.keys.include?( 'xss_path' )
-            @mod = @framework.modules['xss_path'].new( @page )
-            @mod.set_framework( @framework )
+        if framework && !framework.modules.keys.include?( 'xss_path' )
+            @mod = framework.modules['xss_path'].new( page, framework )
             @mod.prepare
         end
     end

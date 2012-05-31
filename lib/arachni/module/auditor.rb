@@ -39,7 +39,7 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditor
-    include Arachni::UI::Output
+    include Arachni::Module::Output
 
     def self.timeout_audit_blocks
         Arachni::Parser::Element::Auditable.timeout_audit_blocks
@@ -103,18 +103,6 @@ module Auditor
     #
     # REQUIRED
     #
-    # Must return an HTTP instance
-    #
-    # @return   [Arachni::HTTP]
-    #
-    # @abstract
-    #
-    def http
-    end
-
-    #
-    # REQUIRED
-    #
     # Must return the Page object you wish to be audited
     #
     # @return   [Arachni::Parser::Page]
@@ -164,6 +152,11 @@ module Auditor
     #
     def override_instance_scope?
         false
+    end
+
+    # @return   [Arachni::HTTP]
+    def http
+        Arachni::HTTP.instance
     end
 
     #

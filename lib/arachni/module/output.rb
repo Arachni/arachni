@@ -41,35 +41,39 @@ module Output
     alias :o_print_line     :print_line
 
     def print_error( str = '' )
-        o_print_error( self.class.info[:name] + ": " + str )
+        o_print_error( fancy_name + ": " + str )
     end
 
     def print_bad( str = '', out = $stdout )
-        o_print_bad( self.class.info[:name] + ": " + str )
+        o_print_bad( fancy_name + ": " + str )
     end
 
     def print_status( str = '' )
-        o_print_status( self.class.info[:name] + ": " + str )
+        o_print_status( fancy_name + ": " + str )
     end
 
     def print_info( str = '' )
-        o_print_info( self.class.info[:name] + ": " + str )
+        o_print_info( fancy_name + ": " + str )
     end
 
     def print_ok( str = '' )
-        o_print_ok( self.class.info[:name] + ": " + str )
+        o_print_ok( fancy_name + ": " + str )
     end
 
     def print_debug( str = '' )
-        o_print_debug( self.class.info[:name] + ": " + str )
+        o_print_debug( fancy_name + ": " + str ) if debug?
     end
 
     def print_verbose( str = '' )
-        o_print_verbose( self.class.info[:name] + ": " + str )
+        o_print_verbose( fancy_name + ": " + str )
     end
 
     def print_line( str = '' )
-        o_print_line( self.class.info[:name] + ": " + str )
+        o_print_line( fancy_name + ": " + str )
+    end
+
+    def fancy_name
+        @fancy_name ||= self.class.info[:name]
     end
 
 end

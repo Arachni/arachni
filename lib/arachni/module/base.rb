@@ -32,9 +32,6 @@ module Module
 # @abstract
 #
 class Base
-
-    # get output module
-    include Output
     include Auditor
 
     #
@@ -185,10 +182,6 @@ class Base
                 remedy_code:     '',
             }
         }
-    end
-
-    def set_framework( framework )
-        @framework = framework
     end
 
 end

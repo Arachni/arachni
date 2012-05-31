@@ -43,8 +43,8 @@ require Options.instance.dir['lib'] + 'http/cookie_jar'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class HTTP
-    include Arachni::UI::Output
     include Singleton
+    include Arachni::Module::Output
     include Arachni::Module::Utilities
     include Arachni::Mixins::Observable
 

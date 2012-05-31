@@ -2,7 +2,6 @@ require_relative '../../spec_helper'
 
 class AuditorTest
     include Arachni::Module::Auditor
-    include Arachni::UI::Output
 
     def initialize( framework )
         @framework = framework
