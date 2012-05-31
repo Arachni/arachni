@@ -31,14 +31,13 @@ class Profiler < Arachni::Plugin::Base
     #
     # Assumes the identity of an Auditor.
     #
-    # It will audit all inputs and log when inserted values appear in a page's body.<br/>
-    # It's does not perform any vulnerability assesment nor does it send attack payloads,
+    # It will audit all inputs and log when inserted values appear in a page's body.
+    #
+    # It does not perform any vulnerability assessment nor does it send attack payloads,
     # just simple benign strings.
     #
     # Since an Auditor has formal specifications a plug-in can't directly become one
-    # due to it's abstract nature.
-    #
-    # Thus, we use this helper class to perform auditing duties.
+    # due to it's abstract nature, we use this helper class to perform the auditing duties.
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
@@ -47,14 +46,8 @@ class Profiler < Arachni::Plugin::Base
         def prepare
             @id = Digest::SHA2.hexdigest( rand( 1000 ).to_s )
             @opts = {
-                :format    => [ Format::STRAIGHT ],
-                :elements  => [
-                    Issue::Element::FORM,
-                    Issue::Element::LINK,
-                    Issue::Element::COOKIE,
-                    Issue::Element::HEADER
-                ],
-                :remove_id => true
+                format:    [Format::STRAIGHT],
+                remove_id: true
             }
 
             @@logged ||= Set.new
@@ -100,7 +93,6 @@ class Profiler < Arachni::Plugin::Base
 
         def find_landing_elements( res )
             elems = []
-
             elems << Struct::Body.new( 'body', nil, { 'attrs' => {} } )
 
             parser = Arachni::Parser.new( Arachni::Options.instance, res )
@@ -186,7 +178,7 @@ class Profiler < Arachni::Plugin::Base
 
     def self.merge( results )
         inputs = results.map { |result| result['inputs'] }.flatten
-        return { 'inputs' => inputs }
+        { 'inputs' => inputs }
     end
 
     def self.info
@@ -195,7 +187,7 @@ class Profiler < Arachni::Plugin::Base
             :description    => %q{Examines the behavior of the web application gathering general statistics
                 and performs taint analysis to determine which inputs affect the output.
 
-                It does not perform any vulnerability assesment nor does it send attack payloads.},
+                It does not perform any vulnerability assessment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.4'
         }
