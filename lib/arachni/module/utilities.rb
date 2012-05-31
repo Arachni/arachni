@@ -133,8 +133,8 @@ module Utilities
         path << '/' if path[-1] != '/'
 
         uri_str = uri.scheme + "://" + uri.host
-        uri_str += ':' + uri.port.to_s if uri.port && uri.port != 80
-        uri_str + path
+        uri_str << ':' + uri.port.to_s if uri.port && uri.port != 80
+        uri_str << path
     end
 
     # @return   [String]    random HEX (SHA2) string
