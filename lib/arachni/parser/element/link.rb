@@ -112,15 +112,19 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         var_hash
     end
 
+    def action=( url )
+        v = super( url )
+        @audit_id_url = self.action.gsub( /\?.*/, '' )
+        v
+    end
 
     def audit_id( injection_str = '', opts = {} )
         vars = auditable.keys.sort.to_s
-        url = @action.gsub( /\?.*/, '' )
 
         str = ''
-        str << !opts[:no_auditor] && !orphan? ? "#{@auditor.class.info[:name]}:" : ''
+        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
 
-        str << "#{url}:" + "#{self.type}:#{vars}"
+        str << "#{@audit_id_url}:" + "#{self.type}:#{vars}"
         str << "=#{injection_str.to_s}" if !opts[:no_injection_str]
         str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 

@@ -321,7 +321,7 @@ module Auditable
         vars = auditable.keys.sort.to_s
 
         str = ''
-        str << !opts[:no_auditor] && !orphan? ? "#{@auditor.class.info[:name]}:" : ''
+        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
 
         str << "#{@action}:" + "#{type}:#{vars}"
         str << "=#{injection_str.to_s}" if !opts[:no_injection_str]

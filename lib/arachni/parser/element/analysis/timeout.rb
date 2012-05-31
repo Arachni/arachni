@@ -231,7 +231,7 @@ module Arachni::Parser::Element::Analysis::Timeout
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
     def timeout_analysis( strings, opts )
-        @@__timeout_loaded_modules << @auditor.class.info[:name]
+        @@__timeout_loaded_modules << @auditor.fancy_name
 
         @@parent.add_timeout_audit_block {
             delay = opts[:timeout]
