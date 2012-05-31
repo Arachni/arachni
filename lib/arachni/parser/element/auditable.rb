@@ -306,7 +306,7 @@ module Auditable
     # @return  [String]
     #
     def status_string
-        "Auditing #{self.type} variable '" + self.altered + "' of " + @action
+        "Auditing #{self.type} variable '" + self.altered + "' of " + self.action
     end
 
     #
