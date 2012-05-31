@@ -160,6 +160,7 @@ class AuditStore
 
         hash
     end
+    alias :to_hash :to_h
 
     private
 
@@ -242,12 +243,11 @@ class AuditStore
         issues.each do |issue|
             var = issue.var || ''
 
+            issue.url = issue.url.split( '?' ).first
+
             __id  = issue.mod_name +
                 '::' + issue.elem + '::' +
-                var + '::' +
-                issue.url.split( /\?/ )[0].gsub( '//', '/' )
-
-            issue.url = issue.url.split( /\?/ )[0]
+                var + '::' + issue.url
 
             new_issues[__id] ||= issue
             new_issues[__id].variations ||= []

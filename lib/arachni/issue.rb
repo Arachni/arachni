@@ -315,6 +315,7 @@ class Issue
         end
         h
     end
+    alias :to_hash :to_h
 
     def remove_instance_var( var )
         remove_instance_variable( var )
