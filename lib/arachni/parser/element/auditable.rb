@@ -67,7 +67,9 @@ module Auditable
     attr_accessor :auditor
 
     #
-    # Key=>value pair of inputs
+    # Frozen Key=>value pair of inputs, if you want to change it you'll
+    # have to use the attr_writer and pass a new hash -- the new hash will also
+    # be frozen.
     #
     # @return   [Hash]
     #
@@ -78,7 +80,7 @@ module Auditable
     #
     # @return   [Hash]
     #
-    attr_accessor :orig
+    attr_reader   :orig
 
     #
     # @return [Hash]    audit and general options for convenience's sake
@@ -177,13 +179,14 @@ module Auditable
     # Invoked by {#submit} to submit the object.
     #
     # @param    [Hash]      opts
+    # @param    [Block]     block    callback to be passed the HTTP response
     #
     # @return   [Typhoeus::Request]
     #
     # @see #submit
     # @abstract
     #
-    def http_request( opts )
+    def http_request( opts, &block )
     end
 
     #
@@ -206,7 +209,7 @@ module Auditable
     # Resets the auditable inputs to their original format/values.
     #
     def reset
-        @auditable = @orig.dup
+        self.auditable = @orig.dup
     end
 
     def remove_auditor
@@ -217,10 +220,11 @@ module Auditable
     # Submits self using {#http_request}.
     #
     # @param  [Hash]  opts
+    # @param  [Block]  block    callback to be passed the HTTP response
     #
     # @see #http_request
     #
-    def submit( opts = {} )
+    def submit( opts = {}, &block )
         opts = OPTIONS.merge( opts )
         opts[:params]  = @auditable.dup
         opts[:follow_location] = true if !opts.include?( :follow_location )
@@ -230,7 +234,7 @@ module Auditable
 
         opts.delete( :auditor )
 
-        http_request( opts )
+        http_request( opts, &block )
     end
 
     #

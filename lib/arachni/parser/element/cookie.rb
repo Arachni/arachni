@@ -43,20 +43,20 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @url
-        @method = 'cookie'
+        self.action = @url
+        self.method = 'cookie'
 
         if @raw['name'] && @raw['value']
-            @auditable = { @raw['name'] => @raw['value'] }
+            self.auditable = { @raw['name'] => @raw['value'] }
         else
-            @auditable = raw.dup
+            self.auditable = raw.dup
             @raw = {
                 'name'  => @auditable.keys.first,
                 'value' => @auditable.values.first
             }
         end
 
-        @raw.merge!( DEFAULT.merge( @raw ) )
+        @raw = @raw.merge( DEFAULT.merge( @raw ) )
         if @raw['value'] && !@raw['value'].empty?
             @raw['value'] = uri_decode( @raw['value'].gsub( '+', ' ' ) )
         end
@@ -72,8 +72,8 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
         @raw['max_age'] = @raw['max_age'] if @raw['max_age']
 
-        @simple = @auditable.dup
-        @orig = @auditable.deep_clone
+        @simple = self.auditable.dup
+        @orig   = self.auditable.dup
         @orig.freeze
     end
 
@@ -295,8 +295,8 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     private
-    def http_request( opts = {} )
-        http.cookie( @action, opts || {} )
+    def http_request( opts = {}, &block )
+        http.cookie( @action, opts || {}, &block )
     end
 
 end

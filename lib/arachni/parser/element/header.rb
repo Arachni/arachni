@@ -21,16 +21,12 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @url
-        @method = 'header'
+        self.action    = @url
+        self.method    = 'header'
+        self.auditable = @raw
 
-        @auditable = @raw
-        @orig      = @auditable.deep_clone
+        @orig = self.auditable.dup
         @orig.freeze
-    end
-
-    def http_request( opts )
-        http.header( @action, opts )
     end
 
     def simple
@@ -39,6 +35,11 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
 
     def type
         Arachni::Module::Auditor::Element::HEADER
+    end
+
+    private
+    def http_request( opts, &block )
+        http.header( @action, opts, &block )
     end
 
 end

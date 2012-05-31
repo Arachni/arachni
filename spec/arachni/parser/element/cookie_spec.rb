@@ -12,7 +12,7 @@ describe Arachni::Parser::Element::Cookie do
         it 'should perform the appropriate HTTP request with appropriate params' do
             body_should = @c.auditable.map { |k, v| k.to_s + v.to_s }.join( "\n" )
             body = nil
-            @c.submit.on_complete { |res| body = res.body }
+            @c.submit { |res| body = res.body }
             @http.run
             body_should.should == body
         end

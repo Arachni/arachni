@@ -13,10 +13,7 @@ describe Arachni::Parser::Element::Link do
     describe '#submit' do
         it 'should perform a GET HTTP request' do
             body = nil
-            @link.submit( remove_id: true ).on_complete {
-                |res|
-                body = res.body
-            }
+            @link.submit( remove_id: true ) { |res| body = res.body }
             run_http!
             @link.auditable.to_s.should == body
         end

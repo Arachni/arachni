@@ -2,7 +2,8 @@ require_relative '../../../spec_helper'
 
 describe Arachni::Parser::Element::Form do
     before( :all ) do
-        @url = server_url_for( :form )
+        @utils = Arachni::Module::Utilities
+        @url = @utils.normalize_url( server_url_for( :form ) )
 
         @raw = {
             'attrs' => {
@@ -35,10 +36,7 @@ describe Arachni::Parser::Element::Form do
                 body_should = @form.method + @form.auditable.to_s
                 body = nil
 
-                @form.submit( remove_id: true ).on_complete {
-                    |res|
-                    body = res.body
-                }
+                @form.submit( remove_id: true ) { |res| body = res.body }
                 @http.run
                 body_should.should == body
             end
@@ -49,10 +47,7 @@ describe Arachni::Parser::Element::Form do
                 body_should = f.method + f.auditable.to_s
                 body = nil
 
-                f.submit( remove_id: true ).on_complete {
-                    |res|
-                    body = res.body
-                }
+                f.submit( remove_id: true ).on_complete { |res| body = res.body }
                 @http.run
                 body_should.should == body
             end
@@ -111,7 +106,7 @@ describe Arachni::Parser::Element::Form do
                     </html>'
 
                     form = Arachni::Parser::Element::Form.from_document( @url, html ).first
-                    form.action.should == @url + '/form_action'
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
                     form.name.should == 'my_form'
                     form.url.should == @url
                     form.method.should == 'get'
@@ -136,7 +131,7 @@ describe Arachni::Parser::Element::Form do
                     </html>'
 
                     form = Arachni::Parser::Element::Form.from_document( @url, html ).first
-                    form.action.should == @url + '/form_action'
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
                     form.name.should == 'my_form'
                     form.url.should == @url
                     form.method.should == 'get'
@@ -170,7 +165,7 @@ describe Arachni::Parser::Element::Form do
                         </html>'
 
                         form = Arachni::Parser::Element::Form.from_document( @url, html ).first
-                        form.action.should == @url + '/form_action'
+                        form.action.should == @utils.normalize_url( @url + '/form_action' )
                         form.name.should == 'my_form'
                         form.url.should == @url
                         form.method.should == 'get'
@@ -201,7 +196,7 @@ describe Arachni::Parser::Element::Form do
                         </html>'
 
                         form = Arachni::Parser::Element::Form.from_document( @url, html ).first
-                        form.action.should == @url + '/form_action'
+                        form.action.should == @utils.normalize_url( @url + '/form_action' )
                         form.name.should == 'my_form'
                         form.url.should == @url
                         form.method.should == 'get'
@@ -234,7 +229,7 @@ describe Arachni::Parser::Element::Form do
                         </html>'
 
                         form = Arachni::Parser::Element::Form.from_document( @url, html ).first
-                        form.action.should == @url + '/form_action'
+                        form.action.should == @utils.normalize_url( @url + '/form_action' )
                         form.name.should == 'my_form'
                         form.url.should == @url
                         form.method.should == 'get'
@@ -270,14 +265,14 @@ describe Arachni::Parser::Element::Form do
                     forms.size.should == 2
 
                     form = forms.shift
-                    form.action.should == base_url + 'form_action/is/here?ha=hoo'
+                    form.action.should == @utils.normalize_url( base_url + 'form_action/is/here?ha=hoo')
                     form.name.should == 'my_form!'
                     form.url.should == @url
                     form.method.should == 'get'
                     form.auditable.should == { 'text_here' => nil }
 
                     form = forms.shift
-                    form.action.should == @url + '/form_action'
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
                     form.name.should == 'my_second_form!'
                     form.url.should == @url
                     form.method.should == 'post'
@@ -319,14 +314,14 @@ describe Arachni::Parser::Element::Form do
                     forms.size.should == 3
 
                     form = forms.shift
-                    form.action.should == base_url + 'form_2'
+                    form.action.should == @utils.normalize_url( base_url + 'form_2' )
                     form.name.should == 'my_form_2'
                     form.url.should == @url
                     form.method.should == 'get'
                     form.auditable.should == { 'text_here' => nil }
 
                     form = forms.shift
-                    form.action.should == @url + '/form'
+                    form.action.should == @utils.normalize_url( @url + '/form' )
                     form.name.should == 'my_form'
                     form.url.should == @url
                     form.method.should == 'post'
@@ -336,7 +331,7 @@ describe Arachni::Parser::Element::Form do
                     }
 
                     form = forms.shift
-                    form.action.should == @url + '/form_3'
+                    form.action.should == @utils.normalize_url( @url + '/form_3' )
                     form.name.should == 'my_form_3'
                     form.url.should == @url
                     form.method.should == 'get'

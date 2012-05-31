@@ -49,7 +49,7 @@ describe Arachni::Parser::Element::Auditable do
     describe '#reset' do
         it 'should return the auditable inputs to their original state' do
             orig = @orig.auditable.dup
-            @orig.auditable['new'] = 'value'
+            @orig.auditable = @orig.auditable.merge( 'new' => 'value' )
             (@orig.auditable != orig).should be_true
             @orig.reset
             @orig.auditable.should == orig
@@ -83,13 +83,12 @@ describe Arachni::Parser::Element::Auditable do
             got_response = false
             has_submited_inputs = false
 
-            @auditable.submit( remove_id: true ).on_complete {
-                |res|
+            @auditable.submit( remove_id: true ) do |res|
                 got_response = true
 
                 body_should = res.request.params.map { |k, v| k.to_s + v.to_s }.join( "\n" )
                 has_submited_inputs = (res.body == body_should)
-            }
+            end
             @auditor.http.run
             got_response.should be_true
             has_submited_inputs.should be_true
@@ -100,13 +99,12 @@ describe Arachni::Parser::Element::Auditable do
                 got_response = false
                 has_submited_inputs = false
 
-                @orphan.submit( remove_id: true ).on_complete {
-                    |res|
+                @orphan.submit( remove_id: true ) do |res|
                     got_response = true
 
                     body_should = res.request.params.map { |k, v| k.to_s + v.to_s }.join( "\n" )
                     has_submited_inputs = (res.body == body_should)
-                }
+                end
                 @orphan.http.run
                 got_response.should be_true
                 has_submited_inputs.should be_true
@@ -121,9 +119,7 @@ describe Arachni::Parser::Element::Auditable do
         context 'when called with no opts' do
             it 'should use the defaults' do
                 cnt = 0
-                @auditable.audit( @seed ) {
-                    cnt += 1
-                }
+                @auditable.audit( @seed ) { cnt += 1 }
                 @auditor.http.run
                 cnt.should == 4
             end
@@ -132,9 +128,7 @@ describe Arachni::Parser::Element::Auditable do
         context 'when it has no auditor' do
             it 'should revert to the HTTP interface singleton' do
                 cnt = 0
-                @orphan.audit( @seed ) {
-                    cnt += 1
-                }
+                @orphan.audit( @seed ) { cnt += 1 }
                 @orphan.http.run
                 cnt.should == 4
             end
@@ -304,12 +298,11 @@ describe Arachni::Parser::Element::Auditable do
                 context false do
                     it 'should not allow redundant requests/audits' do
                         cnt = 0
-                        5.times {
-                            |i|
+                        5.times do |i|
                             @auditable.audit( @seed, @audit_opts.merge( redundant: false )){
                                 cnt += 1
                             }
-                        }
+                        end
                         @auditor.http.run
                         cnt.should == 1
                     end
@@ -318,12 +311,9 @@ describe Arachni::Parser::Element::Auditable do
                 context 'default' do
                     it 'should not allow redundant requests/audits' do
                         cnt = 0
-                        5.times {
-                            |i|
-                            @auditable.audit( @seed, @audit_opts ){
-                                cnt += 1
-                            }
-                        }
+                        5.times do |i|
+                            @auditable.audit( @seed, @audit_opts ){ cnt += 1 }
+                        end
                         @auditor.http.run
                         cnt.should == 1
                     end

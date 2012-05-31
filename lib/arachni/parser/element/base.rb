@@ -28,40 +28,11 @@ class Arachni::Parser::Element::Base
     include Arachni::Parser::Element::Auditable
 
     #
-    # The URL of the page that owns the element.
-    #
-    # @return  [String]
-    #
-    attr_accessor :url
-
-    #
-    # The url to which the element points and should be audited against.
-    #
-    # Ex. 'href' for links, 'action' for forms, etc.
-    #
-    # @return  [String]
-    #
-    attr_accessor :action
-
-    #
-    # Relatively 'raw' hash holding the element's HTML attributes, values, etc.
+    # Relatively 'raw' (frozen) hash holding the element's HTML attributes, values, etc.
     #
     # @return  [Hash]
     #
-    attr_accessor :raw
-
-    #
-    # Method of the element.
-    #
-    # Should represent a method in {Arachni::Module::HTTP}.
-    #
-    # Ex. get, post, cookie, header
-    #
-    # @see Arachni::Module::HTTP
-    #
-    # @return [String]
-    #
-    attr_accessor :method
+    attr_reader :raw
 
     #
     # Initialize the element.
@@ -71,7 +42,8 @@ class Arachni::Parser::Element::Base
     #
     def initialize( url, raw = {} )
         @raw = raw.dup
-        @url = normalize_url( url.to_s )
+        @raw.freeze
+        self.url = url.to_s
 
         @opts = {}
     end
@@ -100,13 +72,81 @@ class Arachni::Parser::Element::Base
         {}
     end
 
+    #
+    # Method for the element.
+    #
+    # Should represent a method in {Arachni::Module::HTTP}.
+    #
+    # Ex. get, post, cookie, header
+    #
+    # @see Arachni::Module::HTTP
+    #
+    # @return [String]
+    #
+    def method
+        @method.freeze
+    end
+
+    # @see #method
+    def method=( method )
+        @method = method
+        rehash
+        self.method
+    end
+
+    #
+    # The url to which the element points and should be audited against.
+    #
+    # Ex. 'href' for links, 'action' for forms, etc.
+    #
+    # @return  [String]
+    #
+    def action
+        @action.freeze
+    end
+
+    # @see #action
+    def action=( url )
+        @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
+        rehash
+        self.action
+    end
+
+    #
+    # The URL of the page that owns the element.
+    #
+    # @return  [String]
+    #
+    def url
+        @url.freeze
+    end
+
+    # @see #url
+    def url=( url )
+        @url = normalize_url( url )
+        rehash
+        self.url
+    end
+
+    # @see Arachni::Parser::Element::Auditable#auditable
+    def auditable
+        @auditable.freeze
+    end
+
+    # @see Arachni::Parser::Element::Auditable#auditable
+    def auditable=( hash )
+        @auditable = hash
+        rehash
+        self.auditable
+    end
+
     def ==( e )
         hash == e.hash
     end
     alias :eql? :==
 
     def hash
-        (@action.to_s + @method + @auditable.to_s).hash
+        @hash ||= rehash
     end
 
     #
@@ -122,4 +162,9 @@ class Arachni::Parser::Element::Base
         new
     end
 
+    private
+
+    def rehash
+        @hash = (@action.to_s + @method.to_s + @auditable.to_s).hash
+    end
 end

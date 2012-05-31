@@ -20,19 +20,14 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     def initialize( url, raw = {} )
         super( url, raw )
 
-        @action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || @url
-        @action = normalize_url( @action )
-        @method = 'get'
+        self.action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action] || self.url
+        self.method = 'get'
 
-        @auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
-        @auditable ||= {}
+        self.auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
+        self.auditable ||= {}
 
-        @orig      = @auditable.deep_clone
+        @orig = self.auditable.dup
         @orig.freeze
-    end
-
-    def http_request( opts )
-        http.get( @action, opts )
     end
 
     def simple
@@ -130,6 +125,11 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         str += ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str
+    end
+
+    private
+    def http_request( opts, &block )
+        http.get( @action, opts, &block )
     end
 
 end

@@ -2,7 +2,8 @@ require_relative '../../../spec_helper'
 
 describe Arachni::Parser::Element::Base do
     before( :all ) do
-        @url = Arachni::Module::Utilities.normalize_url( 'http://test.com' )
+        @utils=  Arachni::Module::Utilities
+        @url = @utils.normalize_url( 'http://test.com' )
         @raw = { raw: { hash: 'stuff' } }
         @e = Arachni::Parser::Element::Base.new( @url, @raw )
     end
@@ -13,6 +14,31 @@ describe Arachni::Parser::Element::Base do
 
     it 'should have the assigned raw data' do
         @e.raw.should == @raw
+    end
+
+    describe '#url=' do
+        it 'should normalize the passed URL' do
+            e = Arachni::Parser::Element::Base.new( @url, @raw )
+            url = 'http://test.com/some stuff#frag!'
+            e.url = url
+            e.url.should == @utils.normalize_url( url )
+        end
+    end
+
+    describe '#action=' do
+        it 'should normalize the passed URL' do
+            e = Arachni::Parser::Element::Base.new( @url, @raw )
+            url = 'http://test.com/some stuff#frag!'
+            e.action = url
+            e.action.should == @utils.normalize_url( url )
+        end
+
+        it 'should convert the passed URL to absolute' do
+            e = Arachni::Parser::Element::Base.new( @url, @raw )
+            url = 'some stuff#frag!'
+            e.action = url
+            e.action.should == @utils.to_absolute( url, @url )
+        end
     end
 
     describe '#==' do
@@ -31,6 +57,7 @@ describe Arachni::Parser::Element::Base do
 
             e = Arachni::Parser::Element::Form.new( @url, inputs: { 'name' => 'val' } )
             c = Arachni::Parser::Element::Form.new( @url, method: 'get', inputs: { 'name' => 'val' } )
+
             c.should_not == e
 
             e = Arachni::Parser::Element::Form.new( @url, inputs: { 'name' => 'val' } )
@@ -51,7 +78,7 @@ describe Arachni::Parser::Element::Base do
             e = @elem.dup
             e.should == @elem
             e.url = 'blah'
-            e.auditable['crap'] = 'stuff'
+            e.auditable = e.auditable.merge( 'crap' => 'stuff' )
             @elem.auditable['crap'].should be_nil
             @elem.url.should == @url
         end
@@ -71,4 +98,30 @@ describe Arachni::Parser::Element::Base do
         end
     end
 
+    describe '#hash' do
+        context 'when the #method is updated' do
+            it 'should be updated too' do
+                e = Arachni::Parser::Element::Base.new( @url, @raw )
+                h = e.hash
+                e.method = 'get'
+                e.hash.should_not == h
+            end
+        end
+        context 'when the #action is updated' do
+            it 'should be updated too' do
+                e = Arachni::Parser::Element::Base.new( @url, @raw )
+                h = e.hash
+                e.action = 'http://stuff.com'
+                e.hash.should_not == h
+            end
+        end
+        context 'when the #auditable is updated' do
+            it 'should be updated too' do
+                e = Arachni::Parser::Element::Base.new( @url, @raw )
+                h = e.hash
+                e.auditable = { 'stuff' => 'blah' }
+                e.hash.should_not == h
+            end
+        end
+    end
 end

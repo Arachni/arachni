@@ -149,7 +149,7 @@ module Mutable
             elem.override_instance_scope
 
             elem.altered = 'Parameter flip'
-            elem.auditable[injection_str] = seed
+            elem.auditable = elem.auditable.merge( injection_str => seed )
             var_combo << elem
         end
 

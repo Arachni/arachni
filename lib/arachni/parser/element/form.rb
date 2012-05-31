@@ -26,20 +26,20 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         super( url, raw )
 
         begin
-            @action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
-            @action = normalize_url( @action )
+            self.action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
         rescue
-            @action = @url
+            self.action = self.url
         end
 
         begin
-            @method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
+            self.method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
         rescue
-            @method = 'post'
+            self.method = 'post'
         end
 
-        @auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable'] || {}
-        @orig      = @auditable.deep_clone
+        self.auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable'] || {}
+
+        @orig = self.auditable.dup
         @orig.freeze
     end
 
@@ -217,7 +217,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         end
     end
 
-    def http_request( opts )
+    def http_request( opts, &block )
         params   = opts[:params]
         altered  = opts[:altered]
 
@@ -246,7 +246,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             print_debug_trainer( opts )
         end
 
-        @method.downcase.to_s != 'get' ? http.post( @action, opts ) : http.get( @action, opts )
+        @method.downcase.to_s != 'get' ? http.post( @action, opts, &block ) : http.get( @action, opts, &block )
     end
 
 end
