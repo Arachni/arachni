@@ -8,10 +8,19 @@ describe Arachni::Parser::Element::Mutable do
     end
 
     describe '#mutations' do
+        it 'should only affect #auditable and #altered' do
+            e = Arachni::Parser::Element::Form.new( 'http://test.com', @inputs )
+            e.mutations( @seed ).each do |m|
+                e.url.should == m.url
+                e.action.should == m.action
+                e.altered.should_not == m.altered
+                e.auditable.should_not == m.auditable
+            end
+        end
+
         context 'with no options' do
             it 'should return all combinatios' do
-                inputs = { inputs:
-                    {
+                inputs = { inputs: {
                         'param_name' => 'param_value',
                         'email' => nil
                     }
