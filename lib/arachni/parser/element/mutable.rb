@@ -82,13 +82,16 @@ module Mutable
         skip:       []
     }
 
+    # @return   [Set]   names of input vectors to be excluded from {#mutations}.
     def immutables
         @immutables ||= Set.new
     end
 
     #
-    # Injects the injecton_str in self's values according to formatting options
+    # Injects the +injection_str+ in self's values according to formatting options
     # and returns an array of permutations of self.
+    #
+    # Vector names in {#immutables} will be excluded.
     #
     # TODO: Move type specific mutations into their respective classes.
     #
@@ -96,6 +99,8 @@ module Mutable
     # @param    [Hash]    opts           {MUTATION_OPTIONS}
     #
     # @return    [Array]
+    #
+    # @see #immutables
     #
     def mutations( injection_str, opts = { } )
         opts = MUTATION_OPTIONS.merge( opts )
