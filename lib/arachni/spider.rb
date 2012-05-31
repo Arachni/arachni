@@ -317,6 +317,9 @@ class Spider
         end
 
         http.get( url, opts, &wrap )
+    rescue
+        @pending_requests -= 1
+        nil
     end
 
     def visited( url )
