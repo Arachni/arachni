@@ -217,16 +217,33 @@ describe Arachni::Module::Utilities do
 
     describe '#normalize_url' do
         it 'should clean the URL' do
-            uri = 'hTTp://tEsT.com//with/////path/another weird path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment'
-            encoded = "http://test.com/with/path/another%20weird%20path%20%25%22&*%5B$)?query=crap&other=$54$5466%5D%5B('%22"
-            begin
-                normalized = @utils.normalize_url( uri )
-                normalized.should == encoded
-                @utils.uri_parse( normalized ).to_s
-                true.should be_true
-            rescue
-                false.should be_true
+            ref = proc do |p|
+                n = Addressable::URI.parse( p ).normalize
+                n.path.gsub!( /\/+/, '/' )
+                n.fragment = nil
+                n.to_s
             end
+
+            [
+                'another/path',
+                '/some/path',
+                'http://test.com',
+                'style.css',
+                'http://test.com/path/here',
+                'http://user@test.com/path/here',
+                'http://user:pass@test.com/path/here',
+                'http://user:pass@test.com:80/path/here',
+                'http://user:pass@test.com:81/path/here',
+                'http://user:pass@test.com:81/path/here?query=here&with=more vars',
+                'http://user:pass@test.com:81/path/here?query=here&with=more vars#and-fragment',
+                'http://localhost:4567',
+                'http://localhost:4567/',
+                'http://testfire.net/default.aspx',
+                'http://testfire.net/Privacypolicy.aspx?sec=Careers&template=US',
+                'http://testfire.net/disclaimer.htm?url=http://dd.d',
+                'hTTp://user:password@tEsT.com:81///with/////path/another weird '+
+                    'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment'
+            ].each { |p| @utils.normalize_url( p ).should == ref.call( p ) }
         end
     end
 

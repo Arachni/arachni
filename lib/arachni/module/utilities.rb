@@ -42,8 +42,14 @@ module Utilities
         @@uri_parse_cache ||= {}
         return @@uri_parse_cache[url].dup if @@uri_parse_cache.include?( url )
 
-        @@uri_parse_cache[url] = Addressable::URI.parse( url )
+        #@@uri_parse_cache[url] = Addressable::URI.parse( url )
+        @@uri_parse_cache[url] = uri_parser.parse( url )
         @@uri_parse_cache[url].dup
+    rescue
+        tries ||= 0
+        tries += 1
+        url = normalize_url( url )
+        retry if tries < 5
     end
 
     #
@@ -137,59 +143,157 @@ module Utilities
     end
 
     #
+    # Converts relative URL *link* into an absolute URL based on the
+    # location of the page
+    #
+    # @param    [String]    relative_url
+    # @param    [String]    reference_url    absolute url to use as a reference
+    #
+    # @return [String]
+    #
+    def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
+        return reference_url if !relative_url || relative_url.empty?
+
+        @@to_absolute_cache ||= {}
+        key = relative_url + ' :: ' + reference_url
+
+        if @@to_absolute_cache.include?( key )
+            return @@to_absolute_cache[key] ? @@to_absolute_cache[key].dup : @@to_absolute_cache[key]
+        end
+
+        relative  = uri_parse( normalize_url( relative_url ) )
+        reference = uri_parse( reference_url )
+
+        @@to_absolute_cache[key] = reference.merge( relative ).to_s
+        @@to_absolute_cache[key].dup
+    rescue
+        @@to_absolute_cache[key] = nil
+    end
+
+    #
     # @param    [String]    url
     #
     # @return   [String]    normalized URL
     #
     def normalize_url( url )
-        return if !url
+        return if !url || url.empty?
         @@normalize_url_cache ||= {}
+
+        url   = url.to_s.dup
+        c_url = url.to_s.dup
 
         if @@normalize_url_cache.include?( url )
             return @@normalize_url_cache[url] ? @@normalize_url_cache[url].dup : @@normalize_url_cache[url]
         end
 
         url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
-        begin
-            url = uri_decode( url ) while url =~ /%[a-fA-F0-9]{2}/
-        rescue
+        url = Addressable::URI.unescape( url ) while url =~ /%[a-fA-F0-9]{2}/
+
+        components = {
+            scheme:   nil,
+            username: nil,
+            password: nil,
+            host:     nil,
+            port:     nil,
+            path:     nil,
+            query:    nil
+        }
+
+        # remove the fragment if there is one
+        url = url.split( '#' )[0...-1].join if url.include?( '#' )
+
+        has_path = true
+
+        splits = url.split( ':' )
+        if !splits.empty? && %w(http https).include?( splits.first.downcase )
+            splits = url.split( '://', 2 )
+            components[:scheme] = splits.shift
+            components[:scheme].downcase! if components[:scheme]
+            url = splits.shift
+
+            splits = url.split( '@', 2 )
+
+            if splits.size > 1
+                components[:username], components[:password] = splits.first.split( ':', 2 )
+                url = splits.shift
+            end
+
+            splits = splits.last.split( '/', 2 )
+            has_path = false if !splits[1] || splits[1].empty?
+
+            url = splits.last
+
+            splits = splits.first.split( ':', 2 )
+            if splits.size == 2
+                host = splits.first
+                components[:port] = Integer( splits.last )
+                components[:port] = nil if components[:port] == 80
+            else
+                host = splits.last
+            end
+
+            if components[:host] = host
+                url.gsub!( host, '' )
+                components[:host].downcase!
+            end
         end
 
-        if @@normalize_url_cache.include?( url )
-            return @@normalize_url_cache[url] ? @@normalize_url_cache[url].dup : @@normalize_url_cache[url]
+        if has_path
+            splits = url.split( '?', 2 )
+            if components[:path] = splits.shift
+                components[:path] = '/' + components[:path] if components[:scheme]
+                components[:path].gsub!( /\/+/, '/' )
+                components[:path] =
+                    Addressable::URI.encode_component( components[:path],
+                        Addressable::URI::CharacterClasses::PATH )
+            end
+
+            if components[:query] = splits.shift
+                components[:query] =
+                    Addressable::URI.encode_component( components[:query],
+                        Addressable::URI::CharacterClasses::QUERY )
+            end
         end
 
-        escaped = Addressable::URI.encode( url )
-        p  = uri_parse( escaped )
+        components[:path] ||= components[:scheme] ? '/' : nil
 
-        p.scheme = p.scheme.downcase if p.scheme
-        p.host   = p.host.downcase if p.host
-        p.port   = nil unless p.port != 80
+        #ap components
+        normalized = ''
+        normalized << components[:scheme] + '://' if components[:scheme]
 
-        if p.host && !p.host.empty?
-            p.path = p.path && !p.path.empty? ? p.path.gsub( /\/+/, '/' ) : '/'
+        if components[:username]
+            normalized << components[:username]
+            normalized << ':' + components[:password] if components[:password]
+            normalized << '@'
         end
 
-        p.fragment = nil
+        if components[:host]
+            normalized << components[:host]
+            normalized << ':' + components[:port].to_s if components[:port]
+        end
 
-        @@normalize_url_cache[url] = p.to_s
+        normalized << components[:path] if components[:path]
+        normalized << '?' + components[:query] if components[:query]
 
-        #addr = Addressable::URI.parse( url ).normalize
+        @@normalize_url_cache[c_url] = normalized.dup
+
+        #addr = Addressable::URI.parse( c_url ).normalize
         #addr.fragment = nil
         #addr.path.gsub!( /\/+/, '/' )
-        #if addr.to_s != p.to_s
-        #    ap '~~~'
-        #    ap p
-        #    ap url
+        #if addr.to_s != normalized
+        #    ap c_url
+        #    ap components
+        #    ap normalized
         #    ap addr.to_s
-        #    ap p.to_s
-        #    ap '---'
+        #    ap '~~~'
         #end
-        @@normalize_url_cache[url].dup
+        @@normalize_url_cache[c_url].dup
     rescue => e
+        #ap c_url
+        #ap url
         #ap e
         #ap e.backtrace
-        @@normalize_url_cache[url] = nil
+        @@normalize_url_cache[c_url] = nil
     end
 
     # @see normalize_url
@@ -264,34 +368,6 @@ module Utilities
         rescue
             true
         end
-    end
-
-    #
-    # Converts relative URL *link* into an absolute URL based on the
-    # location of the page
-    #
-    # @param    [String]    relative_url
-    # @param    [String]    reference_url    absolute url to use as a reference
-    #
-    # @return [String]
-    #
-    def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
-        return if !relative_url
-
-        @@to_absolute_cache ||= {}
-        key = relative_url + ' :: ' + reference_url
-
-        if @@to_absolute_cache.include?( key )
-            return @@to_absolute_cache[key] ? @@to_absolute_cache[key].dup : @@to_absolute_cache[key]
-        end
-
-        relative  = uri_parse( normalize_url( relative_url ) )
-        reference = uri_parse( reference_url )
-
-        @@to_absolute_cache[key] = reference.join( relative ).to_s
-        @@to_absolute_cache[key].dup
-    rescue
-        @@normalize_url_cache[url] = nil
     end
 
     #
