@@ -21,10 +21,7 @@ module Report
 # Provides some common options for the reports
 #
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Options
 
@@ -40,7 +37,7 @@ module Options
     # @return   [Arachni::OptString]
     #
     def outfile( ext = '', desc = 'Where to save the report.' )
-        Arachni::OptString.new( 'outfile', [ false, desc,
+        Arachni::Component::Options::String.new( 'outfile', [ false, desc,
             Time.now.to_s.gsub( ':', '.' ) + ext ] )
     end
 
@@ -128,7 +125,7 @@ class Base
             next if !plugin_results || plugin_results[:results].empty?
 
             exception_jail( false ) {
-                formatted[name] = formatter.new( plugin_results.deep_clone ).run
+                formatted[name] = formatter.new( plugin_results.clone ).run
             }
         end
 
