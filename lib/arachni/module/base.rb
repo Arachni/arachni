@@ -32,12 +32,8 @@ module Module
 # @abstract
 #
 class Base
+    include Utilities
     include Auditor
-
-    #
-    # @return [Arachni::Module::HTTP]
-    #
-    attr_reader :http
 
     #
     # @return [Page]
@@ -50,10 +46,7 @@ class Base
     attr_reader :framework
 
     #
-    # Initializes the module attributes, HTTP client and {Trainer}
-    #
-    # @see Trainer
-    # @see HTTP
+    # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.
     #
     # @param  [Page]  page
     # @param  [Arachni::Framework]  framework
@@ -62,11 +55,10 @@ class Base
         @page  = page
         @framework  = framework
 
-        @http  = Arachni::HTTP.instance
-        @http.trainer.page = @page
+        http.trainer.page = page
 
         # update the cookies
-        @http.update_cookies( @page.cookiejar ) if( !@page.cookiejar.empty? )
+        http.update_cookies( @page.cookiejar ) if !page.cookiejar.empty?
 
         #
         # This is slightly tricky...
@@ -80,9 +72,9 @@ class Base
         # for each page and not overwritten every single time a module is instantiated.
         #
         @@__last_url ||= ''
-        if @@__last_url != @page.url
-            @http.trainer.init_from_page!( @page )
-            @@__last_url = @page.url
+        if @@__last_url != page.url
+            http.trainer.init_from_page!( page )
+            @@__last_url = page.url
         end
     end
 

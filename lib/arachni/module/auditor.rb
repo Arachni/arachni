@@ -103,14 +103,12 @@ module Auditor
     #
     # REQUIRED
     #
-    # Must return the Page object you wish to be audited
+    # Must return the Page object you wish to be audited.
     #
     # @return   [Arachni::Parser::Page]
-    #
     # @abstract
     #
-    def page
-    end
+    attr_reader :page
 
     #
     # REQUIRED

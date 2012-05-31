@@ -44,12 +44,7 @@ class Profiler < Arachni::Plugin::Base
     #
     class Auditor < Arachni::Module::Base
 
-        attr_reader :http
-        attr_reader :page
-
-        def initialize( page )
-            super( page )
-
+        def prepare
             @id = Digest::SHA2.hexdigest( rand( 1000 ).to_s )
             @opts = {
                 :format    => [ Format::STRAIGHT ],
@@ -66,10 +61,11 @@ class Profiler < Arachni::Plugin::Base
         end
 
         def run( &logger )
-            audit( @id, @opts ) {
-                |res, opts, elem|
+            prepare
 
+            audit( @id, @opts ) do |res, opts, elem|
                 landed_elems = []
+
                 if res.body.substring?( @id )
                     landed_elems |= find_landing_elements( res )
                 end
@@ -79,30 +75,27 @@ class Profiler < Arachni::Plugin::Base
                 end
 
                 if !landed_elems.empty?
-
                     @@logged << "#{elem.action}::#{elem.altered}::#{elem.type}"
-
                     logger.call( @id, res, elem, landed_elems )
                 end
 
-            }
+            end
         end
 
         def find_landing_header_fields( res )
             elems = []
 
             parser = Arachni::Parser.new( Arachni::Options.instance, res )
-            parser.cookies.each {
-                |cookie|
+            parser.cookies.each do |cookie|
                 elems << cookie if cookie.auditable.to_s.substring?( @id )
-            }
+            end
 
-            res.headers_hash.each_pair {
-                |k, v|
-                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v.to_s } ) if v.to_s.substring?( @id )
-            }
+            res.headers_hash.each_pair do |k, v|
+                next if !v.to_s.substring?( @id )
+                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v.to_s } )
+            end
 
-            return elems
+            elems
         end
 
         def find_landing_elements( res )
@@ -111,17 +104,15 @@ class Profiler < Arachni::Plugin::Base
             elems << Struct::Body.new( 'body', nil, { 'attrs' => {} } )
 
             parser = Arachni::Parser.new( Arachni::Options.instance, res )
-            parser.forms.each {
-                |form|
+            parser.forms.each do |form|
                 elems << form if form.auditable.to_s.substring?( @id )
-            }
+            end
 
-            parser.links.each {
-                |link|
+            parser.links.each do |link|
                 elems << link if link.auditable.to_s.substring?( @id )
-            }
+            end
 
-            return elems
+            elems
         end
 
         def skip?( elem )
@@ -141,15 +132,11 @@ class Profiler < Arachni::Plugin::Base
     end
 
     def run
-        @framework.add_on_run_mods {
-            |page|
-
-            Auditor.new( page ).run {
-                |taint, res, elem, found_in|
+        framework.add_on_run_mods do |page|
+            Auditor.new( page, @framework ).run do |taint, res, elem, found_in|
                 log( taint, res, elem, found_in )
-            }
-
-        }
+            end
+        end
     end
 
     def clean_up
@@ -158,7 +145,6 @@ class Profiler < Arachni::Plugin::Base
     end
 
     def log( taint, res, elem, landed_elems )
-
         res_hash = res.to_hash
         res_hash['headers'] = res_hash['headers_hash']
 
@@ -182,15 +168,14 @@ class Profiler < Arachni::Plugin::Base
             }
         }
 
-        result['landed'] = landed_elems.map {
-            |elem|
+        result['landed'] = landed_elems.map do |elem|
             {
                 'type'   => elem.type,
                 'method' => elem.method ? elem.method.upcase : nil,
                 'name'   => elem.raw['attrs'] ? elem.raw['attrs']['name'] : nil,
                 'auditable' => elem.auditable
             }
-        }
+        end
 
         @inputs << result
     end
@@ -200,11 +185,7 @@ class Profiler < Arachni::Plugin::Base
     end
 
     def self.merge( results )
-        inputs = []
-        results.each {
-            |result|
-            inputs |= result['inputs']
-        }
+        inputs = results.map { |result| result['inputs'] }.flatten
         return { 'inputs' => inputs }
     end
 
@@ -216,7 +197,7 @@ class Profiler < Arachni::Plugin::Base
 
                 It does not perform any vulnerability assesment nor does it send attack payloads.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3'
+            :version        => '0.1.4'
         }
     end
 

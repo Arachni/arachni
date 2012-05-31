@@ -45,7 +45,7 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -53,13 +53,11 @@ module Modules
 # @see http://cwe.mitre.org/data/definitions/352.html
 #
 class CSRF < Arachni::Module::Base
-    include Arachni::Module::Utilities
 
     def prepare
-
         # the Trainer can provide modules access to the HTML parser
         # and other cool stuff for element comparison
-        @__trainer = @http.trainer
+        @__trainer = http.trainer
 
         # since we bypass the Auditor we must also do our own audit tracking
         @@__audited ||= Set.new
@@ -72,19 +70,14 @@ class CSRF < Arachni::Module::Base
 
         # setup opts with empty cookies
         opts = {
-            :cookies => {},
-            :remove_id => true
+            cookies:   { },
+            remove_id: true
         }
 
         # request page without cookies, simulating a logged-out user
-        @http.get( @page.url, opts ).on_complete {
-            |res|
-
+        http.get( @page.url, opts ) do |res|
             # extract forms from the body of the response
-            forms_logged_out = forms_from_response( res ).reject {
-                |form|
-                form.auditable.empty?
-            }
+            forms_logged_out = forms_from_response( res ).reject { |f| f.auditable.empty? }
 
             print_status( "Found #{forms_logged_out.size.to_s} context irrelevant forms." )
 
@@ -95,7 +88,7 @@ class CSRF < Arachni::Module::Base
             print_status( "Found #{csrf_forms.size.to_s} CSRF candidates." )
 
             csrf_forms.each { |form| __log( form ) if unsafe?( form ) }
-        }
+        end
     end
 
     #
@@ -111,23 +104,21 @@ class CSRF < Arachni::Module::Base
         # nobody says that tokens must be in a 'value' attribute,
         # they can just as well be in 'name'.
         # so we check them both...
-        form.auditable.to_a.flatten.each_with_index {
-            |str, i|
+        form.auditable.to_a.flatten.each_with_index do |str, i|
             next if !str || !form.raw['auditable'] ||
                 !form.raw['auditable'][i] || !form.raw['auditable'][i]['type'] ||
                 form.raw['auditable'][i]['type'].downcase != 'hidden'
 
             found_token = true if( csrf_token?( str ) )
-        }
+        end
 
         link_vars = parse_url_vars( form.action )
-        if( !link_vars.empty? )
+        if !link_vars.empty?
             # and we also need to check for a token in the form action
-            link_vars.values.each {
-                |val|
+            link_vars.values.each do |val|
                 next if !val
-                found_token = true  if( csrf_token?( val ) )
-            }
+                found_token = true if csrf_token?( val )
+            end
         end
 
         !found_token
@@ -144,34 +135,15 @@ class CSRF < Arachni::Module::Base
     # @return  [Array]  forms to be checked for CSRF
     #
     def logged_in_only( logged_out )
-        csrf_forms = []
-
-        @page.forms.each {
-            |form|
-
-            next if form.auditable.size == 0
-
-            if !( forms_include?( logged_out, form ) )
-                csrf_forms << form
-            end
-
-        }
-
-        return csrf_forms
+        page.forms.map do |form|
+            next if form.auditable.size == 0 || forms_include?( logged_out, form )
+            form
+        end.compact
     end
 
     def forms_include?( forms, form )
-
-        forms.each {
-            |i_form|
-
-            if( form.id == i_form.id )
-                return true
-            end
-
-        }
-
-        return false
+        forms.each { |i_form| return true if form.id == i_form.id }
+        false
     end
 
     #
@@ -180,7 +152,6 @@ class CSRF < Arachni::Module::Base
     # @param  [String]  str
     #
     def csrf_token?( str )
-
         # we could use regexps but i kinda like lcamtuf's (Michal's) way
         base16_len_min    = 8
         base16_len_max    = 45
@@ -196,27 +167,23 @@ class CSRF < Arachni::Module::Base
         len = str.size
         digit_cnt = str.scan(/[0-9]+/).join( '' ).size
 
-        if( len >= base16_len_min &&
+        if len >= base16_len_min &&
             len <= base16_len_max &&
             digit_cnt >= base16_digit_num
-          )
             return true
         end
 
         upper_cnt = str.scan(/[A-Z]+/).join( '' ).size
         slash_cnt = str.scan(/\/+/).join( '' ).size
 
-        if( len >= base64_len_min && len <= base64_len_max &&
+        if len >= base64_len_min && len <= base64_len_max &&
             ( ( digit_cnt >= base64_digit_num && upper_cnt >= base64_case ) ||
               digit_cnt >= base64_digit_num2 ) &&
             slash_cnt <= base64_slash_cnt
-          )
-
             return true
         end
 
-        return false
-
+        false
     end
 
 
@@ -254,7 +221,7 @@ class CSRF < Arachni::Module::Base
                 Issue::Element::FORM
             ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.2.3',
+            :version        => '0.2.4',
             :references     => {
                 'Wikipedia' => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',

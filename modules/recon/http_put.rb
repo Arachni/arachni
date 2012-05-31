@@ -20,10 +20,9 @@ module Modules
 #
 # HTTP PUT recon module.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.3
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.4
 #
 class HTTP_PUT < Arachni::Module::Base
 
@@ -40,14 +39,12 @@ class HTTP_PUT < Arachni::Module::Base
 
         body = 'Created by Arachni. PUT' + seed
 
-        @http.request( path, :method => :put, :body => body ).on_complete {
-            |res|
+        http.request( path, :method => :put, :body => body ) do |res|
             next if res.code != 201
-            @http.get( path ).on_complete {
-                |res|
+            http.get( path ) do |res|
                 __log_results( res ) if res.body && res.body.substring?( 'PUT' + seed )
-            }
-        }
+            end
+        end
     end
 
     def self.info
@@ -56,7 +53,7 @@ class HTTP_PUT < Arachni::Module::Base
             :description    => %q{Checks if uploading files is possible using the HTTP PUT method.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {},
             :targets        => { 'Generic' => 'all' },
             :issue   => {
@@ -73,7 +70,6 @@ class HTTP_PUT < Arachni::Module::Base
     end
 
     def __log_results( res )
-
         log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,

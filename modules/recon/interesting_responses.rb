@@ -46,7 +46,7 @@ class InterestingResponses < Arachni::Module::Base
         print_status( "Listening..." )
 
         # tell the HTTP interface to cal this block every-time a request completes
-        @http.add_on_complete do |res|
+        http.add_on_complete do |res|
             __log_results( res ) if !IGNORE_CODES.include?( res.code ) && !res.body.empty?
         end
     end

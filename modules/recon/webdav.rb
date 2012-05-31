@@ -23,17 +23,14 @@ module Modules
 # It doesn't check for a functional DAV implementation but uses the
 # OPTIONS HTTP method to see if 'PROPFIND' is allowed.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.3
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
 #
 class WebDav < Arachni::Module::Base
-
-    include Arachni::Module::Utilities
 
     def prepare
         #
@@ -53,19 +50,19 @@ class WebDav < Arachni::Module::Base
     end
 
     def run
-        path = get_path( @page.url )
+        path = get_path( page.url )
         return if @@__found || @@__auditted.include?( path )
 
         print_status( "Checking: #{path}" )
 
-        @http.request( path, :method => :options ).on_complete {
-            |res|
+        http.request( path, :method => :options ) do |res|
             begin
-                allowed = res.headers_hash['Allow'].split( ',' ).map{ |method| method.strip }
+                allowed = res.headers_hash['Allow'].split( ',' ).
+                    map { |method| method.strip }
                 __log_results( res ) if allowed.include?( @__check )
             rescue
             end
-        }
+        end
 
         @@__auditted << path
     end
@@ -76,7 +73,7 @@ class WebDav < Arachni::Module::Base
             :description    => %q{Checks for WebDAV enabled directories.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
+            :version        => '0.1.3',
             :references     => {
                 'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',

@@ -18,22 +18,15 @@ module Arachni
 module Modules
 
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.3
 #
 class Htaccess < Arachni::Module::Base
 
-    include Arachni::Module::Utilities
-
     def run
-        return if @page.code != 401
-
-        @http.post( @page.url ).on_complete {
-            |res|
-            __log_results( res ) if res.code == 200
-        }
+        return if page.code != 401
+        http.post( page.url ).on_complete { |res| __log_results( res ) if res.code == 200 }
     end
 
     def self.info
@@ -60,7 +53,6 @@ class Htaccess < Arachni::Module::Base
     end
 
     def __log_results( res )
-
         log_issue(
             :url          => res.effective_url,
             :method       => res.request.method.to_s.upcase,

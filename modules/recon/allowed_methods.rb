@@ -20,17 +20,14 @@ module Modules
 #
 # Allowed HTTP methods recon module.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.2
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
 #
 class AllowedMethods < Arachni::Module::Base
-
-    include Arachni::Module::Utilities
 
     def prepare
         @@__ran ||= false
@@ -41,10 +38,9 @@ class AllowedMethods < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        @http.request( URI( normalize_url( @page.url ) ).host, :method => :options ).on_complete {
-            |res|
+        http.request( uri_parse( page.url ).host, method: :options ) do |res|
             __log_results( res )
-        }
+        end
     end
 
     def clean_up
@@ -57,7 +53,7 @@ class AllowedMethods < Arachni::Module::Base
             :description    => %q{Checks for supported HTTP methods.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
             :references     => {
             },
             :targets        => { 'Generic' => 'all' },

@@ -22,18 +22,15 @@ module Modules
 #
 # But not really...it only checks if the TRACE HTTP method is enabled.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.3
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
 # @see http://www.owasp.org/index.php/Cross_Site_Tracing
 #
 class XST < Arachni::Module::Base
-
-    include Arachni::Module::Utilities
 
     def prepare
         # we need to run only once
@@ -45,13 +42,11 @@ class XST < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        @http.trace( URI( normalize_url( @page.url ) ).host ).on_complete {
-            |res|
+        http.trace( uri_parse( page.url ).host ) do |res|
             # checking for a 200 code is not enought, there are some weird
-            # webservers out there that don't give a flying fuck about standards
+            # web servers out there that don't give a flying fuck about standards
             __log_results( res ) if res.code == 200 && !res.body.empty?
-        }
-
+        end
     end
 
     def clean_up
@@ -64,7 +59,7 @@ class XST < Arachni::Module::Base
             :description    => %q{Sends an HTTP TRACE request and checks if it succeeded.},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :references     => {
                 'CAPEC'     => 'http://capec.mitre.org/data/definitions/107.html',
                 'OWASP'     => 'http://www.owasp.org/index.php/Cross_Site_Tracing'
@@ -86,15 +81,14 @@ class XST < Arachni::Module::Base
     end
 
     def __log_results( res )
-
         log_issue(
-            :url          => res.effective_url,
-            :method       => res.request.method.to_s.upcase,
-            :elem         => Issue::Element::SERVER,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
+            url:      res.effective_url,
+            method:   res.request.method.to_s.upcase,
+            elem:     Issue::Element::SERVER,
+            response: res.body,
+            headers: {
+                request:  res.request.headers,
+                response: res.headers
             }
         )
 

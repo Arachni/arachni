@@ -20,18 +20,15 @@ module Modules
 #
 # XSS in path audit module.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.6
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.7
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
 class XSSPath < Arachni::Module::Base
-
-    include Arachni::Module::Utilities
 
     def prepare
         @_tag_name = 'my_tag_' + seed
@@ -47,38 +44,31 @@ class XSSPath < Arachni::Module::Base
     end
 
     def run
-        path = get_path( @page.url )
+        path = get_path( page.url )
 
         return if @@audited.include?( path )
         @@audited << path
 
-        @__injection_strs.each {
-            |str|
-
+        @__injection_strs.each do |str|
             url  = path + str
 
             print_status( "Checking for: #{url}" )
 
-            req  = @http.get( url )
+            req  = http.get( url )
 
-            req.on_complete {
-                |res|
-                check_and_log( res, str )
-            }
-        }
+            req.on_complete { |res| check_and_log( res, str ) }
+        end
     end
 
     def check_and_log( res, str )
         # check for the existence of the tag name before parsing to verify
         # no reason to waste resources...
-        return if ! res.body.substring?( @_tag_name )
+        return if !res.body.substring?( @_tag_name )
 
         doc = Nokogiri::HTML( res.body )
 
         # see if we managed to successfully inject our element
-        if !doc.xpath( "//#{@_tag_name}" ).empty?
-            __log_results( res, str )
-        end
+        __log_results( res, str ) if !doc.xpath( "//#{@_tag_name}" ).empty?
     end
 
 
@@ -88,7 +78,7 @@ class XSSPath < Arachni::Module::Base
             :description    => %q{Cross-Site Scripting module for path injection},
             :elements       => [ ],
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.6',
+            :version        => '0.1.7',
             :references     => {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
@@ -111,6 +101,7 @@ class XSSPath < Arachni::Module::Base
 
     def __log_results( res, id )
         url = res.effective_url
+
         log_issue(
             :var          => 'n/a',
             :url          => url,
