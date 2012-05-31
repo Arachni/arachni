@@ -9,13 +9,15 @@ describe Arachni::Parser do
         @opts.audit_forms = true
         @opts.audit_cookies = true
         @opts.audit_headers = true
+
+        @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
+
         @opts.cookies = [
             Arachni::Parser::Element::Cookie.new( @url,
                 { 'name_from_cookiejar' => 'val_from_cookiejar' }
             )
         ]
 
-        @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
         @response = Arachni::HTTP.instance.get(
             @url,
             async: false,
