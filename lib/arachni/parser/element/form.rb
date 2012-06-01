@@ -140,7 +140,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     #
     # Overrides {Arachni::Parser::Element::Mutable#mutations} adding support
     # for mutations with:
-    # * sample values (filled by {Arachni::Module::KeyFiller#fill})
+    # * sample values (filled by {Arachni::Module::KeyFiller.fill})
     # * original values
     # * password fields with identical values (in order to pass server-side validation)
     #
