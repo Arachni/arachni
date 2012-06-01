@@ -114,7 +114,7 @@ describe Arachni::Parser::Element::Auditable do
 
     describe '#audit' do
 
-        before { Arachni::Parser::Element::Auditable.reset }
+        before( :each ) { Arachni::Parser::Element::Auditable.reset }
 
         context 'when called with no opts' do
             it 'should use the defaults' do
@@ -131,6 +131,110 @@ describe Arachni::Parser::Element::Auditable do
                 @orphan.audit( @seed ) { cnt += 1 }
                 @orphan.http.run
                 cnt.should == 4
+            end
+        end
+
+        context 'when the action matches a #skip_path? rule' do
+            it 'should return immediately' do
+                ran = false
+                @auditable.audit( @seed ) { ran = true }
+                @auditor.http.run
+                ran.should be_true
+
+                Arachni::Parser::Element::Auditable.reset
+
+                opts = Arachni::Options.instance
+                opts.exclude << @auditable.action
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }
+                @auditor.http.run
+                ran.should be_false
+
+                opts.exclude.clear
+
+                Arachni::Parser::Element::Auditable.reset
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }
+                @auditor.http.run
+                ran.should be_true
+            end
+        end
+
+        context 'when the element has no auditable inputs' do
+            it 'should return immediately' do
+                e = Arachni::Parser::Element::Link.new( @url )
+
+                ran = false
+                e.audit( @seed ) { ran = true }.should be_false
+                e.http.run
+
+                ran.should be_false
+            end
+        end
+
+        context 'when the auditor\'s #skip? method returns true for a mutation' do
+            it 'should be skipped' do
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_true
+
+                Arachni::Parser::Element::Auditable.reset
+
+                def @auditor.skip?( elem )
+                    true
+                end
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_false
+
+                Arachni::Parser::Element::Auditable.reset
+
+                def @auditor.skip?( elem )
+                    false
+                end
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_true
+            end
+        end
+
+        context 'when the element\'s #skip? method returns true for a mutation' do
+            it 'should be skipped' do
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_true
+
+                Arachni::Parser::Element::Auditable.reset
+
+                def @auditable.skip?( elem )
+                    true
+                end
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_false
+
+                Arachni::Parser::Element::Auditable.reset
+
+                def @auditable.skip?( elem )
+                    false
+                end
+
+                ran = false
+                @auditable.audit( @seed ) { ran = true }.should be_true
+                @auditor.http.run
+                ran.should be_true
             end
         end
 

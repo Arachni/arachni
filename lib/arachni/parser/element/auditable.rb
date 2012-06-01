@@ -255,8 +255,8 @@ module Auditable
         raise 'Block required.' if !block_given?
 
         if skip_path?( @action )
-            print_debug "Matched skip rule, will not audit element: #{id}"
-            return
+            print_debug "Matched skip rule, returning."
+            return false
         end
 
         @@audited ||= Set.new
@@ -264,18 +264,31 @@ module Auditable
         opts[:injected_orig] = injection_str
 
         # if we don't have any auditable elements just return
-        return if auditable.empty?
+        if auditable.empty?
+            print_debug "The element has no auditable inputs, returning."
+            return false
+        end
 
         @auditor ||= opts[:auditor]
         opts[:auditor] ||= @auditor
 
         audit_id = audit_id( injection_str, opts )
-        return if !opts[:redundant] && audited?( audit_id )
+        if !opts[:redundant] && audited?( audit_id )
+            print_debug 'The element has already been audited, returning.'
+            print_debug '-- Set the \':redundant\' option to \'true\' to override.'
+            return false
+        end
 
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each do |elem|
-            next if !orphan? && @auditor.skip?( elem )
-            next if skip?( elem )
+            if !orphan? && @auditor.skip?( elem )
+                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{elem.id}"
+                next
+            end
+            if skip?( elem )
+                print_debug "Self's #skip? method returned true for mutation, skipping: #{elem.id}"
+                next
+            end
 
             opts[:altered] = elem.altered.dup
             opts[:element] = type
