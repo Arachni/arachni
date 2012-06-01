@@ -24,6 +24,8 @@ class Object
     #
     # Deep-clones self using a Marshal dump-load.
     #
+    # @return   [Object]    duplicate of self
+    #
     def deep_clone
         begin
             Marshal.load( Marshal.dump( self ) )
