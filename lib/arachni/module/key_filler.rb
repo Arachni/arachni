@@ -20,14 +20,12 @@ module Module
 #
 # KeyFiller class
 #
-# Included by {Module::Auditor}.<br/>
+# Included by {Module::Auditor}
+#
 # Tries to fill in input parameters with values of proper type
 # based on their name.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class KeyFiller
 
@@ -62,6 +60,7 @@ class KeyFiller
     # @return   [Hash]
     #
     def self.fill( hash )
+        hash = hash.dup
         hash.keys.each do |key|
             next if hash[key] && !hash[key].empty?
 
