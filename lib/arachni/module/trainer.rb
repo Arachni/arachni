@@ -56,7 +56,7 @@ class Trainer
     # @param    [Arachni::Parser::Page]    page
     #
     def page=( page )
-        @page = page.deep_clone
+        @page = page.dup
     end
 
     #
@@ -183,7 +183,7 @@ class Trainer
     def train_links!( res, redir = false )
         return [], 0  if !@opts.audit_links
 
-        links = @parser.links.deep_clone
+        links = @parser.links
         if redir
             url = @parser.to_absolute( url_sanitize( res.effective_url ) )
             links << Arachni::Parser::Element::Link.new( url, {
