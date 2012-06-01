@@ -255,8 +255,13 @@ module Output
     #
     # @return    [void]
     #
-    def debug
+    def debug_on
         @@debug = true
+    end
+    alias :debug :debug_on
+
+    def debug_off
+        @@debug = false
     end
 
     # Returns the {@@debug} flag
