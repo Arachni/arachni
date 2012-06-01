@@ -325,36 +325,29 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         end
     end
 
+    def audit_id( injection_str = '', opts = {} )
+        str = if original?
+            ORIGINAL_VALUES
+            opts[:no_auditor] = true
+        elsif sample?
+            SAMPLE_VALUES
+            opts[:no_auditor] = true
+        else
+            injection_str
+        end
+        super( str, opts )
+    end
+
     def http_request( opts, &block )
-        params   = opts[:params]
-        altered  = opts[:altered]
-
-        curr_opts = opts.dup
-        if altered == ORIGINAL_VALUES
-            orig_id = audit_id( ORIGINAL_VALUES )
-
-            return if !opts[:redundant] && audited?( orig_id )
-            audited!( orig_id )
-
-            print_debug( 'Submitting form with original values;' +
-                ' overriding trainer option.' )
+        if (original? || sample?) && !audited?( audit_id )
+            state = original? ? 'original' : 'sample'
+            print_debug( "Submitting form with #{state} values; overriding trainer option." )
             opts[:train] = true
             print_debug_trainer( opts )
         end
 
-        if altered == SAMPLE_VALUES
-            sample_id = audit_id( SAMPLE_VALUES )
-
-            return if !opts[:redundant] && audited?( sample_id )
-            audited!( sample_id )
-
-            print_debug( 'Submitting form with sample values;' +
-                ' overriding trainer option.' )
-            opts[:train] = true
-            print_debug_trainer( opts )
-        end
-
-        @method.downcase.to_s != 'get' ? http.post( @action, opts, &block ) : http.get( @action, opts, &block )
+        @method.downcase.to_s != 'get' ?
+            http.post( @action, opts, &block ) : http.get( @action, opts, &block )
     end
 
 end
