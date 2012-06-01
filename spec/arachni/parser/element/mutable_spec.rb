@@ -7,9 +7,39 @@ describe Arachni::Parser::Element::Mutable do
         @mutable = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs  )
     end
 
+    describe '#original?' do
+        context 'when the element has not been mutated' do
+            it 'should return true' do
+                e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+                e.original?.should be_true
+            end
+        end
+        context 'when the element has been mutated' do
+            it 'should return false' do
+                e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+                e.mutations( @seed ).first.original?.should be_false
+            end
+        end
+    end
+
+    describe '#mutated?' do
+        context 'when the element has not been mutated' do
+            it 'should return true' do
+                e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+                e.mutated?.should be_false
+            end
+        end
+        context 'when the element has been mutated' do
+            it 'should return false' do
+                e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+                e.mutations( @seed ).first.mutated?.should be_true
+            end
+        end
+    end
+
     describe '#mutations' do
         it 'should only affect #auditable and #altered' do
-            e = Arachni::Parser::Element::Form.new( 'http://test.com', @inputs )
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.mutations( @seed ).each do |m|
                 e.url.should == m.url
                 e.action.should == m.action
@@ -57,13 +87,6 @@ describe Arachni::Parser::Element::Mutable do
                             'input_two' => 'value 2'
                         }
                     ).mutations( @seed, skip: [ 'input_one' ] )
-                end
-            end
-            describe :skip_orig do
-                it 'should skip adding a mutation with original and default values' do
-                    Arachni::Parser::Element::Form.new( 'http://test.com', inputs: @inputs )
-                    .mutations( @seed, skip_orig: true )
-                    .size.should == 4
                 end
             end
             describe :param_flip do

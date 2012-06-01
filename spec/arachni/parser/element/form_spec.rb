@@ -30,6 +30,71 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#mutations' do
+        it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
+            inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
+            e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
+
+            has_original ||= false
+            has_sample   ||= false
+
+            e.mutations( 'seed' ).each do |m|
+                m.url.should == e.url
+                m.action.should == e.action
+
+                if m.original?
+                    m.altered.should == Arachni::Parser::Element::Form::ORIGINAL_VALUES
+                    m.auditable.should == e.auditable
+                    has_original ||= true
+                end
+
+                if m.sample?
+                    m.altered.should == Arachni::Parser::Element::Form::SAMPLE_VALUES
+                    m.auditable.should == Arachni::Module::KeyFiller.fill( e.auditable )
+                    has_sample ||= true
+                end
+
+                if !m.original? && !m.sample?
+                    m.altered.should_not == e.altered
+                    m.auditable.should_not == e.auditable
+                end
+            end
+
+            has_original.should be_true
+            has_sample.should be_true
+        end
+
+        context 'when it contains more than 1 password field' do
+            it 'should include mutations which have the same values for all of them' do
+                e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                    'auditable' => [
+                        {
+                            'type' => 'password',
+                            'name' => 'my_pass'
+                        },
+                        {
+                            'type' => 'password',
+                            'name' => 'my_pass_validation'
+                        }
+                    ]
+                )
+
+                e.mutations( 'seed' ).reject do |m|
+                    m.auditable['my_pass'] != m.auditable['my_pass_validation']
+                end.size.should == 3
+            end
+        end
+
+        describe :skip_orig do
+            it 'should not add mutations with original nor default values' do
+                e = Arachni::Parser::Element::Form.new( 'http://test.com', @inputs )
+                mutations = e.mutations( @seed, skip_orig: true )
+                mutations.size.should == 4
+                mutations.reject { |m| m.mutated? }.size.should == 0
+            end
+        end
+    end
+
     describe '#submit' do
         context 'when method is post' do
             it 'should perform a POST HTTP request' do

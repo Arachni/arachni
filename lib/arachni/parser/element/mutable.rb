@@ -82,6 +82,16 @@ module Mutable
         skip:       []
     }
 
+    # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
+    def original?
+        self.altered.nil?
+    end
+
+    # @return   [Bool]  +true+ if the element has been mutated, +false+ otherwise.
+    def mutated?
+        !original?
+    end
+
     # @return   [Set]   names of input vectors to be excluded from {#mutations}.
     def immutables
         @immutables ||= Set.new
@@ -93,8 +103,6 @@ module Mutable
     #
     # Vector names in {#immutables} will be excluded.
     #
-    # TODO: Move type specific mutations into their respective classes.
-    #
     # @param    [String]  injection_str  the string to inject
     # @param    [Hash]    opts           {MUTATION_OPTIONS}
     #
@@ -102,31 +110,12 @@ module Mutable
     #
     # @see #immutables
     #
-    def mutations( injection_str, opts = { } )
+    def mutations( injection_str, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
         hash = auditable.dup
 
         var_combo = []
         return [] if !hash || hash.size == 0
-
-        if self.is_a?( Arachni::Parser::Element::Form ) && !opts[:skip_orig]
-
-            if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL ) )
-                # this is the original hash, in case the default values
-                # are valid and present us with new attack vectors
-                elem = self.dup
-                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_ORIGINAL
-                var_combo << elem
-            end
-
-            if !audited?( audit_id( Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE ) )
-                duphash = hash.dup
-                elem = self.dup
-                elem.auditable = Arachni::Module::KeyFiller.fill( duphash )
-                elem.altered = Arachni::Parser::Element::Form::FORM_VALUES_SAMPLE
-                var_combo << elem
-            end
-        end
 
         chash = hash.dup
         hash.keys.each do |k|
@@ -158,36 +147,7 @@ module Mutable
             var_combo << elem
         end
 
-        # if there are two password type fields in the form there's a good
-        # chance that it's a 'please retype your password' thing so make sure
-        # that we have a variation which has identical password values
-        if self.is_a?( Arachni::Parser::Element::Form )
-            chash = hash.dup
-            chash = Arachni::Module::KeyFiller.fill( chash )
-            delem = self.dup
-
-            add = false
-            @raw['auditable'].each do |input|
-                if input['type'] == 'password'
-                    delem.altered = input['name']
-
-                    opts[:format].each do |format|
-                        chash[input['name']] =
-                            format_str( injection_str, chash[input['name']], format )
-                    end
-
-                    add = true
-                end
-            end if @raw['auditable']
-
-            if add
-                delem.auditable = chash
-                var_combo << delem
-            end
-        end
-
         print_debug_injection_set( var_combo, opts )
-
         var_combo.uniq
     end
 

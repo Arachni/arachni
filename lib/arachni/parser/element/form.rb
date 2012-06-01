@@ -19,8 +19,8 @@ require opts.dir['lib'] + 'parser/element/base'
 
 class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
-    FORM_VALUES_ORIGINAL  = '__original_values__'
-    FORM_VALUES_SAMPLE    = '__sample_values__'
+    ORIGINAL_VALUES = '__original_values__'
+    SAMPLE_VALUES   = '__sample_values__'
 
     def initialize( url, raw = {} )
         super( url, raw )
@@ -68,32 +68,106 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     def simple
         form = {}
 
+        form['auditable'] = {}
+        if @raw['auditable'] && !@raw['auditable'].empty?
+            @raw['auditable'].each do |item|
+                next if !item['name']
+                form['auditable'][item['name']] = item['value']
+            end
+        end
+
         if @raw['attrs']
             form['attrs'] = @raw['attrs']
-            form['auditable'] = {}
-            if @raw['auditable'] && !@raw['auditable'].empty?
-                @raw['auditable'].each do |item|
-                    next if !item['name']
-                    form['auditable'][item['name']] = item['value']
-                end
-            end
         else
-            form = {
-                'attrs' => {
-                    'method' => @method,
-                    'action' => @action
-                },
-                'auditable' => @auditable
+            form['attrs'] = {
+                'method' => @method,
+                'action' => @action
             }
         end
 
-        form['auditable'] ||= {}
+        if form['auditable'].empty? && @auditable && !@auditable.empty?
+            form['auditable'] = @auditable
+        end
+
         form.dup
     end
 
+    # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
+    def original?
+        super || self.altered == ORIGINAL_VALUES
+    end
+
+    # @return   [Bool]  +true+ if the element has been populated with sample values,
+    #                     +false+ otherwise.
+    def sample?
+        self.altered == SAMPLE_VALUES
+    end
+
     #
+    # Overrides {Arachni::Parser::Element::Mutable#mutations} adding support
+    # for mutations with:
+    # * sample values (filled by {Arachni::Module::KeyFiller#fill})
+    # * original values
+    # * password fields with identical values (in order to pass server-side validation)
+    #
+    # @return   [Array<Arachni::Parser::Element::Form>]
+    #
+    # @see Arachni::Parser::Element::Mutable#mutations
+    # @see Arachni::Module::KeyFiller#fill
+    #
+    def mutations( injection_str, opts = {} )
+        opts = MUTATION_OPTIONS.merge( opts )
+        var_combo = super( injection_str, opts )
+
+        if !opts[:skip_orig]
+
+            if !audited?( audit_id( ORIGINAL_VALUES ) )
+                # this is the original hash, in case the default values
+                # are valid and present us with new attack vectors
+                elem = self.dup
+                elem.altered = ORIGINAL_VALUES
+                var_combo << elem
+            end
+
+            if !audited?( audit_id( SAMPLE_VALUES ) )
+                elem = self.dup
+                elem.auditable = Arachni::Module::KeyFiller.fill( auditable.dup )
+                elem.altered = SAMPLE_VALUES
+                var_combo << elem
+            end
+        end
+
+        return var_combo.uniq if !@raw['auditable']
+
+        # if there are two password type fields in the form there's a good
+        # chance that it's a 'please retype your password' thing so make sure
+        # that we have a variation which has identical password values
+        filled_auditables = Arachni::Module::KeyFiller.fill( auditable.dup )
+        delem = self.dup
+
+        found_passwords = false
+        @raw['auditable'].each do |input|
+            if input['type'] == 'password'
+                delem.altered = input['name']
+
+                opts[:format].each do |format|
+                    filled_auditables[input['name']] =
+                        format_str( injection_str, filled_auditables[input['name']], format )
+                end
+
+                found_passwords = true
+            end
+        end
+
+        if found_passwords
+            delem.auditable = filled_auditables
+            var_combo << delem
+        end
+
+        var_combo.uniq
+    end
+
     # @return   [String]    'form'
-    #
     def type
         Arachni::Module::Auditor::Element::FORM
     end
@@ -222,8 +296,8 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         altered  = opts[:altered]
 
         curr_opts = opts.dup
-        if altered == FORM_VALUES_ORIGINAL
-            orig_id = audit_id( FORM_VALUES_ORIGINAL )
+        if altered == ORIGINAL_VALUES
+            orig_id = audit_id( ORIGINAL_VALUES )
 
             return if !opts[:redundant] && audited?( orig_id )
             audited!( orig_id )
@@ -234,8 +308,8 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             print_debug_trainer( opts )
         end
 
-        if altered == FORM_VALUES_SAMPLE
-            sample_id = audit_id( FORM_VALUES_SAMPLE )
+        if altered == SAMPLE_VALUES
+            sample_id = audit_id( SAMPLE_VALUES )
 
             return if !opts[:redundant] && audited?( sample_id )
             audited!( sample_id )
