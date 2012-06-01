@@ -108,6 +108,30 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#audit' do
+        context 'when auditing a form with #original? or #sample? values' do
+            it 'should only allow it to happen once' do
+                inputs = { inputs: { 'name' => nil } }
+                f = Arachni::Parser::Element::Form.new( @url, inputs.merge( method: 'get' ) )
+
+                opts = {
+                    format: [ Arachni::Parser::Element::Mutable::Format::STRAIGHT  ],
+                    remove_id: true
+                }
+
+                altered = []
+                f.audit( '', opts ) { |_, _, elem| altered << (elem.sample? || elem.original?) }
+                @http.run
+                altered.count( true ).should == 2
+
+                altered = []
+                f.audit( '', opts ) { |_, _, elem| altered << elem.altered }
+                @http.run
+                altered.should be_empty
+            end
+        end
+    end
+
     describe '#submit' do
         context 'when method is post' do
             it 'should perform a POST HTTP request' do
