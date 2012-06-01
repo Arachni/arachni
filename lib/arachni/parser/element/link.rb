@@ -35,7 +35,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     #   * 'action'
     #   * :action
     #
-    #   and for an auditable inputs <pre>Hash</pre> in:
+    #   and for an auditable inputs +Hash+ in:
     #   * 'vars'
     #   * :vars
     #   * 'inputs'

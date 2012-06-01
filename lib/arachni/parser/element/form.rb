@@ -22,22 +22,56 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
+    #
+    # Creates a new Form element from a URL and auditable data.
+    #
+    # @param    [String]    url     owner URL -- URL of the page which contained the
+    # @param    [Hash]    raw
+    #   If empty, the element will be initialized without auditable inputs.
+    #
+    #   If a full +Hash+ is passed, it will look for an actionable URL
+    #   +String+ in the following keys:
+    #   * 'href'
+    #   * :href
+    #   * 'action'
+    #   * :action
+    #
+    #   For an method +String+ in:
+    #   * 'method'
+    #   * :method
+    #
+    #   For an auditable inputs +Hash+ in:
+    #   * 'inputs'
+    #   * :inputs
+    #   * 'auditable'
+    #
+    #   these should contain inputs in name=>value pairs.
+    #
     def initialize( url, raw = {} )
         super( url, raw )
 
+        was_opts_hash = false
         begin
             self.action = @raw['action'] || @raw[:action] || @raw['attrs']['action']
+            was_opts_hash = true
         rescue
             self.action = self.url
         end
 
         begin
             self.method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
+            was_opts_hash = true
         rescue
             self.method = 'post'
         end
 
-        self.auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable'] || {}
+        if !was_opts_hash && (@raw.keys & [:inputs, 'inputs', 'auditable']).empty?
+            self.auditable = @raw
+        else
+            self.auditable = @raw[:inputs] || @raw['inputs'] || simple['auditable']
+        end
+
+        self.auditable ||= {}
 
         @orig = self.auditable.dup
         @orig.freeze
@@ -110,10 +144,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # * original values
     # * password fields with identical values (in order to pass server-side validation)
     #
-    # @return   [Array<Arachni::Parser::Element::Form>]
+    # @return   [Array<Form>]
     #
     # @see Arachni::Parser::Element::Mutable#mutations
-    # @see Arachni::Module::KeyFiller#fill
+    # @see Arachni::Module::KeyFiller.fill
     #
     def mutations( injection_str, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
@@ -173,7 +207,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     #
-    # Returns an array of forms based on HTTP response.
+    # Returns an array of forms by parsing the body of an HTTP response.
     #
     # @param   [Typhoeus::Response]    response
     #
@@ -184,7 +218,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     #
-    # Returns an array of forms from a document.
+    # Returns an array of forms from an HTML document.
     #
     # @param    [String]    url     request URL
     # @param    [String, Nokogiri::HTML::Document]    document

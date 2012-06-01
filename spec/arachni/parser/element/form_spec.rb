@@ -24,9 +24,22 @@ describe Arachni::Parser::Element::Form do
         @http = Arachni::HTTP.instance
     end
 
-    context 'when initialized with out method' do
-        it 'should default to "post"' do
-            Arachni::Parser::Element::Form.new( @url, @inputs ).method.should == 'post'
+    describe '#new' do
+        context 'when passed opts without a method' do
+            it 'should default to "post"' do
+                Arachni::Parser::Element::Form.new( @url, @inputs ).method.should == 'post'
+            end
+        end
+        context 'when passed opts without an action URL' do
+            it 'should default to the owner URL' do
+                Arachni::Parser::Element::Form.new( @url ).action.should == @url
+            end
+        end
+        context 'when passed opts without auditable inputs or any other expected option' do
+            it 'should use the contents of the opts hash as auditable inputs' do
+                e = Arachni::Parser::Element::Form.new( @url, @inputs[:inputs] )
+                e.auditable.should == @inputs[:inputs]
+            end
         end
     end
 
