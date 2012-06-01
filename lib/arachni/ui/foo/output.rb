@@ -81,7 +81,11 @@ module Output
     def verbose?
     end
 
-    def debug
+    def debug_on
+    end
+    alias :debug :debug_on
+
+    def debug_off
     end
 
     def debug?
