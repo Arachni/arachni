@@ -88,7 +88,7 @@ class Page
     #
     # Cookies extracted from the supplied cookiejar
     #
-    # @return    [Hash]
+    # @return    [Array<Arachni::Parser::Element::Cookie>]
     #
     attr_accessor :cookiejar
 
