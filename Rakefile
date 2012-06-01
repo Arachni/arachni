@@ -62,7 +62,7 @@ desc "Profile Arachni"
 task :profile do
     sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
         "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
-        " ./bin/arachni http://demo.testfire.net --link-count=5 && " +
+        " ./bin/arachni http://demo.testfire.net && " +
         "pprof.rb --gif /tmp/profile.dat > profile.gif"
 end
 
