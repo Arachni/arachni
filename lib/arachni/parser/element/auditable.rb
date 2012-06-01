@@ -254,8 +254,8 @@ module Auditable
     def audit( injection_str, opts = { }, &block )
         raise 'Block required.' if !block_given?
 
-        if skip_path?( @action )
-            print_debug "Matched skip rule, returning."
+        if skip_path?( self.action )
+            print_debug "Element's action matches skip rule, returning (#{self.action})."
             return false
         end
 
@@ -273,20 +273,18 @@ module Auditable
         opts[:auditor] ||= @auditor
 
         audit_id = audit_id( injection_str, opts )
-        if !opts[:redundant] && audited?( audit_id )
-            print_debug 'The element has already been audited, returning.'
-            print_debug '-- Set the \':redundant\' option to \'true\' to override.'
-            return false
-        end
+        return false if !opts[:redundant] && audited?( audit_id )
 
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each do |elem|
             if !orphan? && @auditor.skip?( elem )
-                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{elem.id}"
+                mid = elem.audit_id( injection_str, opts )
+                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
             if skip?( elem )
-                print_debug "Self's #skip? method returned true for mutation, skipping: #{elem.id}"
+                mid = elem.audit_id( injection_str, opts )
+                print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
@@ -457,7 +455,7 @@ module Auditable
         ret = false
         @@audited ||= Set.new
         if @@audited.include?( elem_audit_id )
-            msg = 'Skipping, already audited: ' + elem_audit_id
+            msg = "Skipping, already audited: #{elem_audit_id}"
             ret = true
         elsif !within_scope?
             msg = 'Skipping, out of instance scope.'
