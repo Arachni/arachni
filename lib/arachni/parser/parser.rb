@@ -109,7 +109,7 @@ class Parser
         @opts = opts
 
         @code = res.code
-        self.url  = normalize_url( res.effective_url )
+        self.url  = res.effective_url
         @html = res.body
         @response_headers = res.headers_hash
         @response = res
