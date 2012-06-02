@@ -28,6 +28,7 @@ opts = Arachni::Options.instance
 require opts.dir['lib'] + 'version'
 require opts.dir['lib'] + 'ruby'
 require opts.dir['lib'] + 'exceptions'
+require opts.dir['lib'] + 'cache'
 require opts.dir['lib'] + 'spider'
 require opts.dir['lib'] + 'parser'
 require opts.dir['lib'] + 'issue'

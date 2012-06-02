@@ -860,6 +860,8 @@ class Options
         return if !str
 
         require @dir['lib'] + 'exceptions'
+        require @dir['lib'] + 'ruby'
+        require @dir['lib'] + 'cache'
         require @dir['lib'] + 'module/utilities'
 
         utils = Arachni::Module::Utilities

@@ -28,52 +28,9 @@ module Module
 #
 module Utilities
 
-    def uri_parser
-        @@uri_parser ||= URI::Parser.new
-    end
-
-    #
-    # @param    [String]    url     URL to parse
-    #
-    # @return   [Addressable::URI]
-    #
-    def uri_parse( url )
-        return if !url
-        @@uri_parse_cache ||= {}
-        return @@uri_parse_cache[url].dup if @@uri_parse_cache.include?( url )
-
-        #@@uri_parse_cache[url] = Addressable::URI.parse( url )
-        @@uri_parse_cache[url] = uri_parser.parse( url )
-        @@uri_parse_cache[url].dup
-    rescue
-        tries ||= 0
-        tries += 1
-        url = normalize_url( url )
-        retry if tries < 5
-    end
-
-    #
-    # URL encodes a string.
-    #
-    # @param [String, #to_str] string   The URI component to encode.
-    # @param [String, Regexp] bad_characters    class of characters to encode
-    #                                               formatted as a regexp
-    #
-    # @return   [String]    encoded string
-    #
-    def uri_encode( string, bad_characters = nil )
-        Addressable::URI.encode_component( *[string, bad_characters].compact )
-    end
-
-    #
-    # URL decodes a string.
-    #
-    # @param [String, #to_str] string   The URI component to encode.
-    #
-    # @return   [String]    decoded string
-    #
-    def uri_decode( string )
-        Addressable::URI.unencode( string )
+    # @return   [String]    random HEX (SHA2) string
+    def seed
+        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
 
     # @see Arachni::Parser::Element::Form.from_response
@@ -116,74 +73,108 @@ module Utilities
         Arachni::Parser::Element::Cookie.from_file( *args )
     end
 
-    #
-    # @param   [String]   url
-    #
-    # @return  [String]   path  full URL up to the path component,
-    #                           no resource, query etc.
-    #
-    def get_path( url )
-        uri  = uri_parse( normalize_url( url ) )
-        path = uri.path
-
-        if !File.extname( path ).empty?
-            path = File.dirname( path )
-        end
-
-        path << '/' if path[-1] != '/'
-
-        uri_str = uri.scheme + "://" + uri.host
-        uri_str << ':' + uri.port.to_s if uri.port && uri.port != 80
-        uri_str << path
+    # @return [URI::Parser] cached URI parser
+    def uri_parser
+        @@uri_parser ||= URI::Parser.new
     end
 
-    # @return   [String]    random HEX (SHA2) string
-    def seed
-        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
+    #
+    # ATTENTION: This method's results are cached for performance reasons.
+    # If you plan on doing something destructive with its return value duplicate
+    # it first because there may be references to it elsewhere.
+    #
+    # @param    [String]    url     URL to parse
+    #
+    # @return   [URI]
+    #
+    def uri_parse( url )
+        return if !url
+
+        tries ||= 0
+        tries += 1
+
+        @@uri_parse_cache      ||= Arachni::Cache.rr( 200 )
+        @@uri_parse_cache[url] ||= uri_parser.parse( url )
+    rescue
+        url = normalize_url( url )
+        retry if tries < 5
+    end
+
+    #
+    # URL encodes a string.
+    #
+    # @param [String, #to_str] string   The URI component to encode.
+    # @param [String, Regexp] bad_characters    class of characters to encode
+    #                                               formatted as a regexp
+    #
+    # @return   [String]    encoded string
+    #
+    def uri_encode( string, bad_characters = nil )
+        Addressable::URI.encode_component( *[string, bad_characters].compact )
+    end
+
+    #
+    # URL decodes a string.
+    #
+    # @param [String, #to_str] string   The URI component to encode.
+    #
+    # @return   [String]    decoded string
+    #
+    def uri_decode( string )
+        Addressable::URI.unencode( string )
     end
 
     #
     # Converts relative URL *link* into an absolute URL based on the
-    # location of the page
+    # location of the page.
     #
     # @param    [String]    relative_url
     # @param    [String]    reference_url    absolute url to use as a reference
     #
-    # @return [String]
+    # @return   [String]  absolute URL (frozen)
     #
     def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
         return reference_url if !relative_url || relative_url.empty?
 
-        @@to_absolute_cache ||= {}
+        @@to_absolute_cache ||= Arachni::Cache.rr( 500 )
         key = relative_url + ' :: ' + reference_url
 
-        if @@to_absolute_cache.include?( key )
-            return @@to_absolute_cache[key] ? @@to_absolute_cache[key].dup : @@to_absolute_cache[key]
+        if (v = @@to_absolute_cache[key]) && v == :err
+            return
+        elsif v
+            return v
         end
 
         relative  = uri_parse( normalize_url( relative_url ) )
         reference = uri_parse( reference_url )
 
-        @@to_absolute_cache[key] = reference.merge( relative ).to_s
-        @@to_absolute_cache[key].dup
-    rescue
-        @@to_absolute_cache[key] = nil
+        @@to_absolute_cache[key] = reference.merge( relative ).to_s.freeze
+    rescue# => e
+        #ap relative_url
+        #ap e
+        #ap e.backtrace
+        @@to_absolute_cache[key] = :err
+        nil
     end
 
     #
+    # Encodes and converts URLs to a common format.
+    #
     # @param    [String]    url
     #
-    # @return   [String]    normalized URL
+    # @return   [String]    normalized URL (frozen)
     #
     def normalize_url( url )
         return if !url || url.empty?
-        @@normalize_url_cache ||= {}
+        @@normalize_url_cache ||= Arachni::Cache.rr( 500 )
 
         url   = url.to_s.dup
         c_url = url.to_s.dup
 
-        if @@normalize_url_cache.include?( url )
-            return @@normalize_url_cache[url] ? @@normalize_url_cache[url].dup : @@normalize_url_cache[url]
+        if (v = @@normalize_url_cache[url]) && v == :err
+            return
+        elsif v
+            return v
         end
 
         url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
@@ -275,7 +266,7 @@ module Utilities
         normalized << components[:path] if components[:path]
         normalized << '?' + components[:query] if components[:query]
 
-        @@normalize_url_cache[c_url] = normalized.dup
+        @@normalize_url_cache[c_url] = normalized.freeze
 
         #addr = Addressable::URI.parse( c_url ).normalize
         #addr.fragment = nil
@@ -287,18 +278,40 @@ module Utilities
         #    ap addr.to_s
         #    ap '~~~'
         #end
-        @@normalize_url_cache[c_url].dup
+        #@@normalize_url_cache[c_url]
     rescue => e
         #ap c_url
         #ap url
         #ap e
         #ap e.backtrace
-        @@normalize_url_cache[c_url] = nil
+        @@normalize_url_cache[c_url] = :err
+        nil
     end
 
     # @see normalize_url
     def url_sanitize( url )
         normalize_url( url )
+    end
+
+    #
+    # @param   [String]   url
+    #
+    # @return  [String]   path  full URL up to the path component,
+    #                           no resource, query etc.
+    #
+    def get_path( url )
+        uri  = uri_parse( normalize_url( url ) )
+        path = uri.path
+
+        if !File.extname( path ).empty?
+            path = File.dirname( path )
+        end
+
+        path << '/' if path[-1] != '/'
+
+        uri_str = uri.scheme + "://" + uri.host
+        uri_str << ':' + uri.port.to_s if uri.port && uri.port != 80
+        uri_str << path
     end
 
     #
