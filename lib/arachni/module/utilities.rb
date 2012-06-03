@@ -78,6 +78,17 @@ module Utilities
         @@uri_parser ||= URI::Parser.new
     end
 
+    def size_to_cost( string )
+        sz = string.size
+        if sz > 200
+            :high
+        elsif sz > 100
+            :medium
+        else
+            :low
+        end
+    end
+
     #
     # ATTENTION: This method's results are cached for performance reasons.
     # If you plan on doing something destructive with its return value duplicate
@@ -93,7 +104,7 @@ module Utilities
         tries ||= 0
         tries += 1
 
-        @@uri_parse_cache      ||= Arachni::Cache.rr( 200 )
+        @@uri_parse_cache      ||= Arachni::Cache::RandomReplacement.new( 200 )
         @@uri_parse_cache[url] ||= uri_parser.parse( url )
     rescue
         url = normalize_url( url )
@@ -136,7 +147,8 @@ module Utilities
     def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
         return reference_url if !relative_url || relative_url.empty?
 
-        @@to_absolute_cache ||= Arachni::Cache.rr( 500 )
+        @@to_absolute_cache ||= Arachni::Cache::RandomReplacement.new( 500 )
+
         key = relative_url + ' :: ' + reference_url
 
         if (v = @@to_absolute_cache[key]) && v == :err
@@ -166,7 +178,7 @@ module Utilities
     #
     def normalize_url( url )
         return if !url || url.empty?
-        @@normalize_url_cache ||= Arachni::Cache.rr( 500 )
+        @@normalize_url_cache ||= Arachni::Cache::RandomReplacement.new( 500 )
 
         url   = url.to_s.dup
         c_url = url.to_s.dup

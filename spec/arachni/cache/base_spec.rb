@@ -1,131 +1,19 @@
-require_relative '../spec_helper'
+require_relative '../../spec_helper'
 
-describe Arachni::Cache do
+describe Arachni::Cache::Base do
 
-    before { @cache = Arachni::Cache.new }
-
-    describe '.lru' do
-        it 'should return an instance in :lru (Least Recently Used) mode' do
-            c = Arachni::Cache.lru
-            c.rr?.should be_false
-            c.lru?.should be_true
-        end
-        describe 'max_size' do
-            describe 'nil' do
-                it 'should leave the cache uncapped' do
-                    Arachni::Cache.lru.capped?.should be_false
-                end
-            end
-            describe Integer do
-                it 'should impose a limit to the size of the cache' do
-                    Arachni::Cache.lru( 10 ).capped?.should be_true
-                end
-            end
-        end
-    end
-
-    describe '.rr' do
-        it 'should return an instance in :rr (Random Replacement) mode' do
-            c = Arachni::Cache.rr
-            c.rr?.should be_true
-            c.lru?.should be_false
-        end
-        describe 'max_size' do
-            describe 'nil' do
-                it 'should leave the cache uncapped' do
-                    Arachni::Cache.rr.capped?.should be_false
-                end
-            end
-            describe Integer do
-                it 'should impose a limit to the size of the cache' do
-                    Arachni::Cache.rr( 10 ).capped?.should be_true
-                end
-            end
-        end
-    end
+    before { @cache = Arachni::Cache::Base.new }
 
     describe '#new' do
         describe 'max_size' do
             describe 'nil' do
                 it 'should leave the cache uncapped' do
-                    Arachni::Cache.new.capped?.should be_false
+                    Arachni::Cache::Base.new.capped?.should be_false
                 end
             end
             describe Integer do
                 it 'should impose a limit to the size of the cache' do
-                    Arachni::Cache.new( 10 ).capped?.should be_true
-                end
-            end
-        end
-        describe 'mode' do
-            describe 'nil' do
-                it 'should default to :lru' do
-                    c = Arachni::Cache.new
-                    c.mode.should == :lru
-                    c.lru?.should be_true
-                end
-            end
-            describe :lru do
-                it 'should prune itself by removing Least Recently Used entries' do
-                    cache = Arachni::Cache.new
-                    cache.mode.should == :lru
-                    cache.lru?.should be_true
-                    cache.rr?.should be_false
-
-                    cache.max_size = 3
-
-                    cache[:k]  = '1'
-                    cache[:k2] = '2'
-                    cache[:k3] = '3'
-                    cache[:k4] = '4'
-                    cache.size.should == 3
-
-                    cache[:k4].should be_true
-                    cache[:k3].should be_true
-                    cache[:k2].should be_true
-                    cache[:k].should be_nil
-
-                    cache.clear
-
-                    cache.max_size = 1
-                    cache[:k]  = '1'
-                    cache[:k2] = '3'
-                    cache[:k3] = '4'
-                    cache.size.should == 1
-
-                    cache[:k3].should be_true
-                    cache[:k2].should be_nil
-                    cache[:k].should be_nil
-                end
-            end
-
-            describe :rr do
-                it 'should prune itself by removing random entries (Random Replacement)' do
-                    cache = Arachni::Cache.new( nil, :rr )
-                    cache.mode.should == :rr
-                    cache.lru?.should be_false
-                    cache.rr?.should be_true
-
-                    cache.max_size = 3
-
-                    k = [ :k, :k2, :k3, :k4 ]
-                    cache[k[0]] = '1'
-                    cache[k[1]] = '2'
-                    cache[k[2]] = '3'
-                    cache[k[3]] = '4'
-                    cache.size.should == 3
-
-                    k.map { |key| cache[key] }.count( nil ).should == 1
-
-                    cache.clear
-
-                    cache.max_size = 1
-                    cache[k[0]]  = '1'
-                    cache[k[1]] = '3'
-                    cache[k[2]] = '4'
-                    cache.size.should == 1
-
-                    k[0...3].map { |key| cache[key] }.count( nil ).should == 2
+                    Arachni::Cache::Base.new( 10 ).capped?.should be_true
                 end
             end
         end
@@ -148,12 +36,8 @@ describe Arachni::Cache do
     describe '#uncap' do
         it 'should remove the size limit' do
             @cache.max_size = 0
-            @cache['stuff'] = 'f'
-            @cache['stuff'].should be_nil
-
             @cache.uncap
-            @cache['stuff'] = 'f'
-            @cache['stuff'].should be_true
+            @cache.max_size = nil
         end
     end
 
@@ -168,7 +52,6 @@ describe Arachni::Cache do
         context 'when the cache has a size limit' do
             it 'should return true' do
                 @cache.max_size = 1
-                @cache.max_size.should == 1
                 @cache.capped?.should be_true
             end
         end
@@ -272,7 +155,6 @@ describe Arachni::Cache do
             @cache[:key] = v
             @cache[:key].should == v
             @cache.empty?.should be_false
-            @cache.realsize.should > 0
         end
 
         context 'when the key does not exist' do
@@ -288,7 +170,7 @@ describe Arachni::Cache do
                 old_val = 'my val'
                 new_val = 'new val'
 
-                cache = Arachni::Cache.new
+                cache = Arachni::Cache::Base.new
                 cache[:my_key] = old_val
                 cache.fetch_or_store( :my_key ) { new_val }
 
@@ -299,7 +181,7 @@ describe Arachni::Cache do
         context 'when the passed key does not exist' do
             it 'should assign to it the return value of the block return that value' do
                 new_val = 'new val'
-                cache = Arachni::Cache.new
+                cache = Arachni::Cache::Base.new
                 cache.fetch_or_store( :my_key ) { new_val }
 
                 cache[:my_key].should == new_val
