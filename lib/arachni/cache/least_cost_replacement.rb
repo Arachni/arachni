@@ -46,15 +46,9 @@ class Arachni::Cache::LeastCostReplacement < Arachni::Cache::Base
     def store( k, v, cost = :low )
         fail( "invalid cost: #{cost}" ) if !valid_cost?( cost )
 
-        @last_cost = cost
-        @costs[cost] << k
-
         super( k, v )
-    end
-
-    # @see Arachni::Cache::Base#delete
-    def delete( k )
-        super( k )
+    ensure
+        @costs[cost] << k
     end
 
     # @see Arachni::Cache::Base#clear
@@ -68,7 +62,6 @@ class Arachni::Cache::LeastCostReplacement < Arachni::Cache::Base
 
     def reset_costs
         @costs = {}
-        @last_cost = nil
         VALID_COSTS.each { |c| @costs[c] = [] }
     end
 
@@ -77,19 +70,8 @@ class Arachni::Cache::LeastCostReplacement < Arachni::Cache::Base
     end
 
     def candidate_from_cost_class( cost_class )
-        costs = @costs[cost_class]
-
-        #ap @last_cost
-        if !costs.empty?
-            max_idx = costs.size
-
-            if @last_cost == cost_class
-                return if max_idx == 1
-                max_idx -= 1
-            end
-
-            costs.delete_at( rand( max_idx ) )
-        end
+        return if (costs = @costs[cost_class]).empty?
+        costs.delete_at( rand( costs.size ) )
     end
 
     def prune_candidate

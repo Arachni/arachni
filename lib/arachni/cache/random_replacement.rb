@@ -42,8 +42,7 @@ class Arachni::Cache::RandomReplacement < Arachni::Cache::Base
     private
 
     def prune_candidate
-        # make sure that we don't get the last key
-        @keys.delete_at( rand( size - 1 ) )
+        @keys.delete_at( rand( size ) )
     end
 
     def prune

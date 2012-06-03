@@ -20,7 +20,7 @@ module Arachni::Cache
 # Base cache implementation -- stores, retrieves and removes entries.
 #
 # The cache will be pruned (call {#prune}) upon storage operations, removing old entries
-# to make room for new ones, while the cache {#size} is greater than {#max_size}.
+# to make room for new ones.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
@@ -28,18 +28,25 @@ module Arachni::Cache
 class Base
 
     # @return    [Integer]   maximum cache size
-    attr_accessor :max_size
+    attr_reader :max_size
 
     #
-    # @param    [Integer, nil]  max_size    Maximum size of the cache (+nil+ means unlimited).
-    #   Once the size of the cache exceeds +max_size+, the pruning phase will be initiated.
-    #
-    #   If no +max_size+ has been provided the cache will behave like a +Hash+
-    #   which holds duplicates of everything it stores -- instead of references.
+    # @param    [Integer, nil]  max_size    Maximum size of the cache
+    #   (must be > 0, +nil+ means unlimited).
+    #   Once the size of the cache is about to exceed +max_size+, the pruning phase will be initiated.
     #
     def initialize( max_size = nil )
-        @max_size = max_size
+        self.max_size = max_size
         @cache = {}
+    end
+
+    def max_size=( max )
+        @max_size = if !max
+            nil
+        else
+            fail( 'Maximum size must be greater than 0.' ) if max <= 0
+            max
+        end
     end
 
     # @return   [Bool]  +true+ is there is no size limit, +false+ otherwise
@@ -71,9 +78,9 @@ class Base
     # @return   [Object]    +v+
     #
     def store( k, v )
+        prune while capped? && (size > max_size - 1)
+
         cache[k] = v
-    ensure
-        prune while capped? && size > max_size
     end
 
     # @see {#store}
@@ -152,7 +159,7 @@ class Base
     end
 
     #
-    # Called to make room when the cache reaches its maximum size.
+    # Called to make room when the cache is about to reach its maximum size.
     #
     # @abstract
     #

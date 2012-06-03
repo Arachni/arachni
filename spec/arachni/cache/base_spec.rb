@@ -35,7 +35,7 @@ describe Arachni::Cache::Base do
 
     describe '#uncap' do
         it 'should remove the size limit' do
-            @cache.max_size = 0
+            @cache.max_size = 1
             @cache.uncap
             @cache.max_size = nil
         end
@@ -90,6 +90,18 @@ describe Arachni::Cache::Base do
         it 'should set the maximum size for the cache' do
             (@cache.max_size = 100).should == 100
             @cache.max_size.should == 100
+        end
+
+        context 'when passed < 0' do
+            it 'should throw an exception' do
+                raised = false
+                begin
+                    @cache.max_size = 0
+                rescue
+                    raised = true
+                end
+                raised.should be_true
+            end
         end
     end
 
