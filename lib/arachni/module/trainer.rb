@@ -56,7 +56,7 @@ class Trainer
     # @param    [Arachni::Parser::Page]    page
     #
     def page=( page )
-        @page = page.dup
+        @page = page.deep_clone
     end
 
     #

@@ -697,13 +697,13 @@ class Framework
         print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
 
 
-        call_on_run_mods( page )
+        call_on_run_mods( page.deep_clone )
 
         @current_url = page.url.to_s
 
         @modules.values.each do |mod|
             wait_if_paused
-            run_mod( mod, page )
+            run_mod( mod, page.deep_clone )
         end
 
         @auditmap << page.url
