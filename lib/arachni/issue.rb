@@ -240,7 +240,7 @@ class Issue
         opts.each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue Exception => e
+            rescue
             end
         end
 
@@ -248,7 +248,7 @@ class Issue
         opts[:issue].each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue Exception => e
+            rescue
             end
         end if opts[:issue]
 
@@ -261,6 +261,10 @@ class Issue
         end
 
         @mod_name = opts[:name]
+    end
+
+    def url=( v )
+        @url = Arachni::Module::Utilities.normalize_url( v )
     end
 
     def cwe=( v )
@@ -315,6 +319,7 @@ class Issue
         end
         h
     end
+    alias :to_hash :to_h
 
     def remove_instance_var( var )
         remove_instance_variable( var )
@@ -324,7 +329,7 @@ class Issue
 
     def encode( str )
         return str if !str.is_a?( String )
-        str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
+        str.encode( 'UTF-8', invalid: :replace, undef: :replace )
     end
 
     def normalize_name( name )
