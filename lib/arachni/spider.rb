@@ -306,13 +306,14 @@ class Spider
         wrap = proc do |res|
             @pending_requests -= 1
 
+            effective_url = normalize_url( res.effective_url )
             if res.redirection?
                 @redirects << res.request.url
                 next if skip?( res.location )
             end
 
-            print_status( "[HTTP: #{res.code}] " + res.effective_url )
-            @sitemap[res.effective_url] = res.code
+            print_status( "[HTTP: #{res.code}] " + effective_url )
+            @sitemap[effective_url] = res.code
             block.call( res )
         end
 
