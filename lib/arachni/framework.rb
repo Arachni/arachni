@@ -363,26 +363,20 @@ class Framework
     #
     # @return    [AuditStore]
     #
-    def audit_store( fresh = true )
+    def audit_store
         # restore the original redundancy rules and their counters
         @opts.redundant = @orig_redundant
         opts = @opts.to_h
         opts['mods'] = @modules.keys
 
-        @store ||= nil
-
-        if !fresh && @store
-            @store
-        else
-            @store = AuditStore.new(
-                version:  version,
-                revision: revision,
-                options:  opts,
-                sitemap:  auditstore_sitemap || [],
-                issues:   @modules.results.deep_clone,
-                plugins:  @plugins.results
-            )
-         end
+        AuditStore.new(
+            version:  version,
+            revision: revision,
+            options:  opts,
+            sitemap:  auditstore_sitemap || [],
+            issues:   @modules.results.deep_clone,
+            plugins:  @plugins.results
+        )
     end
     alias :auditstore :audit_store
 
@@ -541,10 +535,6 @@ class Framework
 
         # a plug-in may have updated the page queue, rock it!
         audit_queue if !skip_audit_queue
-
-        # refresh the audit store
-        audit_store( true )
-
         true
     end
     alias :clean_up! :clean_up

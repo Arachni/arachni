@@ -24,24 +24,20 @@ module Plugins
 #
 class HealthMap < Arachni::Plugin::Base
 
-    include Arachni::Module::Utilities
-
     def prepare
         wait_while_framework_running
-        @audit_store = @framework.audit_store( true )
+        @audit_store = @framework.audit_store
     end
 
     def run
-        sitemap  = @audit_store.sitemap.map{ |url| normalize( url ) }.uniq
+        sitemap  = @audit_store.sitemap.map { |url| remove_query( url ) }.uniq.compact
         sitemap |= issue_urls = @audit_store.issues.map { |issue| issue.url }.uniq
 
         return if sitemap.size == 0
 
         issue = 0
         map = []
-        sitemap.each {
-            |url|
-
+        sitemap.each do |url|
             next if !url
 
             if issue_urls.include?( url )
@@ -50,23 +46,20 @@ class HealthMap < Arachni::Plugin::Base
             else
                 map << { :safe  => url }
             end
-        }
+        end
 
-        register_results( {
-            :map    => map,
-            :total  => map.size,
-            :safe   => map.size - issue,
-            :unsafe => issue,
-            :issue_percentage => ( ( Float( issue ) / map.size ) * 100 ).round
-        } )
+        register_results(
+            map:              map,
+            total:            map.size,
+            safe:             map.size - issue,
+            unsafe:           issue,
+            issue_percentage: ((Float(issue) / map.size) * 100).round
+        )
 
     end
 
-    def normalize( url )
-        query = URI( normalize_url( url ) ).query
-        return url if !query
-
-        url.gsub( '?' + query, '' )
+    def remove_query( url )
+        url.gsub( /\?.*$/, '' ) rescue nil
     end
 
     def self.distributable?
@@ -75,22 +68,21 @@ class HealthMap < Arachni::Plugin::Base
 
     def self.merge( results )
         merged = {
-            :map    => [],
-            :total  => 0,
-            :safe   => 0,
-            :unsafe => 0,
-            :issue_percentage => 0
+            map:              [],
+            total:            0,
+            safe:             0,
+            unsafe:           0,
+            issue_percentage: 0
         }
 
-        results.each {
-            |healthmap|
+        results.each do |healthmap|
             merged[:map]    |= healthmap[:map]
             merged[:total]  += healthmap[:total]
             merged[:safe]   += healthmap[:safe]
             merged[:unsafe] += healthmap[:unsafe]
-        }
+        end
         merged[:issue_percentage] = ( ( Float( merged[:unsafe] ) / merged[:total] ) * 100 ).round
-        return merged
+        merged
     end
 
 
@@ -99,7 +91,7 @@ class HealthMap < Arachni::Plugin::Base
             :name           => 'Health map',
             :description    => %q{Generates a simple list of safe/unsafe URLs.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
+            :version        => '0.1.2',
         }
     end
 

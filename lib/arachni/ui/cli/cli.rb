@@ -239,12 +239,12 @@ class CLI
 
                         @exit_handler = Thread.new {
                             @arachni.clean_up( true )
-                            @arachni.reports.run( @arachni.audit_store( true ) )
+                            @arachni.reports.run( @arachni.audit_store )
                             print_stats
                         }
 
                     when 'r'
-                        @arachni.reports.run( @arachni.audit_store( true ) )
+                        @arachni.reports.run( @arachni.audit_store )
                 end
 
                 kill_interrupt_handler
@@ -260,7 +260,7 @@ class CLI
                 print_info( restr( 'Results thus far:' ), true )
 
                 begin
-                    print_issues( @arachni.audit_store( true ), true )
+                    print_issues( @arachni.audit_store, true )
                     print_stats( true, true )
                 rescue Exception => e
                     exception_jail{ raise e }
