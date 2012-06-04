@@ -22,7 +22,7 @@ describe Arachni::Issue do
             internal_modname: 'module_name',
             tags: %w(these are a few tags),
             var: 'input name',
-            url: 'http://test.com',
+            url: 'http://test.com/',
             headers: {
                 request: {
                     'User-Agent' => 'UA/v1'
@@ -119,6 +119,15 @@ describe Arachni::Issue do
             end
             issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] )
             issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
+        end
+    end
+
+    describe :url= do
+        it 'should normalize the URL before assigning it' do
+            i = Arachni::Issue.new
+            url = 'HttP://DomainName.com/stuff here'
+            i.url = url
+            i.url.should == Arachni::Module::Utilities.normalize_url( url )
         end
     end
 

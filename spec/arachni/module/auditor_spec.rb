@@ -51,7 +51,8 @@ describe Arachni::Module::Auditor do
         @opts.audit_cookies = true
         @opts.audit_headers = true
 
-        @opts.url = @url = server_url_for( :auditor )
+        @opts.url = server_url_for( :auditor )
+        @url = @opts.url.dup
 
         @framework = Arachni::Framework.new( @opts )
         @auditor = AuditorTest.new( @framework )
@@ -77,7 +78,7 @@ describe Arachni::Module::Auditor do
 
     describe '#log_remote_file_if_exists' do
         before do
-            @base_url = @url + '/log_remote_file_if_exists/'
+            @base_url = @url + 'log_remote_file_if_exists/'
         end
 
         it 'should log issue if file exists' do
@@ -173,7 +174,7 @@ describe Arachni::Module::Auditor do
 
     describe '#log_remote_file' do
         it 'should log a remote file' do
-            file = @url + '/log_remote_file_if_exists/true'
+            file = @url + 'log_remote_file_if_exists/true'
             @framework.http.get( file ).on_complete { |res| @auditor.log_remote_file( res ) }
             @framework.http.run
 
