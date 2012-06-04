@@ -103,7 +103,7 @@ describe Arachni::Options do
             it 'should set exclusion regexps' do
                 regexp = {
                     'regexp' => 'this is redundant',
-                    'count'  => 3
+                    'count'  => '3'
                 }
                 @instance.opts.redundant = [regexp]
                 @instance.opts.redundant.should == [

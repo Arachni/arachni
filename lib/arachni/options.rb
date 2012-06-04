@@ -480,10 +480,103 @@ class Options
 
         @min_pages_per_instance = 30
         @max_slaves = 10
+        self
+    end
+
+    #
+    # Normalizes and sets +url+ as the target URL.
+    #
+    # @param    [String]    url     absolute URL of the targeted web app
+    #
+    # @return   [String]    normalized +url+
+    #
+    def url=( url )
+        return if !url
+
+        require @dir['lib'] + 'exceptions'
+        require @dir['lib'] + 'ruby'
+        require @dir['lib'] + 'cache'
+        require @dir['lib'] + 'module/utilities'
+
+        utils = Arachni::Module::Utilities
+
+        @url = utils.normalize_url( url.to_s )
+        parsed = utils.uri_parse( @url )
+        if !parsed.absolute? || !%w(http https).include?( parsed.scheme )
+            fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
+        end
+
+        @url
+    end
+
+    #
+    # Configures options via a Hash object
+    #
+    # @param    [Hash]  options     options to set
+    #
+    # @return   [TrueClass]
+    #
+    def set( options )
+        options.each_pair do |k, v|
+            #begin
+                send( "#{k.to_s}=", v )
+            #rescue => e
+                # ap e
+                # ap e.backtrace
+            #end
+        end
+        true
+    end
+
+    # @param    [Hash]  data
+    def datastore=( data )
+        @datastore = Hash[data]
+    end
+
+    #
+    # Sets the redundancy filters.
+    #
+    # Filter example:
+    #     [
+    #        {
+    #            'regexp'    => /calendar\.php/, # URL to apply the filter to
+    #            'count'     => 5   # how many times to crawl the url
+    #        },
+    #        {
+    #            'regexp'    => 'gallery.php', # can also be a string
+    #            'count'     => '3' # this too
+    #        }
+    #    ]
+    #
+    # @param     [Array<Hash>]  filters
+    #
+    def redundant=( filters )
+        @redundant = [filters].flatten.map do |filter|
+            regexp = filter['regexp'].is_a?( Regexp ) ?
+                filter['regexp'] : Regexp.new( filter['regexp'].to_s )
+
+            { 'regexp' => regexp, 'count' => Integer( filter['count'] ) }
+        end
+    end
+
+    # these options need to contain Array<String>
+    [ :exclude_cookies, :exclude_vectors, :mods, :restrict_paths,
+      :extend_paths ].each do |m|
+        define_method( "#{m}=".to_sym ) do |arg|
+            arg = [arg].flatten.map { |s| s.to_s }
+            instance_variable_set( "@#{m}".to_sym, arg )
+        end
+    end
+
+    # these options need to contain Array<Regexp>
+    [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+        define_method( "#{m}=".to_sym ) do |arg|
+            arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+            instance_variable_set( "@#{m}".to_sym, arg )
+        end
     end
 
     def parse!
-
         # Construct getops struct
         opts = GetoptLong.new(
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
@@ -773,7 +866,7 @@ class Options
 
                 end
             end
-        rescue Exception => e
+        rescue => e
             puts e.inspect
             exit
         end
@@ -854,29 +947,6 @@ class Options
         end
 
         opts
-    end
-
-    def url=( str )
-        return if !str
-
-        require @dir['lib'] + 'exceptions'
-        require @dir['lib'] + 'ruby'
-        require @dir['lib'] + 'cache'
-        require @dir['lib'] + 'module/utilities'
-
-        utils = Arachni::Module::Utilities
-
-        @url = utils.normalize_url( str.to_s )
-        parsed = utils.uri_parse( @url )
-        if !parsed.absolute? || !%w(http https).include?( parsed.scheme )
-            fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
-        end
-
-        @url
-    end
-
-    def restrict_paths=( urls )
-        @restrict_paths = [urls].flatten
     end
 
     #

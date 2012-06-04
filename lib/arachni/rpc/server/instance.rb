@@ -21,7 +21,6 @@ require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 
 require Options.instance.dir['lib'] + 'rpc/server/base'
 require Options.instance.dir['lib'] + 'rpc/server/output'
-require Options.instance.dir['lib'] + 'rpc/server/options'
 
 require Options.instance.dir['lib'] + 'rpc/server/framework'
 
