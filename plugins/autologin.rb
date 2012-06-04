@@ -76,7 +76,7 @@ class AutoLogin < Arachni::Plugin::Base
             print_bad( MSG_NO_RESPONSE )
             return
         else
-            cookies = @http.current_cookies.
+            cookies = @http.cookies.
                 inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
 
             register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => cookies.dup } )

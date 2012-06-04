@@ -14,6 +14,110 @@ describe Arachni::HTTP do
         @http.reset
     }
 
+    describe 'Arachni::Options#http_req_limit' do
+        context Integer do
+            it 'should use it as a max_concurrency' do
+                @opts.http_req_limit = 34
+                @http.reset
+                @http.max_concurrency.should == 34
+            end
+        end
+        context 'nil' do
+            it 'should use a default max concurrency setting' do
+                @opts.http_req_limit = nil
+                @http.reset
+                @http.max_concurrency.should == Arachni::HTTP::MAX_CONCURRENCY
+            end
+        end
+    end
+
+    describe 'Arachni::Options#url' do
+        context 'when the target URL includes auth credentials' do
+            it 'should use them globally' do
+                url = Arachni::Module::Utilities.uri_parse( server_url_for( :http_auth ) )
+                @opts.url = url.to_s
+
+                # first fail to make sure that our test server is actually working properly
+                code = 0
+                @http.get( @opts.url + 'auth' ) { |res| code = res.code }
+                @http.run
+                code.should == 401
+
+                # now test the client
+                url.user = 'username'
+                url.password = 'password'
+                @opts.url = url.to_s
+
+                body = nil
+                @http.get( @opts.url + 'auth' ) { |res| body = res.body }
+                @http.run
+                body.should == 'authenticated!'
+            end
+        end
+    end
+
+    describe 'Arachni::Options#user_agent' do
+        context String do
+            it 'should use it as a user agent' do
+                ua = 'my user agent'
+                @opts.user_agent = ua.dup
+                @http.reset
+
+                body = nil
+                @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                @http.run
+                body.should == ua
+            end
+        end
+        context 'nil' do
+            it 'should use a default user agent setting and update the global setting' do
+                @opts.user_agent = nil
+                @http.reset
+
+                body = nil
+                @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+                @http.run
+                body.should == Arachni::HTTP::USER_AGENT + Arachni::VERSION.to_s
+                @opts.user_agent.should == body
+            end
+        end
+    end
+
+    describe 'Arachni::Options#redirect_limit' do
+        context Integer do
+            it 'should not exceed that amount of redirects' do
+                @opts.redirect_limit = 2
+                @http.reset
+
+                code = nil
+                @http.get( @opts.url + 'redirect', follow_location: true ) { |res| code = res.code }
+                @http.run
+                code.should == 302
+
+                @opts.redirect_limit = 10
+                @http.reset
+
+                body = nil
+                @http.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                @http.run
+                body.should == 'This is the end.'
+            end
+        end
+        context 'nil' do
+            it 'should use a default setting and update the global setting' do
+                @opts.redirect_limit = nil
+                @http.reset
+
+                body = nil
+                @http.get( @opts.url + 'redirect', follow_location: true ) { |res| body = res.body }
+                @http.run
+                body.should == 'This is the end.'
+
+                @opts.redirect_limit.should == Arachni::HTTP::REDIRECT_LIMIT
+            end
+        end
+    end
+
     describe '#url' do
         it 'should return the URL in opts' do
             @http.url.should == @opts.url.to_s
@@ -108,13 +212,13 @@ describe Arachni::HTTP do
         end
     end
 
-    describe '#current_cookies' do
+    describe '#cookies' do
         it 'should return the current cookies' do
             @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
             @http.cookie_jar.cookies.should be_empty
             @http.reset
-            @http.current_cookies.size.should == 3
-            @http.current_cookies.should == @http.cookie_jar.cookies
+            @http.cookies.size.should == 3
+            @http.cookies.should == @http.cookie_jar.cookies
         end
     end
 
@@ -495,7 +599,7 @@ describe Arachni::HTTP do
                     body = nil
                     @http.request( @url + '/update_cookies' ) { |res| body = res.body }
                     @http.run
-                    @http.current_cookies.should == cookies
+                    @http.cookies.should == cookies
                 end
             end
 
@@ -508,7 +612,7 @@ describe Arachni::HTTP do
                     body = nil
                     @http.request( @url + '/update_cookies', update_cookies: false ) { |res| body = res.body }
                     @http.run
-                    @http.current_cookies.should == cookies
+                    @http.cookies.should == cookies
                 end
             end
 
@@ -521,7 +625,7 @@ describe Arachni::HTTP do
                     body = nil
                     @http.request( @url + '/update_cookies', update_cookies: true ) { |res| body = res.body }
                     @http.run
-                    @http.current_cookies.first.value.should == cookies.first.value + ' [UPDATED!]'
+                    @http.cookies.first.value.should == cookies.first.value + ' [UPDATED!]'
                 end
             end
         end
@@ -600,9 +704,9 @@ describe Arachni::HTTP do
             cookies = []
             cookies << Arachni::Parser::Element::Cookie.new( @url,
                 'key2' => 'val2' )
-            @http.current_cookies.should be_empty
+            @http.cookies.should be_empty
             @http.update_cookies( cookies )
-            @http.current_cookies.should == cookies
+            @http.cookies.should == cookies
         end
     end
 
@@ -634,9 +738,9 @@ describe Arachni::HTTP do
             res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
 
             @opts.cookies.should be_nil
-            @http.current_cookies.should be_empty
+            @http.cookies.should be_empty
             @http.parse_and_set_cookies( res )
-            @http.current_cookies.should == cookies
+            @http.cookies.should == cookies
             @opts.cookies.should == cookies
         end
     end

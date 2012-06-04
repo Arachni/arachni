@@ -48,6 +48,10 @@ class HTTP
     include Arachni::Module::Utilities
     include Arachni::Mixins::Observable
 
+    MAX_CONCURRENCY = 20
+    REDIRECT_LIMIT  = 20
+    USER_AGENT      = 'Arachni/v'
+
     attr_reader :url
 
     # @return    [Hash]   default headers
@@ -102,7 +106,7 @@ class HTTP
 
         @trainer = Arachni::Module::Trainer.new( opts )
 
-        opts.user_agent ||= 'Arachni/v' + Arachni::VERSION.to_s
+        opts.user_agent ||= USER_AGENT + Arachni::VERSION.to_s
         @headers = {
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
@@ -130,6 +134,7 @@ class HTTP
             proxy_type:     opts.proxy_type
         } if opts.proxy_addr
 
+        opts.redirect_limit ||= REDIRECT_LIMIT
         @opts = {
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
@@ -214,7 +219,7 @@ class HTTP
     #
     # @return   [Array<Arachni::Parser::Element::Cookie>]   all cookies in the jar
     #
-    def current_cookies
+    def cookies
         @cookie_jar.cookies
     end
 

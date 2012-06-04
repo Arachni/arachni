@@ -26,6 +26,22 @@ get '/echo' do
     params.to_s
 end
 
+get '/redirect' do
+    redirect '/redirect/1'
+end
+
+get '/redirect/1' do
+    redirect '/redirect/2'
+end
+
+get '/redirect/2' do
+    redirect '/redirect/3'
+end
+
+get '/redirect/3' do
+    'This is the end.'
+end
+
 get '/elems' do
     <<-EOHTML
     <a href='/stuff'></a>
@@ -47,6 +63,10 @@ get '/headers' do
         h[k] = v || ''; h
     end
     hash.to_yaml
+end
+
+get '/user-agent' do
+    env['HTTP_USER_AGENT'].to_s
 end
 
 get '/update_cookies' do
