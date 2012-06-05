@@ -617,7 +617,7 @@ describe Arachni::HTTP do
             end
 
             describe true do
-                it 'should not update the cookiejar' do
+                it 'should update the cookiejar' do
                     cookies = []
                     cookies << Arachni::Parser::Element::Cookie.new( @url,
                         'key2' => 'val2' )

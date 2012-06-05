@@ -544,9 +544,7 @@ class HTTP
         requests ||= req
 
         [requests].flatten.reject { |p| !p.is_a?( Typhoeus::Request ) }.
-            each do |request|
-                forward_request( request, async, &block )
-        end
+            each { |request| forward_request( request, async, &block ) }
     end
 
     #
