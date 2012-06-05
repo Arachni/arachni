@@ -45,7 +45,7 @@ require Options.instance.dir['lib'] + 'http/cookie_jar'
 class HTTP
     include Singleton
     include Arachni::Module::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Arachni::Mixins::Observable
 
     MAX_CONCURRENCY = 20

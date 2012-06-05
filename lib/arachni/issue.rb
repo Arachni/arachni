@@ -264,7 +264,7 @@ class Issue
     end
 
     def url=( v )
-        @url = Arachni::Module::Utilities.normalize_url( v )
+        @url = Arachni::Utilities.normalize_url( v )
     end
 
     def cwe=( v )

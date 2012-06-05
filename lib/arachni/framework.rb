@@ -59,7 +59,6 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework
-
     #
     # include the output interface but try to use it as little as possible
     #
@@ -67,7 +66,7 @@ class Framework
     #
     include Arachni::UI::Output
 
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Arachni::Mixins::Observable
 
     # the version of *this* class

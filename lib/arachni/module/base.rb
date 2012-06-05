@@ -32,8 +32,8 @@ module Module
 # @abstract
 #
 class Base
-    include Utilities
-    include Auditor
+    include Arachni::Module::Utilities
+    include Arachni::Module::Auditor
 
     #
     # @return [Page]

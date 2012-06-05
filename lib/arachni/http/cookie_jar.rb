@@ -21,7 +21,7 @@ class HTTP
 # TODO: Implement proper tailmatching
 #
 class CookieJar
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     def self.from_file( *args )
         new.load( *args )
@@ -86,7 +86,7 @@ class CookieJar
     private
 
     def to_uri( url )
-        url.is_a?( URI ) ? url : uri_parse( url )
+        url.is_a?( ::URI ) || url.is_a?( Arachni::URI ) ? url : uri_parse( url.to_s )
     end
 
 end

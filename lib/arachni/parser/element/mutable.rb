@@ -22,8 +22,6 @@ class Parser
 module Element
 module Mutable
 
-    include Arachni::Module::Utilities
-
     #
     # @return   [String]    name of the altered/mutated parameter
     #
@@ -41,7 +39,7 @@ module Mutable
       STRAIGHT = 1 << 0
 
       #
-      # Apends the injection string to the default value of the input vector.<br/>
+      # Appends the injection string to the default value of the input vector.<br/>
       # (If no default value exists Arachni will choose one.)
       #
       APPEND   = 1 << 1
@@ -55,6 +53,7 @@ module Mutable
       # Prefix the string with a ';', useful for command injection modules
       #
       SEMICOLON = 1 << 3
+
     end
 
     # Default formatting and permutation options

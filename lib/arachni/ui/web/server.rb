@@ -99,10 +99,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 # It's basically an RPC client for Dispatchers and Instances wearing a pretty frock.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @see Arachni::RPC::Client::Instance
 # @see Arachni::RPC::Client::Dispatcher
@@ -116,7 +113,7 @@ class Server < Sinatra::Base
     register Sinatra::Flash
     register Sinatra::Async
 
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Utilities
 
     configure do

@@ -30,11 +30,9 @@ module Report
 # Holds and manages the registry of the reports.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @version 0.1.1
 #
 class Manager < Arachni::Component::Manager
-
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     def initialize( opts )
         super( opts.dir['reports'], Arachni::Reports )

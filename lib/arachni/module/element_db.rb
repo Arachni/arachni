@@ -28,7 +28,7 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module ElementDB
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     #
     # page forms
@@ -95,7 +95,7 @@ module ElementDB
             next if form.auditable.size == 0
 
             if !@@forms.include?( form.id )
-                @@forms << form.id
+                @@forms   << form.id
                 new_forms << form
                 form_cnt += 1
             end
@@ -120,7 +120,7 @@ module ElementDB
           next if link.action.include?( seed )
 
           if !@@links.include?( link.id )
-              @@links    << link.id
+              @@links   << link.id
               new_links << link
               link_cnt += 1
           end

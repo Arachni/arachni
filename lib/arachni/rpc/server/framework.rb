@@ -40,7 +40,7 @@ class Server
 class Framework < ::Arachni::Framework
     require Options.instance.dir['lib'] + 'rpc/server/distributor'
 
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Distributor
 
     # make this inherited methods visible again

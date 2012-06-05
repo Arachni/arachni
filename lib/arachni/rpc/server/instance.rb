@@ -38,10 +38,8 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
-
-    # the output interface for RPC
     include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     #
     # Initializes the RPC interface, the HTTP(S) server and the framework.

@@ -247,7 +247,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             document = Nokogiri::HTML( head.to_s )
         end
 
-        Arachni::Module::Utilities.exception_jail {
+        Arachni::Utilities.exception_jail {
             document.search( "//meta[@http-equiv]" ).map do |elem|
                 next if elem['http-equiv'].downcase != 'set-cookie'
                 parse_set_cookies( url, elem['content'] )
@@ -270,7 +270,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         headers.each { |k, v| set_strings = [v].flatten if k.downcase == 'set-cookie' }
 
         return set_strings if set_strings.empty?
-        Arachni::Module::Utilities.exception_jail {
+        Arachni::Utilities.exception_jail {
             set_strings.map { |c| parse_set_cookies( url, c ) }.flatten
         } rescue []
     end

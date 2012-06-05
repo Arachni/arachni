@@ -30,8 +30,7 @@ module Plugin
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     DEFAULT = %w(defaults/*)
 

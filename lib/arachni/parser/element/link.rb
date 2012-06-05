@@ -136,7 +136,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
             base_url = url
         end
 
-        utilities = Arachni::Module::Utilities
+        utilities = Arachni::Utilities
         document.search( '//a' ).map do |link|
             c_link = {}
             c_link['href'] = utilities.to_absolute( link['href'], base_url )
@@ -157,7 +157,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     def self.parse_query_vars( url )
         return {} if !url
 
-        utilities = Arachni::Module::Utilities
+        utilities = Arachni::Utilities
 
         query = utilities.uri_parse( url ).query
         return {} if !query || query.empty?

@@ -45,10 +45,9 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Dispatcher
-
     require Options.instance.dir['lib'] + 'rpc/server/node'
 
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Arachni::UI::Output
     include ::Sys
 

@@ -111,7 +111,7 @@ class Page
 
         opts.each { |k, v| send( "#{k}=", v ) }
 
-        @url = Arachni::Module::Utilities.normalize_url( @url )
+        @url = Arachni::Utilities.normalize_url( @url )
         @html ||= ''
     end
 

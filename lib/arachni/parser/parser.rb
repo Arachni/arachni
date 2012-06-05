@@ -55,7 +55,7 @@ require opts.dir['lib'] + 'component/manager'
 #
 class Parser
     include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     module Extractors
         #

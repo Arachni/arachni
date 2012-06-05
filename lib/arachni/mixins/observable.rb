@@ -33,24 +33,19 @@ module Mixins
 #    * observer_instance.on_<hookname>( &block )
 #
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Observable
-
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     def method_missing( sym, *args, &block )
-
         # grab the action (add/call) and the hook name
         action, hook = sym.to_s.split( '_', 2 )
 
         @__hooks       ||= {}
         @__hooks[hook] ||= []
 
-        if( action && hook )
+        if action && hook
             case action
 
             when 'add', 'on'
@@ -73,19 +68,15 @@ module Observable
     end
 
     def call_blocks( hook, *args )
-        @__hooks[hook].each {
-            |block|
-
+        @__hooks[hook].each do |block|
             exception_jail {
-
                 if args.flatten.size == 1
                     block.call( args.flatten[0] )
                 else
                     block.call( *args )
                 end
             }
-
-        }
+        end
     end
 
 end

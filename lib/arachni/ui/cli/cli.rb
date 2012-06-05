@@ -49,7 +49,7 @@ class CLI
 
     # the output interface for CLI
     include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     #
     # Initializes the command line interface and the framework

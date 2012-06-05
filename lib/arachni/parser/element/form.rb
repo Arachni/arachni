@@ -243,7 +243,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     private
 
     def self.form_from_element( url, form )
-        utilities = Arachni::Module::Utilities
+        utilities = Arachni::Utilities
 
         c_form = {}
         c_form['attrs'] = attributes_to_hash( form.attributes )

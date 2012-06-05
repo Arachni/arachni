@@ -27,7 +27,7 @@ module Arachni
 #
 class Spider
     include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     # @return [Arachni::Options]
     attr_reader :opts

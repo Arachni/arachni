@@ -37,8 +37,7 @@ end
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditable
-
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Arachni::Parser::Element::Mutable
 
     # load and include all available analysis/audit techniques
