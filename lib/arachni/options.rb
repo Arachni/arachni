@@ -496,17 +496,14 @@ class Options
         require @dir['lib'] + 'exceptions'
         require @dir['lib'] + 'ruby'
         require @dir['lib'] + 'cache'
-        require @dir['lib'] + 'module/utilities'
+        require @dir['lib'] + 'utilities'
 
-        utils = Arachni::Module::Utilities
-
-        @url = utils.normalize_url( url.to_s )
-        parsed = utils.uri_parse( @url )
+        parsed = Arachni::Utilities.uri_parse( url.to_s )
         if !parsed.absolute? || !%w(http https).include?( parsed.scheme )
             fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
-        @url
+        @url = parsed.to_s
     end
 
     #
