@@ -24,14 +24,19 @@ module Arachni
         Arachni::URI.parse( uri )
     end
 
+#
+#
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class URI
 
     CACHE_SIZES = {
-        parse:       200,
-        ruby_parse:  200,
-        cheap_parse: 200,
-        normalize:   500,
-        to_absolute: 500
+        parse:       600,
+        ruby_parse:  600,
+        cheap_parse: 600,
+        normalize:   1000,
+        to_absolute: 1000
     }
 
     CACHE = {
@@ -206,11 +211,11 @@ class URI
             cache[c_url] = components.inject({}) do |h, (k, val)|
                 h.merge!( Hash[{ k => val.freeze }] )
             end.freeze
-        rescue => e
-            ap c_url
-            ap url
-            ap e
-            ap e.backtrace
+        rescue# => e
+            #ap c_url
+            #ap url
+            #ap e
+            #ap e.backtrace
             cache[c_url] = :err
             nil
         end
@@ -238,10 +243,10 @@ class URI
             end
 
             cache[key] = parse( relative ).to_absolute( reference ).to_s
-        rescue => e
-              ap relative
-              ap e
-              ap e.backtrace
+        rescue# => e
+              #ap relative
+              #ap e
+              #ap e.backtrace
             cache[key] = :err
             nil
         end
@@ -301,11 +306,11 @@ class URI
             #    ap '~~~'
             #end
             #@@normalize_cache[c_url]
-        rescue => e
-            ap c_url
-            ap url
-            ap e
-            ap e.backtrace
+        rescue# => e
+            #ap c_url
+            #ap url
+            #ap e
+            #ap e.backtrace
             cache[c_url] = :err
             nil
         end
