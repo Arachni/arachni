@@ -73,7 +73,6 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
         @raw['max_age'] = @raw['max_age'] if @raw['max_age']
 
-        @simple = self.auditable.dup
         @orig   = self.auditable.dup
         @orig.freeze
     end
@@ -137,7 +136,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     # @return   [Hash]    simple representation of the cookie as a hash with the
     #                     value as key and the cookie value as value.
     def simple
-        @simple
+        self.auditable.dup
     end
 
     #
@@ -145,6 +144,14 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     #
     def type
         Arachni::Module::Auditor::Element::COOKIE
+    end
+
+    def auditable=( inputs )
+        raw = @raw.dup
+        raw['name']  = inputs.keys.first
+        raw['value'] = inputs.values.first
+        @raw = raw.freeze
+        super( inputs )
     end
 
     #
