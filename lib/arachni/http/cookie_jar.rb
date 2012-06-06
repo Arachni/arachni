@@ -18,14 +18,18 @@ module Arachni
 class HTTP
 
 #
-# Basic CookieJar implementation
+# Basic CookieJar implementation.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class CookieJar
     include Arachni::Utilities
 
+    #
     # Same as {#initialize}.
+    #
+    # @return   [Arachni::HTTP::CookieJar]
+    #
     def self.from_file( *args )
         new.load( *args )
     end
