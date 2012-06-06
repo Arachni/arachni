@@ -18,27 +18,16 @@ require 'typhoeus'
 require 'singleton'
 
 module Arachni
-require Options.instance.dir['lib'] + 'ruby/webrick'
 require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
-require Options.instance.dir['lib'] + 'module/utilities'
+require Options.instance.dir['lib'] + 'utilities'
 require Options.instance.dir['lib'] + 'module/trainer'
 require Options.instance.dir['lib'] + 'mixins/observable'
 require Options.instance.dir['lib'] + 'http/cookie_jar'
 
 #
-# Arachni::Module::HTTP class
-#
-# Provides a simple, high-performance and thread-safe HTTP interface to modules.
-#
-# All requests are run Async (compliments of Typhoeus)
-# providing great speed and performance.
-#
-# === Exceptions
-# Any exceptions or session corruption is handled by the class.<br/>
-# Some are ignored, on others the HTTP session is refreshed.<br/>
-# Point is, you don't need to worry about it.
+# Provides a system-wide, simple and high-performance HTTP interface.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -48,35 +37,51 @@ class HTTP
     include Arachni::Utilities
     include Arachni::Mixins::Observable
 
+    # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
+
+    # Default maximum redirect limit.
     REDIRECT_LIMIT  = 20
+
+    # Default user agent (will be appended the current Arachni version).
     USER_AGENT      = 'Arachni/v'
 
+    # @return   [String]    framework seed/target URL
     attr_reader :url
 
-    # @return    [Hash]   default headers
+    # @return    [Hash]     default headers for each request
     attr_reader :headers
 
-    #
     # @return    [CookieJar]
-    #
     attr_reader :cookie_jar
 
+    # @return   [Integer]   amount of performed requests
     attr_reader :request_count
+
+    # @return   [Integer]   amount of received responses
     attr_reader :response_count
 
+    # @return   [Integer]   amount of timed-out requests
     attr_reader :time_out_count
 
+    # @return   [Integer]   sum of the response times of the running requests (of the current burst)
     attr_reader :curr_res_time
-    attr_reader :curr_res_cnt
-    attr_reader :burst_runtime
 
+    # @return   [Integer]   amount of responses received for the running requests (of the current burst)
+    attr_reader :curr_res_cnt
+
+    # @return   [Arachni::Module::Trainer]
     attr_reader :trainer
 
     def initialize
         reset
     end
 
+    #
+    # Re-initializes the singleton
+    #
+    # @return   [Arachni::HTTP] self
+    #
     def reset
         opts = Options.instance
 
@@ -180,19 +185,23 @@ class HTTP
         }
     end
 
+    # Aborts the running requests on a best effort basis
     def abort
         exception_jail { @hydra.abort }
     end
 
+    # @return   [Integer]   amount of time (in seconds) that the current burst has been running
     def burst_runtime
         @burst_runtime || (Time.now - @burst_runtime_start)
     end
 
+    # @return   [Integer]   average response time for the running requests (i.e. the current burst)
     def average_res_time
         return 0 if @curr_res_cnt == 0
         @curr_res_time / @curr_res_cnt
     end
 
+    # @return   [Integer]   responses/second for the running requests (i.e. the current burst)
     def curr_res_per_second
         if @curr_res_cnt > 0 && burst_runtime > 0
             return (@curr_res_cnt / burst_runtime).to_i
@@ -209,29 +218,34 @@ class HTTP
         @hydra.max_concurrency = concurrency
     end
 
-    #
     # @return   [Integer]   current maximum concurrency of HTTP requests
-    #
     def max_concurrency
         @hydra.max_concurrency
     end
 
-    #
     # @return   [Array<Arachni::Parser::Element::Cookie>]   all cookies in the jar
-    #
     def cookies
         @cookie_jar.cookies
     end
 
     #
-    # Gets called each time a hydra run finishes
+    # Gets called each time a hydra run finishes.
+    #
+    # @return   [Arachni::HTTP] self
     #
     def after_run( &block )
         @after_run << block
+        self
     end
 
+    #
+    # Like {#after_run} but will not be removed after it's run.
+    #
+    # @return   [Arachni::HTTP] self
+    #
     def after_run_persistent( &block )
         add_after_run_persistent( &block )
+        self
     end
 
     #
