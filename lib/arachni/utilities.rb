@@ -195,7 +195,7 @@ module Utilities
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # @param
+    # @param    [Arachni::URI, ::URI, Hash, String] path
     #
     # @return   [Bool]
     #
