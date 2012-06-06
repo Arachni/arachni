@@ -284,7 +284,7 @@ class HTTP
             headers['Cookie'] =  if cookies
                     str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
                 else
-                    @cookie_jar.to_s( url )
+                    @cookie_jar.to_s( url ) rescue ''
                 end
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 
