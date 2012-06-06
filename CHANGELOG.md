@@ -42,7 +42,12 @@
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie)
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
 - Tests
-    - Added tests using RSpec
+    - Added full test suite using RSpec.
+- Added Arachni::Cache classes
+    - LeastCostReplacement -- Least Cost Replacement cache implementation.
+    - LeastRecentlyUsed -- Least Recently Used cache implementation.
+    - RandomReplacement -- Random Replacement cache implementation.
+- Added Arachni::URI class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency.
 - Executables
     - arachni_web_autostart -- removed calls to <em>xterm</em> and <em>xdg-open</em>
 
