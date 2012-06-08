@@ -365,9 +365,10 @@ class Framework
     # @return    [AuditStore]
     #
     def audit_store
+        opts = @opts.to_hash.deep_clone
+
         # restore the original redundancy rules and their counters
-        @opts.redundant = @orig_redundant
-        opts = @opts.to_h
+        opts['redundant'] = @orig_redundant
         opts['mods'] = @modules.keys
 
         AuditStore.new(
