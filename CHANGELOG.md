@@ -1,6 +1,10 @@
 # ChangeLog
 
-## Version 0.4.0.3 _(Monday 12, 2012)_
+## Version 0.4.0.4 _(June 8, 2012)_
+- Gemspec -- Typhoeus 0.4.0 breaks the system, staying with 0.3.3.
+- Fixed loop in Spider.
+
+## Version 0.4.0.3 _(March 12, 2012)_
 - Gemspec -- Updated ```do_sqlite3``` dependency. ( [kost](https://github.com/kost) ) [#166]
 
 ## Version 0.4.0.1 _(January 9, 2012)_
