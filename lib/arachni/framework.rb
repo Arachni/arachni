@@ -182,17 +182,8 @@ class Framework
         exception_jail( false ){ block.call } if block_given?
         @status = :done
 
-        if @opts.cookies
-            # convert cookies to hashes for easier manipulation by the reports
-            @opts.cookies = @opts.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) }
-        else
-            @opts.cookies = {}
-        end
-
         # run reports
-        if !@reports.empty?
-            exception_jail{ @reports.run( audit_store ) }
-        end
+        exception_jail { @reports.run( audit_store ) } if !@reports.empty?
 
         true
     end

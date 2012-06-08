@@ -52,7 +52,10 @@ describe Arachni::AuditStore do
         it 'should return the options as a hash' do
             h = Arachni::Options.instance.to_h
             h['url'] = h['url'].to_s
-            @auditstore.options.should == h
+            ah = @auditstore.options
+            ah['cookies'] = nil
+            h['cookies'] = nil
+            ah.should == h
         end
     end
 

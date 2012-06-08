@@ -216,10 +216,15 @@ class AuditStore
                     new_options[key.to_s] = []
                     val.each { |regexp| new_options[key.to_s] << regexp.to_s }
 
+                when 'cookies'
+                    next if !val
+                    new_options[key.to_s] = val.inject( {} ){ |h, c| h.merge!( c.simple ) }
+
                 else
                     new_options[key.to_s] = val
             end
         end
+
         new_options
     end
 
