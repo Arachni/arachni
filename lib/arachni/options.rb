@@ -28,15 +28,13 @@ require 'getoptlong'
 module Arachni
 
 #
-# Options class.
+# Options storage class.
 #
-# Implements the Singleton pattern and formally defines
-# all of Arachni's runtime options.
+# Implements the Singleton pattern and formally defines all of Arachni's runtime options.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Options
-
     include Singleton
 
     #
@@ -60,6 +58,13 @@ class Options
     # @return [Integer] maximum retries for failed RPC calls
     attr_accessor :max_retries
 
+    #
+    # Supported values:
+    # * high_performance
+    #
+    # If +nil+, it won't make use of the Grid.
+    #
+    # @return   [String]    current grid mode
     attr_accessor :grid_mode
 
     #
@@ -331,8 +336,9 @@ class Options
     attr_accessor :user_agent
 
     #
-    # Exclude filters <br/>
-    # URL matching any of these patterns won't be followed
+    # Exclusion filters.
+    #
+    # URLs matching any of these patterns won't be followed or audited.
     #
     # @return    [Array]
     #
@@ -353,8 +359,9 @@ class Options
     attr_accessor :exclude_vectors
 
     #
-    # Include filters <br/>
-    # Only URLs that match any of these patterns will be followed
+    # Inclusion filters.
+    #
+    # Only URLs that match any of these patterns will be followed.
     #
     # @return    [Array]
     #
@@ -375,48 +382,87 @@ class Options
     #
     attr_accessor :http_harvest_last
 
-    # to be populated by the framework
+    # @return   [Time]  to be populated by the framework
     attr_accessor :start_datetime
-    # to be populated by the framework
+
+    # @return   [Time]   to be populated by the framework
     attr_accessor :finish_datetime
-    # to be populated by the framework
+
+    # @return   [Integer]   to be populated by the framework
     attr_accessor :delta_time
 
+    # @return   [Array<Regexp>] regexps to use to select which plugins to list
     attr_accessor :lsplug
+
+    # @return   [Array<String>] plugins to load, by name
     attr_accessor :plugins
 
+    # @return   [Integer]   port for the RPC server to listen to
     attr_accessor :rpc_port
+
+    # @return   [String]   (hostname or IP) address for the RPC server to bind to
     attr_accessor :rpc_address
 
+    # @return   [Array<Integer>]
+    #   Range of ports to use when spawning instances,
+    #   first element should be the lowest port number, last the max port number.
     attr_accessor :rpc_instance_port_range
 
+    # @return   [Bool]  +true+ if SSL should be enabled, +false+ otherwise.
     attr_accessor :ssl
+
+    # @return   [String]  path to a PEM private key
     attr_accessor :ssl_pkey
+
+    # @return   [String]  path to a PEM certificate
     attr_accessor :ssl_cert
+
+    # @return   [String]  path to a PEM CA file
     attr_accessor :ssl_ca
 
+    # @return   [String]  path to a client PEM private key for the grid nodes
     attr_accessor :node_ssl_pkey
+
+    # @return   [String]  path to a client PEM certificate key for the grid nodes
     attr_accessor :node_ssl_cert
 
+    # @return   [String]  URL of an RPC dispatcher (used by the CLI RPC client interface)
     attr_accessor :server
 
+    # @return   [Bool]  +true+ if the output of the RPC instances should be
+    #                       redirected to a file, +false+ otherwise
     attr_accessor :reroute_to_logfile
+
+    # @return   [Integer]   amount of Instances to keep in the pool
     attr_accessor :pool_size
 
+    # @return   [String]    username for the WebUI
     attr_accessor :webui_username
+
+    # @return   [String]    password for the WebUI
     attr_accessor :webui_password
 
+    # @return   [Hash<String, String>]    custom HTTP headers to be included
+    #                                           for every HTTP Request
     attr_accessor :custom_headers
 
+    # @return   [Array<String>] paths to use instead of crawling the webapp
     attr_accessor :restrict_paths
+
+    # @return   [String] path to file containing {#restrict_paths}
     attr_accessor :restrict_paths_filepath
 
+    # @return   [Array<String>] paths to use in addition to crawling the webapp
     attr_accessor :extend_paths
+
+    # @return   [String] path to file containing {#extend_paths}
     attr_accessor :extend_paths_filepath
 
+    # @return   [Integer]   minimum pages per RPC Instance when in High Performance Mode
     attr_accessor :min_pages_per_instance
-    attr_accessor :max_slaves
 
+    # @return   [Integer]   maximum amount of slave Instances to use
+    attr_accessor :max_slaves
 
     def initialize
         reset
@@ -871,20 +917,35 @@ class Options
         self.url = ARGV.shift
     end
 
+    # @return   [String]    root path of the framework
     def root_path
         File.dirname( File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) ) + '/'
     end
 
+    #
+    # @return   [String]    Single-line, Base64 encoded serialized version of self.
+    #
+    # @see #unserialize
+    #
     def serialize
         Base64.encode64( to_yaml ).split( "\n" ).join
     end
 
+    #
+    # Unserializes what is returned by {#serialize}.
+    #
+    # @param    [String]    str return value of {#serialize}
+    #
+    # @return   [Arachni::Options]
+    #
+    # @see #serialize
+    #
     def unserialize( str )
         YAML.load( Base64.decode64( str ) )
     end
 
     #
-    # Saves 'self' to file
+    # Saves 'self' to +file+.
     #
     # @param    [String]    file
     #
@@ -892,25 +953,24 @@ class Options
 
         dir = @dir.clone
 
-        load_profile  = nil
-        save_profile  = nil
-        authed_by     = nil
-        restrict_paths = nil
-        extend_paths   = nil
+        load_profile    = []
+        save_profile    = nil
+        authed_by       = nil
+        restrict_paths  = []
+        extend_paths    = []
 
-        load_profile  = @load_profile.clone if @load_profile
-        save_profile  = @save_profile.clone if @save_profile
-        authed_by     = @authed_by.clone if @authed_by
-        restrict_paths = @restrict_paths.clone if @restrict_paths
-        extend_paths   = @extend_paths.clone if @extend_paths
+        load_profile   = @load_profile.clone    if @load_profile
+        save_profile   = @save_profile.clone    if @save_profile
+        authed_by      = @authed_by.clone       if @authed_by
+        restrict_paths = @restrict_paths.clone  if @restrict_paths
+        extend_paths   = @extend_paths.clone    if @extend_paths
 
-        @dir          = nil
-        @load_profile = nil
-        @save_profile = nil
-        @authed_by    = nil
-        @restrict_paths = nil
-        @extend_paths   = nil
-
+        @dir            = nil
+        @load_profile   = []
+        @save_profile   = nil
+        @authed_by      = nil
+        @restrict_paths = []
+        @extend_paths   = []
 
         begin
             f = File.open( file, 'w' )
@@ -932,8 +992,15 @@ class Options
         f.path
     end
 
-    def load( filename )
-        opts = YAML::load( IO.read( filename ) )
+    #
+    # Loads a file created by {#save}.
+    #
+    # @param    [String]    filepath    path to the file created by {#save}
+    #
+    # @return   [Arachni::Options]
+    #
+    def load( filepath )
+        opts = YAML::load( IO.read( filepath ) )
 
         if opts.restrict_paths_filepath
             opts.restrict_paths = paths_from_file( opts.restrict_paths_filepath )
@@ -958,26 +1025,37 @@ class Options
         end
         hash
     end
+    alias :to_hash :to_h
 
     #
-    # Merges self with the object in 'options'
+    # Compares 2 {Arachni::Options} objects.
     #
-    # @param    [Arachni::Options]   options
+    # @param    [Arachni::Options]  other
+    #
+    # @return   [Bool]  +true+ if +self == other+, +false+ otherwise
+    #
+    def ==( other )
+        to_hash == other.to_hash
+    end
+
+    #
+    # Merges +self+ with the object in +options+, skipping +nils+ and empty +Array+s or +Hash+es.
+    #
+    # @param    [Arachni::Options, #to_hash]   options
+    #
+    # @return   [Arachni::Options]   updated +self+
     #
     def merge!( options )
-        options.to_h.each_pair do |k, v|
+        options.to_hash.each_pair do |k, v|
             next if !v
             next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
-            instance_variable_set( "@#{k}", v )
+            send( "#{k.to_s}=", v )
         end
+        self
     end
 
     def to_args
-        cli_args = ''
-        self.to_h.keys.each do |key|
-            cli_args += " #{to_arg( key ).to_s}" if arg
-        end
-        cli_args + " #{self.url}"
+        ' ' + to_hash.map { |key, val| to_arg( key ) if val }.compact.join( ' ' ) + " #{self.url}"
     end
 
     def to_arg( key )

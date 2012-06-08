@@ -250,4 +250,117 @@ describe Arachni::Options do
         end
     end
 
+    describe '#serialize' do
+        it 'should return an one-line serialized version of self' do
+            s = @opts.serialize
+            s.is_a?( String ).should be_true
+            s.include?( "\n" ).should be_false
+        end
+    end
+
+    describe '#unserialize' do
+        it 'should unserialize the return value of #serialize' do
+            s = @opts.serialize
+            @opts.unserialize( s ).should == @opts
+        end
+    end
+
+    describe '#save' do
+        it 'should dump a serialized version of self to a file' do
+            f = 'options'
+            @opts.save( f )
+
+            raised = false
+            begin
+                File.delete( f )
+            rescue
+                raised = true
+            end
+            raised.should be_false
+        end
+    end
+
+    describe '#load' do
+        it 'should dump a serialized version of self to a file (without the directory data)' do
+            f = 'options'
+            @opts.save( f )
+
+            @opts.dir = nil
+            @opts.load( f ).should == @opts
+
+            raised = false
+            begin
+                File.delete( f )
+            rescue
+                raised = true
+            end
+            raised.should be_false
+        end
+    end
+
+    describe '#to_hash' do
+        it 'should convert self to a hash' do
+            h = @opts.to_hash
+            h.is_a?( Hash ).should be_true
+
+            h.each { |k, v| @opts.instance_variable_get( "@#{k}".to_sym ).should == v }
+        end
+    end
+
+    describe '#to_h' do
+        it 'should be aliased to to_hash' do
+            @opts.to_hash.should == @opts.to_h
+        end
+    end
+
+    describe '#==' do
+        context 'when both objects are equal' do
+            it 'should return true' do
+                @opts.should == @opts
+            end
+        end
+        context 'when objects are not equal' do
+            it 'should return true' do
+                @opts.should_not == @opts.load( @opts.save( 'test_opts' ) )
+            end
+        end
+    end
+
+    describe '#merge!' do
+        context 'when the param is a' do
+            context Arachni::Options do
+                it 'should merge self with the passed object' do
+                    opts = @opts.load( @opts.save( 'test_opts' ) )
+
+                    opts.nickname = 'billybob'
+                    @opts.nickname.should be_nil
+                    @opts.merge!( opts )
+                    @opts.nickname.should == 'billybob'
+                end
+            end
+            context Hash do
+                it 'should merge self with the passed object' do
+                    @opts.depth_limit = 20
+                    @opts.depth_limit.should == 20
+
+                    @opts.merge!( { depth_limit: 10 } )
+                    @opts.depth_limit.should == 10
+                end
+            end
+        end
+
+        it 'should skip nils and empty Arrays or Hashes' do
+            @opts.exclude = 'test'
+            @opts.merge!( { 'exclude' => [] } )
+            @opts.exclude.should == [ /test/ ]
+
+            @opts.datastore = { 'test' => :val }
+            @opts.merge!( { 'datastore' => {} } )
+            @opts.datastore.should == { 'test' => :val }
+
+            @opts.merge!( { 'datastore' => nil } )
+            @opts.datastore.should == { 'test' => :val }
+        end
+    end
+
 end
