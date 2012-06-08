@@ -745,22 +745,20 @@ class Framework
     # @return   [Bool]
     #
     def run_mod?( mod, page )
-        return true if !mod.info[:elements] || mod.info[:elements].empty?
+        elements = mod.info[:elements]
+        return true if !elements || elements.empty?
 
         elems = {
-            Issue::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
-            Issue::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
-            Issue::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
-            Issue::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
+            Issue::Element::LINK => page.links && page.links.any? && @opts.audit_links,
+            Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
+            Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
+            Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
             Issue::Element::BODY   => true,
             Issue::Element::PATH   => true,
-            Issue::Element::SERVER => true,
+            Issue::Element::SERVER => true
         }
 
-        elems.each_pair do |elem, expr|
-            return true if mod.info[:elements].include?( elem ) && expr
-        end
-
+        elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }
         false
     end
 
@@ -779,7 +777,7 @@ class Framework
     def regexp_array_match( regexps, str )
         cnt = 0
         regexps.each { |filter| cnt += 1 if str =~ filter }
-        true if cnt == regexps.size
+        cnt == regexps.size
     end
 
 end
