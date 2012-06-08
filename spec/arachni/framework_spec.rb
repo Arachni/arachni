@@ -21,6 +21,21 @@ describe Arachni::Framework do
         it 'should provide access to the framework options' do
             @f.opts.is_a?( Arachni::Options ).should be_true
         end
+
+        describe '#restrict_paths' do
+            it 'should serve as a replacement to crawling' do
+                f = Arachni::Framework.new
+                f.opts.url = @url
+                f.opts.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
+                f.opts.audit_links = true
+                f.opts.audit_forms = true
+                f.opts.audit_cookies = true
+                f.modules.load( 'taint' )
+
+                f.run
+                f.auditstore.sitemap.should == f.opts.restrict_paths
+            end
+        end
     end
 
     describe '#report' do

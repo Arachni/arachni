@@ -573,8 +573,9 @@ class Framework
 
         # if we're restricted to a given list of paths there's no reason to run the spider
         if @opts.restrict_paths && !@opts.restrict_paths.empty?
-            @sitemap = @opts.restrict_paths
-            @sitemap.each { |url| push_to_url_queue( to_absolute( url ) ) }
+            @opts.restrict_paths = @opts.restrict_paths.map { |p| to_absolute( p ) }
+            @sitemap = @opts.restrict_paths.dup
+            @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
         else
             @spider = Arachni::Spider.new( @opts )
             # initiates the crawl
