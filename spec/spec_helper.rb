@@ -16,8 +16,7 @@ Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 
 @@server_pids ||= []
 @@servers     ||= {}
-Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
-    |path|
+Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) do |path|
 
     name = File.basename( path, '.rb' ).to_sym
     next if name == :base
@@ -26,7 +25,7 @@ Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) {
         port: random_port,
         path: path
     }
-}
+end
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|

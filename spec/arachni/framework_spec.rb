@@ -3,15 +3,21 @@ require_relative '../spec_helper'
 describe Arachni::Framework do
 
     before( :all ) do
-        opts = Arachni::Options.instance
-        opts.dir['reports'] = spec_path + '/fixtures/reports/manager_spec/'
-        opts.dir['modules']  = spec_path + '/fixtures/taint_module/'
-        @f = Arachni::Framework.new
-
         @url = server_url_for( :auditor )
+        @opts = Arachni::Options.instance
     end
 
-    after( :all ) do
+    before( :each ) do
+        reset_options
+        @opts.dir['reports'] = spec_path + '/fixtures/reports/manager_spec/'
+        @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
+        Arachni::Parser::Element::Auditable.reset
+
+        @f = Arachni::Framework.new
+
+        Arachni::Parser::Element::Auditable.reset
+
+        @f.modules.class.results.clear
         @f.modules.clear
         @f.reports.clear
         @f.plugins.clear
@@ -66,6 +72,435 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
+
+        context 'when audit_links is' do
+            context true do
+                context 'and the page contains links' do
+                    it 'should run modules that audit links' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = true
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 2
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = true
+                        f.modules.load %w(path body server)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = true
+                        f.modules.load %w(nil empty)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+            context false do
+                context 'and the page contains links' do
+                    it 'should not run modules that audit links' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = false
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 0
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = true
+                        f.modules.load %w(path body server)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_links = true
+                        f.modules.load %w(nil empty)
+
+                        link = Arachni::Parser::Element::Link.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+        end
+
+        context 'when audit_forms is' do
+            context true do
+                context 'and the page contains forms' do
+                    it 'should run modules that audit links' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = true
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 2
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = true
+                        f.modules.load %w(path body server)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = true
+                        f.modules.load %w(nil empty)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+            context false do
+                context 'and the page contains forms' do
+                    it 'should not run modules that audit forms' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = false
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 0
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = false
+                        f.modules.load %w(path body server)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_forms = false
+                        f.modules.load %w(nil empty)
+
+                        form = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+        end
+
+        context 'when audit_cookies is' do
+            context true do
+                context 'and the page contains cookies' do
+                    it 'should run modules that audit links' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = true
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        cookie = Arachni::Parser::Element::Cookie.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 2
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = true
+                        f.modules.load %w(path body server)
+
+                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = true
+                        f.modules.load %w(nil empty)
+
+                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+            context false do
+                context 'and the page contains cookies' do
+                    it 'should not run modules that audit cookies' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = false
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 0
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = false
+                        f.modules.load %w(path body server)
+
+                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_cookies = false
+                        f.modules.load %w(nil empty)
+
+                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+        end
+
+        context 'when audit_headers is' do
+            context true do
+                context 'and the page contains headers' do
+                    it 'should run modules that audit links' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = true
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        header = Arachni::Parser::Element::Cookie.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 2
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = true
+                        f.modules.load %w(path body server)
+
+                        header = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = true
+                        f.modules.load %w(nil empty)
+
+                        header = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+            context false do
+                context 'and the page contains headers' do
+                    it 'should not run modules that audit headers' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = false
+                        f.modules.load %w(links forms cookies headers flch)
+
+                        header = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 0
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that audit path, body and server' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = false
+                        f.modules.load %w(path body server)
+
+                        header = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 3
+                        f.modules.clear
+                    end
+
+                    it 'should run modules that have not specified any elements' do
+                        @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                        f = Arachni::Framework.new
+
+                        f.opts.audit_headers = false
+                        f.modules.load %w(nil empty)
+
+                        header = Arachni::Parser::Element::Form.new( 'http://test' )
+                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        f.push_to_page_queue( p )
+
+                        f.run
+                        f.auditstore.issues.size.should == 1
+                        f.modules.clear
+                    end
+                end
+            end
+
+        end
+
         it 'should perform the audit' do
             @f.opts.url = @url + '/elem_combo'
             @f.opts.audit_links = true
@@ -110,6 +545,8 @@ describe Arachni::Framework do
             @f.status.should == 'done'
             @f.auditstore.issues.size.should == 3
 
+            @f.auditstore.plugins['wait'][:results].should == { stuff: true }
+
             File.exists?( 'afr' ).should be_true
             File.exists?( 'foo' ).should be_true
             File.delete( 'foo' )
@@ -121,29 +558,34 @@ describe Arachni::Framework do
         it 'should push a page to the page audit queue' do
             res = @f.http.get( @url + '/train/true', async: false ).response
             page = Arachni::Parser::Page.from_response( res, @f.opts )
+
+            @f.opts.audit_links = true
+            @f.opts.audit_forms = true
+            @f.opts.audit_cookies = true
+
+            @f.modules.load( 'taint' )
+
             @f.page_queue_total_size.should == 0
             @f.push_to_page_queue( page )
             @f.run
-            @f.auditstore.issues.size.should == 4
+            @f.auditstore.issues.size.should == 2
             @f.page_queue_total_size.should > 0
         end
     end
 
     describe '#push_to_url_queue' do
         it 'should push a URL to the URL audit queue' do
-            @f.url_queue_total_size.should > 0
+            @f.opts.audit_links = true
+            @f.opts.audit_forms = true
+            @f.opts.audit_cookies = true
+
+            @f.modules.load( 'taint' )
+
+            @f.url_queue_total_size.should == 0
             @f.push_to_url_queue(  @url + '/link' )
             @f.run
-            @f.auditstore.issues.size.should == 5
+            @f.auditstore.issues.size.should == 2
             @f.url_queue_total_size.should > 0
-        end
-    end
-
-    describe '#auditstore' do
-        it 'should return the audit results' do
-            store = @f.auditstore
-            store.issues.size.should == 5
-            store.plugins.include?( 'wait' ).should be_true
         end
     end
 
@@ -157,6 +599,7 @@ describe Arachni::Framework do
 
     describe '#lsmod' do
         it 'should return info on all modules' do
+            @f.modules.load( 'taint' )
             info = @f.modules.values.first.info
             loaded = @f.modules.loaded
             mods = @f.lsmod
@@ -172,6 +615,16 @@ describe Arachni::Framework do
             mod[:references].should == info[:references]
             mod[:targets].should == info[:targets]
             mod[:issue].should == info[:issue]
+        end
+
+        context 'when the #lsmod option is set' do
+            it 'should use it to filter out modules that do not match it' do
+                @f.opts.lsmod = 'boo'
+                @f.lsmod.size == 0
+
+                @f.opts.lsmod = 'taint'
+                @f.lsmod.size == 1
+            end
         end
     end
 
@@ -250,6 +703,16 @@ describe Arachni::Framework do
 ' ).sort_by { |e| e[:plug_name] }
             @f.plugins.loaded.should == loaded
         end
+
+        context 'when the #lsplug option is set' do
+            it 'should use it to filter out plugins that do not match it' do
+                @f.opts.lsplug = 'bad|foo'
+                @f.lsplug.size == 2
+
+                @f.opts.lsplug = 'boo'
+                @f.lsplug.size == 0
+            end
+        end
     end
 
     describe '#lsrep' do
@@ -276,6 +739,17 @@ describe Arachni::Framework do
   :rep_name: foo
 ').sort_by { |e| e[:rep_name] }
             @f.reports.loaded.should == loaded
+        end
+
+        context 'when the #lsrep option is set' do
+            it 'should use it to filter out reports that do not match it' do
+                @f.opts.lsrep = 'foo'
+                @f.lsrep.size == 1
+
+                @f.opts.lsrep = 'boo'
+                @f.lsrep.size == 0
+
+            end
         end
     end
 
