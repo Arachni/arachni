@@ -61,8 +61,7 @@ class Instance
 
         debug if @opts.debug
 
-
-        if logfile = @opts.reroute_to_logfile
+        if @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['logs'] +
                 "/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
         else
