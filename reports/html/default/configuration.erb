@@ -95,9 +95,9 @@
 
                                 <ul>
                                 <% if !audit_store.options['redundant'].empty?%>
-                                <% audit_store.options['redundant'].each do |rule|%>
+                                <% audit_store.options['redundant'].each do |regexp, counter|%>
 
-                                    <li><%=escapeHTML( rule['regexp'] )%> - Count: <%=rule['count']%></li>
+                                    <li><%=escapeHTML( regexp )%> - Count: <%=counter%></li>
 
                                 <%end%>
                                 <% else %>

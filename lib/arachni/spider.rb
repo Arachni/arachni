@@ -232,7 +232,7 @@ class Spider
     # @return   [Bool]  true if any of the 3 filters returns true, false otherwise
     #
     def skip?( url )
-        visited?( url ) || redundant?( url ) || skip_path?( url )
+        visited?( url ) || skip_path?( url )
     end
 
     #
@@ -262,19 +262,19 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        @opts.redundant.each_with_index do |redundant, i|
-            next if !(url =~ redundant['regexp'])
+        @opts.redundant.each do |regexp, counter|
+            next if !(url =~ regexp)
 
-            if @opts.redundant[i]['count'] == 0
+            if counter == 0
                 print_verbose( 'Discarding redundant page: \'' + url + '\'' )
                 return true
             end
 
             print_info( 'Matched redundancy rule: ' +
-                            redundant['regexp'].to_s + ' for page \'' + url + '\'' )
-            print_info( 'Count-down: ' + @opts.redundant[i]['count'].to_s )
+                            regexp.to_s + ' for page \'' + url + '\'' )
+            print_info( 'Count-down: ' + counter.to_s )
 
-            @opts.redundant[i]['count'] -= 1
+            @opts.redundant[regexp] -= 1
         end
         false
     end
@@ -291,7 +291,7 @@ class Spider
     end
 
     def visit( url, opts = {}, &block )
-        return if skip?( url )
+        return if skip?( url ) || redundant?( url )
         visited( url )
 
         @pending_requests += 1

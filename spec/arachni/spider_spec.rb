@@ -7,25 +7,24 @@ describe Arachni::Spider do
         @url = @opts.url.to_s
     end
 
+    before( :each ) do
+        reset_options
+        @opts.url = @url
+        Arachni::HTTP.instance.reset
+    end
+
     it 'should avoid infinite loops' do
         @opts.url = @url + 'loop'
         sitemap = Arachni::Spider.new.run
 
         expected = [ @opts.url, @opts.url + '_back' ]
         (sitemap & expected).sort.should == expected.sort
-
-        reset_options
-        @opts.url = @url
     end
 
     it 'should preserve cookies' do
         @opts.url = @url + 'with_cookies'
         Arachni::Spider.new.run.
             include?( @url + 'with_cookies3' ).should be_true
-
-        reset_options
-        @opts.url = @url
-        Arachni::HTTP.instance.reset
     end
 
     describe '#new' do
@@ -44,9 +43,6 @@ describe Arachni::Spider do
                 @opts.extend_paths = %w(some_path)
                 s = Arachni::Spider.new
                 s.paths.sort.should == ([@url] | [@url + @opts.extend_paths.first]).sort
-
-                reset_options
-                @opts.url = @url
             end
         end
     end
@@ -63,9 +59,6 @@ describe Arachni::Spider do
             s = Arachni::Spider.new
             s.run
             s.redirects.should == [ s.url ]
-
-            reset_options
-            @opts.url = @url
         end
     end
 
@@ -122,9 +115,19 @@ describe Arachni::Spider do
                 spider = Arachni::Spider.new
                 spider.run.should == spider.sitemap
                 spider.sitemap.size.should == 2
+            end
+        end
+        context 'when redundant rules have been set' do
+            it 'should follow the matching paths the specified amounts of time' do
+                @opts.url = @url + '/redundant'
 
-                reset_options
-                @opts.url = @url
+                @opts.redundant = { 'redundant' => 2 }
+                spider = Arachni::Spider.new
+                spider.run.select { |url| url.include?( 'redundant') }.size.should == 2
+
+                @opts.redundant = { 'redundant' => 3 }
+                spider = Arachni::Spider.new
+                spider.run.select { |url| url.include?( 'redundant') }.size.should == 3
             end
         end
         context 'when called without parameters' do

@@ -26,7 +26,7 @@ module Reports
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.2.1
 #
 class Stdout < Arachni::Report::Base
@@ -89,8 +89,8 @@ class Stdout < Arachni::Report::Base
         if @audit_store.options['redundant']
             print_info( "  Redundant:" )
             @audit_store.options['redundant'].each {
-                |red|
-                print_info( "    " + red['regexp'] + ':' + red['count'].to_s )
+                |regexp, counter|
+                print_info( "    " + regexp + ':' + counter.to_s )
             }
         end
 

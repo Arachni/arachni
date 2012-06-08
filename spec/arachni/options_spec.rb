@@ -224,19 +224,17 @@ describe Arachni::Options do
             ]
 
             @opts.redundant = redundants.first
-            @opts.redundant.should == [redundants.first]
+            @opts.redundant.should == { /calendar\.php/ => 5 }
+
+            new_format = { 'regexp' => 39 }
+            @opts.redundant = new_format
+            @opts.redundant.should == { /regexp/ => 39 }
 
             @opts.redundant = redundants
-            @opts.redundant.should == [
-                {
-                    'regexp'    => /calendar\.php/,
-                    'count'     => 5
-                },
-                {
-                    'regexp'    => /gallery\.php/,
-                    'count'     => 3
-                }
-            ]
+            @opts.redundant.should == {
+                /calendar\.php/ => 5,
+                /gallery\.php/ => 3
+            }
         end
     end
 
@@ -322,6 +320,7 @@ describe Arachni::Options do
         context 'when objects are not equal' do
             it 'should return true' do
                 @opts.should_not == @opts.load( @opts.save( 'test_opts' ) )
+                File.delete( 'test_opts' )
             end
         end
     end
@@ -331,6 +330,7 @@ describe Arachni::Options do
             context Arachni::Options do
                 it 'should merge self with the passed object' do
                     opts = @opts.load( @opts.save( 'test_opts' ) )
+                    File.delete( 'test_opts' )
 
                     opts.nickname = 'billybob'
                     @opts.nickname.should be_nil

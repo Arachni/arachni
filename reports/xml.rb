@@ -27,7 +27,7 @@ module Reports
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.2.1
 #
 class XML < Arachni::Report::Base
@@ -102,8 +102,8 @@ class XML < Arachni::Report::Base
         if @audit_store.options['redundant']
             start_tag( "redundant" )
             @audit_store.options['redundant'].each {
-                |red|
-                simple_tag( 'filter', red['regexp'] + ':' + red['count'].to_s )
+                |regexp, counter|
+                simple_tag( 'filter', regexp + ':' + counter.to_s )
             }
             end_tag( "redundant" )
         end

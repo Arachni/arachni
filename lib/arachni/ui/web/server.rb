@@ -184,13 +184,13 @@ class Server < Sinatra::Base
         end
 
         def format_redundants( rules )
-            return if !rules || !rules.is_a?( Array ) || rules.empty?
+            return if !rules || !rules.is_a?( Hash ) || rules.empty?
 
             str = ''
             rules.each {
-                |rule|
-                next if !rule['regexp'] || !rule['count']
-                str += rule['regexp'] + ':' + rule['count'] + "\r\n"
+                |regexp, counter|
+                next if !regexp || !counter
+                str += regexp.to_s + ':' + counter.to_s + "\r\n"
             }
             return str
         end
@@ -470,14 +470,11 @@ class Server < Sinatra::Base
                 cparams[name] = value.split( "\r\n" )
 
             elsif name == 'redundant' && value.is_a?( String )
-                cparams[name] = []
+                cparams[name] = {}
                 value.split( "\r\n" ).each {
                     |rule|
                     regexp, counter = rule.split( ':', 2 )
-                    cparams[name] << {
-                        'regexp'  => regexp,
-                        'count'   => counter
-                    }
+                    cparams[name][regexp] = counter
                 }
             elsif name == 'custom_headers' && value.is_a?( String )
                 cparams[name] = {}

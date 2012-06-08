@@ -106,10 +106,7 @@ describe Arachni::Options do
                     'count'  => '3'
                 }
                 @instance.opts.redundant = [regexp]
-                @instance.opts.redundant.should == [
-                    'regexp' => /this is redundant/,
-                    'count'  => 3
-                ]
+                @instance.opts.redundant.should == { /this is redundant/ => 3 }
             end
         end
 
@@ -120,10 +117,7 @@ describe Arachni::Options do
                     'count'  => 5
                 }
                 @instance.opts.redundant = [regexp]
-                @instance.opts.redundant.should == [
-                    'regexp' => /this is redundant/,
-                    'count'  => 5
-                ]
+                @instance.opts.redundant.should == { /this is redundant/ => 5 }
             end
         end
     end

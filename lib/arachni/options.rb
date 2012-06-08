@@ -140,9 +140,9 @@ class Options
     attr_accessor :debug
 
     #
-    # Filters for redundant links
+    # Filters for redundant links in the form of {pattern => counter}.
     #
-    # @return    [Array]
+    # @return    [Hash[Regexp, Integer]]
     #
     attr_accessor :redundant
 
@@ -491,7 +491,7 @@ class Options
         # their data types for later verification
 
         @datastore  = {}
-        @redundant  = []
+        @redundant  = {}
 
         @obey_robots_txt = false
 
@@ -580,25 +580,30 @@ class Options
     # Sets the redundancy filters.
     #
     # Filter example:
-    #     [
-    #        {
-    #            'regexp'    => /calendar\.php/, # URL to apply the filter to
-    #            'count'     => 5   # how many times to crawl the url
-    #        },
-    #        {
-    #            'regexp'    => 'gallery.php', # can also be a string
-    #            'count'     => '3' # this too
-    #        }
-    #    ]
+    #    {
+    #        # regexp           counter
+    #        /calendar\.php/ => 5
+    #        'gallery\.php' => '3'
+    #    }
     #
-    # @param     [Array<Hash>]  filters
+    # @param     [Hash]  filters
     #
     def redundant=( filters )
-        @redundant = [filters].flatten.map do |filter|
-            regexp = filter['regexp'].is_a?( Regexp ) ?
-                filter['regexp'] : Regexp.new( filter['regexp'].to_s )
+        @redundant = if filters.is_a?( Array ) ||
+            (filters.is_a?( Hash ) && (filters.keys & %w(regexp count)).size == 2)
+            [filters].flatten.inject({})  do |h, filter|
+                regexp = filter['regexp'].is_a?( Regexp ) ?
+                    filter['regexp'] : Regexp.new( filter['regexp'].to_s )
 
-            { 'regexp' => regexp, 'count' => Integer( filter['count'] ) }
+                h.merge!( regexp => Integer( filter['count'] ) )
+                h
+            end
+        else
+            filters.inject({}) do |h, (regexp, counter)|
+                regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+                h.merge!( regexp => Integer( counter ) )
+                h
+            end
         end
     end
 
@@ -725,10 +730,8 @@ class Options
                         @plugins[plugin] = opts
 
                     when '--redundant'
-                        @redundant << {
-                            'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
-                            'count'   => Integer( arg.to_s.split( /:/ )[1] ),
-                        }
+                        regexp, counter = arg.to_s.split( ':', 2 )
+                        @redundant[ Regexp.new( regexp ) ] = Integer( counter )
 
                     when '--port-range'
                         first, last = arg.to_s.split( '-' )

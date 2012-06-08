@@ -205,21 +205,19 @@ class AuditStore
 
         options['url'] = options['url'].to_s
         options.each_pair do |key, val|
-            new_options[key.to_s] = val
-
             case key
                 when 'redundant'
-                    new_options[key.to_s] = []
-                    val.each do |red|
-                        new_options[key.to_s] << {
-                            'regexp' => red['regexp'].to_s,
-                             'count' => red['count']
-                        }
+                    new_options[key.to_s] = {}
+                    val.each do |regexp, counter|
+                        new_options[key.to_s].merge!( regexp.to_s => counter )
                     end
 
                 when 'exclude', 'include'
                     new_options[key.to_s] = []
                     val.each { |regexp| new_options[key.to_s] << regexp.to_s }
+
+                else
+                    new_options[key.to_s] = val
             end
         end
         new_options

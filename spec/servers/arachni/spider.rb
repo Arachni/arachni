@@ -12,6 +12,28 @@ get '/redirect' do
     redirect '/'
 end
 
+get '/redundant' do
+    <<EOHTML
+    <a href='/redundant/1'>Redundant 1</a>
+EOHTML
+end
+
+get '/redundant/1' do
+    <<EOHTML
+    <a href='/redundant/2'>Redundant 2</a>
+EOHTML
+end
+
+get '/redundant/2' do
+    <<EOHTML
+    <a href='/redundant/3'>Redundant 3</a>
+EOHTML
+end
+
+get '/redundant/3' do
+    'End of the line.'
+end
+
 get '/a_pushed_path' do
 end
 
