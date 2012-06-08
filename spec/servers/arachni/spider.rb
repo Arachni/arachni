@@ -8,6 +8,10 @@ get '/' do
 EOHTML
 end
 
+get '/redirect' do
+    redirect '/'
+end
+
 get '/a_pushed_path' do
 end
 

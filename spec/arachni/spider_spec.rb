@@ -57,6 +57,18 @@ describe Arachni::Spider do
         end
     end
 
+    describe '#redirects' do
+        it 'should hold an array of requested URLs that caused a redirect' do
+            @opts.url = @url + 'redirect'
+            s = Arachni::Spider.new
+            s.run
+            s.redirects.should == [ s.url ]
+
+            reset_options
+            @opts.url = @url
+        end
+    end
+
     describe '#url' do
         it 'should return the seed URL' do
             Arachni::Spider.new.url.should == @url
