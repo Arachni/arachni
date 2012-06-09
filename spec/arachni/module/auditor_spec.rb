@@ -396,7 +396,7 @@ describe Arachni::Module::Auditor do
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
                         issue.elem.should == Arachni::Module::Auditor::Element::HEADER
-                        issue.var.should == 'referer'
+                        issue.var.should == 'Referer'
                     end
                 end
 

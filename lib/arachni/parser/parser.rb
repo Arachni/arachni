@@ -249,15 +249,15 @@ class Parser
     #
     def headers
         {
-            'accept'          => 'text/html,application/xhtml+xml,application' +
+            'Accept'          => 'text/html,application/xhtml+xml,application' +
                 '/xml;q=0.9,*/*;q=0.8',
-            'accept-charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-            'accept-language' => 'en-gb,en;q=0.5',
-            'accept-encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'from'       => @opts.authed_by || '',
-            'user-agent' => @opts.user_agent || '',
-            'referer'    => @url,
-            'pragma'     => 'no-cache'
+            'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+            'Accept-Language' => 'en-gb,en;q=0.5',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'From'       => @opts.authed_by || '',
+            'User-Agent' => @opts.user_agent || '',
+            'Referer'    => @url,
+            'Pragma'     => 'no-cache'
         }.map { |k, v| Element::Header.new( @url, { k => v } ) }
     end
 
