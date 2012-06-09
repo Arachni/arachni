@@ -183,7 +183,7 @@ describe Arachni::Framework do
         context 'when audit_forms is' do
             context true do
                 context 'and the page contains forms' do
-                    it 'should run modules that audit links' do
+                    it 'should run modules that audit forms' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -290,7 +290,7 @@ describe Arachni::Framework do
         context 'when audit_cookies is' do
             context true do
                 context 'and the page contains cookies' do
-                    it 'should run modules that audit links' do
+                    it 'should run modules that audit cookies' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -397,7 +397,7 @@ describe Arachni::Framework do
         context 'when audit_headers is' do
             context true do
                 context 'and the page contains headers' do
-                    it 'should run modules that audit links' do
+                    it 'should run modules that audit headers' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
