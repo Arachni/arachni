@@ -344,7 +344,8 @@ class Framework
     # Pushes a URL to the URL audit queue and updates {#url_queue_total_size}
     #
     def push_to_url_queue( url )
-        @url_queue << url
+        abs = to_absolute( url )
+        @url_queue.push( abs ? abs : url )
         @url_queue_total_size += 1
     end
 
