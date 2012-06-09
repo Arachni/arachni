@@ -47,14 +47,11 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         self.action = @url
         self.method = 'cookie'
 
+        @raw ||= {}
         if @raw['name'] && @raw['value']
             self.auditable = { @raw['name'] => @raw['value'] }
         else
             self.auditable = raw.dup
-            @raw = {
-                'name'  => @auditable.keys.first,
-                'value' => @auditable.values.first
-            }
         end
 
         @raw = @raw.merge( DEFAULT.merge( @raw ) )
@@ -147,11 +144,16 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def auditable=( inputs )
+        k = inputs.keys.first
+        v = inputs.values.first
+        v = encode_value( v ).dup if v
+
         raw = @raw.dup
-        raw['name']  = inputs.keys.first
+        raw['name']  = k
         raw['value'] = inputs.values.first
+
         @raw = raw.freeze
-        super( inputs )
+        super( { k => v } )
     end
 
     #
@@ -176,7 +178,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def encoded_value
-        URI.encode( URI.encode( value ), '+;' )
+        encode_value( value )
     end
 
     #
@@ -304,6 +306,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     private
     def http_request( opts = {}, &block )
         http.cookie( @action, opts || {}, &block )
+    end
+
+    def encode_value( str )
+        URI.encode( str, '+;' )
     end
 
 end
