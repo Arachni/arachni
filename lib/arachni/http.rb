@@ -309,6 +309,8 @@ class HTTP
                 rescue
                     return
                 end
+            else
+                cparams.each { |k, v| cparams[k] = ::URI.encode( v, '+;' ) }
             end
 
             opts = {
