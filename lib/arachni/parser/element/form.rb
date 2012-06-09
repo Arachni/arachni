@@ -240,6 +240,20 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         end.compact
     end
 
+    def audit_id( injection_str = '', opts = {} )
+        str = if original?
+                  ORIGINAL_VALUES
+                  opts[:no_auditor] = true
+              elsif sample?
+                  SAMPLE_VALUES
+                  opts[:no_auditor] = true
+              else
+                  injection_str
+              end
+
+        super( str, opts )
+    end
+
     private
 
     def self.form_from_element( url, form )
@@ -323,20 +337,6 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             select['attrs']['value'] = selected || select['options'].first['value']
             select['attrs']
         end
-    end
-
-    def audit_id( injection_str = '', opts = {} )
-        str = if original?
-                  ORIGINAL_VALUES
-                  opts[:no_auditor] = true
-              elsif sample?
-                  SAMPLE_VALUES
-                  opts[:no_auditor] = true
-              else
-                  injection_str
-              end
-
-        super( str, opts )
     end
 
     def http_request( opts, &block )
