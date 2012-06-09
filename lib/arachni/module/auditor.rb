@@ -243,7 +243,7 @@ module Auditor
             url:      url,
             injected: filename,
             id:       filename,
-            elem:     Arachni::Issue::Element::PATH,
+            elem:     Element::PATH,
             response: res.body,
             headers:  {
                 request:  res.request.headers,
@@ -292,7 +292,7 @@ module Auditor
                 log(
                     regexp:  regexp,
                     match:   match,
-                    element: ::Element::BODY
+                    element: Element::BODY
                 )
             end if elems.include? Element::BODY
 
