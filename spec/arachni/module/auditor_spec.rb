@@ -418,7 +418,7 @@ describe Arachni::Module::Auditor do
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/default' ).on_complete do |res|
+                        @framework.http.get( @url + '/train/default' ) do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run

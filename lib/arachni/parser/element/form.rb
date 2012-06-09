@@ -137,6 +137,20 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         self.altered == SAMPLE_VALUES
     end
 
+    def audit_id( injection_str = '', opts = {} )
+        str = if original?
+                  opts[:no_auditor] = true
+                  ORIGINAL_VALUES
+              elsif sample?
+                  opts[:no_auditor] = true
+                  SAMPLE_VALUES
+              else
+                  injection_str
+              end
+
+        super( str, opts )
+    end
+
     #
     # Overrides {Arachni::Parser::Element::Mutable#mutations} adding support
     # for mutations with:
@@ -155,20 +169,20 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
         if !opts[:skip_orig]
 
-            if !audited?( audit_id( ORIGINAL_VALUES ) )
+            #if !audited?( audit_id( ORIGINAL_VALUES ) )
                 # this is the original hash, in case the default values
                 # are valid and present us with new attack vectors
                 elem = self.dup
                 elem.altered = ORIGINAL_VALUES
                 var_combo << elem
-            end
+            #end
 
-            if !audited?( audit_id( SAMPLE_VALUES ) )
+            #if !audited?( audit_id( SAMPLE_VALUES ) )
                 elem = self.dup
                 elem.auditable = Arachni::Module::KeyFiller.fill( auditable.dup )
                 elem.altered = SAMPLE_VALUES
                 var_combo << elem
-            end
+            #end
         end
 
         return var_combo.uniq if !@raw['auditable']
@@ -240,21 +254,16 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         end.compact
     end
 
-    def audit_id( injection_str = '', opts = {} )
-        str = if original?
-                  ORIGINAL_VALUES
-                  opts[:no_auditor] = true
-              elsif sample?
-                  SAMPLE_VALUES
-                  opts[:no_auditor] = true
-              else
-                  injection_str
-              end
-
-        super( str, opts )
-    end
-
     private
+
+    def skip?( elem )
+        if elem.original? || elem.sample?
+            id = elem.audit_id
+            return true if audited?( id )
+            audited!( id )
+        end
+        false
+    end
 
     def self.form_from_element( url, form )
         utilities = Arachni::Utilities
@@ -340,7 +349,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     def http_request( opts, &block )
-        if (original? || sample?) && !audited?( audit_id )
+        if original? || sample?
             state = original? ? 'original' : 'sample'
             print_debug( "Submitting form with #{state} values; overriding trainer option." )
             opts[:train] = true

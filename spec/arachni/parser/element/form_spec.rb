@@ -120,14 +120,14 @@ describe Arachni::Parser::Element::Form do
                 }
 
                 altered = []
-                f.audit( '', opts ) { |_, _, elem| altered << (elem.sample? || elem.original?) }
+                f.audit( 'dsd', opts ) { |_, _, elem| altered << (elem.sample? || elem.original?) }
                 @http.run
                 altered.count( true ).should == 2
 
                 altered = []
-                f.audit( '', opts ) { |_, _, elem| altered << elem.altered }
+                f.audit( 'fff', opts ) { |_, _, elem| altered << (elem.sample? || elem.original?) }
                 @http.run
-                altered.should be_empty
+                altered.count( true ).should == 0
             end
         end
     end
