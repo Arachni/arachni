@@ -5,6 +5,7 @@ def server_port_for( name )
 end
 
 def server_url_for( name, lazy_start = true )
+    name = name.to_s.to_sym
     start_server!( name ) if lazy_start && !server_running?( name )
     'http://localhost:' + server_port_for( name ).to_s
 end
