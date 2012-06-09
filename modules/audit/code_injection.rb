@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # It's designed to work with PHP, Perl, Python, Java, ASP and Ruby
 # but still needs some more testing.
@@ -33,7 +30,7 @@ module Modules
 # @see http://www.aspdev.org/asp/asp-eval-execute/
 # @see http://en.wikipedia.org/wiki/Eval#Ruby
 #
-class CodeInjection < Arachni::Module::Base
+class Arachni::Modules::CodeInjection < Arachni::Module::Base
 
     def prepare
         #
@@ -80,12 +77,12 @@ class CodeInjection < Arachni::Module::Base
                 web application and assess whether or not the injection
                 was successful.},
             elements:    [
-                Issue::Element::FORM,
-                Issue::Element::LINK,
-                Issue::Element::COOKIE,
-                Issue::Element::HEADER
+                Element::FORM,
+                Element::LINK,
+                Element::COOKIE,
+                Element::HEADER
             ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             references:  {
                 'PHP'    => 'http://php.net/manual/en/function.eval.php',
@@ -101,7 +98,7 @@ class CodeInjection < Arachni::Module::Base
     which is then executed as part of the system.},
                 tags:            %w(code injection regexp),
                 cwe:             '94',
-                severity:        Issue::Severity::HIGH,
+                severity:        Severity::HIGH,
                 cvssv2:          '7.5',
                 remedy_guidance: %q{User inputs must be validated and filtered
     before being evaluated as executable code.
@@ -114,6 +111,4 @@ class CodeInjection < Arachni::Module::Base
         }
     end
 
-end
-end
 end
