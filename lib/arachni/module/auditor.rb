@@ -78,6 +78,13 @@ module Auditor
         include Arachni::Issue::Element
     end
 
+    #
+    # Holds constants that describe Issue severities.
+    #
+    module Severity
+        include Arachni::Issue::Severity
+    end
+
     OPTIONS = {
         #
         # Elements to audit.
@@ -87,7 +94,7 @@ module Auditor
         #
         elements: [Element::LINK, Element::FORM,
                    Element::COOKIE, Element::HEADER,
-                   Issue::Element::BODY],
+                   Element::BODY],
 
         #
         # If 'train' is set to true the HTTP response will be
@@ -236,7 +243,7 @@ module Auditor
             url:      url,
             injected: filename,
             id:       filename,
-            elem:     Issue::Element::PATH,
+            elem:     Arachni::Issue::Element::PATH,
             response: res.body,
             headers:  {
                 request:  res.request.headers,
@@ -255,7 +262,7 @@ module Auditor
     #
     def log_issue( opts )
         # register the issue
-        register_results( [ Issue.new( opts.merge( self.class.info ) ) ] )
+        register_results( [ Arachni::Issue.new( opts.merge( self.class.info ) ) ] )
     end
 
     #
@@ -285,9 +292,9 @@ module Auditor
                 log(
                     regexp:  regexp,
                     match:   match,
-                    element: Issue::Element::BODY
+                    element: ::Element::BODY
                 )
-            end if elems.include? Issue::Element::BODY
+            end if elems.include? Element::BODY
 
             next if string != page.html
 
@@ -302,10 +309,10 @@ module Auditor
                         var:     k,
                         regexp:  regexp,
                         match:   match,
-                        element: Issue::Element::HEADER
+                        element: Element::HEADER
                     )
                 end
-            end if elems.include? Issue::Element::HEADER
+            end if elems.include? Element::HEADER
 
         end
     end
