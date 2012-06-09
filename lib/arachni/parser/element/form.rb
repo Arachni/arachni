@@ -128,7 +128,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
     # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
     def original?
-        super || self.altered == ORIGINAL_VALUES
+        self.altered == ORIGINAL_VALUES
     end
 
     # @return   [Bool]  +true+ if the element has been populated with sample values,
@@ -262,7 +262,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         c_form['attrs']['action'] = action
 
         if !c_form['attrs']['method']
-            c_form['attrs']['method'] = 'post'
+            c_form['attrs']['method'] = 'get'
         else
             c_form['attrs']['method'] = c_form['attrs']['method'].downcase
         end
@@ -327,14 +327,15 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
     def audit_id( injection_str = '', opts = {} )
         str = if original?
-            ORIGINAL_VALUES
-            opts[:no_auditor] = true
-        elsif sample?
-            SAMPLE_VALUES
-            opts[:no_auditor] = true
-        else
-            injection_str
-        end
+                  ORIGINAL_VALUES
+                  opts[:no_auditor] = true
+              elsif sample?
+                  SAMPLE_VALUES
+                  opts[:no_auditor] = true
+              else
+                  injection_str
+              end
+
         super( str, opts )
     end
 
