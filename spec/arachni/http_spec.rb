@@ -412,6 +412,20 @@ describe Arachni::HTTP do
                 @http.run
                 params.to_s.should == body
             end
+            context 'POST' do
+                it 'should encode special characters' do
+                    body = nil
+                    params = { 'param' => 'value +;', 'nil' => nil }
+                    @http.request( @url + '/echo',
+                                   method: :post,
+                                   params: params,
+                                   remove_id: true
+                    ) { |res| body = res.body }
+                    @http.run
+                    { 'nil' => '', 'param' => 'value +;' }.to_s.should == body
+                end
+            end
+
         end
         describe :remove_id do
             describe 'nil' do

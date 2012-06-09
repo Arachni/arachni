@@ -26,6 +26,10 @@ get '/echo' do
     params.to_s
 end
 
+post '/echo' do
+    params.to_s
+end
+
 get '/redirect' do
     redirect '/redirect/1'
 end
