@@ -32,42 +32,43 @@
 #
 class Arachni::Modules::CodeInjection < Arachni::Module::Base
 
-    def prepare
-        #
-        # Digits from a sha1 hash.
-        #
-        # The codes in @injection_strs will tell the web app to sum them up
-        # and echo the result.
-        #
-        @@rand1 ||= '287630581954'
-        @@rand2 ||= '4196403186331128'
+    def self.rand1
+        @rand1 ||= '287630581954'
+    end
 
-        @@opts ||= {
-            substring: (@@rand1.to_i + @@rand2.to_i).to_s,
+    def self.rand2
+        @rand2 ||= '4196403186331128'
+    end
+
+    def self.opts
+        @opts ||= {
+            substring: (rand1.to_i + rand2.to_i).to_s,
             format:    [Format::APPEND, Format::STRAIGHT],
             param_flip: false
         }
+    end
 
+    def self.code_strings
         # code strings to be injected to the webapp
-        @@code_strings ||= [
-            "echo " + @@rand1 + "+" + @@rand2 + ";", # PHP
-            "print " + @@rand1 + "+" + @@rand2 + ";", # Perl
-            "print " + @@rand1 + "+" + @@rand2, # Python
+        @code_strings ||= [
+            "echo " + rand1 + "+" + rand2 + ";", # PHP
+            "print " + rand1 + "+" + rand2 + ";", # Perl
+            "print " + rand1 + "+" + rand2, # Python
 
             # the 2 following will most likely print to the console but give them a shot
-            "Response.Write\x28" +  @@rand1  + '+' + @@rand2 + "\x29", # ASP
-            "puts " + @@rand1 + "+" + @@rand2 # Ruby
+            "Response.Write\x28" +  rand1  + '+' + rand2 + "\x29", # ASP
+            "puts " + rand1 + "+" + rand2 # Ruby
         ]
     end
 
-    def run
-        generate_variations.each { |var| audit( var, @@opts ) }
-    end
-
-    def generate_variations
-        @@variations ||= @@code_strings.map do |str|
+    def self.generate_variations
+        @variations ||= code_strings.map do |str|
             [ ';%s', "\";%s#", "';%s#" ].map { |var| var % str } | [str]
         end.flatten.compact
+    end
+
+    def run
+        self.class.generate_variations.each { |var| audit( var, self.class.opts ) }
     end
 
     def self.info
