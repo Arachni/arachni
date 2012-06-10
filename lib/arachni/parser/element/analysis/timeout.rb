@@ -301,13 +301,12 @@ module Arachni::Parser::Element::Analysis::Timeout
     #                                       it will be passed the response and opts
     #
     def timing_attack( strings, opts, &block )
-
         opts[:timeout_divider] ||= 1
 
         [strings].flatten.each do |str|
 
             opts[:timing_string] = str
-            str = str.gsub( '__TIME__', ( (opts[:timeout] + 3 * opts[:timeout_divider]) / opts[:timeout_divider] ).to_s )
+            str = str.gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
             opts[:skip_orig] = true
 
             audit( str, opts ) do |res, c_opts, elem|
