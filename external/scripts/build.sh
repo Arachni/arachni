@@ -490,7 +490,7 @@ install_arachni() {
     $gem_path/bin/bundle install 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 
-    echo "  * Testing"
+    echo "  * Testing -- This will take some time ('tail -f $logs_path/arachni' for progress)."
     $gem_path/bin/bundle exec $usr_path/bin/rake spec  2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 
