@@ -33,6 +33,7 @@ module Module
 #
 class Base
     include Arachni::Module::Utilities
+    extend Arachni::Module::Utilities
     include Arachni::Module::Auditor
 
     #
