@@ -309,7 +309,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def encode_value( str )
-        URI.encode( str, '+;' )
+        URI.encode( str, '+;%' )
     end
 
 end
