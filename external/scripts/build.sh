@@ -440,6 +440,10 @@ get_update_script() {
     get_wrapper_environment 'gem update arachni'
 }
 
+get_shell_script() {
+    get_wrapper_environment '; export PATH="$env_root/bin:$PATH"; export PS1="arachni-shell\$ "; bash --noprofile --norc'
+}
+
 get_test_script() {
     get_wrapper_environment '$GEM_PATH/bin/rspec $(dirname $(dirname `gem which arachni`))'
 }
@@ -501,6 +505,10 @@ install_arachni() {
 
 install_bin_wrappers() {
     cp "`dirname $(readlink_f $scriptdir)`/lib/readlink_f.sh" "$root/bin/"
+
+    get_shell_script > "$root/bin/arachni_shell"
+    chmod +x "$root/bin/arachni_shell"
+    echo "  * $root/bin/arachni_shell"
 
     get_update_script > "$root/bin/arachni_update"
     chmod +x "$root/bin/arachni_update"
