@@ -21,6 +21,28 @@ begin
     require 'rspec'
     require 'rspec/core/rake_task'
 
+    namespace :spec do
+        RSpec::Core::RakeTask.new( :core ) do |t|
+            t.pattern = FileList[ "spec/arachni/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :modules ) do |t|
+            t.pattern = FileList[ "spec/modules/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :reports ) do |t|
+            t.pattern = FileList[ "spec/reports/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :plugins ) do |t|
+            t.pattern = FileList[ "spec/plugins/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :path_extractors ) do |t|
+            t.pattern = FileList[ "spec/path_extractors/**/*_spec.rb" ]
+        end
+    end
+
     RSpec::Core::RakeTask.new
 rescue LoadError => e
     puts 'If you want to run the tests please install rspec first:'
