@@ -48,14 +48,6 @@ class Arachni::Parser::Element::Base
         @opts = {}
     end
 
-    def skip?( elem )
-        if Arachni::Options.instance.exclude_vectors.include?( elem.altered )
-            auditor.print_info "Skipping audit of '#{elem.altered}' #{type} vector."
-            return true
-        end
-        super( elem )
-    end
-
     #
     # Must provide a string uniquely identifying self.
     #

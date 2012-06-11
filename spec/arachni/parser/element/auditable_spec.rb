@@ -116,6 +116,21 @@ describe Arachni::Parser::Element::Auditable do
 
         before( :each ) { Arachni::Parser::Element::Auditable.reset }
 
+        context 'when the exclude_vectors option is set' do
+            it 'should skip those vectors by name' do
+                e = Arachni::Parser::Element::Link.new( @url,
+                    'include_this' => 'param',
+                    'exclude_this' => 'param',
+                )
+
+                Arachni::Options.instance.exclude_vectors << 'exclude_this'
+                audited = []
+                e.audit( @seed ) { |_, _, elem| audited << elem.altered  }.should be_true
+                e.http.run
+
+                audited.uniq.should == %w(include_this)
+            end
+        end
         context 'when called with no opts' do
             it 'should use the defaults' do
                 cnt = 0

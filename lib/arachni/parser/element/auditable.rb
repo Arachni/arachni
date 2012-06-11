@@ -276,6 +276,12 @@ module Auditable
 
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each do |elem|
+
+            if Arachni::Options.instance.exclude_vectors.include?( elem.altered )
+                print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+                next
+            end
+
             if !orphan? && @auditor.skip?( elem )
                 mid = elem.audit_id( injection_str, opts )
                 print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
