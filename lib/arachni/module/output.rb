@@ -17,59 +17,45 @@
 module Arachni
 module Module
 
-
 #
 # Provides output functionality to the modules via the {Arachni::UI::Output}<br/>
 # prepending the module name to the output message.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Output
-
     include Arachni::UI::Output
 
-    alias :o_print_error    :print_error
-    alias :o_print_bad      :print_bad
-    alias :o_print_status   :print_status
-    alias :o_print_info     :print_info
-    alias :o_print_ok       :print_ok
-    alias :o_print_debug    :print_debug
-    alias :o_print_verbose  :print_verbose
-    alias :o_print_line     :print_line
-
     def print_error( str = '' )
-        o_print_error( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_bad( str = '', out = $stdout )
-        o_print_bad( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_status( str = '' )
-        o_print_status( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_info( str = '' )
-        o_print_info( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_ok( str = '' )
-        o_print_ok( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_debug( str = '' )
-        o_print_debug( fancy_name + ": " + str ) if debug?
+        super( fancy_name + ": " + str ) if debug?
     end
 
     def print_verbose( str = '' )
-        o_print_verbose( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def print_line( str = '' )
-        o_print_line( fancy_name + ": " + str )
+        super( fancy_name + ": " + str )
     end
 
     def fancy_name
