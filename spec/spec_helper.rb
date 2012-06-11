@@ -47,7 +47,10 @@ RSpec.configure do |config|
 
     config.after( :all ) do
         Arachni::UI::Output.mute
-        remove_constants( Arachni::Modules, true )
+        remove_constants( Arachni::Modules, true,
+                          [Arachni::Module::Auditor::Element,
+                           Arachni::Module::Auditor::Format,
+                           Arachni::Module::Auditor::Severity] )
         remove_constants( Arachni::Plugins, true )
         remove_constants( Arachni::Reports, true )
     end
