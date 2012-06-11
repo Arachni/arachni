@@ -4,10 +4,8 @@
 # loaded once.
 #
 
-require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 require 'eventmachine'
-Arachni::UI::Output.mute
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
@@ -48,6 +46,7 @@ RSpec.configure do |config|
     end
 
     config.after( :all ) do
+        Arachni::UI::Output.mute
         remove_constants( Arachni::Modules, true )
         remove_constants( Arachni::Plugins, true )
         remove_constants( Arachni::Reports, true )
