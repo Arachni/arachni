@@ -1,8 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-require 'ap'
-
 REGEXP = {
     php: 'sleep\s?\((\d+)\/(\d+)\s?\);',
     perl: 'sleep\s?\((\d+)\/(\d+)\s?\);',

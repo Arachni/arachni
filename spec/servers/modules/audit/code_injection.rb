@@ -1,8 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-require 'ap'
-
 REGEXP = {
     php: 'echo\s([0-9]+)\s?\+\s?([0-9]+);',
     perl: 'print\s([0-9]+)\s?\+\s?([0-9]+);',
