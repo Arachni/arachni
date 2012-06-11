@@ -62,8 +62,7 @@ module Output
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
-        File.open( 'error.log', 'a' ){
-            |f|
+        File.open( 'error.log', 'a' ) do |f|
             if !@@opened
                 f.puts
                 f.puts "#{Time.now} " + ( "-" * 80 )
@@ -84,7 +83,7 @@ module Output
                 f.puts "-" * 80
             end
             print_color( "[#{Time.now}]", 31, str, f, true )
-        }
+        end
 
         @@opened = true
     end
