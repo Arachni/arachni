@@ -3,9 +3,6 @@ require_relative '../../spec_helper'
 describe 'Arachni::Modules::CodeInjectionTiming' do
 
     before( :all ) do
-        #require_relative '../../../lib/arachni/ui/cli/output'
-        #Arachni::UI::Output.unmute
-
         @name = File.basename( __FILE__, '_spec.rb' )
 
         opts = Arachni::Options.instance.reset
