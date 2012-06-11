@@ -4,7 +4,7 @@ describe Arachni::Parser::Element::Analysis::Timeout do
 
     before :all do
         @url     = server_url_for( :timeout )
-        @auditor = Auditor.new( Arachni::HTTP.instance )
+        @auditor = Auditor.new
 
         inputs = {inputs: { 'sleep' => '' }}
 

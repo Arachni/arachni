@@ -4,7 +4,7 @@ describe Arachni::Parser::Element::Auditable do
 
     before :all do
         @url     = server_url_for( :auditable )
-        @auditor = Auditor.new( Arachni::HTTP.instance )
+        @auditor = Auditor.new
 
         @auditable = Arachni::Parser::Element::Link.new( @url, inputs: {'param' => 'val'} )
         @auditable.auditor = @auditor

@@ -4,7 +4,7 @@ describe Arachni::Parser::Element::Analysis::Taint do
 
     before :all do
         @url = server_url_for( :taint )
-        @auditor = Auditor.new( Arachni::HTTP.instance )
+        @auditor = Auditor.new
 
         @positive = Arachni::Parser::Element::Link.new( @url,
             inputs: { 'input' => '' }

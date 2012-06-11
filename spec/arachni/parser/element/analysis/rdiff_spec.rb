@@ -1,25 +1,10 @@
 require_relative '../../../../spec_helper'
 
-class Auditor
-    include Arachni::Module::Auditor
-    include Arachni::UI::Output
-
-    attr_reader :http
-
-    def initialize( http )
-        @http = http
-    end
-
-    def self.info
-        { name: 'Auditor' }
-    end
-end
-
 describe Arachni::Parser::Element::Analysis::RDiff do
 
     before :all do
         @url     = server_url_for( :rdiff )
-        @auditor = Auditor.new( Arachni::HTTP.instance )
+        @auditor = Auditor.new
     end
 
     describe '#rdiff_analysis' do
