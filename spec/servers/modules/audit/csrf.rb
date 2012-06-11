@@ -1,8 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-require 'ap'
-
 def logged_in?( cookies )
     cookies[:logged_in] == 'true'
 end

@@ -3,8 +3,6 @@ require_relative '../../spec_helper'
 describe 'Arachni::Modules::CodeInjection' do
 
     before( :all ) do
-        #require_relative '../../../lib/arachni/ui/cli/output'
-
         @name = File.basename( __FILE__, '_spec.rb' )
 
         opts = Arachni::Options.instance.reset
