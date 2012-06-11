@@ -1,2 +1,2 @@
 /bin/cat /etc/passwd
-type %SYSTEMROOT%\\win.ini
+type %SYSTEMROOT%\\boot.ini
