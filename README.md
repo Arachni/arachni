@@ -303,6 +303,17 @@ automatically loaded.
 
 Should you want to use these extra components simply move them from the <em>extras</em> folder to their appropriate system directories.
 
+## Running the specs
+
+You can run ```rake spec``` to run **all** specs or you can run the selectively using the following:
+```
+rake spec:core            # for the core libraries
+rake spec:modules         # for the modules
+rake spec:plugins         # for the plugins
+rake spec:reports         # for the reports
+rake spec:path_extractors # for the path extractors
+```
+
 ## Supported platforms
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
