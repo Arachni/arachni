@@ -1,6 +1,6 @@
 require_relative '../../spec_helper'
 
-describe 'Arachni::Modules::CodeInjection' do
+describe 'Arachni::Modules::LDAPInjection' do
 
     before( :all ) do
         @name = File.basename( __FILE__, '_spec.rb' )
