@@ -305,7 +305,7 @@ Should you want to use these extra components simply move them from the <em>extr
 
 ## Running the specs
 
-You can run ```rake spec``` to run **all** specs or you can run the selectively using the following:
+You can run ```rake spec``` to run **all** specs or you can run them selectively using the following:
 ```
 rake spec:core            # for the core libraries
 rake spec:modules         # for the modules
