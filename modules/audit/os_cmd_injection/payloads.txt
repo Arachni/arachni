@@ -1,2 +1,2 @@
 /bin/cat /etc/passwd
-type %SYSTEMROOT%\\boot.ini
+type %SystemDrive%\\boot.ini
