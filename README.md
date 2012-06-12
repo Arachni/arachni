@@ -8,6 +8,9 @@ Experimental/unstable branch -- used for integration.
     gem install bundler
     rake install
 
+If you get an error when trying to run Arachni, use ```bundle exec``` like so:
+```bundle exec <executable>```.
+
 
 # Arachni - Web Application Security Scanner Framework
 
