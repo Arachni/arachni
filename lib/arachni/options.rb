@@ -561,12 +561,12 @@ class Options
     #
     def set( options )
         options.each_pair do |k, v|
-            #begin
+            begin
                 send( "#{k.to_s}=", v )
-            #rescue => e
-                # ap e
-                # ap e.backtrace
-            #end
+            rescue => e
+                #ap e
+                #ap e.backtrace
+            end
         end
         true
     end
