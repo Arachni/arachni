@@ -3,7 +3,7 @@ require 'sinatra/contrib'
 
 STRINGS = {
     unix:    '/bin/cat /etc/passwd',
-    windows: 'type %SYSTEMROOT%\\\\boot.ini',
+    windows: 'type %SystemDrive%\\\\boot.ini',
 }
 
 OUT = {
