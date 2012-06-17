@@ -36,7 +36,7 @@ def random_port
             socket.bind( Addrinfo.tcp( "127.0.0.1", port ) )
             socket.close
             return port
-        rescue
+        rescue Errno::EADDRINUSE => e
         end
     end
 end
