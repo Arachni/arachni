@@ -14,13 +14,21 @@ describe Arachni::Framework do
         Arachni::Parser::Element::Auditable.reset
 
         @f = Arachni::Framework.new
-
-        Arachni::Parser::Element::Auditable.reset
-
         @f.modules.class.results.clear
         @f.modules.clear
         @f.reports.clear
         @f.plugins.clear
+
+        Arachni::Parser::Element::Auditable.reset
+    end
+
+    after( :each ) do
+        if @f
+            @f.modules.class.results.clear
+            @f.modules.clear
+            @f.reports.clear
+            @f.plugins.clear
+        end
     end
 
     describe '#opts' do
@@ -40,6 +48,7 @@ describe Arachni::Framework do
 
                 f.run
                 f.auditstore.sitemap.should == f.opts.restrict_paths
+                f.modules.clear
             end
         end
     end
@@ -570,6 +579,7 @@ describe Arachni::Framework do
             @f.run
             @f.auditstore.issues.size.should == 2
             @f.page_queue_total_size.should > 0
+            @f.modules.clear
         end
     end
 
