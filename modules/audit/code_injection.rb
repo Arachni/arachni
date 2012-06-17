@@ -92,7 +92,7 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(PHP Perl Python ASP Ruby),
             issue:       {
                 name:            %q{Code injection},
                 description:     %q{Arbitrary code can be injected into the web application

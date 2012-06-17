@@ -94,7 +94,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Unix Windows),
 
             issue:       {
                 name:            %q{Path Traversal},

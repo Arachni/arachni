@@ -2,6 +2,10 @@ def issues
     Arachni::Module::Manager.results
 end
 
+def name_from_filename
+    File.basename( caller.first.split( ':' ).first, '_spec.rb' )
+end
+
 def spec_path
     @@root
 end

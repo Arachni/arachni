@@ -77,7 +77,7 @@ class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
                 'ASP'    => 'http://www.aspdev.org/asp/asp-eval-execute/',
                 'Ruby'   => 'http://en.wikipedia.org/wiki/Eval#Ruby'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Java ASP Python PHP Perl Ruby),
 
             issue:       {
                 name:            %q{Code injection (timing attack)},

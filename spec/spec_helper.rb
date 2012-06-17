@@ -8,6 +8,8 @@ require 'eventmachine'
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
 
+Dir.glob( @@root + 'shared/**/*.rb' ).each { |f| require f }
+
 require @@root + 'helpers/misc'
 Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 

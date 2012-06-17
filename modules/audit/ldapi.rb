@@ -59,7 +59,7 @@ class Arachni::Modules::LDAPInjection < Arachni::Module::Base
                 'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
                 'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Generic),
             issue:       {
                 name:            %q{LDAP Injection},
                 description:     %q{LDAP queries can be injected into the web application

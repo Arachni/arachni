@@ -1,19 +1,18 @@
 require_relative '../../spec_helper'
 
-describe 'Arachni::Modules::CodeInjection' do
+describe name_from_filename do
+    include_examples 'module'
 
-    before( :all ) do
-        @name = File.basename( __FILE__, '_spec.rb' )
+    def self.targets
+        %w(PHP Perl Python ASP Ruby)
+    end
 
-        opts = Arachni::Options.instance.reset
+    def self.elements
+        [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
+    end
 
-        @url = server_url_for( @name ) + '/'
-        opts.url = @url
-
-        @f = Arachni::Framework.new
-        @f.modules.load @name
-
-        @issue_sizes = {
+    def issue_count_per_target
+        {
             php:    8,
             perl:   8,
             python: 4,
@@ -22,55 +21,7 @@ describe 'Arachni::Modules::CodeInjection' do
         }
     end
 
-    after( :each ) do
-        Arachni::Module::ElementDB.reset
-        Arachni::Parser::Element::Auditable.reset
-        Arachni::Module::Manager.results.clear
+    before( :all ) { http.headers['User-Agent'] = 'default' }
 
-        @f.http.cookie_jar.clear
-
-        @f.opts.audit_links = false
-        @f.opts.audit_forms = false
-        @f.opts.audit_cookies = false
-        @f.opts.audit_headers = false
-    end
-
-    after( :all ){ @f.modules.clear }
-
-    %w(PHP Perl Python ASP Ruby).each do |lang|
-        context lang do
-            before( :all ) { @f.opts.url = @url + lang.downcase }
-
-            it 'should audit links' do
-                @f.opts.audit_links = true
-                @f.run
-                issues.size.should == @issue_sizes[lang.downcase.to_sym]
-                issues.map { |i| i.elem }.uniq.should == [Arachni::Issue::Element::LINK]
-            end
-
-            it 'should audit forms' do
-                @f.opts.audit_forms = true
-                @f.run
-                issues.size.should == @issue_sizes[lang.downcase.to_sym]
-                issues.map { |i| i.elem }.uniq.should == [Arachni::Issue::Element::FORM]
-            end
-
-            it 'should audit cookies' do
-                @f.opts.audit_cookies = true
-                @f.run
-                issues.size.should == @issue_sizes[lang.downcase.to_sym]
-                issues.map { |i| i.elem }.uniq.should == [Arachni::Issue::Element::COOKIE]
-            end
-
-            it 'should audit headers' do
-                @f.opts.audit_headers = true
-                @f.http.headers['User-Agent'] = 'default'
-                @f.run
-                issues.size.should == @issue_sizes[lang.downcase.to_sym]
-                issues.map { |i| i.elem }.uniq.should == [Arachni::Issue::Element::HEADER]
-            end
-
-        end
-    end
-
+    easy_test
 end

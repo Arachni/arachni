@@ -175,7 +175,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
                 'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Generic),
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},

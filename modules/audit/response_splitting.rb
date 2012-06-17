@@ -14,85 +14,72 @@
     limitations under the License.
 =end
 
-module Arachni
-
-module Modules
-
 #
 # HTTP Response Splitting audit module.
 #
 # It audits links, forms and cookies.
 #
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.6
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.7
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
 #
-class ResponseSplitting < Arachni::Module::Base
-    include Arachni::Module::Utilities
+class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def run
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
-        # if we find it it means that the attack was succesful
+        # if we find it it means that the attack was succesfull
         # thus site is vulnerable.
         header = "\r\nX-CRLF-Safe: no"
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header, param_flip: true, follow_location: false ) {
-            |res, opts|
-            if res.headers_hash['X-CRLF-Safe'] &&
-               !res.headers_hash['X-CRLF-Safe'].empty?
-
-                opts[:injected] = uri_encode( opts[:injected] )
-                log( opts, res )
-            end
-        }
+        audit( header, param_flip: true, follow_location: false ) do |res, opts|
+            next if !res.headers_hash['X-CRLF-Safe'] || res.headers_hash['X-CRLF-Safe'].empty?
+            opts[:injected] = uri_encode( opts[:injected] )
+            log( opts, res )
+        end
     end
-
 
     def self.info
         {
-            :name           => 'ResponseSplitting',
-            :description    => %q{Tries to inject some data into the webapp and figure out
+            name:        'ResponseSplitting',
+            description: %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
-            :elements       => [
-                Issue::Element::FORM,
-                Issue::Element::LINK,
-                Issue::Element::COOKIE,
-                Issue::Element::HEADER
+            elements:    [
+                Element::FORM,
+                Element::LINK,
+                Element::COOKIE,
+                Element::HEADER
             ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.7',
-            :references     => {
-                 'SecuriTeam'    => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
-                 'OWASP'         => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1.7',
+            references:  {
+                'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
+                'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
             },
-            :targets        => { 'Generic' => 'all' },
+            targets:     %w(Generic),
 
-            :issue   => {
-                :name        => %q{Response splitting},
-                :description => %q{The web application includes user input
-                     in the response HTTP header.},
-                :tags        => [ 'response', 'splitting', 'injection', 'header' ],
-                :cwe         => '20',
-                :severity    => Issue::Severity::MEDIUM,
-                :cvssv2       => '5.0',
-                :remedy_guidance    => %q{User inputs must be validated and filtered
-                    before being included as part of the HTTP response headers.},
-                :remedy_code => '',
+            issue:       {
+                name:            %q{Response splitting},
+                description:     %q{The web application includes user input
+     in the response HTTP header.},
+                tags:            %w(response splitting injection header),
+                cwe:             '20',
+                severity:        Severity::MEDIUM,
+                cvssv2:          '5.0',
+                remedy_guidance: %q{User inputs must be validated and filtered
+    before being included as part of the HTTP response headers.},
+                remedy_code:     '',
             }
 
         }
     end
 
-end
-end
 end

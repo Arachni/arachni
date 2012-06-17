@@ -66,7 +66,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Windows Unix),
             issue:       {
                 name:            %q{Operating system command injection},
                 description:     %q{The web application allows an attacker to

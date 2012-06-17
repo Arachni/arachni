@@ -63,7 +63,7 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            targets:     { 'Generic' => 'all' },
+            targets:     %w(Linux BSD Solaris Windows),
             issue:       {
                 name:            %q{Operating system command injection (timing attack)},
                 description:     %q{The web application allows an attacker to

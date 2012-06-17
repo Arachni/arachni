@@ -12,8 +12,10 @@ describe name_from_filename do
     end
 
     def issue_count
-        component.error_strings.size
+        4
     end
+
+    before( :all ) { http.headers['User-Agent'] = 'default' }
 
     easy_test
 end
