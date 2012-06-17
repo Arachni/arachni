@@ -11,8 +11,6 @@ describe name_from_filename do
         [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
     end
 
-    before( :all ) { http.headers['User-Agent'] = 'default' }
-
     def issue_count
         12
     end

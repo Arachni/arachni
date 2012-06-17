@@ -21,7 +21,5 @@ describe name_from_filename do
         }
     end
 
-    before( :all ) { http.headers['User-Agent'] = 'default' }
-
     easy_test
 end

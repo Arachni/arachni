@@ -17,6 +17,8 @@ shared_examples_for "module" do
         framework.modules.load name
 
         options.url = url
+
+        http.headers['User-Agent'] = 'default'
     end
 
     after( :each ) do
