@@ -172,14 +172,7 @@ class Manager < Hash
     #
     def []( name )
         return fetch( name ) if include?( name )
-
-        paths.each do
-            |path|
-            next if name != path_to_name( path )
-            self[path_to_name( path )] = load_from_path( path )
-        end
-
-        fetch( name ) rescue nil
+        self[name] = load_from_path( name_to_path( name ) )
     end
 
     def clear
@@ -188,7 +181,7 @@ class Manager < Hash
 
     def delete( k )
         begin
-            @namespace.send( :remove_const, self[k].to_s.split( ':' ).last.to_sym )
+            @namespace.send( :remove_const, fetch( k ).to_s.split( ':' ).last.to_sym )
         rescue
         end
         super( k )
@@ -281,10 +274,15 @@ class Manager < Hash
     end
 
     def load_from_path( path )
+        pre =  @namespace.constants
         ::Kernel::load( path )
-        @namespace.const_get( @namespace.constants[-1] )
-    end
+        post = @namespace.constants
+        #ap post.last
 
+        return if pre == post
+        @namespace.const_get( (post - pre).first )
+        #@namespace.const_get( @namespace.constants.last )
+    end
 
     def helper?( path )
         File.exist?( File.dirname( path ) + '.rb' )
