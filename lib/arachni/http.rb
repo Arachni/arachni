@@ -287,7 +287,7 @@ class HTTP
                     @cookie_jar.to_s( url ) rescue ''
                 end
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-            headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n\0" ) if v }
+            headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
 
             params = params.merge( @rand_seed => '' ) if !remove_id
 
