@@ -3,7 +3,6 @@
 # Require this file using `require "spec_helper.rb"` to ensure that it is only
 # loaded once.
 #
-
 require_relative '../lib/arachni'
 require 'eventmachine'
 
@@ -15,7 +14,6 @@ Dir.glob( @@root + 'helpers/**/*.rb' ).each { |f| require f }
 @@server_pids ||= []
 @@servers     ||= {}
 Dir.glob( File.join( @@root + 'servers/**', "*.rb" ) ) do |path|
-
     name = File.basename( path, '.rb' ).to_sym
     next if name == :base
 
