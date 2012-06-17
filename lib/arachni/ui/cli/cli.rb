@@ -452,8 +452,15 @@ class CLI
 
             if info[:targets]
                 print_line( "Targets:" )
-                info[:targets].keys.each do |key|
-                    print_info( key + "\t\t" + info[:targets][key] )
+
+                if info[:targets].is_a?( Hash )
+                    info[:targets].keys.each do |key|
+                        print_info( key + "\t\t" + info[:targets][key] )
+                    end
+                else
+                    info[:targets].each do |target|
+                        print_info( target )
+                    end
                 end
             end
 

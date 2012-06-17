@@ -144,30 +144,30 @@ class Base
             # If a page doesn't have any of those elements
             # there's no point in instantiating the module.
             #
-            # If you want the module to run no-matter what leave the array
+            # If you want the module to run no-matter what, leave the array
             # empty.
             #
-            # 'Elements'       => [
-            #     Issue::Element::FORM,
-            #     Issue::Element::LINK,
-            #     Issue::Element::COOKIE,
-            #     Issue::Element::HEADER
+            # elements: [
+            #     Element::FORM,
+            #     Element::LINK,
+            #     Element::COOKIE,
+            #     Element::HEADER
             # ],
             elements:    [],
             author:      'zapotek',
             version:     '0.1',
             references:  {},
-            targets:     { 'Generic' => 'all' },
+            targets:     %W(Generic),
             issue:       {
                  description:    %q{},
                  cwe:            '',
                 #
                 # Severity can be:
                 #
-                # Issue::Severity::HIGH
-                # Issue::Severity::MEDIUM
-                # Issue::Severity::LOW
-                # Issue::Severity::INFORMATIONAL
+                # Severity::HIGH
+                # Severity::MEDIUM
+                # Severity::LOW
+                # Severity::INFORMATIONAL
                 #
                 severity:        '',
                 cvssv2:          '',

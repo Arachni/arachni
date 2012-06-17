@@ -19,7 +19,7 @@ module Arachni
 require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Options.instance.dir['lib'] + 'rpc/client/instance'
 
-require Options.instance.dir['lib'] + 'module/utilities'
+require Options.instance.dir['lib'] + 'utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
 
@@ -457,10 +457,19 @@ class RPC
             end
 
             print_line( "Targets:" )
-            info[:targets].keys.each {
-                |key|
-                print_info( key + "\t\t" + info[:targets][key] )
-            }
+            if info[:targets]
+                print_line( "Targets:" )
+
+                if info[:targets].is_a?( Hash )
+                    info[:targets].keys.each do |key|
+                        print_info( key + "\t\t" + info[:targets][key] )
+                    end
+                else
+                    info[:targets].each do |target|
+                        print_info( target )
+                    end
+                end
+            end
 
             if( info[:issue] &&
                 ( sploit = info[:issue]['metasploitable'] ) )
