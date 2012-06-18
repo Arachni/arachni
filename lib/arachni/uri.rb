@@ -218,7 +218,7 @@ class URI
                 splits = splits.first.split( ':', 2 )
                 if splits.size == 2
                     host = splits.first
-                    components[:port] = Integer( splits.last )
+                    components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
                     components[:port] = nil if components[:port] == 80
                 else
                     host = splits.last

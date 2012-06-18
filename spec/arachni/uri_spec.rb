@@ -24,7 +24,8 @@ describe Arachni::URI do
             'http://testfire.net/disclaimer.htm?url=http://dd.d',
             'hTTp://user:password@tEsT.com:81///with/////path/another weird '+
                 'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
-            'http://test.com/login.php?goto?=domain.tld/index.php'
+            'http://test.com/login.php?goto?=domain.tld/index.php',
+            'http://test.com:/stuff',
         ]
 
         @ref_normalizer = proc do |p|
