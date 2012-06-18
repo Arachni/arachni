@@ -8,6 +8,8 @@ if @@errors.empty?
     end
 end
 
+@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../modules/audit/sqli/regexp_ignore.txt' )
+
 def variations
     @@variations ||= [ '\'`--', ')' ]
 end
@@ -32,6 +34,7 @@ end
         <<-EOHTML
             <a href="/#{platform_str}/link/flip?input=default">Link</a>
             <a href="/#{platform_str}/link/append?input=default">Link</a>
+            <a href="/#{platform_str}/link/ignore?input=default">Link</a>
         EOHTML
     end
 
@@ -44,6 +47,10 @@ end
         return if !params['input'].start_with?( default )
 
         get_variations( platform, params['input'].split( default ).last )
+    end
+
+    get "/#{platform_str}/link/ignore" do
+        @@errors.to_s + @@ignore.to_s
     end
 
     get "/#{platform_str}/form" do
