@@ -134,7 +134,7 @@ module Arachni::Parser::Element::Analysis::Taint
     def ignore?( res, opts )
         [opts[:ignore]].flatten.compact.each do |r|
             r = r.is_a?( Regexp ) ? r : Regexp.new( r.to_s, Regexp::IGNORECASE )
-            return true if res.body.scan( r ).first
+            return true if res.body.scan( r ).flatten.first
         end
         false
     end
