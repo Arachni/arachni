@@ -27,6 +27,15 @@ describe Arachni::Parser::Element::Header do
         end
     end
 
+    describe '#mutations' do
+        describe :param_flip do
+            it 'should create a new header' do
+                @header.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
+                    %w(seed)
+            end
+        end
+    end
+
     describe '#type' do
         it 'should be "header"' do
             @header.type.should == 'header'

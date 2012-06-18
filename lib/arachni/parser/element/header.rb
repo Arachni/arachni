@@ -33,6 +33,26 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
         @auditable.dup
     end
 
+    def mutations( injection_str, opts = {} )
+        flip = opts.delete( :param_flip )
+        muts = super( injection_str, opts )
+
+        if flip
+            elem = self.dup
+
+            # when under HPG mode element auditing is strictly regulated
+            # and when we flip params we essentially create a new element
+            # which won't be on the whitelist
+            elem.override_instance_scope
+
+            elem.altered = 'Parameter flip'
+            elem.auditable = { injection_str => seed }
+            muts << elem
+        end
+
+        muts
+    end
+
     def type
         Arachni::Module::Auditor::Element::HEADER
     end

@@ -39,6 +39,15 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
+    describe '#mutations' do
+        describe :param_flip do
+            it 'should create a new cookie' do
+                @c.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
+                    %w(seed)
+            end
+        end
+    end
+
     describe '#type' do
         it 'should be "cookie"' do
             @c.type.should == 'cookie'
