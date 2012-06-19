@@ -149,7 +149,7 @@ Useful resources:
     * Homepage     - http://arachni-scanner.com/
     * Blog         - http://arachni-scanner.com/blog
     * Wiki         - http://arachni-scanner.com/wiki
-    * GitHub page  - http://github.com/zapotek/arachni
+    * GitHub page  - http://github.com/Arachni/arachni
     * Google Group - http://groups.google.com/group/arachni
     * Twitter      - http://twitter.com/ArachniScanner
 

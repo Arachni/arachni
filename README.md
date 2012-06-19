@@ -28,7 +28,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
         <td><a href="http://arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
     <tr>
         <th>Github page</th>
-        <td><a href="http://github.com/zapotek/arachni">http://github.com/zapotek/arachni</a></td>
+        <td><a href="http://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
@@ -322,7 +322,7 @@ Windows users can download the pre-configured Cygwin package, see the [installat
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at
-[http://github.com/zapotek/arachni/issues](http://github.com/zapotek/arachni/issues).
+[http://github.com/Arachni/arachni/issues](http://github.com/Arachni/arachni/issues).
 
 
 ## License
