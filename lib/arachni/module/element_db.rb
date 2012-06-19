@@ -92,7 +92,6 @@ module ElementDB
 
         forms.each do |form|
             next if form.action.include?( seed )
-            next if form.auditable.size == 0
 
             if !@@forms.include?( form.id )
                 @@forms   << form.id
