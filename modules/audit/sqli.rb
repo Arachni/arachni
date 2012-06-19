@@ -77,7 +77,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
                 'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
                 'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection'
             },
-            targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSql EMC SQLite DB2 Informix),
+            targets:     %w(Oracle ColdFusion InterBase PostgreSQL MySQL MSSQL EMC SQLite DB2 Informix),
             issue:       {
                 name:            %q{SQL Injection},
                 description:     %q{SQL code can be injected into the web application.},
