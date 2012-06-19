@@ -103,7 +103,7 @@ shared_examples_for "module" do
     def self.elements
     end
 
-    def audit( element_type )
+    def audit( element_type, logs_issues = true )
         e = element_type.to_s
         e << 's' if element_type.to_s[-1] != 's'
 
@@ -116,10 +116,12 @@ shared_examples_for "module" do
         e = element_type.to_s
         e = e[0...-1] if element_type.to_s[-1] == 's'
 
-        # make sure we ONLY got results for the requested element type
-        c = Arachni::Issue::Element.const_get( e.upcase.to_sym )
-        issues.should be_any
-        issues.map { |i| i.elem }.uniq.should == [c]
+        if logs_issues
+            # make sure we ONLY got results for the requested element type
+            c = Arachni::Issue::Element.const_get( e.upcase.to_sym )
+            issues.should be_any
+            issues.map { |i| i.elem }.uniq.should == [c]
+        end
     end
 
     def name
@@ -127,7 +129,7 @@ shared_examples_for "module" do
     end
 
     def url
-        @url ||= server_url_for( name ) + '/'
+        @url ||= (server_url_for( "#{name}_module" ) || server_url_for( name ))  + '/'
     end
 
     def framework
