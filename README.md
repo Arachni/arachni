@@ -266,7 +266,7 @@ You will then be presented with a Bash shell, after that you'll be able to use A
 
 To install the Gem or work with the source code you'll also need the following system libraries:
 
-    sudo apt-get install libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev
+    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev
 
 You will also need to have Ruby 1.9.2 (or later) installed *including* the dev package/headers.<br/>
 The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby](http://www.ruby-lang.org/en/downloads/) manually.
