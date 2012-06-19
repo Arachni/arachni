@@ -488,7 +488,7 @@ install_arachni() {
 
     extract_archive "arachni"
 
-    cd $src_path/Zapotek-arachni*
+    cd $src_path/Arachni-arachni*
 
     echo "  * Preparing the bundle"
     $gem_path/bin/bundle install 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
