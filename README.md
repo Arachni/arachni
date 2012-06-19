@@ -2,7 +2,7 @@
 
 Experimental/unstable branch -- used for integration.
 
-    git clone git://github.com/Zapotek/arachni.git
+    git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
     gem install bundler
@@ -114,13 +114,13 @@ From a user's or a component developer's point of view everything appears simple
     - Web UI (Utilizing the Client - Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
- - Open [RPC](https://github.com/Zapotek/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
-    - [Distributed deployment](https://github.com/Zapotek/arachni/wiki/Distributed-components)
+ - Open [RPC](https://github.com/Arachni/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
+    - [Distributed deployment](https://github.com/Arachni/arachni/wiki/Distributed-components)
     - Multiple clients
     - Parallel scans
     - SSL encryption (with peer authentication)
     - Remote monitoring
-    - Support for [High Performance Grid](https://github.com/Zapotek/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
+    - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
 
 ### Website Crawler
 
@@ -247,13 +247,13 @@ However, this is usually not required since Arachni is aware of which requests a
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
-## [Installation](https://github.com/Zapotek/arachni/wiki/Installation)
+## [Installation](https://github.com/Arachni/arachni/wiki/Installation)
 
 ### CDE packages for Linux
 
 Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
-You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
+You can download the latest CDE package from the [download](https://github.com/Arachni/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
 ### Cygwin packages for Windows
@@ -280,7 +280,7 @@ To install Arachni:
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
 
-    git clone git://github.com/Zapotek/arachni.git
+    git clone git://github.com/Arachni/arachni.git
     cd arachni
     gem install bundler
     rake install
@@ -288,11 +288,11 @@ If you want to clone the repository and work with the source code then you'll ne
 
 ## Usage
 
-### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
+### [Command line interface](https://github.com/Arachni/arachni/wiki/Command-line-user-interface)
 
-### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
+### [WebUI](https://github.com/Arachni/arachni/wiki/Web-user-interface)
 
-### [Starting a Dispatcher](https://github.com/Zapotek/arachni/wiki/RPC-server)
+### [Starting a Dispatcher](https://github.com/Arachni/arachni/wiki/RPC-server)
 
 
 ## Configuration of <em>extras</em>
@@ -318,7 +318,7 @@ rake spec:path_extractors # for the path extractors
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
 
-Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Zapotek/arachni/wiki/Installation).
+Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Arachni/arachni/wiki/Installation).
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at

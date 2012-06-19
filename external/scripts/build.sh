@@ -80,7 +80,7 @@ if [[ $fail ]]; then
     exit 1
 fi
 
-arachni_tarball_url="https://github.com/Zapotek/arachni/tarball/experimental"
+arachni_tarball_url="https://github.com/Arachni/arachni/tarball/experimental"
 
 #
 # All system library dependencies in proper order
