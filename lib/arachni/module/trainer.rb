@@ -159,7 +159,7 @@ class Trainer
             @page.links      ||= []
             @page.cookies    ||= []
 
-            @pages << @page
+            @pages << @page.dup
 
             @updated = false
         end
@@ -168,8 +168,6 @@ class Trainer
     end
 
     def train_forms!
-        return [], 0 if !@opts.audit_forms
-
         cforms, form_cnt = update_forms( @parser.forms )
 
         if form_cnt > 0
@@ -181,9 +179,8 @@ class Trainer
     end
 
     def train_links!( res, redir = false )
-        return [], 0  if !@opts.audit_links
-
         links = @parser.links
+
         if redir
             url = @parser.to_absolute( url_sanitize( res.effective_url ) )
             links << Arachni::Parser::Element::Link.new( url, {
