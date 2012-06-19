@@ -13,12 +13,10 @@ describe name_from_filename do
 
     elements.each do |element|
         it "should probe #{element}s" do
-            urls = []
-            framework.add_on_run_mods { |page| urls << page.url }
-
             # audit the current element type but don't expect any issues
             audit element.to_sym, false
 
+            urls = framework.auditstore.sitemap
             urls.include?( options.url + "#{element}/straight/trained" ).should be_true
             urls.include?( options.url + "#{element}/append/trained" ).should be_true
         end
