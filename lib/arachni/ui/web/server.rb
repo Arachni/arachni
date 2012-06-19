@@ -444,7 +444,6 @@ class Server < Sinatra::Base
     # @return   [Hash]  normalized hash
     #
     def prep_opts( params )
-
         need_to_split = %w(exclude_cookies exclude_vectors exclude include)
 
         cparams = {}
@@ -462,9 +461,9 @@ class Server < Sinatra::Base
                     cparams['cookies'][c.name] = c.value
                     cparams['cookie_string'] += c.to_s + ';'
                 end
-            elsif name == 'extend_paths'
+            elsif name == 'extend_paths' && value[:tempfile]
                cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
-            elsif name == 'restrict_paths'
+            elsif name == 'restrict_paths' && value[:tempfile]
                cparams['restrict_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
             elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
