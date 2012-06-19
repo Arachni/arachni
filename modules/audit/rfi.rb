@@ -56,7 +56,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
 
     def self.url_to_inject
-        @url_to_inject ||= 'http://zapotek.github.com/arachni/rfi.md5.txt'
+        @url_to_inject ||= 'http://arachni.github.com/arachni/rfi.md5.txt'
     end
 
     def self.opts

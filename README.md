@@ -36,7 +36,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
     </tr>
     <tr>
         <th>Code Documentation</th>
-        <td><a href="http://zapotek.github.com/arachni/">http://zapotek.github.com/arachni/</a></td>
+        <td><a href="http://arachni.github.com/arachni/">http://arachni.github.com/arachni/</a></td>
     </tr>
     <tr>
         <th>Google Group</th>
@@ -60,7 +60,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
     </tr>
 </table>
 
-![Arachni logo](http://zapotek.github.com/arachni/logo.png)
+![Arachni logo](http://arachni.github.com/arachni/logo.png)
 
 ## Synopsis
 
@@ -206,7 +206,7 @@ Can extract and analyze:
     - JSON
     - Marshal
     - YAML
-    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://zapotek.github.com/arachni/file.EXPLOITATION.html).
+    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
@@ -335,4 +335,4 @@ Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.
 
-![Arachni banner](http://zapotek.github.com/arachni/banner.png)
+![Arachni banner](http://arachni.github.com/arachni/banner.png)
