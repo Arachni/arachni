@@ -71,7 +71,7 @@ class Base
 
     # where to report false positives <br/>
     # info about this should be included in all templates
-    REPORT_FP = 'http://github.com/Zapotek/arachni/issues'
+    REPORT_FP = 'http://github.com/Arachni/arachni/issues'
 
     module PluginFormatters
 

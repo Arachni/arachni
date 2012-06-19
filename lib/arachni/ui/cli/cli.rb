@@ -622,8 +622,8 @@ class CLI
                                       <zapotek@segfault.gr>
                (With the support of the community and the Arachni Team.)
 
-       Website:       http://arachni.segfault.gr - http://github.com/Zapotek/arachni
-       Documentation: http://github.com/Zapotek/arachni/wiki'
+       Website:       http://arachni.segfault.gr - http://github.com/Arachni/arachni
+       Documentation: http://github.com/Arachni/arachni/wiki'
         print_line
         print_line
 
