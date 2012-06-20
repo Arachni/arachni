@@ -92,7 +92,7 @@ class Page
     #
     attr_accessor :cookiejar
 
-    def self.from_response( res, opts )
+    def self.from_response( res, opts = Arachni::Options.instance )
         Arachni::Parser.new( opts, res ).run
     end
     class << self; alias :from_http_response :from_response end
