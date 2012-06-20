@@ -31,18 +31,21 @@ module Module
 #
 class Manager < Arachni::Component::Manager
     include Arachni::Utilities
+    extend Arachni::Utilities
+
+    NAMESPACE = Arachni::Modules
 
     @@results             ||= []
-    @@on_register_results ||= []
     @@issue_set           ||= Set.new
     @@do_not_store        ||= false
-    @@issue_mutex         ||= Mutex.new
+    @@mutex               ||= Mutex.new
+    @@on_register_results_blocks ||= []
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
         @framework = framework
         @opts = @framework.opts
-        super( @opts.dir['modules'], Arachni::Modules )
+        super( @opts.dir['modules'], NAMESPACE )
     end
 
     #
@@ -68,20 +71,39 @@ class Manager < Arachni::Component::Manager
     end
 
     def self.on_register_results( &block )
-        @@on_register_results << block
+        on_register_results_blocks << block
     end
-    def on_register_results( &block ) self.class.on_register_results( &block ) end
+    def on_register_results( &block )
+        self.class.on_register_results( &block )
+    end
 
+    def self.on_register_results_blocks
+        @@on_register_results_blocks
+    end
+    def on_register_results_blocks
+        self.class.on_register_results_blocks
+    end
+
+    def self.store?
+        !@@do_not_store
+    end
+    def store?
+        self.class.store
+    end
 
     def self.do_not_store
         @@do_not_store = true
     end
-    def do_not_store() self.class.do_not_store end
+    def do_not_store
+        self.class.do_not_store
+    end
 
     def self.store
         @@do_not_store = false
     end
-    def store() self.class.store end
+    def store
+        self.class.store
+    end
 
     #
     # Registers module results with...well..us.
@@ -89,36 +111,52 @@ class Manager < Arachni::Component::Manager
     # @param    [Array<Arachni::Issue>] results
     #
     def self.register_results( results )
-        @@on_register_results.each { |block| block.call( results ) }
-        return if @@do_not_store
+        on_register_results_blocks.each { |block| block.call( results ) }
+        return if !store?
 
-        @@issue_mutex.synchronize {
-            @@results |= results
-            results.each { |issue| @@issue_set << self.issue_set_id_from_issue( issue ) }
-        }
+        results.each do |issue|
+            self.results << issue if !self.results.include?( issue )
+            issue_set    << issue_set_id_from_issue( issue )
+        end
     end
-    def register_results( results ) self.class.register_results( results ) end
+    def register_results( results )
+        self.class.register_results( results )
+    end
 
     def self.issue_set_id_from_issue( issue )
-        issue_url = Arachni::Utilities.uri_parse( issue.url )
+        issue_url = uri_parse( issue.url )
         issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
-        return "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
-    end
-    def issue_set_id_from_issue( issue ) self.class.issue_set_id_from_issue( issue ) end
 
+        "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
+    end
+    def issue_set_id_from_issue( issue )
+        self.class.issue_set_id_from_issue( issue )
+
+    end
 
     def self.issue_set_id_from_elem( mod_name, elem )
-        elem_url = Arachni::Utilities.uri_parse( elem.action )
+        elem_url = uri_parse( elem.action )
         elem_url_str = elem_url.scheme + "://" + elem_url.host + elem_url.path
 
-        return "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
+        "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
     end
-    def issue_set_id_from_elem( mod_name, elem ) self.class.issue_set_id_from_elem( mod_name, elem ) end
+    def issue_set_id_from_elem( mod_name, elem )
+        self.class.issue_set_id_from_elem( mod_name, elem )
+    end
 
     def self.issue_set
-        @@issue_mutex.synchronize { @@issue_set }
+        mutex.synchronize { @@issue_set }
     end
-    def issue_set() self.class.issue_set end
+    def issue_set
+        self.class.issue_set
+    end
+
+    def self.mutex
+        @@mutex
+    end
+    def mutex
+        self.class.mutex
+    end
 
     #
     # Class method
@@ -128,9 +166,20 @@ class Manager < Arachni::Component::Manager
     # @param    [Array]
     #
     def self.results
-        @@issue_mutex.synchronize { @@results }
+        mutex.synchronize { @@results ||= [] }
     end
-    def results() self.class.results end
+    def results
+        self.class.results
+    end
+
+    def self.reset
+        issue_set.clear
+        results.clear
+        remove_constants( NAMESPACE )
+    end
+    def reset
+        self.class.reset
+    end
 
 end
 end

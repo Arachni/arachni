@@ -33,9 +33,12 @@ module Report
 #
 class Manager < Arachni::Component::Manager
     include Arachni::Utilities
+    extend Arachni::Utilities
+
+    NAMESPACE = Arachni::Reports
 
     def initialize( opts )
-        super( opts.dir['reports'], Arachni::Reports )
+        super( opts.dir['reports'], NAMESPACE )
         @opts = opts
     end
 
@@ -63,6 +66,13 @@ class Manager < Arachni::Component::Manager
             prep_opts( name, self[name], @opts.reports[name] ) )
 
         report.run
+    end
+
+    def self.reset
+        remove_constants( NAMESPACE )
+    end
+    def reset
+        self.class.reset
     end
 
     private

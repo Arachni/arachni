@@ -58,7 +58,7 @@ class Manager < ::Arachni::Plugin::Manager
         info = {}
         formatted = {}
 
-        results << @@results
+        results << self.results
         results.each do |plugins|
             plugins.each do |name, res|
                 next if !res
@@ -80,7 +80,7 @@ class Manager < ::Arachni::Plugin::Manager
             merged[plugin] = info[plugin].merge( :results => res )
         end
 
-        @@results = merged
+        self.results = merged
     end
 
 end

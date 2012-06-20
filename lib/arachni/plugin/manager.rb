@@ -31,17 +31,16 @@ module Plugin
 #
 class Manager < Arachni::Component::Manager
     include Arachni::Utilities
+    extend Arachni::Utilities
 
-    DEFAULT = %w(defaults/*)
-
-    @@results ||= {}
-    @@results_mutex ||= Mutex.new
+    NAMESPACE = Arachni::Plugins
+    DEFAULT   = %w(defaults/*)
 
     #
     # @param    [Arachni::Framework]    framework   framework instance
     #
     def initialize( framework )
-        super( framework.opts.dir['plugins'], Arachni::Plugins )
+        super( framework.opts.dir['plugins'], NAMESPACE )
         @framework = framework
 
         @jobs = []
@@ -202,7 +201,7 @@ class Manager < Arachni::Component::Manager
     # @param    [Object]    results
     #
     def register_results( plugin, results )
-        @@results_mutex.synchronize {
+        mutex.synchronize {
             name = nil
             self.each do |k, v|
                 if plugin.class.name == v.name
@@ -212,12 +211,38 @@ class Manager < Arachni::Component::Manager
             end
 
             return if !name
-            @@results[name] = { results: results }.merge( plugin.class.info )
+            self.class.results[name] = { results: results }.merge( plugin.class.info )
         }
     end
 
-    def self.results() @@results end
-    def results() self.class.results end
+    def self.mutex
+        @mutex ||= Mutex.new
+    end
+    def mutex
+        self.class.mutex
+    end
+
+    def self.results
+        @@results ||= {}
+    end
+    def results
+        self.class.results
+    end
+
+    def self.results=( v )
+        @@results = v
+    end
+    def results=( v )
+        self.class.results = v
+    end
+
+    def self.reset
+        results.clear
+        remove_constants( NAMESPACE )
+    end
+    def reset
+        self.class.reset
+    end
 
 end
 end
