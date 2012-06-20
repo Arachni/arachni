@@ -274,14 +274,20 @@ class Manager < Hash
     end
 
     def load_from_path( path )
-        pre =  @namespace.constants
+        pre = classes
         ::Kernel::load( path )
-        post = @namespace.constants
-        #ap post.last
+        post = classes
 
         return if pre == post
-        @namespace.const_get( (post - pre).first )
-        #@namespace.const_get( @namespace.constants.last )
+        get_obj( (post - pre).first )
+    end
+
+    def classes
+        @namespace.constants.reject{ |c| !get_obj( c ).is_a?( Class ) }
+    end
+
+    def get_obj( sym )
+        @namespace.const_get( sym )
     end
 
     def helper?( path )
