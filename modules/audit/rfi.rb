@@ -56,7 +56,7 @@ class RFI < Arachni::Module::Base # *always* extend Arachni::Module::Base
         @__opts[:substring] = '705cd559b16e6946826207c2199bd890'
 
         # inject this url to assess RFI
-        @__injection_url = 'http://zapotek.github.com/arachni/rfi.md5.txt'
+        @__injection_url = 'http://arachni.github.com/arachni/rfi.md5.txt'
 
 
         #

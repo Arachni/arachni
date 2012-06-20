@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
       s.version           = Arachni::VERSION
       s.date              = Time.now.strftime('%Y-%m-%d')
       s.summary           = "Arachni is a feature-full, modular, high-performance Ruby framework aimed towards helping penetration testers and administrators evaluate the security of web applications."
-      s.homepage          = "https://github.com/Zapotek/arachni"
+      s.homepage          = "https://github.com/Arachni/arachni"
       s.email             = "tasos.laskos@gmail.com"
       s.authors           = [ "Tasos Laskos" ]
 

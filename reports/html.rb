@@ -71,7 +71,7 @@ class HTML < Arachni::Report::Base
         include Utils
 
         REPORT_FP_URL = "https://arachni.segfault.gr/false_positive"
-        ISSUES_URL    = 'https://github.com/Zapotek/arachni/issues'
+        ISSUES_URL    = 'https://github.com/Arachni/arachni/issues'
 
         def initialize( params )
             add_hash( params )

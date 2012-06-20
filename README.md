@@ -13,15 +13,15 @@
         <td><a href="http://trainofthought.segfault.gr/category/projects/arachni/">http://trainofthought.segfault.gr/category/projects/arachni/</a></td>
     <tr>
         <th>Github page</th>
-        <td><a href="http://github.com/zapotek/arachni">http://github.com/zapotek/arachni</a></td>
+        <td><a href="http://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
      <tr/>
     <tr>
         <th>Documentation</th>
-        <td><a href="http://github.com/Zapotek/arachni/wiki">http://github.com/Zapotek/arachni/wiki</a></td>
+        <td><a href="http://github.com/Arachni/arachni/wiki">http://github.com/Arachni/arachni/wiki</a></td>
     </tr>
     <tr>
         <th>Code Documentation</th>
-        <td><a href="http://zapotek.github.com/arachni/">http://zapotek.github.com/arachni/</a></td>
+        <td><a href="http://arachni.github.com/arachni/">http://arachni.github.com/arachni/</a></td>
     </tr>
     <tr>
         <th>Google Group</th>
@@ -45,7 +45,7 @@
     </tr>
 </table>
 
-![Arachni logo](http://zapotek.github.com/arachni/logo.png)
+![Arachni logo](http://arachni.github.com/arachni/logo.png)
 
 ## Synopsis
 
@@ -99,13 +99,13 @@ From a user's or a component developer's point of view everything appears simple
     - Web UI (Utilizing the Client - Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
- - Open [RPC](https://github.com/Zapotek/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
-    - [Distributed deployment](https://github.com/Zapotek/arachni/wiki/Distributed-components)
+ - Open [RPC](https://github.com/Arachni/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
+    - [Distributed deployment](https://github.com/Arachni/arachni/wiki/Distributed-components)
     - Multiple clients
     - Parallel scans
     - SSL encryption (with peer authentication)
     - Remote monitoring
-    - Support for [High Performance Grid](https://github.com/Zapotek/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
+    - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
 
 ### Website Crawler
 
@@ -197,7 +197,7 @@ The analyzer can graciously handle badly written HTML code due to a combination 
     - JSON
     - Marshal
     - YAML
-    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://zapotek.github.com/arachni/file.EXPLOITATION.html).
+    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
@@ -236,13 +236,13 @@ However, this is usually not required since Arachni is aware of which requests a
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
-## [Installation](https://github.com/Zapotek/arachni/wiki/Installation)
+## [Installation](https://github.com/Arachni/arachni/wiki/Installation)
 
 ### CDE packages for Linux
 
 Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
 CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
-You can download the latest CDE package from the [download](https://github.com/Zapotek/arachni/downloads) page and escape the dependency hell.<br/>
+You can download the latest CDE package from the [download](https://github.com/Arachni/arachni/downloads) page and escape the dependency hell.<br/>
 If you decide to go the CDE route you can skip the rest, you're done.
 
 ### Cygwin packages for Windows
@@ -269,7 +269,7 @@ To install Arachni:
 
 If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
 
-    git clone git://github.com/Zapotek/arachni.git
+    git clone git://github.com/Arachni/arachni.git
     cd arachni
     bundle install
 
@@ -279,11 +279,11 @@ To run tests
 
 ## Usage
 
-### [Command line interface](https://github.com/Zapotek/arachni/wiki/Command-line-user-interface)
+### [Command line interface](https://github.com/Arachni/arachni/wiki/Command-line-user-interface)
 
-### [WebUI](https://github.com/Zapotek/arachni/wiki/Web-user-interface)
+### [WebUI](https://github.com/Arachni/arachni/wiki/Web-user-interface)
 
-### [Starting a Dispatcher](https://github.com/Zapotek/arachni/wiki/RPC-server)
+### [Starting a Dispatcher](https://github.com/Arachni/arachni/wiki/RPC-server)
 
 
 ## Configuration of <em>extras</em>
@@ -298,11 +298,11 @@ Should you want to use these extra components simply move them from the <em>extr
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
 
-Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Zapotek/arachni/wiki/Installation).
+Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Arachni/arachni/wiki/Installation).
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at
-[http://github.com/zapotek/arachni/issues](http://github.com/zapotek/arachni/issues).
+[http://github.com/Arachni/arachni/issues](http://github.com/Arachni/arachni/issues).
 
 
 ## License
@@ -315,4 +315,4 @@ Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.
 
-![Arachni banner](http://zapotek.github.com/arachni/banner.png)
+![Arachni banner](http://arachni.github.com/arachni/banner.png)
