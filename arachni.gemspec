@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("profiles/**/**")
       s.files            += Dir.glob("reports/**/**")
       s.files            += Dir.glob("spec/**/**")
-      s.files            += %w( Gemfile Gemfile.lock Rakefile arachni.gemspec )
+      s.files            += %w(Gemfile Rakefile arachni.gemspec)
 
       s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
 
