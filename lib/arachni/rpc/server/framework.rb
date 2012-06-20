@@ -596,8 +596,8 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
-        @modules.class.do_not_store
-        @modules.class.on_register_results { |r| report_issues_to_master( r ) }
+        @modules.do_not_store
+        @modules.on_register_results { |r| report_issues_to_master( r ) }
         true
     end
 
