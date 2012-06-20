@@ -55,6 +55,9 @@ Gem::Specification.new do |s|
       s.add_dependency "em-synchrony",    ">= 1.0.0"
       s.add_dependency "arachni-rpc-em",  ">= 0.1.1"
 
+
+      s.add_development_dependency "rspec", "~> 2.10"
+      s.add_development_dependency "factory_girl"
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
         helping penetration testers and administrators evaluate the security of web applications.

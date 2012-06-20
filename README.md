@@ -271,7 +271,11 @@ If you want to clone the repository and work with the source code then you'll ne
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    rake install
+    bundle install
+
+To run tests
+
+    bundle exec rspec spec
 
 
 ## Usage
