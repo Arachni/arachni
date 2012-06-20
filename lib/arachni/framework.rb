@@ -533,6 +533,34 @@ class Framework
     end
     alias :clean_up! :clean_up
 
+    #
+    # Resets everything and allows the framework to be re-used.
+    #
+    # You should first update {Arachni::Options}.
+    #
+    # Prefer this if you already have an instance.
+    #
+    def reset
+        @modules.clear
+        @reports.clear
+        @plugins.clear
+        self.class.reset
+    end
+
+    #
+    # Resets everything and allows the framework to be re-used.
+    #
+    # You should first update {Arachni::Options}.
+    #
+    def self.reset
+        Arachni::Module::ElementDB.reset
+        Arachni::Parser::Element::Auditable.reset
+        Arachni::Module::Manager.reset
+        Arachni::Plugin::Manager.reset
+        Arachni::Report::Manager.reset
+        Arachni::HTTP.instance.reset
+    end
+
     private
 
     #

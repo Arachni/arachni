@@ -33,26 +33,15 @@ RSpec.configure do |config|
     config.add_formatter :documentation
 
     config.before( :all ) do
+        Arachni::UI::Output.mute
+
         kill_processes!
         kill_servers!
         kill_em!
-        Arachni::Module::ElementDB.reset
-        Arachni::Parser::Element::Auditable.reset
-        Arachni::Module::Manager.results.clear
-        Arachni::Module::Manager.issue_set.clear
-        Arachni::Plugin::Manager.results.clear
+
+        Arachni::Framework.reset
         reset_options
         Arachni::HTTP.instance.reset
-    end
-
-    config.after( :all ) do
-        Arachni::UI::Output.mute
-        remove_constants( Arachni::Modules, true,
-                          [Arachni::Module::Auditor::Element,
-                           Arachni::Module::Auditor::Format,
-                           Arachni::Module::Auditor::Severity] )
-        remove_constants( Arachni::Plugins, true )
-        remove_constants( Arachni::Reports, true )
     end
 
     config.after( :suite ) do
