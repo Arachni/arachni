@@ -49,8 +49,7 @@ require opts.dir['lib'] + 'component/manager'
 # === Cookies
 # Cookies are extracted from the HTTP headers and parsed by WEBrick::Cookie
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 #
 class Parser
@@ -64,10 +63,8 @@ class Parser
         # The aim of such modules is to extract paths from a webpage for the Spider to follow.
         #
         #
-        # @author Tasos "Zapotek" Laskos
-        #                                      <tasos.laskos@gmail.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         #
-        # @version 0.1
         # @abstract
         #
         class Paths
@@ -197,6 +194,16 @@ class Parser
             cookie_names.include?( c.name )
         end
 
+        # these cookies are to be audited and thus are dirty and anarchistic
+        # so they have to contain even cookies completely irrelevant to the
+        # current page, i.e. it contains all cookies that have been observed
+        # from the beginning of the scan
+        cookies_to_be_audited = (c_cookies | from_jar | from_http_jar).map do |c|
+            dc = c.dup
+            dc.action = @url
+            dc
+        end
+
         Page.new(
             code:             @code,
             url:              @url,
@@ -206,18 +213,14 @@ class Parser
             response_headers: @response_headers,
 
             # all paths seen in the page
-            paths:            paths(),
-            forms:            forms(),
+            paths:            paths,
+            forms:            forms,
 
             # all href attributes from 'a' elements
-            links:            links() | [self_link],
+            links:            links | [self_link],
 
-            # these cookies are to be audited and thus are dirty and anarchistic
-            # so they have to contain even cookies completely irrelevant to the
-            # current page, i.e. it contains all cookies that have been observed
-            # from the beginning of the scan
-            cookies:          c_cookies | from_jar | from_http_jar,
-            headers:          headers(),
+            cookies:          cookies_to_be_audited,
+            headers:          headers,
 
             # this is the page cookiejar, each time the page is to be audited
             # by a module the cookiejar of the HTTP class will be updated

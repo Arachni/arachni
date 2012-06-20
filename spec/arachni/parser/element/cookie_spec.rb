@@ -39,6 +39,18 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
+    describe '#dup' do
+        it 'should preserve its action URL' do
+            url = 'http://stuff.net'
+            raw = { 'name' => 'myname', 'value' => 'myvalue' }
+            c = Arachni::Parser::Element::Cookie.new( url, raw )
+            c.action = url + '2'
+            d = c.dup
+            d.action.should == url + '2/'
+            d.should == c
+        end
+    end
+
     describe '#mutations' do
         describe :param_flip do
             it 'should create a new cookie' do

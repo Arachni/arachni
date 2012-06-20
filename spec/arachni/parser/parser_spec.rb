@@ -61,6 +61,22 @@ describe Arachni::Parser do
             page.headers.should == @parser.headers
             page.cookiejar.should == @parser.cookies | @opts.cookies
         end
+
+        it 'should force page\'s cookies\'s action to the response\'s effective URL' do
+            url = 'http://stuff.com/'
+            response = Typhoeus::Response.new(
+                effective_url: url,
+                body: '',
+                headers_hash: {
+                    'Content-Type' => 'text/html',
+                    'Set-Cookie' => 'cname=cval' }
+            )
+            parser = Arachni::Parser.new( @opts, response )
+            cookies = parser.page.cookies
+            cookies.size.should == 2
+            cookies.map{ |c| c.action }.uniq.should == [url]
+        end
+
     end
 
     describe '#text?' do
@@ -258,10 +274,7 @@ describe Arachni::Parser do
 
     describe '#headers' do
         it 'should return an array of headers' do
-            @parser.headers.each {
-                |h|
-                h.class.should == Arachni::Parser::Element::Header
-            }
+            @parser.headers.each { |h| h.class.should == Arachni::Parser::Element::Header }
         end
     end
 

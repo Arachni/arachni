@@ -143,6 +143,12 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         Arachni::Module::Auditor::Element::COOKIE
     end
 
+    def dup
+        d = super
+        d.action = self.action
+        d
+    end
+
     def auditable=( inputs )
         k = inputs.keys.first
         v = inputs.values.first
@@ -325,7 +331,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
     private
     def http_request( opts = {}, &block )
-        http.cookie( @action, opts || {}, &block )
+        http.cookie( self.action, opts || {}, &block )
     end
 
     def encode_value( str )

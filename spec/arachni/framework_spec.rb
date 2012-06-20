@@ -577,7 +577,7 @@ describe Arachni::Framework do
             @f.page_queue_total_size.should == 0
             @f.push_to_page_queue( page )
             @f.run
-            @f.auditstore.issues.size.should == 2
+            @f.auditstore.issues.size.should == 1
             @f.page_queue_total_size.should > 0
             @f.modules.clear
         end
@@ -594,7 +594,7 @@ describe Arachni::Framework do
             @f.url_queue_total_size.should == 0
             @f.push_to_url_queue(  @url + '/link' )
             @f.run
-            @f.auditstore.issues.size.should == 2
+            @f.auditstore.issues.size.should == 1
             @f.url_queue_total_size.should > 0
         end
     end
