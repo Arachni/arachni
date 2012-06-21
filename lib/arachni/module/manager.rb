@@ -173,6 +173,8 @@ class Manager < Arachni::Component::Manager
     end
 
     def self.reset
+        store
+        on_register_results_blocks.clear
         issue_set.clear
         results.clear
         remove_constants( NAMESPACE )
