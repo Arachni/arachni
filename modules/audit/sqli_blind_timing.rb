@@ -28,11 +28,7 @@
 class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     def self.sleep_codes
-        @sleep_codes ||= []
-        if @sleep_codes.empty?
-            read_file( 'payloads.txt' ) { |str| @sleep_codes << str }
-        end
-        @sleep_codes
+        @sleep_codes ||= read_file( 'payloads.txt' )
     end
 
     def run

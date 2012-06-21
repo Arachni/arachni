@@ -30,19 +30,11 @@
 class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.error_patterns
-        @error_patterns ||= []
-        if @error_patterns.empty?
-            read_file( 'regexp_ids.txt' ) { |regexp| @error_patterns << regexp }
-        end
-        @error_patterns
+        @error_patterns ||= read_file( 'regexp_ids.txt' )
     end
 
     def self.ignore_patterns
-        @ignore_patterns ||= []
-        if @ignore_patterns.empty?
-            read_file( 'regexp_ignore.txt' ) { |regexp| @ignore_patterns << regexp }
-        end
-        @ignore_patterns
+        @ignore_patterns ||= read_file( 'regexp_ignore.txt' )
     end
 
     # Prepares the string that will hopefully cause the webapp

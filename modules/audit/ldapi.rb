@@ -28,9 +28,7 @@
 class Arachni::Modules::LDAPInjection < Arachni::Module::Base
 
     def self.error_strings
-        @errors ||= []
-        read_file( 'errors.txt' ) { |error| @errors << error } if @errors.empty?
-        @errors
+        @errors ||= read_file( 'errors.txt' )
     end
 
     def run
