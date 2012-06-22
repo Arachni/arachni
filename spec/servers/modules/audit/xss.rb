@@ -1,8 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
-require 'open-uri'
-
 def get_variations( str )
     str
 end
