@@ -107,7 +107,7 @@ shared_examples_for "module" do
         e = element_type.to_s
         e << 's' if element_type.to_s[-1] != 's'
 
-        options.send( "audit_#{e}=", true )
+        options.send( "audit_#{e}=", true ) rescue
         run
 
         e = element_type.to_s
