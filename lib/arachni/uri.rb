@@ -391,8 +391,11 @@ class URI
             when Arachni::URI
                 self.parsed_url = url.parsed_url.dup
 
-            else
-                fail TypeError.new( 'Argument must either be String, URI or Hash.' )
+          else
+                to_string = url.to_s rescue ''
+                msg = "Argument must either be String, URI or Hash"
+                msg << " -- #{url.class.name} '#{to_string}' passed."
+                fail TypeError.new( msg )
             end
     end
 
