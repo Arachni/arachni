@@ -358,14 +358,15 @@ describe Arachni::Spider do
 
     describe '#resume' do
         it 'should resume a paused crawl' do
+            @opts.url = @url + 'sleep'
             s = Arachni::Spider.new
-            Thread.new{ s.run }
             s.pause
+            Thread.new{ s.run }
             sleep 1
             s.sitemap.should be_empty
             s.done?.should be_false
             s.resume
-            sleep 1
+            sleep 0.1 while !s.done?
             s.sitemap.should be_any
             s.done?.should be_true
         end
