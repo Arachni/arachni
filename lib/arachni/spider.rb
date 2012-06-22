@@ -309,7 +309,7 @@ class Spider
             effective_url = normalize_url( res.effective_url )
             if res.redirection?
                 @redirects << res.request.url
-                next if skip?( res.location )
+                next if skip?( effective_url )
             end
 
             print_status( "[HTTP: #{res.code}] " + effective_url )

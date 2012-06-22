@@ -12,6 +12,10 @@ get '/redirect' do
     redirect '/'
 end
 
+get '/skip_redirect' do
+    redirect 'http://google.com'
+end
+
 get '/redundant' do
     <<EOHTML
     <a href='/redundant/1'>Redundant 1</a>

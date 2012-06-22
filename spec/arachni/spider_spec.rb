@@ -146,6 +146,15 @@ describe Arachni::Spider do
                 pages.first.is_a?( Arachni::Parser::Page ).should be_true
             end
         end
+        context 'when a redirect that is outside the scope is encountered' do
+            it 'should be ignored' do
+                @opts.url = @url + '/skip_redirect'
+
+                spider = Arachni::Spider.new
+                spider.run.should be_empty
+                spider.redirects.size.should == 1
+            end
+        end
         context 'when called with options and a block' do
             describe :pass_pages_to_block do
                 describe true do
