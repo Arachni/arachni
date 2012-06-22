@@ -37,11 +37,11 @@ class Arachni::Modules::XSS < Arachni::Module::Base
     def self.strings
         @strings ||= [
             # straight injection
-            '<' + tag + ' />',
+            '<' + tag + '/>',
             # go for an error
-            '\'-;<' + tag + ' />',
+            '\'-;<' + tag + '/>',
             # break out of HTML comments
-            '--> <' + tag + ' /> <!--',
+            '--> <' + tag + '/> <!--',
         ]
     end
 
