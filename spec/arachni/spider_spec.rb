@@ -123,11 +123,11 @@ describe Arachni::Spider do
 
                 @opts.redundant = { 'redundant' => 2 }
                 spider = Arachni::Spider.new
-                spider.run.select { |url| url.include?( 'redundant') }.size.should == 2
+                spider.run.select { |url| url.include?( 'redundant' ) }.size.should == 2
 
                 @opts.redundant = { 'redundant' => 3 }
                 spider = Arachni::Spider.new
-                spider.run.select { |url| url.include?( 'redundant') }.size.should == 3
+                spider.run.select { |url| url.include?( 'redundant' ) }.size.should == 3
             end
         end
         context 'when called without parameters' do
@@ -154,6 +154,12 @@ describe Arachni::Spider do
                 spider.run.should be_empty
                 spider.redirects.size.should == 1
             end
+        end
+        it 'should follow stacked redirects' do
+            @opts.url = @url + '/stacked_redirect'
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         context 'when called with options and a block' do
             describe :pass_pages_to_block do

@@ -16,6 +16,25 @@ get '/skip_redirect' do
     redirect 'http://google.com'
 end
 
+get '/stacked_redirect' do
+    redirect '/stacked_redirect1'
+end
+
+get '/stacked_redirect1' do
+    redirect '/stacked_redirect2'
+end
+
+get '/stacked_redirect2' do
+    redirect '/stacked_redirect3'
+end
+
+get '/stacked_redirect3' do
+    redirect '/stacked_redirect4'
+end
+
+get '/stacked_redirect4' do
+end
+
 get '/redundant' do
     <<EOHTML
     <a href='/redundant/1'>Redundant 1</a>
