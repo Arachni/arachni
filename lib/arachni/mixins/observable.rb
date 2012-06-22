@@ -47,18 +47,17 @@ module Observable
 
         if action && hook
             case action
+                when 'add', 'on'
+                    add_block( hook, &block )
+                    return
 
-            when 'add', 'on'
-                add_block( hook, &block )
-                return
-
-             when 'call'
-                call_blocks( hook, args )
-                return
+                 when 'call'
+                    call_blocks( hook, args )
+                    return
             end
         end
 
-        raise NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args )
+        fail NoMethodError.new( "Undefined method '#{sym.to_s}'.", sym, args )
     end
 
     private
@@ -70,7 +69,7 @@ module Observable
     def call_blocks( hook, *args )
         @__hooks[hook].each do |block|
             exception_jail {
-                if args.flatten.size == 1
+                if args.first.size == 1
                     block.call( args.flatten[0] )
                 else
                     block.call( *args )
