@@ -71,12 +71,12 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             port = random_port
             n.add_neighbour( 'localhost:' + port.to_s )
 
-            sleep 2
+            sleep 4
             n.neighbours.should be_empty
 
             c = @get_node.call( port )
 
-            sleep 2
+            sleep 4
             n.neighbours.should == [c.url]
             c.neighbours.should == [n.url]
 
@@ -98,7 +98,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c = @get_node.call
 
             n.add_neighbour( c.url )
-            sleep 0.5
+            sleep 1
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 
@@ -106,7 +106,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
                 n.shutdown
             rescue Exception
             end
-            sleep 2
+            sleep 4
             c.neighbours.should be_empty
         end
     end
@@ -117,19 +117,19 @@ describe Arachni::RPC::Server::Dispatcher::Node do
 
             @opts.neighbour = n.url
             c = @get_node.call
-            sleep 0.5
+            sleep 4
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 
             d = @get_node.call
-            sleep 0.5
+            sleep 4
             d.neighbours.sort.should == [n.url, c.url].sort
             c.neighbours.sort.should == [n.url, d.url].sort
             n.neighbours.sort.should == [c.url, d.url].sort
 
             @opts.neighbour = d.url
             e = @get_node.call
-            sleep 0.5
+            sleep 4
             e.neighbours.sort.should == [n.url, c.url, d.url].sort
             d.neighbours.sort.should == [n.url, c.url, e.url].sort
             c.neighbours.sort.should == [n.url, d.url, e.url].sort
