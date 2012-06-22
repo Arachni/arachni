@@ -8,6 +8,17 @@ get '/' do
 EOHTML
 end
 
+get '/sleep' do
+    sleep 2
+    <<EOHTML
+    <a href='/something'>Stuff</a>
+EOHTML
+end
+
+get '/something' do
+    'Stuff'
+end
+
 get '/redirect' do
     redirect '/'
 end
