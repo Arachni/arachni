@@ -15,5 +15,5 @@ describe name_from_filename do
         2
     end
 
-    easy_test
+    easy_test { issues.map { |i| i.var }.sort.should == %w(cookie cookie2).sort }
 end
