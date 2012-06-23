@@ -77,12 +77,7 @@ class Arachni::Modules::CodeInjection < Arachni::Module::Base
             description: %q{It tries to inject code snippets into the
                 web application and assess whether or not the injection
                 was successful.},
-            elements:    [
-                Element::FORM,
-                Element::LINK,
-                Element::COOKIE,
-                Element::HEADER
-            ],
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             references:  {

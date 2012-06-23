@@ -55,12 +55,7 @@ class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
         {
             name:        'OS command injection',
             description: %q{Tries to find operating system command injections.},
-            elements:    [
-                Element::FORM,
-                Element::LINK,
-                Element::COOKIE,
-                Element::HEADER
-            ],
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.6',
             references:  {

@@ -101,12 +101,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
             # If you want the module to run no-matter what leave the array
             # empty or don't define it at all.
             #
-            elements:    [
-                Element::FORM,
-                Element::LINK,
-                Element::COOKIE,
-                Element::HEADER
-            ],
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.5',
             references:  {

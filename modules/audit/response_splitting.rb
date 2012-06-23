@@ -52,12 +52,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
             name:        'ResponseSplitting',
             description: %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
-            elements:    [
-                Element::FORM,
-                Element::LINK,
-                Element::COOKIE,
-                Element::HEADER
-            ],
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.1.7',
             references:  {
