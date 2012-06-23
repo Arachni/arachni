@@ -14,47 +14,49 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
+#
+# Looks for and logs e-mail addresses.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class Arachni::Modules::EMails < Arachni::Module::Base
 
-#
-#
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
-#
-class EMails < Arachni::Module::Base
+    def self.logged
+        @logged ||= Set.new
+    end
+
+    def logged?( email )
+        self.class.logged.include?( email )
+    end
+
+    def log_email( email )
+        self.class.logged << email
+    end
 
     def run
-        @@_logged ||= Set.new
-
-        match_and_log( /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i ){
-            |email|
-            return false if @@_logged.include?( email )
-            @@_logged << email
-        }
+        match_and_log( /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i ) do |email|
+            return false if logged?( email )
+            log_email( email )
+        end
     end
 
     def self.info
         {
-            :name           => 'E-mail address',
-            :description    => %q{Greps pages for disclosed e-mail addresses.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Disclosed e-mail address.},
-                :description => %q{An e-mail address is being disclosed.},
-                :cwe         => '200',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{},
-                :remedy_code => '',
+            name:        'E-mail address',
+            description: %q{Greps pages for disclosed e-mail addresses.},
+            elements:    [ Element::BODY ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{Disclosed e-mail address.},
+                description: %q{An e-mail address is being disclosed.},
+                cwe:         '200',
+                severity:    Severity::INFORMATIONAL,
             }
         }
     end
 
-end
-end
 end
