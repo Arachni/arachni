@@ -14,51 +14,43 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
+#
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class Arachni::Modules::CAPTCHA < Arachni::Module::Base
 
-#
-#
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
-#
-class CAPTCHA < Arachni::Module::Base
+    def self.regex
+        @regex ||= /captcha/i
+    end
 
     def run
+        return if !page.body =~ self.class.regex
 
-        begin
-            # since we only care about forms parse the HTML and match forms only
-            Nokogiri::HTML( @page.body ).xpath( "//form" ).each {
-                |form|
-                # pretty dumb way to do this but it's a pretty dumb issue anyways...
-                match_and_log( /captcha/i, form.to_s )
-            }
-        rescue
+        # since we only care about forms parse the HTML and match forms only
+        Nokogiri::HTML( page.body ).css( "form" ).each do |form|
+            # pretty dumb way to do this but it's a pretty dumb issue anyways...
+            match_and_log( self.class.regex, form.to_s )
         end
-
+    rescue
     end
 
     def self.info
         {
-            :name           => 'CAPTCHA',
-            :description    => %q{Greps pages for forms with CAPTCHAs.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Found a CAPTCHA protected form.},
-                :description => %q{Arachni can't audit CAPTCHA protected forms, consider auditing manually.},
-                :cwe         => '',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2      => '',
-                :remedy_guidance    => %q{},
-                :remedy_code => '',
+            name:        'CAPTCHA',
+            description: %q{Greps pages for forms with CAPTCHAs.},
+            elements:    [ Element::BODY ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{Found a CAPTCHA protected form.},
+                description: %q{Arachni can't audit CAPTCHA protected forms, consider auditing manually.},
+                severity:    Severity::INFORMATIONAL
             }
         }
     end
 
-end
-end
 end
