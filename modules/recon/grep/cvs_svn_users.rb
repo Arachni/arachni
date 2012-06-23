@@ -26,15 +26,17 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
 
     def self.regexps
         @regexps ||= [
-            /\$Author: (.*) \$/,
-            /\$Locker: (.*) \$/,
-            /\$Header: .* (.*) (Exp )?\$/,
-            /\$Id: .* (.*) (Exp )?\$/
+            /\$Author: (\w+) \$/,
+            /\$Locker: (\w+) \$/,
+            /\$Header: .* (\w+) Exp \$/,
+            /\$Id: .* (\w+) Exp \$/,
+            /\$Header: .* (\w+) (?<!Exp )\$/,
+            /\$Id: .* (\w+) (?<!Exp )\$/
         ]
     end
 
     def run
-        self.class.regexps.each { |rx| match_and_log( rx ) }
+        match_and_log( self.class.regexps )
     end
 
     def self.info
