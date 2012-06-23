@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require_relative '../../../spec_helper'
 
 describe name_from_filename do
     include_examples 'module'
@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        6
+        3
     end
 
     easy_test

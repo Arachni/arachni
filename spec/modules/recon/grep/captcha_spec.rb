@@ -1,4 +1,4 @@
-require_relative '../../spec_helper'
+require_relative '../../../spec_helper'
 
 describe name_from_filename do
     include_examples 'module'
@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::BODY ]
+        [ Element::FORM ]
     end
 
     def issue_count
