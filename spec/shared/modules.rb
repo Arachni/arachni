@@ -81,7 +81,7 @@ shared_examples_for "module" do
                             issues.size.should == issue_count_per_element[type]
                         end
 
-                        block.call
+                        block.call if block_given?
                     end
                 end
 
