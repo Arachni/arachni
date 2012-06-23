@@ -146,19 +146,19 @@ Can extract and analyze:
 
  - Very simple and easy to use module API providing access to multiple levels of complexity.
  - Helper audit methods:
-    - For forms, links and cookies auditing.
+    - For form, link, cookie and header auditing.
     - A wide range of injection strings/input combinations.
-    - Writing RFI, SQL injection, XSS etc modules is a matter of minutes if not seconds.
+    - Writing RFI, SQL injection, XSS etc modules is a matter of minutes, if not seconds.
  - Currently available modules:
     - Audit:
-        - SQL injection
+        - SQL injection (Oracle, ColdFusion, InterBase, PostgreSQL, MySQL, MSSQL, EMC, SQLite, DB2, Informix)
         - Blind SQL injection using rDiff analysis
-        - Blind SQL injection using timing attacks
+        - Blind SQL injection using timing attacks (MySQL, PostgreSQL, MSSQL
         - CSRF detection
         - Code injection (PHP, Ruby, Python, JSP, ASP.NET)
         - Blind code injection using timing attacks (PHP, Ruby, Python, JSP, ASP.NET)
         - LDAP injection
-        - Path traversal
+        - Path traversal (*nix, Windows)
         - Response splitting
         - OS command injection (*nix, Windows)
         - Blind OS command injection using timing attacks (*nix, Windows)
