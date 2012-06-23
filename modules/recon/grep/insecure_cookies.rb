@@ -14,60 +14,62 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.1
 #
-class InsecureCookies < Arachni::Module::Base
+class Arachni::Modules::InsecureCookies < Arachni::Module::Base
+
+    def self.logged
+        @logged ||= Set.new
+    end
+
+    def logged?( cookie )
+        self.class.logged.include?( cookie.name )
+    end
+
+    def log_cookie( cookie )
+        self.class.logged << cookie.name
+    end
 
     def run
-        @@_logged ||= Set.new
+        page.cookies.each do |cookie|
+            next if cookie.secure? || logged?( cookie )
 
-        [page.cookies].compact.flatten.each {
-            |cookie|
-            next if cookie.secure? || @@_logged.include?( cookie.name )
             log_issue(
-                :var          => cookie.name,
-                :url          => page.url,
-                :elem         => cookie.type,
-                :method       => page.method,
-                :response     => page.body,
-                :headers      => {
-                    :response   => page.response_headers
-                }
+                var:      cookie.name,
+                url:      page.url,
+                elem:     cookie.type,
+                method:   page.method,
+                response: page.body,
+                headers:  { response: page.response_headers }
             )
 
-            @@_logged << cookie.name
-        }
+            log_cookie( cookie )
+        end
     end
 
     def self.info
         {
-            :name           => 'Insecure cookies',
-            :description    => %q{Logs cookies that are served over an unencrypted channel.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :targets        => { 'Generic' => 'all' },
-            :references     => {
+            name:        'Insecure cookies',
+            description: %q{Logs cookies that are served over an unencrypted channel.},
+            elements:    [ Element::COOKIE ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            targets:     %w(Generic),
+            references:  {
                 'SecureFlag - OWASP' => 'https://www.owasp.org/index.php/SecureFlag'
             },
-            :issue   => {
-                :name        => %q{Insecure cookie},
-                :description => %q{The logged cookie is allowed to be served over
-                    an unencrypted channel which makes it succeptible to sniffing.},
-                :cwe         => '200',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{Set the 'Secure' flag in the cookie.},
-                :remedy_code => '',
+            issue:       {
+                name:            %q{Insecure cookie},
+                description:     %q{The logged cookie is allowed to be served over
+    an unencrypted channel which makes it susceptible to sniffing.},
+                cwe:             '200',
+                severity:        Severity::INFORMATIONAL,
+                remedy_guidance: %q{Set the 'Secure' flag in the cookie.},
             }
         }
     end
 
-end
-end
 end
