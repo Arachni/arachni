@@ -14,60 +14,64 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
+#
+# Logs cookies that are accessible via JavaScript.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
-class HttpOnlyCookies < Arachni::Module::Base
+class Arachni::Modules::HttpOnlyCookies < Arachni::Module::Base
+
+    def self.logged
+        @logged ||= Set.new
+    end
+
+    def logged?( cookie )
+        self.class.logged.include?( cookie.name )
+    end
+
+    def log_cookie( cookie )
+        self.class.logged << cookie.name
+    end
 
     def run
-        @@_logged ||= Set.new
+        page.cookies.each do |cookie|
+            next if cookie.http_only? || logged?( cookie )
 
-        [page.cookies].compact.flatten.each {
-            |cookie|
-            next if cookie.http_only? || @@_logged.include?( cookie.name )
             log_issue(
-                :var          => cookie.name,
-                :url          => page.url,
-                :elem         => cookie.type,
-                :method       => page.method,
-                :response     => page.body,
-                :headers      => {
-                    :response   => page.response_headers
-                }
+                var:      cookie.name,
+                url:      page.url,
+                elem:     cookie.type,
+                method:   page.method,
+                response: page.body,
+                headers:  { response: page.response_headers }
             )
 
-            @@_logged << cookie.name
-        }
+            log_cookie( cookie )
+        end
     end
 
     def self.info
         {
-            :name           => 'HttpOnly cookies',
-            :description    => %q{Logs cookies that are accessible via JavaScript.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :targets        => { 'Generic' => 'all' },
-            :references     => {
+            name:        'HttpOnly cookies',
+            description: %q{Logs cookies that are accessible via JavaScript.},
+            elements:    [ Element::COOKIE ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            targets:     %w(Generic),
+            references:  {
                 'HttpOnly - OWASP' => 'https://www.owasp.org/index.php/HttpOnly'
             },
-            :issue   => {
-                :name        => %q{HttpOnly cookie},
-                :description => %q{The logged cookie does not have the HttpOnly
-                    flag set which makes it succeptible to maniplation via client-side code.},
-                :cwe         => '200',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{Set the 'HttpOnly' flag in the cookie.},
-                :remedy_code => '',
+            issue:       {
+                name:            %q{HttpOnly cookie},
+                description:     %q{The logged cookie does not have the HttpOnly
+    flag set which makes it succeptible to maniplation via client-side code.},
+                cwe:             '200',
+                severity:        Severity::INFORMATIONAL,
+                remedy_guidance: %q{Set the 'HttpOnly' flag in the cookie.},
             }
         }
     end
 
-end
-end
 end
