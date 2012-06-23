@@ -54,7 +54,7 @@ shared_examples_for "module" do
         end
     end
 
-    def self.easy_test
+    def self.easy_test( &block )
         targets = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
 
         targets.each do |target|
@@ -81,6 +81,7 @@ shared_examples_for "module" do
                             issues.size.should == issue_count_per_element[type]
                         end
 
+                        block.call
                     end
                 end
 
