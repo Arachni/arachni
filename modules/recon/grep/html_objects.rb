@@ -14,41 +14,37 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
+#
+# Looks for HTML "object" tags.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.2
+#
+class Arachni::Modules::HTMLObjects < Arachni::Module::Base
 
-#
-#
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
-#
-class HTMLObjects < Arachni::Module::Base
+    def self.regexp
+        @regexp ||= /<object(.*)>(.*)<\/object>/im
+    end
 
     def run
-        match_and_log( /<object(.*)>(.*)<\/object>/im )
+        match_and_log( self.class.regexp ) { |m| m && !m.empty? }
     end
 
     def self.info
         {
-            :name           => 'HTML objects',
-            :description    => %q{Greps pages for HTML objects.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Found an HTML object.},
-                :description => %q{},
-                :cwe         => '200',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{},
-                :remedy_code => '',
+            name:        'HTML objects',
+            description: %q{Greps pages for HTML objects.},
+            elements:    [ Element::BODY ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            targets:     %w(Generic),
+            issue:       {
+                name:     %q{Found an HTML object.},
+                cwe:      '200',
+                severity: Severity::INFORMATIONAL
             }
         }
     end
 
-end
-end
 end
