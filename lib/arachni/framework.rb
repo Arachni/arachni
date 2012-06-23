@@ -782,7 +782,7 @@ class Framework
             Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
             Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
             Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
-            Issue::Element::BODY   => true,
+            Issue::Element::BODY   => page.body && !page.body.empty?,
             Issue::Element::PATH   => true,
             Issue::Element::SERVER => true
         }

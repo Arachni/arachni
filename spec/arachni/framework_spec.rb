@@ -82,6 +82,43 @@ describe Arachni::Framework do
 
     describe '#run' do
 
+        context 'when the page has a body which is' do
+            context 'not empty' do
+                it 'should run modules that audit the page body' do
+                    @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                    f = Arachni::Framework.new
+
+                    f.opts.audit_links = true
+                    f.modules.load %w(body)
+
+                    link = Arachni::Parser::Element::Link.new( 'http://test' )
+                    p = Arachni::Parser::Page.new( url: 'http://test', body: 'stuff' )
+                    f.push_to_page_queue( p )
+
+                    f.run
+                    f.auditstore.issues.size.should == 1
+                    f.modules.clear
+                end
+            end
+            context 'empty' do
+                it 'should not run modules that audit the page body' do
+                    @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
+                    f = Arachni::Framework.new
+
+                    f.opts.audit_links = true
+                    f.modules.load %w(body)
+
+                    link = Arachni::Parser::Element::Link.new( 'http://test' )
+                    p = Arachni::Parser::Page.new( url: 'http://test', body: '' )
+                    f.push_to_page_queue( p )
+
+                    f.run
+                    f.auditstore.issues.size.should == 0
+                    f.modules.clear
+                end
+            end
+        end
+
         context 'when audit_links is' do
             context true do
                 context 'and the page contains links' do
@@ -101,19 +138,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_links = true
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         link = Arachni::Parser::Element::Link.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -153,19 +190,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_links = true
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         link = Arachni::Parser::Element::Link.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -208,19 +245,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_forms = true
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         form = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -260,19 +297,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_forms = false
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         form = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -315,19 +352,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_cookies = true
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         cookie = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -367,19 +404,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_cookies = false
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         cookie = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -422,19 +459,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_headers = true
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         header = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
@@ -474,19 +511,19 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path, body and server' do
+                    it 'should run modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
                         f.opts.audit_headers = false
-                        f.modules.load %w(path body server)
+                        f.modules.load %w(path server)
 
                         header = Arachni::Parser::Element::Form.new( 'http://test' )
                         p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
-                        f.auditstore.issues.size.should == 3
+                        f.auditstore.issues.size.should == 2
                         f.modules.clear
                     end
 
