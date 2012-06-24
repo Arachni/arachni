@@ -17,7 +17,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
 class Arachni::Modules::InsecureCookies < Arachni::Module::Base
 
@@ -25,15 +25,7 @@ class Arachni::Modules::InsecureCookies < Arachni::Module::Base
         page.cookies.each do |cookie|
             next if cookie.secure? || audited?( cookie.name )
 
-            log_issue(
-                var:      cookie.name,
-                url:      page.url,
-                elem:     cookie.type,
-                method:   page.method,
-                response: page.body,
-                headers:  { response: page.response_headers }
-            )
-
+            log( var: cookie.name, element: cookie.type, )
             audited( cookie.name )
         end
     end

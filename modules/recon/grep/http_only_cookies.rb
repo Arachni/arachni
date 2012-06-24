@@ -27,15 +27,7 @@ class Arachni::Modules::HttpOnlyCookies < Arachni::Module::Base
         page.cookies.each do |cookie|
             next if cookie.http_only? || audited?( cookie.name )
 
-            log_issue(
-                var:      cookie.name,
-                url:      page.url,
-                elem:     cookie.type,
-                method:   page.method,
-                response: page.body,
-                headers:  { response: page.response_headers }
-            )
-
+            log( var: cookie.name, element: cookie.type, )
             audited( cookie.name )
         end
     end
