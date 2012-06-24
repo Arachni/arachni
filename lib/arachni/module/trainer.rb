@@ -119,7 +119,8 @@ class Trainer
 
         @parser.url = @parser.to_absolute( url_sanitize( res.effective_url ) )
 
-        train_cookies!
+        page_data = @page.to_hash
+        page_data[:cookies] = train_cookies!
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
@@ -128,8 +129,8 @@ class Trainer
             return
         end
 
-        train_forms!
-        train_links!( res, redir )
+        page_data[:forms] = train_forms!
+        page_data[:links] = train_links!( res, redir )
 
         if @updated
             begin
@@ -148,18 +149,15 @@ class Trainer
                 return
             end
 
-            @page.html = res.body.dup
-            @page.response_headers    = res.headers_hash
-            @page.query_vars = @parser.link_vars( @parser.url ).dup
-            @page.url        = @parser.url.dup
-            @page.code       = res.code
-            @page.method     = res.request.method.to_s.upcase
+            page_data[:body]             = res.body
+            page_data[:doc]              = @parser.doc
+            page_data[:response_headers] = res.headers_hash
+            page_data[:query_vars]       = @parser.link_vars( @parser.url )
+            page_data[:url]              = @parser.url
+            page_data[:code]             = res.code
+            page_data[:method]           = res.request.method.to_s.upcase
 
-            @page.forms      ||= []
-            @page.links      ||= []
-            @page.cookies    ||= []
-
-            @pages << @page.dup
+            @pages << Arachni::Parser::Page.new( page_data )
 
             @updated = false
         end
@@ -171,11 +169,13 @@ class Trainer
         cforms, form_cnt = update_forms( @parser.forms )
 
         if form_cnt > 0
-            @page.forms = cforms.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
-
             print_info( 'Found ' + form_cnt.to_s + ' new forms.' )
+
+            return cforms.flatten.map{ |elem| elem.override_instance_scope; elem }
         end
+
+        []
     end
 
     def train_links!( res, redir = false )
@@ -192,22 +192,26 @@ class Trainer
         clinks, link_cnt = update_links( links )
 
         if link_cnt > 0
-            @page.links = clinks.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
-
             print_info( 'Found ' + link_cnt.to_s + ' new links.' )
+
+            return clinks.flatten.map{ |elem| elem.override_instance_scope; elem }
         end
+
+        []
     end
 
     def train_cookies!
         ccookies, cookie_cnt = update_cookies( @parser.cookies )
 
         if cookie_cnt > 0
-            @page.cookies = ccookies.flatten.map{ |elem| elem.override_instance_scope; elem }
             @updated = true
-
             print_info( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+
+            return ccookies.flatten.map{ |elem| elem.override_instance_scope; elem }
         end
+
+        []
     end
 
     def self.info

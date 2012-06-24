@@ -28,41 +28,41 @@ class Page
     #
     # @return    [String]    url of the page
     #
-    attr_accessor :url
+    attr_reader :url
 
     #
     # @return    [Fixnum]    the HTTP response code
     #
-    attr_accessor :code
+    attr_reader :code
 
     #
     # @return    [String]    the request method that returned the page
     #
-    attr_accessor :method
+    attr_reader :method
 
     #
     # @return    [Hash]    url variables
     #
-    attr_accessor :query_vars
+    attr_reader :query_vars
 
     #
     # @return    [String]    the HTML response
     #
-    attr_accessor :html
+    attr_reader :body
 
     #
     # Request headers
     #
     # @return    [Array<Arachni::Parser::Element::Header>]
     #
-    attr_accessor :headers
+    attr_reader :headers
 
     #
     # @return    [Hash]
     #
-    attr_accessor :response_headers
+    attr_reader :response_headers
 
-    attr_accessor :paths
+    attr_reader :paths
 
     #
     # @see Parser#links
@@ -109,18 +109,33 @@ class Page
         @response_headers = {}
         @query_vars       = {}
 
-        opts.each { |k, v| send( "#{k}=", v ) }
+        opts.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
 
-        @url = Arachni::Utilities.normalize_url( @url )
-        @html ||= ''
+        @url    = Arachni::Utilities.normalize_url( @url )
+        @body ||= ''
     end
 
-    def body
-        @html
+    def html
+        @body
     end
 
-    def body=( str )
-        @html = str
+    def document
+        @document ||= Nokogiri::HTML( @body )
+    end
+
+    def to_hash
+        instance_variables.reduce({}) do |h, iv|
+            if iv != :@document
+                h[iv.to_s.gsub( '@', '').to_sym] = try_dup( instance_variable_get( iv ) )
+            end
+            h
+        end
+    end
+
+    private
+
+    def try_dup( v )
+        v.dup rescue v
     end
 
 end

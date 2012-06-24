@@ -9,7 +9,7 @@ describe Arachni::Parser::Page do
             query_vars: {
                 'myvar' => 'my value'
             },
-            html: 'some html code',
+            body: 'some html code',
             response_headers: {
                 'header-name' => 'header value'
             },
@@ -41,6 +41,18 @@ describe Arachni::Parser::Page do
         it 'should retain its options' do
             @page_data.each do |k, v|
                 @page.instance_variable_get( "@#{k}".to_sym ).should == v
+            end
+        end
+
+        describe '#document' do
+            it 'should return a parsed tree' do
+                @page.document.to_html.should == Nokogiri::HTML( @page.body ).to_html
+            end
+        end
+
+        describe '#to_hash' do
+            it 'should return a hash representation' do
+                @page.to_hash.should == @page_data
             end
         end
     end
@@ -94,15 +106,15 @@ describe Arachni::Parser::Page do
             end
         end
 
-        describe '#html' do
-            it 'should default to empty hash' do
-                @empty_page.html.should == ''
-            end
-        end
-
         describe '#body' do
             it 'should default to empty string' do
                 @empty_page.body.should == ''
+            end
+        end
+
+        describe '#document' do
+            it 'should return a parsed tree' do
+                @empty_page.document.to_html.should == Nokogiri::HTML( @empty_page.body ).to_html
             end
         end
     end

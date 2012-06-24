@@ -266,7 +266,7 @@ module Auditor
     end
 
     #
-    # Matches the "string" (default string is the HTML code in page.html) to
+    # Matches the "string" (default string is the HTML code in page.body) to
     # an array of regular expressions and logs the results.
     #
     # For good measure, regexps will also be run against the page headers (page.response_headers).
@@ -276,7 +276,7 @@ module Auditor
     # @param    [Block]             block       block to verify matches before logging,
     #                                           must return true/false
     #
-    def match_and_log( regexps, string = page.html, &block )
+    def match_and_log( regexps, string = page.body, &block )
         # make sure that we're working with an array
         regexps = [regexps].flatten
 
@@ -296,7 +296,7 @@ module Auditor
                 )
             end if elems.include? Element::BODY
 
-            next if string != page.html
+            next if string != page.body
 
             page.response_headers.each do |k,v|
                 next if !v
@@ -332,7 +332,7 @@ module Auditor
         if page
             request_headers  = nil
             response_headers = page.response_headers
-            response         = page.html
+            response         = page.body
             url              = page.url
             method           = page.method.to_s.upcase if page.method
         end

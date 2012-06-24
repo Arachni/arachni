@@ -163,7 +163,7 @@ class Parser
                 url:              @url,
                 method:           req_method,
                 query_vars:       self_link.auditable,
-                html:             @html,
+                body:             @html,
                 response_headers: @response_headers
             )
         end
@@ -209,7 +209,8 @@ class Parser
             url:              @url,
             query_vars:       self_link.auditable,
             method:           req_method,
-            html:             @html,
+            body:             @html,
+            document:         doc,
             response_headers: @response_headers,
 
             # all paths seen in the page
