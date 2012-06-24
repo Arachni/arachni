@@ -263,6 +263,10 @@ class Issue
         @mod_name = opts[:name]
     end
 
+    def match
+        self.regexp_match
+    end
+
     def url=( v )
         @url = Arachni::Utilities.normalize_url( v )
     end
