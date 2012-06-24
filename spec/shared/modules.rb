@@ -38,18 +38,18 @@ shared_examples_for "module" do
 
     describe '.info' do
         it 'should hold the right targets' do
-            if component.info[:targets]
-                component.info[:targets].sort.should == self.class.targets.sort
+            if current_module.info[:targets]
+                current_module.info[:targets].sort.should == self.class.targets.sort
             else
-                component.info[:targets].should == self.class.targets
+                current_module.info[:targets].should == self.class.targets
             end
         end
 
         it 'should hold the right elements' do
-            if component.info[:elements]
-                component.info[:elements].sort.should == self.class.elements.sort
+            if current_module.info[:elements]
+                current_module.info[:elements].sort.should == self.class.elements.sort
             else
-                component.info[:elements].should == self.class.elements
+                current_module.info[:elements].should == self.class.elements
             end
         end
     end
@@ -145,7 +145,7 @@ shared_examples_for "module" do
         @f ||= Arachni::Framework.new
     end
 
-    def component
+    def current_module
         framework.modules.values.first
     end
 

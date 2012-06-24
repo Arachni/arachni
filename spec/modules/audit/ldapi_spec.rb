@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        component.error_strings.size
+        current_module.error_strings.size
     end
 
     easy_test
