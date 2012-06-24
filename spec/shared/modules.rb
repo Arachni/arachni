@@ -59,7 +59,8 @@ shared_examples_for "module" do
     end
 
     def self.easy_test( &block )
-        targets = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
+        targets  = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
+        elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
 
         targets.each do |target|
             context target do
@@ -124,7 +125,7 @@ shared_examples_for "module" do
         e = element_type.to_s
         e = e[0...-1] if element_type.to_s[-1] == 's'
 
-        if logs_issues
+        if logs_issues && element_type.to_s.downcase != 'generic'
             # make sure we ONLY got results for the requested element type
             c = Arachni::Issue::Element.const_get( e.upcase.to_sym )
             issues.should be_any
