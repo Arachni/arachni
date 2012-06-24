@@ -1,5 +1,4 @@
 require 'sinatra'
-require 'sinatra/contrib'
 
 get '/' do
     <<-EOHTML
