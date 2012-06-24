@@ -710,20 +710,18 @@ class Framework
         print_line
         print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
 
-
-        call_on_run_mods( page.deep_clone )
+        call_on_run_mods( page )
 
         @current_url = page.url.to_s
 
         @modules.values.each do |mod|
             wait_if_paused
-            run_mod( mod, page.deep_clone )
+            run_mod( mod, page )
         end
 
         @auditmap << page.url
         @sitemap |= @auditmap
         @sitemap.uniq!
-
 
         harvest_http_responses if !@opts.http_harvest_last
     end
