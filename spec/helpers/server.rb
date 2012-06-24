@@ -12,8 +12,8 @@ end
 
 def start_server( name )
     @@server_pids << fork {
-        #$stdout.reopen('/dev/null', 'w')
-        #$stderr.reopen('/dev/null', 'w')
+        $stdout.reopen('/dev/null', 'w')
+        $stderr.reopen('/dev/null', 'w')
         exec 'ruby', @@servers[name][:path], '-p ' + @@servers[name][:port].to_s
     }
     Process.detach( @@server_pids.last )
@@ -29,9 +29,11 @@ def server_running?( name )
     url = server_url_for( name, false )
     begin
         Net::HTTP.get_response( URI.parse( url ) )
-        return true
+        true
+    rescue Errno::ECONNRESET
+        true
     rescue
-        return false
+        false
     end
 end
 
