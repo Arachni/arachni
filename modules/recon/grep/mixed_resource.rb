@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # Mixed Resource detection module
 #
@@ -24,83 +21,84 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html
 #
-class MixedResource < Arachni::Module::Base
-    include Arachni::Module::Utilities
+class Arachni::Modules::MixedResource < Arachni::Module::Base
 
-    def prepare
-        @@__audited ||= Set.new
+    def self.audited
+        @audited ||= Set.new
+    end
+
+    def audited?( url )
+        self.class.audited.include?( url )
+    end
+
+    def audited( url )
+        self.class.audited << url
     end
 
     def run
-        return if !https?( @page.url )
+        return if !https?( page.url )
 
         print_status( 'Checking...' )
 
-        doc = Nokogiri::HTML( @page.html )
-        doc.xpath( './/script' ).each {
-            |script|
-
+        page.document.css( 'script' ).each do |script|
             url = script.attributes['src'].to_s
-            next if !url || https?( url ) || url.empty?
+            log_resource( url ) if insecure_script?( script )
+        end
 
-            log_resource( url )
-        }
-
-        doc.xpath( './/link' ).each {
-            |script|
-
+        page.document.css( 'link' ).each do |script|
             url = script.attributes['href'].to_s
-            if !url || !script.attributes['rel'].to_s.downcase == 'stylesheet' ||
-                https?( url ) || url.empty?
-                next
-            end
+            log_resource( url ) if insecure_link?( script )
+        end
+    end
 
-            log_resource( url )
-        }
+    def insecure_link?( script )
+        url = script.attributes['href'].to_s
+        url && !url.empty? && script.attributes['rel'].to_s.downcase == 'stylesheet' &&
+            !https?( url )
+    end
+
+    def insecure_script?( script )
+        url = script.attributes['src'].to_s
+        url && !url.empty? && !https?( url )
     end
 
     def https?( url )
-        URI( to_absolute( url, @page.url ) ).scheme == 'https'
+        uri_parse( to_absolute( url, page.url ) ).scheme == 'https'
     end
 
     def log_resource( url )
-        return if @@__audited.include?( url )
-
-        @@__audited << url
+        return if audited?( url )
+        audited( url )
 
         match_and_log( url )
     end
 
     def self.info
         {
-            :name           => 'Mixed Resource',
-            :description    => %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
-            :elements       => [
-                Issue::Element::BODY
-            ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.2',
-            :references     => {
+            name:        'Mixed Resource',
+            description: %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
+            elements:    [ Element::BODY ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1.2',
+            references:  {
                 'Google Online Security Blog' =>
                     'http://googleonlinesecurity.blogspot.com/2011/06/trying-to-end-mixed-scripting.html'
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Mixed Resource},
-                :description => %q{Serving resources over an unencrypted channel
-                    while the HTML code is served over HTTPS can lead to
-                    Man-In-The-Middle attacks and provide a false sense of security.},
-                :tags        => [ 'unencrypted', 'resource', 'javascript', 'stylesheet' ],
-                :severity    => Issue::Severity::MEDIUM,
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{Mixed Resource},
+                description: %q{Serving resources over an unencrypted channel
+    while the HTML code is served over HTTPS can lead to
+    Man-In-The-Middle attacks and provide a false sense of security.},
+                tags:        %w(unencrypted resource javascript stylesheet),
+                severity:    Severity::MEDIUM
             }
 
         }
     end
 
-end
-end
 end
