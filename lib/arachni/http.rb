@@ -618,7 +618,7 @@ class HTTP
                 # handle redirections
                 if res.redirection?
                     get( res.location, remove_id: true ) do |res2|
-                        @trainer.add_response( res2, true )
+                        @trainer.add_response( res2 )
                     end
                 else
                     @trainer.add_response( res )

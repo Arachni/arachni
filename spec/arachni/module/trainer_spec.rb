@@ -93,7 +93,7 @@ describe Arachni::Module::Trainer do
         context 'when the response is the result of a redirection' do
             it 'should extract query vars from the effective url' do
                 url = @base_url + '/redirect?redirected=true'
-                @trainer.add_response( request( url ), true ).should be_true
+                @trainer.add_response( request( url ) ).should be_true
                 page = @trainer.flush_pages.first
                 page.links.last.auditable['redirected'].should == 'true'
             end

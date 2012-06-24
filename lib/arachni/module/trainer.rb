@@ -65,7 +65,7 @@ class Trainer
     # @return   [Array<Arachni::Parser::Page>]
     #
     def flush_pages
-        pages = @pages.dup
+        pages  = @pages.dup
         @pages = []
         pages
     end
@@ -79,31 +79,21 @@ class Trainer
     # These new pages can then be retrieved by flushing the buffer (#flush_pages).
     #
     # @param  [Typhoeus::Response]  res
-    # @param  [Bool]                redir  was the response a result of redirection?
     #
-    def add_response( res, redir = false )
+    def add_response( res )
         if !@page
-            print_debug( 'No page assigned yet.' )
+            print_debug 'No seed page assigned yet.'
             return
         end
 
         @parser = Parser.new( @opts, res )
-        return false if !@parser.text?
+        return false if !@parser.text? || @parser.skip?( @parser.url )
 
-        @parser.url = @page.url
-        begin
-            url = @parser.to_absolute( res.effective_url )
-
-            return false if @parser.skip?( url )
-
-            analyze!( res, redir )
-
-            return true
-        rescue => e
-            print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-            print_error( "URL: #{res.effective_url}" )
-            print_error_backtrace( e )
-        end
+        analyze!( res )
+        true
+    rescue => e
+        print_error( e.to_s )
+        print_error_backtrace( e )
     end
 
     private
@@ -112,25 +102,22 @@ class Trainer
     # Analyzes a response looking for new links, forms and cookies.
     #
     # @param   [Typhoeus::Response]  res
-    # @param   [Bool]  redir    was the response a result of a redirect?
     #
-    def analyze!( res, redir = false )
+    def analyze!( res )
         print_debug "Started for response with request ID: ##{res.request.id}"
 
-        @parser.url = @parser.to_absolute( res.effective_url )
-
-        page_data = @page.to_hash
+        page_data           = @page.to_hash
         page_data[:cookies] = train_cookies
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if res.body == @page.body && !@updated && !redir
+        if res.body == @page.body && !@updated && @page.url == @parser.url
             print_debug 'Page hasn\'t changed.'
             return
         end
 
         page_data[:forms] = train_forms
-        page_data[:links] = train_links( res, redir )
+        page_data[:links] = train_links
 
         if @updated
             page_data[:url]              = @parser.url
@@ -159,13 +146,10 @@ class Trainer
         prepare_new_elements( cforms )
     end
 
-    def train_links( res, redir = false )
+    def train_links
         links = @parser.links
-
-        if redir
-            url = @parser.normalize_url( res.effective_url )
-            links << Arachni::Parser::Element::Link.new( url, @parser.link_vars( url ) )
-        end
+        links |= [Arachni::Parser::Element::Link.new( @parser.url,
+            @parser.link_vars( @parser.url ) )]
 
         clinks, link_cnt = update_links( links )
         return [] if link_cnt == 0
