@@ -99,7 +99,7 @@ class Trainer
             analyze!( res, redir )
 
             return true
-        rescue Exception => e
+        rescue => e
             print_error( "Invalid URL, probably broken redirection. Ignoring..." )
             print_error( "URL: #{res.effective_url}" )
             print_error_backtrace( e )
@@ -115,107 +115,83 @@ class Trainer
     # @param   [Bool]  redir    was the response a result of a redirect?
     #
     def analyze!( res, redir = false )
-        print_debug( 'Started for response with request ID: #' + res.request.id.to_s )
+        print_debug "Started for response with request ID: ##{res.request.id}"
 
-        @parser.url = @parser.to_absolute( url_sanitize( res.effective_url ) )
+        @parser.url = @parser.to_absolute( res.effective_url )
 
         page_data = @page.to_hash
-        page_data[:cookies] = train_cookies!
+        page_data[:cookies] = train_cookies
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
         if res.body == @page.body && !@updated && !redir
-            print_debug( 'Page hasn\'t changed, skipping...' )
+            print_debug 'Page hasn\'t changed.'
             return
         end
 
-        page_data[:forms] = train_forms!
-        page_data[:links] = train_links!( res, redir )
+        page_data[:forms] = train_forms
+        page_data[:links] = train_links( res, redir )
 
         if @updated
-            begin
-                url         = res.request.url
-                # prepare the page url
-                @parser.url = @parser.to_absolute( url )
-            rescue Exception => e
-                print_error( "Invalid URL, probably broken redirection. Ignoring..." )
-
-                begin
-                    print_error( "URL: #{res.request.url}" )
-                rescue
-                end
-
-                print_error_backtrace( e )
-                return
-            end
-
+            page_data[:url]              = @parser.url
+            page_data[:query_vars]       = @parser.link_vars( @parser.url )
+            page_data[:code]             = res.code
+            page_data[:method]           = res.request.method.to_s.upcase
             page_data[:body]             = res.body
             page_data[:doc]              = @parser.doc
             page_data[:response_headers] = res.headers_hash
-            page_data[:query_vars]       = @parser.link_vars( @parser.url )
-            page_data[:url]              = @parser.url
-            page_data[:code]             = res.code
-            page_data[:method]           = res.request.method.to_s.upcase
 
             @pages << Arachni::Parser::Page.new( page_data )
 
             @updated = false
         end
 
-        print_debug( 'Training complete.' )
+        print_debug 'Training complete.'
     end
 
-    def train_forms!
+    def train_forms
         cforms, form_cnt = update_forms( @parser.forms )
+        return [] if form_cnt == 0
 
-        if form_cnt > 0
-            @updated = true
-            print_info( 'Found ' + form_cnt.to_s + ' new forms.' )
+        @updated = true
+        print_info "Found #{form_cnt} new forms."
 
-            return cforms.flatten.map{ |elem| elem.override_instance_scope; elem }
-        end
-
-        []
+        prepare_new_elements( cforms )
     end
 
-    def train_links!( res, redir = false )
+    def train_links( res, redir = false )
         links = @parser.links
 
         if redir
-            url = @parser.to_absolute( url_sanitize( res.effective_url ) )
-            links << Arachni::Parser::Element::Link.new( url, {
-                'href' => url,
-                'vars' => @parser.link_vars( url )
-            } )
+            url = @parser.normalize_url( res.effective_url )
+            links << Arachni::Parser::Element::Link.new( url, @parser.link_vars( url ) )
         end
 
         clinks, link_cnt = update_links( links )
+        return [] if link_cnt == 0
 
-        if link_cnt > 0
-            @updated = true
-            print_info( 'Found ' + link_cnt.to_s + ' new links.' )
+        @updated = true
+        print_info "Found #{link_cnt} new links."
 
-            return clinks.flatten.map{ |elem| elem.override_instance_scope; elem }
-        end
-
-        []
+        prepare_new_elements( clinks )
     end
 
-    def train_cookies!
+    def train_cookies
         ccookies, cookie_cnt = update_cookies( @parser.cookies )
+        return [] if cookie_cnt == 0
 
-        if cookie_cnt > 0
-            @updated = true
-            print_info( 'Found ' + cookie_cnt.to_s + ' new cookies.' )
+        @updated = true
+        print_info "Found #{cookie_cnt} new cookies."
 
-            return ccookies.flatten.map{ |elem| elem.override_instance_scope; elem }
-        end
+        prepare_new_elements( ccookies )
+    end
 
-        []
+    def prepare_new_elements( elements )
+        elements.flatten.map { |elem| elem.override_instance_scope; elem }
     end
 
     def self.info
-      { :name  => 'Trainer' }
+      { name: 'Trainer' }
     end
 
 end
