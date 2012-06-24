@@ -260,6 +260,7 @@ class Issue
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
+        @method = @method.to_s.upcase
         @mod_name = opts[:name]
     end
 
