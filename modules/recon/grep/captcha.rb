@@ -28,7 +28,7 @@ class Arachni::Modules::CAPTCHA < Arachni::Module::Base
         return if !page.body =~ CAPTCHA_RX
 
         # since we only care about forms parse the HTML and match forms only
-        Nokogiri::HTML( page.body ).css( "form" ).each do |form|
+        page.document.css( "form" ).each do |form|
             # pretty dumb way to do this but it's a pretty dumb issue anyways...
             if (form_html = form.to_s) =~ CAPTCHA_RX
                 log( regexp: CAPTCHA_RX, match: form_html, element: Element::FORM )
