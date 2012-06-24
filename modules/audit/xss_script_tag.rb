@@ -56,7 +56,6 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             # elements
             if (html_elem = Nokogiri::HTML( res.body ).css( "script" )).empty? ||
                 !html_elem.to_s.include?( injected )
-                ap html_elem.to_s
                 return
             end
 
