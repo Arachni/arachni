@@ -127,8 +127,8 @@ class Framework
     #
     def initialize( opts = Arachni::Options.instance )
 
-        Encoding.default_external = "BINARY"
-        Encoding.default_internal = "BINARY"
+        Encoding.default_external = 'BINARY'
+        Encoding.default_internal = 'BINARY'
 
         @opts = opts
 
@@ -612,8 +612,8 @@ class Framework
         exception_jail {
             if !Arachni::Module::Auditor.timeout_audit_blocks.empty?
                 print_line
-                print_status( 'Running timing attacks.' )
-                print_info( '---------------------------------------' )
+                print_status 'Running timing attacks.'
+                print_info '---------------------------------------'
                 Arachni::Module::Auditor.on_timing_attacks do |_, elem|
                     @current_url = elem.action if !elem.action.empty?
                 end
@@ -708,7 +708,7 @@ class Framework
         return if !page
 
         print_line
-        print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
+        print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
 
         call_on_run_mods( page )
 
@@ -727,9 +727,9 @@ class Framework
     end
 
     def harvest_http_responses
-        print_status( 'Harvesting HTTP responses...' )
-        print_info( 'Depending on server responsiveness and network' +
-            ' conditions this may take a while.' )
+        print_status 'Harvesting HTTP responses...'
+        print_info 'Depending on server responsiveness and network' <<
+            ' conditions this may take a while.'
 
         # grab updated pages
         http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
@@ -757,7 +757,7 @@ class Framework
         rescue SystemExit
             raise
         rescue Exception => e
-            print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
+            print_error "Error in #{mod.to_s}: #{e.to_s}"
             print_error_backtrace( e )
         end
     end
