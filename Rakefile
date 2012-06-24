@@ -44,7 +44,7 @@ begin
     end
 
     RSpec::Core::RakeTask.new
-rescue LoadError => e
+rescue LoadError
     puts 'If you want to run the tests please install rspec first:'
     puts '  gem install rspec'
 end
@@ -82,10 +82,17 @@ end
 #
 desc "Profile Arachni"
 task :profile do
-    sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
-        "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
-        " ./bin/arachni http://demo.testfire.net && " +
-        "pprof.rb --gif /tmp/profile.dat > profile.gif"
+
+    if !Gem::Specification.find_all_by_name( 'perftools.rb' ).empty?
+        sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
+               "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
+               " ./bin/arachni http://demo.testfire.net && " +
+               "pprof.rb --gif /tmp/profile.dat > profile.gif"
+    else
+        puts 'If you want to run the profiler please install perftools.rb first:'
+        puts '  gem install perftools.rb'
+    end
+
 end
 
 #
@@ -110,24 +117,6 @@ end
 
 
 Bundler::GemHelper.install_tasks
-
-#
-# Building
-#
-# desc "Build the arachni gem."
-# task :build  => [ :clean ] do
-    # # sh "gem build arachni.gemspec"
-    # Bundler::GemHelper.new.build_gem
-# end
-
-#
-# Installing
-#
-# desc "Build and install the arachni gem."
-# task :install  => [ :build ] do
-    # sh "gem install arachni-#{Arachni::VERSION}.gem"
-# end
-
 
 #
 # Publishing
