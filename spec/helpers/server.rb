@@ -6,14 +6,14 @@ end
 
 def server_url_for( name, lazy_start = true )
     name = name.to_s.to_sym
-    start_server!( name ) if lazy_start && !server_running?( name )
+    start_server( name ) if lazy_start && !server_running?( name )
     'http://localhost:' + server_port_for( name ).to_s
 end
 
-def start_server!( name )
+def start_server( name )
     @@server_pids << fork {
-        $stdout.reopen('/dev/null', 'w')
-        $stderr.reopen('/dev/null', 'w')
+        #$stdout.reopen('/dev/null', 'w')
+        #$stderr.reopen('/dev/null', 'w')
         exec 'ruby', @@servers[name][:path], '-p ' + @@servers[name][:port].to_s
     }
     Process.detach( @@server_pids.last )
@@ -35,16 +35,16 @@ def server_running?( name )
     end
 end
 
-def start_servers!
-    @@servers.each { |name, info| start_server!( name ) }
+def start_servers
+    @@servers.each { |name, info| start_server( name ) }
 end
 
-def reload_servers!
-    kill_servers!
-    start_servers!
+def reload_servers
+    kill_servers
+    start_servers
 end
 
-def kill_servers!
+def kill_servers
     @@server_pids.compact!
     while p = @@server_pids.pop
         kill( p )

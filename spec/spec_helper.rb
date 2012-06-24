@@ -36,7 +36,7 @@ RSpec.configure do |config|
         Arachni::UI::Output.mute
 
         kill_processes!
-        kill_servers!
+        kill_servers
         kill_em!
 
         Arachni::Framework.reset
@@ -46,6 +46,6 @@ RSpec.configure do |config|
 
     config.after( :suite ) do
         kill_processes!
-        kill_servers!
+        kill_servers
     end
 end
