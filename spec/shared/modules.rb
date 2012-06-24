@@ -54,6 +54,10 @@ shared_examples_for "module" do
         end
     end
 
+    def self.use_https
+        before( :all ) { options.url.gsub!( 'http', 'https' ) }
+    end
+
     def self.easy_test( &block )
         targets = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
 
