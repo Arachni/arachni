@@ -27,18 +27,6 @@
 #
 class Arachni::Modules::MixedResource < Arachni::Module::Base
 
-    def self.audited
-        @audited ||= Set.new
-    end
-
-    def audited?( url )
-        self.class.audited.include?( url )
-    end
-
-    def audited( url )
-        self.class.audited << url
-    end
-
     def run
         return if !https?( page.url )
 

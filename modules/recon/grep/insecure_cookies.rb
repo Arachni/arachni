@@ -21,21 +21,9 @@
 #
 class Arachni::Modules::InsecureCookies < Arachni::Module::Base
 
-    def self.logged
-        @logged ||= Set.new
-    end
-
-    def logged?( cookie )
-        self.class.logged.include?( cookie.name )
-    end
-
-    def log_cookie( cookie )
-        self.class.logged << cookie.name
-    end
-
     def run
         page.cookies.each do |cookie|
-            next if cookie.secure? || logged?( cookie )
+            next if cookie.secure? || audited?( cookie.name )
 
             log_issue(
                 var:      cookie.name,
@@ -46,7 +34,7 @@ class Arachni::Modules::InsecureCookies < Arachni::Module::Base
                 headers:  { response: page.response_headers }
             )
 
-            log_cookie( cookie )
+            audited( cookie.name )
         end
     end
 

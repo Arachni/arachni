@@ -23,22 +23,10 @@
 #
 class Arachni::Modules::EMails < Arachni::Module::Base
 
-    def self.logged
-        @logged ||= Set.new
-    end
-
-    def logged?( email )
-        self.class.logged.include?( email )
-    end
-
-    def log_email( email )
-        self.class.logged << email
-    end
-
     def run
         match_and_log( /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}/i ) do |email|
-            return false if logged?( email )
-            log_email( email )
+            return false if audited?( email )
+            audited( email )
         end
     end
 
@@ -54,7 +42,7 @@ class Arachni::Modules::EMails < Arachni::Module::Base
                 name:        %q{Disclosed e-mail address.},
                 description: %q{An e-mail address is being disclosed.},
                 cwe:         '200',
-                severity:    Severity::INFORMATIONAL,
+                severity:    Severity::INFORMATIONAL
             }
         }
     end

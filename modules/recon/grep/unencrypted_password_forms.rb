@@ -27,18 +27,6 @@
 #
 class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
 
-    def self.audited
-        @audited ||= Set.new
-    end
-
-    def audited?( input )
-        self.class.audited.include?( determine_name( input ) )
-    end
-
-    def audited( input )
-        self.class.audited << determine_name( input )
-    end
-
     def determine_name( input )
         input['name'] || input['id']
     end
