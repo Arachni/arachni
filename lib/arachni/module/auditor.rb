@@ -472,7 +472,7 @@ module Auditor
             end
         end
 
-        elements.map { |e| e.auditor = self; e }
+        elements.map { |e| d = e.dup; d.auditor = self; d }
     end
 
     #
