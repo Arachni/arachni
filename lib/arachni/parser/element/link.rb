@@ -116,7 +116,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     # @return   [Array<Link>]
     #
     def self.from_response( response )
-        from_document( response.effective_url, response.body )
+        url = response.effective_url
+        from_document( url, response.body ) | [new( url, parse_query_vars( url ) )]
     end
 
     #
@@ -129,11 +130,10 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     #
     def self.from_document( url, document )
         document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
-        base_url = url
-        begin
-            base_url = document.search( '//base[@href]' )[0]['href']
+        base_url =  begin
+            document.search( '//base[@href]' )[0]['href']
         rescue
-            base_url = url
+            url
         end
 
         utilities = Arachni::Utilities
