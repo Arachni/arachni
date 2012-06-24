@@ -362,7 +362,7 @@ module Auditor
         print_verbose( '---------' ) if only_positives?
 
         log_issue(
-            var:          opts[:altered],
+            var:          opts[:altered] || opts[:var],
             url:          url,
             injected:     opts[:injected],
             id:           opts[:id],
