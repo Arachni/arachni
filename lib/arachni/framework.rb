@@ -553,6 +553,7 @@ class Framework
     # You should first update {Arachni::Options}.
     #
     def self.reset
+        Arachni::Module::Auditor.reset
         Arachni::Module::ElementDB.reset
         Arachni::Parser::Element::Auditable.reset
         Arachni::Module::Manager.reset

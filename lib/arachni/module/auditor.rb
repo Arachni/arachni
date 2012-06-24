@@ -41,6 +41,10 @@ module Module
 module Auditor
     include Arachni::Module::Output
 
+    def self.reset
+        audited.clear
+    end
+
     def self.timeout_audit_blocks
         Arachni::Parser::Element::Auditable.timeout_audit_blocks
     end
@@ -61,6 +65,26 @@ module Auditor
     end
     def self.current_timeout_audit_operations_cnt
         Arachni::Parser::Element::Auditable.current_timeout_audit_operations_cnt
+    end
+
+    #
+    # @param    [#to_s] id  identifier of the object to be marked as audited
+    #
+    # @see #audited?
+    #
+    def audited( id )
+        Arachni::Module::Auditor.audited << "#{self.class}-#{id}"
+    end
+
+    #
+    # @param    [#to_s] id  identifier of the object to be checked
+    #
+    # @return   [Bool]  +true+ if audited, +false+ otherwise
+    #
+    # @see #audited
+    #
+    def audited?( id )
+        Arachni::Module::Auditor.audited.include?( "#{self.class}-#{id}" )
     end
 
     #
@@ -192,6 +216,7 @@ module Auditor
     def log_remote_file_if_exists( url, silent = false, &block )
         return nil if !url
 
+        print_status( "Checking for #{url}" ) if !silent
         remote_file_exist?( url ) do |bool, res|
             print_status( 'Analyzing response for: ' + url ) if !silent
 
@@ -235,7 +260,7 @@ module Auditor
     #
     # @see #log_issue
     #
-    def log_remote_file( res )
+    def log_remote_file( res, silent = false )
         url = res.effective_url
         filename = File.basename( URI( res.effective_url ).path )
 
@@ -250,6 +275,8 @@ module Auditor
                 response: res.headers,
             }
         )
+
+        print_ok( "Found #{filename} at #{url}" ) if !silent
     end
     alias :log_remote_directory :log_remote_file
 
@@ -504,6 +531,23 @@ module Auditor
     def audit_timeout( strings, opts = {} )
         opts = OPTIONS.merge( opts )
         candidate_elements( opts ).each { |e| e.timeout_analysis( strings, opts ) }
+    end
+
+
+    private
+
+    #
+    # Helper +Set+ for modules which want to keep track of what they've audited
+    # by themselves.
+    #
+    # @return   [Set]
+    #
+    # @see #audited?
+    # @see #audited
+    #
+    #
+    def self.audited
+        @audited ||= Set.new
     end
 
 end
