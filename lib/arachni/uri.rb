@@ -135,7 +135,7 @@ class URI
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
-            parser.parse( normalize( url ).dup )
+            parser.parse( normalize( url ).dup ) rescue nil
         end
     end
 
