@@ -9,7 +9,7 @@ describe Arachni::UI::Output do
         @out.mute
         @@msg = 'This is a @msg!'
 
-        @logfile = @opts.dir['logs'] + 'output_spec'
+        @logfile = @opts.dir['logs'] + 'output_spec.log'
 
         @e = Exception.new( 'Stuff' )
         @e.set_backtrace( [ 'backtrace line1', 'backtrace line2' ] )
