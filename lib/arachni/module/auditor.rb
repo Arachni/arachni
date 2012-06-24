@@ -394,7 +394,6 @@ module Auditor
             mod_name = framework.modules[mod].info[:name]
 
             set_id = framework.modules.issue_set_id_from_elem( mod_name, elem )
-            framework.modules.issue_set
             return true if framework.modules.issue_set.include?( set_id )
         end if framework
 
