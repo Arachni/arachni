@@ -6,7 +6,8 @@ Experimental/unstable branch -- used for integration.
     cd arachni
     git checkout experimental
     gem install bundler
-    rake install
+    bundle install # to resolve possible dev dependencies
+    rake install   # to install to PATH
 
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 ```bundle exec <executable>```.
