@@ -372,8 +372,7 @@ module Auditor
             method           = res.request.method.to_s.upcase
         end
 
-        if response_headers['content-type'] &&
-           !response_headers['content-type'].substring?( 'text' )
+        if !response_headers['content-type'].to_s.include?( 'text' )
             response = nil
         end
 
