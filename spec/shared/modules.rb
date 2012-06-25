@@ -130,6 +130,11 @@ shared_examples_for "module" do
             c = Arachni::Issue::Element.const_get( e.upcase.to_sym )
             issues.should be_any
             issues.map { |i| i.elem }.uniq.should == [c]
+
+            if current_module.info[:issue]
+                issues.map { |i| i.severity }.uniq.should ==
+                    [current_module.info[:issue][:severity]]
+            end
         end
     end
 
