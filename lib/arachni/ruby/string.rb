@@ -17,10 +17,7 @@
 #
 # Overloads the {String} class.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class String
 
@@ -43,27 +40,59 @@ class String
     #   # => "This is the test.\nNot really sure what else to put here...\n"
     #
     #
-    # @param [String] str
+    # @param [String] other
     #
     # @return [String]
     #
-    def rdiff( str )
-        return self if self == str
+    def rdiff( other )
+        return self if self == other
 
         # get the words of the first text in an array
-        words1 = self.split( /\b/ )
+        s_words = words
 
         # get the words of the second text in an array
-        words2 = str.split( /\b/ )
+        o_words = other.words
 
         # get all the words that are different between the 2 arrays
         # math style!
-        changes  = words1 - words2
-        changes << words2 - words1
+        changes  = s_words - o_words
+        changes << s_words - o_words
         changes.flatten!
 
         # get what hasn't changed (the rdiff, so to speak) as a string
-        ( words1 - changes ).join
+        (s_words - changes).join
+    end
+
+    #
+    # Calculates the difference ratio (at a word level) between +self+ and +other+.
+    #
+    # @param    [String]    other
+    #
+    # @return   [Float]     +0.0+ (identical strings) to +1.0+ (completely different)
+    #
+    def diff_ratio( other )
+        return 0.0 if self == other
+
+        s_words = self.words( true )
+        o_words = other.words( true )
+
+        common = (s_words & o_words).size.to_f
+        union  = (s_words | o_words).size.to_f
+
+        (union - common)/union
+    end
+
+    #
+    # Returns the words in +self+.
+    #
+    # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
+    #
+    # @return   [Array<String>]
+    #
+    def words( strict = false )
+        splits = split( /\b/ )
+        splits.reject! { |w| !(w =~ /\w/) } if strict
+        splits
     end
 
     def substring?( string )
