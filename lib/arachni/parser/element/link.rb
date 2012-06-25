@@ -117,7 +117,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     #
     def self.from_response( response )
         url = response.effective_url
-        from_document( url, response.body ) | [new( url, parse_query_vars( url ) )]
+        [new( url, parse_query_vars( url ) )] | from_document( url, response.body )
     end
 
     #
