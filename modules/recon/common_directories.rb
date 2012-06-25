@@ -25,7 +25,6 @@
 #
 # @see http://cwe.mitre.org/data/definitions/538.html
 #
-#
 class Arachni::Modules::CommonDirectories < Arachni::Module::Base
 
     def self.directories
