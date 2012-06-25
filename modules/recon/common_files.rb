@@ -46,7 +46,7 @@ class Arachni::Modules::CommonFiles < Arachni::Module::Base
             issue:       {
                 name:     %q{A common sensitive file exists on the server.},
                 tags:     %w(common path file discovery),
-                severity: Severity::LOW,
+                severity: Severity::LOW
             }
         }
     end
