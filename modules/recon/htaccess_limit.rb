@@ -14,59 +14,40 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
-class Htaccess < Arachni::Module::Base
+class Arachni::Modules::Htaccess < Arachni::Module::Base
 
     def run
         return if page.code != 401
-        http.post( page.url ).on_complete { |res| __log_results( res ) if res.code == 200 }
+        http.post( page.url ) { |res| check_and_log( res ) }
+    end
+
+    def check_and_log( res )
+        return if res.code != 200
+        log( { element: Element::SERVER }, res )
+        print_ok 'Request was accepted: ' + res.effective_url
     end
 
     def self.info
         {
-            :name           => '.htaccess LIMIT misconfiguration',
-            :description    => %q{Checks for misconfiguration in LIMIT directives that blocks
+            name:        '.htaccess LIMIT misconfiguration',
+            description: %q{Checks for misconfiguration in LIMIT directives that blocks
                 GET requests but allows POST.},
-            :elements       => [ ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
-            :references     => {},
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Misconfiguration in LIMIT directive of .htaccess file.},
-                :description => %q{The .htaccess file blocks GET requests but allows POST.},
-                :tags        => [ 'htaccess', 'server', 'limit' ],
-                :cwe         => '',
-                :severity    => Issue::Severity::HIGH,
-                :cvssv2       => '',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+            elements:    [ Element::SERVER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.4',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{Misconfiguration in LIMIT directive of .htaccess file.},
+                description: %q{The .htaccess file blocks GET requests but allows POST.},
+                tags:        %w(htaccess server limit),
+                severity:    Severity::HIGH
             }
         }
     end
 
-    def __log_results( res )
-        log_issue(
-            :url          => res.effective_url,
-            :method       => res.request.method.to_s.upcase,
-            :elem         => Issue::Element::SERVER,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        )
-
-        print_ok( 'Request was accepted: ' + res.effective_url )
-    end
-
-end
-end
 end
