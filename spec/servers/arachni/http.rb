@@ -65,7 +65,6 @@ get '/cookies' do
 end
 
 get '/headers' do
-    env['HTTP_MY_HEADER'].to_s
     hash = env.reject{ |k, v| !k.to_s.downcase.include?( 'http' ) }.inject({}) do |h, (k, v)|
         k = k.split( '_' )[1..-1].map { |s| s.capitalize }.join( '-' )
         h[k] = v || ''; h
