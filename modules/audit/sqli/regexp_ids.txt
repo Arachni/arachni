@@ -55,8 +55,6 @@ Driver.*SQL[\-\_\ ]*Server
 OLE DB.*SQL Server
 SQL Server.*Driver
 Warning.*mssql_.*
-Access.*Driver
-Driver.*Access
 JET Database Engine
 Access Database Engine
 Oracle error
