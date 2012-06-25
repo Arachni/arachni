@@ -335,6 +335,16 @@ describe Arachni::HTTP do
             raised.should be_true
         end
 
+        describe :body do
+            it 'should use its value as a request body' do
+                req_body = 'heyaya'
+                body = nil
+                @http.request( @url + '/body', method: :put, body: req_body ) { |res| body = res.body }
+                @http.run
+                body.should == req_body
+            end
+        end
+
         describe :method do
             describe 'nil' do
                 it 'should perform a GET HTTP request' do
