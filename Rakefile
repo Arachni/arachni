@@ -118,13 +118,8 @@ end
 
 Bundler::GemHelper.install_tasks
 
-#
-# Publishing
-#
-desc "Push a new version to Gemcutter"
-task :publish => [ :build ] do
-    sh "gem push arachni-#{Arachni::VERSION}.gem"
-end
+desc "Push a new version to RubyGems"
+task :publish => [ :release ]
 
 desc "Build Arachni and run all the tests."
 task :default => [ :build, :spec ]
