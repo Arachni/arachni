@@ -377,10 +377,11 @@ module Auditor
             response = nil
         end
 
-        begin
-            print_ok( "In #{opts[:element]} var '#{opts[:altered]}' ( #{url} )" )
-        rescue
-        end
+        var = opts[:altered] || opts[:var]
+
+        msg = "In #{opts[:element]}"
+        msg << " var '#{var}'" if var
+        print_ok "#{msg} ( #{url} )"
 
         print_verbose( "Injected string:\t" + opts[:injected] ) if opts[:injected]
         print_verbose( "Verified string:\t" + opts[:match].to_s ) if opts[:match]
@@ -389,7 +390,7 @@ module Auditor
         print_verbose( '---------' ) if only_positives?
 
         log_issue(
-            var:          opts[:altered] || opts[:var],
+            var:          var,
             url:          url,
             injected:     opts[:injected],
             id:           opts[:id],
