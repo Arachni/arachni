@@ -317,7 +317,8 @@ class HTTP
             opts = {
                 headers: headers,
                 params:  cparams.empty? ? nil : cparams,
-                method:  opts[:method].nil? ? :get : opts[:method]
+                method:  opts[:method].nil? ? :get : opts[:method],
+                body:    opts[:body]
             }.merge( @opts )
 
             opts[:follow_location] = follow_location if follow_location

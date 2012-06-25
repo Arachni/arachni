@@ -2,6 +2,10 @@ require 'sinatra'
 require 'sinatra/contrib'
 set :logging, false
 
+put '/body' do
+    request.body.read
+end
+
 get '/' do
     'GET'
 end
