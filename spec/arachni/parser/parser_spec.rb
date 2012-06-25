@@ -69,7 +69,8 @@ describe Arachni::Parser do
                 body: '',
                 headers_hash: {
                     'Content-Type' => 'text/html',
-                    'Set-Cookie' => 'cname=cval' }
+                    'Set-Cookie'   => 'cname=cval'
+                }
             )
             parser = Arachni::Parser.new( @opts, response )
             cookies = parser.page.cookies
@@ -206,7 +207,16 @@ describe Arachni::Parser do
 
         describe '#links' do
             it 'should return an array of links' do
-                link = @parser.links.first
+                links = @parser.links
+                links.size.should == 2
+
+                link = links.first
+                link.action.should == @utils.normalize_url( @url )
+                link.auditable.should == { 'query_var_input' => 'query_var_val' }
+                link.method.should == 'get'
+                link.url.should == @url
+
+                link = links.last
                 link.action.should == @utils.normalize_url( @opts.url + '/link?link_input=link_val' )
                 link.auditable.should == { 'link_input' => 'link_val' }
                 link.method.should == 'get'
@@ -252,7 +262,16 @@ describe Arachni::Parser do
 
         describe '#links' do
             it 'should return an array of links' do
-                link = @parser_with_base.links.first
+                links = @parser_with_base.links
+                links.size.should == 2
+
+                link = links.first
+                link.action.should == @url_with_base
+                link.auditable.should == { }
+                link.method.should == 'get'
+                link.url.should == @url_with_base
+
+                link = links.last
                 link.action.should == @parser_with_base.base + 'link_with_base?link_input=link_val'
                 link.auditable.should == { 'link_input' => 'link_val' }
                 link.method.should == 'get'

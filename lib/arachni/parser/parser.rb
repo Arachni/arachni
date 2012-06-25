@@ -258,7 +258,7 @@ class Parser
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'Accept-Language' => 'en-gb,en;q=0.5',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'From'       => @opts.authed_by || '',
+            'From'       => @opts.authed_by  || '',
             'User-Agent' => @opts.user_agent || '',
             'Referer'    => @url,
             'Pragma'     => 'no-cache'
@@ -284,7 +284,8 @@ class Parser
     # @return [Array<Element::Link>] of links
     #
     def links( html = nil )
-        Element::Link.from_document( @url, html || doc )
+        [Element::Link.new( @url, link_vars( @url ) )] |
+            Element::Link.from_document( @url, html || doc )
     end
 
     #
