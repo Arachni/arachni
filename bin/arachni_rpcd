@@ -15,7 +15,7 @@
     limitations under the License.
 =end
 
-require_relative "../lib/arachni/options"
+require_relative '../lib/arachni'
 
 Arachni::Options.instance.parse!
 

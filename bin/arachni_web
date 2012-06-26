@@ -15,7 +15,7 @@
     limitations under the License.
 =end
 
-require_relative "../lib/arachni/options"
+require_relative '../lib/arachni'
 
 Arachni::Options.instance.parse!
 
@@ -23,7 +23,7 @@ def print_help( root )
         puts <<USAGE
 Arachni - Web Application Security Scanner Framework
        Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      
+
                (With the support of the community and the Arachni Team.)
 
        Website:       http://arachni.segfault.gr - http://github.com/Arachni/arachni
