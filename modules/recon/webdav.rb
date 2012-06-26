@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # WebDAV detection recon module.
 #
@@ -25,95 +22,68 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://en.wikipedia.org/wiki/WebDAV
 # @see http://www.webdav.org/specs/rfc4918.html
 #
-class WebDav < Arachni::Module::Base
+class Arachni::Modules::WebDav < Arachni::Module::Base
 
-    def prepare
-        #
-        # Because Dav may be enabled on a per directory basis we will check
-        # all directories but only report the first one we find.
-        #
-        # If it is enabled for all dirs then we'll end up swimming in
-        # noise.
-        #
-        # Result aggregation will be implemented at some point though...
-        #
-        @@__found ||= false
+    def self.dav_method
+        @check ||= 'PROPFIND'
+    end
 
-        @__check = 'PROPFIND'
+    def self.found?
+        @found ||= false
+    end
 
-        @@__auditted ||= Set.new
+    def self.found
+        @found = true
     end
 
     def run
         path = get_path( page.url )
-        return if @@__found || @@__auditted.include?( path )
+        return if self.class.found? || audited?( path )
 
-        print_status( "Checking: #{path}" )
-
-        http.request( path, :method => :options ) do |res|
-            begin
-                allowed = res.headers_hash['Allow'].split( ',' ).
-                    map { |method| method.strip }
-                __log_results( res ) if allowed.include?( @__check )
-            rescue
-            end
-        end
-
-        @@__auditted << path
+        http.request( path, method: :options, remove_id: true ) { |res| check_and_log( res ) }
+        audited( path )
     end
 
     def self.info
         {
-            :name           => 'WebDav',
-            :description    => %q{Checks for WebDAV enabled directories.},
-            :elements       => [ ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
-            :references     => {
-                'WebDAV.org'    => 'http://www.webdav.org/specs/rfc4918.html',
-                'Wikipedia'    => 'http://en.wikipedia.org/wiki/WebDAV',
+            name:        'WebDav',
+            description: %q{Checks for WebDAV enabled directories.},
+            elements:    [ Element::SERVER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.4',
+            references:  {
+                'WebDAV.org' => 'http://www.webdav.org/specs/rfc4918.html',
+                'Wikipedia'  => 'http://en.wikipedia.org/wiki/WebDAV',
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{WebDAV},
-                :description => %q{WebDAV is enabled on the server.
-                    Consider auditing further using a specialised tool.},
-                :tags        => [ 'webdav', 'options', 'methods', 'server' ],
-                :cwe         => '',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2       => '',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{WebDAV},
+                description: %q{WebDAV is enabled on the server.
+    Consider auditing further using a specialised tool.},
+                tags:        %w(webdav options methods server),
+                severity:    Severity::INFORMATIONAL
             }
 
         }
     end
 
-    def __log_results( res )
-        return if @@__found
+    def check_and_log( res )
+        begin
+            allowed = res.headers_hash['Allow'].split( ',' ).map { |method| method.strip }
+            return if !allowed.include?( self.class.dav_method )
+        rescue
+            return
+        end
 
-        @@__found = true
+        self.class.found
 
-        log_issue(
-            :url          => res.effective_url,
-            :method       => res.request.method.to_s.upcase,
-            :elem         => Issue::Element::SERVER,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        )
-
-        # inform the user that we have a match
-        print_ok( "Enabled for: #{res.effective_url}" )
+        log( { element: Element::SERVER }, res )
+        print_ok "Enabled for: #{res.effective_url}"
     end
 
-end
-end
 end
