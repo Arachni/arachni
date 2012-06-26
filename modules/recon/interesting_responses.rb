@@ -16,102 +16,92 @@
 
 require 'digest/md5'
 
-module Arachni
-module Modules
-
 #
 # Logs all non 200 (OK) and non 404 server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class InterestingResponses < Arachni::Module::Base
+class Arachni::Modules::InterestingResponses < Arachni::Module::Base
 
-    include Arachni::Module::Utilities
+    IGNORE_CODES = [ 200, 404 ].to_set
+    MAX_ENTRIES  = 100
 
-    IGNORE_CODES = [
-        200,
-        404
-    ]
+    def self.ran?
+        @ran ||= false
+    end
 
-    MAX_ENTRIES = 100
+    def self.ran
+        @ran = true
+    end
 
-    def prepare
-        # we need to run only once
-        @@__ran ||= false
+    def self.counter
+        @counter ||= 0
+    end
+
+    def self.counter=( int )
+        @counter = int
+    end
+
+    def increment
+        self.class.counter += 1
+    end
+
+    def limit_reached?
+        self.class.counter >= MAX_ENTRIES
     end
 
     def run
-        return if @@__ran
+        return if self.class.ran?
 
-        print_status( "Listening..." )
-
-        # tell the HTTP interface to cal this block every-time a request completes
-        http.add_on_complete do |res|
-            __log_results( res ) if !IGNORE_CODES.include?( res.code ) && !res.body.empty?
-        end
+        # tell the HTTP interface to call this block every-time a request completes
+        http.add_on_complete { |res| check_and_log( res ) }
     end
 
     def clean_up
-        @@__ran = true
+        self.class.ran
+    end
+
+    def check_and_log( res )
+        return if IGNORE_CODES.include?( res.code ) || res.body.to_s.empty? ||
+            limit_reached?
+
+        digest = Digest::MD5.hexdigest( res.body )
+        path   = uri_parse( res.effective_url ).path
+
+        return if audited?( path ) || audited?( digest )
+
+        audited( path )
+        audited( digest )
+        increment
+
+        log( { id: "Code: #{res.code}", element: Element::SERVER }, res )
+        print_ok "Found an interesting response -- Code: #{res.code}."
     end
 
     def self.info
         {
-            :name           => 'Interesting responses',
-            :description    => %q{Logs all non 200 (OK) server responses.},
-            :elements       => [ ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.4',
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Interesting server response.},
-                :description => %q{The server responded with a non 200 (OK) code. },
-                :tags        => [ 'interesting', 'response', 'server' ],
-                :cwe         => '',
-                :severity    => Issue::Severity::INFORMATIONAL,
-                :cvssv2       => '',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+            name:        'Interesting responses',
+            description: %q{Logs all non 200 (OK) server responses.},
+            elements:    [ Element::SERVER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.4',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{Interesting server response.},
+                description: %q{The server responded with a non 200 (OK) code. },
+                tags:        %w(interesting response server),
+                severity:    Severity::INFORMATIONAL
             }
-
         }
     end
 
-    def __log_results( res )
-        @@entries ||= 0
-        return if @@entries > MAX_ENTRIES
-
-        @@_loged ||= {
-            :paths   => Set.new,
-            :digests => Set.new
-        }
-
-        digest = Digest::MD5.hexdigest( res.body )
-        path   = URI( res.effective_url ).path
-
-        return if @@_loged[:paths].include?( path ) ||
-            @@_loged[:digests].include?( digest )
-
-        @@_loged[:paths]   << path
-        @@_loged[:digests] << digest
-
-        log_issue(
-            :url          => res.effective_url,
-            :method       => res.request.method.to_s.upcase,
-            :id           => "Code: #{res.code.to_s}",
-            :elem         => Issue::Element::SERVER,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        )
-
-        @@entries += 1
-        # inform the user that we have a match
-        print_ok( "Found an interesting response (Code: #{res.code.to_s})." )
+    def self.acceptable
+        [ 102, 200, 201, 202, 203, 206, 207, 208, 226, 300, 301, 302,
+          303, 305, 306, 307, 308, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409,
+          410, 411, 412, 413, 414, 415, 416, 417, 418, 420, 422, 423, 424, 425, 426, 428,
+          429, 431, 444, 449, 450, 451, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508,
+          509, 510, 511, 598, 599
+        ]
     end
 
-end
-end
 end
