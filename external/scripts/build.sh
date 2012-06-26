@@ -570,6 +570,10 @@ rm -rf $src_path
 echo "  * Removing downloaded archives"
 rm -rf $archives_path
 
+echo "  * Removing docs"
+rm -rf $root/usr/share/*
+rm -rf $root/gems/doc/*
+
 echo
 cat<<EOF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
