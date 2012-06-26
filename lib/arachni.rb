@@ -14,6 +14,9 @@
     limitations under the License.
 =end
 
+require 'rubygems'
+require 'bundler/setup'
+
 module Arachni
 end
 
