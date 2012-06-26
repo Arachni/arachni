@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # Cross-Site tracing recon module.
 #
@@ -24,78 +21,61 @@ module Modules
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/693.html
 # @see http://capec.mitre.org/data/definitions/107.html
 # @see http://www.owasp.org/index.php/Cross_Site_Tracing
 #
-class XST < Arachni::Module::Base
+class Arachni::Modules::XST < Arachni::Module::Base
 
-    def prepare
-        # we need to run only once
-        @@__ran ||= false
+    def self.ran?
+        @ran ||= false
+    end
+
+    def self.ran
+        @ran = true
     end
 
     def run
-        return if @@__ran
+        return if self.class.ran?
 
         print_status( "Checking..." )
 
-        http.trace( uri_parse( page.url ).host ) do |res|
-            # checking for a 200 code is not enought, there are some weird
-            # web servers out there that don't give a flying fuck about standards
-            __log_results( res ) if res.code == 200 && !res.body.empty?
+        http.trace( page.url, remove_id: true ) do |res|
+            next if res.code != 200 || res.body.to_s.empty?
+
+            log( { element: Element::SERVER }, res )
+            print_ok "TRACE is enabled."
         end
     end
 
     def clean_up
-        @@__ran = true
+        self.class.ran
     end
 
     def self.info
         {
-            :name           => 'XST',
-            :description    => %q{Sends an HTTP TRACE request and checks if it succeeded.},
-            :elements       => [ ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.4',
-            :references     => {
-                'CAPEC'     => 'http://capec.mitre.org/data/definitions/107.html',
-                'OWASP'     => 'http://www.owasp.org/index.php/Cross_Site_Tracing'
+            name:        'XST',
+            description: %q{Sends an HTTP TRACE request and checks if it succeeded.},
+            elements:    [ Element::SERVER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.5',
+            references:  {
+                'CAPEC' => 'http://capec.mitre.org/data/definitions/107.html',
+                'OWASP' => 'http://www.owasp.org/index.php/Cross_Site_Tracing'
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{The TRACE HTTP method is enabled.},
-                :description => %q{This type of attack can occur when the there
-                    is an XSS vulnerability and the server supports HTTP TRACE. },
-                :tags        => [ 'xst', 'methods', 'trace', 'server' ],
-                :cwe         => '693',
-                :severity    => Issue::Severity::MEDIUM,
-                :cvssv2       => '',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+            targets:     %w(Generic),
+            issue:       {
+                name:        %q{The TRACE HTTP method is enabled.},
+                description: %q{This type of attack can occur when the there
+    is an XSS vulnerability and the server supports HTTP TRACE.},
+                tags:        %w(xst methods trace server),
+                cwe:         '693',
+                severity:    Severity::MEDIUM
             }
 
         }
     end
 
-    def __log_results( res )
-        log_issue(
-            url:      res.effective_url,
-            method:   res.request.method.to_s.upcase,
-            elem:     Issue::Element::SERVER,
-            response: res.body,
-            headers: {
-                request:  res.request.headers,
-                response: res.headers
-            }
-        )
-
-        # inform the user that we have a match
-        print_ok( "TRACE is enabled." )
-    end
-
-end
-end
 end
