@@ -1,5 +1,4 @@
 require 'sinatra'
-require 'ap'
 
 put '/Arachni-*' do
     body = request.body
