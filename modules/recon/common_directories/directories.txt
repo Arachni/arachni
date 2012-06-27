@@ -74,7 +74,6 @@ contact
 press
 p0rn
 pron
-pron
 new%20folder
 New%20Folder
 oldfiles
@@ -165,7 +164,6 @@ password
 jdbc
 files
 site
-files
 sales
 log
 logs
@@ -210,12 +208,10 @@ customer
 customers
 asp
 java
-jdbc
 jrun
 job
 zipfiles
 pw
-public
 admin
 new
 adm
@@ -243,7 +239,6 @@ samples
 scripts
 stats
 sitestats
-support
 www
 errors
 siteadmin
