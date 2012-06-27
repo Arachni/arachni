@@ -59,8 +59,7 @@ describe Arachni::Module::Auditor do
     end
 
     after :each do
-        @framework.modules.results.clear
-        Arachni::Parser::Element::Auditable.reset
+        @framework.reset
     end
 
     describe '#register_results' do
@@ -338,7 +337,7 @@ describe Arachni::Module::Auditor do
                 @auditor.load_page_from( @url + '/link' )
                 @auditor.audit( @seed )
                 @framework.http.run
-                @framework.modules.results.size.should == 4
+                @framework.modules.results.size.should == 1
             end
         end
 

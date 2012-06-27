@@ -416,12 +416,9 @@ module Auditor
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
-        redundant.map do |mod|
+        (redundant | [fancy_name]).each do |mod|
             next if !framework.modules.include?( mod )
-            mod_name = framework.modules[mod].info[:name]
-
-            set_id = framework.modules.issue_set_id_from_elem( mod_name, elem )
-            return true if framework.modules.issue_set.include?( set_id )
+            return true if framework.modules.issue_set.include?( elem.provisioned_issue_id )
         end if framework
 
         false

@@ -11,24 +11,13 @@ describe Arachni::Framework do
         reset_options
         @opts.dir['reports'] = spec_path + '/fixtures/reports/manager_spec/'
         @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
-        Arachni::Parser::Element::Auditable.reset
 
         @f = Arachni::Framework.new
-        @f.modules.class.results.clear
-        @f.modules.clear
-        @f.reports.clear
-        @f.plugins.clear
-
-        Arachni::Parser::Element::Auditable.reset
+        @f.reset
     end
 
     after( :each ) do
-        if @f
-            @f.modules.class.results.clear
-            @f.modules.clear
-            @f.reports.clear
-            @f.plugins.clear
-        end
+        @f.reset if @f
     end
 
     describe '#opts' do

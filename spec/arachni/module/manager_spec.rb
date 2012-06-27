@@ -5,15 +5,13 @@ describe Arachni::Module::Manager do
     before( :all ) do
         opts = Arachni::Options.instance
         opts.dir['modules'] = spec_path + 'fixtures/modules/'
-        @modules = Arachni::Module::Manager.new( Arachni::Framework.new )
+        @modules = Arachni::Framework.new.modules
 
         @page  = Arachni::Parser::Page.new
         @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 
-    before( :each ) { @modules.results.clear }
-
-    after( :all ) { @modules.clear }
+    before( :each ) { @modules.reset }
 
     describe '#load' do
         it 'should load all modules' do

@@ -346,6 +346,10 @@ module Auditable
         str
     end
 
+    def provisioned_issue_id
+        "#{@auditor.fancy_name}::#{type}::#{altered}::#{get_path( self.action )}"
+    end
+
     # impersonate the auditor to the output methods
     def info
         !orphan? ? @auditor.class.info : { :name => '' }
