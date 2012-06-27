@@ -88,12 +88,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [String]    unique form ID
     #
     def id
-        id = simple['attrs'].to_s
-        auditable.each do |name, _|
-            next if name.substring?( seed )
-            id +=  name
-        end
-        id
+        simple['attrs'].to_s << auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
     end
 
     #
