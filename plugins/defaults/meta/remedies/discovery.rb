@@ -14,33 +14,27 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Catches custom 404 or similar server behavior that can confuse discovery
 # modules.
 #
 # This is relatively easy to determine since valid responses to discovery modules
-# should vary wildly while custom 404 responses will have many comonalities
+# should vary wildly while custom 404 responses will have many commonalities
 # every time.
 #
 # This is a sort of baseline implementation/anomaly detection.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Discovery < Arachni::Plugin::Base
-
-    include Arachni::Module::Utilities
+# @version 0.1.2
+#
+class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
     # look for issues containing the following tags
-    TAGS = [ [ 'file', 'discovery' ], [ 'directory', 'discovery' ] ]
+    TAGS = [ %w(file discovery).sort, %w(directory discovery).sort ]
 
     # valid responses to discovery modules should vary *wildly*
-    # especially considereing the types of directories and files that
+    # especially considering the types of directories and files that
     # these modules look for
     #
     # on the other hand custom 404 or such responses will have many things
@@ -61,9 +55,7 @@ class Discovery < Arachni::Plugin::Base
         # URL path => size of responses
         response_size_per_path  = {}
 
-        @framework.audit_store.issues.each_with_index {
-            |issue, idx|
-
+        framework.auditstore.issues.each_with_index do |issue, idx|
             next if !includes_tags?( issue.tags )
 
             # discovery issues only have 1 variation
@@ -74,18 +66,11 @@ class Discovery < Arachni::Plugin::Base
             # will control the behavior under that path
             #
             # did that make any sense?
-            path = ''
-            begin
-                exception_jail {
-                    path = File.dirname( URI( normalize_url( variation['url'] ) ).path )
-                }
-            rescue
-                next
-            end
+            path = File.dirname( uri_parse( variation.url ).path )
 
             # gathering total response sizes for issues per path
             response_size_per_path[path] ||= 0
-            response_size_per_path[path] += variation['response'].size
+            response_size_per_path[path] += variation.response.size
 
             # categorize issues per path as well
             issues_per_path[path] ||= []
@@ -105,25 +90,21 @@ class Discovery < Arachni::Plugin::Base
             #
             # on the other hand, valid responses will be dissimilar since the
             # discovery modules look for different things.
-            if !diffs_per_path[path]
-                diffs_per_path[path] = variation['response']
+            diffs_per_path[path] = if !diffs_per_path[path]
+                 variation['response']
             else
-                diffs_per_path[path] = diffs_per_path[path].rdiff( variation['response'] )
+                diffs_per_path[path].rdiff( variation['response'] )
             end
-        }
+        end
 
         issues = []
-        diffs_per_path.each_pair {
-            |path, diff|
-
-            # calculate the similarity factor of the responses under the current path
+        diffs_per_path.each_pair do |path, diff|
+            # calculate the similarity ratio of the responses under the current path
             similarity = Float( diff.size * issues_per_path[path].size ) / response_size_per_path[path]
 
             # gotcha!
-            if similarity >= SIMILARITY_TOLERANCE
-                issues |= issues_per_path[path]
-            end
-        }
+            issues |= issues_per_path[path] if similarity >= SIMILARITY_TOLERANCE
+        end
 
         register_results( issues ) if !issues.empty?
     end
@@ -136,29 +117,22 @@ class Discovery < Arachni::Plugin::Base
     # @return   [Bool]
     #
     def includes_tags?( tags )
-        TAGS.each {
-            |tag_pair|
-            intersection = (tags & tag_pair)
-            return true if intersection && (intersection.size  == tag_pair.size)
-        }
-        return false
+        TAGS.each { |tag_pair| return true if tag_pair  == tags.sort }
+        false
     end
 
     def self.info
         {
-            :name           => 'Discovery module response anomalies',
-            :description    => %q{Analyzes the scan results and identifies issues logged by discovery modules
+            name:        'Discovery module response anomalies',
+            description: %q{Analyzes the scan results and identifies issues logged by discovery modules
                 (i.e. modules that look for certain files and folders on the server),
                 while the server responses were exhibiting an anomalous factor of similarity.
 
                 There's a good chance that these issues are false positives.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :tags           => [ 'anomaly' , 'discovery', 'file', 'directories', 'meta']
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.2',
+            tags:        %w(anomaly discovery file directories meta)
         }
     end
 
-end
-
-end
 end
