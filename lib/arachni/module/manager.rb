@@ -39,6 +39,7 @@ class Manager < Arachni::Component::Manager
     @@issue_set           ||= Set.new
     @@do_not_store        ||= false
     @@on_register_results_blocks ||= []
+    @@on_register_results_blocks_raw ||= []
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
@@ -83,6 +84,20 @@ class Manager < Arachni::Component::Manager
         self.class.on_register_results_blocks
     end
 
+    def self.on_register_results_raw( &block )
+        on_register_results_blocks_raw << block
+    end
+    def on_register_results_raw( &block )
+        self.class.on_register_results_raw( &block )
+    end
+
+    def self.on_register_results_blocks_raw
+        @@on_register_results_blocks_raw
+    end
+    def on_register_results_blocks_raw
+        self.class.on_register_results_blocks_raw
+    end
+
     def self.store?
         !@@do_not_store
     end
@@ -112,13 +127,15 @@ class Manager < Arachni::Component::Manager
     # @return   [Integer]   amount of (unique) issues registered
     #
     def self.register_results( results )
+        on_register_results_blocks_raw.each { |block| block.call( results ) }
+
         unique = dedup( results )
         return 0 if unique.empty?
 
         unique.each { |issue| issue_set << issue.unique_id }
 
         on_register_results_blocks.each { |block| block.call( unique ) }
-        return if !store?
+        return 0 if !store?
 
         unique.each { |issue| self.results << issue }
         unique.size
@@ -151,6 +168,7 @@ class Manager < Arachni::Component::Manager
     def self.reset
         store
         on_register_results_blocks.clear
+        on_register_results_blocks_raw.clear
         issue_set.clear
         results.clear
         remove_constants( NAMESPACE )

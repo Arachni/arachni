@@ -19,12 +19,20 @@ shared_examples_for "module" do
         options.url = url
 
         http.headers['User-Agent'] = 'default'
+
+        @issues = []
+        Arachni::Module::Manager.on_register_results_raw do |issues|
+            issues.each { |i| @issues << i }
+        end
     end
 
     after( :each ) do
         Arachni::Module::ElementDB.reset
         Arachni::Parser::Element::Auditable.reset
         Arachni::Module::Manager.results.clear
+        Arachni::Module::Manager.do_not_store
+
+        @issues.clear
 
         http.cookie_jar.clear
 
@@ -92,6 +100,10 @@ shared_examples_for "module" do
 
             end
         end
+    end
+
+    def issues
+        @issues
     end
 
     def issue_count
