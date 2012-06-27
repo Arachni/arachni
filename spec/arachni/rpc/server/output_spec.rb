@@ -15,6 +15,8 @@ describe Arachni::UI::Output do
         @e.set_backtrace( [ 'backtrace line1', 'backtrace line2' ] )
     end
 
+    after( :all ) { File.delete( @logfile ) }
+
     context 'when buffering the messages' do
         it 'should not hold more than 30 messages by default' do
             50.times { @out.print_error( @msg ) }
