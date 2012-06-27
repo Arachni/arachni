@@ -165,7 +165,7 @@ Can extract and analyze:
         - Blind OS command injection using timing attacks (*nix, Windows)
         - Remote file inclusion
         - Unvalidated redirects
-        - XPath injection
+        - XPath injection (Generic, PHP, Java, dotNET, libXML2)
         - Path XSS
         - URI XSS
         - XSS

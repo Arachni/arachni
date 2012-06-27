@@ -50,7 +50,7 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection'
             },
-            targets:     %w(General PHP Java dotNET Java libXML2),
+            targets:     %w(General PHP Java dotNET libXML2),
             issue:       {
                 name:            %q{XPath Injection},
                 description:     %q{XPath queries can be injected into the web application.},
