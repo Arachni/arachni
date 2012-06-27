@@ -384,6 +384,19 @@ describe Arachni::Module::Auditor do
                         issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
                         issue.var.should == 'cookie_input'
                     end
+                    it 'should maintain the session while auditing cookies' do
+                        @auditor.load_page_from( @url + '/session' )
+                        @auditor.audit( @seed,
+                                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                                        elements: [ Arachni::Module::Auditor::Element::COOKIE ]
+                        )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
+                        issue.var.should == 'vulnerable'
+                    end
+
                 end
                 describe 'Arachni::Module::Auditor::Element::HEADER' do
                     it 'should audit headers' do
