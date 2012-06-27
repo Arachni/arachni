@@ -417,8 +417,8 @@ module Auditor
     #
     def skip?( elem )
         if framework
-            modname = framework.modules.map { |k, v| k if v == self.class }.compact.first
-            (redundant | [modname]).each do |mod|
+            @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
+            (redundant | [@modname]).each do |mod|
                 next if !framework.modules.include?( mod )
                 return true if framework.modules.issue_set.include?( elem.provisioned_issue_id )
             end
