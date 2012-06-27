@@ -295,7 +295,7 @@ class Issue
     end
 
     def []( k )
-        instance_variable_get( "@#{k.to_s}".to_sym )
+        send( "#{k}" )
     end
 
     def []=( k, v )
@@ -320,14 +320,20 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
-        h['hash'] = h['_hash'] = hash.to_s
+        h[:hash] = h[:_hash] = hash
+        h[:unique_id] = unique_id
         h
     end
     alias :to_hash :to_h
 
-    def hash
-        "#{@mod_name}::#{@elem}::#{@var}::#{@url}".hash
+    def unique_id
+        "#{@mod_name}::#{@elem}::#{@var}::#{Arachni::Utilities.get_path( @url )}"
     end
+
+    def hash
+        unique_id.hash
+    end
+    alias :_hash :hash
 
     def eql?( other )
         hash == other.hash
