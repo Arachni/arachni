@@ -16,6 +16,13 @@ shared_examples_for "module" do
         opts = Arachni::Options.instance.reset
         framework.modules.load name
 
+        # do not dedup, the module tests need to see everything
+        current_module.instance_eval do
+            define_method( :skip? ) do |elem|
+                return false
+            end
+        end
+
         options.url = url
 
         http.headers['User-Agent'] = 'default'
