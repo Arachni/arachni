@@ -409,7 +409,7 @@ module Auditor
 
     #
     # This is called right before an [Arachni::Parser::Element]
-    # is submitted/audited and is used to determine whether to skip it or not.
+    # is audited and is used to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
