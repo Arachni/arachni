@@ -68,6 +68,7 @@ Gem::Specification.new do |s|
 
       s.add_development_dependency 'rake', "~> 0.9.2.2"
       s.add_development_dependency 'rspec', "~> 2.8"
+      s.add_development_dependency 'guard-rspec'
 
       s.description = <<description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
