@@ -311,6 +311,12 @@ describe Arachni::Issue do
         end
     end
 
+    describe '#_hash' do
+        it 'should be #hash as a string' do
+            @issue._hash.to_s.should_not == @issue.hash
+        end
+    end
+
     describe '#remove_instance_var' do
         it 'should remove an instance variable' do
             rxp = @issue.regexp
