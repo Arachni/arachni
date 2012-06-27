@@ -22,7 +22,7 @@ describe Arachni::Issue do
             internal_modname: 'module_name',
             tags: %w(these are a few tags),
             var: 'input name',
-            url: 'http://test.com/stuff/?query=blah',
+            url: 'http://test.com/stuff/test.blah?query=blah',
             headers: {
                 request: {
                     'User-Agent' => 'UA/v1'
@@ -244,7 +244,8 @@ describe Arachni::Issue do
 
     describe '#unique_id' do
         it 'should return a string uniquely identifying the issue' do
-            @issue.unique_id.should == "#{@issue.mod_name}::#{@issue.elem}::#{@issue.var}::http://test.com/stuff/"
+            @issue.unique_id.should ==
+                "#{@issue.mod_name}::#{@issue.elem}::#{@issue.var}::http://test.com/stuff/test.blah"
         end
     end
 

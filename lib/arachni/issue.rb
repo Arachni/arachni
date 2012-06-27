@@ -327,7 +327,7 @@ class Issue
     alias :to_hash :to_h
 
     def unique_id
-        "#{@mod_name}::#{@elem}::#{@var}::#{Arachni::Utilities.get_path( @url )}"
+        "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
 
     def hash

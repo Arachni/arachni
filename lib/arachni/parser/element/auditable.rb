@@ -347,7 +347,7 @@ module Auditable
     end
 
     def provisioned_issue_id
-        "#{@auditor.fancy_name}::#{type}::#{altered}::#{get_path( self.action )}"
+        "#{@auditor.fancy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
     end
 
     # impersonate the auditor to the output methods
