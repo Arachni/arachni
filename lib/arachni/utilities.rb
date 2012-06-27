@@ -72,6 +72,10 @@ module Utilities
         Arachni::Parser::Element::Cookie.from_file( *args )
     end
 
+    def cookie_encode( str )
+        Arachni::Parser::Element::Cookie.encode( str )
+    end
+
     # @return [URI::Parser] cached URI parser
     def uri_parser
         URI.parser

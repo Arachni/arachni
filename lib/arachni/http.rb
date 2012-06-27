@@ -280,12 +280,14 @@ class HTTP
         #
         exception_jail {
 
+            cookies ||= @cookie_jar.for_url( url ).inject({}) do |h, c|
+                h[c.name] = c.value
+                h
+            end
+
             headers           = @headers.merge( headers )
-            headers['Cookie'] =  if cookies
-                    str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
-                else
-                    @cookie_jar.to_s( url ) rescue ''
-                end
+            headers['Cookie'] = cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
 

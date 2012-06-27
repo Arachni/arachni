@@ -706,7 +706,7 @@ describe Arachni::HTTP do
     describe '#cookie' do
         it 'should perform a GET request' do
             body = nil
-            cookies = { 'name' => 'val' }
+            cookies = { 'name' => 'v%+;al' }
             @http.cookie( @url + '/cookies', params: cookies ) { |res| body = res.body }
             @http.run
             body.should == cookies.keys.first + '=' + cookies.values.first

@@ -167,21 +167,19 @@ describe Arachni::Parser::Element::Cookie do
         end
     end
 
-    describe '#encoded_value' do
-        it 'should return the name of the cookie' do
-            c = Arachni::Parser::Element::Cookie.new( @url,
-                'name'  => '',
-                'value' => 'some stuff ;',
-            )
-
-            c.value.should == 'some stuff ;'
-            c.encoded_value.should == 'some stuff %3B'
+    describe '#encode' do
+        it 'should encode the string in a way that makes is suitable to be included in a cookie header' do
+            Arachni::Parser::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some stuff %3B%25%3D'
         end
     end
 
     describe '#to_s' do
         it 'should return a string representation of the cookie' do
-            @c.to_s.should == "#{@c.name}=#{@c.encoded_value}"
+            c = Arachni::Parser::Element::Cookie.new( @url,
+                                                      'name'  => 'blah=ha%',
+                                                      'value' => 'some stuff ;',
+            )
+            c.to_s.should == 'blah%3Dha%25=some stuff %3B'
         end
     end
 
@@ -192,7 +190,7 @@ describe Arachni::Parser::Element::Cookie do
                                                       'value' => 'some stuff ;',
             )
 
-            c.auditable.values.first.should == 'some stuff %3B'
+            c.auditable.values.first.should == 'some stuff ;'
         end
     end
 
