@@ -264,7 +264,7 @@ class HTTP
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
-        cookies   = opts[:cookies]
+        cookies   = opts[:cookies] || {}
         async     = opts[:async]
         async     = true if async.nil?
         headers   = opts[:headers] || {}
@@ -280,9 +280,11 @@ class HTTP
         #
         exception_jail {
 
-            cookies ||= @cookie_jar.for_url( url ).inject({}) do |h, c|
-                h[c.name] = c.value
-                h
+            if !opts[:no_cookiejar]
+                cookies = @cookie_jar.for_url( url ).inject({}) do |h, c|
+                    h[c.name] = c.value
+                    h
+                end.merge( cookies )
             end
 
             headers           = @headers.merge( headers )
