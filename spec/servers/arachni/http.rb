@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/contrib'
 set :logging, false
 
-put '/body' do
+post '/body' do
     request.body.read
 end
 
