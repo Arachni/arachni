@@ -117,6 +117,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
     # @return   [Bool]
     #
     def includes_tags?( tags )
+        return false if !tags
         TAGS.each { |tag_pair| return true if tag_pair  == tags.sort }
         false
     end
