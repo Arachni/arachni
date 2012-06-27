@@ -45,9 +45,20 @@ describe Arachni::Module::Manager do
             @modules.results.any?.should be true
         end
 
-        it 'should not register redundant issues' do
-            2.times { @modules.register_results( [ @issue ] ) }
-            @modules.results.size.should be 1
+        context 'when an issue was discovered by manipulating an input' do
+            it 'should not register redundant issues' do
+                i = @issue.deep_clone
+                i.var = 'some input'
+                2.times { @modules.register_results( [ i ] ) }
+                @modules.results.size.should be 1
+            end
+        end
+
+        context 'when an issue was not discovered by manipulating an input' do
+            it 'should register it multiple times' do
+                2.times { @modules.register_results( [ @issue ] ) }
+                @modules.results.size.should be 2
+            end
         end
     end
 
