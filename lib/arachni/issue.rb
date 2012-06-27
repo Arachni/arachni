@@ -320,7 +320,8 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
-        h[:hash] = h[:_hash] = hash
+        h[:_hash] = hash.to_s
+        h[:hash]  = hash
         h[:unique_id] = unique_id
         h
     end
@@ -333,7 +334,9 @@ class Issue
     def hash
         unique_id.hash
     end
-    alias :_hash :hash
+    def _hash
+        hash.to_s
+    end
 
     def eql?( other )
         hash == other.hash
