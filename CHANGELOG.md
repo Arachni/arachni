@@ -19,6 +19,7 @@
         - Updated to provide access to running plugins.
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s.
         - Audit operations by default follow redirects.
+        - Issue de-duplication has been updated to be a lot more aggressive, variations have been restricted to just 1.
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
     - SSN -- Improved regexp and logging. [Issue #170]
     - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
