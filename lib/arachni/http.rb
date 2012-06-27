@@ -281,10 +281,18 @@ class HTTP
         exception_jail {
 
             if !opts[:no_cookiejar]
-                cookies = @cookie_jar.for_url( url ).inject({}) do |h, c|
+                cookies = begin
+                    @cookie_jar.for_url( url ).inject({}) do |h, c|
                     h[c.name] = c.value
                     h
-                end.merge( cookies )
+                    end.merge( cookies )
+                rescue => e
+                    ap e
+                    ap e.backtrace
+                    ap opts
+                    ap url
+                    cookies
+                end
             end
 
             headers           = @headers.merge( headers )
@@ -622,7 +630,7 @@ class HTTP
             if req.train?
                 # handle redirections
                 if res.redirection?
-                    get( res.location, remove_id: true ) do |res2|
+                    get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
                         @trainer.add_response( res2 )
                     end
                 else

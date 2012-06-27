@@ -32,6 +32,8 @@ class Trainer
     include ElementDB
     include Utilities
 
+    attr_reader :page
+
     # @param    [Arachni::Options]  opts
     def initialize( opts )
         @opts     = opts
