@@ -356,9 +356,24 @@ describe Arachni::HTTP do
                     @http.run
                     body.should == @opts.cookie_string
                 end
+                context 'when custom cookies are provided' do
+                    it 'should merge them with the cookiejar and override it' do
+                        @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                        @http.cookie_jar.cookies.should be_empty
+                        @http.reset
+
+                        body = nil
+
+                        custom_cookies = { 'newcookie' => 'newval', 'blah_name' => 'val3' }
+                        @http.request( @url + '/cookies', cookies: custom_cookies,
+                                       no_cookiejar: false ) { |res| body = res.body }
+                        @http.run
+                        body.should == 'my_cookie_name=val1;blah_name=val3;another_name=another_val;newcookie=newval'
+                    end
+                end
             end
-            context 'default' do
-                it 'should use the cookiejar' do
+            context 'nil' do
+                it 'should default to false' do
                     @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
                     @http.cookie_jar.cookies.should be_empty
                     @http.reset
