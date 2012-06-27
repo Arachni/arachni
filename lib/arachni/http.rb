@@ -286,11 +286,7 @@ class HTTP
                     h[c.name] = c.value
                     h
                     end.merge( cookies )
-                rescue => e
-                    ap e
-                    ap e.backtrace
-                    ap opts
-                    ap url
+                rescue
                     cookies
                 end
             end
