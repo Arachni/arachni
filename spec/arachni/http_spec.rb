@@ -335,6 +335,43 @@ describe Arachni::HTTP do
             raised.should be_true
         end
 
+        describe :no_cookiejar do
+            context true do
+                it 'should not use the cookiejar' do
+                    body = nil
+                    @http.request( @url + '/cookies', no_cookiejar: true ) { |res| body = res.body }
+                    @http.run
+                    body.should == ''
+                end
+            end
+            context false do
+                it 'should use the cookiejar' do
+                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @http.cookie_jar.cookies.should be_empty
+                    @http.reset
+
+                    body = nil
+
+                    @http.request( @url + '/cookies', no_cookiejar: false ) { |res| body = res.body }
+                    @http.run
+                    body.should == @opts.cookie_string
+                end
+            end
+            context 'default' do
+                it 'should use the cookiejar' do
+                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @http.cookie_jar.cookies.should be_empty
+                    @http.reset
+
+                    body = nil
+
+                    @http.request( @url + '/cookies' ) { |res| body = res.body }
+                    @http.run
+                    body.should == @opts.cookie_string
+                end
+            end
+        end
+
         describe :body do
             it 'should use its value as a request body' do
                 req_body = 'heyaya'
