@@ -3,22 +3,22 @@
 ## Version 0.4.1 _(Under development)_
 - License -- Moved from GPLv2 to Apache License Version 2.
 - Major refactoring
-    - Arachni::Parser::Element::Auditable and Arachni::Module::Auditor.
+    - ```Arachni::Parser::Element::Auditable``` and ```Arachni::Module::Auditor```.
         - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
           in order to increase audit granularity and ease scripting.
         - Auditor methods now simply iterate over candidate elements and delegate analysis to them.
     - Updated URL normalization methods and added caching to resource intensive parsing operations,
       leading to overall improvements, especially during the initial crawling process.
-    - Moved from Ruby's URI lib to Addressable::URI.
+    - Moved from Ruby's URI lib to ```Addressable::URI```.
     - Project-wide code clean-up, documentation and style improvements.
 - Options
-    - <em>--cookie-string</em> -- Allows the specification of cookies as a string in the form of: <em>name=value; name2=value2</em>
-    - <em>--exclude-vectors</em> -- Excludes vectors (parameters), by name, from the audit.
-- Modules
+    - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
+    - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
+- Modules - Every single one has been cleaned up and have had RSpec tests added.
     - API
         - Updated to provide access to running plugins.
-        - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s
-        - Audit operations by default follow redirects
+        - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s.
+        - Audit operations by default follow redirects.
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
     - SSN -- Improved regexp and logging. [Issue #170]
     - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
@@ -31,25 +31,25 @@
       Useful for unit-testing or a gazillion other things. (**New**)
     - Script -- Loads and runs an external Ruby script under the scope of a plugin, used for debugging and general hackery.
 - Extras
-    - All modules under <em>/extras</em> had to be removed because they distributed GPLv3 licensed content.
+    - All modules under <tt>/extras</tt> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
-    - Improved detection of custom 404 pages
-    - Updated <em>add_on_queue()</em> hook (called by <em>queue()</em>) which allows HTTP requests to be intercepted and modified before being fired.
-    - Fixed burst average requests/second calculation
-    - Implemented a new Cookiejar
+    - Improved detection of custom 404 pages.
+    - Updated ```#add_on_queue``` hook (called by ```#queue```) which allows HTTP requests to be intercepted and modified before being fired.
+    - Fixed burst average requests/second calculation.
+    - Implemented a new Cookiejar.
 - Spider -- Re-written, much cleaner design and code.
 - Parser
-    - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie)
+    - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
 - Tests
     - Added full test suite using RSpec.
-- Added Arachni::Cache classes
-    - LeastCostReplacement -- Least Cost Replacement cache implementation.
-    - LeastRecentlyUsed -- Least Recently Used cache implementation.
-    - RandomReplacement -- Random Replacement cache implementation.
-- Added Arachni::URI class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency.
+- Added ```Arachni::Cache``` classes
+    - ```LeastCostReplacement``` -- Least Cost Replacement cache implementation.
+    - ```LeastRecentlyUsed``` -- Least Recently Used cache implementation.
+    - ```RandomReplacement``` -- Random Replacement cache implementation.
+- Added ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency.
 - Executables
-    - arachni_web_autostart -- removed calls to <em>xterm</em> and <em>xdg-open</em>
+    - ```arachni_web_autostart``` -- removed calls to ```xterm``` and ```xdg-open```.
 
 ## Version 0.4.0.3 _(Monday 12, 2012)_
 - Gemspec -- Updated ```do_sqlite3``` dependency. ( [kost](https://github.com/kost) ) [#166]
