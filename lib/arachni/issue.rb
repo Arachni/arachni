@@ -221,8 +221,6 @@ class Issue
     # @return [Array<String>]
     attr_accessor :tags
 
-    attr_accessor :_hash
-
     #
     # Sets up the instance attributes
     #
@@ -322,9 +320,18 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
+        h['hash'] = h['_hash'] = hash.to_s
         h
     end
     alias :to_hash :to_h
+
+    def hash
+        "#{@mod_name}::#{@elem}::#{@var}::#{@url}".hash
+    end
+
+    def eql?( other )
+        hash == other.hash
+    end
 
     def remove_instance_var( var )
         remove_instance_variable( var )

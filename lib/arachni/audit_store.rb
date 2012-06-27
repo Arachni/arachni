@@ -244,14 +244,9 @@ class AuditStore
 
         new_issues = {}
         issues.each do |issue|
-            var = issue.var || ''
-
             issue.url = issue.url.split( '?' ).first
 
-            __id  = issue.mod_name +
-                '::' + issue.elem + '::' +
-                var + '::' + issue.url
-
+            __id  = issue.hash
             new_issues[__id] ||= issue
             new_issues[__id].variations ||= []
 
@@ -268,7 +263,6 @@ class AuditStore
             issue.headers.delete( :request )
             issue.headers.delete( :response )
 
-            new_issues[__id]._hash = Digest::MD5.hexdigest( __id )
             new_issues[__id].internal_modname =
                 get_internal_module_name( new_issues[__id].mod_name )
             new_issues[__id].variations << issue.deep_clone
