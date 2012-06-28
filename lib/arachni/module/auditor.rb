@@ -121,14 +121,16 @@ module Auditor
                    Element::BODY],
 
         #
-        # If 'train' is set to true the HTTP response will be
-        # analyzed for new elements. <br/>
+        # If set to +true+ the HTTP response will be
+        # analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
         #
-        # When the Auditor submits a form with original or sample values
-        # this option will be overridden to true.
+        # If set to +false+, no training is going to occur.
         #
-        train:    false,
+        # If set to +nil+, when the Auditor submits a form with original or sample values
+        # this option will be overridden to +true+.
+        #
+        train:    nil
     }
 
     #
@@ -409,20 +411,20 @@ module Auditor
 
     #
     # This is called right before an [Arachni::Parser::Element]
-    # is submitted/audited and is used to determine whether to skip it or not.
+    # is audited and is used to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
     # @param    [Arachni::Parser::Element]  elem
     #
     def skip?( elem )
-        redundant.map do |mod|
-            next if !framework.modules.include?( mod )
-            mod_name = framework.modules[mod].info[:name]
-
-            set_id = framework.modules.issue_set_id_from_elem( mod_name, elem )
-            return true if framework.modules.issue_set.include?( set_id )
-        end if framework
+        if framework
+            @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
+            (redundant | [@modname]).each do |mod|
+                next if !framework.modules.include?( mod )
+                return true if framework.modules.issue_set.include?( elem.provisioned_issue_id )
+            end
+        end
 
         false
     end

@@ -23,6 +23,8 @@ describe Arachni::Parser::Element::Analysis::Timeout do
         @run = proc{ Arachni::Parser::Element::Auditable.timeout_audit_run }
     end
 
+    before { Arachni::Framework.reset }
+
     describe '#timeout_analysis' do
         before do
             @timeout_opts = {

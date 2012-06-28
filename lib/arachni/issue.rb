@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require 'digest/sha2'
+
 module Arachni
 
 #
@@ -221,8 +223,6 @@ class Issue
     # @return [Array<String>]
     attr_accessor :tags
 
-    attr_accessor :_hash
-
     #
     # Sets up the instance attributes
     #
@@ -297,7 +297,7 @@ class Issue
     end
 
     def []( k )
-        instance_variable_get( "@#{k.to_s}".to_sym )
+        send( "#{k}" )
     end
 
     def []=( k, v )
@@ -322,9 +322,29 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
+        h[:digest] = h[:_hash] = digest
+        h[:hash]  = hash
+        h[:unique_id] = unique_id
         h
     end
     alias :to_hash :to_h
+
+    def unique_id
+        "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
+    end
+
+    def hash
+        unique_id.hash
+    end
+
+    def digest
+        Digest::SHA2.hexdigest( unique_id )
+    end
+    alias :_hash :digest
+
+    def eql?( other )
+        hash == other.hash
+    end
 
     def remove_instance_var( var )
         remove_instance_variable( var )

@@ -5,15 +5,13 @@ describe Arachni::Module::Manager do
     before( :all ) do
         opts = Arachni::Options.instance
         opts.dir['modules'] = spec_path + 'fixtures/modules/'
-        @modules = Arachni::Module::Manager.new( Arachni::Framework.new )
+        @modules = Arachni::Framework.new.modules
 
         @page  = Arachni::Parser::Page.new
         @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 
-    before( :each ) { @modules.results.clear }
-
-    after( :all ) { @modules.clear }
+    before( :each ) { @modules.reset }
 
     describe '#load' do
         it 'should load all modules' do
@@ -47,9 +45,20 @@ describe Arachni::Module::Manager do
             @modules.results.any?.should be true
         end
 
-        it 'should not register redundant issues' do
-            2.times { @modules.register_results( [ @issue ] ) }
-            @modules.results.size.should be 1
+        context 'when an issue was discovered by manipulating an input' do
+            it 'should not register redundant issues' do
+                i = @issue.deep_clone
+                i.var = 'some input'
+                2.times { @modules.register_results( [ i ] ) }
+                @modules.results.size.should be 1
+            end
+        end
+
+        context 'when an issue was not discovered by manipulating an input' do
+            it 'should register it multiple times' do
+                2.times { @modules.register_results( [ @issue ] ) }
+                @modules.results.size.should be 2
+            end
         end
     end
 

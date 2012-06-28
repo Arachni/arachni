@@ -335,11 +335,63 @@ describe Arachni::HTTP do
             raised.should be_true
         end
 
+        describe :no_cookiejar do
+            context true do
+                it 'should not use the cookiejar' do
+                    body = nil
+                    @http.request( @url + '/cookies', no_cookiejar: true ) { |res| body = res.body }
+                    @http.run
+                    body.should == ''
+                end
+            end
+            context false do
+                it 'should use the cookiejar' do
+                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @http.cookie_jar.cookies.should be_empty
+                    @http.reset
+
+                    body = nil
+
+                    @http.request( @url + '/cookies', no_cookiejar: false ) { |res| body = res.body }
+                    @http.run
+                    body.should == @opts.cookie_string
+                end
+                context 'when custom cookies are provided' do
+                    it 'should merge them with the cookiejar and override it' do
+                        @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                        @http.cookie_jar.cookies.should be_empty
+                        @http.reset
+
+                        body = nil
+
+                        custom_cookies = { 'newcookie' => 'newval', 'blah_name' => 'val3' }
+                        @http.request( @url + '/cookies', cookies: custom_cookies,
+                                       no_cookiejar: false ) { |res| body = res.body }
+                        @http.run
+                        body.should == 'my_cookie_name=val1;blah_name=val3;another_name=another_val;newcookie=newval'
+                    end
+                end
+            end
+            context 'nil' do
+                it 'should default to false' do
+                    @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @http.cookie_jar.cookies.should be_empty
+                    @http.reset
+
+                    body = nil
+
+                    @http.request( @url + '/cookies' ) { |res| body = res.body }
+                    @http.run
+                    body.should == @opts.cookie_string
+                end
+            end
+        end
+
         describe :body do
             it 'should use its value as a request body' do
                 req_body = 'heyaya'
                 body = nil
-                @http.request( @url + '/body', method: :put, body: req_body ) { |res| body = res.body }
+                @http.request( @url + '/body', method: :post, body: req_body ) { |res| body = res.body }
                 @http.run
                 body.should == req_body
             end
@@ -437,32 +489,32 @@ describe Arachni::HTTP do
             end
 
         end
-        describe :remove_id do
-            describe 'nil' do
-                it 'should include the framework-wide hash ID in the params' do
-                    body = nil
-                    @http.request( @url + '/echo' ) { |res| body = res.body }
-                    @http.run
-                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-                end
-            end
-            describe false do
-                it 'should include the framework-wide hash ID in the params' do
-                    body = nil
-                    @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
-                    @http.run
-                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-                end
-            end
-            describe true do
-                it 'should remove the framework-wide hash ID from the params' do
-                    body = nil
-                    @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
-                    @http.run
-                    body.should == {}.to_s
-                end
-            end
-        end
+        #describe :remove_id do
+        #    describe 'nil' do
+        #        it 'should include the framework-wide hash ID in the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo' ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+        #        end
+        #    end
+        #    describe false do
+        #        it 'should include the framework-wide hash ID in the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+        #        end
+        #    end
+        #    describe true do
+        #        it 'should remove the framework-wide hash ID from the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == {}.to_s
+        #        end
+        #    end
+        #end
 
         describe :train do
             before( :all ) do
@@ -706,7 +758,7 @@ describe Arachni::HTTP do
     describe '#cookie' do
         it 'should perform a GET request' do
             body = nil
-            cookies = { 'name' => 'val' }
+            cookies = { 'name' => 'v%+;al' }
             @http.cookie( @url + '/cookies', params: cookies ) { |res| body = res.body }
             @http.run
             body.should == cookies.keys.first + '=' + cookies.values.first

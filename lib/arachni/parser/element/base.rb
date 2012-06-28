@@ -26,6 +26,7 @@ require opts.dir['lib'] + 'parser/element/auditable'
 #
 class Arachni::Parser::Element::Base
     include Arachni::Parser::Element::Auditable
+    extend Arachni::Utilities
 
     #
     # Relatively 'raw' (frozen) hash holding the element's HTML attributes, values, etc.
@@ -151,6 +152,7 @@ class Arachni::Parser::Element::Base
     def dup
         new = self.class.new( @url ? @url.dup : nil, @raw.dup )
         new.override_instance_scope if override_instance_scope?
+        new.auditor = self.auditor
         new
     end
 

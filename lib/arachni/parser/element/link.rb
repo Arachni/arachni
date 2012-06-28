@@ -93,6 +93,15 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     end
 
     #
+    # @return   [String]    unique link ID
+    #
+    def id
+        #self.action + auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
+        query_vars = self.class.parse_query_vars( self.action )
+        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.auditable ).keys.sort.to_s}"
+    end
+
+    #
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
     #
@@ -136,12 +145,11 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
             url
         end
 
-        utilities = Arachni::Utilities
         document.search( '//a' ).map do |link|
             c_link = {}
-            c_link['href'] = utilities.to_absolute( link['href'], base_url )
+            c_link['href'] = to_absolute( link['href'], base_url )
             next if !c_link['href']
-            next if utilities.skip_path?( c_link['href'] )
+            next if skip_path?( c_link['href'] )
 
             new( url, c_link['href'] )
         end.compact
@@ -157,16 +165,14 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     def self.parse_query_vars( url )
         return {} if !url
 
-        utilities = Arachni::Utilities
-
-        query = utilities.uri_parse( url ).query
+        query = uri_parse( url ).query
         return {} if !query || query.empty?
 
         var_hash = {}
         query.split( /&/ ).each do |pair|
             name, value = pair.split( /=/ )
 
-            next if value == utilities.seed
+            #next if value == seed
             var_hash[name] = value
         end
 
@@ -176,7 +182,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     # @see Base#action=
     def action=( url )
         v = super( url )
-        @audit_id_url = self.action.gsub( /\?.*/, '' )
+        @audit_id_url = self.action.split( '?', 2 ).first
         v
     end
 

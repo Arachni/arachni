@@ -100,6 +100,53 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#links' do
+        context 'when the response was a result of redirection' do
+            it 'should include the URL in the array' do
+                url = 'http://stuff.com/'
+                response = Typhoeus::Response.new(
+                    effective_url: url,
+                    body: '',
+                    headers_hash: {
+                        'Content-Type' => 'text/html',
+                        'Location'     => url
+                    }
+                )
+                parser = Arachni::Parser.new( @opts, response )
+                parser.links.size == 1
+            end
+        end
+        context 'when the response URL contains auditable inputs' do
+            it 'should include the URL in the array' do
+                url = 'http://stuff.com/?stuff=ba'
+                response = Typhoeus::Response.new(
+                    effective_url: url,
+                    body: '',
+                    headers_hash: {
+                        'Content-Type' => 'text/html'
+                    }
+                )
+                parser = Arachni::Parser.new( @opts, response )
+                parser.links.size == 1
+                parser.links.first.auditable.should == { 'stuff' => 'ba' }
+            end
+        end
+        context 'otherwise' do
+            it 'should not include it the response URL' do
+                url = 'http://stuff.com/'
+                response = Typhoeus::Response.new(
+                    effective_url: url,
+                    body: '',
+                    headers_hash: {
+                        'Content-Type' => 'text/html'
+                    }
+                )
+                parser = Arachni::Parser.new( @opts, response )
+                parser.links.should be_empty
+            end
+        end
+    end
+
     describe '#forms' do
         it 'should return an array of parsed forms' do
             @parser.forms.size.should == 2
@@ -239,7 +286,7 @@ describe Arachni::Parser do
 
     context 'with base' do
         before {
-            @url_with_base = @utils.normalize_url( @opts.url + '/with_base' )
+            @url_with_base = @utils.normalize_url( @opts.url + '/with_base?stuff=ha' )
             res = Arachni::HTTP.instance.get(
                 @url_with_base,
                 async: false,
@@ -267,7 +314,7 @@ describe Arachni::Parser do
 
                 link = links.first
                 link.action.should == @url_with_base
-                link.auditable.should == { }
+                link.auditable.should ==  { 'stuff' => 'ha' }
                 link.method.should == 'get'
                 link.url.should == @url_with_base
 

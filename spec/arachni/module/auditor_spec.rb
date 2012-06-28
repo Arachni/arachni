@@ -59,8 +59,7 @@ describe Arachni::Module::Auditor do
     end
 
     after :each do
-        @framework.modules.results.clear
-        Arachni::Parser::Element::Auditable.reset
+        @framework.reset
     end
 
     describe '#register_results' do
@@ -338,7 +337,7 @@ describe Arachni::Module::Auditor do
                 @auditor.load_page_from( @url + '/link' )
                 @auditor.audit( @seed )
                 @framework.http.run
-                @framework.modules.results.size.should == 4
+                @framework.modules.results.size.should == 1
             end
         end
 
@@ -385,6 +384,19 @@ describe Arachni::Module::Auditor do
                         issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
                         issue.var.should == 'cookie_input'
                     end
+                    it 'should maintain the session while auditing cookies' do
+                        @auditor.load_page_from( @url + '/session' )
+                        @auditor.audit( @seed,
+                                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
+                                        elements: [ Arachni::Module::Auditor::Element::COOKIE ]
+                        )
+                        @framework.http.run
+                        @framework.modules.results.size.should == 1
+                        issue = @framework.modules.results.first
+                        issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
+                        issue.var.should == 'vulnerable'
+                    end
+
                 end
                 describe 'Arachni::Module::Auditor::Element::HEADER' do
                     it 'should audit headers' do
@@ -448,7 +460,7 @@ describe Arachni::Module::Auditor do
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
+                        @framework.http.get( @url + '/train/true' ) do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run
@@ -465,7 +477,7 @@ describe Arachni::Module::Auditor do
                             pages |= @framework.http.trainer.flush_pages
                         end
 
-                        issue = @framework.modules.results.first
+                        issue = issues.first
                         issue.should be_true
                         issue.elem.should == Arachni::Module::Auditor::Element::FORM
                         issue.var.should == 'you_made_it'
@@ -478,7 +490,7 @@ describe Arachni::Module::Auditor do
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
+                        @framework.http.get( @url + '/train/true' ) do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run

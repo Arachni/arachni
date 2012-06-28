@@ -1144,6 +1144,10 @@ class Options
         IO.read( file ).lines.map { |p| p.strip }
     end
 
+    def instance
+        self
+    end
+
     private
 
     def normalize_name( name )
@@ -1151,4 +1155,8 @@ class Options
     end
 
 end
+
+    def self.Options
+        Options.instance
+    end
 end

@@ -72,6 +72,10 @@ module Utilities
         Arachni::Parser::Element::Cookie.from_file( *args )
     end
 
+    def cookie_encode( str )
+        Arachni::Parser::Element::Cookie.encode( str )
+    end
+
     # @return [URI::Parser] cached URI parser
     def uri_parser
         URI.parser
@@ -252,7 +256,7 @@ module Utilities
 
     def remove_constants( mod, skip = [], children_only = true )
         return if skip.include?( mod )
-        return if !(mod.is_a?( Class ) || mod.is_a?( Module )) ||
+        return if !(mod.is_a?( Class ) || !mod.is_a?( Module )) ||
             !mod.to_s.start_with?( 'Arachni' )
 
         parent = Object
@@ -261,7 +265,7 @@ module Utilities
         end
 
         mod.constants.each do |m|
-            remove_constants( mod.const_get( m ), false, skip )
+            remove_constants( mod.const_get( m ), skip, children_only )
         end
 
         return if children_only

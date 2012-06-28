@@ -264,7 +264,7 @@ class HTTP
         remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
-        cookies   = opts[:cookies]
+        cookies   = opts[:cookies] || {}
         async     = opts[:async]
         async     = true if async.nil?
         headers   = opts[:headers] || {}
@@ -280,16 +280,29 @@ class HTTP
         #
         exception_jail {
 
-            headers           = @headers.merge( headers )
-            headers['Cookie'] =  if cookies
-                    str = '';  cookies.each { |k, v| str += "#{k}=#{v}" }; str
-                else
-                    @cookie_jar.to_s( url ) rescue ''
+            if !opts[:no_cookiejar]
+                cookies = begin
+                    @cookie_jar.for_url( url ).inject({}) do |h, c|
+                    h[c.name] = c.value
+                    h
+                    end.merge( cookies )
+                rescue => e
+                    print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
+                    print_error_backtrace e
+                    cookies
                 end
+            end
+
+            headers           = @headers.merge( headers )
+            headers['Cookie'] = cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
 
-            params = params.merge( @rand_seed => '' ) if !remove_id
+            # if we are going to train (i.e. parse the response and feed the new
+            # page back to the framework) we need a way to keep track of
+            # what we tainted
+            #params = params.merge( @rand_seed => '' ) if train
 
             #
             # There are cases where the url already has a query and we also have
@@ -517,9 +530,9 @@ class HTTP
                 @_404[path][i] ||= {}
 
                 precision.times {
-                    get( generator.call, remove_id: true ).on_complete do |c_res|
-
+                    get( generator.call, remove_id: true ) do |c_res|
                         gathered += 1
+
                         if gathered == generators.size * precision
                             @_404_gathered[path] = true
                             block.call is_404?( path, body )
@@ -611,14 +624,14 @@ class HTTP
             print_debug( '------------' )
 
             if res.timed_out?
-                # print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                #print_bad( 'Request timed-out! -- ID# ' + res.request.id.to_s )
                 @time_out_count += 1
             end
 
             if req.train?
                 # handle redirections
-                if res.redirection?
-                    get( res.location, remove_id: true ) do |res2|
+                if res.redirection? && res.location.is_a?( String )
+                    get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
                         @trainer.add_response( res2 )
                     end
                 else

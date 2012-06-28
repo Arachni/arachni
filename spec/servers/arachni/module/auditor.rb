@@ -77,6 +77,16 @@ EOHTML
     html + "#{params[:you_made_it]}"
 end
 
+get '/session' do
+    session_id = 'superdupersessionid'
+    cookies['session'] ||= session_id
+    cookies['vulnerable'] ||= 'hack me'
+
+    if cookies['session'] == session_id
+        cookies['vulnerable']
+    end
+end
+
 get '/log_remote_file_if_exists/true' do
     'Success!'
 end

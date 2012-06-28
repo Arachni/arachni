@@ -22,7 +22,7 @@ describe Arachni::Issue do
             internal_modname: 'module_name',
             tags: %w(these are a few tags),
             var: 'input name',
-            url: 'http://test.com/',
+            url: 'http://test.com/stuff/test.blah?query=blah',
             headers: {
                 request: {
                     'User-Agent' => 'UA/v1'
@@ -122,7 +122,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :url= do
+    describe '#url=' do
         it 'should normalize the URL before assigning it' do
             i = Arachni::Issue.new
             url = 'HttP://DomainName.com/stuff here'
@@ -131,7 +131,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :cwe= do
+    describe '#cwe=' do
         it 'should assign a CWE ID and CWE URL based on that ID' do
             i = Arachni::Issue.new
             i.cwe = 20
@@ -140,7 +140,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :references= do
+    describe '#references=' do
         it 'should assign a references hash' do
             i = Arachni::Issue.new
             refs = { 'title' => 'url' }
@@ -157,7 +157,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :regexp= do
+    describe '#regexp=' do
         it 'should assign a regexp and convert it to a string' do
             i = Arachni::Issue.new
             rxp = /test/
@@ -173,7 +173,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :opts= do
+    describe '#opts=' do
         it 'should assign an opts hash and convert the included :regexp to a string' do
             i = Arachni::Issue.new
             i.opts = { an: 'opt' }
@@ -193,7 +193,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :[] do
+    describe '#[]' do
         it 'should act as an attr_reader' do
             @issue_data.each do |k, _|
                 @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
@@ -201,7 +201,7 @@ describe Arachni::Issue do
         end
     end
 
-    describe :[]= do
+    describe '#[]=' do
         it 'should act as an attr_writer' do
             raised = false
             begin
@@ -213,35 +213,112 @@ describe Arachni::Issue do
         end
     end
 
-    describe :each do
+    describe '#each' do
         it 'should iterate over the available instance vars' do
             @issue.each do |k, v|
-                @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
+                @issue[k].should == @issue.send( k )
                 @issue[k].should == v
             end
         end
     end
 
-    describe :each_pair do
+    describe '#each_pair' do
         it 'should iterate over the available instance vars' do
             @issue.each_pair do |k, v|
-                @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
+                @issue[k].should == @issue.send( "#{k}" )
                 @issue[k].should == v
             end
         end
     end
 
-    describe :to_h do
+    describe '#to_h' do
         it 'should convert self to a Hash' do
             @issue.to_h.is_a?( Hash ).should be_true
             @issue.to_h.each do |k, v|
+                next if [:unique_id, :hash, :_hash, :digest].include? k
                 @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
                 @issue[k].should == v
             end
         end
     end
 
-    describe :remove_instance_var do
+    describe '#unique_id' do
+        it 'should return a string uniquely identifying the issue' do
+            @issue.unique_id.should ==
+                "#{@issue.mod_name}::#{@issue.elem}::#{@issue.var}::http://test.com/stuff/test.blah"
+        end
+    end
+
+    describe '#eql?' do
+        context 'when 2 issues are equal' do
+            it 'should return true' do
+                @issue.eql?( @issue ).should be_true
+
+                i = @issue.deep_clone
+                i.injected = 'stuff'
+                @issue.eql?( i ).should be_true
+            end
+        end
+        context 'when 2 issues are not equal' do
+            it 'should return false' do
+                i = @issue.deep_clone
+                i.var = 'stuff'
+                @issue.eql?( i ).should be_false
+
+                i = @issue.deep_clone
+                i.url = 'http://stuff'
+                @issue.eql?( i ).should be_false
+
+                i = @issue.deep_clone
+                i.mod_name = 'http://stuff'
+                @issue.eql?( i ).should be_false
+
+                i = @issue.deep_clone
+                i.elem = 'stuff'
+                @issue.eql?( i ).should be_false
+            end
+        end
+    end
+
+    describe '#hash' do
+        context 'when 2 issues are equal' do
+            it 'should have the same hash' do
+                @issue.hash.should == @issue.hash
+
+                i = @issue.deep_clone
+                i.injected = 'stuff'
+                @issue.hash.should == i.hash
+            end
+        end
+        context 'when 2 issues are not equal' do
+            it 'should return false' do
+                i = @issue.deep_clone
+                i.var = 'stuff'
+                @issue.hash.should_not == i.hash
+
+                i = @issue.deep_clone
+                i.url = 'http://stuff'
+                @issue.hash.should_not == i.hash
+
+                i = @issue.deep_clone
+                i.mod_name = 'http://stuff'
+                @issue.hash.should_not == i.hash
+
+                i = @issue.deep_clone
+                i.elem = 'stuff'
+                @issue.hash.should_not == i.hash
+            end
+        end
+    end
+
+    describe '#digest (and #_hash)' do
+        it 'should return a HERX digest of the issue' do
+            @issue._hash.should == Digest::SHA2.hexdigest( @issue.unique_id )
+            @issue.digest.should == @issue._hash
+        end
+    end
+
+    describe '#remove_instance_var' do
         it 'should remove an instance variable' do
             rxp = @issue.regexp
             rxp.should_not be_nil

@@ -37,7 +37,7 @@ class Response
         end
 
         hash['headers_hash'] = {}
-        headers_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
+        headers_hash.to_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
 
         hash.delete( 'request' )
         hash
@@ -46,7 +46,8 @@ class Response
     private
     def find_header_field( field )
         return if !headers_hash.is_a?( Hash ) || headers_hash[field].empty?
-        headers_hash[field]
+        headers_hash.to_hash.each { |k, v| return v if k.downcase == field.downcase }
+        nil
     end
 
 end

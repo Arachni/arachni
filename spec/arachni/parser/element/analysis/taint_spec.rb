@@ -21,15 +21,14 @@ describe Arachni::Parser::Element::Analysis::Taint do
 
         before do
             @seed = 'my_seed'
-            issues.clear
-            Arachni::Parser::Element::Auditable.reset
+            Arachni::Framework.reset
          end
 
         context 'when called with no opts' do
             it 'should use the defaults' do
                 @positive.taint_analysis( @seed )
                 @auditor.http.run
-                issues.size.should == 4
+                issues.size.should == 1
             end
         end
 

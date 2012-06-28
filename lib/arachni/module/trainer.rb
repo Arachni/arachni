@@ -32,6 +32,8 @@ class Trainer
     include ElementDB
     include Utilities
 
+    attr_reader :page
+
     # @param    [Arachni::Options]  opts
     def initialize( opts )
         @opts     = opts
@@ -147,17 +149,13 @@ class Trainer
     end
 
     def train_links
-        links = @parser.links
-        links |= [Arachni::Parser::Element::Link.new( @parser.url,
-            @parser.link_vars( @parser.url ) )]
-
-        clinks, link_cnt = update_links( links )
+        links, link_cnt = update_links( @parser.links )
         return [] if link_cnt == 0
 
         @updated = true
         print_info "Found #{link_cnt} new links."
 
-        prepare_new_elements( clinks )
+        prepare_new_elements( links )
     end
 
     def train_cookies

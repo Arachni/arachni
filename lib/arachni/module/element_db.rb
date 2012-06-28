@@ -91,7 +91,7 @@ module ElementDB
         new_forms ||= []
 
         forms.each do |form|
-            next if form.action.include?( seed )
+            #next if form.action.include?( seed )
 
             if !@@forms.include?( form.id )
                 @@forms   << form.id
@@ -116,7 +116,7 @@ module ElementDB
       new_links ||= []
       links.each do |link|
           next if !link
-          next if link.action.include?( seed )
+          #next if link.action.include?( seed )
 
           if !@@links.include?( link.id )
               @@links   << link.id

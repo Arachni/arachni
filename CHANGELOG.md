@@ -19,6 +19,8 @@
         - Updated to provide access to running plugins.
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s.
         - Audit operations by default follow redirects.
+        - Issue de-duplication has been updated to be a lot more aggressive for
+            issues discovered by manipulating inputs, variations have been restricted to just 1.
     - Unencrypted password forms -- Checks for non-nil form fields before iterating. [Issue #136]
     - SSN -- Improved regexp and logging. [Issue #170]
     - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
@@ -37,6 +39,7 @@
     - Updated ```#add_on_queue``` hook (called by ```#queue```) which allows HTTP requests to be intercepted and modified before being fired.
     - Fixed burst average requests/second calculation.
     - Implemented a new Cookiejar.
+    - Removed tagging of requests with the system-wide seed.
 - Spider -- Re-written, much cleaner design and code.
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
@@ -51,7 +54,7 @@
 - Executables
     - ```arachni_web_autostart``` -- removed calls to ```xterm``` and ```xdg-open```.
 
-## Version 0.4.0.3 _(Monday 12, 2012)_
+## Version 0.4.0.3 _(March 12, 2012)_
 - Gemspec -- Updated ```do_sqlite3``` dependency. ( [kost](https://github.com/kost) ) [#166]
 
 ## Version 0.4.0.1 _(January 9, 2012)_

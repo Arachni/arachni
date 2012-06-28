@@ -493,7 +493,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
                 sleep 1
 
-                @master.issues.size.should == 204
+                @master.issues.size.should == 51
             end
         end
         context 'when called with auditable URL restrictions' do
@@ -512,7 +512,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
                 sleep 1
 
-                @master.issues.size.should == 8
+                @master.issues.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == absolute_urls.sort.uniq
@@ -538,7 +538,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
                 sleep 1
 
-                @master.issues.size.should == 8
+                @master.issues.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 exp_urls = %w(/vulnerable?vulnerable_20=stuff20 /vulnerable?vulnerable_30=stuff30)
@@ -564,7 +564,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sleep 0.1 while slave.framework.busy?
                     sleep 1
 
-                    @master.issues.size.should == 4
+                    @master.issues.size.should == 1
                     @master.issues.first.url.should ==
                         url + "?you_made_it=to+the+end+of+the+training"
                 end
@@ -616,7 +616,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 0.1 while slave.framework.busy?
                 sleep 1
 
-                @master.issues.size.should == 16
+                @master.issues.size.should == 4
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == exp_urls.sort

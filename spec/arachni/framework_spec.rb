@@ -11,24 +11,13 @@ describe Arachni::Framework do
         reset_options
         @opts.dir['reports'] = spec_path + '/fixtures/reports/manager_spec/'
         @opts.dir['modules'] = spec_path + '/fixtures/taint_module/'
-        Arachni::Parser::Element::Auditable.reset
 
         @f = Arachni::Framework.new
-        @f.modules.class.results.clear
-        @f.modules.clear
-        @f.reports.clear
-        @f.plugins.clear
-
-        Arachni::Parser::Element::Auditable.reset
+        @f.reset
     end
 
     after( :each ) do
-        if @f
-            @f.modules.class.results.clear
-            @f.modules.clear
-            @f.reports.clear
-            @f.plugins.clear
-        end
+        @f.reset
     end
 
     describe '#opts' do
@@ -47,7 +36,13 @@ describe Arachni::Framework do
                 f.modules.load( 'taint' )
 
                 f.run
-                f.auditstore.sitemap.should == f.opts.restrict_paths
+
+                s = ["/elem_combo",
+                     "/log_remote_file_if_exists/true",
+                     "/elem_combo?link_input=--seed",
+                     "/elem_combo?form_input=--seed",
+                     "/elem_combo?form_input=form_blah&link_input=--seed"].sort
+                f.auditstore.sitemap.sort.should == s.map { |p| @url + p }
                 f.modules.clear
             end
         end
@@ -589,7 +584,7 @@ describe Arachni::Framework do
             called.should be_true
 
             @f.status.should == 'done'
-            @f.auditstore.issues.size.should == 3
+            @f.auditstore.issues.size.should == 5
 
             @f.auditstore.plugins['wait'][:results].should == { stuff: true }
 
@@ -614,7 +609,7 @@ describe Arachni::Framework do
             @f.page_queue_total_size.should == 0
             @f.push_to_page_queue( page )
             @f.run
-            @f.auditstore.issues.size.should == 1
+            @f.auditstore.issues.size.should == 2
             @f.page_queue_total_size.should > 0
             @f.modules.clear
         end

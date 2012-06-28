@@ -88,12 +88,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [String]    unique form ID
     #
     def id
-        id = simple['attrs'].to_s
-        auditable.each do |name, _|
-            next if name.substring?( seed )
-            id +=  name
-        end
-        id
+        #simple['attrs'].to_s << auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
+        #simple['attrs'].to_s << auditable.keys.sort.to_s
+        query_vars = parse_url_vars( self.action )
+        "#{self.action.split( '?' ).first}::#{self.method}::#{query_vars.merge( self.auditable ).keys.sort.to_s}"
     end
 
     #
@@ -168,21 +166,16 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         var_combo = super( injection_str, opts )
 
         if !opts[:skip_orig]
+            # this is the original hash, in case the default values
+            # are valid and present us with new attack vectors
+            elem = self.dup
+            elem.altered = ORIGINAL_VALUES
+            var_combo << elem
 
-            #if !audited?( audit_id( ORIGINAL_VALUES ) )
-                # this is the original hash, in case the default values
-                # are valid and present us with new attack vectors
-                elem = self.dup
-                elem.altered = ORIGINAL_VALUES
-                var_combo << elem
-            #end
-
-            #if !audited?( audit_id( SAMPLE_VALUES ) )
-                elem = self.dup
-                elem.auditable = Arachni::Module::KeyFiller.fill( auditable.dup )
-                elem.altered = SAMPLE_VALUES
-                var_combo << elem
-            #end
+            elem = self.dup
+            elem.auditable = Arachni::Module::KeyFiller.fill( auditable.dup )
+            elem.altered = SAMPLE_VALUES
+            var_combo << elem
         end
 
         return var_combo.uniq if !@raw['auditable']
@@ -266,19 +259,17 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     def self.form_from_element( url, form )
-        utilities = Arachni::Utilities
-
         c_form = {}
         c_form['attrs'] = attributes_to_hash( form.attributes )
 
         if !c_form['attrs'] || !c_form['attrs']['action']
             action = url.to_s
         else
-            action = utilities.url_sanitize( c_form['attrs']['action'] )
+            action = url_sanitize( c_form['attrs']['action'] )
         end
 
         begin
-             action = utilities.to_absolute( action.dup, url ).to_s
+             action = to_absolute( action.dup, url ).to_s
         rescue
         end
 
@@ -349,15 +340,15 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     def http_request( opts, &block )
-        if original? || sample?
+        if (original? || sample?) && opts[:train] != false
             state = original? ? 'original' : 'sample'
             print_debug( "Submitting form with #{state} values; overriding trainer option." )
             opts[:train] = true
             print_debug_trainer( opts )
         end
 
-        @method.downcase.to_s != 'get' ?
-            http.post( @action, opts, &block ) : http.get( @action, opts, &block )
+        self.method.downcase.to_s != 'get' ?
+            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
     end
 
 end

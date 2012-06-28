@@ -38,8 +38,8 @@ class Manager < Arachni::Component::Manager
     @@results             ||= []
     @@issue_set           ||= Set.new
     @@do_not_store        ||= false
-    @@mutex               ||= Mutex.new
     @@on_register_results_blocks ||= []
+    @@on_register_results_blocks_raw ||= []
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
@@ -84,6 +84,20 @@ class Manager < Arachni::Component::Manager
         self.class.on_register_results_blocks
     end
 
+    def self.on_register_results_raw( &block )
+        on_register_results_blocks_raw << block
+    end
+    def on_register_results_raw( &block )
+        self.class.on_register_results_raw( &block )
+    end
+
+    def self.on_register_results_blocks_raw
+        @@on_register_results_blocks_raw
+    end
+    def on_register_results_blocks_raw
+        self.class.on_register_results_blocks_raw
+    end
+
     def self.store?
         !@@do_not_store
     end
@@ -106,56 +120,35 @@ class Manager < Arachni::Component::Manager
     end
 
     #
-    # Registers module results with...well..us.
+    # De-duplicates and registers module results (issues).
     #
     # @param    [Array<Arachni::Issue>] results
     #
+    # @return   [Integer]   amount of (unique) issues registered
+    #
     def self.register_results( results )
-        on_register_results_blocks.each { |block| block.call( results ) }
-        return if !store?
+        on_register_results_blocks_raw.each { |block| block.call( results ) }
 
-        results.each do |issue|
-            self.results << issue if !self.results.include?( issue )
-            issue_set    << issue_set_id_from_issue( issue )
-        end
+        unique = dedup( results )
+        return 0 if unique.empty?
+
+        unique.each { |issue| issue_set << issue.unique_id if issue.var }
+
+        on_register_results_blocks.each { |block| block.call( unique ) }
+        return 0 if !store?
+
+        unique.each { |issue| self.results << issue }
+        unique.size
     end
     def register_results( results )
         self.class.register_results( results )
     end
 
-    def self.issue_set_id_from_issue( issue )
-        issue_url = uri_parse( issue.url )
-        issue_url_str = issue_url.scheme + "://" + issue_url.host + issue_url.path
-
-        "#{issue.mod_name}:#{issue.elem}:#{issue.var}:#{issue_url_str}"
-    end
-    def issue_set_id_from_issue( issue )
-        self.class.issue_set_id_from_issue( issue )
-
-    end
-
-    def self.issue_set_id_from_elem( mod_name, elem )
-        elem_url = uri_parse( elem.action )
-        elem_url_str = elem_url.scheme + "://" + elem_url.host + elem_url.path
-
-        "#{mod_name}:#{elem.type}:#{elem.altered}:#{elem_url_str}"
-    end
-    def issue_set_id_from_elem( mod_name, elem )
-        self.class.issue_set_id_from_elem( mod_name, elem )
-    end
-
     def self.issue_set
-        mutex.synchronize { @@issue_set }
+        @@issue_set
     end
     def issue_set
         self.class.issue_set
-    end
-
-    def self.mutex
-        @@mutex
-    end
-    def mutex
-        self.class.mutex
     end
 
     #
@@ -166,7 +159,7 @@ class Manager < Arachni::Component::Manager
     # @param    [Array]
     #
     def self.results
-        mutex.synchronize { @@results ||= [] }
+        @@results ||= []
     end
     def results
         self.class.results
@@ -175,12 +168,20 @@ class Manager < Arachni::Component::Manager
     def self.reset
         store
         on_register_results_blocks.clear
+        on_register_results_blocks_raw.clear
         issue_set.clear
         results.clear
         remove_constants( NAMESPACE )
     end
     def reset
         self.class.reset
+    end
+
+    def self.dedup( issues )
+        issues.uniq.reject { |issue| issue_set.include?( issue.unique_id ) }
+    end
+    def dedup( issues )
+        self.class.dedup( issues )
     end
 
 end

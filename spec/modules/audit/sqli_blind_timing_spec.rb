@@ -11,8 +11,12 @@ describe name_from_filename do
         [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ]
     end
 
-    def issue_count
-        2
+    def issue_count_per_target
+        {
+            mysql:      84,
+            postgresql: 38,
+            mssql:      18
+        }
     end
 
     easy_test

@@ -152,11 +152,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     def auditable=( inputs )
         k = inputs.keys.first
         v = inputs.values.first
-        v = encode_value( v ).dup if v
 
         raw = @raw.dup
         raw['name']  = k
-        raw['value'] = inputs.values.first
+        raw['value'] = v
 
         @raw = raw.freeze
         super( { k => v } )
@@ -203,15 +202,11 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         @raw.include?( sym.to_s ) || super( sym )
     end
 
-    def encoded_value
-        encode_value( value )
-    end
-
     #
     # @return   [String]    to be used in a 'Cookie' request header. (name=value)
     #
     def to_s
-        "#{name}=#{encoded_value}"
+        "#{encode( name )}=#{encode( value )}"
     end
 
     #
@@ -305,7 +300,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         headers.each { |k, v| set_strings = [v].flatten if k.downcase == 'set-cookie' }
 
         return set_strings if set_strings.empty?
-        Arachni::Utilities.exception_jail {
+        exception_jail {
             set_strings.map { |c| parse_set_cookies( url, c ) }.flatten
         } rescue []
     end
@@ -329,13 +324,16 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         end.flatten.compact
     end
 
+    def self.encode( str )
+        URI.encode( str, '+;%=' )
+    end
+    def encode( str )
+        self.class.encode( str )
+    end
+
     private
     def http_request( opts = {}, &block )
         http.cookie( self.action, opts || {}, &block )
-    end
-
-    def encode_value( str )
-        URI.encode( str, '+;%' )
     end
 
 end
