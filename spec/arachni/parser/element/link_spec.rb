@@ -115,7 +115,7 @@ describe Arachni::Parser::Element::Link do
     describe '#to_s' do
         it 'should return a URL' do
             url = Arachni::Parser::Element::Link.new(
-                'http://test.com/test?one=two&three=four',
+                'http://test.com/test?one=two&amp;three=four',
                 { 'one' => 2, '5' => 'six' }
             ).to_s
             url.should == 'http://test.com/test?one=2&three=four&5=six'

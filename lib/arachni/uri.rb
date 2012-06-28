@@ -43,6 +43,8 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class URI
+    include Arachni::Utilities
+    extend Arachni::Utilities
 
     CACHE_SIZES = {
         parse:       600,
@@ -101,7 +103,7 @@ class URI
     #
     def self.deep_decode( string )
         string = decode( string ) while string =~ /%[a-fA-F0-9]{2}/
-        string
+        html_decode( string )
     end
 
     #
