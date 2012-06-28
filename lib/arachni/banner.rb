@@ -1,3 +1,5 @@
+
+
 =begin
     Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
@@ -17,20 +19,16 @@
 require 'rubygems'
 require 'bundler/setup'
 
-require_relative 'arachni/version'
-require_relative 'arachni/banner'
-
 module Arachni
-end
 
-#
-# If there's no UI driving us then there's no output interface.
-#
-# Chances are that someone is using Arachni as a Ruby lib so there's no
-# need for a functional output interface, so provide non-functional one.
-#
-if !Arachni.constants.include?( :UI )
-    require_relative 'arachni/ui/foo/output'
-end
+    BANNER =<<EOBANNER
+Arachni - Web Application Security Scanner Framework v#{VERSION}
+   Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
-require_relative 'arachni/framework'
+           (With the support of the community and the Arachni Team.)
+
+   Website:       http://arachni-scanner.com
+   Documentation: http://arachni-scanner.com/wiki
+EOBANNER
+
+end
