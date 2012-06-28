@@ -93,6 +93,13 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     end
 
     #
+    # @return   [String]    unique link ID
+    #
+    def id
+        self.action + auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
+    end
+
+    #
     # @return   [String]
     #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
     #
