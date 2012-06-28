@@ -106,8 +106,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
     #
     def to_s
+        query_vars = self.class.parse_query_vars( self.action )
         uri = uri_parse( self.action )
-        query_vars = self.class.parse_query_vars( '?' + uri.query )
         uri.query = query_vars.merge( self.auditable ).map { |k, v| "#{k}=#{v}" }.join( '&' )
         uri.to_s
     end
@@ -169,8 +169,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         return {} if !query || query.empty?
 
         var_hash = {}
-        query.split( /&/ ).each do |pair|
-            name, value = pair.split( /=/ )
+        query.split( '&' ).each do |pair|
+            name, value = pair.split( '=' )
 
             #next if value == seed
             var_hash[name] = value
