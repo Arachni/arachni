@@ -528,9 +528,9 @@ class HTTP
                 @_404[path][i] ||= {}
 
                 precision.times {
-                    get( generator.call, remove_id: true ).on_complete do |c_res|
-
+                    get( generator.call, remove_id: true ) do |c_res|
                         gathered += 1
+
                         if gathered == generators.size * precision
                             @_404_gathered[path] = true
                             block.call is_404?( path, body )
@@ -622,13 +622,13 @@ class HTTP
             print_debug( '------------' )
 
             if res.timed_out?
-                # print_error( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                #print_bad( 'Request timed-out! -- ID# ' + res.request.id.to_s )
                 @time_out_count += 1
             end
 
             if req.train?
                 # handle redirections
-                if res.redirection?
+                if res.redirection? && res.location.is_a?( String )
                     get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
                         @trainer.add_response( res2 )
                     end
