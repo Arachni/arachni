@@ -20,6 +20,8 @@ if [[ ! -e "$path_to_readlink_function" ]]; then
     exit
 fi
 
+source $path_to_readlink_function
+
 root="$(dirname "$(readlink_f "${0}")")"
 version=`cat $root/../../lib/version`
 

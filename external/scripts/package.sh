@@ -20,6 +20,8 @@ if [[ ! -e "$path_to_readlink_function" ]]; then
     exit
 fi
 
+source $path_to_readlink_function
+
 cat<<EOF
 
             Arachni packager (experimental)
