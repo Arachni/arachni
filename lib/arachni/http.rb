@@ -286,7 +286,9 @@ class HTTP
                     h[c.name] = c.value
                     h
                     end.merge( cookies )
-                rescue
+                rescue => e
+                    print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
+                    print_error_backtrace e
                     cookies
                 end
             end
