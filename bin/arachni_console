@@ -15,14 +15,17 @@
     limitations under the License.
 =end
 
+require_relative '../lib/arachni/ui/cli/output'
 require_relative '../lib/arachni'
 require 'irb'
 require 'irb/completion'
 
 include Arachni
+include UI::Output
 
 puts BANNER
 puts
+puts "(Call the 'mute' method to mute framework output.)"
 
 IRB.setup nil
 IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context
@@ -31,9 +34,9 @@ HISTFILE = '~/.irb_history'
 MAXHISTSIZE = 300
 
 begin
-    histfile = File::expand_path( HISTFILE )
+    histfile = File.expand_path( HISTFILE )
     if File::exists?( histfile )
-        lines = IO::readlines( histfile ).map { |line| line.chomp }
+        lines = IO.readlines( histfile ).map { |line| line.chomp }
         Readline::HISTORY.push( *lines )
     end
     Kernel::at_exit do
