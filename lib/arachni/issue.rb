@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require 'digest/sha2'
+
 module Arachni
 
 #
@@ -320,7 +322,7 @@ class Issue
         self.instance_variables.each do |var|
             h[normalize_name( var )] = instance_variable_get( var )
         end
-        h[:_hash] = hash.to_s
+        h[:digest] = h[:_hash] = digest
         h[:hash]  = hash
         h[:unique_id] = unique_id
         h
@@ -334,9 +336,11 @@ class Issue
     def hash
         unique_id.hash
     end
-    def _hash
-        hash.to_s
+
+    def digest
+        Digest::SHA2.hexdigest( unique_id )
     end
+    alias :_hash :digest
 
     def eql?( other )
         hash == other.hash

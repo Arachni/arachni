@@ -235,7 +235,7 @@ describe Arachni::Issue do
         it 'should convert self to a Hash' do
             @issue.to_h.is_a?( Hash ).should be_true
             @issue.to_h.each do |k, v|
-                next if [:unique_id, :hash, :_hash].include? k
+                next if [:unique_id, :hash, :_hash, :digest].include? k
                 @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
                 @issue[k].should == v
             end
@@ -311,9 +311,10 @@ describe Arachni::Issue do
         end
     end
 
-    describe '#_hash' do
-        it 'should be #hash as a string' do
-            @issue._hash.to_s.should_not == @issue.hash
+    describe '#digest (and #_hash)' do
+        it 'should return a HERX digest of the issue' do
+            @issue._hash.should == Digest::SHA2.hexdigest( @issue.unique_id )
+            @issue.digest.should == @issue._hash
         end
     end
 
