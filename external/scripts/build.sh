@@ -24,7 +24,13 @@
 #     Dan Woodruff <daniel.woodruff@gmail.com> -- Patches for OSX and testing
 #
 
-source `dirname $0`"/lib/readlink_f.sh"
+path_to_readlink_function=`dirname $0`"/lib/readlink_f.sh"
+if [[ ! -e "$path_to_readlink_function" ]]; then
+    echo "Could not find $path_to_readlink_function"
+    exit
+fi
+
+source $path_to_readlink_function
 
 cat<<EOF
 
