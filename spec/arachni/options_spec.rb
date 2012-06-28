@@ -6,10 +6,11 @@ describe Arachni::Options do
         @utils = Arachni::Module::Utilities
     end
 
-    describe 'Arachni.Options' do
-        it 'should provide a shortcut to Arachni::Options#instance' do
-            Arachni.Options.should == Arachni::Options.instance
-        end
+    it 'should proxy missing class methods to instance methods' do
+        url = 'http://test.com/'
+        Arachni::Options.url.should_not == url
+        Arachni::Options.url = url
+        Arachni::Options.url.should == url
     end
 
     describe '#url' do
@@ -366,12 +367,6 @@ describe Arachni::Options do
 
             @opts.merge!( { 'datastore' => nil } )
             @opts.datastore.should == { 'test' => :val }
-        end
-    end
-
-    describe '#instance' do
-        it 'should return self' do
-            @opts.instance.should == @opts
         end
     end
 

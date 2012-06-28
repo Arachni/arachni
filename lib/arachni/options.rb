@@ -1144,8 +1144,8 @@ class Options
         IO.read( file ).lines.map { |p| p.strip }
     end
 
-    def instance
-        self
+    def self.method_missing( sym, *args, &block )
+        instance.send( sym, *args, &block )
     end
 
     private
@@ -1155,8 +1155,4 @@ class Options
     end
 
 end
-
-    def self.Options
-        Options.instance
-    end
 end
