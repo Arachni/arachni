@@ -121,14 +121,16 @@ module Auditor
                    Element::BODY],
 
         #
-        # If 'train' is set to true the HTTP response will be
-        # analyzed for new elements. <br/>
+        # If set to +true+ the HTTP response will be
+        # analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
         #
-        # When the Auditor submits a form with original or sample values
-        # this option will be overridden to true.
+        # If set to +false+, no training is going to occur.
         #
-        train:    false,
+        # If set to +nil+, when the Auditor submits a form with original or sample values
+        # this option will be overridden to +true+.
+        #
+        train:    nil
     }
 
     #

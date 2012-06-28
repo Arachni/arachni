@@ -489,32 +489,32 @@ describe Arachni::HTTP do
             end
 
         end
-        describe :remove_id do
-            describe 'nil' do
-                it 'should include the framework-wide hash ID in the params' do
-                    body = nil
-                    @http.request( @url + '/echo' ) { |res| body = res.body }
-                    @http.run
-                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-                end
-            end
-            describe false do
-                it 'should include the framework-wide hash ID in the params' do
-                    body = nil
-                    @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
-                    @http.run
-                    body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-                end
-            end
-            describe true do
-                it 'should remove the framework-wide hash ID from the params' do
-                    body = nil
-                    @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
-                    @http.run
-                    body.should == {}.to_s
-                end
-            end
-        end
+        #describe :remove_id do
+        #    describe 'nil' do
+        #        it 'should include the framework-wide hash ID in the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo' ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+        #        end
+        #    end
+        #    describe false do
+        #        it 'should include the framework-wide hash ID in the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
+        #        end
+        #    end
+        #    describe true do
+        #        it 'should remove the framework-wide hash ID from the params' do
+        #            body = nil
+        #            @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
+        #            @http.run
+        #            body.should == {}.to_s
+        #        end
+        #    end
+        #end
 
         describe :train do
             before( :all ) do

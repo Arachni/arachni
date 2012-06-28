@@ -26,6 +26,7 @@ require opts.dir['lib'] + 'parser/element/auditable'
 #
 class Arachni::Parser::Element::Base
     include Arachni::Parser::Element::Auditable
+    extend Arachni::Utilities
 
     #
     # Relatively 'raw' (frozen) hash holding the element's HTML attributes, values, etc.

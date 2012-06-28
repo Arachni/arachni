@@ -302,7 +302,7 @@ class HTTP
             # if we are going to train (i.e. parse the response and feed the new
             # page back to the framework) we need a way to keep track of
             # what we tainted
-            params = params.merge( @rand_seed => '' ) if train
+            #params = params.merge( @rand_seed => '' ) if train
 
             #
             # There are cases where the url already has a query and we also have

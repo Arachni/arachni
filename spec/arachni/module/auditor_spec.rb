@@ -460,7 +460,7 @@ describe Arachni::Module::Auditor do
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
+                        @framework.http.get( @url + '/train/true' ) do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run
@@ -477,7 +477,7 @@ describe Arachni::Module::Auditor do
                             pages |= @framework.http.trainer.flush_pages
                         end
 
-                        issue = @framework.modules.results.first
+                        issue = issues.first
                         issue.should be_true
                         issue.elem.should == Arachni::Module::Auditor::Element::FORM
                         issue.var.should == 'you_made_it'
@@ -490,7 +490,7 @@ describe Arachni::Module::Auditor do
                         @framework.http.trainer.flush_pages
 
                         page = nil
-                        @framework.http.get( @url + '/train/true' ).on_complete do |res|
+                        @framework.http.get( @url + '/train/true' ) do |res|
                             page = Arachni::Parser::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run

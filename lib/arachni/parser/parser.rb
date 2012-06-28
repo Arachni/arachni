@@ -284,8 +284,11 @@ class Parser
     # @return [Array<Element::Link>] of links
     #
     def links( html = nil )
-        [Element::Link.new( @url, link_vars( @url ) )] |
-            Element::Link.from_document( @url, html || doc )
+        if !(vars = link_vars( @url )).empty? || @response.redirection?
+            [Element::Link.new( @url, vars )]
+        else
+            []
+        end | Element::Link.from_document( @url, html || doc )
     end
 
     #

@@ -75,8 +75,7 @@ describe Arachni::Module::Trainer do
                 @trainer.add_response( request( url ) ).should be_true
                 page = @trainer.flush_pages.first
                 page.should be_true
-                page.links.size.should == 2
-                page.links.last.auditable.include?( 'link_param' ).should be_true
+                page.links.select { |l| l.auditable.include?( 'link_param' ) }.should be_any
             end
         end
 

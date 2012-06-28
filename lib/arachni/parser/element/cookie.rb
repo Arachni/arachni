@@ -300,7 +300,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         headers.each { |k, v| set_strings = [v].flatten if k.downcase == 'set-cookie' }
 
         return set_strings if set_strings.empty?
-        Arachni::Utilities.exception_jail {
+        exception_jail {
             set_strings.map { |c| parse_set_cookies( url, c ) }.flatten
         } rescue []
     end
