@@ -76,6 +76,14 @@ module Utilities
         Arachni::Parser::Element::Cookie.encode( str )
     end
 
+    def html_decode( str )
+        ::CGI.unescapeHTML( str )
+    end
+
+    def html_encode( str )
+        ::CGI.escapeHTML( str )
+    end
+
     # @return [URI::Parser] cached URI parser
     def uri_parser
         URI.parser
