@@ -32,7 +32,7 @@ Usage: #{__FILE__} file1 [file2] [..]
 
 Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts.
 
-(Call the 'mute' method to mute the output.)
+(Call the 'mute' method to mute framework output.)
 EOHELP
     exit
 end
