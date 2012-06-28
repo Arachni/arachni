@@ -346,6 +346,15 @@ module Auditable
         str
     end
 
+    #
+    # Predicts what the {Issue#unique_id} of an issue would look like,
+    # should self be vulnerable.
+    #
+    # Mainly used by {Auditor#skip?} to prevent redundant audits for elements/issues
+    # which have already been logged as vulnerable.
+    #
+    # @return   [String]
+    #
     def provisioned_issue_id
         "#{@auditor.fancy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
     end
