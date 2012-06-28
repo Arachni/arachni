@@ -557,6 +557,10 @@ class HTTP
         end
     end
 
+    def self.method_missing( sym, *args, &block )
+        instance.send( sym, *args, &block )
+    end
+
     private
 
     #

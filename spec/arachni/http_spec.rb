@@ -4,7 +4,7 @@ describe Arachni::HTTP do
 
     before( :all ) do
         @opts = Arachni::Options.instance
-        @http = Arachni::HTTP.instance
+        @http = Arachni::HTTP
         @url = server_url_for( :http )
     end
     before( :each ){
