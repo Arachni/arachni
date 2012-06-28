@@ -624,7 +624,7 @@ class Options
         end
     end
 
-    def parse!
+    def parse!( require_url = true )
         # Construct getops struct
         opts = GetoptLong.new(
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
@@ -917,7 +917,7 @@ class Options
             exit
         end
 
-        self.url = ARGV.shift
+        self.url = ARGV.shift if require_url
     end
 
     # @return   [String]    root path of the framework
