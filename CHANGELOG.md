@@ -54,6 +54,7 @@
 - Executables
     - ```arachni_web_autostart``` -- removed calls to ```xterm``` and ```xdg-open```.
     - ```arachni_script``` -- Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts. (**New**)
+    - ```arachni_console``` -- Pre-loads Arachni's libraries and loads and runs an IRB shell with persistent history and tab-completion. (**New**)
 
 ## Version 0.4.0.3 _(March 12, 2012)_
 - Gemspec -- Updated ```do_sqlite3``` dependency. ( [kost](https://github.com/kost) ) [#166]
