@@ -552,6 +552,10 @@ class Options
         @url = parsed.to_s
     end
 
+    def audit( *element_types )
+        element_types.each { |type| self.send( "audit_#{type}=", true ) }
+    end
+
     #
     # Configures options via a Hash object
     #
