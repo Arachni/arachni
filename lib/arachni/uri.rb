@@ -259,7 +259,7 @@ class URI
             #ap e.backtrace
             begin
                 out = Arachni::UI::Output
-                out.print_error "Failed to fast-parse '#{url}', please report this."
+                out.print_error "Failed to fast-parse '#{c_url}', please report this."
                 out.print_error "Falling back to slow-parse."
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue
