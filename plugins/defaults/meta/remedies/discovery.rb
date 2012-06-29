@@ -31,7 +31,7 @@
 class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
     # look for issues containing the following tags
-    TAGS = [ %w(file discovery).sort, %w(directory discovery).sort ]
+    TAGS = [ %w(file discovery), %w(directory discovery) ]
 
     # valid responses to discovery modules should vary *wildly*
     # especially considering the types of directories and files that
@@ -118,7 +118,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
     #
     def includes_tags?( tags )
         return false if !tags
-        TAGS.each { |tag_pair| return true if tag_pair  == tags.sort }
+        TAGS.each { |tag_pair| return true if (tag_pair & tags).size == tag_pair.size }
         false
     end
 
