@@ -137,7 +137,7 @@ class URI
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
-            parser.parse( normalize( url ).dup ) rescue nil
+            parser.parse( normalize( url ).dup )
         end
     end
 
@@ -257,9 +257,25 @@ class URI
             #ap url
             #ap e
             #ap e.backtrace
-            cache[c_url] = :err
-            nil
+            begin
+                out = Arachni::UI::Output
+                out.print_error "Failed to fast-parse '#{url}', please report this."
+                out.print_error "Falling back to slow-parse."
+                cache[c_url] = addressable_parse( c_url ).freeze
+            rescue
+                cache[c_url] = :err
+                nil
+            end
         end
+    end
+
+    def self.addressable_parse( url )
+        u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
+        u.path.gsub!( /\/+/, '/' )
+        u.fragment = nil
+        h = u.to_hash
+        h[:userinfo] = "#{h.delete( :user )}:#{h.delete( :password )}"
+        h
     end
 
     #
@@ -393,7 +409,7 @@ class URI
             when Arachni::URI
                 self.parsed_url = url.parsed_url.dup
 
-          else
+            else
                 to_string = url.to_s rescue ''
                 msg = "Argument must either be String, URI or Hash"
                 msg << " -- #{url.class.name} '#{to_string}' passed."
