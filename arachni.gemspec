@@ -39,7 +39,10 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("spec/**/**")
       s.files            += %w(Gemfile Rakefile arachni.gemspec)
 
-      s.executables       = [ "arachni", "arachni_rpcd_monitor", "arachni_rpcd", "arachni_rpc", "arachni_web", "arachni_web_autostart", ]
+      s.executables       = [ "arachni", "arachni_rpcd_monitor",
+                              "arachni_rpcd", "arachni_rpc", "arachni_web",
+                              "arachni_web_autostart", "arachni_console",
+                              "arachni_script" ]
 
       s.extra_rdoc_files  = %w( README.md ACKNOWLEDGMENTS.md LICENSE.md AUTHORS.md CHANGELOG.md CONTRIBUTORS.md EXPLOITATION.md HACKING.md NOTICE )
       s.rdoc_options      = ["--charset=UTF-8"]
@@ -49,6 +52,7 @@ Gem::Specification.new do |s|
       s.add_dependency "addressable",     ">= 2.2.8"
       s.add_dependency "awesome_print"
       s.add_dependency "json"
+      s.add_dependency "rb-readline"
       s.add_dependency "nokogiri",        ">= 1.5.0"
       s.add_dependency "sys-proctable",   ">= 0.9.1"
       s.add_dependency "terminal-table",  ">= 1.4.2"

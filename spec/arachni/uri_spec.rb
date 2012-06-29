@@ -26,13 +26,14 @@ describe Arachni::URI do
                 'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
             'http://test.com/login.php?goto?=domain.tld/index.php',
             'http://test.com:/stuff',
+            'http://test.com/stuff?name=val&amp;name2=val2',
         ]
 
         @ref_normalizer = proc do |p|
             n = Addressable::URI.parse( p ).normalize
             n.path.gsub!( /\/+/, '/' )
             n.fragment = nil
-            n.to_s
+            Arachni::Utilities.html_decode( n.to_s )
         end
 
         @uri = Arachni::URI

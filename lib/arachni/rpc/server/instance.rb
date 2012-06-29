@@ -141,14 +141,7 @@ class Instance
     # Displays version number, revision number, author details etc.
     #
     def banner
-        puts 'Arachni - Web Application Security Scanner Framework v' +
-            @framework.version + ' [' + @framework.revision + ']
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://arachni-scanner.com
-       Documentation: http://arachni-scanner.com/wiki'
+        puts BANNER
         puts
         puts
     end

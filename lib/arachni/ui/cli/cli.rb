@@ -612,17 +612,9 @@ class CLI
     # @return [void]
     #
     def banner
-        print_line 'Arachni - Web Application Security Scanner Framework v' +
-            @arachni.version + ' [' + @arachni.revision + ']
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://arachni-scanner.com
-       Documentation: http://arachni-scanner.com/wiki'
+        print_line BANNER
         print_line
         print_line
-
     end
 
     #

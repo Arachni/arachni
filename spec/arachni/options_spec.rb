@@ -6,9 +6,26 @@ describe Arachni::Options do
         @utils = Arachni::Module::Utilities
     end
 
-    describe 'Arachni.Options' do
-        it 'should provide a shortcut to Arachni::Options#instance' do
-            Arachni.Options.should == Arachni::Options.instance
+    it 'should proxy missing class methods to instance methods' do
+        url = 'http://test.com/'
+        Arachni::Options.url.should_not == url
+        Arachni::Options.url = url
+        Arachni::Options.url.should == url
+    end
+
+    describe '#audit' do
+        it 'should enable auditing of the given element types' do
+            Arachni::Options.audit_links.should be_false
+            Arachni::Options.audit_forms.should be_false
+            Arachni::Options.audit_cookies.should be_false
+            Arachni::Options.audit_headers.should be_false
+
+            Arachni::Options.audit :links, :forms, :cookies, :headers
+
+            Arachni::Options.audit_links.should be_true
+            Arachni::Options.audit_forms.should be_true
+            Arachni::Options.audit_cookies.should be_true
+            Arachni::Options.audit_headers.should be_true
         end
     end
 
@@ -366,12 +383,6 @@ describe Arachni::Options do
 
             @opts.merge!( { 'datastore' => nil } )
             @opts.datastore.should == { 'test' => :val }
-        end
-    end
-
-    describe '#instance' do
-        it 'should return self' do
-            @opts.instance.should == @opts
         end
     end
 

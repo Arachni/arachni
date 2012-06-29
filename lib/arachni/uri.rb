@@ -43,6 +43,8 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class URI
+    include Arachni::Utilities
+    extend Arachni::Utilities
 
     CACHE_SIZES = {
         parse:       600,
@@ -101,7 +103,7 @@ class URI
     #
     def self.deep_decode( string )
         string = decode( string ) while string =~ /%[a-fA-F0-9]{2}/
-        string
+        html_decode( string )
     end
 
     #
@@ -135,7 +137,7 @@ class URI
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
-            parser.parse( normalize( url ).dup ) rescue nil
+            parser.parse( normalize( url ).dup )
         end
     end
 
@@ -255,9 +257,49 @@ class URI
             #ap url
             #ap e
             #ap e.backtrace
-            cache[c_url] = :err
-            nil
+            begin
+                out = Arachni::UI::Output
+                out.print_error "Failed to fast-parse '#{c_url}', please report this."
+                out.print_error "Falling back to slow-parse."
+                cache[c_url] = addressable_parse( c_url ).freeze
+            rescue
+                cache[c_url] = :err
+                nil
+            end
         end
+    end
+
+    #
+    # Performs a parse using the +URI::Addressable+ lib while normalizing the
+    # URL (will also discard the fragment).
+    #
+    # This method is not cached and solely exists as a fallback used by {.cheap_parse}.
+    #
+    # @param    [String]  url
+    #
+    # @return   [Hash]  URL components:
+    #   Hash fields:
+    #   * scheme -- HTTP or HTTPS
+    #   * userinfo -- username:password
+    #   * host
+    #   * port
+    #   * path
+    #   * query
+    #
+    #   The Hash is suitable for passing to +::URI::Generic.build+ -- if however
+    #   you plan on doing that you'll be better off just using {.ruby_parse} which
+    #   does the same thing and caches the results for some extra schnell.
+    #
+    def self.addressable_parse( url )
+        u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
+        u.path.gsub!( /\/+/, '/' )
+        u.fragment = nil
+        h = u.to_hash
+        if h[:user]
+            h[:userinfo] = h.delete( :user )
+            h[:userinfo] << ":#{h.delete( :password )}" if h[:password]
+        end
+        h
     end
 
     #
@@ -391,7 +433,7 @@ class URI
             when Arachni::URI
                 self.parsed_url = url.parsed_url.dup
 
-          else
+            else
                 to_string = url.to_s rescue ''
                 msg = "Argument must either be String, URI or Hash"
                 msg << " -- #{url.class.name} '#{to_string}' passed."

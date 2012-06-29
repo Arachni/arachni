@@ -222,16 +222,9 @@ class Dispatcher
     # Displays version number, revision number, author details etc.
     #
     def banner
-        puts 'Arachni - Web Application Security Scanner Framework
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://arachni-scanner.com
-       Documentation: http://arachni-scanner.com/wiki'
+        puts BANNER
         puts
         puts
-
     end
 
     def print_help

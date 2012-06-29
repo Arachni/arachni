@@ -264,27 +264,4 @@ describe Arachni::HTTP::CookieJar do
         end
     end
 
-    describe '#to_s' do
-        it 'should convert the jar to a string suitable for inclusion in the \'Cookie\' HTTP request headers' do
-            @jar << Arachni::Parser::Element::Cookie.new( '',
-                'name'  => 'my_cookie',
-                'value' => 'my_value',
-                'domain'=> 'domain.com',
-                'path'  => '/my/path'
-            )
-
-            @jar <<Arachni::Parser::Element::Cookie.new( '',
-                'name'  => 'my_cookie1',
-                'value' => 'my_value2',
-                'domain'=> 'domain.com',
-                'path'  => '/'
-            )
-
-            @jar.to_s( 'http://domain.com/my/path/' ).should == "my_cookie=my_value;my_cookie1=my_value2"
-            @jar.to_s( 'http://domain.com/my/path' ).should == "my_cookie=my_value;my_cookie1=my_value2"
-            @jar.to_s( 'http://domain.com/some/path' ).should == "my_cookie1=my_value2"
-            @jar.to_s( 'http://domain.com' ).should == "my_cookie1=my_value2"
-        end
-    end
-
 end

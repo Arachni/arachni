@@ -143,15 +143,6 @@ class CookieJar
         !empty?
     end
 
-    #
-    # @param    [String]    url     get cookies for +url+
-    #
-    # @return   [String]    cookies as a string formatted for HTTP request headers
-    #
-    def to_s( url )
-        for_url( url ).map{ |c| c.to_s }.join( ';' )
-    end
-
     private
 
     def in_domain?( cookie_domain, request_domain )

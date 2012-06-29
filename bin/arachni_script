@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 =begin
     Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
@@ -14,23 +15,26 @@
     limitations under the License.
 =end
 
-require 'rubygems'
-require 'bundler/setup'
+require_relative '../lib/arachni/ui/cli/output'
+require_relative '../lib/arachni'
 
-require_relative 'arachni/version'
-require_relative 'arachni/banner'
+include Arachni
+include UI::Output
 
-module Arachni
+Options.parse!( false )
+
+if Options.help
+    puts <<EOHELP
+#{BANNER}
+
+
+Usage: #{__FILE__} file1 [file2] [..]
+
+Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts.
+
+(Call the 'mute' method to mute framework output.)
+EOHELP
+    exit
 end
 
-#
-# If there's no UI driving us then there's no output interface.
-#
-# Chances are that someone is using Arachni as a Ruby lib so there's no
-# need for a functional output interface, so provide non-functional one.
-#
-if !Arachni.constants.include?( :UI )
-    require_relative 'arachni/ui/foo/output'
-end
-
-require_relative 'arachni/framework'
+ARGV.each { |script| load script }

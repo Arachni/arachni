@@ -552,6 +552,10 @@ class Options
         @url = parsed.to_s
     end
 
+    def audit( *element_types )
+        element_types.each { |type| self.send( "audit_#{type}=", true ) }
+    end
+
     #
     # Configures options via a Hash object
     #
@@ -624,7 +628,7 @@ class Options
         end
     end
 
-    def parse!
+    def parse!( require_url = true )
         # Construct getops struct
         opts = GetoptLong.new(
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
@@ -917,7 +921,7 @@ class Options
             exit
         end
 
-        self.url = ARGV.shift
+        self.url = ARGV.shift if require_url
     end
 
     # @return   [String]    root path of the framework
@@ -1144,8 +1148,8 @@ class Options
         IO.read( file ).lines.map { |p| p.strip }
     end
 
-    def instance
-        self
+    def self.method_missing( sym, *args, &block )
+        instance.send( sym, *args, &block )
     end
 
     private
@@ -1155,8 +1159,4 @@ class Options
     end
 
 end
-
-    def self.Options
-        Options.instance
-    end
 end
