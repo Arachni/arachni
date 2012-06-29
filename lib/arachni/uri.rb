@@ -203,32 +203,35 @@ class URI
                 splits = url.split( '://', 2 )
                 components[:scheme] = splits.shift
                 components[:scheme].downcase! if components[:scheme]
-                url = splits.shift
 
-                splits = url.split( '@', 2 )
+                if url = splits.shift
+                    splits = url.split( '@', 2 )
 
-                if splits.size > 1
-                    components[:userinfo] = splits.first
-                    url = splits.shift
-                end
+                    if splits.size > 1
+                        components[:userinfo] = splits.first
+                        url = splits.shift
+                    end
 
-                splits = splits.last.split( '/', 2 )
-                has_path = false if !splits[1] || splits[1].empty?
+                    splits = splits.last.split( '/', 2 )
+                    has_path = false if !splits[1] || splits[1].empty?
 
-                url = splits.last
+                    url = splits.last
 
-                splits = splits.first.split( ':', 2 )
-                if splits.size == 2
-                    host = splits.first
-                    components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
-                    components[:port] = nil if components[:port] == 80
+                    splits = splits.first.split( ':', 2 )
+                    if splits.size == 2
+                        host = splits.first
+                        components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
+                        components[:port] = nil if components[:port] == 80
+                    else
+                        host = splits.last
+                    end
+
+                    if components[:host] = host
+                        url.gsub!( host, '' )
+                        components[:host].downcase!
+                    end
                 else
-                    host = splits.last
-                end
-
-                if components[:host] = host
-                    url.gsub!( host, '' )
-                    components[:host].downcase!
+                    has_path = false
                 end
             end
 
@@ -252,15 +255,16 @@ class URI
             cache[c_url] = components.inject({}) do |h, (k, val)|
                 h.merge!( Hash[{ k => val.freeze }] )
             end.freeze
-        rescue# => e
+        rescue => e
             #ap c_url
             #ap url
             #ap e
             #ap e.backtrace
             begin
                 out = Arachni::UI::Output
-                out.print_error "Failed to fast-parse '#{c_url}', please report this."
+                out.print_error "Failed to fast-parse '#{c_url}', please report this.#{e}"
                 out.print_error "Falling back to slow-parse."
+                out.print_error_backtrace( e )
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue
                 cache[c_url] = :err
