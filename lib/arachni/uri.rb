@@ -274,7 +274,10 @@ class URI
         u.path.gsub!( /\/+/, '/' )
         u.fragment = nil
         h = u.to_hash
-        h[:userinfo] = "#{h.delete( :user )}:#{h.delete( :password )}"
+        if h[:user]
+            h[:userinfo] = h.delete( :user )
+            h[:userinfo] << ":#{h.delete( :password )}" if h[:password]
+        end
         h
     end
 
