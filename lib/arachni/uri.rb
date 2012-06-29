@@ -269,6 +269,27 @@ class URI
         end
     end
 
+    #
+    # Performs a parse using the +URI::Addressable+ lib while normalizing the
+    # URL (will also discard the fragment).
+    #
+    # This method is not cached and solely exists as a fallback used by {.cheap_parse}.
+    #
+    # @param    [String]  url
+    #
+    # @return   [Hash]  URL components:
+    #   Hash fields:
+    #   * scheme -- HTTP or HTTPS
+    #   * userinfo -- username:password
+    #   * host
+    #   * port
+    #   * path
+    #   * query
+    #
+    #   The Hash is suitable for passing to +::URI::Generic.build+ -- if however
+    #   you plan on doing that you'll be better off just using {.ruby_parse} which
+    #   does the same thing and caches the results for some extra schnell.
+    #
     def self.addressable_parse( url )
         u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
         u.path.gsub!( /\/+/, '/' )
