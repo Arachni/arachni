@@ -1,4 +1,5 @@
 shared_examples_for "module" do
+    include_examples 'component'
 
     module Format
         include Arachni::Parser::Element::Mutable::Format
@@ -13,7 +14,6 @@ shared_examples_for "module" do
     end
 
     before( :all ) do
-        opts = Arachni::Options.instance.reset
         framework.modules.load name
 
         # do not dedup, the module tests need to see everything
@@ -23,11 +23,10 @@ shared_examples_for "module" do
             end
         end
 
-        options.url = url
-
         http.headers['User-Agent'] = 'default'
 
         @issues = []
+        Arachni::Module::Manager.do_not_store
         Arachni::Module::Manager.on_register_results_raw do |issues|
             issues.each { |i| @issues << i }
         end
@@ -49,8 +48,6 @@ shared_examples_for "module" do
         framework.opts.audit_headers = false
     end
 
-    after( :all ){ framework.modules.clear }
-
     describe '.info' do
         it 'should hold the right targets' do
             if current_module.info[:targets]
@@ -67,10 +64,6 @@ shared_examples_for "module" do
                 current_module.info[:elements].should == self.class.elements
             end
         end
-    end
-
-    def self.use_https
-        before( :all ) { options.url.gsub!( 'http', 'https' ) }
     end
 
     def self.easy_test( &block )
@@ -157,31 +150,12 @@ shared_examples_for "module" do
         end
     end
 
-    def name
-        self.class.description
+    def current_module
+        framework.modules.values.first
     end
 
     def url
         @url ||= (server_url_for( "#{name}_module" ) rescue server_url_for( name ))  + '/'
     end
 
-    def framework
-        @f ||= Arachni::Framework.new
-    end
-
-    def current_module
-        framework.modules.values.first
-    end
-
-    def http
-        framework.http
-    end
-
-    def options
-        framework.opts
-    end
-
-    def run
-        framework.run
-    end
 end
