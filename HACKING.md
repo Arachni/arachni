@@ -22,14 +22,6 @@ adhere to the following guidelines:
     end
 ```
 
- - For multi-line blocks which don't expect parameters you can use '{}'
-
-```ruby
-    arr.something {
-        stuff( item )
-    }
-```
-
  - Use space before, between, and after method parameters:
 
 ```ruby
