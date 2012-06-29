@@ -298,10 +298,12 @@ class Issue
 
     def []( k )
         send( "#{k}" )
+    rescue
+        instance_variable_get( "@#{k.to_s}".to_sym )
     end
 
     def []=( k, v )
-        v= encode( v )
+        v = encode( v )
         begin
             send( "#{k.to_s}=", v )
         rescue
