@@ -78,7 +78,11 @@ class Manager < Hash
 
         load( '*' )
         map do |k, v|
-            if ![v.info[:tags]].includes_tags?( tags )
+            component_tags  = [v.info[:tags]]
+            component_tags |= [v.info[:issue][:tags]] if v.info[:issue]
+            component_tags  = [component_tags].flatten.uniq.compact
+
+            if !component_tags.includes_tags?( tags )
                 delete( k )
                 next
             end

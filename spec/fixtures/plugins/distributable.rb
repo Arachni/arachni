@@ -36,9 +36,11 @@ class Distributable < Arachni::Plugin::Base
         {
             name:        'Distributable',
             description: %q{},
-            tags:        [ 'distributable_string', :distributable_sym ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1'
+            version:     '0.1',
+            issue:       {
+                tags: [ 'distributable_string', :distributable_sym ]
+            }
         }
     end
 
