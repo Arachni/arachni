@@ -1,10 +1,6 @@
 shared_examples_for "component" do
 
-    before( :all ) do
-        Arachni::Options.reset
-        options.url = url
-    end
-
+    before( :all ) { Arachni::Options.reset }
     after( :all ) { framework.reset }
 
     def self.use_https

@@ -14,6 +14,7 @@ shared_examples_for "module" do
     end
 
     before( :all ) do
+        options.url = url
         framework.modules.load name
 
         # do not dedup, the module tests need to see everything
