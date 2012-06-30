@@ -64,6 +64,29 @@ class Manager < Hash
     end
 
     #
+    # Loads components by tags.
+    #
+    # @param    [Array] tags    tags to look for in components
+    #
+    # @return   [Array] components loaded
+    #
+    def load_by_tags( tags )
+        return [] if !tags
+
+        tags = [tags].flatten.compact.map( &:to_s )
+        return [] if tags.empty?
+
+        load( '*' )
+        map do |k, v|
+            if ![v.info[:tags]].includes_tags?( tags )
+                delete( k )
+                next
+            end
+            k
+        end.compact
+    end
+
+    #
     # Validates and prepares options for a given component.
     #
     # @param    [String]    component_name    the name of the component

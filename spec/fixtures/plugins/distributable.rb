@@ -34,10 +34,11 @@ class Distributable < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Distributable',
-            :description    => %q{},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            name:        'Distributable',
+            description: %q{},
+            tags:        [ 'distributable_string', :distributable_sym ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1'
         }
     end
 

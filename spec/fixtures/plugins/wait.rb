@@ -26,10 +26,11 @@ class Wait < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Wait',
-            :description    => %q{},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            name:        'Wait',
+            description: %q{},
+            tags:        ['wait_string', :wait_sym],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1'
         }
     end
 
