@@ -53,7 +53,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         response_size_per_path  = {}
 
         framework.auditstore.issues.each_with_index do |issue, idx|
-            issue.tags.includes_tags?( :discovery )
+            next if !issue.tags.includes_tags?( :discovery )
 
             # discovery issues only have 1 variation
             variation = issue.variations.first
