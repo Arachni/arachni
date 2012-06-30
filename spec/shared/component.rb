@@ -17,6 +17,8 @@ shared_examples_for "component" do
 
     def url
         @url ||= server_url_for( name ) + '/'
+    rescue
+        raise "Could not find server for '#{name}' component."
     end
 
     def framework
