@@ -146,7 +146,7 @@ class Manager < Hash
         unload = []
         load   = []
 
-        components = [components].flatten
+        components = [components].flatten.map( &:to_s )
 
         return load if components[0] == EXCLUDE
 
@@ -198,6 +198,7 @@ class Manager < Hash
     # @return   [Class]
     #
     def []( name )
+        name = name.to_s
         return fetch( name ) if include?( name )
         self[name] = load_from_path( name_to_path( name ) )
     end
@@ -207,6 +208,7 @@ class Manager < Hash
     end
 
     def delete( k )
+        k = k.to_s
         begin
             @namespace.send( :remove_const, fetch( k ).to_s.split( ':' ).last.to_sym )
         rescue
@@ -241,7 +243,7 @@ class Manager < Hash
     # @return   [String]
     #
     def name_to_path( name )
-        paths.each { |path| return path if name == path_to_name( path ) }
+        paths.each { |path| return path if name.to_s == path_to_name( path ) }
         return
     end
 
