@@ -256,17 +256,17 @@ class URI
                 h.merge!( Hash[{ k => val.freeze }] )
             end.freeze
         rescue => e
-            #ap c_url
-            #ap url
-            #ap e
-            #ap e.backtrace
+            out = Arachni::UI::Output
             begin
-                out = Arachni::UI::Output
                 out.print_error "Failed to fast-parse '#{c_url}', please report this.#{e}"
                 out.print_error "Falling back to slow-parse."
                 out.print_error_backtrace( e )
+
                 cache[c_url] = addressable_parse( c_url ).freeze
-            rescue
+            rescue => ex
+                out.print_error "Failed to parse '#{c_url}', please report this.#{e}"
+                out.print_error_backtrace( ex )
+
                 cache[c_url] = :err
                 nil
             end
