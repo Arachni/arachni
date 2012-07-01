@@ -258,13 +258,15 @@ class URI
         rescue => e
             out = Arachni::UI::Output
             begin
-                out.print_error "Failed to fast-parse '#{c_url}', please report this.#{e}"
+                out.print_error "Failed to fast-parse '#{c_url}', please report this."
+                out.print_error "Error: #{e}"
                 out.print_error "Falling back to slow-parse."
                 out.print_error_backtrace( e )
 
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue => ex
-                out.print_error "Failed to parse '#{c_url}', please report this.#{e}"
+                out.print_error "Failed to parse '#{c_url}', please report this."
+                out.print_error "Error: #{ex}"
                 out.print_error_backtrace( ex )
 
                 cache[c_url] = :err
@@ -390,23 +392,12 @@ class URI
             normalized << '?' + components[:query] if components[:query]
 
             cache[c_url] = normalized.freeze
+        rescue => e
+            out = Arachni::UI::Output
+            out.print_error "Failed to normalize '#{c_url}', please report this."
+            out.print_error "Error: #{e}"
+            out.print_error_backtrace( e )
 
-            #addr = Addressable::URI.parse( c_url ).normalize
-            #addr.fragment = nil
-            #addr.path.gsub!( /\/+/, '/' )
-            #if addr.to_s != normalized
-            #    ap c_url
-            #    ap components
-            #    ap normalized
-            #    ap addr.to_s
-            #    ap '~~~'
-            #end
-            #@@normalize_cache[c_url]
-        rescue# => e
-            #ap c_url
-            #ap url
-            #ap e
-            #ap e.backtrace
             cache[c_url] = :err
             nil
         end
