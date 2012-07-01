@@ -110,6 +110,17 @@ describe Arachni::Issue do
         @issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
     end
 
+    describe '#tags' do
+        it 'should return the set tags' do
+            @issue.tags.should == @issue_data[:tags]
+        end
+        context 'when nil' do
+            it 'should default to an empty array' do
+                Arachni::Issue.new( url: 'http://test.com' ).tags.should == []
+            end
+        end
+    end
+
     context 'when there\'s an :issue key' do
         it 'should assign its hash contents to instance vars' do
             issue = Arachni::Issue.new( issue: @issue_data )

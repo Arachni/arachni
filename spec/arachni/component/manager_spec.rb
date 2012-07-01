@@ -29,58 +29,69 @@ describe Arachni::Component::Manager do
     end
 
     describe '#load' do
-        context 'when passed a string' do
-            it 'should load components by name' do
-                @components.load( 'wait' )
-                @components.loaded.should == %w(wait)
-            end
-        end
-        context 'when passed an array' do
-            it 'should load the component by name' do
-                @components.load( %w(bad distributable) )
-                @components.loaded.sort.should == %w(bad distributable).sort
-            end
-        end
+        context 'when passed a' do
 
-        context 'when passed a wildcard' do
-            context 'alone' do
-                it 'should load all components' do
-                    @components.load( '*' )
-                    @components.loaded.sort.should == @components.available.sort
+            context String do
+                it 'should load the component by name' do
+                    @components.load( 'wait' )
+                    @components.loaded.should == %w(wait)
                 end
             end
 
-            context 'with a category name' do
-                it 'should load all of its components' do
-                    @components.load( 'plugins/*' )
-                    @components.loaded.sort.should == @components.available.sort
+            context Symbol do
+                it 'should load the component by name' do
+                    @components.load( :wait )
+                    @components.loaded.should == %w(wait)
                 end
             end
 
-        end
+            context Array do
+                it 'should load the component by name' do
+                    @components.load( %w(bad distributable) )
+                    @components.loaded.sort.should == %w(bad distributable).sort
+                end
+            end
 
-        context 'when passed an exclusion filter' do
-            context 'alone' do
-                it 'should not load anything' do
-                    @components.load( '-' )
-                    @components.loaded.sort.should be_empty
+            context 'wildcard (*)' do
+                context 'alone' do
+                    it 'should load all components' do
+                        @components.load( '*' )
+                        @components.loaded.sort.should == @components.available.sort
+                    end
                 end
-            end
-            context 'with a name' do
-                it 'should not load that component' do
-                    @components.load( %w(* -wait) )
-                    loaded = @components.available
-                    loaded.delete( 'wait' )
-                    @components.loaded.sort.should == loaded.sort
+
+                context 'with a category name' do
+                    it 'should load all of its components' do
+                        @components.load( 'plugins/*' )
+                        @components.loaded.sort.should == @components.available.sort
+                    end
                 end
+
             end
-            context 'with a partial name and a wildcard' do
-                it 'should not load matching components' do
-                    @components.load( %w(* -wai* -dist*) )
-                    loaded = @components.available
-                    loaded.delete( 'wait' )
-                    loaded.delete( 'distributable' )
-                    @components.loaded.sort.should == loaded.sort
+
+            context 'exclusion filter (-)' do
+                context 'alone' do
+                    it 'should not load anything' do
+                        @components.load( '-' )
+                        @components.loaded.sort.should be_empty
+                    end
+                end
+                context 'with a name' do
+                    it 'should not load that component' do
+                        @components.load( %w(* -wait) )
+                        loaded = @components.available
+                        loaded.delete( 'wait' )
+                        @components.loaded.sort.should == loaded.sort
+                    end
+                end
+                context 'with a partial name and a wildcard' do
+                    it 'should not load matching components' do
+                        @components.load( %w(* -wai* -dist*) )
+                        loaded = @components.available
+                        loaded.delete( 'wait' )
+                        loaded.delete( 'distributable' )
+                        @components.loaded.sort.should == loaded.sort
+                    end
                 end
             end
         end
@@ -170,54 +181,64 @@ describe Arachni::Component::Manager do
     end
 
     describe '#parse' do
-        context 'when passed a string' do
-            it 'should return components by name' do
-                @components.parse( 'wait' ).should == %w(wait)
-            end
-        end
-        context 'when passed an array' do
-            it 'should load the component by name' do
-                @components.parse( %w(bad distributable) ).sort.should ==
-                    %w(bad distributable).sort
-            end
-        end
+        context 'when passed a' do
 
-        context 'when passed a wildcard' do
-            context 'alone' do
-                it 'should return all components' do
-                    @components.parse( '*' ).sort.should == @components.available.sort
+            context String do
+                it 'should return an array including the component\'s name' do
+                    @components.parse( 'wait' ).should == %w(wait)
                 end
             end
 
-            context 'with a category name' do
-                it 'should return all of its components' do
-                    @components.parse( 'plugins/*' ).sort.should == @components.available.sort
+            context Symbol do
+                it 'should return an array including the component\'s name' do
+                    @components.parse( :wait ).should == %w(wait)
                 end
             end
 
-        end
+            context Array do
+                it 'should load the component by name' do
+                    @components.parse( %w(bad distributable) ).sort.should ==
+                        %w(bad distributable).sort
+                end
+            end
 
-        context 'when passed an exclusion filter' do
-            context 'alone' do
-                it 'should not return anything' do
-                    @components.parse( '-' ).sort.should be_empty
+            context 'wildcard (*)' do
+                context 'alone' do
+                    it 'should return all components' do
+                        @components.parse( '*' ).sort.should == @components.available.sort
+                    end
                 end
-            end
-            context 'with a name' do
-                it 'should not return that component' do
-                    @components.parse( %w(* -wait) )
-                    loaded = @components.available
-                    loaded.delete( 'wait' )
-                    loaded.sort.should == loaded.sort
+
+                context 'with a category name' do
+                    it 'should return all of its components' do
+                        @components.parse( 'plugins/*' ).sort.should == @components.available.sort
+                    end
                 end
+
             end
-            context 'with a partial name and a wildcard' do
-                it 'should not return matching components' do
-                    parsed = @components.parse( %w(* -wai* -dist*) )
-                    loaded = @components.available
-                    loaded.delete( 'wait' )
-                    loaded.delete( 'distributable' )
-                    parsed.sort.should == loaded.sort
+
+            context 'exclusion filter (-)' do
+                context 'alone' do
+                    it 'should not return anything' do
+                        @components.parse( '-' ).sort.should be_empty
+                    end
+                end
+                context 'with a name' do
+                    it 'should not return that component' do
+                        @components.parse( %w(* -wait) )
+                        loaded = @components.available
+                        loaded.delete( 'wait' )
+                        loaded.sort.should == loaded.sort
+                    end
+                end
+                context 'with a partial name and a wildcard' do
+                    it 'should not return matching components' do
+                        parsed = @components.parse( %w(* -wai* -dist*) )
+                        loaded = @components.available
+                        loaded.delete( 'wait' )
+                        loaded.delete( 'distributable' )
+                        parsed.sort.should == loaded.sort
+                    end
                 end
             end
         end
@@ -261,10 +282,21 @@ describe Arachni::Component::Manager do
     end
 
     describe :[] do
-        it 'should load and return a component' do
-            @components.loaded.should be_empty
-            @components['wait'].name.should == 'Arachni::Plugins::Wait'
-            @components.loaded.should == %w(wait)
+        context 'when passed a' do
+            context String do
+                it 'should load and return the component' do
+                    @components.loaded.should be_empty
+                    @components['wait'].name.should == 'Arachni::Plugins::Wait'
+                    @components.loaded.should == %w(wait)
+                end
+            end
+            context Symbol do
+                it 'should load and return the component' do
+                    @components.loaded.should be_empty
+                    @components[:wait].name.should == 'Arachni::Plugins::Wait'
+                    @components.loaded.should == %w(wait)
+                end
+            end
         end
     end
 

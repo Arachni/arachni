@@ -262,6 +262,8 @@ class Issue
 
         @method = @method.to_s.upcase
         @mod_name = opts[:name]
+
+        @tags ||= []
     end
 
     def match
