@@ -678,6 +678,7 @@ describe Arachni::Framework do
 ---
 - :name: Wait
   :description: ""
+  :tags: ["wait_string", :wait_sym]
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
@@ -722,6 +723,7 @@ describe Arachni::Framework do
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: distributable
+  :issue: {:tags: ["distributable_string", :distributable_sym]}
 - :name: ""
   :description: ""
   :author:
