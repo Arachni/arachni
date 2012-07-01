@@ -13,8 +13,7 @@ shared_examples_for "plugin" do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run
-            (framework.plugins.results[name] || {})[:results].should
-                eq( (results == :nil) ? nil : results )
+            (framework.plugins.results[name] || {})[:results].should eq( (results == :nil) ? nil : results )
 
             instance_eval &block if block_given?
         end
