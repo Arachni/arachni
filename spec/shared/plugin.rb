@@ -20,4 +20,8 @@ shared_examples_for "plugin" do
         end
     end
 
+    def current_plugin
+        framework.plugins[name]
+    end
+
 end
