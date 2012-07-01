@@ -342,7 +342,12 @@ class URI
                 return v
             end
 
-            cache[key] = parse( relative ).to_absolute( reference ).to_s.freeze
+            parsed_ref = parse( reference )
+
+            # scheme-less URLs are expensive to parse so let's resolve the issue here
+            relative = "#{parsed_ref.scheme}:#{relative}" if relative.start_with?( '//' )
+
+            cache[key] = parse( relative ).to_absolute( parsed_ref ).to_s.freeze
         rescue# => e
               #ap relative
               #ap e
