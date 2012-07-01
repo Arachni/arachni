@@ -190,6 +190,12 @@ class URI
                 return v
             end
 
+            # we're not smart enough for scheme-less URLs and if we're to go
+            # into heuristics then there's no reason to not just use Addressable's parser
+            if url.start_with?( '//' )
+                return cache[c_url] = addressable_parse( c_url ).freeze
+            end
+
             url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
             url = deep_decode( url )
 
@@ -298,9 +304,10 @@ class URI
     #
     def self.addressable_parse( url )
         u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
-        u.path.gsub!( /\/+/, '/' )
         u.fragment = nil
         h = u.to_hash
+
+        h[:path].gsub!( /\/+/, '/' ) if h[:path]
         if h[:user]
             h[:userinfo] = h.delete( :user )
             h[:userinfo] << ":#{h.delete( :password )}" if h[:password]

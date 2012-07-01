@@ -26,7 +26,7 @@ describe Arachni::URI do
                 'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
             'http://test.com/login.php?goto?=domain.tld/index.php',
             'http://test.com:/stuff',
-            'http://test.com/stuff?name=val&amp;name2=val2',
+            'http://test.com/stuff?name=val&amp;name2=val2'
         ]
 
         @ref_normalizer = proc do |p|
@@ -112,11 +112,19 @@ describe Arachni::URI do
             path     = '/some/path'
             query    = 'param=val&param2=val2'
 
-            uri = "#{scheme}://#{user}:#{password}@#{host}#{path}?#{query}"
+            uri = "#{scheme}://#{user}:#{password}@#{host}/#{path}?#{query}"
 
             parsed_uri = @uri.cheap_parse( uri )
 
             parsed_uri[:scheme].should == scheme
+            parsed_uri[:userinfo].should == user + ':' + password
+            parsed_uri[:host].should == host
+            parsed_uri[:path].should == path
+            parsed_uri[:query].should == query
+
+            parsed_uri = @uri.cheap_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
+
+            parsed_uri[:scheme].should be_nil
             parsed_uri[:userinfo].should == user + ':' + password
             parsed_uri[:host].should == host
             parsed_uri[:path].should == path
@@ -132,6 +140,9 @@ describe Arachni::URI do
             @uri.to_absolute( rel, abs ).should == "http://test.com" + rel
             @uri.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
             @uri.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+
+            rel = '//domain-name.com/stuff'
+            @uri.to_absolute( rel, abs ).should == "http:" + rel
         end
     end
 
