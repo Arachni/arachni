@@ -14,18 +14,14 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Gathers all issues that require manual verification into an array.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class ManualVerification < Arachni::Plugin::Base
+# @version 0.1.2
+#
+class Arachni::Plugins::ManualVerification < Arachni::Plugin::Base
 
     def prepare
         wait_while_framework_running
@@ -33,13 +29,10 @@ class ManualVerification < Arachni::Plugin::Base
 
     def run
         # will hold the hash IDs of inconclusive issues
-        inconclusive = []
-        @framework.audit_store.issues.each.with_index {
-            |issue, idx|
+        inconclusive = framework.audit_store.issues.map.with_index do |issue, idx|
             next if !issue.verification
-
-            inconclusive << {
-                'hash'   => issue._hash,
+            {
+                'hash'   => issue.digest,
                 'index'  => idx + 1,
                 'url'    => issue.url,
                 'name'   => issue.name,
@@ -47,25 +40,22 @@ class ManualVerification < Arachni::Plugin::Base
                 'elem'   => issue.elem,
                 'method' => issue.method
             }
-        }
+        end.compact
 
         register_results( inconclusive ) if !inconclusive.empty?
     end
 
     def self.info
         {
-            :name           => 'Issues requiring manual verification',
-            :description    => %q{The HTTP responses of the issues logged by this plugin exhibit a suspicious pattern
+            name:        'Issues requiring manual verification',
+            description: %q{The HTTP responses of the issues logged by this plugin exhibit a suspicious pattern
                 even before any audit action has taken place -- this challenges the relevance of the audit procedure.
 
                 Thus, these issues require manual verification.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :tags           => [ 'anomaly' , 'verification', 'meta' ]
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.2',
+            tags:        %w(anomaly verification meta)
         }
     end
 
-end
-
-end
 end

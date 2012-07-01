@@ -86,6 +86,89 @@ describe Arachni::Component::Manager do
         end
     end
 
+    describe '#load_by_tags' do
+        context 'when passed' do
+            context 'nil' do
+                it 'should return an empty array' do
+                    @components.empty?.should be_true
+                    @components.load_by_tags( nil ).should == []
+                end
+            end
+
+            context '[]' do
+                it 'should return an empty array' do
+                    @components.empty?.should be_true
+                    @components.load_by_tags( [] ).should == []
+                end
+            end
+
+            context String do
+                it 'should load components whose tags include the given tag (as either a String or a Symbol)' do
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( 'wait_string' ).should == %w(wait)
+                    @components.delete( 'wait' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( 'wait_sym' ).should == %w(wait)
+                    @components.delete( 'wait' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( 'distributable_string' ).should == %w(distributable)
+                    @components.delete( 'distributable' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( 'distributable_sym' ).should == %w(distributable)
+                    @components.delete( 'distributable' )
+                    @components.empty?.should be_true
+
+                end
+            end
+
+            context Symbol do
+                it 'should load components whose tags include the given tag (as either a String or a Symbol)' do
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( :wait_string ).should == %w(wait)
+                    @components.delete( 'wait' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( :wait_sym ).should == %w(wait)
+                    @components.delete( 'wait' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( :distributable_string ).should == %w(distributable)
+                    @components.delete( 'distributable' )
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( :distributable_sym ).should == %w(distributable)
+                    @components.delete( 'distributable' )
+                    @components.empty?.should be_true
+                end
+            end
+
+            context Array do
+                it 'should load components which include any of the given tags (as either Strings or a Symbols)' do
+                    @components.empty?.should be_true
+
+                    expected = %w(wait distributable).sort
+                    @components.load_by_tags( [ :wait_string, 'distributable_string' ] ).sort.should == expected
+                    @components.clear
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( [ 'wait_string', :distributable_string ] ).sort.should == expected
+                    @components.clear
+                    @components.empty?.should be_true
+
+                    @components.load_by_tags( [ 'wait_sym', :distributable_sym ] ).sort.should == expected
+                    @components.clear
+                    @components.empty?.should be_true
+                end
+
+            end
+        end
+    end
+
     describe '#parse' do
         context 'when passed a string' do
             it 'should return components by name' do

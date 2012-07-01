@@ -30,9 +30,6 @@
 #
 class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
-    # look for issues containing the following tags
-    TAGS = [ %w(file discovery).sort, %w(directory discovery).sort ]
-
     # valid responses to discovery modules should vary *wildly*
     # especially considering the types of directories and files that
     # these modules look for
@@ -56,7 +53,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         response_size_per_path  = {}
 
         framework.auditstore.issues.each_with_index do |issue, idx|
-            next if !includes_tags?( issue.tags )
+            next if !issue.tags.includes_tags?( :discovery )
 
             # discovery issues only have 1 variation
             variation = issue.variations.first
@@ -107,19 +104,6 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         end
 
         register_results( issues ) if !issues.empty?
-    end
-
-    #
-    # Checks if 'tags' contain any item in {TAGS}
-    #
-    # @param    [Array]     tags
-    #
-    # @return   [Bool]
-    #
-    def includes_tags?( tags )
-        return false if !tags
-        TAGS.each { |tag_pair| return true if tag_pair  == tags.sort }
-        false
     end
 
     def self.info
