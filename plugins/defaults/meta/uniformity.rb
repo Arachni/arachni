@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Goes through all the issues and checks for signs of uniformity using
 # the following criteria:
@@ -26,62 +23,44 @@ module Plugins
 #
 # If the above are all the same for more than 1 page we have a hit.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Uniformity < Arachni::Plugin::Base
-
-    include Arachni::Module::Utilities
-
-    SEVERITY = Issue::Severity::HIGH
-
-    ELEMENTS = [
-        Issue::Element::LINK,
-        Issue::Element::FORM,
-        Issue::Element::COOKIE,
-        Issue::Element::HEADER
-    ]
+# @version 0.1.2
+#
+class Arachni::Plugins::Uniformity < Arachni::Plugin::Base
 
     def prepare
         wait_while_framework_running
     end
 
     def run
-        # will hold the hash IDs of inconclusive issues
         uniformals = {}
         pages      = {}
 
-        @framework.audit_store.deep_clone.issues.each_with_index {
-            |issue, idx|
+        framework.audit_store.deep_clone.issues.each.with_index do |issue, idx|
+            next if !issue.var
 
-            if issue.severity == SEVERITY && ELEMENTS.include?( issue.elem ) && issue.var
+            id = issue.internal_modname + ':' + issue.elem + ':' + issue.var
+            uniformals[id] ||= {
+                'issue'   => {
+                    'name'   => issue.name,
+                    'var'    => issue.var,
+                    'elem'   => issue.elem,
+                    'method' => issue.method
+                },
+                'indices' => [],
+                'hashes'  => []
+            }
 
-                id = issue.elem + ':' + issue.var + ':' + issue.internal_modname
+            pages[id] ||= []
+            pages[id] << issue.url
 
-                uniformals[id] ||= {
-                    'issue'  => {
-                        'name'   => issue.name,
-                        'var'    => issue.var,
-                        'elem'   => issue.elem,
-                        'method' => issue.method
-                    },
-                    'indices' => [],
-                    'hashes'  => []
-                }
+            uniformals[id]['indices'] << idx + 1
+            uniformals[id]['hashes']  << issue.digest
+        end
 
-                pages[id]      ||= []
-
-                pages[id]      << issue.url
-                uniformals[id]['indices'] << idx + 1
-                uniformals[id]['hashes']  << issue._hash
-
-            end
-        }
-
-        uniformals.reject!{ |k, v| v['hashes'].empty? || v['hashes'].size == 1 }
-        pages.reject!{ |k, v| v.size == 1 }
+        uniformals.reject! { |_, v| v['hashes'].size <= 1 }
+        pages.reject! { |_, v| v.size == 1 }
 
         return if pages.empty?
         register_results(  { 'uniformals' => uniformals, 'pages' => pages } )
@@ -89,17 +68,14 @@ class Uniformity < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Uniformity (Lack of central sanitization)',
-            :description    => %q{Analyzes the scan results and logs issues which persist across different pages.
+            name:        'Uniformity (Lack of central sanitization)',
+            description: %q{Analyzes the scan results and logs issues which persist across different pages.
                 This is usually a sign for a lack of a central/single point of input sanitization,
                 a bad coding practise.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :tags           => [ 'meta' ],
-            :version        => '0.1.1'
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            tags:        %w(meta uniformity),
+            version:     '0.1.2'
         }
     end
 
-end
-
-end
 end
