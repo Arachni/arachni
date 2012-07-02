@@ -67,8 +67,8 @@ class Trainer
     # @return   [Array<Arachni::Parser::Page>]
     #
     def flush
-        pages  = @pages.dup
-        @pages = []
+        pages = @pages.dup
+        @pages.clear
         pages
     end
 
@@ -110,7 +110,7 @@ class Trainer
         print_debug "Started for response with request ID: ##{res.request.id}"
 
         page_data           = @page.to_hash
-        page_data[:cookies] = train_cookies
+        page_data[:cookies] = find_new( :cookies )
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
@@ -119,8 +119,7 @@ class Trainer
             return
         end
 
-        page_data[:forms] = train_forms
-        page_data[:links] = train_links
+        [ :forms, :links ].each { |type| page_data[type] = find_new( type ) }
 
         if @updated
             page_data[:url]              = @parser.url
@@ -139,34 +138,14 @@ class Trainer
         print_debug 'Training complete.'
     end
 
-    def train_forms
-        cforms, form_cnt = update_forms( @parser.forms )
-        return [] if form_cnt == 0
+    def find_new( element_type )
+        elements, count = send( "update_#{element_type}".to_sym, @parser.send( element_type ) )
+        return [] if count == 0
 
         @updated = true
-        print_info "Found #{form_cnt} new forms."
+        print_info "Found #{count} new #{element_type}."
 
-        prepare_new_elements( cforms )
-    end
-
-    def train_links
-        links, link_cnt = update_links( @parser.links )
-        return [] if link_cnt == 0
-
-        @updated = true
-        print_info "Found #{link_cnt} new links."
-
-        prepare_new_elements( links )
-    end
-
-    def train_cookies
-        ccookies, cookie_cnt = update_cookies( @parser.cookies )
-        return [] if cookie_cnt == 0
-
-        @updated = true
-        print_info "Found #{cookie_cnt} new cookies."
-
-        prepare_new_elements( ccookies )
+        prepare_new_elements( elements )
     end
 
     def prepare_new_elements( elements )
@@ -174,7 +153,7 @@ class Trainer
     end
 
     def self.info
-      { name: 'Trainer' }
+        { name: 'Trainer' }
     end
 
 end
