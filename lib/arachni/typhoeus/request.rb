@@ -64,7 +64,7 @@ class Request
         @train
     end
 
-    def train!
+    def train
         @train = true
     end
 
@@ -72,7 +72,7 @@ class Request
         @update_cookies
     end
 
-    def update_cookies!
+    def update_cookies
         @update_cookies = true
     end
 

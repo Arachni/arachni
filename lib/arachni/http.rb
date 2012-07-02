@@ -338,8 +338,8 @@ class HTTP
             opts[:timeout]         = timeout if timeout
 
             req = Typhoeus::Request.new( curl, opts )
-            req.train! if train
-            req.update_cookies! if update_cookies
+            req.train if train
+            req.update_cookies if update_cookies
             queue( req, async, &block )
             req
         }

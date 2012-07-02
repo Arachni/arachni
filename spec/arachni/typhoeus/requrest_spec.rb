@@ -37,20 +37,20 @@ describe Typhoeus::Request do
         end
     end
 
-    describe '#train!' do
+    describe '#train' do
         it 'should set train? to return true' do
             req = Typhoeus::Request.new( '' )
             req.train?.should be_false
-            req.train!
+            req.train
             req.train?.should be_true
         end
     end
 
-    describe '#update_cookies!' do
+    describe '#update_cookies' do
         it 'should set update_cookies? to return true' do
             req = Typhoeus::Request.new( '' )
             req.update_cookies?.should be_false
-            req.update_cookies!
+            req.update_cookies
             req.update_cookies?.should be_true
         end
     end
