@@ -51,30 +51,30 @@ module ElementDB
         @@cookies = Set.new
     end
 
-    def init_db_from_page!( page )
-        init_links!( page.links )
-        init_forms!( page.forms )
-        init_cookies!( page.cookies )
+    def init_db_from_page( page )
+        init_links( page.links )
+        init_forms( page.forms )
+        init_cookies( page.cookies )
     end
 
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
-    def init_forms!( forms )
+    def init_forms( forms )
       @@forms |= forms.map { |form| form.id }
     end
 
     #
     # Initializes @@links with the links found during the crawl/analysis
     #
-    def init_links!( links )
+    def init_links( links )
       @@links |= links.map { |link| link.id }
     end
 
     #
     # Initializes @@cookies with the cookies found during the crawl/analysis
     #
-    def init_cookies!( cookies )
+    def init_cookies( cookies )
       @@cookies = cookies
     end
 

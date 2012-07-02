@@ -38,7 +38,7 @@ describe Arachni::Module::ElementDB do
             ]
         )
 
-        @edb.init_db_from_page!( @page )
+        @edb.init_db_from_page( @page )
     end
 
     describe '#update_links' do
