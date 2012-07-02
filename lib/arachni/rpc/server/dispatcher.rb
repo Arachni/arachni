@@ -92,7 +92,7 @@ class Dispatcher
 
         if @opts.pool_size > 0
             print_status( 'Warming up the pool...' )
-            @opts.pool_size.times{ add_instance_to_pool! }
+            @opts.pool_size.times{ add_instance_to_pool }
         end
 
         print_status( 'Initialization complete.' )
@@ -124,7 +124,7 @@ class Dispatcher
 
         # just to make sure...
         owner = owner.to_s
-        ::EM.next_tick { add_instance_to_pool! }
+        ::EM.next_tick { add_instance_to_pool }
         @pool.pop do |cjob|
             cjob['owner']     = owner
             cjob['starttime'] = Time.now
@@ -304,7 +304,7 @@ USAGE
         @server.shutdown
     end
 
-    def add_instance_to_pool!
+    def add_instance_to_pool
         owner = 'dispatcher'
         exception_jail {
 
