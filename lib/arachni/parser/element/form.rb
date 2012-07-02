@@ -253,7 +253,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         if elem.original? || elem.sample?
             id = elem.audit_id
             return true if audited?( id )
-            audited!( id )
+            audited( id )
         end
         false
     end

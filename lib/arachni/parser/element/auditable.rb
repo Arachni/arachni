@@ -305,7 +305,7 @@ module Auditable
             on_complete( req, elem, &block )
         end
 
-        audited!( audit_id )
+        audited( audit_id )
         true
     end
 
@@ -493,7 +493,7 @@ module Auditable
     #
     # @param  [String]  audit_id  a string returned by {#audit_id}
     #
-    def audited!( audit_id )
+    def audited( audit_id )
         @@audited << audit_id
     end
 
