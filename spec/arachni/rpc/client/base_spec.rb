@@ -14,7 +14,7 @@ class Server
         if block_given?
             start
             block.call self
-            kill_em!
+            kill_em
         end
     end
 

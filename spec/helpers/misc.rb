@@ -10,8 +10,8 @@ def spec_path
     @@root
 end
 
-def run_http!
-    Arachni::HTTP.instance.run
+def run_http
+    Arachni::HTTP.run
 end
 
 def random_port

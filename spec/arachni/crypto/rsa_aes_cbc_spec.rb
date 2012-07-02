@@ -1,5 +1,5 @@
 require_relative '../../spec_helper'
-require_testee!
+require_testee
 
 require 'tempfile'
 

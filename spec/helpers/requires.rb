@@ -3,6 +3,6 @@ def require_from_root( path )
 end
 
 
-def require_testee!
+def require_testee
     require Kernel::caller.first.split( ':' ).first.gsub( '/spec/arachni', '/lib/arachni' ).gsub( '_spec', '' )
 end

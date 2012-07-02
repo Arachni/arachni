@@ -8,7 +8,7 @@ def blocks
     @@blocks ||= {}
 end
 
-def kill_processes!
+def kill_processes
     kill_dispatchers
     while p = pids.pop
         blocks.delete( p )
@@ -92,7 +92,7 @@ def kill( pid )
     end
 end
 
-def kill_em!
+def kill_em
     while ::EM.reactor_running?
         ::EM.stop
         sleep( 0.1 )

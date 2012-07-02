@@ -22,7 +22,7 @@ describe Arachni::Parser::Element::Header do
         it 'should perform an appropriate request' do
             body = nil
             @header.submit( remove_id: true ) { |res| body = res.body }
-            run_http!
+            run_http
             body.should == @header.auditable.values.first
         end
     end
