@@ -523,34 +523,34 @@ describe Arachni::HTTP do
             end
             describe 'nil' do
                 it 'should not pass the response to the Trainer' do
-                    @http.trainer.init_from_page( @page )
+                    @http.trainer.init( @page )
                     @http.request( @url + '/elems' )
                     @http.run
-                    @http.trainer.flush_pages.should be_empty
+                    @http.trainer.flush.should be_empty
                 end
             end
             describe false do
                 it 'should not pass the response to the Trainer' do
-                    @http.trainer.init_from_page( @page )
+                    @http.trainer.init( @page )
                     @http.request( @url + '/elems', train: false )
                     @http.run
-                    @http.trainer.flush_pages.should be_empty
+                    @http.trainer.flush.should be_empty
                 end
             end
             describe true do
                 it 'should pass the response to the Trainer' do
-                    @http.trainer.init_from_page( @page )
+                    @http.trainer.init( @page )
                     @http.request( @url + '/elems', train: true )
                     @http.run
-                    @http.trainer.flush_pages.should be_any
+                    @http.trainer.flush.should be_any
                 end
 
                 context 'when a redirection leads to new elements' do
                     it 'should pass the response to the Trainer' do
-                        @http.trainer.init_from_page( @page )
+                        @http.trainer.init( @page )
                         @http.request( @url + '/train/redirect', train: true )
                         @http.run
-                        page = @http.trainer.flush_pages.first
+                        page = @http.trainer.flush.first
                         page.links.first.auditable.include?( 'msg' ).should be_true
                     end
                 end

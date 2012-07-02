@@ -636,10 +636,10 @@ class HTTP
                 # handle redirections
                 if res.redirection? && res.location.is_a?( String )
                     get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
-                        @trainer.add_response( res2 )
+                        @trainer.push( res2 )
                     end
                 else
-                    @trainer.add_response( res )
+                    @trainer.push( res )
                 end
             end
         end

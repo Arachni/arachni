@@ -734,12 +734,12 @@ class Framework
             ' conditions this may take a while.'
 
         # grab updated pages
-        http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
+        http.trainer.flush.each { |page| push_to_page_queue( page ) }
 
         # run all the queued HTTP requests and harvest the responses
         http.run
 
-        http.trainer.flush_pages.each { |page| push_to_page_queue( page ) }
+        http.trainer.flush.each { |page| push_to_page_queue( page ) }
     end
 
     #

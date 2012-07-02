@@ -427,7 +427,7 @@ describe Arachni::Module::Auditor do
                 context 'default' do
                     it 'should parse the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
                         # flush any existing pages from the buffer
-                        @framework.http.trainer.flush_pages
+                        @framework.http.trainer.flush
 
                         page = nil
                         @framework.http.get( @url + '/train/default' ) do |res|
@@ -444,7 +444,7 @@ describe Arachni::Module::Auditor do
                             # run audit requests
                             @framework.http.run
                             # feed the new pages/elements back to the queue
-                            pages |= @framework.http.trainer.flush_pages
+                            pages |= @framework.http.trainer.flush
                         end
 
                         issue = @framework.modules.results.first
@@ -457,7 +457,7 @@ describe Arachni::Module::Auditor do
                 context true do
                     it 'should parse all responses and feed any new elements back to the framework to be audited' do
                         # flush any existing pages from the buffer
-                        @framework.http.trainer.flush_pages
+                        @framework.http.trainer.flush
 
                         page = nil
                         @framework.http.get( @url + '/train/true' ) do |res|
@@ -474,7 +474,7 @@ describe Arachni::Module::Auditor do
                             # run audit requests
                             @framework.http.run
                             # feed the new pages/elements back to the queue
-                            pages |= @framework.http.trainer.flush_pages
+                            pages |= @framework.http.trainer.flush
                         end
 
                         issue = issues.first
@@ -487,7 +487,7 @@ describe Arachni::Module::Auditor do
                 context false do
                     it 'should skip analysis' do
                         # flush any existing pages from the buffer
-                        @framework.http.trainer.flush_pages
+                        @framework.http.trainer.flush
 
                         page = nil
                         @framework.http.get( @url + '/train/true' ) do |res|
@@ -498,7 +498,7 @@ describe Arachni::Module::Auditor do
                         auditor = Arachni::Module::Base.new( page )
                         auditor.audit( @seed, train: false )
                         @framework.http.run
-                        @framework.http.trainer.flush_pages.should be_empty
+                        @framework.http.trainer.flush.should be_empty
                     end
                 end
             end

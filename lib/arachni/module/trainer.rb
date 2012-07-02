@@ -36,8 +36,8 @@ class Trainer
 
     # @param    [Arachni::Options]  opts
     def initialize( opts )
-        @opts     = opts
-        @updated  = false
+        @opts    = opts
+        @updated = false
 
         @pages = []
     end
@@ -47,7 +47,7 @@ class Trainer
     #
     # @param    [Arachni::Parser::Page]    page
     #
-    def init_from_page( page )
+    def init( page )
         init_db_from_page( page )
         self.page = page
     end
@@ -66,7 +66,7 @@ class Trainer
     #
     # @return   [Array<Arachni::Parser::Page>]
     #
-    def flush_pages
+    def flush
         pages  = @pages.dup
         @pages = []
         pages
@@ -78,11 +78,11 @@ class Trainer
     # If the response contains new elements it creates a new page
     # with those elements and pushes it a buffer.
     #
-    # These new pages can then be retrieved by flushing the buffer (#flush_pages).
+    # These new pages can then be retrieved by flushing the buffer (#flush).
     #
     # @param  [Typhoeus::Response]  res
     #
-    def add_response( res )
+    def push( res )
         if !@page
             print_debug 'No seed page assigned yet.'
             return
@@ -97,6 +97,7 @@ class Trainer
         print_error( e.to_s )
         print_error_backtrace( e )
     end
+    alias :<< :push
 
     private
 

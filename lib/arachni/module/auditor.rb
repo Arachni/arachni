@@ -228,7 +228,7 @@ module Auditor
 
                 # if the file exists let the trainer parse it since it may
                 # contain brand new data to audit
-                http.trainer.add_response( res )
+                http.trainer.push( res )
             end
         end
          true
