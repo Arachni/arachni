@@ -21,7 +21,7 @@ describe Arachni::Module::Trainer do
         @page = Arachni::Parser::Page.from_http_response( request( @opts.url ), @opts )
 
         @trainer = Arachni::Module::Trainer.new( @opts )
-        @trainer.init_from_page!( @page )
+        @trainer.init_from_page( @page )
     end
 
     describe '#add_response' do

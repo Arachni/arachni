@@ -47,7 +47,7 @@ class Trainer
     #
     # @param    [Arachni::Parser::Page]    page
     #
-    def init_from_page!( page )
+    def init_from_page( page )
         init_db_from_page( page )
         self.page = page
     end

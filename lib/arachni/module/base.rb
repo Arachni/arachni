@@ -74,7 +74,7 @@ class Base
         #
         @@__last_url ||= ''
         if @@__last_url != page.url
-            http.trainer.init_from_page!( page )
+            http.trainer.init_from_page( page )
             @@__last_url = page.url
         end
     end

@@ -523,7 +523,7 @@ describe Arachni::HTTP do
             end
             describe 'nil' do
                 it 'should not pass the response to the Trainer' do
-                    @http.trainer.init_from_page!( @page )
+                    @http.trainer.init_from_page( @page )
                     @http.request( @url + '/elems' )
                     @http.run
                     @http.trainer.flush_pages.should be_empty
@@ -531,7 +531,7 @@ describe Arachni::HTTP do
             end
             describe false do
                 it 'should not pass the response to the Trainer' do
-                    @http.trainer.init_from_page!( @page )
+                    @http.trainer.init_from_page( @page )
                     @http.request( @url + '/elems', train: false )
                     @http.run
                     @http.trainer.flush_pages.should be_empty
@@ -539,7 +539,7 @@ describe Arachni::HTTP do
             end
             describe true do
                 it 'should pass the response to the Trainer' do
-                    @http.trainer.init_from_page!( @page )
+                    @http.trainer.init_from_page( @page )
                     @http.request( @url + '/elems', train: true )
                     @http.run
                     @http.trainer.flush_pages.should be_any
@@ -547,7 +547,7 @@ describe Arachni::HTTP do
 
                 context 'when a redirection leads to new elements' do
                     it 'should pass the response to the Trainer' do
-                        @http.trainer.init_from_page!( @page )
+                        @http.trainer.init_from_page( @page )
                         @http.request( @url + '/train/redirect', train: true )
                         @http.run
                         page = @http.trainer.flush_pages.first
