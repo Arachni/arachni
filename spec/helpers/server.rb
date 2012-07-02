@@ -12,8 +12,8 @@ end
 
 def start_server( name )
     @@server_pids << fork {
-        #$stdout.reopen('/dev/null', 'w')
-        #$stderr.reopen('/dev/null', 'w')
+        $stdout.reopen('/dev/null', 'w')
+        $stderr.reopen('/dev/null', 'w')
         exec 'ruby', @@servers[name][:path], '-p ' + @@servers[name][:port].to_s
     }
     Process.detach( @@server_pids.last )
