@@ -71,34 +71,36 @@ shared_examples_for "module" do
         targets  = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
         elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
 
-        targets.each do |target|
-            context target do
-                before( :all ) { options.url = url + target.downcase if target.to_s.downcase != 'generic' }
+        context "when the target is" do
+            targets.each do |target|
+                context target do
+                    before( :all ) { options.url = url + target.downcase if target.to_s.downcase != 'generic' }
 
-                elements.each do |type|
-                    it "should audit #{type}" do
-                        if !issue_count && !issue_count_per_target && !issue_count_per_element
-                            raise 'No issue count provided via a suitable method.'
+                    elements.each do |type|
+                        it "should log vulnerable #{type}s" do
+                            if !issue_count && !issue_count_per_target && !issue_count_per_element
+                                raise 'No issue count provided via a suitable method.'
+                            end
+
+                            audit type.to_sym
+
+                            if issue_count
+                                issues.size.should == issue_count
+                            end
+
+                            if issue_count_per_target
+                                issues.size.should == issue_count_per_target[target.downcase.to_sym]
+                            end
+
+                            if issue_count_per_element
+                                issues.size.should == issue_count_per_element[type]
+                            end
+
+                            instance_eval &block if block_given?
                         end
-
-                        audit type.to_sym
-
-                        if issue_count
-                            issues.size.should == issue_count
-                        end
-
-                        if issue_count_per_target
-                            issues.size.should == issue_count_per_target[target.downcase.to_sym]
-                        end
-
-                        if issue_count_per_element
-                            issues.size.should == issue_count_per_element[type]
-                        end
-
-                        instance_eval &block if block_given?
                     end
-                end
 
+                end
             end
         end
     end
