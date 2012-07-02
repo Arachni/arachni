@@ -28,7 +28,7 @@ module Arachni::Parser::Element::Analysis::RDiff
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track of audited elements
-        @@__rdiff_audited ||= Set.new
+        @@rdiff_audited ||= Set.new
     end
 
     RDIFF_OPTIONS =  {
@@ -83,18 +83,18 @@ module Arachni::Parser::Element::Analysis::RDiff
         # don't continue if there's a missing value
         @auditable.values.each { |val| return if !val || val.empty? }
 
-        return if __rdiff_audited?
-        __rdiff_audited!
+        return if rdiff_audited?
+        rdiff_audited
 
         responses = {
             # will hold the original, default, response that results from submitting
             orig: nil,
 
             # will hold responses of boolean injections
-            good: { },
+            good: {},
 
             # will hold responses of fault injections
-            bad:  { }
+            bad:  {}
         }
 
         # submit the element, as is, opts[:precision] amount of times and
@@ -208,7 +208,7 @@ module Arachni::Parser::Element::Analysis::RDiff
                                 }
                             )
 
-                            print_ok( "In #{res['elem'].type} var '#{key}' ( #{url} )" )
+                            print_ok "In #{res['elem'].type} var '#{key}' ( #{url} )"
                         end
                     end
 
@@ -218,15 +218,15 @@ module Arachni::Parser::Element::Analysis::RDiff
     end
 
     private
-    def __rdiff_audited!
-        @@__rdiff_audited << __rdiff_audit_id
+    def rdiff_audited
+        @@rdiff_audited << rdiff_audit_id
     end
 
-    def __rdiff_audited?
-        @@__rdiff_audited.include?( __rdiff_audit_id )
+    def rdiff_audited?
+        @@rdiff_audited.include?( rdiff_audit_id )
     end
 
-    def __rdiff_audit_id
+    def rdiff_audit_id
         @action + @auditable.keys.to_s
     end
 
