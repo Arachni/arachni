@@ -108,7 +108,7 @@ class CLI
                 # start the show!
                 @arachni.run {
                     kill_interrupt_handler
-                    clear_screen!
+                    clear_screen
                 }
                 print_stats
             }
@@ -223,7 +223,7 @@ class CLI
              Thread.new {
 
                 c = gets[0]
-                clear_screen!
+                clear_screen
                 unmute
                 case c
 
@@ -252,11 +252,11 @@ class CLI
             }
 
             mute
-            clear_screen!
+            clear_screen
             loop do
 
                 print_line( restr, true )
-                move_to_home!
+                move_to_home
                 print_info( restr( 'Results thus far:' ), true )
 
                 begin

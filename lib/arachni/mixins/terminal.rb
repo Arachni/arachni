@@ -33,7 +33,7 @@ module Mixins
 #        include ProgressBar
 #
 #        # clear the screen
-#        clear_screen!
+#        clear_screen
 #
 #        start_time = Time.now
 #
@@ -42,7 +42,7 @@ module Mixins
 #            |i|
 #
 #            # move the cursor to its home, top-left of the screen.
-#            move_to_home!
+#            move_to_home
 #
 #            prog =  i / Float( MAX ) * 100
 #
@@ -87,14 +87,14 @@ module Terminal
     #
     # Clear the bottom of the screen
     #
-    def clear_screen!
+    def clear_screen
         print "\e[2J"
     end
 
     #
     # Moves cursor top left to its home
     #
-    def move_to_home!
+    def move_to_home
         print "\e[H"
     end
 
