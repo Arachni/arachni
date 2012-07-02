@@ -91,7 +91,7 @@ class Trainer
         @parser = Parser.new( @opts, res )
         return false if !@parser.text? || @parser.skip?( @parser.url )
 
-        analyze!( res )
+        analyze( res )
         true
     rescue => e
         print_error( e.to_s )
@@ -105,7 +105,7 @@ class Trainer
     #
     # @param   [Typhoeus::Response]  res
     #
-    def analyze!( res )
+    def analyze( res )
         print_debug "Started for response with request ID: ##{res.request.id}"
 
         page_data           = @page.to_hash
