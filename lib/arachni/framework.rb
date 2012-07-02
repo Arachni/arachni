@@ -515,10 +515,10 @@ class Framework
     #
     def clean_up( skip_audit_queue = false )
         @status = :cleanup
-        
-        @opts.finish_datetime = Time.now
-        @opts.start_datetime ||= @opts.finish_datetime
-        
+
+        @opts.finish_datetime  = Time.now
+        @opts.start_datetime ||= Time.now
+
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
         # make sure this is disabled or it'll break report output
