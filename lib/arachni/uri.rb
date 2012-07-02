@@ -190,6 +190,12 @@ class URI
                 return v
             end
 
+            # we're not smart enough for scheme-less URLs and if we're to go
+            # into heuristics then there's no reason to not just use Addressable's parser
+            if url.start_with?( '//' )
+                return cache[c_url] = addressable_parse( c_url ).freeze
+            end
+
             url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
             url = deep_decode( url )
 
@@ -256,17 +262,19 @@ class URI
                 h.merge!( Hash[{ k => val.freeze }] )
             end.freeze
         rescue => e
-            #ap c_url
-            #ap url
-            #ap e
-            #ap e.backtrace
+            out = Arachni::UI::Output
             begin
-                out = Arachni::UI::Output
-                out.print_error "Failed to fast-parse '#{c_url}', please report this.#{e}"
+                out.print_error "Failed to fast-parse '#{c_url}', please report this."
+                out.print_error "Error: #{e}"
                 out.print_error "Falling back to slow-parse."
                 out.print_error_backtrace( e )
+
                 cache[c_url] = addressable_parse( c_url ).freeze
-            rescue
+            rescue => ex
+                out.print_error "Failed to parse '#{c_url}', please report this."
+                out.print_error "Error: #{ex}"
+                out.print_error_backtrace( ex )
+
                 cache[c_url] = :err
                 nil
             end
@@ -296,9 +304,10 @@ class URI
     #
     def self.addressable_parse( url )
         u = Addressable::URI.parse( html_decode( url.to_s ) ).normalize
-        u.path.gsub!( /\/+/, '/' )
         u.fragment = nil
         h = u.to_hash
+
+        h[:path].gsub!( /\/+/, '/' ) if h[:path]
         if h[:user]
             h[:userinfo] = h.delete( :user )
             h[:userinfo] << ":#{h.delete( :password )}" if h[:password]
@@ -390,23 +399,12 @@ class URI
             normalized << '?' + components[:query] if components[:query]
 
             cache[c_url] = normalized.freeze
+        rescue => e
+            out = Arachni::UI::Output
+            out.print_error "Failed to normalize '#{c_url}', please report this."
+            out.print_error "Error: #{e}"
+            out.print_error_backtrace( e )
 
-            #addr = Addressable::URI.parse( c_url ).normalize
-            #addr.fragment = nil
-            #addr.path.gsub!( /\/+/, '/' )
-            #if addr.to_s != normalized
-            #    ap c_url
-            #    ap components
-            #    ap normalized
-            #    ap addr.to_s
-            #    ap '~~~'
-            #end
-            #@@normalize_cache[c_url]
-        rescue# => e
-            #ap c_url
-            #ap url
-            #ap e
-            #ap e.backtrace
             cache[c_url] = :err
             nil
         end
