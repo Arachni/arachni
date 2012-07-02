@@ -26,3 +26,5 @@ get '/high_response_time' do
         <a href='?sleep=0'>Inject here</a>
 EOHTML
 end
+
+get( '/sleep' ) { sleep 10 }

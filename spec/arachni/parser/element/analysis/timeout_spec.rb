@@ -25,6 +25,19 @@ describe Arachni::Parser::Element::Analysis::Timeout do
 
     before { Arachni::Framework.reset }
 
+    describe '#responsive?' do
+        context 'when the server is responsive' do
+            it 'should return true' do
+                Arachni::Parser::Element::Link.new( @url + '/true' ).responsive?.should be_true
+            end
+        end
+        context 'when the server is not responsive' do
+            it 'should return false' do
+                Arachni::Parser::Element::Link.new( @url + '/sleep' ).responsive?( 1 ).should be_false
+            end
+        end
+    end
+
     describe '#timeout_analysis' do
         before do
             @timeout_opts = {

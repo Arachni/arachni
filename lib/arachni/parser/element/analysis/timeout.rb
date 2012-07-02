@@ -29,13 +29,13 @@ require 'set'
 # * Loop 1 ({#timeout_analysis}) -- Populates the candidate queue. We're picking the low hanging
 #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
 #   - Initial probing for candidates -- If element times out it is added to a queue.
-#   - Stabilization ({#ensure_responsiveness!}) -- The element is submitted with its default values in
+#   - Stabilization ({#responsive?}) -- The element is submitted with its default values in
 #     order to wait until the effects of the timing attack have worn off.
 # * Loop 2 ({timeout_analysis_phase_2}) -- Verifies the candidates. This is much more delicate so the
 #   concurrent requests are lowered to pairs.
 #   - Liveness test -- Ensures that the webapp is alive and not just timing-out by default
 #   - Verification using an increased timeout delay -- Any elements that time out again are logged.
-#   - Stabilization ({#ensure_responsiveness!})
+#   - Stabilization ({#responsive?})
 #
 # Ideally, all requests involved with timing attacks would be run in sync mode
 # but the performance penalties are too high, thus we compromise and make the best of it
@@ -66,7 +66,7 @@ module Arachni::Parser::Element::Analysis::Timeout
         # @return   [Set]
         #
         def @@parent.timeout_loaded_modules
-            @@__timeout_loaded_modules
+            @@timeout_loaded_modules
         end
 
         #
@@ -76,7 +76,7 @@ module Arachni::Parser::Element::Analysis::Timeout
         # @return   [Queue]
         #
         def @@parent.timeout_audit_blocks
-            @@__timeout_audit_blocks
+            @@timeout_audit_blocks
         end
 
         #
@@ -84,42 +84,42 @@ module Arachni::Parser::Element::Analysis::Timeout
         #                           (audit blocks + candidate elements)
         #
         def @@parent.current_timeout_audit_operations_cnt
-            @@__timeout_audit_blocks.size + @@__timeout_candidates.size
+            @@timeout_audit_blocks.size + @@timeout_candidates.size
         end
 
         def @@parent.add_timeout_audit_block( &block )
-            @@__timeout_audit_operations_cnt += 1
-            @@__timeout_audit_blocks << block
+            @@timeout_audit_operations_cnt += 1
+            @@timeout_audit_blocks << block
         end
 
         def @@parent.add_timeout_candidate( elem )
-            @@__timeout_audit_operations_cnt += 1
-            @@__timeout_candidates << elem
+            @@timeout_audit_operations_cnt += 1
+            @@timeout_candidates << elem
         end
 
         #
         # @return   [Bool]  true if timeout attacks are currently running
         #
         def @@parent.running_timeout_attacks?
-            @@__running_timeout_attacks
+            @@running_timeout_attacks
         end
 
         #
         # Adds a block to be executed every time a timing attack is performed
         #
         def @@parent.on_timing_attacks( &block )
-            @@__on_timing_attacks << block
+            @@on_timing_attacks << block
         end
 
         #
         # @return   [Integer]    amount of timeout-audit operations
         #
         def @@parent.timeout_audit_operations_cnt
-            @@__timeout_audit_operations_cnt
+            @@timeout_audit_operations_cnt
         end
 
         def @@parent.call_on_timing_blocks( res, elem )
-            @@__on_timing_attacks.each { |block| block.call( res, elem ) }
+            @@on_timing_attacks.each { |block| block.call( res, elem ) }
         end
 
         #
@@ -127,14 +127,14 @@ module Arachni::Parser::Element::Analysis::Timeout
         # and logs the candidate elements.
         #
         def @@parent.timeout_audit_run
-            @@__running_timeout_attacks = true
+            @@running_timeout_attacks = true
 
-            while !@@__timeout_audit_blocks.empty?
-                @@__timeout_audit_blocks.pop.call
+            while !@@timeout_audit_blocks.empty?
+                @@timeout_audit_blocks.pop.call
             end
 
-            while !@@__timeout_candidates.empty?
-                self.timeout_analysis_phase_2( @@__timeout_candidates.pop )
+            while !@@timeout_candidates.empty?
+                self.timeout_analysis_phase_2( @@timeout_candidates.pop )
             end
         end
 
@@ -155,7 +155,7 @@ module Arachni::Parser::Element::Analysis::Timeout
         def @@parent.timeout_analysis_phase_2( elem )
 
             # reset the audited list since we're going to re-audit the elements
-            # @@__timeout_audited = Set.new
+            # @@timeout_audited = Set.new
 
             opts = elem.opts
             opts[:timeout] *= 2
@@ -184,7 +184,7 @@ module Arachni::Parser::Element::Analysis::Timeout
                             # end of story.
                             # c_opts[:verification] = true
                             elem.auditor.log( c_opts, c_res )
-                            elem.ensure_responsiveness!
+                            elem.responsive?
                         else
                             elem.print_info( 'Verification failed.' )
                         end
@@ -203,22 +203,22 @@ module Arachni::Parser::Element::Analysis::Timeout
 
         # holds timing-attack performing Procs to be run after all
         # non-timing-attack modules have finished.
-        @@__timeout_audit_blocks   ||= Queue.new
+        @@timeout_audit_blocks   ||= Queue.new
 
-        @@__timeout_audit_operations_cnt ||= 0
+        @@timeout_audit_operations_cnt ||= 0
 
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
-        @@__timeout_candidates     ||= Queue.new
+        @@timeout_candidates     ||= Queue.new
 
         # modules which have called the timing attack audit method (audit_timeout)
         # we're interested in the amount, not the names, and is used to
         # determine scan progress
-        @@__timeout_loaded_modules ||= Set.new
+        @@timeout_loaded_modules ||= Set.new
 
-        @@__on_timing_attacks      ||= []
+        @@on_timing_attacks      ||= []
 
-        @@__running_timeout_attacks ||= false
+        @@running_timeout_attacks ||= false
     end
 
     #
@@ -231,19 +231,18 @@ module Arachni::Parser::Element::Analysis::Timeout
     #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
     #
     def timeout_analysis( strings, opts )
-        @@__timeout_loaded_modules << @auditor.fancy_name
+        @@timeout_loaded_modules << @auditor.fancy_name
 
         @@parent.add_timeout_audit_block {
             delay = opts[:timeout]
 
             audit_timeout_debug_msg( 1, delay )
-            timing_attack( strings, opts ) do |res, c_opts, elem|
+            timing_attack( strings, opts ) do |_, _, elem|
                 elem.auditor = @auditor
 
-                print_info( "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}" )
+                print_info "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
-                elem.ensure_responsiveness!
-                @@parent.add_timeout_candidate( elem )
+                @@parent.add_timeout_candidate( elem ) if elem.responsive?
             end
         }
     end
@@ -253,11 +252,15 @@ module Arachni::Parser::Element::Analysis::Timeout
     #
     # That is to make sure that responsiveness has been restored before progressing further.
     #
-    def ensure_responsiveness!
+    # @param    [Float] limit   how much time to afford the server to respond
+    #
+    # @return   [Bool] +true+ if server responds within the given time limit, +false+ otherwise
+    #
+    def responsive?( limit = 120.0 )
         d_opts = {
             skip_orig: true,
             redundant: true,
-            timeout:   120000,
+            timeout:   limit * 1000,
             silent:    true,
             async:     false
         }
@@ -270,13 +273,15 @@ module Arachni::Parser::Element::Analysis::Timeout
         @auditable = @orig
         res = submit( d_opts ).response
 
+        @opts.merge!( orig_opts )
+
         if !res.timed_out?
             print_info( 'Server seems responsive again.' )
         else
             print_error( 'Max waiting time exceeded, the server may be dead.' )
+            return false
         end
 
-        @opts.merge!( orig_opts )
         true
     end
 
