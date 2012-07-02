@@ -268,7 +268,7 @@ class CLI
                 end
 
                 print_info( restr( 'Continue? (hit \'enter\' to continue, \'r\' to generate reports and \'e\' to exit)' ), true )
-                flush!
+                flush
 
                 ::IO::select( nil, nil, nil, 0.3 )
             end

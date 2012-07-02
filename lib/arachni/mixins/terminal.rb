@@ -56,7 +56,7 @@ module Mixins
 #
 #
 #            # make sure that everything is sent out on time
-#            flush!
+#            flush
 #            sleep 0.003
 #        }
 #
@@ -101,7 +101,7 @@ module Terminal
     #
     # Flushes the STDOUT buffer
     #
-    def flush!
+    def flush
         $stdout.flush
     end
 
