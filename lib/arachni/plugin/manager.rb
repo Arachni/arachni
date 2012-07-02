@@ -132,7 +132,7 @@ class Manager < Arachni::Component::Manager
     #
     # Blocks until all plug-ins have finished executing.
     #
-    def block!
+    def block
         while !@jobs.empty?
             print_debug
             print_debug( "Waiting on the following (#{@jobs.size}) plugins to finish:" )

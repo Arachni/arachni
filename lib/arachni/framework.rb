@@ -527,7 +527,7 @@ class Framework
         @running = false
 
         # wait for the plugins to finish
-        @plugins.block!
+        @plugins.block
 
         # a plug-in may have updated the page queue, rock it!
         audit_queue if !skip_audit_queue

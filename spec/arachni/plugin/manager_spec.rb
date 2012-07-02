@@ -21,7 +21,7 @@ describe Arachni::Plugin::Manager do
         context 'when gem dependencies are met' do
             it 'should run loaded plugins' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.results['default'][:results].should be_true
             end
         end
@@ -31,7 +31,7 @@ describe Arachni::Plugin::Manager do
                 begin
                     @plugins.load( 'bad' )
                     @plugins.run
-                    @plugins.block!
+                    @plugins.block
                 rescue
                     raised = true
                 end
@@ -65,13 +65,13 @@ describe Arachni::Plugin::Manager do
             it 'should return true' do
                 @plugins.run
                 @plugins.busy?.should be_true
-                @plugins.block!
+                @plugins.block
             end
         end
         context 'when plugins have finished' do
             it 'should return false' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.busy?.should be_false
             end
         end
@@ -82,13 +82,13 @@ describe Arachni::Plugin::Manager do
             it 'should return the names of the running plugins' do
                 @plugins.run
                 @plugins.job_names.should == @plugins.keys
-                @plugins.block!
+                @plugins.block
             end
         end
         context 'when plugins have finished' do
             it 'should return an empty array' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.job_names.should be_empty
             end
         end
@@ -99,13 +99,13 @@ describe Arachni::Plugin::Manager do
             it 'should return the names of the running plugins' do
                 @plugins.run
                 @plugins.jobs.first.instance_of?( Thread ).should be_true
-                @plugins.block!
+                @plugins.block
             end
         end
         context 'when plugins have finished' do
             it 'should return an empty array' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.jobs.should be_empty
             end
         end
@@ -117,7 +117,7 @@ describe Arachni::Plugin::Manager do
                 @plugins.load( 'loop' )
                 @plugins.run
                 ret = @plugins.kill( 'loop' )
-                @plugins.block!
+                @plugins.block
 
                 ret.should be_true
                 @plugins.delete( 'loop' )
@@ -127,7 +127,7 @@ describe Arachni::Plugin::Manager do
         context 'when plugin is not running' do
             it 'should return false' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.kill( 'default' ).should be_false
             end
         end
@@ -140,7 +140,7 @@ describe Arachni::Plugin::Manager do
                 @plugins.run
                 @plugins.get( 'loop' ).is_a?( Thread ).should be_true
                 @plugins.kill( 'loop' )
-                @plugins.block!
+                @plugins.block
 
                 @plugins.delete( 'loop' )
             end
@@ -149,7 +149,7 @@ describe Arachni::Plugin::Manager do
         context 'when plugin is not running' do
             it 'should return nil' do
                 @plugins.run
-                @plugins.block!
+                @plugins.block
                 @plugins.get( 'default' ).should be_nil
             end
         end
