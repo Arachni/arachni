@@ -17,8 +17,8 @@
 
 require_relative '../lib/arachni'
 
-Arachni::Options.instance.parse!
+Arachni::Options.parse
 
-require Arachni::Options.instance.dir['lib'] + 'ui/cli/cli'
+require Arachni::Options.dir['lib'] + 'ui/cli/cli'
 
 Arachni::UI::CLI.new( Arachni::Options.instance ).run

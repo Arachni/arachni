@@ -17,7 +17,7 @@
 
 require_relative '../lib/arachni'
 
-Arachni::Options.instance.parse!
-require Arachni::Options.instance.dir['lib'] + 'ui/rpc/rpc'
+Arachni::Options.parse
+require Arachni::Options.dir['lib'] + 'ui/rpc/rpc'
 
 Arachni::UI::RPC.new( Arachni::Options.instance ).run

@@ -628,7 +628,7 @@ class Options
         end
     end
 
-    def parse!( require_url = true )
+    def parse( require_url = true )
         # Construct getops struct
         opts = GetoptLong.new(
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],

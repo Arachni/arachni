@@ -17,10 +17,8 @@
 
 require_relative '../lib/arachni'
 
-Arachni::Options.instance.parse!
+Arachni::Options.parse
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require Arachni::Options.dir['lib'] + 'rpc/server/dispatcher'
 
-::EM.run {
-    Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance )
-}
+::EM.run { Arachni::RPC::Server::Dispatcher.new( Arachni::Options.instance ) }

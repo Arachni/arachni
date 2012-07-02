@@ -21,7 +21,7 @@ require_relative '../lib/arachni'
 include Arachni
 include UI::Output
 
-Options.parse!( false )
+Options.parse( false )
 
 if Options.help
     puts <<EOHELP

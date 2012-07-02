@@ -17,7 +17,7 @@
 
 require_relative '../lib/arachni'
 
-Arachni::Options.instance.parse!
+Arachni::Options.parse
 
 def print_help( root )
         puts <<USAGE
@@ -41,9 +41,8 @@ def print_help( root )
 USAGE
 end
 
-options = Arachni::Options.instance
-if options.help
-    print_help( options.root_path )
+if Arachni::Options.help
+    print_help( Arachni::Options.root_path )
     exit
 end
 
@@ -51,5 +50,5 @@ require 'eventmachine'
 
 ::EM.run do
     # Sinatra will run automatically
-    require Arachni::Options.instance.dir['lib'] + 'ui/web/server'
+    require Arachni::Options.dir['lib'] + 'ui/web/server'
 end
