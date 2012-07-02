@@ -263,6 +263,8 @@ class Issue
         @method = @method.to_s.upcase
         @mod_name = opts[:name]
 
+        @internal_modname ||= ''
+
         @tags ||= []
     end
 

@@ -263,7 +263,7 @@ class AuditStore
             issue.headers.delete( :request )
             issue.headers.delete( :response )
 
-            new_issues[__id].internal_modname =
+            new_issues[__id].internal_modname ||=
                 get_internal_module_name( new_issues[__id].mod_name )
             new_issues[__id].variations << issue.deep_clone
 
