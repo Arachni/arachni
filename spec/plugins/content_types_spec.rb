@@ -1,0 +1,108 @@
+require_relative '../spec_helper'
+
+describe name_from_filename do
+    include_examples 'plugin'
+
+    before ( :all ) do
+        Arachni::Options.url = url
+    end
+
+    def results
+        framework.plugins.results[name_from_filename][:results]
+    end
+
+    def default_results
+        yaml_load <<YAML
+---
+image/png:
+- :url: __URL__png
+  :method: GET
+  :params:
+- :url: __URL____sinatra__/404.png
+  :method: GET
+  :params:
+application/vnd.ms-excel:
+- :url: __URL__excel
+  :method: GET
+  :params:
+YAML
+    end
+
+    def results_with_options
+        yaml_load <<YAML
+---
+text/html;charset=utf-8:
+- :url: __URL__
+  :method: GET
+  :params:
+- :url: __URL__sitemap.xml
+  :method: GET
+  :params:
+- :url: __URL__sitemap.xml.gz
+  :method: GET
+  :params:
+text/css:
+- :url: __URL__css
+  :method: GET
+  :params:
+YAML
+    end
+
+    def results_with_empty_options
+        yaml_load <<YAML
+---
+text/html;charset=utf-8:
+- :url: __URL__
+  :method: GET
+  :params:
+- :url: __URL__sitemap.xml
+  :method: GET
+  :params:
+- :url: __URL__sitemap.xml.gz
+  :method: GET
+  :params:
+text/css:
+- :url: __URL__css
+  :method: GET
+  :params:
+image/png:
+- :url: __URL__png
+  :method: GET
+  :params:
+- :url: __URL____sinatra__/404.png
+  :method: GET
+  :params:
+application/vnd.ms-excel:
+- :url: __URL__excel
+  :method: GET
+  :params:
+YAML
+    end
+
+    def yaml_load( yaml )
+        YAML.load yaml.gsub( '__URL__', url )
+    end
+
+    context 'with default options' do
+        it "should not log 'text' content types" do
+            run
+            results.should == default_results
+        end
+    end
+
+    context 'with custom \'exclude\' option' do
+        it "should not log the provided content types" do
+            Arachni::Options.plugins = { name_from_filename => { 'exclude' => 'image|excel' } }
+            run
+            results.should == results_with_options
+        end
+    end
+
+    context 'with an empty \'exclude\' option' do
+        it "should log everything" do
+            Arachni::Options.plugins = { name_from_filename => { 'exclude' => '' } }
+            run
+            results.should == results_with_empty_options
+        end
+    end
+end
