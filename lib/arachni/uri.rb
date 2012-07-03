@@ -218,23 +218,27 @@ class URI
                         url = splits.shift
                     end
 
-                    splits = splits.last.split( '/', 2 )
-                    has_path = false if !splits[1] || splits[1].empty?
+                    if !splits.empty?
+                        splits = splits.last.split( '/', 2 )
+                        has_path = false if !splits[1] || splits[1].empty?
 
-                    url = splits.last
+                        url = splits.last
 
-                    splits = splits.first.split( ':', 2 )
-                    if splits.size == 2
-                        host = splits.first
-                        components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
-                        components[:port] = nil if components[:port] == 80
+                        splits = splits.first.split( ':', 2 )
+                        if splits.size == 2
+                            host = splits.first
+                            components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
+                            components[:port] = nil if components[:port] == 80
+                        else
+                            host = splits.last
+                        end
+
+                        if components[:host] = host
+                            url.gsub!( host, '' )
+                            components[:host].downcase!
+                        end
                     else
-                        host = splits.last
-                    end
-
-                    if components[:host] = host
-                        url.gsub!( host, '' )
-                        components[:host].downcase!
+                        has_path = false
                     end
                 else
                     has_path = false
@@ -428,24 +432,24 @@ class URI
         @arachni_opts = Arachni::Options.instance
 
         @parsed_url = case url
-            when String
-                self.class.ruby_parse( url )
+                          when String
+                              self.class.ruby_parse( url )
 
-            when ::URI
-                url.dup
+                          when ::URI
+                              url.dup
 
-            when Hash
-                ::URI::Generic.build( url )
+                          when Hash
+                              ::URI::Generic.build( url )
 
-            when Arachni::URI
-                self.parsed_url = url.parsed_url.dup
+                          when Arachni::URI
+                              self.parsed_url = url.parsed_url.dup
 
-            else
-                to_string = url.to_s rescue ''
-                msg = "Argument must either be String, URI or Hash"
-                msg << " -- #{url.class.name} '#{to_string}' passed."
-                fail TypeError.new( msg )
-            end
+                          else
+                              to_string = url.to_s rescue ''
+                              msg = "Argument must either be String, URI or Hash"
+                              msg << " -- #{url.class.name} '#{to_string}' passed."
+                              fail TypeError.new( msg )
+                      end
     end
 
     def ==( other )
@@ -461,13 +465,13 @@ class URI
     #
     def to_absolute( reference )
         absolute = case reference
-             when Arachni::URI
-                 reference.parsed_url
-            when ::URI
-                reference
-            else
-                self.class.new( reference.to_s ).parsed_url
-           end.merge( @parsed_url )
+                       when Arachni::URI
+                           reference.parsed_url
+                       when ::URI
+                           reference
+                       else
+                           self.class.new( reference.to_s ).parsed_url
+                   end.merge( @parsed_url )
 
         self.class.new( absolute )
     end
