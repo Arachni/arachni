@@ -14,60 +14,51 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Auto adjusts HTTP throughput for maximum network utilization.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
-class AutoThrottle < Arachni::Plugin::Base
+class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 
-    HIGH_THRESHOLD    = 0.9
-    MIDDLE_THRESHOLD  = 0.34
-    LOW_THREASHOLD    = 0.05
+    # Will decrease concurrency if avg response times are bellow this threshold -- in ms.
+    THRESHOLD = 0.9
 
-    # easy on the throttle
-    STEP_UP      = 1
-    # hard on the breaks
-    STEP_DOWN    = -3
+    # Easy on the throttle.
+    STEP_UP   = 1
 
+    # Hard on the breaks.
+    STEP_DOWN = -3
+
+    # Don't drop bellow this.
     MIN_CONCURRENCY = 2
 
     def prepare
-        http = @framework.http
+        http = framework.http
 
         # run for each response as it arrives
         http.add_on_complete {
-
-            # adjust only after finished bursts
+            # adjust on a per-burst basis
             next if http.curr_res_cnt == 0 || http.curr_res_cnt % http.max_concurrency != 0
 
-            print_debug( "Max concurrency: " + http.max_concurrency.to_s )
-            if( http.max_concurrency > MIN_CONCURRENCY && http.average_res_time > HIGH_THRESHOLD ) ||
-                http.max_concurrency > @framework.opts.http_req_limit
+            print_debug "Max concurrency: #{http.max_concurrency}"
 
-                # make sure that http.max_concurrency >= MIN_CONCURRENCY
-                if http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY
-                    step = MIN_CONCURRENCY - http.max_concurrency
-                else
-                    step = STEP_DOWN
-                end
+            if( http.max_concurrency > MIN_CONCURRENCY && http.average_res_time > THRESHOLD ) ||
+                http.max_concurrency > framework.opts.http_req_limit
 
-                print_debug( "Stepping down!: #{step}" )
+                step = http.max_concurrency + STEP_DOWN < MIN_CONCURRENCY ?
+                    MIN_CONCURRENCY - http.max_concurrency : STEP_DOWN
+
+                print_debug "Stepping down!: #{step}"
                 http.max_concurrency = http.max_concurrency + step
 
-            elsif http.average_res_time < HIGH_THRESHOLD && http.average_res_time > LOW_THREASHOLD
-
-                print_debug( "Stepping up!: +#{STEP_UP}" )
+            elsif http.average_res_time < THRESHOLD && http.max_concurrency < framework.opts.http_req_limit
+                print_debug "Stepping up!: +#{STEP_UP}"
                 http.max_concurrency = http.max_concurrency + STEP_UP
             end
         }
-
     end
 
     def self.distributable?
@@ -76,17 +67,14 @@ class AutoThrottle < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'AutoThrottle',
-            :description    => %q{Monitors HTTP response times and automatically
+            name:        'AutoThrottle',
+            description: %q{Monitors HTTP response times and automatically
                 throttles the request concurrency in order to maintain stability
-                and prevent from killing the server.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :tags           => [ 'meta' ],
-            :version        => '0.1.2'
+                and avoid from killing the server.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            tags:        %w(meta http throttle),
+            version:     '0.1.3'
         }
     end
 
-end
-
-end
 end
