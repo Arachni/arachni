@@ -35,6 +35,7 @@ RSpec.configure do |config|
 
     config.before( :all ) do
         Arachni::UI::Output.mute
+        #Arachni::UI::Output.debug_on
 
         kill_processes
         kill_servers
