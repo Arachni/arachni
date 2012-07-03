@@ -86,7 +86,7 @@ YAML
     context 'with default options' do
         it "should not log 'text' content types" do
             run
-            results.should == default_results
+            results.should eq default_results
         end
     end
 
@@ -94,7 +94,7 @@ YAML
         it "should not log the provided content types" do
             Arachni::Options.plugins = { name_from_filename => { 'exclude' => 'image|excel' } }
             run
-            results.should == results_with_options
+            results.should eq results_with_options
         end
     end
 
@@ -102,7 +102,14 @@ YAML
         it "should log everything" do
             Arachni::Options.plugins = { name_from_filename => { 'exclude' => '' } }
             run
-            results.should == results_with_empty_options
+            results.should eq results_with_empty_options
+        end
+    end
+
+    describe '.merge' do
+        it 'should merge an array of results' do
+            results = framework.plugins[name_from_filename].merge [ default_results, results_with_options ]
+            results.should eq results_with_empty_options
         end
     end
 end
