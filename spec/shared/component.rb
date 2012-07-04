@@ -29,6 +29,10 @@ shared_examples_for "component" do
         framework.opts
     end
 
+    def yaml_load( yaml )
+        YAML.load yaml.gsub( '__URL__', url )
+    end
+
     def run
         framework.run
     end

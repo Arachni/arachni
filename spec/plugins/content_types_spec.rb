@@ -79,10 +79,6 @@ application/vnd.ms-excel:
 YAML
     end
 
-    def yaml_load( yaml )
-        YAML.load yaml.gsub( '__URL__', url )
-    end
-
     context 'with default options' do
         it "should not log 'text' content types" do
             run
