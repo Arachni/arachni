@@ -315,6 +315,19 @@ rake spec:reports         # for the reports
 rake spec:path_extractors # for the path extractors
 ```
 
+## Contributing
+
+We're happy to accept help from fellow code-monkeys and these are the steps you
+need to follow in order to contribute code:
+
+* [Fork the project](https://github.com/Arachni/arachni/fork_select)
+* Develop on the experimental branch (```git checkout experimental```)
+* Add specs for your code
+* Run the spec suite to make sure you didn't break anything (```rake spec:core``` for the core libs or ```rake spec``` for everything)
+* Issue a pull request and wait for your code to be reviewed
+
+That's all. :)
+
 ## Supported platforms
 
 Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
