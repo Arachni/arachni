@@ -13,10 +13,21 @@ shared_examples_for "plugin" do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run
-            (framework.plugins.results[name] || {})[:results].should eq( (results == :nil) ? nil : results )
+            actual_results.should be_eql( expected_results )
 
             instance_eval &block if block_given?
         end
+    end
+
+    def actual_results
+        (framework.plugins.results[name] || {})[:results]
+    end
+
+    def expected_results
+        return nil if results == :nil
+
+        (results.is_a?( String ) && results.include?( '__URL__' )) ?
+            yaml_load( results ) : results
     end
 
     def current_plugin
