@@ -228,7 +228,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
             # expiry date is optional so if we don't have one push everything back
             begin
-                c['expires'] = Time.parse( c['expires'] )
+                c['expires'] = Time.at( c['expires'] )
             rescue
                 c['value'] = c['name'].dup
                 c['name'] = c['expires'].dup
