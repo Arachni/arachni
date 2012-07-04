@@ -228,7 +228,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
             # expiry date is optional so if we don't have one push everything back
             begin
-                c['expires'] = Time.parse( c['expires'] )
+                c['expires'] = expires_to_time( c['expires'] )
             rescue
                 c['value'] = c['name'].dup
                 c['name'] = c['expires'].dup
@@ -237,6 +237,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             c['secure'] = (c['secure'] == 'TRUE') ? true : false
             new( url, c )
         end.flatten.compact
+    end
+
+    def self.expires_to_time( expires )
+        (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
     end
 
     #

@@ -197,7 +197,7 @@ describe Arachni::Parser::Element::Cookie do
     describe '.from_file' do
         it 'should parse a Netscape cookiejar file and return an array of cookies' do
             forms =  Arachni::Parser::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
-            forms.size.should == 2
+            forms.size.should == 3
 
             form = forms.shift
             form.action.should == @url
@@ -225,6 +225,18 @@ describe Arachni::Parser::Element::Cookie do
             form.name.should == 'second_name'
             form.value.should == 'second_value'
 
+            form = forms.shift
+            form.action.should == @url
+            form.url.should == @url
+            form.auditable.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
+            form.simple.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
+            form.domain.should == '.blah-domain'
+            form.path.should == '/'
+            form.secure.should == false
+            form.session?.should == false
+            form.expires.should == Time.parse( '2020-08-09 16:59:20 +0300' )
+            form.name.should == 'NAME'
+            form.value.should == 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210'
         end
     end
 

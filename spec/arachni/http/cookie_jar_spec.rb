@@ -11,7 +11,7 @@ describe Arachni::HTTP::CookieJar do
         it 'should load cookies from a Netscape cookie-jar file' do
             j = @jar.class.from_file( @file )
             cookies = j.cookies
-            cookies.size.should == 2
+            cookies.size.should == 3
             cookies.should == Arachni::Utilities.cookies_from_file( '', @file )
         end
 
@@ -37,7 +37,7 @@ describe Arachni::HTTP::CookieJar do
             it 'should load cookies from a Netscape cookie-jar file' do
                 j = @jar.class.from_file( @file )
                 cookies = j.cookies
-                cookies.size.should == 2
+                cookies.size.should == 3
                 cookies.should == Arachni::Utilities.cookies_from_file( '', @file )
             end
         end
