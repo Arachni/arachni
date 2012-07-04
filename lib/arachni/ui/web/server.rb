@@ -461,9 +461,9 @@ class Server < Sinatra::Base
                     cparams['cookies'][c.name] = c.value
                     cparams['cookie_string'] += c.to_s + ';'
                 end
-            elsif name == 'extend_paths' && value[:tempfile]
+            elsif name == 'extend_paths' && !value.is_a?( Array ) && value[:tempfile]
                cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
-            elsif name == 'restrict_paths' && value[:tempfile]
+            elsif name == 'restrict_paths' && !value.is_a?( Array ) && value[:tempfile]
                cparams['restrict_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
             elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
