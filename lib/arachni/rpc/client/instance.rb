@@ -45,8 +45,10 @@ class Instance
         def method_missing( sym, *args, &block )
             return super( sym, *args, &block ) if sym == :set
 
-            call = "#{@remote}.#{sym.to_s}"
-            if !args.empty? && sym.to_s[-1] != '='
+            call  = "#{@remote}.#{sym.to_s}"
+
+            if !args.empty? && !sym.to_s.end_with?( '=' ) &&
+                Arachni::Options.instance.methods.include?( "#{sym}=".to_sym  )
                 call += '='
             end
 
