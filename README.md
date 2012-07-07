@@ -1,6 +1,8 @@
-# Experimental
+# Experimental/unstable branch -- used for integration
 
-Experimental/unstable branch -- used for integration.
+For self-contained, dev snapshot packages take a look at: http://downloads.arachni-scanner.com/dev/
+
+To install from source:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
