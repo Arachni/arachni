@@ -127,7 +127,7 @@ else
     root="arachni"
 fi
 
-clean_build="$root-clean"
+clean_build="arachni-clean"
 if [[ -d $clean_build ]]; then
 
     echo
