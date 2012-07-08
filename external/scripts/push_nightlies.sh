@@ -31,19 +31,29 @@ dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 mkdir -p $nightlies
 cd $nightlies
 
-# remove the old nightlies
+if ls *.lock > /dev/null 2>&1; then
+    echo "Found a lock file, another build process is in progress or the dir is dirty.";
+    exit 1
+fi
+
+if ls *.pid > /dev/null 2>&1; then
+    echo "Found a pid file, another build process is in progress or the dir is dirty.";
+    exit 1
+fi
+
 rm -f arachn*.gz arachn*installer.sh
+rm *.log
 
 echo 'Building packages, this could take a while...'
 
 bash -c "touch 32bit_build.lock && \
-    bash $root/cross_build_and_package.sh 2>> /dev/null 1>> /dev/null ;\
+    bash $root/cross_build_and_package.sh 2>> 32bit.log 1>> 32bit.log ;\
     rm 32bit_build.lock" &
 
 echo $! > 32bit.pid
 
 bash -c "touch 64bit_build.lock && \
-    bash $root/build_and_package.sh 2>> /dev/null 1>> /dev/null &&\
+    bash $root/build_and_package.sh 2>> 64bit.log 1>> 64bit.log &&\
     rm 64bit_build.lock" &
 
 echo $! > 64bit.pid
@@ -63,11 +73,16 @@ echo
 echo -n 'Removing PID files'
 rm *.pid
 echo ' - done.'
+
+echo -n 'Removing output logs'
+rm *.log
+echo ' - done.'
+
 echo
 
 echo 'Pushing to server, this could take a while also...'
-rsync --human-readable --progress --executability --compress --stats \
-    $package_patterns $dest
+#rsync --human-readable --progress --executability --compress --stats \
+#    $package_patterns $dest
 
 echo
 echo 'All done.'
