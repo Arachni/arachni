@@ -25,5 +25,5 @@ source $path_to_readlink_function
 root="$(dirname "$(readlink_f "${0}")")"
 
 export xterm="xterm -geometry 80X10 -hold"
-xterm -T "Building 32bit packages" -e "bash $root/cross_build_and_package.sh" &
-xterm -T "Building 64bit packages" -e "bash $root/build_and_package.sh" &
+xterm -T "Building 32bit packages" -e "touch 32bit_build.lock && bash $root/cross_build_and_package.sh; rm 32bit_build.lock" &
+xterm -T "Building 64bit packages" -e "touch 64bit_build.lock && bash $root/build_and_package.sh && rm 64bit_build.lock" &
