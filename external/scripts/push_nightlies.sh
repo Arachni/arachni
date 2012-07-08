@@ -34,7 +34,19 @@ cd $nightlies
 # remove the old nightlies
 rm -f arachn*.gz arachn*installer.sh
 
-$root/build_all.sh
+echo 'Building packages, this could take a while...'
+
+bash -c "touch 32bit_build.lock && \
+    bash $root/cross_build_and_package.sh 2>> /dev/null 1>> /dev/null ;\
+    rm 32bit_build.lock" &
+
+echo $! > 32bit.pid
+
+bash -c "touch 64bit_build.lock && \
+    bash $root/build_and_package.sh 2>> /dev/null 1>> /dev/null &&\
+    rm 64bit_build.lock" &
+
+echo $! > 64bit.pid
 
 # wait for the locks to be created
 while [ ! -e "32bit_build.lock" ]; do sleep 0.1; done
@@ -42,7 +54,20 @@ while [ ! -e "64bit_build.lock" ]; do sleep 0.1; done
 
 # and then wait for the locks to be removed
 while [ -e "32bit_build.lock" ]; do sleep 0.1; done
-while [ -e "64bit_build.lock" ]; do sleep 0.1; done
+echo '  * 32bit package ready'
 
+while [ -e "64bit_build.lock" ]; do sleep 0.1; done
+echo '  * 64bit package ready'
+
+echo
+echo -n 'Removing PID files'
+rm *.pid
+echo ' - done.'
+echo
+
+echo 'Pushing to server, this could take a while also...'
 rsync --human-readable --progress --executability --compress --stats \
     $package_patterns $dest
+
+echo
+echo 'All done.'
