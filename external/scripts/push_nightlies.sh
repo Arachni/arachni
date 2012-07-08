@@ -81,8 +81,8 @@ echo ' - done.'
 echo
 
 echo 'Pushing to server, this could take a while also...'
-#rsync --human-readable --progress --executability --compress --stats \
-#    $package_patterns $dest
+rsync --human-readable --progress --executability --compress --stats \
+    $package_patterns $dest
 
 echo
 echo 'All done.'
