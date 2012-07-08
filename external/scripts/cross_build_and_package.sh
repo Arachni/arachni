@@ -15,8 +15,6 @@
 # limitations under the License.
 
 chroot_path="/var/chroots/32bit"
-chroot $chroot_path /bin/bash -c "cd /root
-/workspace/arachni/external/scripts/build_and_package.sh
-"
 
-mv $chroot_path/root/arachni*.* . &> /dev/null
+schroot --chroot=32bit -d /home/zapotek/builds '../arachni/external/scripts/build_and_package.sh'
+mv $chroot_path/home/zapotek/builds/*.* . &> /dev/null
