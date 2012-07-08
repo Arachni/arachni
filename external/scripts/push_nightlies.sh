@@ -73,11 +73,6 @@ echo
 echo -n 'Removing PID files'
 rm *.pid
 echo ' - done.'
-
-echo -n 'Removing output logs'
-rm *.log
-echo ' - done.'
-
 echo
 
 echo 'Pushing to server, this could take a while also...'
