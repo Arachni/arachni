@@ -42,7 +42,7 @@ if ls *.pid > /dev/null 2>&1; then
 fi
 
 rm -f arachn*.gz arachn*installer.sh
-rm *.log
+rm -f *.log
 
 echo 'Building packages, this could take a while...'
 
