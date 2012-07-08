@@ -28,6 +28,9 @@ nightlies="$HOME/builds/nightlies"
 package_patterns="arachn*.gz arachn*installer.sh"
 dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 
+output_log_32bit="$root/32bit.log"
+output_log_64bit="$root/64bit.log"
+
 mkdir -p $nightlies
 cd $nightlies
 
@@ -44,16 +47,20 @@ fi
 rm -f arachn*.gz arachn*installer.sh
 rm -f *.log
 
-echo 'Building packages, this could take a while...'
+echo "Building packages, this could take a while; to monitor the progress of the:"
+echo "  * 32bit build: tail -f $output_log_32bit"
+echo "  * 64bit build: tail -f $output_log_64bit"
+echo
+echo 'You better go grab some coffee now...'
 
 bash -c "touch 32bit_build.lock && \
-    bash $root/cross_build_and_package.sh 2>> 32bit.log 1>> 32bit.log ;\
+    bash $root/cross_build_and_package.sh 2>> $output_log_32bit 1>> $output_log_32bit ;\
     rm 32bit_build.lock" &
 
 echo $! > 32bit.pid
 
 bash -c "touch 64bit_build.lock && \
-    bash $root/build_and_package.sh 2>> 64bit.log 1>> 64bit.log &&\
+    bash $root/build_and_package.sh 2>> $output_log_64bit 1>> $output_log_64bit &&\
     rm 64bit_build.lock" &
 
 echo $! > 64bit.pid
