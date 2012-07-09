@@ -132,6 +132,14 @@ class Base
         formatted
     end
 
+    def self.has_outfile?
+        (info[:options] || {}).each { |opt| return true if opt.name == Report::Options.outfile.name }
+        false
+    end
+    def has_outfile?
+        self.class.has_outfile?
+    end
+
     #
     # REQUIRED
     #

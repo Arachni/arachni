@@ -20,4 +20,17 @@ describe Arachni::Report::Base do
         end
     end
 
+    describe '.has_outfile?' do
+        context 'when the report has an outfile option' do
+            it 'should return true' do
+                @reports[:with_outfile].has_outfile?.should be_true
+            end
+        end
+        context 'when the report does not have an outfile option' do
+            it 'should return false' do
+                @reports[:without_outfile].has_outfile?.should be_false
+            end
+        end
+    end
+
 end
