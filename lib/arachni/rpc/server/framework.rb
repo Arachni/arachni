@@ -484,6 +484,18 @@ class Framework < ::Arachni::Framework
     alias :audit_store_as_hash :report
     alias :auditstore_as_hash :report
 
+    def report_as( name )
+        fail Arachni::Exceptions::ComponentNotFound, "Report '#{name}' could not be found." if !reports.available.include?( name.to_s )
+        fail TypeError, "Report '#{name}' cannot format the audit results as a String." if !reports[name].has_outfile?
+
+        outfile = "/tmp/arachn_report_as.#{name}"
+        reports.run_one( name, auditstore, 'outfile' => outfile )
+
+        str = IO.read( outfile )
+        File.delete( outfile )
+        str
+    end
+
     #
     # @return   [String]    YAML representation of {#auditstore}
     #

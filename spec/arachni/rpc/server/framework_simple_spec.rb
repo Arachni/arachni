@@ -1,5 +1,7 @@
 require_relative '../../../spec_helper'
 
+require 'json'
+
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
 
@@ -318,6 +320,40 @@ describe Arachni::RPC::Server::Framework do
                 @instance_clean.framework.auditstore_as_hash
         end
     end
+
+    describe '#report_as' do
+        context 'when passed a valid report name' do
+            it 'should return the report as a string' do
+                json = @instance_clean.framework.report_as( :json )
+                JSON.load( json )['issues'].size.should == @instance_clean.framework.auditstore.issues.size
+            end
+        end
+
+        context 'when passed an valid report name which does not support the \'outfile\' option' do
+            it 'should raise an exception' do
+                raised = false
+                begin
+                    @instance_clean.framework.report_as( :stdout )
+                rescue Exception
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+
+        context 'when passed an invalid report name' do
+            it 'should raise an exception' do
+                raised = false
+                begin
+                    @instance_clean.framework.report_as( :blah )
+                rescue Exception
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+    end
+
     describe '#serialized_auditstore' do
         it 'should return a YAML serialized AuditStore' do
             yaml_str = @instance_clean.framework.serialized_auditstore
