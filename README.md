@@ -1,6 +1,6 @@
 # Experimental/unstable branch -- used for integration
 
-For self-contained, dev snapshot packages take a look at: http://downloads.arachni-scanner.com/dev/
+For self-contained, nightly snapshot packages take a look at: http://downloads.arachni-scanner.com/nightlies/
 
 To install from source:
 
