@@ -43,6 +43,9 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class URI
+    include Arachni::UI::Output
+    extend Arachni::UI::Output
+
     include Arachni::Utilities
     extend Arachni::Utilities
 
@@ -118,7 +121,14 @@ class URI
     #
     def self.parse( url )
         return url if !url || url.is_a?( Arachni::URI )
-        CACHE[__method__][url] ||= new( url )
+        CACHE[__method__][url] ||= begin
+            new( url )
+        rescue => e
+            print_error "Failed to parse '#{url}', please report this."
+            print_error "Error: #{e}"
+            print_error_backtrace( e )
+            nil
+        end
     end
 
     #
@@ -137,7 +147,14 @@ class URI
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
-            parser.parse( normalize( url ).dup )
+            begin
+                parser.parse( normalize( url ).dup )
+            rescue => e
+                print_error "Failed to parse '#{url}', please report this."
+                print_error "Error: #{e}"
+                print_error_backtrace( e )
+                nil
+            end
         end
     end
 
@@ -266,18 +283,17 @@ class URI
                 h.merge!( Hash[{ k => val.freeze }] )
             end.freeze
         rescue => e
-            out = Arachni::UI::Output
             begin
-                out.print_error "Failed to fast-parse '#{c_url}', please report this."
-                out.print_error "Error: #{e}"
-                out.print_error "Falling back to slow-parse."
-                out.print_error_backtrace( e )
+                print_error "Failed to fast-parse '#{c_url}', please report this."
+                print_error "Error: #{e}"
+                print_error "Falling back to slow-parse."
+                print_error_backtrace( e )
 
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue => ex
-                out.print_error "Failed to parse '#{c_url}', please report this."
-                out.print_error "Error: #{ex}"
-                out.print_error_backtrace( ex )
+                print_error "Failed to parse '#{c_url}', please report this."
+                print_error "Error: #{ex}"
+                print_error_backtrace( ex )
 
                 cache[c_url] = :err
                 nil
@@ -409,10 +425,9 @@ class URI
 
             cache[c_url] = normalized.freeze
         rescue => e
-            out = Arachni::UI::Output
-            out.print_error "Failed to normalize '#{c_url}', please report this."
-            out.print_error "Error: #{e}"
-            out.print_error_backtrace( e )
+            print_error "Failed to normalize '#{c_url}', please report this."
+            print_error "Error: #{e}"
+            print_error_backtrace( e )
 
             cache[c_url] = :err
             nil
@@ -450,6 +465,7 @@ class URI
                               msg << " -- #{url.class.name} '#{to_string}' passed."
                               fail TypeError.new( msg )
                       end
+        fail 'Failed to parse URL.' if !@parsed_url
     end
 
     def ==( other )

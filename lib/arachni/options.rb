@@ -545,7 +545,7 @@ class Options
         require @dir['lib'] + 'utilities'
 
         parsed = Arachni::Utilities.uri_parse( url.to_s )
-        if !parsed.absolute? || !%w(http https).include?( parsed.scheme )
+        if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
             fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
