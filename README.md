@@ -1,4 +1,4 @@
-# Experimental/unstable branch -- used for integration
+# Experimental/unstable branch -- used for development/integration
 
 For self-contained, nightly snapshot packages take a look at: http://downloads.arachni-scanner.com/nightlies/
 
