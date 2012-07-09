@@ -73,6 +73,8 @@ class Base
     module PluginFormatters
     end
 
+    attr_reader :options
+
     #
     # @param    [AuditStore]  audit_store
     # @param    [Hash]        options       options passed to the report

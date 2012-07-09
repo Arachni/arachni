@@ -61,11 +61,12 @@ class Manager < Arachni::Component::Manager
         end
     end
 
-    def run_one( name, audit_store )
+    def run_one( name, audit_store, opts = {} )
         report = self[name].new( audit_store.deep_clone,
-            prep_opts( name, self[name], @opts.reports[name] ) )
+            prep_opts( name, self[name], opts.empty? ? @opts.reports[name] : opts ) )
 
         report.run
+        report
     end
 
     def self.reset

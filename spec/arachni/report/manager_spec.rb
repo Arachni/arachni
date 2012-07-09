@@ -58,6 +58,23 @@ describe Arachni::Report::Manager do
             File.exist?( 'foo' ).should be_true
             File.delete( 'foo' )
         end
+
+        context 'when passed options' do
+            it 'should override Options.reports' do
+                Arachni::Options.reports[:foo] = { 'outfile' => 'stuff1' }
+                opts = { 'outfile' => 'stuff' }
+                report = @reports.run_one :foo, @framework.auditstore, opts
+                report.options.should eq opts
+            end
+        end
+
+        context 'when not passed options' do
+            it 'should fallback to Options.reports' do
+                opts = Arachni::Options.reports[:foo] = { 'outfile' => 'stuff2' }
+                report = @reports.run_one :foo, @framework.auditstore
+                report.options.should eq opts
+            end
+        end
     end
 
 end
