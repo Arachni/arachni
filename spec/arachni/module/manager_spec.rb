@@ -11,7 +11,10 @@ describe Arachni::Module::Manager do
         @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 
-    before( :each ) { @modules.reset }
+    before( :each ) do
+        @modules.clear
+        @modules.reset
+    end
 
     describe '#load' do
         it 'should load all modules' do
@@ -23,6 +26,7 @@ describe Arachni::Module::Manager do
 
     describe '#run' do
         it 'should run all modules' do
+            @modules.load( [ '*' ] )
             @modules.run( @page )
             results = @modules.results
             results.size.should equal 1
@@ -32,6 +36,7 @@ describe Arachni::Module::Manager do
 
     describe '#run_one' do
         it 'should run a single module' do
+            @modules.load( [ '*' ] )
             @modules.run_one( @modules.values.first, @page )
             results = @modules.results
             results.size.should equal 1
