@@ -143,7 +143,7 @@ class URI
     # @return   [URI]
     #
     def self.ruby_parse( url )
-        return url if !url || url.is_a?( ::URI )
+        return url if url.to_s.empty? || url.is_a?( ::URI )
         CACHE[__method__][url] ||= begin
             ::URI::Generic.build( cheap_parse( url ) )
         rescue
