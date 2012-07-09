@@ -55,7 +55,7 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#report' do
+    describe '#reports' do
         it 'should provide access to the report manager' do
             @f.reports.is_a?( Arachni::Report::Manager ).should be_true
             @f.reports.available.sort.should == %w(afr foo).sort
@@ -769,7 +769,7 @@ describe Arachni::Framework do
     describe '#lsrep' do
         it 'should return info on all reports' do
             loaded = @f.reports.loaded
-            @f.lsrep.map { |r| r.delete( :path ); r }
+            @f.lsrep.map { |r| r[:options] = []; r.delete( :path ); r }
                 .sort_by { |e| e[:rep_name] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
