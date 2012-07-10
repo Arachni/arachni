@@ -6,19 +6,55 @@ describe Arachni::Parser::Element::Auditable do
         @url     = server_url_for( :auditable )
         @auditor = Auditor.new
 
-        @auditable = Arachni::Parser::Element::Link.new( @url, inputs: {'param' => 'val'} )
+        @auditable = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val' } )
         @auditable.auditor = @auditor
 
         @orphan = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'val' } )
 
         # will sleep 2 secs before each response
-        @sleep = Arachni::Parser::Element::Link.new( @url + '/sleep', inputs: {'param' => 'val'} )
+        @sleep = Arachni::Parser::Element::Link.new( @url + '/sleep', inputs: { 'param' => 'val' } )
         @sleep.auditor = @auditor
 
-        @orig = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val'} )
+        @orig = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val' } )
 
         @seed = 'my_seed'
         @default_input_value = @auditable.auditable['param']
+    end
+
+
+    describe '#auditable' do
+	    it 'should return a frozen hash of auditable inputs' do
+		    @auditable.auditable.should == { 'param' => 'val' }
+
+		    raised = false
+		    begin
+		        @auditable.auditable['stuff'] = true
+		    rescue
+			    raised = true
+		    end
+
+		    @auditable.auditable.should == { 'param' => 'val' }
+
+		    raised.should be_true
+	    end
+    end
+
+    describe '#update_auditable' do
+	    it 'should update the auditable inputs using the given hash' do
+		    a = @auditable.dup
+
+		    updates = { 'param' => 'val1', 'another_param' => 'val3' }
+		    a.update_auditable( updates )
+
+		    a.auditable.should == updates
+		    a.hash.should_not == @auditable.hash
+
+		    c = a.dup
+		    cupdates = { 'param' => nil }
+		    a.update_auditable( cupdates )
+		    a.auditable.should == updates.merge( cupdates )
+		    c.should_not == a
+	    end
     end
 
     describe '#orig' do

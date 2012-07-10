@@ -66,15 +66,6 @@ module Auditable
     attr_accessor :auditor
 
     #
-    # Frozen Key=>value pair of inputs, if you want to change it you'll
-    # have to use the attr_writer and pass a new hash -- the new hash will also
-    # be frozen.
-    #
-    # @return   [Hash]
-    #
-    attr_accessor :auditable
-
-    #
     # Frozen version of {#auditable}, has all the original name/values
     #
     # @return   [Hash]
@@ -107,6 +98,48 @@ module Auditable
         #
         async:     true
     }
+
+	#
+	# Frozen Key=>value pairs of inputs.
+    #
+    # If you want to change it you'll either have to use {#update_auditable}
+    # or the {#auditable=} attr_writer and pass a new hash -- the new hash will also be frozen.
+	#
+	# @return   [Hash]
+	#
+    def auditable
+	    @auditable.freeze
+    end
+
+    #
+    # @param    [Hash]  hash    key=>value pair of inputs/params
+    #
+    # @see auditable
+    #
+    def auditable=( hash )
+	    @auditable = hash
+	    rehash
+	    self.auditable
+    end
+
+    #
+    # @param    [Hash]  hash  key=>value pair of inputs/params with which to
+    #                               update the #auditable inputs
+    #
+    # @see auditable
+    #
+    def update_auditable( hash )
+	    self.auditable = self.auditable.merge( hash )
+    end
+
+    def ==( e )
+	    hash == e.hash
+    end
+    alias :eql? :==
+
+    def hash
+	    @hash ||= rehash
+    end
 
     #
     # When working in High Performance Grid mode the instances have
@@ -409,6 +442,7 @@ module Auditable
     end
 
     private
+
     #
     # Registers a block to be executed as soon as the Typhoeus request (reg)
     # has been completed and a response has been received.
@@ -495,6 +529,10 @@ module Auditable
     #
     def audited( audit_id )
         @@audited << audit_id
+    end
+
+    def rehash
+	    @hash = (self.action.to_s + self.method.to_s + self.auditable.to_s).hash
     end
 
 end

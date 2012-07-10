@@ -121,27 +121,6 @@ class Arachni::Parser::Element::Base
         self.url
     end
 
-    # @see Arachni::Parser::Element::Auditable#auditable
-    def auditable
-        @auditable.freeze
-    end
-
-    # @see Arachni::Parser::Element::Auditable#auditable
-    def auditable=( hash )
-        @auditable = hash
-        rehash
-        self.auditable
-    end
-
-    def ==( e )
-        hash == e.hash
-    end
-    alias :eql? :==
-
-    def hash
-        @hash ||= rehash
-    end
-
     #
     # Must provide the element type, one of {Arachni::Module::Auditor::Element}.
     #
@@ -156,9 +135,4 @@ class Arachni::Parser::Element::Base
         new
     end
 
-    private
-
-    def rehash
-        @hash = (@action.to_s + @method.to_s + @auditable.to_s).hash
-    end
 end
