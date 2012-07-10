@@ -272,6 +272,13 @@ class Issue
 
     def url=( v )
         @url = Arachni::Utilities.normalize_url( v )
+        if @url.to_s.empty?
+            #ap v
+            #Arachni::UI::Output.print_error "#{v}"
+            #Arachni::UI::Output.print_error "#{self}"
+            #ap self
+            @url = v.split( '?' ).first
+        end
     end
 
     def cwe=( v )
