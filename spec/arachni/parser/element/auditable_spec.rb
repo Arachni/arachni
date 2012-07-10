@@ -39,6 +39,17 @@ describe Arachni::Parser::Element::Auditable do
 	    end
     end
 
+    describe '#auditable=' do
+        it 'should assign a hash of auditable inputs' do
+            @auditable.auditable.should == { 'param' => 'val' }
+
+            a = @auditable.dup
+            a.auditable = { 'param1' => 'val1' }
+            a.auditable.should == { 'param1' => 'val1' }
+            a.should_not == @auditable
+        end
+    end
+
     describe '#update_auditable' do
 	    it 'should update the auditable inputs using the given hash' do
 		    a = @auditable.dup
