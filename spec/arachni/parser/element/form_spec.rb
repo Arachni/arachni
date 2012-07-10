@@ -200,8 +200,8 @@ describe Arachni::Parser::Element::Form do
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
-                                <input name="my_first_input" value="my_first_value"" />
-                                <input name="my_second_input" value="my_second_value"" />
+                                <input name="my_first_input" value="my_first_value" />
+                                <input name="my_second_input" value="my_second_value" />
                             </form>
 
                         </body>
@@ -341,6 +341,29 @@ describe Arachni::Parser::Element::Form do
                         }
                     end
                 end
+
+                context 'without any options' do
+                    it 'should use a nil value' do
+                        html = '
+                        <html>
+                            <body>
+                                <form method="get" action="form_action" name="my_form">
+                                    <select name="manufacturer">
+                                    </select>
+                                </form>
+
+                            </body>
+                        </html>'
+
+                        form = Arachni::Parser::Element::Form.from_document( @url, html ).first
+                        form.action.should == @utils.normalize_url( @url + '/form_action' )
+                        form.name.should == 'my_form'
+                        form.url.should == @url
+                        form.method.should == 'get'
+                        form.auditable.should == { 'manufacturer' => nil }
+                    end
+                end
+
 
             end
 

@@ -293,6 +293,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
                     auditables = elem.children.map do |child|
                         h = attributes_to_hash( child.attributes )
                         h['value'] ||= child.text
+                        h['options'] ||= {}
                         h
                     end
 
@@ -334,7 +335,10 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
                 end
             end
 
-            select['attrs']['value'] = selected || select['options'].first['value']
+            select['attrs']['value'] = selected || begin
+                select['options'].first['value']
+            rescue
+            end
             select['attrs']
         end
     end
