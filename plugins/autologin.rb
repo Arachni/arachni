@@ -26,7 +26,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
 class AutoLogin < Arachni::Plugin::Base
 
@@ -63,7 +63,7 @@ class AutoLogin < Arachni::Plugin::Base
         print_status( "Found log-in form with name: "  + name )
 
         # merge the input fields of the form with the user supplied parameters
-        login_form.auditable.merge!( @params )
+        login_form.update_auditable( @params )
 
         res = login_form.submit(
             async: false,
@@ -107,7 +107,7 @@ class AutoLogin < Arachni::Plugin::Base
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
+            :version        => '0.1.4',
             :options        => [
                 Component::Options::URL.new( 'url', [ true, 'The URL that contains the login form.' ] ),
                 Component::Options::String.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
