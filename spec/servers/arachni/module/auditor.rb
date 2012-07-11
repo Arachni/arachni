@@ -7,6 +7,10 @@ get '/' do
     'OK'
 end
 
+get '/sleep' do
+    sleep 2
+end
+
 get '/link' do
     <<-EOHTML
 <a href='?input=blah'>Inject here</a>
