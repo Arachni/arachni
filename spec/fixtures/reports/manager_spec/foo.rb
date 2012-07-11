@@ -24,7 +24,7 @@ class Foo < Arachni::Report::Base
     end
 
     def self.info
-        super.merge( options: [ Arachni::Report::Options.outfile( '.json' ) ] )
+        super.merge( options: [ Arachni::Report::Options.outfile( 'foo' ) ] )
     end
 end
 
