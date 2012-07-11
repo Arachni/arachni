@@ -65,6 +65,7 @@ describe Arachni::Report::Manager do
                 opts = { 'outfile' => 'stuff' }
                 report = @reports.run_one :foo, @framework.auditstore, opts
                 report.options.should eq opts
+                File.delete( 'foo' )
             end
         end
 
@@ -73,6 +74,7 @@ describe Arachni::Report::Manager do
                 opts = Arachni::Options.reports[:foo] = { 'outfile' => 'stuff2' }
                 report = @reports.run_one :foo, @framework.auditstore
                 report.options.should eq opts
+                File.delete( 'foo' )
             end
         end
     end
