@@ -214,10 +214,11 @@ class URI
             end
 
             url = url.encode( 'UTF-8', undef: :replace, invalid: :replace )
-            url = deep_decode( url )
 
             # remove the fragment if there is one
-            url = url.split( '#' )[0...-1].join if url.include?( '#' )
+            url = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
+
+            url = deep_decode( url )
 
             has_path = true
 

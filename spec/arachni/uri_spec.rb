@@ -26,7 +26,8 @@ describe Arachni::URI do
                 'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
             'http://test.com/login.php?goto?=domain.tld/index.php',
             'http://test.com:/stuff',
-            'http://test.com/stuff?name=val&amp;name2=val2'
+            'http://test.com/stuff?name=val&amp;name2=val2',
+            'http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=%2FwEWAwLNx%2B2YBwKw59eKCgKcjoPABw%3D%3D&__VIEWSTATE=%2FwEPDwUKMTEzMDczNTAxOWRk&_ctl0%3A_ctl0%3AContent%3AMain%3AButton1=Query&_ctl0%3A_ctl0%3AContent%3AMain%3ATextBox1=Enter+title+%28e.g.+IBM%29%27%3Becho+287630581954%2B4196403186331128%3B%23'
         ]
 
         @ref_normalizer = proc do |p|
