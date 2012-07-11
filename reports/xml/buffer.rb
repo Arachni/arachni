@@ -62,14 +62,13 @@ module Reports
         end
 
         def add_headers( type, headers )
-
             start_tag( type )
             headers.each_pair {
                 |name, value|
-                if name.downcase == 'set-cookie' && value.is_a?( Array )
+                if value.is_a?( Array ) #&& name.downcase == 'set-cookie'
                     __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.join( "\n" ) )}\" />" )
                 else
-                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.strip )}\" />" )
+                    __buffer( "<field name=\"#{name}\" value=\"#{CGI.escapeHTML( value.to_s )}\" />" )
                 end
             }
             end_tag( type )
