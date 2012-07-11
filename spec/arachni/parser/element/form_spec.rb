@@ -360,7 +360,7 @@ describe Arachni::Parser::Element::Form do
                         form.name.should == 'my_form'
                         form.url.should == @url
                         form.method.should == 'get'
-                        form.auditable.should == { 'manufacturer' => nil }
+                        form.auditable.should == { 'manufacturer' => '' }
                     end
                 end
 
@@ -394,7 +394,7 @@ describe Arachni::Parser::Element::Form do
                     form.name.should == 'my_form!'
                     form.url.should == @url
                     form.method.should == 'get'
-                    form.auditable.should == { 'text_here' => nil }
+                    form.auditable.should == { 'text_here' => '' }
 
                     form = forms.shift
                     form.action.should == @utils.normalize_url( @url + '/form_action' )
@@ -443,7 +443,7 @@ describe Arachni::Parser::Element::Form do
                     form.name.should == 'my_form_2'
                     form.url.should == @url
                     form.method.should == 'get'
-                    form.auditable.should == { 'text_here' => nil }
+                    form.auditable.should == { 'text_here' => '' }
 
                     form = forms.shift
                     form.action.should == @utils.normalize_url( @url + '/form' )

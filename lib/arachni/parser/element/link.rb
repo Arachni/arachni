@@ -72,7 +72,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
             self.action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action]
         end
 
-        self.auditable ||= self.class.parse_query_vars( self.action )
+        self.auditable = self.class.parse_query_vars( self.action ) if !self.auditable || self.auditable.empty?
 
         if @raw.is_a?( String )
             @raw = {

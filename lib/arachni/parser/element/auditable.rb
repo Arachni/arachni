@@ -112,12 +112,13 @@ module Auditable
     end
 
     #
-    # @param    [Hash]  hash    key=>value pair of inputs/params
+    # @param    [Hash]  hash    key=>value pair of inputs/params.
+    #                               Will convert keys and values to string.
     #
     # @see auditable
     #
     def auditable=( hash )
-	    @auditable = hash
+	    @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h}
 	    rehash
 	    self.auditable
     end
@@ -126,7 +127,8 @@ module Auditable
     # @param    [Hash]  hash  key=>value pair of inputs/params with which to
     #                               update the #auditable inputs
     #
-    # @see auditable
+    # @see #auditable
+    # @see #auditable=
     #
     def update_auditable( hash )
 	    self.auditable = self.auditable.merge( hash )

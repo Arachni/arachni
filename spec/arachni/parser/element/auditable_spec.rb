@@ -48,6 +48,11 @@ describe Arachni::Parser::Element::Auditable do
             a.auditable.should == { 'param1' => 'val1' }
             a.should_not == @auditable
         end
+
+        it 'should convert all inputs to strings' do
+            e = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => nil } )
+            e.auditable.should == { 'key' => '' }
+        end
     end
 
     describe '#update_auditable' do
@@ -61,11 +66,17 @@ describe Arachni::Parser::Element::Auditable do
 		    a.hash.should_not == @auditable.hash
 
 		    c = a.dup
-		    cupdates = { 'param' => nil }
+		    cupdates = { 'param' => '' }
 		    a.update_auditable( cupdates )
 		    a.auditable.should == updates.merge( cupdates )
 		    c.should_not == a
-	    end
+        end
+
+        it 'should convert all inputs to strings' do
+            e = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'stuff' } )
+            e.update_auditable( { 'key' => nil } )
+            e.auditable.should == { 'key' => '' }
+        end
     end
 
     describe '#orig' do
