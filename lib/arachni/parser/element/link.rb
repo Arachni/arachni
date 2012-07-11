@@ -98,7 +98,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     def id
         #self.action + auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
         query_vars = self.class.parse_query_vars( self.action )
-        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.auditable ).keys.sort.to_s}"
+        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
     end
 
     #
@@ -187,7 +187,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     end
 
     def audit_id( injection_str = '', opts = {} )
-        vars = auditable.keys.sort.to_s
+        vars = auditable.keys.compact.sort.to_s
 
         str = ''
         str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
