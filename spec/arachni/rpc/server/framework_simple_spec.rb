@@ -38,7 +38,7 @@ describe Arachni::RPC::Server::Framework do
         end
         context 'when the scan is running' do
             it 'should return true' do
-                @instance.opts.url = server_url_for( :auditor )
+                @instance.opts.url = server_url_for( :auditor ) + '/sleep'
                 @modules.load( 'test' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
