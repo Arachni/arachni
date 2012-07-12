@@ -143,6 +143,10 @@ class Base
         }
     end
 
+    def http
+        framework.http
+    end
+
     #
     # Registers the plugin's results with the framework.
     #
