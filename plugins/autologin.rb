@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Automated login plugin.
 #
@@ -26,97 +23,80 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.1.5
 #
-class AutoLogin < Arachni::Plugin::Base
+class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
     MSG_SUCCESS     = 'Form submitted successfully.'
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
 
     def prepare
-        @framework.pause
-        print_info( "System paused." )
+        framework.pause
+        print_info 'System paused.'
 
-        @params = parse_url_vars( '?' + @options['params'] )
-
-        # we need to declared this in order to pass ourselves
-        # as the auditor to the form later in order to submit it.
-        @http = @framework.http
+        @params = parse_url_vars( '?' + options['params'] )
     end
 
     def run
         # grab the page containing the login form
-        res = @http.get( @options['url'], async: false ).response
+        res = http.get( options['url'], async: false ).response
 
         # find the login form
         login_form = nil
         forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
 
         if !login_form
-            register_results( { :code => 0, :msg => MSG_FAILURE + @options['url'] } )
-            print_bad( MSG_FAILURE + @options['url'] )
+            register_results( code: 0, msg: MSG_FAILURE + options['url'] )
+            print_bad MSG_FAILURE + options['url']
             return
         end
 
-        name = login_form.name ? login_form.name : '<n/a>'
-        print_status( "Found log-in form with name: "  + name )
+        print_status "Found log-in form with name: "  + login_form.name ? login_form.name : '<n/a>'
 
         # merge the input fields of the form with the user supplied parameters
         login_form.update_auditable( @params )
 
-        res = login_form.submit(
-            async: false,
-            update_cookies: true,
-            follow_location: false
-        ).response
-
+        res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
         if !res
-            register_results( { :code => -1, :msg => MSG_NO_RESPONSE } )
-            print_bad( MSG_NO_RESPONSE )
+            register_results( code: -1, msg: MSG_NO_RESPONSE )
+            print_bad MSG_NO_RESPONSE
             return
-        else
-            cookies = @http.cookies.
-                inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
-
-            register_results( { :code => 1, :msg => MSG_SUCCESS, :cookies => cookies.dup } )
-            print_ok( MSG_SUCCESS )
-
-            print_info( 'Cookies set to:' )
-            cookies.each_pair { |name, val| print_info( '    * ' + name + ' = ' + val ) }
         end
+
+        cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
+
+        register_results( code: 1, msg: MSG_SUCCESS, cookies: cookies.dup )
+        print_ok MSG_SUCCESS
+
+        print_info 'Cookies set to:'
+        cookies.each_pair { |name, val| print_info( '    * ' + name + ' = ' + val ) }
     end
 
     def clean_up
-        @framework.resume
+        framework.resume
     end
 
     def login_form?( form )
-        avail    = form.auditable.keys
-        provided = @params.keys
-
-        provided.each { |name| return false if !avail.include?( name ) }
+        @params.keys.each { |name| return false if !form.auditable.include?( name ) }
         true
     end
 
     def self.info
         {
-            :name           => 'AutoLogin',
-            :description    => %q{It looks for the login form in the user provided URL,
+            name:        'AutoLogin',
+            description: %q{It looks for the login form in the user provided URL,
                 merges its input fields with the user supplied parameters and sets the cookies
                 of the response and request as framework-wide cookies to be used by the spider later on.
             },
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.4',
-            :options        => [
-                Component::Options::URL.new( 'url', [ true, 'The URL that contains the login form.' ] ),
-                Component::Options::String.new( 'params', [ true, 'Form parameters to submit. ( username=user&password=pass )' ] )
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.5',
+            options:     [
+                Arachni::Component::Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
+                Arachni::Component::Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] )
             ],
-            :order          => 0
+            order:       0 # run before any other plugin
         }
     end
 
-end
-
-end
 end
