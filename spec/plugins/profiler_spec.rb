@@ -6,7 +6,6 @@ describe name_from_filename do
     before ( :all ) do
         Arachni::Options.url = url
         framework.opts.audit :links, :forms, :cookies, :headers
-        framework.modules.load :xss
     end
 
     it 'should log taints' do
