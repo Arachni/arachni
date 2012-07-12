@@ -14,16 +14,12 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
 #
-class Resolver < Arachni::Plugin::Base
+# @version 0.1.1
+#
+class Arachni::Plugins::Resolver < Arachni::Plugin::Base
 
     def prepare
         wait_while_framework_running
@@ -33,29 +29,25 @@ class Resolver < Arachni::Plugin::Base
         print_status 'Resolving hostnames...'
 
         host_to_ipaddress = {}
-        @framework.audit_store.deep_clone.issues.each_with_index {
-            |issue|
+        framework.audit_store.deep_clone.issues.each_with_index do |issue|
             exception_jail( false ) {
-                host = URI( issue.url ).host
+                host = uri_parse( issue.url ).host
                 host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
             }
-        }
-        print_status 'Done!'
+        end
 
+        print_status 'Done!'
         register_results( host_to_ipaddress )
     end
 
     def self.info
         {
-            :name           => 'Resolver',
-            :description    => %q{Resolves vulnerable hostnames to IP addresses.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :tags           => [ 'ip address', 'hostname' ],
-            :version        => '0.1'
+            name:        'Resolver',
+            description: %q{Resolves vulnerable hostnames to IP addresses.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            tags:        [ 'ip address', 'hostname' ],
+            version:     '0.1.1'
         }
     end
 
-end
-
-end
 end
