@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Profiler plugin.
 #
@@ -26,7 +23,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Profiler < Arachni::Plugin::Base
+class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
     #
     # Assumes the identity of an Auditor.
@@ -43,35 +40,23 @@ class Profiler < Arachni::Plugin::Base
     #
     class Auditor < Arachni::Module::Base
 
-        def prepare
-            @id = Digest::SHA2.hexdigest( rand( 1000 ).to_s )
-            @opts = {
-                format:    [Format::STRAIGHT],
-                remove_id: true
-            }
-
-            @@logged ||= Set.new
+        def seed_id
+            @seed_id ||= Digest::SHA2.hexdigest( rand( 1000 ).to_s )
         end
 
         def run( &logger )
-            prepare
-
-            audit( @id, @opts ) do |res, opts, elem|
+            audit( seed_id, format: [Format::APPEND] ) do |res, _, elem|
                 landed_elems = []
 
-                if res.body.substring?( @id )
+                if res.body.include?( seed_id )
                     landed_elems |= find_landing_elements( res )
                 end
 
-                if res.headers.to_s.substring?( @id )
+                if res.headers.to_s.include?( seed_id )
                     landed_elems |= find_landing_header_fields( res )
                 end
 
-                if !landed_elems.empty?
-                    @@logged << "#{elem.action}::#{elem.altered}::#{elem.type}"
-                    logger.call( @id, res, elem, landed_elems )
-                end
-
+                logger.call( seed_id, res, elem, landed_elems ) if landed_elems.any?
             end
         end
 
@@ -80,11 +65,11 @@ class Profiler < Arachni::Plugin::Base
 
             parser = Arachni::Parser.new( Arachni::Options.instance, res )
             parser.cookies.each do |cookie|
-                elems << cookie if cookie.auditable.to_s.substring?( @id )
+                elems << cookie if cookie.auditable.to_s.substring?( seed_id )
             end
 
             res.headers_hash.each_pair do |k, v|
-                next if !v.to_s.substring?( @id )
+                next if !v.to_s.substring?( seed_id )
                 elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v.to_s } )
             end
 
@@ -97,22 +82,23 @@ class Profiler < Arachni::Plugin::Base
 
             parser = Arachni::Parser.new( Arachni::Options.instance, res )
             parser.forms.each do |form|
-                elems << form if form.auditable.to_s.substring?( @id )
+                elems << form if form.auditable.to_s.substring?( seed_id )
             end
 
+            self_url = Arachni::Parser::Element::Link.new( res.effective_url )
             parser.links.each do |link|
-                elems << link if link.auditable.to_s.substring?( @id )
+                if link.auditable.to_s.substring?( seed_id )
+                    # skip ourselves
+                    next if link.auditable == self_url.auditable
+                    elems << link
+                end
             end
 
             elems
         end
 
-        def skip?( elem )
-            @@logged.include?( "#{elem.action}::#{elem.altered}::#{elem.type}" )
-        end
-
         def self.info
-            { :name => 'Profiler' }
+            { name: 'Profiler' }
         end
 
     end
@@ -140,7 +126,7 @@ class Profiler < Arachni::Plugin::Base
         res_hash = res.to_hash
         res_hash['headers'] = res_hash['headers_hash']
 
-         result = {
+        result = {
             'taint'       => taint,
             'element'     =>  {
                 'type'      => elem.type,
@@ -155,7 +141,7 @@ class Profiler < Arachni::Plugin::Base
             'request' => {
                 'url'      => res.request.url,
                 'method'   => res.request.method.to_s.upcase,
-                'params'   => res.request.params,
+                'params'   => res.request.params || {},
                 'headers'  => res.request.headers,
             }
         }
@@ -183,17 +169,14 @@ class Profiler < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Profiler',
-            :description    => %q{Examines the behavior of the web application gathering general statistics
+            name:        'Profiler',
+            description: %q{Examines the behavior of the web application gathering general statistics
                 and performs taint analysis to determine which inputs affect the output.
 
                 It does not perform any vulnerability assessment nor does it send attack payloads.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.4'
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.5'
         }
     end
 
-end
-
-end
 end
