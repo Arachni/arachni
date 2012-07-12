@@ -20,7 +20,11 @@ shared_examples_for "plugin" do
     end
 
     def actual_results
-        (framework.plugins.results[name] || {})[:results]
+	    results_for( name )
+    end
+
+    def results_for( name )
+	    (framework.plugins.results[name] || {})[:results]
     end
 
     def expected_results
