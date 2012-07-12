@@ -16,13 +16,10 @@ describe name_from_filename do
 - :safe: __URL__
 - :safe: __URL__safe
 - :unsafe: __URL__vuln
-- :safe: __URL__sitemap.xml
-- :safe: __URL__sitemap.xml.gz
-- :safe: __URL____sinatra__/404.png
-:total: 6
-:safe: 5
+:total: 3
+:safe: 2
 :unsafe: 1
-:issue_percentage: 17
+:issue_percentage: 33
 YAML
     end
 

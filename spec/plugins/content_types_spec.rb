@@ -18,9 +18,6 @@ image/png:
 - :url: __URL__png
   :method: GET
   :params:
-- :url: __URL____sinatra__/404.png
-  :method: GET
-  :params:
 application/vnd.ms-excel:
 - :url: __URL__excel
   :method: GET
@@ -33,12 +30,6 @@ YAML
 ---
 text/html;charset=utf-8:
 - :url: __URL__
-  :method: GET
-  :params:
-- :url: __URL__sitemap.xml
-  :method: GET
-  :params:
-- :url: __URL__sitemap.xml.gz
   :method: GET
   :params:
 text/css:
@@ -55,21 +46,12 @@ text/html;charset=utf-8:
 - :url: __URL__
   :method: GET
   :params:
-- :url: __URL__sitemap.xml
-  :method: GET
-  :params:
-- :url: __URL__sitemap.xml.gz
-  :method: GET
-  :params:
 text/css:
 - :url: __URL__css
   :method: GET
   :params:
 image/png:
 - :url: __URL__png
-  :method: GET
-  :params:
-- :url: __URL____sinatra__/404.png
   :method: GET
   :params:
 application/vnd.ms-excel:
