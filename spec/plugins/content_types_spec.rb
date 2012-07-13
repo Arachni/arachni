@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'plugin'
 
     before ( :all ) do
-        Arachni::Options.url = url
+        options.url = url
     end
 
     def results
