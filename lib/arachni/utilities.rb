@@ -72,8 +72,14 @@ module Utilities
         Arachni::Parser::Element::Cookie.from_file( *args )
     end
 
-    def cookie_encode( str )
-        Arachni::Parser::Element::Cookie.encode( str )
+    # @see Arachni::Parser::Element::Cookie.encode
+    def cookie_encode( *args )
+        Arachni::Parser::Element::Cookie.encode( *args )
+    end
+
+    # @see Arachni::Parser::Page.from_response
+    def page_from_response( *args )
+	    Arachni::Parser::Page.from_response( *args )
     end
 
     def html_decode( str )
