@@ -4,7 +4,7 @@
 # loaded once.
 #
 require_relative '../lib/arachni'
-require_relative '../lib/arachni/ui/cli/output'
+#require_relative '../lib/arachni/ui/cli/output'
 require 'eventmachine'
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
@@ -34,7 +34,7 @@ RSpec.configure do |config|
     config.add_formatter :documentation
 
     config.before( :all ) do
-        Arachni::UI::Output.mute
+        #Arachni::UI::Output.mute
         #Arachni::UI::Output.debug_on
 
         kill_processes
