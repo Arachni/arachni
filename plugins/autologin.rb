@@ -55,7 +55,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         print_status "Found log-in form with name: "  + login_form.name ? login_form.name : '<n/a>'
 
         # merge the input fields of the form with the user supplied parameters
-        login_form.update_auditable( @params )
+        login_form.update( @params )
 
         res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
         if !res

@@ -102,7 +102,7 @@ module Auditable
 	#
 	# Frozen Key=>value pairs of inputs.
     #
-    # If you want to change it you'll either have to use {#update_auditable}
+    # If you want to change it you'll either have to use {#update}
     # or the {#auditable=} attr_writer and pass a new hash -- the new hash will also be frozen.
 	#
 	# @return   [Hash]
@@ -130,7 +130,7 @@ module Auditable
     # @see #auditable
     # @see #auditable=
     #
-    def update_auditable( hash )
+    def update( hash )
 	    self.auditable = self.auditable.merge( hash )
     end
 

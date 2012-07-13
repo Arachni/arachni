@@ -55,26 +55,26 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
-    describe '#update_auditable' do
+    describe '#update' do
 	    it 'should update the auditable inputs using the given hash' do
 		    a = @auditable.dup
 
 		    updates = { 'param' => 'val1', 'another_param' => 'val3' }
-		    a.update_auditable( updates )
+		    a.update( updates )
 
 		    a.auditable.should == updates
 		    a.hash.should_not == @auditable.hash
 
 		    c = a.dup
 		    cupdates = { 'param' => '' }
-		    a.update_auditable( cupdates )
+		    a.update( cupdates )
 		    a.auditable.should == updates.merge( cupdates )
 		    c.should_not == a
         end
 
         it 'should convert all inputs to strings' do
             e = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'stuff' } )
-            e.update_auditable( { 'key' => nil } )
+            e.update( { 'key' => nil } )
             e.auditable.should == { 'key' => '' }
         end
     end
