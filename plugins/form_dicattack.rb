@@ -14,52 +14,47 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.4
 #
-class FormDicattack < Arachni::Plugin::Base
-    attr_accessor :http
+class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
     def prepare
-        # disable spidering and the subsequent audit
-        # @framework.opts.link_count_limit = 0
+        # disable crawling and the subsequent audit
+        # framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
-        @framework.pause
-        print_info( "System paused." )
+        framework.pause
+        print_info 'System paused.'
 
-        @url     = @framework.opts.url.to_s
-        @users   = File.read( @options['username_list'] ).split( "\n" )
-        @passwds = File.read( @options['password_list'] ).split( "\n" )
-        @user_field   = @options['username_field']
-        @passwd_field = @options['password_field']
-        @verifier     = Regexp.new( @options['login_verifier'] )
+        @url = framework.opts.url
 
-        # we need to declare this in order to pass ourselves
-        # as the auditor to the form later in order to submit it.
-        @http = @framework.http
+        @users   = File.read( options['username_list'] ).split( "\n" )
+        @passwds = File.read( options['password_list'] ).split( "\n" )
+
+        @user_field   = options['username_field']
+        @passwd_field = options['password_field']
+
+        @verifier = Regexp.new( options['login_verifier'] )
 
         @found = false
     end
 
     def run
         if !form = login_form
-            print_bad( 'Could not find a form suiting the provided params at: ' + @url )
+            print_bad "Could not find a form suiting the provided params at: #{@url }"
             return
         end
 
         name = form.raw['attrs']['name'] ? form.raw['attrs']['name'] : '<n/a>'
-        print_status( "Found log-in form with name: "  + name )
+        print_status "Found log-in form with name: #{name}"
 
-        print_status( "Building the request queue..." )
+        print_status 'Building the request queue...'
 
         total_req = @users.size * @passwds.size
-        print_status( "Number of requests to be transmitted: #{total_req}" )
+        print_status "Number of requests to be transmitted: #{total_req}"
 
         # we need a clean cookie slate for each request
         opts = {
@@ -71,28 +66,23 @@ class FormDicattack < Arachni::Plugin::Base
         @users.each do |user|
             @passwds.each do |pass|
 
-                params = {
-                    @user_field     => user,
-                    @passwd_field   => pass
-                }
-
                 # merge the input fields of the form with our own params
-                form.auditable.merge!( params.dup )
-                form.submit( opts ).on_complete do |res|
+                form.update( @user_field => user, @passwd_field => pass )
+                form.submit( opts ) do |res|
                     next if @found
 
-                    print_status( "#{@user_field}: '#{res.request.params[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'" )
+                    print_status "#{@user_field}: '#{res.request.params[@user_field]}'" +
+                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'"
 
                     next if !res.body.match( @verifier )
 
                     @found = true
 
-                    print_ok( "Found a match. #{@user_field}: '#{res.request.params[@user_field]}'" +
-                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'" )
+                    print_ok "Found a match -- #{@user_field}: '#{res.request.params[@user_field]}'" +
+                        " -- #{@passwd_field}: '#{res.request.params[@passwd_field]}'"
 
                     # register our findings...
-                    register_results( { :username => user, :password => pass } )
+                    register_results( username: user, password: pass )
                     clean_up
 
                     raise "Stopping the attack."
@@ -101,27 +91,25 @@ class FormDicattack < Arachni::Plugin::Base
             end
         end
 
-        print_status( "Waiting for the requests to complete..." )
-        @http.run
-        print_bad( "Couldn't find a match." )
+        print_status 'Waiting for the requests to complete...'
+        http.run
+        print_bad 'Couldn\'t find a match.'
     end
 
     def clean_up
         # abort the rest of the queued requests
-        @http.abort
+        http.abort
 
         # continue with the scan
-        @framework.resume
+        framework.resume
     end
 
     def login_form
         # grab the page containing the login form
-        res  = @http.get( @url, :async => false ).response
+        res = http.get( @url, async: false ).response
 
         # find the login form
-        form = nil
-        forms_from_response( res ).each { |cform| form = cform if login_form?( cform ) }
-        form
+        forms_from_response( res ).select { |cform| login_form?( cform ) }.first
     end
 
     def login_form?( form )
@@ -135,25 +123,22 @@ class FormDicattack < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Form dictionary attacker',
-            :description    => %q{Uses wordlists to crack login forms.
+            name:        'Form dictionary attacker',
+            description: %q{Uses wordlists to crack login forms.
                 If the cracking process is successful the found credentials will be set
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.2',
-            :options        => [
-                Component::Options::Path.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Component::Options::Path.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] ),
-                Component::Options::String.new( 'username_field', [ true, 'The name of the username form field.'] ),
-                Component::Options::String.new( 'password_field', [ true, 'The name of the password form field.'] ),
-                Component::Options::String.new( 'login_verifier', [ true, 'A string that will be used to verify a successful login.
-                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] ),
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.4',
+            options:     [
+                Arachni::Component::Options::Path.new('username_list', [true, 'File with a list of usernames (newline separated).']),
+                Arachni::Component::Options::Path.new('password_list', [true, 'File with a list of passwords (newline separated).']),
+                Arachni::Component::Options::String.new('username_field', [true, 'The name of the username form field.']),
+                Arachni::Component::Options::String.new('password_field', [true, 'The name of the password form field.']),
+                Arachni::Component::Options::String.new('login_verifier', [true, 'A regular expression which will be used to verify a successful login.
+                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.']),
             ]
         }
     end
 
-end
-
-end
 end
