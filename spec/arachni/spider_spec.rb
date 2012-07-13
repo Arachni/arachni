@@ -104,32 +104,32 @@ describe Arachni::Spider do
     end
 
     describe '#run' do
-	    context 'Options.do_not_crawl' do
-		    it 'should now crawl the site' do
-			    @opts.do_not_crawl
-			    Arachni::Spider.new.run.should be_nil
-		    end
+        context 'Options.do_not_crawl' do
+            it 'should now crawl the site' do
+                @opts.do_not_crawl
+                Arachni::Spider.new.run.should be_nil
+            end
 
-		    context 'when crawling is then enabled using Options.crawl' do
-			    it 'should perform a crawl' do
-				    @opts.crawl
-				    Arachni::Spider.new.run.size.should == 3
-			    end
-		    end
-	    end
-	    context 'when the link-count-limit option has been set' do
-		    it 'should follow only a <link-count-limit> amount of paths' do
-			    @opts.link_count_limit = 1
-			    spider = Arachni::Spider.new
-			    spider.run.should == spider.sitemap
-			    spider.sitemap.should == [@url]
+            context 'when crawling is then enabled using Options.crawl' do
+                it 'should perform a crawl' do
+                    @opts.crawl
+                    Arachni::Spider.new.run.size.should == 3
+                end
+            end
+        end
+        context 'when the link-count-limit option has been set' do
+            it 'should follow only a <link-count-limit> amount of paths' do
+                @opts.link_count_limit = 1
+                spider = Arachni::Spider.new
+                spider.run.should == spider.sitemap
+                spider.sitemap.should == [@url]
 
-			    @opts.link_count_limit = 2
-			    spider = Arachni::Spider.new
-			    spider.run.should == spider.sitemap
-			    spider.sitemap.size.should == 2
-		    end
-	    end
+                @opts.link_count_limit = 2
+                spider = Arachni::Spider.new
+                spider.run.should == spider.sitemap
+                spider.sitemap.size.should == 2
+            end
+        end
         context 'when redundant rules have been set' do
             it 'should follow the matching paths the specified amounts of time' do
                 @opts.url = @url + '/redundant'

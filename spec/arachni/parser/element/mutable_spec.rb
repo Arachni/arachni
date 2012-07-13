@@ -38,10 +38,10 @@ describe Arachni::Parser::Element::Mutable do
     end
 
     describe '#mutations' do
-	    it 'should be aliased to #mutations_for' do
-		    e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
-		    e.mutations_for( @seed ).should == e.mutations( @seed )
-	    end
+        it 'should be aliased to #mutations_for' do
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+            e.mutations_for( @seed ).should == e.mutations( @seed )
+        end
 
         it 'should only affect #auditable and #altered' do
             e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )

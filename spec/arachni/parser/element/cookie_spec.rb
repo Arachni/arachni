@@ -304,7 +304,7 @@ describe Arachni::Parser::Element::Cookie do
 
                     cookies = Arachni::Parser::Element::Cookie.from_headers( 'http://test.com', headers )
                     cookies.size.should == 1
-	                cookies.first.name.should == 'coo@ki e2'
+                    cookies.first.name.should == 'coo@ki e2'
                     cookies.first.value.should == 'blah val2@'
                 end
             end

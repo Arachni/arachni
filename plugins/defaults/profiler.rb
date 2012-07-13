@@ -163,7 +163,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     end
 
     def self.merge( results )
-	    results.flatten
+        results.flatten
     end
 
     def self.info

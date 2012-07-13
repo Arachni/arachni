@@ -79,7 +79,7 @@ module Utilities
 
     # @see Arachni::Parser::Page.from_response
     def page_from_response( *args )
-	    Arachni::Parser::Page.from_response( *args )
+        Arachni::Parser::Page.from_response( *args )
     end
 
     def html_decode( str )

@@ -99,16 +99,16 @@ module Auditable
         async:     true
     }
 
-	#
-	# Frozen Key=>value pairs of inputs.
+    #
+    # Frozen Key=>value pairs of inputs.
     #
     # If you want to change it you'll either have to use {#update}
     # or the {#auditable=} attr_writer and pass a new hash -- the new hash will also be frozen.
-	#
-	# @return   [Hash]
-	#
+    #
+    # @return   [Hash]
+    #
     def auditable
-	    @auditable.freeze
+        @auditable.freeze
     end
 
     #
@@ -118,9 +118,9 @@ module Auditable
     # @see auditable
     #
     def auditable=( hash )
-	    @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h}
-	    rehash
-	    self.auditable
+        @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h}
+        rehash
+        self.auditable
     end
 
     #
@@ -131,16 +131,16 @@ module Auditable
     # @see #auditable=
     #
     def update( hash )
-	    self.auditable = self.auditable.merge( hash )
+        self.auditable = self.auditable.merge( hash )
     end
 
     def ==( e )
-	    hash == e.hash
+        hash == e.hash
     end
     alias :eql? :==
 
     def hash
-	    @hash ||= rehash
+        @hash ||= rehash
     end
 
     #
@@ -534,7 +534,7 @@ module Auditable
     end
 
     def rehash
-	    @hash = (self.action.to_s + self.method.to_s + self.auditable.to_s).hash
+        @hash = (self.action.to_s + self.method.to_s + self.auditable.to_s).hash
     end
 
 end

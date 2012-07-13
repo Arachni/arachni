@@ -14,40 +14,40 @@ describe Arachni::Options do
     end
 
     describe '#do_not_crawl' do
-	    it 'should set the link_count_limit to 0' do
-		    Arachni::Options.do_not_crawl
-		    Arachni::Options.link_count_limit.should == 0
-	    end
+        it 'should set the link_count_limit to 0' do
+            Arachni::Options.do_not_crawl
+            Arachni::Options.link_count_limit.should == 0
+        end
     end
 
     describe '#crawl' do
-	    it 'should set the link_count_limit to < 0' do
-		    Arachni::Options.crawl
-		    Arachni::Options.link_count_limit.should < 0
-	    end
+        it 'should set the link_count_limit to < 0' do
+            Arachni::Options.crawl
+            Arachni::Options.link_count_limit.should < 0
+        end
     end
 
     describe '#crawl?' do
-	    context 'by default' do
-		    it 'should return true' do
-			    Arachni::Options.crawl?.should be_true
-		    end
-	    end
-	    context 'when crawling is enabled' do
-		    it 'should return true' do
-			    Arachni::Options.do_not_crawl
-			    Arachni::Options.crawl?.should be_false
-			    Arachni::Options.crawl
-			    Arachni::Options.crawl?.should be_true
-		    end
-	    end
-	    context 'when crawling is disabled' do
-		    it 'should return false' do
-			    Arachni::Options.crawl?.should be_true
-			    Arachni::Options.do_not_crawl
-			    Arachni::Options.crawl?.should be_false
-		    end
-	    end
+        context 'by default' do
+            it 'should return true' do
+                Arachni::Options.crawl?.should be_true
+            end
+        end
+        context 'when crawling is enabled' do
+            it 'should return true' do
+                Arachni::Options.do_not_crawl
+                Arachni::Options.crawl?.should be_false
+                Arachni::Options.crawl
+                Arachni::Options.crawl?.should be_true
+            end
+        end
+        context 'when crawling is disabled' do
+            it 'should return false' do
+                Arachni::Options.crawl?.should be_true
+                Arachni::Options.do_not_crawl
+                Arachni::Options.crawl?.should be_false
+            end
+        end
     end
 
     describe '#audit' do

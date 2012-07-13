@@ -340,10 +340,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def self.decode( str )
-	    URI.decode( str.gsub( '+', ' ' ), )
+        URI.decode( str.gsub( '+', ' ' ), )
     end
     def decode( str )
-	    self.class.decode( str )
+        self.class.decode( str )
     end
 
     private

@@ -23,20 +23,20 @@ describe Arachni::Parser::Element::Auditable do
 
 
     describe '#auditable' do
-	    it 'should return a frozen hash of auditable inputs' do
-		    @auditable.auditable.should == { 'param' => 'val' }
+        it 'should return a frozen hash of auditable inputs' do
+            @auditable.auditable.should == { 'param' => 'val' }
 
-		    raised = false
-		    begin
-		        @auditable.auditable['stuff'] = true
-		    rescue
-			    raised = true
-		    end
+            raised = false
+            begin
+                @auditable.auditable['stuff'] = true
+            rescue
+                raised = true
+            end
 
-		    @auditable.auditable.should == { 'param' => 'val' }
+            @auditable.auditable.should == { 'param' => 'val' }
 
-		    raised.should be_true
-	    end
+            raised.should be_true
+        end
     end
 
     describe '#auditable=' do
@@ -56,20 +56,20 @@ describe Arachni::Parser::Element::Auditable do
     end
 
     describe '#update' do
-	    it 'should update the auditable inputs using the given hash' do
-		    a = @auditable.dup
+        it 'should update the auditable inputs using the given hash' do
+            a = @auditable.dup
 
-		    updates = { 'param' => 'val1', 'another_param' => 'val3' }
-		    a.update( updates )
+            updates = { 'param' => 'val1', 'another_param' => 'val3' }
+            a.update( updates )
 
-		    a.auditable.should == updates
-		    a.hash.should_not == @auditable.hash
+            a.auditable.should == updates
+            a.hash.should_not == @auditable.hash
 
-		    c = a.dup
-		    cupdates = { 'param' => '' }
-		    a.update( cupdates )
-		    a.auditable.should == updates.merge( cupdates )
-		    c.should_not == a
+            c = a.dup
+            cupdates = { 'param' => '' }
+            a.update( cupdates )
+            a.auditable.should == updates.merge( cupdates )
+            c.should_not == a
         end
 
         it 'should convert all inputs to strings' do

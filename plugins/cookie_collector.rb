@@ -28,9 +28,9 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
     end
 
     def run
-	    framework.http.add_on_new_cookies do |cookies, res|
-		    update( cookies.inject({}) { |h, c| h.merge!( c.simple ); h }, res )
-	    end
+        framework.http.add_on_new_cookies do |cookies, res|
+            update( cookies.inject({}) { |h, c| h.merge!( c.simple ); h }, res )
+        end
     end
 
     def update( cookies, res )
@@ -63,14 +63,14 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
     def self.info
         {
-	        :name => 'Cookie collector',
-	        :description => %q{Monitors and collects cookies while establishing a timeline of changes.
+            :name => 'Cookie collector',
+            :description => %q{Monitors and collects cookies while establishing a timeline of changes.
 
                 WARNING: Highly discouraged when the audit includes cookies.
                     It will log thousands of results leading to a huge report,
                     highly increased memory and CPU usage.},
-	        :author => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-	        :version => '0.1.5'
+            :author => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            :version => '0.1.5'
         }
     end
 

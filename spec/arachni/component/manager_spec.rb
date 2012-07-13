@@ -53,26 +53,26 @@ describe Arachni::Component::Manager do
             end
 
             context 'vararg' do
-	            context String do
-		            it 'should load components by name' do
-			            @components.load( 'wait', 'bad' )
-			            @components.loaded.sort.should == %w(bad wait).sort
-		            end
-	            end
+                context String do
+                    it 'should load components by name' do
+                        @components.load( 'wait', 'bad' )
+                        @components.loaded.sort.should == %w(bad wait).sort
+                    end
+                end
 
-	            context Symbol do
-		            it 'should load components by name' do
-			            @components.load :wait, :distributable
-			            @components.loaded.sort.should == %w(wait distributable).sort
-		            end
-	            end
+                context Symbol do
+                    it 'should load components by name' do
+                        @components.load :wait, :distributable
+                        @components.loaded.sort.should == %w(wait distributable).sort
+                    end
+                end
 
-	            context Array do
-		            it 'should load components by name' do
-			            @components.load( :wait, %w(bad distributable) )
-			            @components.loaded.sort.should == %w(bad distributable wait).sort
-		            end
-	            end
+                context Array do
+                    it 'should load components by name' do
+                        @components.load( :wait, %w(bad distributable) )
+                        @components.loaded.sort.should == %w(bad distributable wait).sort
+                    end
+                end
             end
 
             context 'wildcard (*)' do
