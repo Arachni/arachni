@@ -14,111 +14,98 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
-class HTTPDicattack < Arachni::Plugin::Base
+class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
         # disable spidering and the subsequent audit
         # @framework.opts.link_count_limit = 0
 
         # don't scan the website just yet
-        @framework.pause
-        print_info( "System paused." )
+        framework.pause
+        print_info "System paused."
 
-        @url     = @framework.opts.url.to_s
-        @users   = File.read( @options['username_list'] ).split( "\n" )
-        @passwds = File.read( @options['password_list'] ).split( "\n" )
+        @url = framework.opts.url.to_s
+
+        @users   = File.read( options['username_list'] ).split( "\n" )
+        @passwds = File.read( options['password_list'] ).split( "\n" )
 
         @found = false
     end
 
     def run
         if !protected?( @url )
-            print_info( "The URL you provided doesn't seem to be protected." )
-            print_info( "Aborting..." )
+            print_info "The URL you provided doesn't seem to be protected."
+            print_info "Aborting..."
             return
         end
 
         url = uri_parse( @url )
 
-        print_status( "Building the request queue..." )
+        print_status "Building the request queue..."
 
         total_req = @users.size * @passwds.size
-        print_status( "Number of requests to be transmitted: #{total_req}" )
+        print_status "Maximum number of requests to be transmitted: #{total_req}"
 
         @users.each do |user|
             url.user = user
 
             @passwds.each do |pass|
-                url.password = pass
+                url.password = pass.strip
 
-                @framework.http.get( url.to_s ).on_complete do |res|
-
+                framework.http.get( url.to_s ).on_complete do |res|
                     next if @found
 
-                    print_status( "Username: '#{user}' -- Password: '#{pass}'" )
+                    print_status "Username: '#{user}' -- Password: '#{pass}'"
                     next if res.code != 200
 
                     @found = true
 
-                    print_ok( "Found a match. Username: '#{user}' -- Password: '#{pass}'" )
-                    print_info( "URL: #{res.effective_url}" )
+                    print_ok "Found a match. Username: '#{user}' -- Password: '#{pass}'"
+                    print_info "URL: #{res.effective_url}"
 
-                    @framework.opts.url = res.effective_url
+                    framework.opts.url = res.effective_url
 
                     # register our findings...
-                    register_results( { :username => user, :password => pass } )
-                    clean_up
-
-                    raise "Stopping the attack."
-
+                    register_results( username: user, password: pass )
+                    http.abort
                 end
 
             end
         end
 
-        print_status( "Waiting for the requests to complete..." )
-        @framework.http.run
-        print_bad( "Couldn't find a match." )
-
+        print_status "Waiting for the requests to complete..."
+        http.run
+        print_bad "Couldn't find a match."
     end
 
     def clean_up
-        # abort the rest of the queued requests
-        @framework.http.abort
-
         # continue with the scan
-        @framework.resume
+        framework.resume
     end
 
     def protected?( url )
-        @framework.http.get( url, async: false ).response.code == 401
+        http.get( url, async: false ).response.code == 401
     end
 
     def self.info
         {
-            :name           => 'HTTP dictionary attacker',
-            :description    => %q{Uses wordlists to crack password protected directories.
+            name:        'HTTP dictionary attacker',
+            description: %q{Uses wordlists to crack password protected directories.
                 If the cracking process is successful the found credentials will be set
                 framework-wide and used for the duration of the audit.
                 If that's not what you want set the crawler's link-count limit to "0".},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :options        => [
-                Component::Options::Path.new( 'username_list', [ true, 'File with a list of usernames (newline separated).' ] ),
-                Component::Options::Path.new( 'password_list', [ true, 'File with a list of passwords (newline separated).' ] )
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.2',
+            options:     [
+                Arachni::Component::Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
+                Arachni::Component::Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] )
             ]
         }
     end
 
-end
-
-end
 end
