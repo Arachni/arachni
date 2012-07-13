@@ -538,7 +538,7 @@ class Options
     end
 
     def crawl?
-	    self.link_count_limit < 0
+	    self.link_count_limit != 0
     end
 
     #
