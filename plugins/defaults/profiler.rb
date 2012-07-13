@@ -119,7 +119,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
     def clean_up
         wait_while_framework_running
-        register_results( { 'inputs' => @inputs } )
+        register_results( @inputs )
     end
 
     def log( taint, res, elem, landed_elems )
@@ -163,8 +163,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     end
 
     def self.merge( results )
-        inputs = results.map { |result| result['inputs'] }.flatten
-        { 'inputs' => inputs }
+	    results.flatten
     end
 
     def self.info

@@ -10,7 +10,7 @@ describe name_from_filename do
 
     it 'should log taints' do
         run
-        results = actual_results['inputs']
+        results = actual_results
         results.size.should == 6
 
         eoks = 0

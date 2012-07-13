@@ -16,32 +16,19 @@
 
 require 'json'
 
-module Arachni
+#
+# HTML formatter for the results of the Profiler plugin
+#
+# @author Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#
+# @version 0.2.2
+#
+class Arachni::Reports::HTML::PluginFormatters::Profiler < Arachni::Plugin::Formatter
+    include Arachni::Reports::HTML::Utils
 
-module Reports
-
-class HTML
-module PluginFormatters
-
-    #
-    # HTML formatter for the results of the Profiler plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.2.1
-    #
-    class Profiler < Arachni::Plugin::Formatter
-        include Arachni::Reports::HTML::Utils
-
-        def run
-            return ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
-        end
-
+    def run
+        ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
     end
 
-end
-end
-
-end
 end

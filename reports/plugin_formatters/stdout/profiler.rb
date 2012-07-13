@@ -26,7 +26,7 @@ module PluginFormatters
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      
+    #
     # @version 0.1
     #
     class Profiler < Arachni::Plugin::Formatter
@@ -41,7 +41,7 @@ module PluginFormatters
             print_info( 'Inputs affecting output:' )
             print_line
 
-            @results['inputs'].each {
+            @results.each {
                 |item|
 
                 output = item['element']['type'].capitalize

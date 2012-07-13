@@ -28,7 +28,7 @@ module PluginFormatters
     #
     # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      
+    #
     # @version 0.1.1
     #
     class Profiler < Arachni::Plugin::Formatter
@@ -42,7 +42,7 @@ module PluginFormatters
             start_tag( 'results' )
 
             start_tag( 'inputs' )
-            @results['inputs'].each {
+            @results.each {
                 |item|
 
                 start_tag( 'input' )
