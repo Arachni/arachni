@@ -299,11 +299,13 @@ describe Arachni::Parser::Element::Cookie do
             context 'with a String document' do
                 it 'should return an array of cookies' do
                     headers = {
-                        'set-cookie' => "cookie2=val2; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
+                        'set-cookie' => "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
                     }
 
                     cookies = Arachni::Parser::Element::Cookie.from_headers( 'http://test.com', headers )
                     cookies.size.should == 1
+	                cookies.first.name.should == 'coo@ki e2'
+                    cookies.first.value.should == 'blah val2@'
                 end
             end
             context 'with a Nokogiri::HTML::Document' do

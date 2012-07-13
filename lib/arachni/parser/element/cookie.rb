@@ -324,6 +324,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
                 cookie_hash[var.to_s.gsub( /@/, '' )] = cookie.instance_variable_get( var )
             end
             cookie_hash['expires'] = cookie.expires
+
+            cookie_hash['name']  = decode( cookie.name )
+            cookie_hash['value'] = decode( cookie.value )
+
             new( url.to_s, cookie_hash )
         end.flatten.compact
     end
@@ -333,6 +337,13 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
     def encode( str )
         self.class.encode( str )
+    end
+
+    def self.decode( str )
+	    URI.decode( str.gsub( '+', ' ' ), )
+    end
+    def decode( str )
+	    self.class.decode( str )
     end
 
     private
