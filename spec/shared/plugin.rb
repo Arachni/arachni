@@ -1,9 +1,8 @@
 shared_examples_for "plugin" do
     include_examples 'component'
 
-    before( :all ) do
-        framework.plugins.load name
-    end
+    before( :all ) { framework.plugins.load name }
+    before( :each ) { framework.plugins.reset }
 
     def results
     end
