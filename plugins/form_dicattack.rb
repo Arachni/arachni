@@ -83,9 +83,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
                     # register our findings...
                     register_results( username: user, password: pass )
-                    clean_up
-
-                    raise "Stopping the attack."
+                    http.abort
                 end
 
             end
@@ -93,13 +91,10 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
         print_status 'Waiting for the requests to complete...'
         http.run
-        print_bad 'Couldn\'t find a match.'
+        print_bad 'Couldn\'t find a match.' if !@found
     end
 
     def clean_up
-        # abort the rest of the queued requests
-        http.abort
-
         # continue with the scan
         framework.resume
     end
