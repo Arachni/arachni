@@ -149,6 +149,7 @@ module Mutable
         print_debug_injection_set( var_combo, opts )
         var_combo.uniq
     end
+    alias :mutations_for :mutations
 
     private
 
