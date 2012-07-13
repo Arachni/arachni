@@ -164,6 +164,11 @@ class Manager < Arachni::Component::Manager
     def results
         self.class.results
     end
+    alias :issues :results
+
+    def self.issues
+        results
+    end
 
     def self.reset
         store

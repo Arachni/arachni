@@ -87,4 +87,43 @@ describe Arachni::Module::Manager do
         end
     end
 
+    describe '#results' do
+        it 'should return the registered results' do
+            @modules.register_results( [ @issue ] )
+            @modules.results.empty?.should be false
+        end
+
+        it 'should be aliased to #issues' do
+            @modules.register_results( [ @issue ] )
+            @modules.results.empty?.should be false
+            @modules.results.should == @modules.issues
+        end
+    end
+
+    describe '.results' do
+        it 'should return the registered results' do
+            @modules.register_results( [ @issue ] )
+            @modules.class.results.empty?.should be false
+        end
+
+        it 'should be aliased to #issues' do
+            @modules.register_results( [ @issue ] )
+            @modules.class.results.empty?.should be false
+            @modules.class.results.should == @modules.class.issues
+        end
+    end
+
+    describe '#register_results' do
+        it 'should register the given issues' do
+            @modules.register_results( [ @issue ] )
+            @modules.results.empty?.should be false
+        end
+    end
+
+    describe '.register_results' do
+        it 'should register the given issues' do
+            @modules.register_results( [ @issue ] )
+            @modules.class.results.empty?.should be false
+        end
+    end
 end
