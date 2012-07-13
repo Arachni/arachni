@@ -59,7 +59,7 @@ class Manager < Hash
     #
     # @param    [Array]    components    array of names of components to load
     #
-    def load( components )
+    def load( *components )
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
