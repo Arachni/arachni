@@ -14,29 +14,24 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Loads and runs an external Ruby script under the scope of a plugin,
 # used for debugging and general hackery.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1
+# @version 0.1.1
 #
-class Script < Arachni::Plugin::Base
+class Arachni::Plugins::Script < Arachni::Plugin::Base
 
     def run
-        if Arachni.constants.include?( :RPC )
+        if Arachni::Options.rpc_address
             print_error 'Cannot be executed while running as an RPC server.'
             return
         end
 
-        path = Dir.getwd + '/' + @options['path']
-        print_status "Loading #{path}"
-        eval( IO.read( path ) )
+        print_status "Loading #{options['path']}"
+        eval( IO.read( options['path'] ) )
         print_status 'Done!'
     end
 
@@ -48,14 +43,11 @@ class Script < Arachni::Plugin::Base
 
                 Will not work over RPC.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
+            :version        => '0.1.1',
             :options        => [
-                Component::Options::Path.new( 'path', [ true, 'Path to the script.' ] )
+                Arachni::Component::Options::Path.new( 'path', [ true, 'Path to the script.' ] )
             ]
         }
     end
 
-end
-
-end
 end
