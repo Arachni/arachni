@@ -4,14 +4,14 @@ describe name_from_filename do
 	include_examples 'plugin'
 
 	before( :all ) do
-		Arachni::Options.url = url
+		options.url = url
 	end
 
 	context "when given the right params" do
 		it 'should locate the form and login successfully' do
 			name = name_from_filename
 
-			Arachni::Options.plugins[name] = {
+			options.plugins[name] = {
 				'url'    => url + '/login',
 				'params' => 'username=john&password=doe',
 			}
@@ -31,7 +31,7 @@ describe name_from_filename do
 		it 'should complain about not being able to find the form' do
 			name = name_from_filename
 
-			Arachni::Options.plugins[name] = {
+			options.plugins[name] = {
 				'url'    => url + '/login',
 				'params' => 'username2=john&password=doe',
 			}
