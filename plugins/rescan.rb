@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Allows users to skip the crawling phase by extracting paths discovered
 # by a previous scan.
@@ -26,40 +23,37 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
-class ReScan < Arachni::Plugin::Base
+class Arachni::Plugins::ReScan < Arachni::Plugin::Base
 
     def prepare
-        @framework.pause
-        print_status( "System paused." )
+        framework.pause
+        print_status "System paused."
     end
 
     def run
-        @framework.opts.restrict_paths = Arachni::AuditStore.load( @options['afr'] ).sitemap
-        print_status( "Found #{@framework.opts.restrict_paths.size} paths." )
+        framework.opts.restrict_paths = Arachni::AuditStore.load( options['afr'] ).sitemap
+        print_status "Found #{framework.opts.restrict_paths.size} paths."
     end
 
     def clean_up
-        @framework.resume
-        print_status( "System resumed." )
+        framework.resume
+        print_status "System resumed."
     end
 
     def self.info
         {
-            :name           => 'ReScan',
-            :description    => %q{It uses the AFR report of a previous scan to
+            name:        'ReScan',
+            description: %q{It uses the AFR report of a previous scan to
                 extract the sitemap in order to avoid a redundant crawl.
             },
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :options        => [
-                Component::Options::Path.new( 'afr', [ true, 'Path to the AFR report.' ] )
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.2',
+            options:     [
+                Arachni::Component::Options::Path.new( 'afr', [true, 'Path to the AFR report.'] )
             ]
         }
     end
 
-end
-
-end
 end
