@@ -529,6 +529,18 @@ class Options
         self
     end
 
+    def do_not_crawl
+	    self.link_count_limit = 0
+    end
+
+    def crawl
+	    self.link_count_limit = -1
+    end
+
+    def crawl?
+	    self.link_count_limit < 0
+    end
+
     #
     # Normalizes and sets +url+ as the target URL.
     #
