@@ -106,7 +106,6 @@ class URI
     #
     def self.deep_decode( string )
         string = decode( string ) while string =~ /%[a-fA-F0-9]{2}/
-        html_decode( string )
     end
 
     #
@@ -218,7 +217,7 @@ class URI
             # remove the fragment if there is one
             url = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
 
-            url = deep_decode( url )
+            url = html_decode( url )
 
             has_path = true
 
@@ -269,12 +268,14 @@ class URI
                     components[:path] = '/' + components[:path] if components[:scheme]
                     components[:path].gsub!( /\/+/, '/' )
                     components[:path] =
-                        encode( components[:path], Addressable::URI::CharacterClasses::PATH )
+                        encode( decode( components[:path] ),
+                                Addressable::URI::CharacterClasses::PATH )
                 end
 
                 if components[:query] = splits.shift
                     components[:query] =
-                        encode( components[:query], Addressable::URI::CharacterClasses::QUERY )
+                        encode( decode( components[:query] ),
+                                Addressable::URI::CharacterClasses::QUERY )
                 end
             end
 
