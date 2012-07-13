@@ -89,7 +89,7 @@ class Spider
     # @return [Array<String>]   sitemap
     #
     def run( pass_pages_to_block = pass_pages?, &block )
-        return if limit_reached?
+        return if !@opts.crawl?
 
         if block_given?
             pass_pages_to_block ? pass_pages : pass_responses
@@ -218,7 +218,7 @@ class Spider
 
     # @return   [Arachni::HTTP]   HTTP interface
     def http
-        Arachni::HTTP.instance
+        Arachni::HTTP
     end
 
     #
@@ -246,9 +246,7 @@ class Spider
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
     def limit_reached?
-        return true if @opts.link_count_limit == 0
-        @opts.link_count_limit && @opts.link_count_limit > 0 &&
-            @visited.size >= @opts.link_count_limit
+        @opts.link_count_limit > 0 && @visited.size >= @opts.link_count_limit
     end
 
     #
