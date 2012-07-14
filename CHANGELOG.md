@@ -25,7 +25,7 @@
     - SSN -- Improved regexp and logging. [Issue #170]
     - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
     - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag. (**New**)
-- Plugins
+- Plugins - Every single one has been cleaned up and have had RSpec tests added.
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.
