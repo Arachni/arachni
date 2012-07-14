@@ -10,8 +10,6 @@ describe name_from_filename do
     before( :all ) do
         options.url = url
         options.do_not_crawl
-
-        framework.modules.load :trainer
     end
 
     def vectors
