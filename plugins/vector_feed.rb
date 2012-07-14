@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Vector feed plug-in.
 #
@@ -27,21 +24,21 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class VectorFeed < Arachni::Plugin::Base
+class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
     def prepare
-        print_status 'Pausing the framework...'
-        @framework.pause
-        print_status 'Done!'
+        framework.pause
+        print_status 'System paused.'
     end
 
     def run
-
-        if !@options['vectors'].is_a? Array
-            feed = if @options['yaml_file']
-                IO.read( @options['yaml_file'] )
-            elsif @options['yaml_string']
-                @options['yaml_string']
+        # if the 'vectors' option is an array at this point then someone fed
+        # them to us programmatically
+        if !options['vectors'].is_a? Array
+            feed = if options['yaml_file']
+                IO.read( options['yaml_file'] )
+            elsif options['yaml_string']
+                options['yaml_string']
             else
                 ''
             end
@@ -64,24 +61,19 @@ class VectorFeed < Arachni::Plugin::Base
                 return
             end
         else
-            feed = @options['vectors']
+            feed = options['vectors']
         end
 
         pages = {}
         page_buffer = []
         print_status "Imported #{feed.size} vectors."
         feed.each do |obj|
-
-            if obj.respond_to?( :value )
-                vector = obj.value
-            else
-                vector = obj
-            end
+            vector = obj.respond_to?( :value ) ? obj.value : obj
 
             begin
                 exception_jail{
 
-                    if is_page?( vector )
+                    if page?( vector )
                         page_buffer << page_from_body_vector( vector )
                         next
                     end
@@ -93,7 +85,7 @@ class VectorFeed < Arachni::Plugin::Base
                         url: element.url
                     )
 
-                    pages[element.url].instance_variable_get( "@#{element.type}s" ) << element
+                    pages[element.url].send( "#{element.type}s" ) << element
                 }
             rescue
                 next
@@ -104,28 +96,28 @@ class VectorFeed < Arachni::Plugin::Base
         pages |= page_buffer
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
-            pages.each { |page| @framework.push_to_page_queue( page ) }
+            pages.each { |page| framework.push_to_page_queue( page ) }
             print_status 'Done!'
         else
             print_bad 'Could not find any usable vectors.'
         end
     end
 
-    def is_page?( vector )
+    def page?( vector )
         vector['type'] == 'page'
     end
 
     def page_from_body_vector( vector )
         Arachni::Parser::Page.new(
-            code: Integer( vector['code'] || 200 ),
-            url: vector['url'] || @framework.opts.url.to_s,
-            body: vector['body'] || '',
+            code:             Integer( vector['code'] || 200 ),
+            url:              vector['url'] || framework.opts.url.to_s,
+            body:             vector['body'] || '',
             response_headers: vector['headers'] || {}
         )
     end
 
     def hash_to_element( vector )
-        owner = @framework.opts.url.to_s
+        owner  = framework.opts.url.to_s
         action = vector['action']
         inputs = vector['inputs']
         method = vector['method'] || 'get'
@@ -146,9 +138,9 @@ class VectorFeed < Arachni::Plugin::Base
                     inputs: inputs
                 )
             when Arachni::Issue::Element::COOKIE
-                Arachni::Parser::Element::Cookie.new( owner, inputs )
+                Arachni::Parser::Element::Cookie.new( action, inputs )
             when Arachni::Issue::Element::HEADER
-                Arachni::Parser::Element::Header.new( owner, inputs )
+                Arachni::Parser::Element::Header.new( action, inputs )
             else
                 Arachni::Parser::Element::Link.new( owner,
                     action: action,
@@ -160,17 +152,15 @@ class VectorFeed < Arachni::Plugin::Base
     end
 
     def clean_up
-        print_status 'Resuming the framework...'
-        @framework.resume
-        print_status 'Done!'
+        framework.resume
+        print_status 'System resumed.'
     end
 
     def self.info
         {
-            :name           => 'Vector feed',
-            :description    => %q{Reads in vector data from which it creates elements to be audited.
+            name:        'Vector feed',
+            description: %q{Reads in vector data from which it creates elements to be audited.
     Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
-    Useful for unit-testing or a gazillion other things. :)
 
     Notes:
         * To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
@@ -180,7 +170,7 @@ class VectorFeed < Arachni::Plugin::Base
 -
   # you can pass pages to be audited by grep modules (and JS in the future)
   type: page
-  url: http://localhost/~zapotek/tests/links/xss.php
+  url: http://localhost/
   # response code
   code: 200
   # response headers
@@ -191,7 +181,7 @@ class VectorFeed < Arachni::Plugin::Base
 -
   # default type is link which has method get
   #type: link
-  action: http://localhost/~zapotek/tests/links/xss.php
+  action: http://localhost/link
   inputs:
     my_param: "my val"
 
@@ -199,7 +189,7 @@ class VectorFeed < Arachni::Plugin::Base
   # if a method is post it'll default to a form type
   type: form
   method: post
-  action: http://localhost/~zapotek/tests/links/xss.php
+  action: http://localhost/form
   inputs:
     post_this: "HUA!"
     csrf: "my_csrf_token"
@@ -210,30 +200,27 @@ class VectorFeed < Arachni::Plugin::Base
 # GET only
 -
   type: cookie
-  action: http://localhost/~zapotek/tests/links/xss.php
+  action: http://localhost/cookie
   inputs:
     session_id: "43434234343sddsdsds"
 
 # GET only
 -
   type: header
-  action: http://localhost/~zapotek/tests/links/xss.php
+  action: http://localhost/header
   # only 1 input allowed, each header field=>value must be defined separately
   inputs:
     User-Agent: "Blah/2"
 
             },
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.1',
-            :options        => [
-                Component::Options::Base.new( 'vectors', [ false, ' Vector array (for configuration over RPC).' ] ),
-                Component::Options::String.new( 'yaml_string', [ false, 'A string of YAML serialized vectors (for configuration over RPC).' ] ),
-                Component::Options::Path.new( 'yaml_file', [ false, 'A file containing the YAML serialized vectors.' ] ),
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.2',
+            options:     [
+                Arachni::Component::Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
+                Arachni::Component::Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),
+                Arachni::Component::Options::Path.new( 'yaml_file', [false, 'A file containing the YAML serialized vectors.'] )
             ]
         }
     end
 
-end
-
-end
 end
