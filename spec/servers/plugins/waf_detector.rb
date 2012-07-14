@@ -24,5 +24,10 @@ end
 
 get '/inconclusive' do
     @@request_cnt += 1
-    @@request_cnt % 2 == 0 ? rejected : normal_response
+
+    if params.empty?
+        normal_response
+    else
+        @@request_cnt % 2 == 0 ? rejected : normal_response
+    end
 end
