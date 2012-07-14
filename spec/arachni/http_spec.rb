@@ -14,6 +14,13 @@ describe Arachni::HTTP do
         @http.reset
     }
 
+    it 'should support gzip content-encoding' do
+        body = nil
+        @http.get( @opts.url + 'gzip' ) { |res| body = res.body }
+        @http.run
+        body.should == 'success'
+    end
+
     describe 'Arachni::Options#http_req_limit' do
         context Integer do
             it 'should use it as a max_concurrency' do

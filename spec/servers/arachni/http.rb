@@ -1,9 +1,23 @@
+require 'zlib'
 require 'sinatra'
 require 'sinatra/contrib'
 set :logging, false
 
 post '/body' do
     request.body.read
+end
+
+get '/gzip' do
+    headers['Content-Encoding'] = 'gzip'
+    io = StringIO.new
+
+    gz = Zlib::GzipWriter.new( io )
+    begin
+        gz.write( 'success' )
+    ensure
+        gz.close
+    end
+    io.string
 end
 
 get '/' do
