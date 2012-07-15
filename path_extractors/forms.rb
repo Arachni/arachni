@@ -14,17 +14,14 @@
     limitations under the License.
 =end
 
-module Arachni::Parser::Extractors
-
 #
 # Extracts paths from "form" HTML elements.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Forms < Paths
+# @version 0.1.1
+#
+class Arachni::Parser::Extractors::Forms < Arachni::Parser::Extractors::Base
 
     #
     # Returns an array of paths as plain strings
@@ -34,8 +31,7 @@ class Forms < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.search( "//form[@action]" ).map { |a| a['action'] }
+        doc.search( '//form[@action]' ).map { |a| a['action'] }
     end
 
-end
 end

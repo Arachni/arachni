@@ -14,17 +14,14 @@
     limitations under the License.
 =end
 
-module Arachni::Parser::Extractors
-
 #
 # Extracts paths from anchor elements.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Anchors < Paths
+# @version 0.1.1
+#
+class Arachni::Parser::Extractors::Anchors < Arachni::Parser::Extractors::Base
 
     #
     # Returns an array of paths as plain strings
@@ -34,8 +31,7 @@ class Anchors < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.search( "//a[@href]" ).map { |a| a['href'] }
+        doc.search( '//a[@href]' ).map { |a| a['href'] }
     end
 
-end
 end

@@ -14,18 +14,16 @@
     limitations under the License.
 =end
 
-module Arachni::Parser::Extractors
-
 #
 # Extracts paths from "script" HTML elements.<br/>
 # Both from "src" and the text inside the scripts.
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.1
 #
-class Scripts < Paths
+class Arachni::Parser::Extractors::Scripts < Arachni::Parser::Extractors::Base
 
     #
     # Returns an array of paths as plain strings
@@ -35,8 +33,7 @@ class Scripts < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.search( "//script[@src]" ).map { |a| a['src'] }
+        doc.search( '//script[@src]' ).map { |a| a['src'] }
     end
 
-end
 end

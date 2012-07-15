@@ -14,17 +14,14 @@
     limitations under the License.
 =end
 
-module Arachni::Parser::Extractors
-
 #
 # Extracts paths from frames.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Frames < Paths
+# @version 0.1.1
+#
+class Arachni::Parser::Extractors::Frames < Arachni::Parser::Extractors::Base
 
     #
     # Returns an array of paths as plain strings
@@ -34,11 +31,7 @@ class Frames < Paths
     # @return   [Array<String>]  paths
     #
     def run( doc )
-        doc.css( 'frame', 'iframe' ).map {
-            |a|
-            a.attributes['src'].content rescue next
-        }
+        doc.css( 'frame', 'iframe' ).map { |a| a.attributes['src'].content rescue next }
     end
 
-end
 end

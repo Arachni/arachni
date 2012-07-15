@@ -58,16 +58,12 @@ class Parser
 
     module Extractors
         #
-        # Base Spider parser class for modules.
-        #
-        # The aim of such modules is to extract paths from a webpage for the Spider to follow.
-        #
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
         #
         # @abstract
         #
-        class Paths
+        class Base
 
             #
             # This method must be implemented by all modules and must return an array

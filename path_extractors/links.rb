@@ -14,17 +14,14 @@
     limitations under the License.
 =end
 
-module Arachni::Parser::Extractors
-
 #
 # Extracts paths from "link" HTML elements.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Links < Paths
+# @version 0.1.1
+#
+class Arachni::Parser::Extractors::Links < Arachni::Parser::Extractors::Base
 
     #
     # Returns an array of paths as plain strings
@@ -37,5 +34,4 @@ class Links < Paths
         doc.search( "//link[@href]" ).map { |a| a['href'] }
     end
 
-end
 end
