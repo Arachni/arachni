@@ -186,9 +186,9 @@ describe Arachni::AuditStore do
         end
     end
 
-    describe '#to_h' do
+    describe '#to_hash' do
         it 'should return the object as a hash' do
-            h = @auditstore.to_h
+            h = @auditstore.to_hash
             h.is_a?( Hash ).should be_true
 
             h.each do |k, v|
@@ -197,6 +197,25 @@ describe Arachni::AuditStore do
                 else
                     @auditstore.issues.size.should == v.size
                 end
+            end
+        end
+        it 'should be aliased to #to_h' do
+            @auditstore.to_hash.should == @auditstore.to_h
+        end
+    end
+
+    describe '#==' do
+        context 'when the auditstores are equal' do
+            it 'should return true' do
+                a = @auditstore.deep_clone
+                a.should == @auditstore
+            end
+        end
+        context 'when the auditstores are not equal' do
+            it 'should return false' do
+                a = @auditstore.deep_clone
+                a.options['url'] = ''
+                a.should_not == @auditstore
             end
         end
     end

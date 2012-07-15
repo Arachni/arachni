@@ -87,6 +87,9 @@ class AuditStore
         @plugins = {}
         @sitemap = []
 
+        @issues  ||= []
+        @options ||= Options
+
         # set instance variables from audit opts
         opts.each { |k, v| self.instance_variable_set( '@' + k.to_s, v ) }
 
@@ -143,7 +146,7 @@ class AuditStore
     #
     # @return    [Hash]
     #
-    def to_h
+    def to_hash
         hash = obj_to_hash( self ).deep_clone
 
         hash['issues'] = hash['issues'].map do |issue|
@@ -160,7 +163,15 @@ class AuditStore
 
         hash
     end
-    alias :to_hash :to_h
+    alias :to_h :to_hash
+
+    def ==( other )
+        to_hash == other.to_hash
+    end
+
+    def hash
+        to_hash.hash
+    end
 
     private
 
@@ -203,6 +214,7 @@ class AuditStore
     def prepare_options( options )
         new_options = {}
 
+        options = options.to_hash
         options['url'] = options['url'].to_s
         options.each_pair do |key, val|
             case key
@@ -272,7 +284,13 @@ class AuditStore
                     new_issues[__id].remove_instance_var( '@' + key )
                 end
             end
+        end
 
+        issues.each do |i|
+            next if !i.variations
+            i.variations.each do |v|
+                v.remove_instance_var( :@variations ) rescue next
+            end
         end
 
         issue_keys = new_issues.keys
