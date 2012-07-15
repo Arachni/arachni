@@ -9,6 +9,22 @@ describe Arachni::Report::Base do
         @reports   = @framework.reports
     end
 
+    describe '#auditstore' do
+        it 'should return the provided auditstore' do
+            @reports.run_one( :with_outfile, @framework.auditstore ).auditstore.
+                should == @framework.auditstore
+        end
+    end
+
+    describe '#outfile' do
+        it 'should return the outfile in options' do
+            outfile = 'blahfile'
+            @reports.run_one( :with_outfile, @framework.auditstore,
+                              'outfile' => outfile
+            ).outfile.should == outfile
+        end
+    end
+
     describe '#format_plugin_results' do
         it 'should run the formatters of appropriate plugin' do
             store = @framework.auditstore
