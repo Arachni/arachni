@@ -9,14 +9,14 @@ shared_examples_for "report" do
     def self.test_with_full_report( &block )
         it 'should be able to handle a full report' do
             run( full_report )
-            instance_eval &block
+            instance_eval( &block ) if block_given?
         end
     end
 
     def self.test_with_empty_report( &block )
         it 'should be able to handle an empty report' do
             run( empty_report )
-            instance_eval &block
+            instance_eval( &block ) if block_given?
         end
     end
 
