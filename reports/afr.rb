@@ -14,39 +14,32 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
-
 #
 # Arachni Framework Report (.afr)
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class AFR < Arachni::Report::Base
+# @version 0.1.2
+#
+class Arachni::Reports::AFR < Arachni::Report::Base
 
     def run
         print_line
-        print_status( 'Dumping audit results in \'' + @options['outfile']  + '\'.' )
+        print_status "Dumping audit results in '#{outfile}'."
 
-        @audit_store.save( @options['outfile'] )
+        auditstore.save( outfile )
 
-        print_status( 'Done!' )
+        print_status 'Done!'
     end
 
     def self.info
         {
-            :name           => 'Arachni Framework Report',
-            :description    => %q{Saves the file in the default Arachni Framework Report (.afr) format.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [ Arachni::Report::Options.outfile( '.afr' ) ]
+            name:        'Arachni Framework Report',
+            description: %q{Saves the file in the default Arachni Framework Report (.afr) format.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            options:     [ Arachni::Report::Options.outfile( '.afr' ) ]
         }
     end
 
-end
-
-end
 end
