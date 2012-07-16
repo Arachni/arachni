@@ -52,7 +52,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        print_status "Found log-in form with name: "  + login_form.name ? login_form.name : '<n/a>'
+        print_status "Found log-in form with name: #{login_form.name || '<n/a>'}"
 
         # merge the input fields of the form with the user supplied parameters
         login_form.update( @params )
