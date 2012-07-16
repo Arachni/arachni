@@ -16,39 +16,31 @@
 
 require 'ap'
 
-module Arachni
-module Reports
-
 #
-# Awesome prints an {AuditStore#to_h} hash.
+# Awesome prints an {AuditStore#to_hash} hash.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class AP < Arachni::Report::Base
+# @version 0.1.1
+#
+class Arachni::Reports::AP < Arachni::Report::Base
 
     def run
-
         print_line
-        print_status( 'Awesome printing AuditStore as a Hash...' )
+        print_status 'Awesome printing AuditStore as a Hash...'
 
-        ap @audit_store.to_h
+        ap auditstore.to_hash
 
-        print_status( 'Done!' )
+        print_status 'Done!'
     end
 
     def self.info
         {
-            :name           => 'AP',
-            :description    => %q{Awesome prints an AuditStore hash.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            name:        'AP',
+            description: %q{Awesome prints an AuditStore hash.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1'
         }
     end
 
-end
-
-end
 end
