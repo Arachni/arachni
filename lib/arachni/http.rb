@@ -162,6 +162,8 @@ class HTTP
         @curr_res_cnt  = 0
         @burst_runtime = 0
 
+        @queue_size = 0
+
         @after_run = []
         self
     end
@@ -570,6 +572,7 @@ class HTTP
         @burst_runtime_start = Time.now
         @hydra.run
         @burst_runtime += Time.now - @burst_runtime_start
+        @queue_size = 0
     end
 
     #
@@ -602,6 +605,7 @@ class HTTP
     def forward_request( req, async = true, &block )
         req.id = @request_count
 
+        @queue_size += 1
         !async ? @hydra_sync.queue( req ) : @hydra.queue( req )
 
         @request_count += 1
@@ -655,9 +659,13 @@ class HTTP
 
         req.on_complete( &block ) if block_given?
 
-        hydra_run if req.id > 0 && req.id % MAX_QUEUE_SIZE == 0
+        hydra_run if emergency_run?
 
         exception_jail { @hydra_sync.run } if !async
+    end
+
+    def emergency_run?
+        @queue_size >= MAX_QUEUE_SIZE
     end
 
     def is_404?( path, body )
