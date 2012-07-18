@@ -12,6 +12,7 @@
     - Moved from Ruby's URI lib to ```Addressable::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
 - Options
+    - Removed the http-harvest-last option.
     - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2``` (**New**)
     - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit. (**New**)
 - Modules - Every single one has been cleaned up and have had RSpec tests added.

@@ -374,14 +374,6 @@ class Options
     #
     attr_accessor :follow_subdomains
 
-    #
-    # Harvest the HTTP responses for the whole site at the end or
-    # for each page?
-    #
-    # @return    [Bool]
-    #
-    attr_accessor :http_harvest_last
-
     # @return   [Time]  to be populated by the framework
     attr_accessor :start_datetime
 
@@ -678,7 +670,6 @@ class Options
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
-            [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
@@ -705,7 +696,8 @@ class Options
             [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -873,7 +865,9 @@ class Options
                         @follow_subdomains = true
 
                     when '--http-harvest-last'
-                        @http_harvest_last = true
+                        puts 'The http-harvest-last option has been removed.'
+                        puts 'Please adjust your command-line arguments and try again.'
+                        exit
 
                     when '--ssl'
                         @ssl = true

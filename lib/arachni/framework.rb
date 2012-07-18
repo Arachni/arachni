@@ -650,12 +650,10 @@ class Framework
                 audit_page_queue
             end
 
-            harvest_http_responses if !@opts.http_harvest_last
+            harvest_http_responses
         end
 
-        harvest_http_responses if @opts.http_harvest_last
         audit_page_queue
-        harvest_http_responses if @opts.http_harvest_last
     end
 
     #
@@ -666,7 +664,7 @@ class Framework
         while !@page_queue.empty? && page = @page_queue.pop
             # audit the page
             exception_jail{ run_mods( page ) }
-            harvest_http_responses if !@opts.http_harvest_last
+            harvest_http_responses
         end
     end
 
@@ -725,7 +723,7 @@ class Framework
         @sitemap |= @auditmap
         @sitemap.uniq!
 
-        harvest_http_responses if !@opts.http_harvest_last
+        harvest_http_responses
     end
 
     def harvest_http_responses
