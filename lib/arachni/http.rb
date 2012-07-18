@@ -196,7 +196,7 @@ class HTTP
 
     # @return   [Integer]   amount of time (in seconds) that the current burst has been running
     def burst_runtime
-        @burst_runtime.to_i > 0 ? @burst_runtime : Time.now - @burst_runtime_start
+        @burst_runtime.to_i > 0 ? @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
     end
 
     # @return   [Integer]   average response time for the running requests (i.e. the current burst)
