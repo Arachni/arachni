@@ -40,6 +40,7 @@
     - Fixed burst average requests/second calculation.
     - Implemented a Cookiejar. (**New**)
     - Removed tagging of requests with the system-wide seed.
+    - Added a maximum queue size limit -- once the request limit has been reached the queued requests will be fired in order to unload the queue.
 - Spider -- Re-written, much cleaner design and code. (**New**)
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).

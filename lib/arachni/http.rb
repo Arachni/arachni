@@ -46,6 +46,10 @@ class HTTP
     # Default user agent (will be appended the current Arachni version).
     USER_AGENT      = 'Arachni/v'
 
+    # Don't let the request queue grow more than this amount, if it does then
+    # run the queued requests to unload it
+    MAX_QUEUE_SIZE  = 5000
+
     # @return   [String]    framework seed/target URL
     attr_reader :url
 
@@ -171,9 +175,7 @@ class HTTP
     def run
         exception_jail {
             @burst_runtime = nil
-            @burst_runtime_start = Time.now
-            @hydra.run
-            @burst_runtime = Time.now - @burst_runtime_start
+            hydra_run
 
             @after_run.each { |block| block.call }
             @after_run.clear
@@ -192,7 +194,7 @@ class HTTP
 
     # @return   [Integer]   amount of time (in seconds) that the current burst has been running
     def burst_runtime
-        @burst_runtime || (Time.now - @burst_runtime_start)
+        @burst_runtime.to_i > 0 ? @burst_runtime : Time.now - @burst_runtime_start
     end
 
     # @return   [Integer]   average response time for the running requests (i.e. the current burst)
@@ -563,6 +565,13 @@ class HTTP
 
     private
 
+    def hydra_run
+        @burst_runtime ||= 0
+        @burst_runtime_start = Time.now
+        @hydra.run
+        @burst_runtime += Time.now - @burst_runtime_start
+    end
+
     #
     # Queues a Tyhpoeus::Request and calls the following callbacks:
     # * on_queue() -- intersects a queued request and gets passed the original
@@ -645,6 +654,8 @@ class HTTP
         end
 
         req.on_complete( &block ) if block_given?
+
+        hydra_run if req.id > 0 && req.id % MAX_QUEUE_SIZE == 0
 
         exception_jail { @hydra_sync.run } if !async
     end

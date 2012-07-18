@@ -255,7 +255,6 @@ describe Arachni::HTTP do
         end
 
         it 'should calculate the burst average response time' do
-            @http.burst_runtime.should == 0
             @http.run
             @http.burst_runtime.should > 0
         end
