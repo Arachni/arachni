@@ -181,13 +181,20 @@ class Spider
         @paths |= paths
         @paths.uniq!
 
-        Thread.new { run } if done? # wake the crawler up
+        # NOTE: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        #Thread.new { run } if idle? # wake the crawler up
         true
     end
 
     # @return [TrueClass, FalseClass] true if crawl is done, false otherwise
     def done?
-        (@paths.empty? && @pending_requests == 0) || limit_reached?
+        idle? || limit_reached?
+    end
+
+    # @return [TrueClass, FalseClass] true if the queue is empty and no
+    #                                           requests are pending, false otherwise
+    def idle?
+        @paths.empty? && @pending_requests == 0
     end
 
     # @return [TrueClass] pauses the system on a best effort basis
