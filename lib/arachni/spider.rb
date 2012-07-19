@@ -181,8 +181,8 @@ class Spider
         @paths |= paths
         @paths.uniq!
 
-        # NOTE: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
-        #Thread.new { run } if idle? # wake the crawler up
+        # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        #Thread.new { run } if idle? # wake up the crawler
         true
     end
 
@@ -309,23 +309,31 @@ class Spider
         }.merge( opts )
 
         wrap = proc do |res|
-            @pending_requests -= 1
-
             effective_url = normalize_url( res.effective_url )
+
             if res.redirection?
                 @redirects << res.request.url
-                next if skip?( effective_url )
+                if skip?( effective_url )
+                    decrease_pending
+                    next
+                end
             end
 
             print_status( "[HTTP: #{res.code}] " + effective_url )
             @sitemap[effective_url] = res.code
             block.call( res )
+
+            decrease_pending
         end
 
         http.get( url, opts, &wrap )
     rescue
-        @pending_requests -= 1
+        decrease_pending
         nil
+    end
+
+    def decrease_pending
+        @pending_requests -= 1
     end
 
     def visited( url )
