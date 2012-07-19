@@ -309,15 +309,15 @@ describe Arachni::Spider do
             s.fancy_sitemap[nwp].should == 200
         end
 
-        context 'when called after the crawl has finished' do
-            it 'should wake the crawler up after pushing the new paths' do
-                s = Arachni::Spider.new
-                s.run
-                s.done?.should be_true
-                s.push( '/a_pushed_path' )
-                s.done?.should be_false
-            end
-        end
+        #context 'when called after the crawl has finished' do
+        #    it 'should wake the crawler up after pushing the new paths' do
+        #        s = Arachni::Spider.new
+        #        s.run
+        #        s.done?.should be_true
+        #        s.push( '/a_pushed_path' )
+        #        s.done?.should be_false
+        #    end
+        #end
     end
 
     describe '#done?' do
