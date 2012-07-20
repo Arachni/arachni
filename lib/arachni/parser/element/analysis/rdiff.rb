@@ -39,7 +39,9 @@ module Arachni::Parser::Element::Analysis::RDiff
         redundant: true,
 
         # amount of rdiff iterations
-        precision: 2
+        precision: 2,
+
+        respect_method: true
     }
 
     #
@@ -81,7 +83,7 @@ module Arachni::Parser::Element::Analysis::RDiff
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )
 
         # don't continue if there's a missing value
-        @auditable.values.each { |val| return if !val || val.empty? }
+        auditable.values.each { |val| return if !val || val.empty? }
 
         return if rdiff_audited?
         rdiff_audited
@@ -117,10 +119,10 @@ module Arachni::Parser::Element::Analysis::RDiff
                 # get mutations of self using the fault seed, which will
                 # cause an internal/silent error when evaluated
                 mutations( str, opts ).each do |elem|
-                    print_status( elem.status_string )
+                    print_status elem.status_string
 
                     # submit the mutation and store the response
-                    elem.submit( opts ).on_complete do |res|
+                    elem.submit( opts ) do |res|
                         responses[:bad][elem.altered] ||= res.body.clone
                         # remove context-irrelevant dynamic content like banners and such
                         # from the error page
@@ -137,10 +139,10 @@ module Arachni::Parser::Element::Analysis::RDiff
             # get mutations of self using the boolean seed, which will not
             # alter the execution flow
             mutations( str, opts ).each do |elem|
-                print_status( elem.status_string )
+                print_status elem.status_string
 
                 # submit the mutation and store the response
-                elem.submit( opts ).on_complete do |res|
+                elem.submit( opts ) do |res|
                     responses[:good][elem.altered] ||= []
                     # save the response and some data for analysis
                     responses[:good][elem.altered] << {
