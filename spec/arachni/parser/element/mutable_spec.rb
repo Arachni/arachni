@@ -60,8 +60,8 @@ describe Arachni::Parser::Element::Mutable do
                         'email' => nil
                     }
                 }
-                Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
-                    .mutations( @seed ).size.should == 10
+                Arachni::Parser::Element::Link.new( 'http://test.com', inputs )
+                    .mutations( @seed ).size.should == 8
             end
         end
 
