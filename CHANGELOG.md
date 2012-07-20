@@ -4,12 +4,12 @@
 - License -- Moved from GPLv2 to Apache License Version 2.
 - Major refactoring
     - ```Arachni::Parser::Element::Auditable``` and ```Arachni::Module::Auditor```.
-        - Moved analysis techniques from Auditor to Auditable to enable per element audits and analysis
+        - Moved analysis techniques from ```Auditor``` to ```Auditable``` to enable per element audits and analysis
           in order to increase audit granularity and ease scripting.
-        - Auditor methods now simply iterate over candidate elements and delegate analysis to them.
+        - ```Auditor``` methods now simply iterate over candidate elements and delegate analysis to them.
     - Updated URL normalization methods and added caching to resource intensive parsing operations,
       leading to overall improvements, especially during the initial crawling process. (**New**)
-    - Moved from Ruby's URI lib to ```Addressable::URI```. (**New**)
+    - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
 - Options
     - Removed the http-harvest-last option.
