@@ -14,13 +14,19 @@ describe name_from_filename do
 
         results.size.should == 3
 
-        results[0][:res]['effective_url'].should == url
-        results[0][:cookies].should == { 'cookie1' => 'val1' }
+        oks = 0
+        results.each do |result|
+            if (result[:res]['effective_url'] == url &&
+                result[:cookies] == { 'cookie1' => 'val1' }) ||
+                (result[:res]['effective_url'] == url + 'a_link' &&
+                result[:cookies] == { 'link_followed' => 'yay link!' }) ||
+                (result[:res]['effective_url'] == url + 'update_cookie' &&
+                result[:cookies] == { 'link_followed' => 'updated link!', 'stuff' => 'blah' })
+                oks += 1
+            end
 
-        results[1][:res]['effective_url'].should == url + 'a_link'
-        results[1][:cookies].should == { 'link_followed' => 'yay link!' }
+        end
 
-        results[2][:res]['effective_url'].should == url + 'update_cookie'
-        results[2][:cookies].should == { 'link_followed' => 'updated link!', 'stuff' => 'blah' }
+        oks.should == 3
     end
 end
