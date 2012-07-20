@@ -1,6 +1,14 @@
 shared_examples_for "path_extractor" do
     include_examples 'component'
 
+    before( :each ) do
+        extractors.namespace.constants.each do |const|
+            next if const == :Base
+            extractors.namespace.send :remove_const, const
+        end
+        extractors.clear
+    end
+
     def results
     end
 
