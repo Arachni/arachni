@@ -78,7 +78,11 @@ module Mutable
         param_flip: false,
 
         # array of parameter names remain untouched
-        skip:       []
+        skip:       [],
+
+        # respect the default method of the element and don't create mutations
+        # with other methods (GET/POST)
+        respect_method: false
     }
 
     # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.

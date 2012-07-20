@@ -165,10 +165,12 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         opts = MUTATION_OPTIONS.merge( opts )
         var_combo = super( injection_str, opts )
 
-        var_combo |= var_combo.map do |f|
-            c = f.dup
-            c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
-            c
+        if !opts[:respect_method]
+            var_combo |= var_combo.map do |f|
+                c = f.dup
+                c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
+                c
+            end
         end
 
         if !opts[:skip_orig]
