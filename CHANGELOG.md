@@ -26,6 +26,10 @@
     - SSN -- Improved regexp and logging. [Issue #170]
     - Insecure cookies -- Logs cookies without the 'secure' flag. (**New**)
     - HttpOnly cookies -- Logs cookies without the 'HttpOnly' flag. (**New**)
+    - SQL injection -- Now ignores irrelevant error messages in order to reduce false-positives.
+    - XSS -- Improved detection accuracy.
+    - RFI -- Added a seed URL without a protocol.
+    - Path traversal -- Added seeds with file:// URLs and for Tomcat webapps.
 - Plugins - Every single one has been cleaned up and have had RSpec tests added.
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
@@ -46,6 +50,7 @@
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
+    - Form mutations now include both POST and GET versions for each given form.
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added ```Arachni::Cache``` classes (**New**)
