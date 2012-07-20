@@ -480,12 +480,12 @@ module Auditable
     def after_complete( response, element, &block )
         # make sure that we have a response before continuing
         if !response
-            print_error( 'Failed to get response, backing out...' )
+            print_error 'Failed to get response, backing out...'
             return
-        else
-            if element.opts && !element.opts[:silent]
-                print_status( 'Analyzing response #' + response.request.id.to_s + '...' )
-            end
+        end
+
+        if element.opts && !element.opts[:silent]
+            print_status 'Analyzing response #' + response.request.id.to_s + '...'
         end
 
         exception_jail( false ){ block.call( response, element.opts, element ) }
