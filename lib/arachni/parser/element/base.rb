@@ -131,7 +131,10 @@ class Arachni::Parser::Element::Base
     def dup
         new = self.class.new( @url ? @url.dup : nil, @raw.dup )
         new.override_instance_scope if override_instance_scope?
-        new.auditor = self.auditor
+        new.auditor   = self.auditor
+        new.method    = self.method.dup
+        new.altered   = self.altered.dup if self.altered
+        new.auditable = self.auditable.dup
         new
     end
 
