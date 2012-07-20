@@ -44,6 +44,17 @@ describe Arachni::Parser::Element::Form do
     end
 
     describe '#mutations' do
+        it 'should generate mutations with boh POST and GET methods' do
+            inputs = { inputs: { 'param_name' => 'param_value' } }
+            e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
+            m = e.mutations( 'stuff' )
+            m.size.should == 9
+
+            m.select { |f| f.method.to_s.downcase == 'get' }.size.should == 4
+            m.select { |f| f.method.to_s.downcase == 'get' }.size.should ==
+                m.select { |f| f.method.to_s.downcase == 'get' }.size
+        end
+
         it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
             e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
@@ -102,7 +113,7 @@ describe Arachni::Parser::Element::Form do
             it 'should not add mutations with original nor default values' do
                 e = Arachni::Parser::Element::Form.new( 'http://test.com', @inputs )
                 mutations = e.mutations( @seed, skip_orig: true )
-                mutations.size.should == 4
+                mutations.size.should == 8
                 mutations.reject { |m| m.mutated? }.size.should == 0
             end
         end
