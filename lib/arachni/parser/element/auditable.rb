@@ -271,6 +271,10 @@ module Auditable
         http_request( opts, &block )
     end
 
+    def skip_path?( url )
+        super || Options.redundant?( url )
+    end
+
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
@@ -289,7 +293,7 @@ module Auditable
         raise 'Block required.' if !block_given?
 
         if skip_path?( self.action )
-            print_debug "Element's action matches skip rule, returning (#{self.action})."
+            print_debug "Element's action matches skip rule, bailing out (#{self.action})."
             return false
         end
 

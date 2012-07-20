@@ -521,6 +521,30 @@ class Options
         self
     end
 
+    #
+    # Checks is the provided URL matches a redundant filter
+    # and decreases its counter if so.
+    #
+    # If a filter's counter has reached 0 the method returns true.
+    #
+    # @param    [String]    url
+    # @param    [Block]     block   to be called for each match and be passed
+    #                                   the count, regexp and url
+    #
+    # @return   [Bool]  true if the url is redundant, false otherwise
+    #
+    def redundant?( url, &block )
+        redundant.each do |regexp, count|
+            next if !(url =~ regexp)
+            return true if count == 0
+
+            block.call( count, regexp, url ) if block_given?
+
+            redundant[regexp] -= 1
+        end
+        false
+    end
+
     def do_not_crawl
         self.link_count_limit = 0
     end

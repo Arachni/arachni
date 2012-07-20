@@ -267,21 +267,14 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        @opts.redundant.each do |regexp, counter|
-            next if !(url =~ regexp)
-
-            if counter == 0
-                print_verbose( 'Discarding redundant page: \'' + url + '\'' )
-                return true
-            end
-
-            print_info( 'Matched redundancy rule: ' +
-                            regexp.to_s + ' for page \'' + url + '\'' )
-            print_info( 'Count-down: ' + counter.to_s )
-
-            @opts.redundant[regexp] -= 1
+        redundant = @opts.redundant?( url ) do |count, regexp, path|
+            print_info "Matched redundancy rule: #{regexp} for #{path}"
+            print_info "Count-down: #{count}"
         end
-        false
+
+        print_verbose "Discarding redundant page: #{url}" if redundant
+
+        redundant
     end
 
     def dedup( paths )
