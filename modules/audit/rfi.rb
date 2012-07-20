@@ -55,12 +55,18 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     # initializing the same stuff and every little helps.
     #
 
-    def self.url_to_inject
-        @url_to_inject ||= 'http://arachni.github.com/arachni/rfi.md5.txt'
+    def self.urls_to_inject
+        @url_to_inject ||= [
+            'hTtP://arachni.github.com/arachni/rfi.md5.txt',
+            'arachni.github.com/arachni/rfi.md5.txt'
+        ]
     end
 
     def self.opts
-        @opts ||= { substring: '705cd559b16e6946826207c2199bd890' }
+        @opts ||= {
+            substring: '705cd559b16e6946826207c2199bd890',
+            follow_location: false
+        }
     end
 
     #
@@ -70,7 +76,7 @@ class Arachni::Modules::RFI < Arachni::Module::Base # *always* extend Arachni::M
     #
     def run
         print_debug 'In #run'
-        audit( self.class.url_to_inject, self.class.opts )
+        self.class.urls_to_inject.each { |url| audit( url, self.class.opts ) }
     end
 
     #

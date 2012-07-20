@@ -5,6 +5,8 @@ require 'open-uri'
 
 def get_variations( str )
     return if !str
+
+    str = "http://#{str}" if !str.downcase.start_with?( 'http://' )
     open( str.split( "\0" ).first ) rescue nil
 end
 
