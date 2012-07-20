@@ -44,6 +44,30 @@ describe Arachni::Parser::Element::Form do
     end
 
     describe '#mutations' do
+
+        context 'with options' do
+            describe :respect_method do
+                it 'should skip mutation of parameters with these names' do
+                    e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                        inputs: {
+                                    'input_one' => 'value 1',
+                                    'input_two' => 'value 2'
+                                }
+                    )
+
+                    respect_method = e.mutations( @seed, respect_method: true )
+                    respect_method.size.should == 7
+
+                    respect_method.map{ |m| m.method }.uniq.should == [e.method]
+
+                    no_respect_method = e.mutations( @seed, respect_method: false )
+                    no_respect_method.size.should == 14
+
+                    no_respect_method.map{ |m| m.method }.uniq.size.should == 2
+                end
+            end
+        end
+
         it 'should generate mutations with boh POST and GET methods' do
             inputs = { inputs: { 'param_name' => 'param_value' } }
             e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
