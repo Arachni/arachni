@@ -24,7 +24,15 @@ shared_examples_for "report" do
         opts['outfile'] ||= outfile
 
         #report_name = File.basename( caller.first.split( ':' ).first, '_spec.rb' )
-        framework.reports.run_one( name, auditstore, opts )
+
+        out = $stdout.dup
+        $stdout = StringIO.new
+
+        r = framework.reports.run_one( name, auditstore, opts )
+
+        $stdout = out
+
+        r
     end
 
     def full_report
