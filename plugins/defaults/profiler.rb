@@ -111,7 +111,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
     def run
         framework.add_on_run_mods do |page|
-            Auditor.new( page, @framework ).run do |taint, res, elem, found_in|
+            Auditor.new( page, framework ).run do |taint, res, elem, found_in|
                 log( taint, res, elem, found_in )
             end
         end
