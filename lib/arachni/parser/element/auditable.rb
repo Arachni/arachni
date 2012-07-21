@@ -262,6 +262,10 @@ module Auditable
         opts = OPTIONS.merge( opts )
         opts[:params]  = @auditable.dup
         opts[:follow_location] = true if !opts.include?( :follow_location )
+
+        @opts ||= {}
+
+        opts = @opts.merge( opts )
         @opts = opts
 
         @auditor ||= opts[:auditor] if opts[:auditor]
@@ -400,7 +404,7 @@ module Auditable
 
     # impersonate the auditor to the output methods
     def info
-        !orphan? ? @auditor.class.info : { :name => '' }
+        !orphan? ? @auditor.class.info : { name: '' }
     end
 
     #
