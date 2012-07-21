@@ -749,7 +749,7 @@ class CLI
                                   (*WARNING*: Enabling this option will result in increased requests,
                                    maybe by an order of magnitude.)
 
-    --fuzz-methods              audits links, forms and cookies using both GET and POST requests
+    --fuzz-methods              audit links, forms and cookies using both GET and POST requests
 
     Modules ------------------------
 
