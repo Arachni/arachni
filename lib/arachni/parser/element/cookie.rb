@@ -178,6 +178,21 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             muts << elem
         end
 
+        if !orphan? && Arachni::Options.extensive_cookies?
+            # submit all links and forms of the page along with our cookie mutations
+            muts |= muts.map do |m|
+                (auditor.page.links | auditor.page.forms).map do |e|
+                    next if e.auditable.empty?
+                    c = e.dup
+                    c.altered = "mutation for the '#{m.altered}' cookie"
+                    c.auditor = auditor
+                    c.opts[:cookies] = m.auditable.dup
+                    c.auditable = Arachni::Module::KeyFiller.fill( c.auditable.dup )
+                    c
+                end
+            end.flatten.compact
+        end
+
         muts
     end
 

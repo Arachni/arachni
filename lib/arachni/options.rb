@@ -458,6 +458,10 @@ class Options
 
     attr_accessor :fuzz_methods
 
+    attr_accessor :extensive_cookies
+
+    alias :extensive_cookies? :extensive_cookies
+
     def initialize
         reset
     end
@@ -487,8 +491,9 @@ class Options
         @datastore  = {}
         @redundant  = {}
 
-        @obey_robots_txt = false
-        @fuzz_methods    = false
+        @obey_robots_txt   = false
+        @fuzz_methods      = false
+        @extensive_cookies = false
 
         @depth_limit      = -1
         @link_count_limit = -1
@@ -725,7 +730,8 @@ class Options
             [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
             [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
-            [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ]
+            [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
+            [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -950,6 +956,9 @@ class Options
 
                     when '--fuzz-methods'
                         @fuzz_methods = true
+
+                    when '--extensive-cookies'
+                        @extensive_cookies = true
                 end
             end
         rescue => e

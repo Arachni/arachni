@@ -749,7 +749,13 @@ class CLI
                                   (*WARNING*: Enabling this option will result in increased requests,
                                    maybe by an order of magnitude.)
 
+    Coverage -----------------------
+
+    --extensive-cookies         submit all links and forms of the page along with the cookie permutations
+                                  (*WARNING*: This severely increase the scan-time.)
+
     --fuzz-methods              audit links, forms and cookies using both GET and POST requests
+                                  (*WARNING*: This severely increase the scan-time.)
 
     Modules ------------------------
 

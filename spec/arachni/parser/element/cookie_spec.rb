@@ -58,6 +58,24 @@ describe Arachni::Parser::Element::Cookie do
                     %w(seed)
             end
         end
+        describe 'Options.extensive_cookies' do
+            it 'should submit the default elements of the page along with the cookie mutations' do
+                p = Arachni::Parser::Page.from_url( @url + 'with_other_elements' )
+                a = Auditor.new
+                a.page = p
+                c = p.cookies.first
+                c.auditor = a
+
+
+                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should == 1
+
+                Arachni::Options.extensive_cookies = true
+                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should > 1
+
+                Arachni::Options.extensive_cookies = false
+                c.mutations_for( 'seed' ).map { |e| e.type }.uniq.size.should == 1
+            end
+        end
     end
 
     describe '#type' do
