@@ -368,12 +368,16 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
             res = http.get( @url, async: false ).response
             f = self.class.from_response( res ).select { |f| f.auditable.keys == auditable.keys }.first
-            nonce = f.auditable[nonce_name]
+            if !f
+                print_bad 'Could not refresh nonce because the form could not be found.'
+            else
+                nonce = f.auditable[nonce_name]
 
-            print_info "Got new nonce '#{nonce}'."
+                print_info "Got new nonce '#{nonce}'."
 
-            opts[:params][nonce_name] = nonce
-            opts[:async] = false
+                opts[:params][nonce_name] = nonce
+                opts[:async] = false
+            end
 
             self.method.downcase.to_s != 'get' ?
                 http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )

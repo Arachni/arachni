@@ -44,41 +44,6 @@ describe Arachni::Parser::Element::Form do
     end
 
     describe '#mutations' do
-
-        context 'with options' do
-            describe :respect_method do
-                it 'should skip mutation of parameters with these names' do
-                    e = Arachni::Parser::Element::Form.new( 'http://test.com',
-                        inputs: {
-                                    'input_one' => 'value 1',
-                                    'input_two' => 'value 2'
-                                }
-                    )
-
-                    respect_method = e.mutations( @seed, respect_method: true )
-                    respect_method.size.should == 7
-
-                    respect_method.map{ |m| m.method }.uniq.should == [e.method]
-
-                    no_respect_method = e.mutations( @seed, respect_method: false )
-                    no_respect_method.size.should == 14
-
-                    no_respect_method.map{ |m| m.method }.uniq.size.should == 2
-                end
-            end
-        end
-
-        it 'should generate mutations with boh POST and GET methods' do
-            inputs = { inputs: { 'param_name' => 'param_value' } }
-            e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
-            m = e.mutations( 'stuff' )
-            m.size.should == 9
-
-            m.select { |f| f.method.to_s.downcase == 'get' }.size.should == 4
-            m.select { |f| f.method.to_s.downcase == 'get' }.size.should ==
-                m.select { |f| f.method.to_s.downcase == 'get' }.size
-        end
-
         it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
             e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
@@ -137,7 +102,7 @@ describe Arachni::Parser::Element::Form do
             it 'should not add mutations with original nor default values' do
                 e = Arachni::Parser::Element::Form.new( 'http://test.com', @inputs )
                 mutations = e.mutations( @seed, skip_orig: true )
-                mutations.size.should == 8
+                mutations.size.should == 4
                 mutations.reject { |m| m.mutated? }.size.should == 0
             end
         end
@@ -189,6 +154,24 @@ describe Arachni::Parser::Element::Form do
                 body_should.should == body
             end
         end
+        context 'when the form has a nonce' do
+            it 'should refresh its value before submitting it' do
+                f = Arachni::Parser::Element::Form.new( @url + 'with_nonce',
+                    @inputs.merge( method: 'get', action: @url + 'get_nonce') )
+
+                f.update 'nonce' => rand( 999 )
+                f.nonce_name = 'nonce'
+
+                body_should = f.method + f.auditable.to_s
+                body = nil
+
+                f.submit { |res| body = res.body }
+                @http.run
+                body.should_not == f.auditable['nonce']
+                body.to_i.should > 0
+            end
+        end
+
     end
 
     context 'when initialized' do

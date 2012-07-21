@@ -153,7 +153,10 @@ module Mutable
             var_combo << elem
         end
 
-        if (opts[:respect_method].nil? && Options.fuzz_methods) || opts[:respect_method]
+        opts[:respect_method] = !Options.fuzz_methods if opts[:respect_method].nil?
+
+        # add the same stuff with different methods
+        if !opts[:respect_method]
             var_combo |= var_combo.map do |f|
                 c = f.dup
                 c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')

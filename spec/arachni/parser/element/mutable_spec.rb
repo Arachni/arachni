@@ -84,6 +84,87 @@ describe Arachni::Parser::Element::Mutable do
         end
 
         context 'with option' do
+            describe :respect_method do
+                describe true do
+                    it 'should not fuzz methods' do
+                        e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                            inputs: {
+                                        'input_one' => 'value 1',
+                                        'input_two' => 'value 2'
+                                    }
+                        )
+
+                        respect_method = e.mutations( @seed, respect_method: true )
+                        respect_method.size.should == 9
+
+                        respect_method.map{ |m| m.method }.uniq.should == [e.method]
+                    end
+                end
+                describe false do
+                    it 'should methods' do
+                        e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                            inputs: {
+                                        'input_one' => 'value 1',
+                                        'input_two' => 'value 2'
+                                    }
+                        )
+
+                        no_respect_method = e.mutations( @seed, respect_method: false )
+                        no_respect_method.size.should == 17
+
+                        no_respect_method.map{ |m| m.method }.uniq.size.should == 2
+                    end
+                    it 'should generate mutations with boh POST and GET methods' do
+                        inputs = { inputs: { 'param_name' => 'param_value' } }
+                        e = Arachni::Parser::Element::Form.new( 'http://test.com', inputs )
+                        m = e.mutations( 'stuff', respect_method: false )
+                        m.size.should == 9
+
+                        m.select { |f| f.method.to_s.downcase == 'get' }.size.should == 4
+                        m.select { |f| f.method.to_s.downcase == 'get' }.size.should ==
+                            m.select { |f| f.method.to_s.downcase == 'get' }.size
+                    end
+                end
+                describe 'nil' do
+                    it 'should not fuzz methods' do
+                        e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                            inputs: {
+                                        'input_one' => 'value 1',
+                                        'input_two' => 'value 2'
+                                    }
+                        )
+
+                        respect_method = e.mutations( @seed )
+                        respect_method.size.should == 9
+
+                        respect_method.map{ |m| m.method }.uniq.should == [e.method]
+                    end
+                end
+            end
+            describe 'Options.fuzz_methods' do
+                it 'should serve as the default value of :respect_method' do
+                    e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                        inputs: {
+                                    'input_one' => 'value 1',
+                                    'input_two' => 'value 2'
+                                }
+                    )
+
+                    Arachni::Options.fuzz_methods = true
+                    no_respect_method = e.mutations( @seed )
+                    no_respect_method.size.should == 17
+
+                    no_respect_method.map{ |m| m.method }.uniq.size.should == 2
+
+                    Arachni::Options.fuzz_methods = false
+                    respect_method = e.mutations( @seed )
+                    respect_method.size.should == 9
+
+                    respect_method.map{ |m| m.method }.uniq.should == [e.method]
+
+                end
+            end
+
             describe :skip do
                 it 'should skip mutation of parameters with these names' do
                     Arachni::Parser::Element::Form.new( 'http://test.com',

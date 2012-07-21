@@ -23,26 +23,25 @@ require 'ap'
 require 'pp'
 
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
-opts = Arachni::Options.instance
+lib = Arachni::Options.dir['lib']
 
-require opts.dir['lib'] + 'version'
-require opts.dir['lib'] + 'ruby'
-require opts.dir['lib'] + 'exceptions'
-require opts.dir['lib'] + 'cache'
-require opts.dir['lib'] + 'utilities'
-require opts.dir['lib'] + 'uri'
-require opts.dir['lib'] + 'spider'
-require opts.dir['lib'] + 'parser'
-require opts.dir['lib'] + 'issue'
-require opts.dir['lib'] + 'module'
-require opts.dir['lib'] + 'plugin'
-require opts.dir['lib'] + 'audit_store'
-require opts.dir['lib'] + 'http'
-require opts.dir['lib'] + 'report'
-require opts.dir['lib'] + 'database'
-require opts.dir['lib'] + 'component/manager'
-require opts.dir['mixins'] + 'progress_bar'
-
+require lib + 'version'
+require lib + 'ruby'
+require lib + 'exceptions'
+require lib + 'cache'
+require lib + 'utilities'
+require lib + 'uri'
+require lib + 'spider'
+require lib + 'parser'
+require lib + 'issue'
+require lib + 'module'
+require lib + 'plugin'
+require lib + 'audit_store'
+require lib + 'http'
+require lib + 'report'
+require lib + 'database'
+require lib + 'component/manager'
+require Arachni::Options.dir['mixins'] + 'progress_bar'
 
 module Arachni
 
@@ -70,7 +69,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.6'
+    REVISION     = '0.2.7'
 
     #
     # Instance options

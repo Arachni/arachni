@@ -21,7 +21,6 @@ describe Arachni::Parser::Element::Auditable do
         @default_input_value = @auditable.auditable['param']
     end
 
-
     describe '#auditable' do
         it 'should return a frozen hash of auditable inputs' do
             @auditable.auditable.should == { 'param' => 'val' }

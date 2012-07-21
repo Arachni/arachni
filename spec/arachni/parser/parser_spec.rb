@@ -228,7 +228,7 @@ describe Arachni::Parser do
             cookie = cookies.pop
             cookie.action.should == @url
             cookie.auditable.should == { 'cookie_input2' => 'cookie_val2' }
-            cookie.method.should == 'cookie'
+            cookie.method.should == 'get'
             cookie.secure?.should be_false
             cookie.http_only?.should be_false
             cookie.url.should == @url
@@ -236,7 +236,7 @@ describe Arachni::Parser do
             cookie = cookies.pop
             cookie.action.should == @url
             cookie.auditable.should == { 'cookie_input' => 'cookie_val' }
-            cookie.method.should == 'cookie'
+            cookie.method.should == 'get'
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
             cookie.url.should == @url
@@ -246,7 +246,7 @@ describe Arachni::Parser do
             cookie.auditable.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
-            cookie.method.should == 'cookie'
+            cookie.method.should == 'get'
             cookie.url.should == @url
         end
     end

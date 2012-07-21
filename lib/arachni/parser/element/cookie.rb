@@ -348,7 +348,8 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
     private
     def http_request( opts = {}, &block )
-        opts[:cookies] = opts[:params]
+        opts[:cookies] = opts[:params].dup
+        opts[:params] = {}
 
         self.method.downcase.to_s != 'get' ?
             http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )

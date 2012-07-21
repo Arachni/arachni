@@ -286,7 +286,7 @@ class Parser
                     f.each do |form|
                         next if form.auditable.keys.sort != form2.auditable.keys.sort
                         form.auditable.each do |k, v|
-                            ap form.nonce_name = k if v != form2.auditable[k]
+                            form.nonce_name = k if v != form2.auditable[k]
                         end
                     end
                 end
