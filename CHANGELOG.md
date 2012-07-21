@@ -13,6 +13,7 @@
     - Project-wide code clean-up, documentation and style improvements.
 - Options
     - Removed the http-harvest-last option.
+    - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods. (**New**)
     - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2``` (**New**)
     - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit. (**New**)
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
@@ -50,7 +51,9 @@
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
-    - Form mutations now include both POST and GET versions for each given form.
+    - Form
+      - Mutations now include both POST and GET versions for each given form.
+      - Tokens are being automatically detected and refreshed before submission.
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added ```Arachni::Cache``` classes (**New**)
