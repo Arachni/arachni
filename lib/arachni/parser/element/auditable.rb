@@ -55,6 +55,7 @@ module Auditable
     def self.reset
         @@audited = BloomFilter.new
     end
+    reset
 
     #
     # Sets the auditor for this element.
@@ -532,7 +533,6 @@ module Auditable
     #
     def audited?( elem_audit_id )
         ret = false
-        @@audited ||= BloomFilter.new
         if @@audited.include?( elem_audit_id )
             msg = "Skipping, already audited: #{elem_audit_id}"
             ret = true
@@ -556,6 +556,10 @@ module Auditable
     #
     def audited( audit_id )
         @@audited << audit_id
+    end
+
+    def self.audited
+        @@audited
     end
 
     def rehash
