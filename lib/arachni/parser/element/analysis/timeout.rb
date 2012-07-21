@@ -171,27 +171,28 @@ module Arachni::Parser::Element::Analysis::Timeout
 
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
-            elem.submit.on_complete do |res|
+            elem.submit do |res|
                 self.call_on_timing_blocks( res, elem )
 
-                if !res.timed_out?
-
-                    elem.print_info 'Liveness check was successful, progressing to verification...'
-
-                    elem.audit( str, opts ) do |c_res, c_opts|
-                        if c_res.timed_out?
-                            # all issues logged by timing attacks need manual verification.
-                            # end of story.
-                            # c_opts[:verification] = true
-                            elem.auditor.log( c_opts, c_res )
-                            elem.responsive?
-                        else
-                            elem.print_info 'Verification failed.'
-                        end
-                    end
-                else
+                if res.timed_out?
                     elem.print_info 'Liveness check failed, bailing out...'
+                    next
                 end
+
+                elem.print_info 'Liveness check was successful, progressing to verification...'
+                elem.audit( str, opts ) do |c_res, c_opts|
+                    if !c_res.timed_out?
+                        elem.print_info 'Verification failed.'
+                        next
+                    end
+
+                    # all issues logged by timing attacks need manual verification.
+                    # end of story.
+                    # c_opts[:verification] = true
+                    elem.auditor.log( c_opts, c_res )
+                    elem.responsive?
+                end
+
             end
 
             elem.http.run
