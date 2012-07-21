@@ -502,13 +502,14 @@ module Auditable
             print_status 'Analyzing response #' + response.request.id.to_s + '...'
         end
 
-        p = proc do |r, e|
-            block.call( r, e.opts, e )
-
-            # nil-out the auditor to help out the GC
-            #remove_auditor if !keep_auditor?
-        end
-        exception_jail( false ){ p.call( response, element ) }
+        #p = proc do |r, e|
+        #    block.call( r, e.opts, e )
+        #
+        #    # nil-out the auditor to help out the GC
+        #    remove_auditor if !keep_auditor?
+        #end
+        #exception_jail( false ){ p.call( response, element ) }
+        exception_jail( false ){ block.call( response, element.opts, element ) }
     end
 
     def within_scope?
