@@ -37,16 +37,6 @@ class Base
     include Arachni::Module::Auditor
 
     #
-    # @return [Page]
-    #
-    attr_reader :page
-
-    #
-    # @return [Arachni::Framework]
-    #
-    attr_reader :framework
-
-    #
     # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.
     #
     # @param  [Page]  page
