@@ -45,7 +45,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         super( url, raw )
 
         self.action = @url
-        self.method = 'cookie'
+        self.method = 'get'
 
         @raw ||= {}
         if @raw['name'] && @raw['value']
@@ -348,7 +348,10 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
     private
     def http_request( opts = {}, &block )
-        http.cookie( self.action, opts || {}, &block )
+        opts[:cookies] = opts[:params]
+
+        self.method.downcase.to_s != 'get' ?
+            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
     end
 
 end

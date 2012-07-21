@@ -80,9 +80,12 @@ module Mutable
         # array of parameter names remain untouched
         skip:       [],
 
-        # respect the default method of the element and don't create mutations
-        # with other methods (GET/POST)
-        respect_method: false
+        #
+        # nil:   use system settings (!Options.fuzz_methods)
+        # true:  don't create mutations with other methods (GET/POST)
+        # false: create mutations with other methods (GET/POST)
+        #
+        respect_method: nil
     }
 
     # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
@@ -148,6 +151,14 @@ module Mutable
             elem.altered = 'Parameter flip'
             elem.auditable = elem.auditable.merge( injection_str => seed )
             var_combo << elem
+        end
+
+        if (opts[:respect_method].nil? && Options.fuzz_methods) || opts[:respect_method]
+            var_combo |= var_combo.map do |f|
+                c = f.dup
+                c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
+                c
+            end
         end
 
         print_debug_injection_set( var_combo, opts )

@@ -236,7 +236,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 async: false,
                 remove_id: true
             ).response
-            page = Arachni::Parser.new( @opts, @response ).run
+            page = Arachni::Parser.new( @response, @opts ).run
             @distributor.build_elem_list( page ).size.should == 7
         end
     end

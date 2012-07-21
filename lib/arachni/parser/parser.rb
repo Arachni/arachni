@@ -96,10 +96,17 @@ class Parser
     #
     # Instantiates Analyzer class with user options.
     #
+    # @param  [Typhoeus::Responses, Array<Typhoeus::Responses>] res
     # @param  [Options] opts
     #
-    def initialize( opts, res )
+    def initialize( res, opts = Arachni::Options )
         @opts = opts
+
+        if res.is_a? Array
+            @secondary_responses = res[1..-1]
+            @secondary_responses.compact! if @secondary_responses
+            res = res.shift
+        end
 
         @code = res.code
         self.url  = res.effective_url
@@ -269,7 +276,24 @@ class Parser
     # @return [Array<Element::Form>] array of forms
     #
     def forms( html = nil )
-        Element::Form.from_document( @url, html || doc )
+        f = Element::Form.from_document( @url, html || doc )
+
+        if @secondary_responses
+            @secondary_responses.each do |response|
+                next if response.body.to_s.empty?
+
+                Element::Form.from_document( @url, response.body ).each do |form2|
+                    f.each do |form|
+                        next if form.auditable.keys.sort != form2.auditable.keys.sort
+                        form.auditable.each do |k, v|
+                            ap form.nonce_name = k if v != form2.auditable[k]
+                        end
+                    end
+                end
+            end
+        end
+
+        f
     end
 
     #

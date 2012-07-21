@@ -22,7 +22,7 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
         super( url, raw )
 
         self.action    = @url
-        self.method    = 'header'
+        self.method    = 'get'
         self.auditable = @raw
 
         @orig = self.auditable.dup

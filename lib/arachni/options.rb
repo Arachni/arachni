@@ -456,6 +456,8 @@ class Options
     # @return   [Integer]   maximum amount of slave Instances to use
     attr_accessor :max_slaves
 
+    attr_accessor :fuzz_methods
+
     def initialize
         reset
     end
@@ -486,6 +488,7 @@ class Options
         @redundant  = {}
 
         @obey_robots_txt = false
+        @fuzz_methods    = false
 
         @depth_limit      = -1
         @link_count_limit = -1
@@ -721,7 +724,8 @@ class Options
             [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
             [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ]
+            [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
+            [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -944,6 +948,8 @@ class Options
                     when '--password'
                         @webui_password = arg.to_s
 
+                    when '--fuzz-methods'
+                        @fuzz_methods = true
                 end
             end
         rescue => e

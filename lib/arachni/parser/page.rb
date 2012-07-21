@@ -92,8 +92,26 @@ class Page
     #
     attr_accessor :cookiejar
 
-    def self.from_response( res, opts = Arachni::Options.instance )
-        Arachni::Parser.new( opts, res ).run
+    def self.from_url( url, opts = {}, &block )
+        responses = []
+
+        opts[:precision] ||= 1
+        opts[:precision].times {
+            HTTP.get( url ) do |res|
+                responses << res
+                next if responses.size != 2
+                block.call( Parser.new( responses ).run ) if block_given?
+            end
+        }
+
+        if !block_given?
+            HTTP.run
+            Parser.new( responses ).run
+        end
+    end
+
+    def self.from_response( res, opts = Arachni::Options )
+        Arachni::Parser.new( res, opts ).run
     end
     class << self; alias :from_http_response :from_response end
 

@@ -103,9 +103,9 @@ class Spider
 
                 visit( url ) do |res|
                     obj = if pass_pages?
-                        Arachni::Parser::Page.from_http_response( res, @opts )
+                        Arachni::Parser::Page.from_response( res, @opts )
                     else
-                        Parser.new( @opts, res )
+                        Parser.new( res, @opts )
                     end
 
                     call_on_each_page_blocks( pass_pages? ? obj.dup : res )

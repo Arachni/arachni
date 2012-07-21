@@ -638,9 +638,7 @@ class Framework
         # of knowing how big the site will be.
         #
         while !@url_queue.empty? && url = @url_queue.pop
-            http.get( url, remove_id: true ) do |res|
-                page = Arachni::Parser::Page.from_http_response( res, @opts )
-
+            Parser::Page.from_url( url, precision: 2 ) do |page|
                 # audit the page
                 exception_jail{ run_mods( page ) }
 

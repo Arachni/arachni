@@ -22,6 +22,8 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
+    attr_accessor :nonce_name
+
     #
     # Creates a new Form element from a URL and auditable data.
     #
@@ -165,14 +167,6 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         opts = MUTATION_OPTIONS.merge( opts )
         var_combo = super( injection_str, opts )
 
-        if !opts[:respect_method]
-            var_combo |= var_combo.map do |f|
-                c = f.dup
-                c.method = (f.method.to_s.downcase == 'get' ? 'post' : 'get')
-                c
-            end
-        end
-
         if !opts[:skip_orig]
             # this is the original hash, in case the default values
             # are valid and present us with new attack vectors
@@ -253,6 +247,16 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             form.url = url
             form
         end.compact
+    end
+
+    def has_nonce?
+        !!!nonce_name
+    end
+
+    def dup
+        f = super
+        f.nonce_name = nonce_name.dup if nonce_name
+        f
     end
 
     private
@@ -354,13 +358,29 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     def http_request( opts, &block )
         if (original? || sample?) && opts[:train] != false
             state = original? ? 'original' : 'sample'
-            print_debug( "Submitting form with #{state} values; overriding trainer option." )
+            print_debug "Submitting form with #{state} values; overriding trainer option."
             opts[:train] = true
             print_debug_trainer( opts )
         end
 
-        self.method.downcase.to_s != 'get' ?
-            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
+        if nonce_name
+            print_info "Refreshing nonce for '#{nonce_name}'."
+
+            res = http.get( @url, async: false ).response
+            f = self.class.from_response( res ).select { |f| f.auditable.keys == auditable.keys }.first
+            nonce = f.auditable[nonce_name]
+
+            print_info "Got new nonce '#{nonce}'."
+
+            opts[:params][nonce_name] = nonce
+            opts[:async] = false
+
+            self.method.downcase.to_s != 'get' ?
+                http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
+        else
+            self.method.downcase.to_s != 'get' ?
+                http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
+        end
     end
 
 end

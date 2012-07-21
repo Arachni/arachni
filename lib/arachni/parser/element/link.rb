@@ -201,7 +201,8 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
 
     private
     def http_request( opts, &block )
-        http.get( @action, opts, &block )
+        self.method.downcase.to_s != 'get' ?
+            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
     end
 
 end

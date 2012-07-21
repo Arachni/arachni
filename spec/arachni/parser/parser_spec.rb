@@ -23,7 +23,7 @@ describe Arachni::Parser do
             async: false,
             remove_id: true
         ).response
-        @parser = Arachni::Parser.new( @opts, @response )
+        @parser = Arachni::Parser.new( @response, @opts )
     end
 
     describe '#url' do
@@ -72,7 +72,7 @@ describe Arachni::Parser do
                     'Set-Cookie'   => 'cname=cval'
                 }
             )
-            parser = Arachni::Parser.new( @opts, response )
+            parser = Arachni::Parser.new( response, @opts )
             cookies = parser.page.cookies
             cookies.size.should == 2
             cookies.map{ |c| c.action }.uniq.should == [url]
@@ -88,7 +88,7 @@ describe Arachni::Parser do
         context 'when the response is not text based' do
             before {
                 res = Typhoeus::Response.new( effective_url: @url )
-                @parser_2 = Arachni::Parser.new( @opts, res )
+                @parser_2 = Arachni::Parser.new( res, @opts )
             }
             it { @parser_2.text?.should be_false }
         end
@@ -112,7 +112,7 @@ describe Arachni::Parser do
                         'Location'     => url
                     }
                 )
-                parser = Arachni::Parser.new( @opts, response )
+                parser = Arachni::Parser.new( response, @opts )
                 parser.links.size == 1
             end
         end
@@ -126,7 +126,7 @@ describe Arachni::Parser do
                         'Content-Type' => 'text/html'
                     }
                 )
-                parser = Arachni::Parser.new( @opts, response )
+                parser = Arachni::Parser.new( response, @opts )
                 parser.links.size == 1
                 parser.links.first.auditable.should == { 'stuff' => 'ba' }
             end
@@ -141,7 +141,7 @@ describe Arachni::Parser do
                         'Content-Type' => 'text/html'
                     }
                 )
-                parser = Arachni::Parser.new( @opts, response )
+                parser = Arachni::Parser.new( response, @opts )
                 parser.links.should be_empty
             end
         end
@@ -204,6 +204,18 @@ describe Arachni::Parser do
             form.action.should == @utils.normalize_url( @opts.url + '/form_2')
             form.url.should == @url
             form.auditable.should == { "form_2_input_1" => "form_2_val_1" }
+        end
+
+        context 'when passed secondary responses' do
+            it 'should identify the nonces' do
+                responses = []
+
+                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
+                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
+
+                parser = Arachni::Parser.new( responses, @opts )
+                parser.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
+            end
         end
     end
 
@@ -292,7 +304,7 @@ describe Arachni::Parser do
                 async: false,
                 remove_id: true
             ).response
-            @parser_with_base = Arachni::Parser.new( @opts, res )
+            @parser_with_base = Arachni::Parser.new( res, @opts )
         }
 
         describe '#base' do

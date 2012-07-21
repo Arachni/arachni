@@ -63,7 +63,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         def find_landing_header_fields( res )
             elems = []
 
-            parser = Arachni::Parser.new( Arachni::Options.instance, res )
+            parser = Arachni::Parser.new( res )
             parser.cookies.each do |cookie|
                 elems << cookie if cookie.auditable.to_s.substring?( seed_id )
             end
@@ -80,7 +80,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
             elems = []
             elems << Struct::Body.new( 'body', nil, { 'attrs' => {} } )
 
-            parser = Arachni::Parser.new( Arachni::Options.instance, res )
+            parser = Arachni::Parser.new( res )
             parser.forms.each do |form|
                 elems << form if form.auditable.to_s.substring?( seed_id )
             end

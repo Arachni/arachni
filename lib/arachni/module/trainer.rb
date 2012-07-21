@@ -88,7 +88,7 @@ class Trainer
             return
         end
 
-        @parser = Parser.new( @opts, res )
+        @parser = Parser.new( res )
         return false if !@parser.text? || @parser.skip?( @parser.url )
 
         analyze( res )

@@ -51,7 +51,7 @@ class Proxy < Arachni::Plugin::Base
         require @framework.opts.dir['plugins'] + '/proxy/server.rb'
 
         # foo initialization, we just need it to verify URLs
-        @parser = Arachni::Parser.new( @framework.opts,
+        @parser = Arachni::Parser.new(
             Typhoeus::Response.new(
                 :effective_url => @framework.opts.url.to_s,
                 :body          => '',
@@ -94,7 +94,7 @@ class Proxy < Arachni::Plugin::Base
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
         # proper initialization in order to parse the response into a page
-        @parser = Arachni::Parser.new( @framework.opts,
+        @parser = Arachni::Parser.new(
             Typhoeus::Response.new(
                 :effective_url => req.unparsed_uri,
                 :body          => res.body,
