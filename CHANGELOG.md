@@ -52,8 +52,7 @@
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
     - Form
-      - Mutations now include both POST and GET versions for each given form.
-      - Tokens are being automatically detected and refreshed before submission.
+      - Nonce tokens are being automatically detected and refreshed before submission.
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added ```Arachni::Cache``` classes (**New**)
