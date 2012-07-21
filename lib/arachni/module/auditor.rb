@@ -152,8 +152,7 @@ module Auditor
     #
     # @abstract
     #
-    def framework
-    end
+    attr_reader :framework
 
     #
     # OPTIONAL
