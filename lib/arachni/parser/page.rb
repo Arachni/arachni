@@ -99,7 +99,7 @@ class Page
         opts[:precision].times {
             HTTP.get( url ) do |res|
                 responses << res
-                next if responses.size != 2
+                next if responses.size != opts[:precision]
                 block.call( Parser.new( responses ).run ) if block_given?
             end
         }
