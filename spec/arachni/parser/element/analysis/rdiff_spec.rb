@@ -23,6 +23,7 @@ describe Arachni::Parser::Element::Analysis::RDiff do
                     @params
                 )
                 auditable.auditor = @auditor
+                auditable.keep_auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
                 @auditor.http.run
@@ -39,6 +40,7 @@ describe Arachni::Parser::Element::Analysis::RDiff do
                     @params
                 )
                 auditable.auditor = @auditor
+                auditable.keep_auditor
                 auditable.rdiff_analysis( @opts )
                 @auditor.http.run
                 @auditor.http.run

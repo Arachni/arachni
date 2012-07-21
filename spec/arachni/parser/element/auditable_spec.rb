@@ -8,12 +8,14 @@ describe Arachni::Parser::Element::Auditable do
 
         @auditable = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val' } )
         @auditable.auditor = @auditor
+        @auditable.keep_auditor
 
         @orphan = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'val' } )
 
         # will sleep 2 secs before each response
         @sleep = Arachni::Parser::Element::Link.new( @url + '/sleep', inputs: { 'param' => 'val' } )
         @sleep.auditor = @auditor
+        @sleep.keep_auditor
 
         @orig = Arachni::Parser::Element::Link.new( @url, inputs: { 'param' => 'val' } )
 

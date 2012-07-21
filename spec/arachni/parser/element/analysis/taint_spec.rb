@@ -9,11 +9,13 @@ describe Arachni::Parser::Element::Analysis::Taint do
         @positive = Arachni::Parser::Element::Link.new( @url,
             inputs: { 'input' => '' }
         )
+        @positive.keep_auditor
         @positive.auditor = @auditor
 
         @negative = Arachni::Parser::Element::Link.new( @url,
             inputs: { 'inexistent_input' => '' }
         )
+        @negative.keep_auditor
         @negative.auditor = @auditor
     end
 

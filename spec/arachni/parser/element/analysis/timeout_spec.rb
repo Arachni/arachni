@@ -10,15 +10,18 @@ describe Arachni::Parser::Element::Analysis::Timeout do
 
         @positive = Arachni::Parser::Element::Link.new( @url + '/true', inputs )
         @positive.auditor = @auditor
+        @positive.keep_auditor
 
         @positive_high_res = Arachni::Parser::Element::Link.new(
             @url + '/high_response_time',
             inputs
         )
         @positive_high_res.auditor = @auditor
+        @positive.keep_auditor
 
         @negative = Arachni::Parser::Element::Link.new( @url + '/false', inputs )
         @negative.auditor = @auditor
+        @negative.keep_auditor
 
         @run = proc{ Arachni::Parser::Element::Auditable.timeout_audit_run }
     end

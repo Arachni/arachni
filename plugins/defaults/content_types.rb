@@ -27,7 +27,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
         @results = {}
         @exclude = Regexp.new( options['exclude'] )
 
-        @logged = Set.new
+        @logged = Arachni::BloomFilter.new
     end
 
     def run

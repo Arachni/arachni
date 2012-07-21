@@ -51,11 +51,6 @@
 #
 class Arachni::Modules::CSRF < Arachni::Module::Base
 
-    # since we bypass the Auditor we must also do our own audit tracking
-    def self.audited
-        @audited ||= Set.new
-    end
-
     def run
         print_status 'Looking for CSRF candidates...'
         print_status 'Simulating logged-out user.'
@@ -150,12 +145,12 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
         url  = form.action
         name = form.raw['attrs']['name'] || form.raw['attrs']['id']
 
-        if self.class.audited.include?( "#{url}::#{name}" )
+        if audited?( "#{url}::#{name}" )
             print_info "Skipping already audited form '#{name}' at '#{url}'"
             return
         end
 
-        self.class.audited << "#{url}::#{name}"
+        audited( "#{url}::#{name}" )
 
         log_issue( var: name, url: url, elem: Element::FORM, response: page.body )
         print_ok "Found unprotected form with name '#{name}' at '#{url}'"

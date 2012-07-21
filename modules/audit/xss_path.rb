@@ -48,18 +48,6 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
         ]
     end
 
-    def self.audited
-        @audited ||= Set.new
-    end
-
-    def audited?( path )
-        self.class.audited.include?( path )
-    end
-
-    def audited( path )
-        self.class.audited << path
-    end
-
     def run
         path = get_path( page.url )
 

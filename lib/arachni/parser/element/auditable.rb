@@ -14,10 +14,11 @@
     limitations under the License.
 =end
 
-
-require Arachni::Options.instance.dir['lib'] + 'module/utilities'
-require Arachni::Options.instance.dir['lib'] + 'issue'
-require Arachni::Options.instance.dir['lib'] + 'parser/element/mutable'
+lib = Arachni::Options.dir['lib']
+require lib + 'bloom_filter'
+require lib + 'module/utilities'
+require lib + 'issue'
+require lib + 'parser/element/mutable'
 
 module Arachni
 class Parser
@@ -52,14 +53,13 @@ module Auditable
     # when calling audit methods to bypass it.
     #
     def self.reset
-        @@audited = Set.new
+        @@audited = BloomFilter.new
     end
 
     #
     # Sets the auditor for this element.
     #
-    # The auditor provides its output and issue logging interfaces to the
-    # auditable element.
+    # The auditor provides its output, HTTP and issue logging interfaces.
     #
     # @return   [Arachni::Module::Auditor]
     #
@@ -171,7 +171,7 @@ module Auditable
     end
 
     def self.reset_instance_scope
-        @@restrict_to_elements = Set.new
+        @@restrict_to_elements = BloomFilter.new
     end
 
     #
@@ -229,7 +229,7 @@ module Auditable
     # @return   [Arachni::HTTP]
     #
     def http
-        orphan? ? Arachni::HTTP.instance : @auditor.http
+        orphan? ? Arachni::HTTP : @auditor.http
     end
 
     #
@@ -282,6 +282,9 @@ module Auditable
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
+    # Requires an {#auditor}.
+    # Will remove the auditor after it's done unless {#keep_auditor} has been previously called.
+    #
     # @param  [String]  injection_str  the string to be injected
     # @param  [Hash]    opts           options as described in {OPTIONS}
     # @param  [Block]   block         block to be used for analysis of responses; will be passed the following:
@@ -300,8 +303,6 @@ module Auditable
             print_debug "Element's action matches skip rule, bailing out (#{self.action})."
             return false
         end
-
-        @@audited ||= Set.new
 
         opts[:injected_orig] = injection_str
 
@@ -407,6 +408,15 @@ module Auditable
         !orphan? ? @auditor.class.info : { name: '' }
     end
 
+    # Do not remove the auditor after the audit
+    def keep_auditor
+        self.opts[:keep_auditor] = true
+    end
+
+    def keep_auditor?
+        !!self.opts[:keep_auditor]
+    end
+
     #
     # Delegate output related methods to the auditor
     #
@@ -492,11 +502,17 @@ module Auditable
             print_status 'Analyzing response #' + response.request.id.to_s + '...'
         end
 
-        exception_jail( false ){ block.call( response, element.opts, element ) }
+        p = proc do |r, e|
+            block.call( r, e.opts, e )
+
+            # nil-out the auditor to help out the GC
+            remove_auditor if !keep_auditor?
+        end
+        exception_jail( false ){ p.call( response, element ) }
     end
 
     def within_scope?
-        @@restrict_to_elements ||= Set.new
+        @@restrict_to_elements ||= BloomFilter.new
 
         auditor_override_instance_scope = false
         begin
@@ -515,7 +531,7 @@ module Auditable
     #
     def audited?( elem_audit_id )
         ret = false
-        @@audited ||= Set.new
+        @@audited ||= BloomFilter.new
         if @@audited.include?( elem_audit_id )
             msg = "Skipping, already audited: #{elem_audit_id}"
             ret = true

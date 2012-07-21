@@ -14,9 +14,12 @@
     limitations under the License.
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'module/utilities'
+lib = Arachni::Options.instance.dir['lib']
+
+require lib + 'bloom_filter'
+require lib + 'module/utilities'
 require 'nokogiri'
-require Arachni::Options.instance.dir['lib'] + 'nokogiri/xml/node'
+require lib + 'nokogiri/xml/node'
 
 module Arachni
 
@@ -49,7 +52,7 @@ class Spider
 
         @sitemap   = {}
         @redirects = []
-        @visited   = Set.new
+        @visited   = BloomFilter.new
 
         @on_each_page_blocks = []
         @on_complete_blocks  = []

@@ -548,7 +548,7 @@ module Auditor
     #
     #
     def self.audited
-        @audited ||= Set.new
+        @audited ||= BloomFilter.new
     end
 
 end

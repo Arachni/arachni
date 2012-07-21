@@ -36,7 +36,7 @@ class Manager < Arachni::Component::Manager
     NAMESPACE = Arachni::Modules
 
     @@results             ||= []
-    @@issue_set           ||= Set.new
+    @@issue_set           ||= BloomFilter.new
     @@do_not_store        ||= false
     @@on_register_results_blocks ||= []
     @@on_register_results_blocks_raw ||= []

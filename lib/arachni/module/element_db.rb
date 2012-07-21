@@ -33,12 +33,12 @@ module ElementDB
     #
     # page forms
     #
-    @@forms    ||= Set.new
+    @@forms    ||= BloomFilter.new
 
     #
     # page links
     #
-    @@links    ||= Set.new
+    @@links    ||= BloomFilter.new
 
     #
     # page cookies
@@ -46,9 +46,9 @@ module ElementDB
     @@cookies  ||= Set.new
 
     def self.reset
-        @@forms = Set.new
-        @@links = Set.new
-        @@cookies = Set.new
+        @@forms.clear
+        @@links.clear
+        @@cookies.clear
     end
 
     def init_db_from_page( page )
@@ -61,21 +61,21 @@ module ElementDB
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
     def init_forms( forms )
-      @@forms |= forms.map { |form| form.id }
+        forms.each { |form| @@forms << form.id }
     end
 
     #
     # Initializes @@links with the links found during the crawl/analysis
     #
     def init_links( links )
-      @@links |= links.map { |link| link.id }
+        links.each { |link| @@links << link.id }
     end
 
     #
     # Initializes @@cookies with the cookies found during the crawl/analysis
     #
     def init_cookies( cookies )
-      @@cookies = cookies
+        @@cookies = cookies
     end
 
     #
