@@ -253,6 +253,12 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         !!!nonce_name
     end
 
+    def field_type_for( name )
+        field = @raw['auditable'].select { |f| f['name'] == name }.first
+        return if !field
+        field['type'].to_s.downcase
+    end
+
     def dup
         f = super
         f.nonce_name = nonce_name.dup if nonce_name

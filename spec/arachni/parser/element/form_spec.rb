@@ -43,6 +43,26 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#field_type_for' do
+        it 'should return a field\'s type' do
+            e = Arachni::Parser::Element::Form.new( 'http://test.com',
+                'auditable' => [
+                    {
+                        'type' => 'password',
+                        'name' => 'my_pass'
+                    },
+                    {
+                        'type' => 'hidden',
+                        'name' => 'hidden_field'
+                    }
+                ]
+            )
+
+            e.field_type_for( 'my_pass' ).should == 'password'
+            e.field_type_for( 'hidden_field' ).should == 'hidden'
+        end
+    end
+
     describe '#mutations' do
         it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }

@@ -43,14 +43,14 @@ get '/with_nonce' do
     <form method="post" action="/form" name="my_form">
         <p>
             <input type="text" name="form_input_1" value="form_val_1">
-            <input type="text" name="nonce" value="#{rand(999)}">
+            <input type="hidden" name="nonce" value="#{rand(999)}">
         </p>
     </form>
 
     <form method="post" action="/form" name="my_form2">
         <p>
             <input type="text" name="form_input_2" value="form_val_2">
-            <input type="text" name="nonce2" value="#{rand(999)}">
+            <input type="hidden" name="nonce2" value="#{rand(999)}">
         </p>
     </form>
 HTML

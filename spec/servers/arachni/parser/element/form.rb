@@ -34,7 +34,7 @@ get '/with_nonce' do
     <form method="post" action="/form" name="my_form">
         <p>
             <input type="text" name="param_name" value="param_value">
-            <input type="text" name="nonce" value="#{rand(999)}">
+            <input type="hidden" name="nonce" value="#{rand(999)}">
         </p>
     </form>
 HTML
