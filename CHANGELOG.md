@@ -11,12 +11,15 @@
       leading to overall improvements, especially during the initial crawling process. (**New**)
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
+    - Replaced ```Set```s with ```Arachni::BloomFilter```s, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
 - Options
-    - Removed the ```--http-harvest-last``` option.
-    - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods. (**New**)
-    - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations. (**New**)
-    - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2``` (**New**)
-    - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit. (**New**)
+    - Removed
+        - ```--http-harvest-last```
+    - Added (**New**)
+        - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods.
+        - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.
+        - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
+        - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
     - API
         - Updated to provide access to running plugins.
@@ -56,11 +59,13 @@
       - Nonce tokens are being automatically detected and refreshed before submission.
 - Tests
     - Added full test suite using RSpec. (**New**)
-- Added ```Arachni::Cache``` classes (**New**)
-    - ```LeastCostReplacement``` -- Least Cost Replacement cache implementation.
-    - ```LeastRecentlyUsed``` -- Least Recently Used cache implementation.
-    - ```RandomReplacement``` -- Random Replacement cache implementation.
-- Added ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency. (**New**)
+- Added
+    - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency. (**New**)
+    - ```Arachni::BloomFilter``` class, a ```Hash```-based, lightweight Bloom-filter implementation requiring minimum storage space and providing fast look-ups.
+    - ```Arachni::Cache``` classes (**New**)
+        - ```LeastCostReplacement``` -- Least Cost Replacement cache implementation.
+        - ```LeastRecentlyUsed``` -- Least Recently Used cache implementation.
+        - ```RandomReplacement``` -- Random Replacement cache implementation.
 - Executables
     - ```arachni_web_autostart``` -- removed calls to ```xterm``` and ```xdg-open```.
     - ```arachni_script``` -- Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts. (**New**)
