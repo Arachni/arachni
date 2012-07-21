@@ -176,7 +176,7 @@ module Arachni::Parser::Element::Analysis::Timeout
 
                 if !res.timed_out?
 
-                    elem.print_info( 'Liveness check was successful, progressing to verification...' )
+                    elem.print_info 'Liveness check was successful, progressing to verification...'
 
                     elem.audit( str, opts ) do |c_res, c_opts|
                         if c_res.timed_out?
@@ -186,15 +186,15 @@ module Arachni::Parser::Element::Analysis::Timeout
                             elem.auditor.log( c_opts, c_res )
                             elem.responsive?
                         else
-                            elem.print_info( 'Verification failed.' )
+                            elem.print_info 'Verification failed.'
                         end
                     end
                 else
-                    elem.print_info( 'Liveness check failed, bailing out...' )
+                    elem.print_info 'Liveness check failed, bailing out...'
                 end
             end
 
-            elem.auditor.http.run
+            elem.http.run
         end
 
         def call_on_timing_blocks( res, elem )
@@ -267,8 +267,8 @@ module Arachni::Parser::Element::Analysis::Timeout
 
         orig_opts = opts
 
-        print_info( 'Waiting for the effects of the timing attack to wear off.' )
-        print_info( 'Max waiting time: ' + ( d_opts[:timeout] /1000 ).to_s + ' seconds.' )
+        print_info 'Waiting for the effects of the timing attack to wear off.'
+        print_info "Max waiting time: #{d_opts[:timeout] /1000} seconds."
 
         @auditable = @orig
         res = submit( d_opts ).response
@@ -276,9 +276,9 @@ module Arachni::Parser::Element::Analysis::Timeout
         @opts.merge!( orig_opts )
 
         if !res.timed_out?
-            print_info( 'Server seems responsive again.' )
+            print_info 'Server seems responsive again.'
         else
-            print_error( 'Max waiting time exceeded, the server may be dead.' )
+            print_error 'Max waiting time exceeded, the server may be dead.'
             return false
         end
 
@@ -287,10 +287,10 @@ module Arachni::Parser::Element::Analysis::Timeout
 
     private
     def audit_timeout_debug_msg( phase, delay )
-        print_debug( '---------------------------------------------' )
-        print_debug( "Running phase #{phase.to_s} of timing attack." )
-        print_debug( "Delay set to: #{delay.to_s} milliseconds" )
-        print_debug( '---------------------------------------------' )
+        print_debug '---------------------------------------------'
+        print_debug "Running phase #{phase.to_s} of timing attack."
+        print_debug "Delay set to: #{delay.to_s} milliseconds"
+        print_debug '---------------------------------------------'
     end
 
     #
