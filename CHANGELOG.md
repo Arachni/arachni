@@ -12,8 +12,9 @@
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
 - Options
-    - Removed the http-harvest-last option.
+    - Removed the ```--http-harvest-last``` option.
     - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods. (**New**)
+    - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations. (**New**)
     - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2``` (**New**)
     - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit. (**New**)
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
