@@ -11,7 +11,7 @@
       leading to overall improvements, especially during the initial crawling process. (**New**)
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
-    - Replaced ```Set```s with ```Arachni::BloomFilter```s, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
+    - Replaced ```Set``` with ```Arachni::BloomFilter```, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
 - Options
     - Removed
         - ```--http-harvest-last```
