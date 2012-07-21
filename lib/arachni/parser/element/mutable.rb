@@ -14,10 +14,10 @@
     limitations under the License.
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'module/utilities'
-require Arachni::Options.instance.dir['lib'] + 'module/key_filler'
-
 module Arachni
+require Options.dir['lib'] + 'module/utilities'
+require Options.dir['lib'] + 'module/key_filler'
+
 class Parser
 module Element
 module Mutable
@@ -201,17 +201,17 @@ module Mutable
     def print_debug_injection_set( var_combo, opts )
         return if !debug?
 
-        print_debug( )
+        print_debug
         print_debug_trainer( opts )
         print_debug_formatting( opts )
         print_debug_combos( var_combo )
     end
 
     def print_debug_formatting( opts )
-        print_debug( '------------' )
+        print_debug '------------'
 
-        print_debug( 'Injection string format combinations set to:' )
-        print_debug( '|')
+        print_debug 'Injection string format combinations set to:'
+        print_debug '|'
         msg = []
         opts[:format].each do |format|
             if( format & Format::NULL ) != 0
@@ -230,7 +230,8 @@ module Mutable
             prep.gsub!( 'format::null', "Format::NULL [#{Format::NULL}]" )
             prep.gsub!( 'format::append', "Format::APPEND [#{Format::APPEND}]" )
             prep.gsub!( 'format::straight', "Format::STRAIGHT [#{Format::STRAIGHT}]" )
-            print_debug( "|----> " + prep )
+
+            print_debug "|----> #{prep}"
 
             msg.clear
         end
@@ -239,27 +240,27 @@ module Mutable
 
     def print_debug_combos( combos )
         print_debug
-        print_debug( 'Prepared combinations:' )
-        print_debug( '|' )
+        print_debug 'Prepared combinations:'
+        print_debug '|'
 
         combos.each do |elem|
           altered = elem.altered
           combo   = elem.auditable
 
-          print_debug( '|' )
-          print_debug( "|--> Auditing: " + altered )
-          print_debug( "|--> Combo: " )
+          print_debug '|'
+          print_debug "|--> Auditing: #{altered}"
+          print_debug "|--> Combo: "
 
-          combo.each { |c_combo| print_debug( "|------> " + c_combo.to_s ) }
+          combo.each { |c_combo| print_debug "|------> #{c_combo}" }
         end
 
         print_debug
-        print_debug( '------------' )
+        print_debug '------------'
         print_debug
     end
 
     def print_debug_trainer( opts )
-        print_debug( 'Trainer set to: ' + ( opts[:train] ? 'ON' : 'OFF' ) )
+        print_debug 'Trainer set to: ' + ( opts[:train] ? 'ON' : 'OFF' )
     end
 
 end
