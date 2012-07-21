@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require 'set'
+
 #
 # Evaluates whether or not the injection of specific data affects the response
 # time of the web application.
