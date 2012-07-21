@@ -506,7 +506,7 @@ module Auditable
             block.call( r, e.opts, e )
 
             # nil-out the auditor to help out the GC
-            remove_auditor if !keep_auditor?
+            #remove_auditor if !keep_auditor?
         end
         exception_jail( false ){ p.call( response, element ) }
     end
