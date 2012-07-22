@@ -414,8 +414,7 @@ describe Arachni::Parser::Element::Auditable do
                     cnt = 0
 
                     each_mutation = proc do |mutation|
-                        h = { mutation.altered => 'houa!' }
-                        mutation.update( h )
+                        mutation.altered_value = 'houa!'
                     end
 
                     @auditable.audit( @seed, each_mutation: each_mutation,
@@ -435,12 +434,10 @@ describe Arachni::Parser::Element::Auditable do
 
                         each_mutation = proc do |mutation|
                             m = mutation.dup
-                            h = { m.altered => 'houa!' }
-                            m.update( h )
+                            m.altered_value = 'houa!'
 
                             c = mutation.dup
-                            h = { c.altered => 'houa2!' }
-                            c.update( h )
+                            c.altered_value = 'houa2!'
 
                             [m, c]
                         end
