@@ -141,6 +141,10 @@ class Page
         @document ||= Nokogiri::HTML( @body )
     end
 
+    def text?
+        !!@text
+    end
+
     def to_hash
         instance_variables.reduce({}) do |h, iv|
             if iv != :@document

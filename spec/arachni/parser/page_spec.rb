@@ -37,6 +37,29 @@ describe Arachni::Parser::Page do
         @empty_page = Arachni::Parser::Page.new
     end
 
+    describe '#text?' do
+        context 'when the HTTP response was text based' do
+            it 'should return true' do
+                res = Typhoeus::Response.new(
+                    effective_url: 'http://test.com',
+                    body: '',
+                    headers_hash: {
+                       'Content-Type' => 'text/html',
+                       'Set-Cookie'   => 'cname=cval'
+                   }
+                )
+                Arachni::Parser.new( res, @opts ).page.text?.should be_true
+            end
+        end
+
+        context 'when the response is not text based' do
+            it 'should return false' do
+                res = Typhoeus::Response.new( effective_url: 'http://test.com' )
+                Arachni::Parser.new( res, @opts ).page.text?.should be_false
+            end
+        end
+    end
+
     context 'when called with options' do
         it 'should retain its options' do
             @page_data.each do |k, v|

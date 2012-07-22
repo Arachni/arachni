@@ -167,7 +167,8 @@ class Parser
                 method:           req_method,
                 query_vars:       self_link.auditable,
                 body:             @html,
-                response_headers: @response_headers
+                response_headers: @response_headers,
+                text:             false
             )
         end
 
@@ -229,7 +230,9 @@ class Parser
             # this is the page cookiejar, each time the page is to be audited
             # by a module the cookiejar of the HTTP class will be updated
             # with the cookies specified here
-            cookiejar:        c_cookies | from_jar
+            cookiejar:        c_cookies | from_jar,
+
+            text:             true
         )
     end
     alias :run :page
