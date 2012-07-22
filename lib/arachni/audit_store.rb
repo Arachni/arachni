@@ -94,7 +94,7 @@ class AuditStore
         opts.each { |k, v| self.instance_variable_set( '@' + k.to_s, v ) }
 
         @options = prepare_options( @options )
-        @issues  = sort( prepare_variations( @issues ) )
+        @issues  = sort( prepare_variations( @issues.deep_clone ) )
 
         @start_datetime  =  if @options['start_datetime']
             @options['start_datetime'].asctime
