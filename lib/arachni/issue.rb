@@ -343,6 +343,10 @@ class Issue
         "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
 
+    def ==( other )
+        hash == other.hash
+    end
+
     def hash
         unique_id.hash
     end

@@ -22,7 +22,7 @@ describe Arachni::AuditStore do
             revision: '0.2',
             options:  @opts.to_h,
             sitemap:  [@opts.url],
-            issues:   [@issue],
+            issues:   [@issue.deep_clone],
             plugins:  @plugin_results,
         }
 
@@ -30,7 +30,7 @@ describe Arachni::AuditStore do
             @auditstore_opts.merge(
                 start_datetime: Time.now.asctime,
                 finish_datetime: Time.now.asctime
-            )
+            ).deep_clone
         )
 
         @clean = Arachni::AuditStore.new( @auditstore_opts )
@@ -124,7 +124,7 @@ describe Arachni::AuditStore do
                 var: 'varname2'
             )
         ]
-        organized = Arachni::AuditStore.new( @auditstore_opts.merge( issues: issues ) ).issues
+        organized = Arachni::AuditStore.new( @auditstore_opts.merge( issues: issues.deep_clone ) ).issues
         organized.first.variations.size.should == 2
 
         identical = %w(name url mod_name elem var)

@@ -277,7 +277,7 @@ class AuditStore
 
             new_issues[__id].internal_modname ||=
                 get_internal_module_name( new_issues[__id].mod_name )
-            new_issues[__id].variations << issue.deep_clone.dup
+            new_issues[__id].variations << issue.deep_clone
 
             variation_keys.each do |key|
                 if new_issues[__id].instance_variable_defined?( '@' + key )
