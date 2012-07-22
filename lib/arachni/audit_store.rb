@@ -277,18 +277,20 @@ class AuditStore
 
             new_issues[__id].internal_modname ||=
                 get_internal_module_name( new_issues[__id].mod_name )
-            new_issues[__id].variations << issue.deep_clone
+            new_issues[__id].variations << issue.deep_clone.dup
 
-            #variation_keys.each do |key|
-            #    if new_issues[__id].instance_variable_defined?( '@' + key )
-            #        new_issues[__id].remove_instance_var( '@' + key )
-            #    end
-            #end
+            variation_keys.each do |key|
+                if new_issues[__id].instance_variable_defined?( '@' + key )
+                    new_issues[__id].remove_instance_var( '@' + key )
+                end
+            end
         end
 
         new_issues.values.each do |i|
             next if !i.variations || !i.injected
-            i.variations = [i.variations.first]
+            i.variations.each do |v|
+                v.remove_instance_var( :@variations ) rescue next
+            end
         end
 
         issue_keys = new_issues.keys

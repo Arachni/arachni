@@ -263,6 +263,8 @@ class Issue
         @method = @method.to_s.upcase
         @mod_name = opts[:name]
 
+        # remove this block because it won't be able to be serialized
+        @opts.delete( :each_mutation )
         @tags ||= []
     end
 

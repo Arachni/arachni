@@ -29,7 +29,7 @@ class Object
     def deep_clone
         begin
             Marshal.load( Marshal.dump( self ) )
-        rescue Exception
+        rescue => e
             self
         end
     end
