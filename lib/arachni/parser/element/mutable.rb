@@ -90,7 +90,7 @@ module Mutable
 
     # @return   [String]    value of the altered input
     def altered_value
-        self[altered]
+        self[altered].to_s
     end
 
     # @param    [String]    value   sets the value for the altered input
