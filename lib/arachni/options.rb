@@ -742,7 +742,8 @@ class Options
             [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
             [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
-            [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ]
+            [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ],
+            [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -970,6 +971,9 @@ class Options
 
                     when '--extensive-cookies'
                         @extensive_cookies = true
+
+                    when '--exclude-binaries'
+                        @exclude_binaries = true
                 end
             end
         rescue => e

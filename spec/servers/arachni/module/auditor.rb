@@ -7,6 +7,10 @@ get '/' do
     'OK'
 end
 
+get '/binary' do
+    content_type 'application/stuff'
+end
+
 get '/sleep' do
     sleep 2
 end

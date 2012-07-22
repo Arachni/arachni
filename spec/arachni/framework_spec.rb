@@ -15,16 +15,39 @@ describe Arachni::Framework do
         @f = Arachni::Framework.new
         @f.reset
     end
-
-    after( :each ) do
-        @f.reset
-    end
+    after( :each ) { @f.reset }
 
     describe '#opts' do
         it 'should provide access to the framework options' do
             @f.opts.is_a?( Arachni::Options ).should be_true
         end
 
+        describe '#exclude_binaries' do
+            it 'should exclude binary pages from the audit' do
+                f = Arachni::Framework.new
+
+                f.opts.url = @url + '/binary'
+                f.opts.audit :links, :forms, :cookies
+                f.modules.load :taint
+
+                ok = false
+                f.on_run_mods { ok = true }
+                f.run
+                ok.should be_true
+                f.reset
+
+                f.opts.url = @url + '/binary'
+                f.opts.exclude_binaries = true
+                f.modules.load :taint
+
+                ok = true
+                f.on_run_mods { ok = false }
+
+                f.run
+                f.reset
+                ok.should be_true
+            end
+        end
         describe '#restrict_paths' do
             it 'should serve as a replacement to crawling' do
                 f = Arachni::Framework.new

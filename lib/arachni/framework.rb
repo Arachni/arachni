@@ -534,6 +534,10 @@ class Framework
     end
     alias :clean_up! :clean_up
 
+    def on_run_mods( &block )
+        add_on_run_mods( &block )
+    end
+
     #
     # Resets everything and allows the framework to be re-used.
     #
@@ -703,6 +707,11 @@ class Framework
     #
     def run_mods( page )
         return if !page
+
+        if Options.exclude_binaries? && !page.text?
+            print_info "Ignoring page due to non text-based content-type: #{page.url}"
+            return
+        end
 
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"

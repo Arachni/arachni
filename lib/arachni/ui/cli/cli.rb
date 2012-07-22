@@ -757,6 +757,9 @@ class CLI
     --fuzz-methods              audit links, forms and cookies using both GET and POST requests
                                   (*WARNING*: This severely increase the scan-time.)
 
+    --exclude-binaries          exclude non text-based pages from the audit
+                                  (Binary content can confuse recon modules which perform pattern matching.)
+
     Modules ------------------------
 
     --lsmod=<regexp>            list available modules based on the provided regular expression

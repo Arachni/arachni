@@ -20,6 +20,7 @@
         - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.
         - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
+        - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
     - API
         - Updated to provide access to running plugins.
