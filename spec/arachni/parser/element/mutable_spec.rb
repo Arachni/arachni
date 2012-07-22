@@ -37,6 +37,24 @@ describe Arachni::Parser::Element::Mutable do
         end
     end
 
+    describe '#altered_value' do
+        it 'should return the value of the altered input' do
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+            elem = e.mutations_for( @seed ).first
+            elem.altered_value.should == @seed
+        end
+    end
+
+    describe '#altered_value=' do
+        it 'should set the value of the altered input' do
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+            elem = e.mutations_for( @seed ).first
+            elem.altered_value = 'stuff'
+            elem.altered_value.should == 'stuff'
+            elem.auditable.values.first.should == 'stuff'
+        end
+    end
+
     describe '#mutations' do
         it 'should be aliased to #mutations_for' do
             e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )

@@ -80,6 +80,29 @@ describe Arachni::Parser::Element::Auditable do
         end
     end
 
+    describe '#[]' do
+        it 'should serve as a reader to the #auditable hash' do
+            e = Arachni::Parser::Element::Link.new( @url,
+                inputs: { 'key' => 'stuff', 'key2' => 'val' } )
+            e['key'].should == 'stuff'
+        end
+    end
+
+    describe '#[]=' do
+        it 'should serve as a writer to the #auditable hash' do
+            e = Arachni::Parser::Element::Link.new( @url,
+                inputs: { 'key' => 'stuff', 'key2' => 'val' } )
+            h = e.hash
+
+            e['key'] = 'val2'
+
+            h.should_not == e.hash
+
+            e['key'].should == e.auditable['key']
+            e['key'].should == 'val2'
+        end
+    end
+
     describe '#orig' do
         it 'should be the same as auditable' do
             @orig.orig.should == @orig.auditable
@@ -385,6 +408,57 @@ describe Arachni::Parser::Element::Auditable do
 
         context 'when called with option' do
 
+            describe :each_mutation do
+                it 'should be able to modify the element on the fly' do
+                    injected = nil
+                    cnt = 0
+
+                    each_mutation = proc do |mutation|
+                        h = { mutation.altered => 'houa!' }
+                        mutation.update( h )
+                    end
+
+                    @auditable.audit( @seed, each_mutation: each_mutation,
+                        format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                        injected = res.request.params[opts[:altered]]
+                        cnt += 1
+                    end
+
+                    @auditor.http.run
+                    cnt.should == 1
+                    injected.should == 'houa!'
+                end
+                context 'when it returns one or more elements of the same type' do
+                    it 'should audit those elements too' do
+                        injected = []
+                        cnt = 0
+
+                        each_mutation = proc do |mutation|
+                            m = mutation.dup
+                            h = { m.altered => 'houa!' }
+                            m.update( h )
+
+                            c = mutation.dup
+                            h = { c.altered => 'houa2!' }
+                            c.update( h )
+
+                            [m, c]
+                        end
+
+                        @auditable.audit( @seed, each_mutation: each_mutation,
+                            format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ) do |res, opts|
+                            injected << res.request.params[opts[:altered]]
+                            cnt += 1
+                        end
+
+                        @auditor.http.run
+                        cnt.should == 3
+                        injected.sort.should == [ @seed, 'houa!', 'houa2!'].sort
+                    end
+                end
+
+            end
+
             describe :format do
 
                 describe 'Arachni::Module::Auditor::Format::STRAIGHT' do
@@ -395,7 +469,7 @@ describe Arachni::Parser::Element::Auditable do
                             format: [ Arachni::Module::Auditor::Format::STRAIGHT ] ){
                             |res, opts|
                             injected = res.request.params[opts[:altered]]
-                            cnt = +1
+                            cnt += 1
                         }
                         @auditor.http.run
                         cnt.should == 1
@@ -411,7 +485,7 @@ describe Arachni::Parser::Element::Auditable do
                             format: [ Arachni::Module::Auditor::Format::APPEND ] ){
                             |res, opts|
                             injected = res.request.params[opts[:altered]]
-                            cnt = +1
+                            cnt += 1
                         }
                         @auditor.http.run
                         cnt.should == 1
@@ -427,7 +501,7 @@ describe Arachni::Parser::Element::Auditable do
                             format: [ Arachni::Module::Auditor::Format::NULL ] ){
                             |res, opts|
                             injected = res.request.params[opts[:altered]]
-                            cnt = +1
+                            cnt += 1
                         }
                         @auditor.http.run
                         cnt.should == 1
@@ -443,7 +517,7 @@ describe Arachni::Parser::Element::Auditable do
                             format: [ Arachni::Module::Auditor::Format::SEMICOLON ] ){
                             |res, opts|
                             injected = res.request.params[opts[:altered]]
-                            cnt = +1
+                            cnt += 1
                         }
                         @auditor.http.run
                         cnt.should == 1
@@ -462,12 +536,11 @@ describe Arachni::Parser::Element::Auditable do
                 context true do
                     it 'should allow redundant audits' do
                         cnt = 0
-                        5.times {
-                            |i|
+                        5.times do |i|
                             @auditable.audit( @seed, @audit_opts.merge( redundant: true )){
                                 cnt += 1
                             }
-                        }
+                        end
                         @auditor.http.run
                         cnt.should == 5
                     end

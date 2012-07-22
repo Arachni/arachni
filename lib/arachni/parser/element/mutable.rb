@@ -88,6 +88,16 @@ module Mutable
         respect_method: nil
     }
 
+    # @return   [String]    value of the altered input
+    def altered_value
+        self[altered]
+    end
+
+    # @param    [String]    value   sets the value for the altered input
+    def altered_value=( value )
+        self[altered] = value
+    end
+
     # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
     def original?
         self.altered.nil?

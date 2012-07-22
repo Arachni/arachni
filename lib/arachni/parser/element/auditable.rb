@@ -97,7 +97,14 @@ module Auditable
         #
         # Make requests asynchronously
         #
-        async:     true
+        async:     true,
+
+        #
+        # Block to be passed each mutation right before being submitted.
+        #
+        # Allows for last minute changes.
+        #
+        each_mutation:  nil
     }
 
     #
@@ -119,7 +126,7 @@ module Auditable
     # @see auditable
     #
     def auditable=( hash )
-        @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h}
+        @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
         rehash
         self.auditable
     end
@@ -133,6 +140,30 @@ module Auditable
     #
     def update( hash )
         self.auditable = self.auditable.merge( hash )
+    end
+
+    #
+    # Shorthand {#auditable} reader
+    #
+    # @param    [#to_s] k   key
+    #
+    # @return   [String]
+    #
+    def []( k )
+        self.auditable[k.to_s]
+    end
+
+    #
+    # Shorthand {#auditable} writer
+    #
+    # @param    [#to_s] k   key
+    # @param    [#to_s] v   value
+    #
+    # @see #update
+    #
+    def []=( k, v )
+        update( { k => v } )
+        [k]
     end
 
     def ==( e )
@@ -344,10 +375,16 @@ module Auditable
             # inform the user about what we're auditing
             print_status( elem.status_string ) if !opts[:silent]
 
+            if opts[:each_mutation]
+                if elements = opts[:each_mutation].call( elem )
+                    [elements].flatten.compact.each do |e|
+                        on_complete( e.submit( opts ), e, &block ) if e.is_a?( self.class )
+                    end
+                end
+            end
+
             # submit the element with the injection values
-            req = elem.submit( opts )
-            return if !req
-            on_complete( req, elem, &block )
+            on_complete( elem.submit( opts ), elem, &block )
         end
 
         audited( audit_id )
@@ -480,6 +517,8 @@ module Auditable
     #                                    HTTP response is received.
     #
     def on_complete( req, elem, &block )
+        return if !req
+
         elem.opts[:injected] = elem.auditable[elem.altered].to_s
         elem.opts[:combo]    = elem.auditable
         elem.opts[:action]   = elem.action
