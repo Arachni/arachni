@@ -16,15 +16,15 @@
 
 module Arachni
 
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'ruby/webrick'
-require opts.dir['lib'] + 'parser/element/link'
-require opts.dir['lib'] + 'parser/element/form'
-require opts.dir['lib'] + 'parser/element/cookie'
-require opts.dir['lib'] + 'parser/element/header'
-require opts.dir['lib'] + 'parser/page'
-require opts.dir['lib'] + 'module/utilities'
-require opts.dir['lib'] + 'component/manager'
+lib = Arachni::Options.dir['lib']
+require lib + 'ruby/webrick'
+require lib + 'parser/element/link'
+require lib + 'parser/element/form'
+require lib + 'parser/element/cookie'
+require lib + 'parser/element/header'
+require lib + 'parser/page'
+require lib + 'module/utilities'
+require lib + 'component/manager'
 
 #
 # Analyzer class
@@ -276,6 +276,8 @@ class Parser
     # @return [Array<Element::Form>] array of forms
     #
     def forms( html = nil )
+        return [] if !text? && !html
+
         f = Element::Form.from_document( @url, html || doc )
 
         if @secondary_responses
@@ -306,6 +308,8 @@ class Parser
     # @return [Array<Element::Link>] of links
     #
     def links( html = nil )
+        return [] if !text? && !html
+
         if !(vars = link_vars( @url )).empty? || @response.redirection?
             [Element::Link.new( @url, vars )]
         else

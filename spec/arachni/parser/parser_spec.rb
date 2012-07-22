@@ -95,9 +95,19 @@ describe Arachni::Parser do
     end
 
     describe '#doc' do
-        it 'should return the parsed document' do
-            @parser.doc.class == Nokogiri::HTML::Document
+        context 'when the response is text based' do
+            it 'should return the parsed document' do
+                @parser.doc.class == Nokogiri::HTML::Document
+            end
         end
+
+        context 'when the response is not text based' do
+            it 'should return nil' do
+                res = Typhoeus::Response.new( effective_url: @url )
+                Arachni::Parser.new( res, @opts ).doc.should be_nil
+            end
+        end
+
     end
 
     describe '#links' do
@@ -143,6 +153,12 @@ describe Arachni::Parser do
                 )
                 parser = Arachni::Parser.new( response, @opts )
                 parser.links.should be_empty
+            end
+        end
+        context 'when the response is not text based' do
+            it 'should return nil' do
+                res = Typhoeus::Response.new( effective_url: @url )
+                Arachni::Parser.new( res, @opts ).links.should be_empty
             end
         end
     end
@@ -215,6 +231,12 @@ describe Arachni::Parser do
 
                 parser = Arachni::Parser.new( responses, @opts )
                 parser.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
+            end
+        end
+        context 'when the response is not text based' do
+            it 'should return nil' do
+                res = Typhoeus::Response.new( effective_url: @url )
+                Arachni::Parser.new( res, @opts ).forms.should be_empty
             end
         end
     end
