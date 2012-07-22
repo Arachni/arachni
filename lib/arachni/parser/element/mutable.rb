@@ -163,7 +163,7 @@ module Mutable
             var_combo << elem
         end
 
-        opts[:respect_method] = !Options.fuzz_methods if opts[:respect_method].nil?
+        opts[:respect_method] = !Options.fuzz_methods? if opts[:respect_method].nil?
 
         # add the same stuff with different methods
         if !opts[:respect_method]

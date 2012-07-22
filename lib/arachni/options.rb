@@ -460,6 +460,8 @@ class Options
 
     attr_accessor :extensive_cookies
 
+    attr_accessor :exclude_binaries
+
     alias :extensive_cookies? :extensive_cookies
 
     def initialize
@@ -494,6 +496,7 @@ class Options
         @obey_robots_txt   = false
         @fuzz_methods      = false
         @extensive_cookies = false
+        @exclude_binaries  = false
 
         @depth_limit      = -1
         @link_count_limit = -1
@@ -551,6 +554,14 @@ class Options
             redundant[regexp] -= 1
         end
         false
+    end
+
+    def exclude_binaries?
+        self.exclude_binaries
+    end
+
+    def fuzz_methods?
+        self.fuzz_methods
     end
 
     def do_not_crawl
