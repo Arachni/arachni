@@ -348,7 +348,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def self.encode( str )
-        URI.encode( str, '+;%=' )
+        URI.encode( str, "+;%=\0" )
     end
     def encode( str )
         self.class.encode( str )
