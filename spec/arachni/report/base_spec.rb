@@ -11,8 +11,9 @@ describe Arachni::Report::Base do
 
     describe '#auditstore' do
         it 'should return the provided auditstore' do
-            @reports.run_one( :with_outfile, @framework.auditstore ).auditstore.
-                should == @framework.auditstore
+            auditstore = @framework.auditstore
+            @reports.run_one( :with_outfile, auditstore ).auditstore.
+                should == auditstore
         end
     end
 
