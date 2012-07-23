@@ -216,9 +216,9 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
             options:     [
-                Arachni::Component::Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
-                Arachni::Component::Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),
-                Arachni::Component::Options::Path.new( 'yaml_file', [false, 'A file containing the YAML serialized vectors.'] )
+                Options::Base.new( 'vectors', [false, ' Vector array (for configuration over RPC).'] ),
+                Options::String.new( 'yaml_string', [false, 'A string of YAML serialized vectors (for configuration over RPC).'] ),
+                Options::Path.new( 'yaml_file', [false, 'A file containing the YAML serialized vectors.'] )
             ]
         }
     end

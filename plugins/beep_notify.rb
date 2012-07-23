@@ -39,8 +39,8 @@ class Arachni::Plugins::BeepNotify < Arachni::Plugin::Base
             author: 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version: '0.1',
             options: [
-                Arachni::Component::Options::Int.new('repeat', [false, 'How many times to beep.', 4]),
-                Arachni::Component::Options::Float.new('interval', [false, 'How long to wait between beeps.', 0.4]),
+                Options::Int.new( 'repeat', [false, 'How many times to beep.', 4] ),
+                Options::Float.new( 'interval', [false, 'How long to wait between beeps.', 0.4] )
             ]
 
         }

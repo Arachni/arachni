@@ -126,12 +126,12 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             options:     [
-                Arachni::Component::Options::Path.new('username_list', [true, 'File with a list of usernames (newline separated).']),
-                Arachni::Component::Options::Path.new('password_list', [true, 'File with a list of passwords (newline separated).']),
-                Arachni::Component::Options::String.new('username_field', [true, 'The name of the username form field.']),
-                Arachni::Component::Options::String.new('password_field', [true, 'The name of the password form field.']),
-                Arachni::Component::Options::String.new('login_verifier', [true, 'A regular expression which will be used to verify a successful login.
-                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.']),
+                Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
+                Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] ),
+                Options::String.new( 'username_field', [true, 'The name of the username form field.'] ),
+                Options::String.new( 'password_field', [true, 'The name of the password form field.'] ),
+                Options::String.new( 'login_verifier', [true, 'A regular expression which will be used to verify a successful login.
+                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ]
         }
     end

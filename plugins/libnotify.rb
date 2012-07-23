@@ -23,7 +23,7 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 class LibNotify < Arachni::Plugin::Base
@@ -80,7 +80,7 @@ class LibNotify < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1',
             :options        => [
-                Arachni::OptBool.new( 'for_every_issue', [ false, 'Show every issue.', true ] ),
+                Options::Bool.new( 'for_every_issue', [ false, 'Show every issue.', true ] )
             ]
 
         }

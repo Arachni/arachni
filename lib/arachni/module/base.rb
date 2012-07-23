@@ -14,13 +14,14 @@
     limitations under the License.
 =end
 
-require 'set'
-require Arachni::Options.instance.dir['lib'] + 'module/output'
-require Arachni::Options.instance.dir['lib'] + 'module/utilities'
-require Arachni::Options.instance.dir['lib'] + 'module/trainer'
-require Arachni::Options.instance.dir['lib'] + 'module/auditor'
-
 module Arachni
+
+lib = Arachni::Options.dir['lib']
+require lib + 'module/output'
+require lib + 'module/utilities'
+require lib + 'module/trainer'
+require lib + 'module/auditor'
+
 module Module
 
 #
@@ -32,9 +33,13 @@ module Module
 # @abstract
 #
 class Base
-    include Arachni::Module::Utilities
-    extend Arachni::Module::Utilities
-    include Arachni::Module::Auditor
+    # I hate keep typing this all the time...
+    include Arachni
+
+    include Module::Utilities
+    extend  Module::Utilities
+
+    include Module::Auditor
 
     #
     # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.
@@ -49,7 +54,7 @@ class Base
         http.trainer.page = page
 
         # update the cookies
-        http.update_cookies( @page.cookiejar ) if !page.cookiejar.empty?
+        http.update_cookies( @page.cookiejar ) if !@page.cookiejar.empty?
 
         #
         # This is slightly tricky...

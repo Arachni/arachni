@@ -45,7 +45,7 @@ class Arachni::Plugins::Script < Arachni::Plugin::Base
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.1',
             :options        => [
-                Arachni::Component::Options::Path.new( 'path', [ true, 'Path to the script.' ] )
+                Options::Path.new( 'path', [ true, 'Path to the script.' ] )
             ]
         }
     end

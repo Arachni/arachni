@@ -61,10 +61,12 @@ end
 # @abstract
 #
 class Base
+    # I hate keep typing this all the time...
+    include Arachni
 
     # get the output interface
-    include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include UI::Output
+    include Module::Utilities
 
     # where to report false positives <br/>
     # info about this should be included in all templates

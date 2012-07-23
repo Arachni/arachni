@@ -14,15 +14,12 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
 #
 # Left here for compatibility reasons, has been obsoleted by the xss_path module.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class XSSURI < Arachni::Module::Base
+class Arachni::Modules::XSSURI < Arachni::Module::Base
 
     def prepare
         if framework && !framework.modules.keys.include?( 'xss_path' )
@@ -32,9 +29,9 @@ class XSSURI < Arachni::Module::Base
     end
 
     def run
-        print_bad( 'Module has been obsoleted and will eventually be removed.' )
-        print_bad( 'Please remove it from any profiles or scripts you may have created.' )
-        print_bad( '-- Running \'xss_path\' instead.' )
+        print_bad 'Module has been obsoleted and will eventually be removed.'
+        print_bad 'Please remove it from any profiles or scripts you may have created.'
+        print_bad '-- Running \'xss_path\' instead.'
         @mod.run if @mod
     end
 
@@ -44,13 +41,11 @@ class XSSURI < Arachni::Module::Base
 
     def self.info
         {
-            :name           => 'XSSURI',
-            :description    => %q{Compatibility module, will load and run xss_path instead.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0'
+            name:        'XSSURI',
+            description: %q{Compatibility module, will load and run xss_path instead.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0'
         }
     end
 
-end
-end
 end

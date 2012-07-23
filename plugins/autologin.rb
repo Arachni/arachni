@@ -92,8 +92,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.5',
             options:     [
-                Arachni::Component::Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
-                Arachni::Component::Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] )
+                Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
+                Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] )
             ],
             order:       0 # run before any other plugin
         }

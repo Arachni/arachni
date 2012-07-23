@@ -99,7 +99,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             options:     [
-                Arachni::Component::Options::String.new( 'exclude',
+                Options::String.new( 'exclude',
                     [false, 'Exclude content-types that match this regular expression.', 'text']
                 )
             ]

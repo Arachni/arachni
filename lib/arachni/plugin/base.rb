@@ -46,9 +46,14 @@ end
 # @abstract
 #
 class Base
+    # I hate keep typing this all the time...
+    include Arachni
+
     # get the output interface
-    include Arachni::Module::Output
-    include Arachni::Module::Utilities
+    include Module::Output
+    include Module::Utilities
+
+    include Arachni::Component
 
     attr_reader :options
     attr_reader :framework

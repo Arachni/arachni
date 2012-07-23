@@ -278,9 +278,7 @@ module Utilities
             parent = parent.const_get( ancestor.to_sym )
         end
 
-        mod.constants.each do |m|
-            remove_constants( mod.const_get( m ), skip, children_only )
-        end
+        mod.constants.each { |m| mod.send( :remove_const, m ) }
 
         return if children_only
         parent.send( :remove_const, mod.to_s.split( ':' ).last.to_sym )
