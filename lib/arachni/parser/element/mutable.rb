@@ -159,7 +159,7 @@ module Mutable
             elem.override_instance_scope
 
             elem.altered = 'Parameter flip'
-            elem.auditable = elem.auditable.merge( injection_str => seed )
+            elem[injection_str] = seed
             var_combo << elem
         end
 
@@ -181,6 +181,14 @@ module Mutable
     # alias for #mutations
     def mutations_for( *args )
         mutations( *args )
+    end
+    # alias for #mutations
+    def permutations( *args )
+        mutations( *args )
+    end
+    # alias for #mutations
+    def permutations_for( *args )
+        permutations( *args )
     end
 
     private
