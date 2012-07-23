@@ -88,7 +88,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     def login_form?( form )
 #        @params.keys.each { |name| return false if !form.auditable.include?( name ) }
 #        true
-         print_info form.action 
          @uid_field = find_uid_field( form )
          
          (@uid_field != nil && count_password_fields( form ) == 1)
@@ -96,7 +95,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     
     def find_uid_field( form )
          form.raw['input'].each { |elem|
-           print_info elem['name']
            return elem['name'] if elem['name'] =~ /.*[(login)|(user)|(id)|(email)].*/
          }
          nil
