@@ -131,7 +131,7 @@ module Mutable
         hash = auditable.dup
 
         var_combo = []
-        return [] if !hash || hash.size == 0
+        return [] if !hash || hash.empty?
 
         chash = hash.dup
         hash.keys.each do |k|
@@ -150,7 +150,7 @@ module Mutable
 
         end
 
-        if opts[:param_flip] #&& !self.is_a?( Arachni::Parser::Element::Cookie )
+        if opts[:param_flip]
             elem = self.dup
 
             # when under HPG mode element auditing is strictly regulated
