@@ -44,7 +44,12 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
         # find the login form
         login_form = nil
-        forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
+        forms_from_response( res ).each { |form| 
+            if login_form?( form ) 
+              login_form = form
+              break
+            end
+          }
 
         if !login_form
             register_results( code: 0, msg: MSG_FAILURE + options['url'] )
@@ -83,15 +88,16 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     def login_form?( form )
 #        @params.keys.each { |name| return false if !form.auditable.include?( name ) }
 #        true
+         print_info form.action 
          @uid_field = find_uid_field( form )
- 
+         
          (@uid_field != nil && count_password_fields( form ) == 1)
     end
     
     def find_uid_field( form )
-        require 'pp'
          form.raw['input'].each { |elem|
-           return elem['name'] if elem['name'] =~ /.*[(login)(user)(id)(email)].*/ && elem['type'] == 'text'
+           print_info elem['name']
+           return elem['name'] if elem['name'] =~ /.*[(login)|(user)|(id)|(email)].*/
          }
          nil
     end
