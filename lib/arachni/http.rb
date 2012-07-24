@@ -534,7 +534,7 @@ class HTTP
                 @_404[path][i] ||= {}
 
                 precision.times {
-                    get( generator.call, remove_id: true ) do |c_res|
+                    get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
                         if gathered == generators.size * precision
@@ -669,8 +669,8 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].map { |_404| _404['body'].rdiff( body ) == _404['rdiff'] }.
-            include?( true )
+        @_404[path].each { |_404| return true if _404['body'].rdiff( body ) == _404['rdiff'] }
+        false
     end
 
     def random_string
