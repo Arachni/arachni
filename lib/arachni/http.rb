@@ -514,7 +514,7 @@ class HTTP
             proc{ path + random_string + '/' }
         ]
 
-        @_404_gathered ||= Hash.new( false )
+        @_404_gathered ||= BloomFilter.new
 
         gathered = 0
         body = res.body
@@ -529,7 +529,7 @@ class HTTP
             # }
         # }
 
-        if !@_404_gathered[path]
+        if !@_404_gathered.include?( path )
             generators.each.with_index do |generator, i|
                 @_404[path][i] ||= {}
 
@@ -538,7 +538,7 @@ class HTTP
                         gathered += 1
 
                         if gathered == generators.size * precision
-                            @_404_gathered[path] = true
+                            @_404_gathered << path
                             block.call is_404?( path, body )
                         else
                             @_404[path][i]['rdiff_now'] ||= false
@@ -559,6 +559,7 @@ class HTTP
         else
             block.call is_404?( path, body )
         end
+        nil
     end
 
     def self.method_missing( sym, *args, &block )
