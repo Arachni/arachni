@@ -89,6 +89,9 @@ class CLI
 
         # trap Ctrl+C interrupts
         trap( 'INT' ) { handle_interrupt( ) }
+
+	      # trap SIGUSR1 interrupts
+      	trap ( 'USR1' ) { handle_usr1_interrupt( ) }
     end
 
     #
@@ -198,6 +201,8 @@ class CLI
         unmute!
     end
 
+
+
     #
     # Handles Ctrl+C interrupts
     #
@@ -273,6 +278,26 @@ class CLI
 
     end
 
+    # 
+    # Handles SIGUSR1 system calls
+    # 
+    # It will cause Arachni to create a report and shut down afterwards
+    # 
+    def handle_usr1_interrupt
+      print_status( 'Received SIGUSR1. Creating report and exiting...' )
+      @arachni.reports.run( @arachni.audit_store( true ) )
+      print_info( 'Please wait while the system cleans up.' )
+
+      # kill the audit
+      @audit.exit
+      @exit_handler = Thread.new {
+        @arachni.clean_up!( true )
+        @arachni.reports.run( @arachni.audit_store( true ) )
+        print_stats
+      }
+    end
+    
+    
     def print_issues( audit_store, unmute = false )
 
         print_line( restr, unmute )
