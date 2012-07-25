@@ -2,7 +2,7 @@ shared_examples_for "report" do
     include_examples 'component'
 
     before( :all ) { framework.reports.load name }
-    before( :each ) { framework.reports.reset }
+    #before( :each ) { framework.reports.reset }
 
     after( :each ) { File.delete( outfile ) rescue nil }
 
