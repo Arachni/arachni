@@ -611,15 +611,15 @@ class HTTP
 
         @request_count += 1
 
-        print_debug( '------------' )
-        print_debug( 'Queued request.' )
-        print_debug( 'ID#: ' + req.id.to_s )
-        print_debug( 'URL: ' + req.url )
-        print_debug( 'Method: ' + req.method.to_s  )
-        print_debug( 'Params: ' + req.params.to_s  )
-        print_debug( 'Headers: ' + req.headers.to_s  )
-        print_debug( 'Train?: ' + req.train?.to_s  )
-        print_debug(  '------------' )
+        print_debug '------------'
+        print_debug 'Queued request.'
+        print_debug "ID#: #{req.id}"
+        print_debug "URL: #{req.url}"
+        print_debug "Method: #{req.method}"
+        print_debug "Params: #{req.params}"
+        print_debug "Headers: #{req.headers}"
+        print_debug "Train?: #{req.train?}"
+        print_debug  '------------'
 
         req.on_complete( true ) do |res|
 
@@ -631,25 +631,25 @@ class HTTP
 
             parse_and_set_cookies( res ) if req.update_cookies?
 
-            print_debug( '------------' )
-            print_debug( 'Got response.' )
-            print_debug( 'Request ID#: ' + res.request.id.to_s )
-            print_debug( 'URL: ' + res.effective_url )
-            print_debug( 'Method: ' + res.request.method.to_s  )
-            print_debug( 'Params: ' + res.request.params.to_s  )
-            print_debug( 'Headers: ' + res.request.headers.to_s  )
-            print_debug( 'Train?: ' + res.request.train?.to_s  )
-            print_debug( '------------' )
+            print_debug '------------'
+            print_debug 'Got response.'
+            print_debug "Request ID#: #{res.request.id}"
+            print_debug "URL: #{res.effective_url}"
+            print_debug "Method: #{res.request.method}"
+            print_debug "Params: #{res.request.params}"
+            print_debug "Headers: #{res.request.headers}"
+            print_debug "Train?: #{res.request.train?}"
+            print_debug '------------'
 
             if res.timed_out?
-                #print_bad( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
                 @time_out_count += 1
             end
 
             if req.train?
                 # handle redirections
                 if res.redirection? && res.location.is_a?( String )
-                    get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
+                    get( to_absolute( res.location, trainer.page.url ) ) do |res2|
                         @trainer.push( res2 )
                     end
                 else
