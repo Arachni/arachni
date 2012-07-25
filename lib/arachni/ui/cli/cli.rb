@@ -91,7 +91,7 @@ class CLI
         trap( 'INT' ) { handle_interrupt( ) }
 
 	      # trap SIGUSR1 interrupts
-      	trap ( 'USR1' ) { handle_usr1_interrupt( ) }
+      	trap( 'USR1' ) { handle_usr1_interrupt( ) }
     end
 
     #
