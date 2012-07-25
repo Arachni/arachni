@@ -28,6 +28,9 @@ class Formatter
     # get the output interface
     include Arachni::UI::Output
 
+    attr_reader :results
+    attr_reader :description
+
     def initialize( plugin_data )
         @results     = plugin_data[:results]
         @description = plugin_data[:description]
@@ -53,7 +56,7 @@ class Base
     include Module::Output
     include Module::Utilities
 
-    include Arachni::Component
+    include Component
 
     attr_reader :options
     attr_reader :framework
