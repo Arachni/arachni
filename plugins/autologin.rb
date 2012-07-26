@@ -66,8 +66,12 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        body = res.body
-        body = http.get( res.location, async: false ).response.body if res.redirection?
+        body =  if res.redirection?
+            http.get( to_absolute( res.location ), async: false, follow_location: true ).response.body
+        else
+            res.body
+        end
+
         if !body.match( @verifier )
             register_results( code: -2, msg: MSG_NO_MATCH )
             print_bad MSG_NO_MATCH
