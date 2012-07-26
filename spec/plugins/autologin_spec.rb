@@ -12,8 +12,9 @@ describe name_from_filename do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'    => url + '/login',
-                'params' => 'username=john&password=doe',
+                'url'       => url + '/login',
+                'params'    => 'username=john&password=doe',
+                'login_verifier'  => 'Hi there logged-in user'
             }
 
             run
@@ -34,6 +35,7 @@ describe name_from_filename do
             options.plugins[name] = {
                 'url'    => url + '/login',
                 'params' => 'username2=john&password=doe',
+                'login_verifier'  => 'Hi there logged-in user'
             }
 
             run
@@ -41,6 +43,24 @@ describe name_from_filename do
             results = results_for( name )
             results[:code].should == 0
             results[:msg].start_with?( framework.plugins[name]::MSG_FAILURE ).should be_true
+        end
+    end
+
+    context "when the verifier does not match" do
+        it 'should complain about not being able to verify the login' do
+            name = name_from_filename
+
+            options.plugins[name] = {
+                'url'    => url + '/login',
+                'params'    => 'username=john&password=doe',
+                'login_verifier'  => 'Hi there Jimbo'
+            }
+
+            run
+
+            results = results_for( name )
+            results[:code].should == -2
+            results[:msg].start_with?( framework.plugins[name]::MSG_NO_MATCH ).should be_true
         end
     end
 end

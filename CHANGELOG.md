@@ -37,6 +37,7 @@
     - RFI -- Added a seed URL without a protocol.
     - Path traversal -- Added seeds with file:// URLs and for Tomcat webapps.
 - Plugins - Every single one has been cleaned up and have had RSpec tests added.
+    - AutoLogin -- Added a mandatory verifier regexp to make sure that the login was successful.
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.

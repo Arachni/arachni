@@ -30,12 +30,14 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     MSG_SUCCESS     = 'Form submitted successfully.'
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
+    MSG_NO_MATCH    = 'Form submitted but the response did not match the verifier.'
 
     def prepare
         framework.pause
         print_info 'System paused.'
 
-        @params = parse_url_vars( '?' + options['params'] )
+        @params   = parse_url_vars( '?' + options['params'] )
+        @verifier = Regexp.new( options['login_verifier'] )
     end
 
     def run
@@ -61,6 +63,14 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         if !res
             register_results( code: -1, msg: MSG_NO_RESPONSE )
             print_bad MSG_NO_RESPONSE
+            return
+        end
+
+        body = res.body
+        body = http.get( res.location, async: false ).response.body if res.redirection?
+        if !body.match( @verifier )
+            register_results( code: -2, msg: MSG_NO_MATCH )
+            print_bad MSG_NO_MATCH
             return
         end
 
@@ -93,7 +103,9 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             version:     '0.1.5',
             options:     [
                 Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
-                Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] )
+                Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] ),
+                Options::String.new( 'login_verifier', [true, 'A regular expression which will be used to verify a successful login.
+                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ],
             order:       0 # run before any other plugin
         }

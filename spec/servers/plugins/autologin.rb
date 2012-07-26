@@ -29,7 +29,7 @@ post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
         params['token'] == 'secret!'
         cookies[:success] = true
-        'Logged in!'
+        redirect '/'
     else
         'Boohoo...'
     end
