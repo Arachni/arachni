@@ -60,19 +60,8 @@ describe Arachni::Framework do
 
                 f.run
 
-                s1 = ["/elem_combo",
-                     "/log_remote_file_if_exists/true",
-                     "/elem_combo?link_input=--seed",
-                     "/elem_combo?form_input=--seed",
-                     "/elem_combo?form_input=form_blah&link_input=--seed"].sort.map { |p| @url + p }
-                s2 =  ["/elem_combo",
-                       "/elem_combo?form_input=--seed",
-                       "/elem_combo?form_input=form_blah&link_input=link_blah--seed",
-                       "/elem_combo?link_input=link_blah--seed",
-                       "/log_remote_file_if_exists/true"].sort.map { |p| @url + p }
-
-                sitemap = f.auditstore.sitemap.sort
-                (sitemap == s1 || sitemap == s2 ).should be_true
+                sitemap = f.auditstore.sitemap.sort.map { |u| u.split( '?' ).first }
+                sitemap.uniq.should == f.opts.restrict_paths.sort
                 f.modules.clear
             end
         end

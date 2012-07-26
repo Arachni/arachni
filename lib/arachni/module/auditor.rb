@@ -157,21 +157,6 @@ module Auditor
     #
     # OPTIONAL
     #
-    # Prevents auditing elements that have been previously
-    # logged by any of the modules returned by this method.
-    #
-    # @return   [Array]     module names
-    #
-    # @abstract
-    #
-    def redundant
-        # [ 'sqli', 'sqli_blind_rdiff' ]
-        []
-    end
-
-    #
-    # OPTIONAL
-    #
     # Allows modules to ignore HPG scope restrictions
     #
     # This way they can audit elements that are not on the Grid sanctioned whitelist.
@@ -408,6 +393,11 @@ module Auditor
         )
     end
 
+    # @see Arachni::Module::Base.preferred
+    def preferred
+        []
+    end
+
     #
     # This is called right before an [Arachni::Parser::Element]
     # is audited and is used to determine whether to skip it or not.
@@ -418,10 +408,11 @@ module Auditor
     #
     def skip?( elem )
         if framework
-            @modname ||= framework.modules.map { |k, v| k if v == self.class }.compact.first
-            (redundant | [@modname]).each do |mod|
+            @modname ||= framework.modules.select { |k, v| k if v == self.class }.first
+            (preferred | [@modname]).each do |mod|
                 next if !framework.modules.include?( mod )
-                return true if framework.modules.issue_set.include?( elem.provisioned_issue_id )
+                issue_id = elem.provisioned_issue_id( framework.modules[mod].info[:name] )
+                return true if framework.modules.issue_set.include?( issue_id )
             end
         end
 

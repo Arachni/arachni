@@ -22,6 +22,8 @@
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
         - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
+    - Scheduling - Expensive modules are now scheduled to be run after cheaper ones
+        of similar type and only audit elements missed by the cheaper ones.
     - API
         - Updated to provide access to running plugins.
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s.

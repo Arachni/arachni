@@ -720,7 +720,7 @@ class Framework
 
         @current_url = page.url.to_s
 
-        @modules.values.each do |mod|
+        @modules.schedule.each do |mod|
             wait_if_paused
             run_mod( mod, page )
         end
@@ -756,44 +756,14 @@ class Framework
     # @param    [Page]    page
     #
     def run_mod( mod, page )
-        return if !run_mod?( mod, page )
-
         begin
             @modules.run_one( mod, page )
         rescue SystemExit
             raise
-        rescue Exception => e
+        rescue => e
             print_error "Error in #{mod.to_s}: #{e.to_s}"
-            print_error_backtrace( e )
+            print_error_backtrace e
         end
-    end
-
-    #
-    # Determines whether or not to run the module against the given page
-    # depending on which elements exist in the page, which elements the module
-    # is configured to audit and user options.
-    #
-    # @param    [Class]   mod      the module to run
-    # @param    [Page]    page
-    #
-    # @return   [Bool]
-    #
-    def run_mod?( mod, page )
-        elements = mod.info[:elements]
-        return true if !elements || elements.empty?
-
-        elems = {
-            Issue::Element::LINK => page.links && page.links.any? && @opts.audit_links,
-            Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
-            Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
-            Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
-            Issue::Element::BODY   => page.body && !page.body.empty?,
-            Issue::Element::PATH   => true,
-            Issue::Element::SERVER => true
-        }
-
-        elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }
-        false
     end
 
     def lsrep_match?( path )

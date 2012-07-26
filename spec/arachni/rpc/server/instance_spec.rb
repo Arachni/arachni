@@ -69,7 +69,7 @@ describe Arachni::RPC::Server::Instance do
 
     describe '#modules' do
         it 'should provide access to the module manager' do
-            @instance.modules.available.should == %w(test)
+            @instance.modules.available.sort.should == %w(test test2 test3).sort
         end
     end
 

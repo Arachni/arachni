@@ -122,6 +122,25 @@ class Base
     end
 
     #
+    # OPTIONAL
+    #
+    # Schedules self to be run *after* the specified modules and prevents
+    # auditing elements that have been previously logged by any of the modules
+    # returned by this method.
+    #
+    # @return   [Array]     module names
+    #
+    # @abstract
+    #
+    def self.preferred
+        # [ 'sqli', 'sqli_blind_rdiff' ]
+        []
+    end
+    def preferred
+        self.class.preferred
+    end
+
+    #
     # REQUIRED
     #
     # Provides information about the module.

@@ -44,7 +44,7 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
                        timeout_divider: 1000 )
     end
 
-    def redundant
+    def self.preferred
         %w(os_cmd_injection)
     end
 

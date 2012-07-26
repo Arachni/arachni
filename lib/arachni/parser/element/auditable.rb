@@ -437,8 +437,8 @@ module Auditable
     #
     # @return   [String]
     #
-    def provisioned_issue_id
-        "#{@auditor.fancy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
+    def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
+        "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
     end
 
     # impersonate the auditor to the output methods

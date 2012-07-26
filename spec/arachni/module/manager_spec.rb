@@ -18,15 +18,26 @@ describe Arachni::Module::Manager do
 
     describe '#load' do
         it 'should load all modules' do
-            all = @modules.load( [ '*' ] )
-            all.size.should equal 1
-            all.first.should == @modules.keys.first
+            all = @modules.load_all
+            all.size.should equal 3
+            all.sort.should == @modules.keys.sort
+        end
+    end
+
+    describe '#schedule' do
+        it 'should use each module\'s #preferred return value to sort the modules in proper running order' do
+            # load them in the wrong order
+            @modules.load :test2
+            @modules.load :test3
+            @modules.load :test
+
+            @modules.schedule.should == [@modules[:test], @modules[:test2], @modules[:test3]]
         end
     end
 
     describe '#run' do
         it 'should run all modules' do
-            @modules.load( [ '*' ] )
+            @modules.load_all
             @modules.run( @page )
             results = @modules.results
             results.size.should equal 1
@@ -36,7 +47,7 @@ describe Arachni::Module::Manager do
 
     describe '#run_one' do
         it 'should run a single module' do
-            @modules.load( [ '*' ] )
+            @modules.load :test
             @modules.run_one( @modules.values.first, @page )
             results = @modules.results
             results.size.should equal 1

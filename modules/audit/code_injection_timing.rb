@@ -52,7 +52,7 @@ class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
 
     # If the simple code injection module has already logged an element
     # don't waste time re-auditing it.
-    def redundant
+    def self.preferred
         %w(code_injection)
     end
 
