@@ -28,6 +28,13 @@ describe Arachni::Component::Manager do
         end
     end
 
+    describe '#load_all' do
+        it 'should load all components' do
+            @components.load_all
+            @components.loaded.sort.should == @components.available.sort
+        end
+    end
+
     describe '#load' do
         context 'when passed a' do
 

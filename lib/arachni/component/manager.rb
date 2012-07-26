@@ -63,6 +63,10 @@ class Manager < Hash
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
+    def load_all
+        load '*'
+    end
+
     #
     # Loads components by tags.
     #
