@@ -3,7 +3,7 @@
             <div id="summary-tabs">
                 <ul>
                     <li><a href="#graphs">Graphs</a></li>
-                    <li><a href="#issue-list">Issues [<%=audit_store.issues.size%>]</a></li>
+                    <li><a href="#issue-list">Issues [<%=auditstore.issues.size%>]</a></li>
                 </ul>
 
                 <div id="graphs">
@@ -34,10 +34,10 @@
                     <%= erb :search, { :id => 'summary_issues_tab' } %>
 
                     <%
-                       half_sz = ( audit_store.issues.size / 2 ).round
+                       half_sz = ( auditstore.issues.size / 2 ).round
 
-                       left = audit_store.issues[0...half_sz]
-                       right = audit_store.issues[half_sz..-1]
+                       left = auditstore.issues[0...half_sz]
+                       right = auditstore.issues[half_sz..-1]
 
                        idx = 0
                     %>

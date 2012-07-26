@@ -14,61 +14,38 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# Stdout formatter for the results of the ContentTypes plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
 
-    #
-    # Stdout formatter for the results of the ContentTypes plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class ContentTypes < Arachni::Plugin::Formatter
+    def run
+        results.each_pair do |type, responses|
+            print_ok type
 
-        def run
-            print_status( 'Content-types' )
-            print_info( '~~~~~~~~~~~~~~~~~~~~~~~~~~' )
+            responses.each do |res|
+                print_status "    URL:    #{res[:url]}"
+                print_info   "    Method: #{res[:method]}"
 
-            print_info( 'Description: ' + @description )
-            print_line
-
-            @results.each_pair {
-                |type, responses|
-
-                print_ok( type )
-
-                responses.each {
-                    |res|
-                    print_status( "    URL:    " + res[:url] )
-                    print_info( "    Method: " + res[:method] )
-
-                    if res[:params] && res[:method].downcase == 'post'
-                        print_info( "    Parameters:" )
-                        res[:params].each_pair {
-                            |k, v|
-                            print_info( "        #{k} => #{v}" )
-                        }
+                if res[:params] && res[:method].downcase == 'post'
+                    print_info "    Parameters:"
+                    res[:params].each_pair do |k, v|
+                        print_info "        #{k} => #{v}"
                     end
-
-                    print_line
-                }
+                end
 
                 print_line
-            }
+            end
 
             print_line
-
         end
-
     end
-
-end
-end
 
 end
 end

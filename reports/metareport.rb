@@ -14,56 +14,38 @@
     limitations under the License.
 =end
 
-module Arachni
-
-require Options.instance.dir['reports'] + 'metareport/arachni_metareport.rb'
-
-module Reports
+require Arachni::Options.instance.dir['reports'] + 'metareport/arachni_metareport.rb'
 
 #
 # Metareport
 #
 # Creates a file to be used with the Arachni MSF plug-in.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Metareport < Arachni::Report::Base
+# @version 0.1.1
+#
+class Arachni::Reports::Metareport < Arachni::Report::Base
 
-    #
-    # @param [AuditStore]  audit_store
-    # @param [Hash]        options    options passed to the report
-    #
-    def initialize( audit_store, options )
-        @audit_store = audit_store
-        @options     = options
-    end
+    def run
+        print_info 'Apologies, the metareport is currently out of commission.'
+        return
 
-    def run( )
-
-        print_line( )
-        print_status( 'Creating file for the Metasploit framework...' )
+        print_line
+        print_status 'Creating file for the Metasploit framework...'
 
         msf = []
-
-        @audit_store.issues.each {
-            |issue|
+        auditstore.issues.each do |issue|
             next if !issue.metasploitable
 
-            issue.variations.each {
-                |variation|
-
-                if( ( method = issue.method.dup ) != 'post' )
-                    url = variation['url'].gsub( /\?.*/, '' )
+            issue.variations.each do |variation|
+                url = if ( method = issue.method.dup ) != 'post'
+                    variation['url'].gsub( /\?.*/, '' )
                 else
-                    url = variation['url']
+                    variation['url']
                 end
 
-                if( issue.elem == 'cookie' || issue.elem == 'header' )
-                    method = issue.elem
-                end
+                method = issue.elem if issue.elem == 'cookie' || issue.elem == 'header'
 
                 # pp issue
                 # pp variation['opts']
@@ -80,65 +62,54 @@ class Metareport < Arachni::Report::Base
 
                 # ap sub_cookie( variation['headers']['request']['cookie'], params )
 
-                msf << ArachniMetareport.new( {
-                    :host   => URI( url ).host,
-                    :port   => URI( url ).port,
-                    :vhost  => '',
-                    :ssl    => URI( url ).scheme == 'https',
-                    :path   => URI( url ).path,
-                    :query  => URI( url ).query,
-                    :method => method.upcase,
-                    :params => params,
-                    :headers=> variation['headers']['request'].dup,
-                    :pname  => issue.var,
-                    :proof  => variation['regexp_match'],
-                    :risk   => '',
-                    :name   => issue.name,
-                    :description    =>  issue.description,
-                    :category   =>  'n/a',
-                    :exploit    => issue.metasploitable
-                } )
-            }
-
-        }
+                uri = URI( url )
+                msf << ArachniMetareport.new(
+                    host:        uri.host,
+                    port:        uri.port,
+                    vhost:       '',
+                    ssl:         uri.scheme == 'https',
+                    path:        uri.path,
+                    query:       uri.query,
+                    method:      method.upcase,
+                    params:      params,
+                    headers:     variation['headers']['request'].dup,
+                    pname:       issue.var,
+                    proof:       variation['regexp_match'],
+                    risk:        '',
+                    name:        issue.name,
+                    description: issue.description,
+                    category:    'n/a',
+                    exploit:     issue.metasploitable
+                )
+            end
+        end
 
         # pp msf
 
-        outfile = File.new( @options['outfile'], 'w')
-        ::YAML.dump( msf, outfile )
-        outfile.close
+        File.open( outfile, 'w' ) { |f| ::YAML.dump( msf, outfile ) }
 
-        print_status( 'Saved in \'' + @options['outfile'] + '\'.' )
+        print_status "Saved in '#{outfile}'."
     end
 
     def sub_cookie( str, params )
         hash = {}
-        str.split( ';' ).each {
-            |cookie|
-            k,v = cookie.split( '=', 2 )
+        str.split( ';' ).each do |cookie|
+            k, v = cookie.split( '=', 2 )
             hash[k] = v
-        }
+        end
 
-        return hash.merge( params ).map{ |k,v| "#{k}=#{v}" }.join( ';' )
+        hash.merge( params ).map{ |k,v| "#{k}=#{v}" }.join( ';' )
     end
 
-    #
-    # REQUIRED
-    #
-    # Do not ommit any of the info.
-    #
     def self.info
         {
-            :name           => 'Metareport',
-            :description    => %q{Creates a file to be used with the Arachni MSF plug-in.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [ Arachni::Report::Options.outfile( '.msf' ) ]
+            name:        'Metareport',
+            description: %q{Creates a file to be used with the Arachni MSF plug-in.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            options:     [ Options.outfile( '.msf' ) ]
 
         }
     end
 
-end
-
-end
 end

@@ -7,17 +7,17 @@
 
                 <div id='configuration_list'>
 
-                <strong>Version</strong>: <%=audit_store.version%><br />
-                <strong>Revision</strong>: <%=audit_store.revision%><br />
-                <strong>Audit started on</strong>: <%=audit_store.start_datetime%><br />
-                <strong>Audit finished on</strong>: <%=audit_store.finish_datetime%><br />
-                <strong>Runtime</strong>: <%=audit_store.delta_time%><br />
+                <strong>Version</strong>: <%=auditstore.version%><br />
+                <strong>Revision</strong>: <%=auditstore.revision%><br />
+                <strong>Audit started on</strong>: <%=auditstore.start_datetime%><br />
+                <strong>Audit finished on</strong>: <%=auditstore.finish_datetime%><br />
+                <strong>Runtime</strong>: <%=auditstore.delta_time%><br />
 
                 <p>&nbsp;</p>
                 <h3>Runtime options</h3>
 
-                <strong>URL:</strong> <%=audit_store.options['url']%><br />
-                <strong>User agent:</strong> <%=escapeHTML( audit_store.options['user_agent'] )%><br />
+                <strong>URL:</strong> <%=auditstore.options['url']%><br />
+                <strong>User agent:</strong> <%=escapeHTML( auditstore.options['user_agent'] )%><br />
 
                 <p>&nbsp;</p>
 
@@ -32,19 +32,19 @@
                       <td>
                           <ul>
 
-                            <% if audit_store.options['audit_links']%>
+                            <% if auditstore.options['audit_links']%>
                             <li>Links</li>
                             <%end%>
 
-                            <% if audit_store.options['audit_forms']%>
+                            <% if auditstore.options['audit_forms']%>
                             <li>Forms</li>
                             <%end%>
 
-                            <% if audit_store.options['audit_cookies']%>
+                            <% if auditstore.options['audit_cookies']%>
                             <li>Cookies</li>
                             <%end%>
 
-                            <% if audit_store.options['audit_headers']%>
+                            <% if auditstore.options['audit_headers']%>
                             <li>Headers</li>
                             <%end%>
 
@@ -53,7 +53,7 @@
 
                     <td>
                         <ul>
-                        <% audit_store.options['mods'].each do |mod|%>
+                        <% auditstore.options['mods'].each do |mod|%>
                             <li><%=mod%></li>
                         <%end%>
                         </ul>
@@ -64,8 +64,8 @@
 
                             <li>Exclude:
                                 <ul>
-                                <% if !audit_store.options['exclude'].empty?%>
-                                <% audit_store.options['exclude'].each do |rule|%>
+                                <% if !auditstore.options['exclude'].empty?%>
+                                <% auditstore.options['exclude'].each do |rule|%>
 
                                     <li><%=escapeHTML( rule )%></li>
 
@@ -79,8 +79,8 @@
                             <li>Include:
 
                                 <ul>
-                                <% if !audit_store.options['include'].empty?%>
-                                <% audit_store.options['include'].each do |rule|%>
+                                <% if !auditstore.options['include'].empty?%>
+                                <% auditstore.options['include'].each do |rule|%>
 
                                     <li><%=escapeHTML( rule )%></li>
 
@@ -94,8 +94,8 @@
                             <li>Redundant:
 
                                 <ul>
-                                <% if !audit_store.options['redundant'].empty?%>
-                                <% audit_store.options['redundant'].each do |regexp, counter|%>
+                                <% if !auditstore.options['redundant'].empty?%>
+                                <% auditstore.options['redundant'].each do |regexp, counter|%>
 
                                     <li><%=escapeHTML( regexp )%> - Count: <%=counter%></li>
 
@@ -111,8 +111,8 @@
 
                         <td>
                             <ul>
-                            <% if audit_store.options['cookies'] && !audit_store.options['cookies'].empty?%>
-                            <% audit_store.options['cookies'].each_pair do |name, val|%>
+                            <% if auditstore.options['cookies'] && !auditstore.options['cookies'].empty?%>
+                            <% auditstore.options['cookies'].each_pair do |name, val|%>
                                 <li><%=escapeHTML( name )%> = <%=escapeHTML( val )%></li>
                             <%end%>
                             <% else %>

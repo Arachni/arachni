@@ -23,9 +23,8 @@
 # A serialized array holding instances of this class will be loaded by
 # the Metasploit Framework.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 # @version 0.1
 #
 class ArachniMetareport
@@ -36,42 +35,42 @@ class ArachniMetareport
     # @return [String]
     #
     attr_accessor :host
-    
+
     #
     # The port number of the associated web site
     #
     # @return   [Integer]
     #
     attr_accessor :port
-    
+
     #
     # The virtual host for this particular web site
     #
     # @return   [Integer]
     #
     attr_accessor :vhost
-    
+
     #
     # Whether or not SSL is in use on this port
     #
     # @return   [Bool]
     #
     attr_accessor :ssl
-    
+
     #
     # Path of the vulnerable script
     #
     # @return   [String]
     #
     attr_accessor :path
-    
+
     #
     # Query part of the vulnerable URI
     #
     # @return   [Bool]
     #
     attr_accessor :query
-    
+
     #
     # HTTP method used for the vulnerability
     #
@@ -81,14 +80,14 @@ class ArachniMetareport
     # @return   [String]
     #
     attr_accessor :method
-    
+
     #
     # Parameters used for the vulnerability
     #
     # @return   [Hash]
     #
     attr_accessor :params
-    
+
     #
     # Headers used for the vulnerability
     #
@@ -97,49 +96,49 @@ class ArachniMetareport
     # @return   [Hash]
     #
     attr_accessor :headers
-    
+
     #
     # The name of the vulnerable field
     #
     # @return   [String]
     #
     attr_accessor :pname
-    
+
     #
     # A string showing proof of the vulnerability
     #
     # @return   [String]
     #
     attr_accessor :proof
-    
+
     #
     # An integer value from 0 to 5 indicating the risk (5 is highest)
     #
     # @return   [Integer]
     #
     attr_accessor :risk
-    
+
     #
     # A string indicating the type of vulnerability
     #
     # @return   [String]
     #
     attr_accessor :name
-    
+
     #
     # Description of the vulnerability
     #
     # @return   [String]
     #
     attr_accessor :description
-    
+
     #
     # No idea what this is...
     #
     # @return   [String]
     #
     attr_accessor :category
-    
+
     #
     # An arachni_* exploit of the MSF framework that is able to exploit this
     # type of vulnerability.
@@ -149,7 +148,7 @@ class ArachniMetareport
     # @return   [String]
     #
     attr_accessor :exploit
-    
+
     #
     # From Metasploit's report_web_vuln() in: lib/msf/core/db.rb
     #
@@ -168,13 +167,12 @@ class ArachniMetareport
     #  :name      -- the string indicating the type of vulnerability
     #
     def initialize( opts = {} )
-        opts.each {
-            |k, v|
+        opts.each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", v )
-            rescue Exception => e
+            rescue => e
             end
-        }
+        end
     end
-    
+
 end

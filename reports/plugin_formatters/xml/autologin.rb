@@ -14,56 +14,28 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the AutoLogin plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
+    def run
+        simple_tag( 'message', results[:msg] )
+        simple_tag( 'code', results[:code].to_s )
 
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the AutoLogin plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class AutoLogin < Arachni::Plugin::Formatter
-
-        include Buffer
-
-        def run
-            start_tag( 'autologin' )
-            simple_tag( 'description', @description )
-
-            start_tag( 'results' )
-
-            simple_tag( 'message', @results[:msg] )
-            simple_tag( 'code', @results[:code].to_s )
-
-            start_tag( 'cookies' )
-            if( @results[:cookies] )
-                @results[:cookies].each {
-                    |name, value|
-                    add_cookie( name, value )
-                }
-            end
-            end_tag( 'cookies' )
-
-
-            end_tag( 'results' )
-            end_tag( 'autologin' )
-
-            return buffer( )
+        start_tag 'cookies'
+        if results[:cookies]
+            results[:cookies].each { |name, value| add_cookie( name, value ) }
         end
+        end_tag 'cookies'
 
+        buffer
     end
-
-end
-end
 
 end
 end

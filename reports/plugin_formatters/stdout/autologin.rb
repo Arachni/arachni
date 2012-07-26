@@ -14,43 +14,25 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# Stdout formatter for the results of the AutoLogin plugin
+#
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
 
-    #
-    # Stdout formatter for the results of the AutoLogin plugin
-    #
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class AutoLogin < Arachni::Plugin::Formatter
+    def run
+        print_ok results[:msg]
 
-        def run
-            print_status( 'AutoLogin' )
-            print_info( '~~~~~~~~~~~~~~' )
-
-            print_info( 'Description: ' + @description )
-            print_line
-            print_ok( @results[:msg] )
-
-            return if !@results[:cookies]
-            print_info( 'Cookies set to:' )
-            @results[:cookies].each_pair {
-                |name, val|
-                print_info( '    * ' + name + ' = ' + val )
-            }
-        end
-
+        return if !results[:cookies]
+        print_info 'Cookies set to:'
+        results[:cookies].each_pair { |name, val| print_info "    * #{name} = #{val}" }
     end
-
-end
-end
 
 end
 end

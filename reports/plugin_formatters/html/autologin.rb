@@ -14,45 +14,32 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::HTML
 
-module Reports
+#
+# HTML formatter for the results of the AutoLogin plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::AutoLogin < Arachni::Plugin::Formatter
 
-class HTML
-module PluginFormatters
+    def run
+        ERB.new( tpl ).result( binding )
+    end
 
-    #
-    # HTML formatter for the results of the AutoLogin plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class AutoLogin < Arachni::Plugin::Formatter
-
-        def run
-            return ERB.new( tpl ).result( binding )
-        end
-
-        def tpl
-            %q{
-                <% if @results[:cookies].is_a?( Hash )%>
-                <h3>Cookies were set to:</h3>
-                <ul>
-                <% @results[:cookies].each_pair do |name, val|%>
-                    <li><%=name%> = <%=val%></li>
-                <%end%>
-                <ul>
-                <%end%>
-            }
-
-        end
-
+    def tpl
+        <<-HTML
+            <% if results[:cookies].is_a?( Hash )%>
+            <h3>Cookies were set to:</h3>
+            <ul>
+            <% results[:cookies].each do |name, val|%>
+                <li><%=name%> = <%=val%></li>
+            <%end%>
+            <ul>
+            <%end%>
+        HTML
     end
 
 end
-end
 
-end
 end

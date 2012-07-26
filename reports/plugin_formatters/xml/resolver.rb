@@ -14,46 +14,20 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::Resolver < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
-
-class XML
-module PluginFormatters
-
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class Resolver < Arachni::Plugin::Formatter
-
-        include Buffer
-
-        def run
-            start_tag( 'resolver' )
-            simple_tag( 'description', @description )
-
-            start_tag( 'results' )
-
-            @results.each {
-                |hostname, ipaddress|
-                __buffer( "<hostname value='#{hostname}' ipaddress='#{ipaddress}' />" )
-            }
-
-            end_tag( 'results' )
-            end_tag( 'resolver' )
-
-            return buffer( )
+    def run
+        results.each do |hostname, ipaddress|
+            append "<hostname value='#{hostname}' ipaddress='#{ipaddress}' />"
         end
-
+        buffer
     end
-
-end
-end
 
 end
 end

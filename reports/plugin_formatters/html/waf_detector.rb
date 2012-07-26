@@ -14,39 +14,25 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::HTML
 
-module Reports
+#
+# HTML formatter for the results of the WAF Detector plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::WAFDetector < Arachni::Plugin::Formatter
 
-class HTML
-module PluginFormatters
-
-    #
-    # HTML formatter for the results of the WAF Detector plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class WAFDetector < Arachni::Plugin::Formatter
-
-        def run
-            return ERB.new( tpl ).result( binding )
-        end
-
-        def tpl
-            %q{
-                <h3>Result</h3>
-                <blockquote><%=@results[:msg]%></blockquote>
-            }
-
-        end
-
+    def run
+        ERB.new( tpl ).result( binding )
     end
 
-end
-end
+    def tpl
+        <<-HTML
+            <h3>Result</h3>
+            <blockquote><%=results[:msg]%></blockquote>
+        HTML
+    end
 
 end
 end

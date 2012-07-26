@@ -14,46 +14,38 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::HTML
 
-module Reports
+#
+# HTML formatter for the results of the TimingAttacks plugin.
+#
+# @author Tasos "Zapotek" Laskos
+#                                      <tasos.laskos@gmail.com>
+#
+# @version 0.1
+#
+class PluginFormatters::TimingAttacks < Arachni::Plugin::Formatter
 
-class HTML
-module PluginFormatters
-
-    #
-    # HTML formatter for the results of the TimingAttacks plugin.
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class TimingAttacks < Arachni::Plugin::Formatter
-
-        def run
-            return ERB.new( tpl ).result( binding )
-        end
-
-        def tpl
-            %q{
-                    <ul>
-                    <%@results.each do |issue| %>
-                        <li>
-                            <a href="#issue_<%=issue['index']%>">
-                                [#<%=issue['index']%>]
-                                <%=issue['name']%> at <%=issue['url']%> in
-                                <%=issue['elem']%> variable '<%=issue['var']%>'
-                                using <%=issue['method']%>
-                            </a>
-                        </li>
-                    <%end%>
-                    </ul>
-            }
-        end
+    def run
+        ERB.new( tpl ).result( binding )
     end
 
-end
-end
+    def tpl
+        <<-HTML
+            <ul>
+            <% results.each do |issue| %>
+                <li>
+                    <a href="#issue_<%=issue['index']%>">
+                        [#<%=issue['index']%>]
+                        <%=issue['name']%> at <%=issue['url']%> in
+                        <%=issue['elem']%> variable '<%=issue['var']%>'
+                        using <%=issue['method']%>
+                    </a>
+                </li>
+            <%end%>
+            </ul>
+        HTML
+    end
+
 end
 end

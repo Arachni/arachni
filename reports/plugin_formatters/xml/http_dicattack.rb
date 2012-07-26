@@ -14,45 +14,20 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the HTTPDicattack plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::HTTPDicattack < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
-
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the HTTPDicattack plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class HTTPDicattack < Arachni::Plugin::Formatter
-
-        include Buffer
-
-        def run
-            start_tag( 'http_dicattack' )
-            simple_tag( 'description', @description )
-
-            start_tag( 'results' )
-
-            add_credentials( @results[:username], @results[:password] )
-
-            end_tag( 'results' )
-            end_tag( 'http_dicattack' )
-
-            return buffer( )
-        end
-
+    def run
+        add_credentials( results[:username], results[:password] )
+        buffer
     end
-
-end
-end
 
 end
 end
