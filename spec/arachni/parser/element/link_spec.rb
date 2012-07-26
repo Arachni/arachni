@@ -91,6 +91,16 @@ describe Arachni::Parser::Element::Link do
         end
     end
 
+    describe '#id' do
+        context 'when the action it contains path parameters' do
+            it 'should ignore them' do
+                e = Arachni::Parser::Element::Link.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
+                c = Arachni::Parser::Element::Link.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
+                e.id.should == c.id
+            end
+        end
+    end
+
     describe '#submit' do
         it 'should perform a GET HTTP request' do
             body = nil

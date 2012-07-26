@@ -90,10 +90,9 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [String]    unique form ID
     #
     def id
-        #simple['attrs'].to_s << auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
-        #simple['attrs'].to_s << auditable.keys.sort.to_s
         query_vars = parse_url_vars( self.action )
-        "#{self.action.split( '?' ).first}::#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
+        "#{self.action.split( '?' ).first.to_s.split( ';' ).first}::" <<
+            "#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
     end
 
     #

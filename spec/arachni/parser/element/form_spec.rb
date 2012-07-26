@@ -43,6 +43,16 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#id' do
+        context 'when the action it contains path parameters' do
+            it 'should ignore them' do
+                e = Arachni::Parser::Element::Form.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
+                c = Arachni::Parser::Element::Form.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
+                e.id.should == c.id
+            end
+        end
+    end
+
     describe '#field_type_for' do
         it 'should return a field\'s type' do
             e = Arachni::Parser::Element::Form.new( 'http://test.com',

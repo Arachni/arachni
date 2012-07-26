@@ -182,7 +182,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     # @see Base#action=
     def action=( url )
         v = super( url )
-        @audit_id_url = self.action.split( '?', 2 ).first
+        @audit_id_url = self.action.split( '?' ).first.to_s.split( ';' ).first
         v
     end
 
