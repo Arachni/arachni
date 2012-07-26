@@ -70,7 +70,6 @@ module Arachni::Reports::XML::Buffer
         end_tag 'tags'
     end
 
-
     def buffer
         @xml
     end
