@@ -716,9 +716,12 @@ class CLI
     --include=<regex>           include urls matching this regex only
                                   (Can be used multiple times.)
 
-    --redundant=<regex>:<count> limit crawl on redundant pages like galleries or catalogs
-                                  (URLs matching <regex> will be crawled <count> amount of times.)
+    --redundant=<regex>:<limit> limit crawl on redundant pages like galleries or catalogs
+                                  (URLs matching <regex> will be crawled <limit> amount of times.)
                                   (Can be used multiple times.)
+
+    --auto-redundant=<limit>    only follow <limit> amount of URLs with identical query parameter names (default: inf)
+                                  (Will default to 10 if no value has been specified.)
 
     -f
     --follow-subdomains         follow links to subdomains (default: off)
@@ -728,9 +731,9 @@ class CLI
     --depth=<number>            depth limit (default: inf)
                                   (How deep Arachni should go into the site structure.)
 
-    --link-count=<number>       how many links to follow (default: inf)
+    --link-count=<limit>       how many links to follow (default: inf)
 
-    --redirect-limit=<number>   how many redirects to follow (default: #{@opts.redirect_limit})
+    --redirect-limit=<limit>   how many redirects to follow (default: #{@opts.redirect_limit})
 
     --extend-paths=<file>       add the paths in <file> to the ones discovered by the crawler
                                   (Can be used multiple times.)

@@ -16,6 +16,7 @@
     - Removed
         - ```--http-harvest-last```
     - Added (**New**)
+        - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
         - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods.
         - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.
         - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```

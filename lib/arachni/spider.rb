@@ -276,8 +276,22 @@ class Spider
         end
 
         print_verbose "Discarding redundant page: #{url}" if redundant
-
         redundant
+    end
+
+    def auto_redundant?( url )
+        return false if !Options.auto_redundant?
+        @auto_redundant ||= Hash.new( 0 )
+
+        h = "#{url.split( '?' ).first}#{parse_query( url ).keys.sort}".hash
+
+        if @auto_redundant[h] >= Options.auto_redundant
+            print_verbose "Discarding auto-redundant page: #{url}"
+            return true
+        end
+
+        @auto_redundant[h] += 1
+        false
     end
 
     def dedup( paths )
@@ -292,7 +306,7 @@ class Spider
     end
 
     def visit( url, opts = {}, &block )
-        return if skip?( url ) || redundant?( url )
+        return if skip?( url ) || redundant?( url ) || auto_redundant?( url )
         visited( url )
 
         @pending_requests += 1

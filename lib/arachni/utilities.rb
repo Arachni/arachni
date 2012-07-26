@@ -56,6 +56,9 @@ module Utilities
     def parse_url_vars( *args )
         Arachni::Parser::Element::Link.parse_query_vars( *args )
     end
+    def parse_query( *args )
+        Arachni::Parser::Element::Link.parse_query_vars( *args )
+    end
 
     # @see Arachni::Parser::Element::Cookie.from_response
     def cookies_from_response( *args )
