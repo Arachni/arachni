@@ -37,7 +37,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         print_info 'System paused.'
 
         @params   = parse_url_vars( '?' + options['params'] )
-        @verifier = Regexp.new( options['login_verifier'] )
+        @verifier = Regexp.new( options['check'] )
     end
 
     def run
@@ -95,11 +95,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
             true
         end
-
-        framework.login_check = proc do
-            !!http.get( check_url, async: false, follow_location: true ).
-                response.body.match( @verifier )
-        end
+        framework.set_login_check_url( check_url, @verifier )
 
         cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
 
@@ -131,7 +127,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             options:     [
                 Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
                 Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] ),
-                Options::String.new( 'login_verifier', [true, 'A regular expression which will be used to verify a successful login.
+                Options::String.new( 'check', [true, 'A pattern which will be used to verify a successful login.
                     For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ],
             order:       0 # run before any other plugin

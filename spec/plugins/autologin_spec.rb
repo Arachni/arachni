@@ -12,9 +12,9 @@ describe name_from_filename do
             name = name_from_filename
 
             options.plugins[name] = {
-                'url'       => url + '/login',
-                'params'    => 'username=john&password=doe',
-                'login_verifier'  => 'Hi there logged-in user'
+                'url'    => url + '/login',
+                'params' => 'username=john&password=doe',
+                'check'  => 'Hi there logged-in user'
             }
 
             run
@@ -45,7 +45,7 @@ describe name_from_filename do
             options.plugins[name] = {
                 'url'    => url + '/login',
                 'params' => 'username2=john&password=doe',
-                'login_verifier'  => 'Hi there logged-in user'
+                'check'  => 'Hi there logged-in user'
             }
 
             run
@@ -62,8 +62,8 @@ describe name_from_filename do
 
             options.plugins[name] = {
                 'url'    => url + '/login',
-                'params'    => 'username=john&password=doe',
-                'login_verifier'  => 'Hi there Jimbo'
+                'params' => 'username=john&password=doe',
+                'check'  => 'Hi there Jimbo'
             }
 
             run
