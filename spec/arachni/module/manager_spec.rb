@@ -30,8 +30,17 @@ describe Arachni::Module::Manager do
             @modules.load :test2
             @modules.load :test3
             @modules.load :test
-
             @modules.schedule.should == [@modules[:test], @modules[:test2], @modules[:test3]]
+
+            @modules.clear
+
+            @modules.load :test2
+            @modules.schedule.should == [@modules[:test2]]
+
+            @modules.clear
+
+            @modules.load :test
+            @modules.schedule.should == [@modules[:test]]
         end
     end
 

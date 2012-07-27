@@ -70,7 +70,7 @@ class Manager < Arachni::Component::Manager
             preferred_over[name] = klass.preferred if klass.preferred.any?
         end
 
-        return self.values if preferred_over.empty?
+        return self.values if preferred_over.empty? || preferred.empty?
 
         preferred_over.size.times do
             update = {}
