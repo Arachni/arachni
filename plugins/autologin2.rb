@@ -44,12 +44,12 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
         # find the login form
         login_form = nil
-        forms_from_response( res ).each { |form| 
+        forms_from_response( res ).each do |form| 
             if login_form?( form ) 
               login_form = form
               break
             end
-          }
+        end
 
         if !login_form
             register_results( code: 0, msg: MSG_FAILURE + options['url'] )
@@ -57,7 +57,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         else
             print_info "Found fields: #{@uid_field}, #{@password_field}"
-            @params.merge!(@uid_field => @params['user_name'], @password_field => @params['password'])
+            @params.merge!(@uid_field : @params['user_name'], @password_field : @params['password'])
         end
 
         print_status "Found log-in form with name: #{login_form.name || '<n/a>'}"
@@ -86,29 +86,33 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def login_form?( form )
-#        @params.keys.each { |name| return false if !form.auditable.include?( name ) }
-#        true
-         @uid_field = find_uid_field( form )
-         
-         (@uid_field != nil && count_password_fields( form ) == 1)
+#       @params.keys.each { |name| return false if !form.auditable.include?( name ) }
+#       true
+        @uid_field = find_uid_field( form )
+        
+        (@uid_field != nil && count_password_fields( form ) == 1)
     end
     
     def find_uid_field( form )
-         form.raw['input'].each { |elem|
-           return elem['name'] if elem['name'] =~ /.*[(login)|(user)|(id)|(email)].*/
-         }
-         nil
+         
+        form.raw['input'].each { |elem|
+          return elem['name'] if elem['name'] =~ /.*[(login)|(user)|(id)|(email)].*/
+        }
+        
+        nil
     end
     
     def count_password_fields( form )
-      count=0
-      form.raw['input'].each { |elem| 
-        if elem['type'] == 'password'
-          count += 1
-          @password_field = elem['name']
+        count=0
+      
+        form.raw['input'].each do |elem| 
+            if elem['type'] == 'password'
+                count += 1
+                @password_field = elem['name']
+            end
         end
-      }
-      count
+      
+        count
     end
     
     def self.info
