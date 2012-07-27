@@ -17,6 +17,8 @@
     - Removed
         - ```--http-harvest-last```
     - Added (**New**)
+        - ```--login-check-url``` --  A URL used to verify that the scanner is still logged in to the web application.
+        - ```--login-check-pattern``` -- A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
         - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
         - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods.
         - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.

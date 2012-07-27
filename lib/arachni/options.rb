@@ -1003,7 +1003,8 @@ class Options
                 end
             end
 
-            if @login_check_url.nil? || @login_check_pattern.nil?
+            if (!@login_check_url && @login_check_pattern) ||
+                (@login_check_url && !@login_check_pattern)
                 fail "Both '--login-check-url' and '--login-check-pattern' options are required."
             end
 
