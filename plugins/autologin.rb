@@ -66,8 +66,10 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        body =  if res.redirection?
-            http.get( to_absolute( res.location ), async: false, follow_location: true ).response.body
+        check_url = res.effective_url
+        body = if res.redirection?
+            check_url = to_absolute( res.location )
+            http.get( check_url, async: false, follow_location: true ).response.body
         else
             res.body
         end
@@ -76,6 +78,27 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             register_results( code: -2, msg: MSG_NO_MATCH )
             print_bad MSG_NO_MATCH
             return
+        end
+
+        # summarize what we did above
+        framework.login_sequence = proc do
+            res = http.get( options['url'], async: false ).response
+            next false if !res
+
+            login_form = nil
+            forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
+            next false if !login_form
+
+            login_form.update( @params )
+            res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+            next false if !res
+
+            true
+        end
+
+        framework.login_check = proc do
+            !!http.get( check_url, async: false, follow_location: true ).
+                response.body.match( @verifier )
         end
 
         cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
