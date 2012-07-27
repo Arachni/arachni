@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
 # Passive proxy.
 #
@@ -25,15 +22,15 @@ module Plugins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.3
+# @version 0.1.4
 #
-class Proxy < Arachni::Plugin::Base
+class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     SHUTDOWN_URL = 'http://arachni.proxy.shutdown/'
 
     MSG_SHUTDOWN = 'Shutting down the Arachni proxy plug-in...'
 
-    MSG_DISALOWED = "You can't access this resource via the Arachni " +
+    MSG_DISALLOWED = "You can't access this resource via the Arachni " +
                     "proxy plug-in for the following reasons:"
 
     MSG_NOT_IN_DOMAIN = 'This resource is on a domain or subdomain' +
@@ -45,37 +42,27 @@ class Proxy < Arachni::Plugin::Base
 
     def prepare
         # don't let the framework run just yet
-        @framework.pause
-        print_info( "System paused." )
+        framework.pause
+        print_info 'System paused.'
 
-        require @framework.opts.dir['plugins'] + '/proxy/server.rb'
-
-        # foo initialization, we just need it to verify URLs
-        @parser = Arachni::Parser.new(
-            Typhoeus::Response.new(
-                :effective_url => @framework.opts.url.to_s,
-                :body          => '',
-                :headers_hash  => {}
-            )
-        )
+        require framework.opts.dir['plugins'] + '/proxy/server.rb'
 
         @server = Server.new(
-            :BindAddress    => @options['bind_address'],
-            :Port           => @options['port'],
-            :ProxyVia       => false,
-            :ProxyContentHandler => method( :handler ),
-            :ProxyURITest   => method( :allowed? ),
-            :AccessLog      => [],
-            :Logger         => WEBrick::Log::new( "/dev/null", 7 )
+             BindAddress:         options['bind_address'],
+             Port:                options['port'],
+             ProxyVia:            false,
+             ProxyContentHandler: method( :handler) ,
+             ProxyURITest:        method( :allowed? ),
+             AccessLog:           [],
+             Logger:              WEBrick::Log::new( '/dev/null', 7 )
         )
     end
 
     def run
-        print_status( "Listening on: " +
-            "http://#{@server[:BindAddress]}:#{@server[:Port]}" )
+        print_status "Listening on: http://#{@server[:BindAddress]}:#{@server[:Port]}"
 
-        print_status( "Shutdown URL: #{SHUTDOWN_URL}" )
-        print_info( "The scan will resume once you visit the shutdown URL." )
+        print_status "Shutdown URL: #{SHUTDOWN_URL}"
+        print_info 'The scan will resume once you visit the shutdown URL.'
         @server.start
     end
 
@@ -83,7 +70,6 @@ class Proxy < Arachni::Plugin::Base
     # Called by the proxy to process each page
     #
     def handler( req, res )
-
         if res.header['content-encoding'] == 'gzip'
             res.header.delete( 'content-encoding' )
             res.body = Zlib::GzipReader.new( StringIO.new( res.body ) ).read
@@ -93,75 +79,58 @@ class Proxy < Arachni::Plugin::Base
         headers.merge!( res.header.dup )    if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
-        # proper initialization in order to parse the response into a page
-        @parser = Arachni::Parser.new(
-            Typhoeus::Response.new(
-                :effective_url => req.unparsed_uri,
-                :body          => res.body,
-                :headers_hash  => headers
+        page = page_from_response( Typhoeus::Response.new(
+                effective_url: req.unparsed_uri,
+                body:          res.body,
+                headers_hash:  headers,
+                method:        res.request_method,
+                code:          res.status.to_i
             )
         )
-
-        page = @parser.run
         page = update_forms( page, req ) if req.body
-        page.method = res.request_method
-        page.code   = res.status
+        page = update_framework_cookies( page, req )
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
         print_info " *  #{page.cookies.size} cookies"
 
-        update_framework_cookies( page, req )
-        @framework.push_to_page_queue( page.dup )
+        framework.push_to_page_queue( page.dup )
 
         res
     end
 
     def update_framework_cookies( page, req )
-        print_debug( 'Updating framework cookies...' )
+        print_debug 'Updating framework cookies...'
 
-        cookies = {}
-
-        if req['Cookie']
-            req['Cookie'].split( ';' ).each do |cookie|
+        cookies = if req['Cookie']
+            req['Cookie'].split( ';' ).map do |cookie|
                 k, v = cookie.split( '=', 2 )
-                cookies[k.strip] = v.strip
+                Parser::Element::Cookie.new( req.unparsed_uri, k.strip => v.strip )
             end
+        else
+            []
         end
-
-        page.cookies.each { |cookie| cookies.merge!( cookie.simple ) }
 
         if cookies.empty?
-            print_debug( 'Could not extract cookies...' )
-            return
-        else
-            print_debug( 'Extracted cookies:' )
-            cookies.each { |k, v| print_debug( "  * #{k} => #{v}" ) }
+            print_debug 'Could not extract cookies...'
+            page
         end
 
-        @framework.http.update_cookies( cookies )
+        page.cookies |= cookies
+
+        print_debug 'Extracted cookies:'
+        cookies.each { |c| print_debug "  * #{c.name} => #{c.value}" }
+
+        framework.http.update_cookies( cookies )
+        page
     end
 
     def update_forms( page, req )
-        params = {}
-
-        uri_decode( req.body ).split( '&' ).each do |param|
-            k,v = param.split( '=', 2 )
-            params[k] = v
-        end
-
-        raw = {
-            'attrs' => {
-                'action' => req.unparsed_uri,
-                'method' => req.request_method,
-            }
-        }
-
-        form = ::Arachni::Parser::Element::Form.new( req.unparsed_uri, raw )
-        form.auditable = params
-
-        page.forms << form
-
+        page.forms << Parser::Element::Form.new( req.unparsed_uri,
+            action: req.unparsed_uri,
+            method: req.request_method,
+            inputs: parse_query( "?#{req.body}" )
+        )
         page
     end
 
@@ -171,10 +140,9 @@ class Proxy < Arachni::Plugin::Base
     # URLs outside the scope of the scan are not allowed.
     #
     def allowed?( uri )
-
         url = URI( uri )
 
-        print_status( 'Requesting: ' + url.to_s )
+        print_status "Requesting: #{url}"
 
         # if !(url.to_s =~ /http(s):\/\//)
         #     url = URI( @framework.opts.url.scheme + '://' + url.to_s )
@@ -183,22 +151,20 @@ class Proxy < Arachni::Plugin::Base
         reasons = []
 
         if shutdown?( url )
-            print_status( 'Shutting down...' )
+            print_status 'Shutting down...'
             @server.shutdown
             reasons << MSG_SHUTDOWN
             return reasons
         end
 
-        @parser.url = @framework.opts.url
-
-        reasons << MSG_NOT_IN_DOMAIN if !@parser.in_domain?( url )
-        reasons << MSG_EXCLUDED      if @parser.exclude?( url )
-        reasons << MSG_NOT_INCLUDED  if !@parser.include?( url )
+        reasons << MSG_NOT_IN_DOMAIN if !path_in_domain?( url )
+        reasons << MSG_EXCLUDED      if exclude_path?( url )
+        reasons << MSG_NOT_INCLUDED  if !include_path?( url )
 
         if !reasons.empty?
-            print_info( "#{MSG_DISALOWED}" )
+            print_info MSG_DISALLOWED
             reasons.each{ |msg| print_info " *  #{msg}" }
-            reasons << MSG_DISALOWED
+            reasons << MSG_DISALLOWED
         end
 
         reasons
@@ -209,26 +175,23 @@ class Proxy < Arachni::Plugin::Base
     end
 
     def clean_up
-        @framework.resume
+        framework.resume
     end
 
     def self.info
         {
-            :name           => 'Proxy',
-            :description    => %q{Gathers data based on user actions and exchanged HTTP
+            name:        'Proxy',
+            description: %q{Gathers data based on user actions and exchanged HTTP
                 traffic and pushes that data to the framework's page-queue to be audited.
                 It also updates the framework cookies with the cookies of the HTTP requests and
                 responses, thus it can also be used to login to a web application.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1.3',
-            :options        => [
-                Component::Options::Port.new( 'port', [ false, 'Port to bind to.', 8282 ] ),
-                Component::Options::Address.new( 'bind_address', [ false, 'IP address to bind to.', '0.0.0.0' ] )
-            ]
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.4',
+            options:     [
+                 Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
+                 Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] )
+             ]
         }
     end
 
-end
-
-end
 end
