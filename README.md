@@ -104,19 +104,22 @@ From a user's or a component developer's point of view everything appears simple
 
 ### General
 
- - Cookie-jar support.
+ - Cookie-jar/cookie-string support.
  - Custom header support.
  - SSL support.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others)
+ - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others).
+ - Automatic log-out detection and re-login during the audit (when the initial login was performed via the AutoLogin plugin).
+ - Custom 404 page detection.
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
     - Web UI (Utilizing the Client - Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
+    - With adjustable concurrency.
  - Open [RPC](https://github.com/Arachni/arachni/wiki/RPC-API) Client/Dispatcher Infrastructure
     - [Distributed deployment](https://github.com/Arachni/arachni/wiki/Distributed-components)
     - Multiple clients
@@ -128,13 +131,27 @@ From a user's or a component developer's point of view everything appears simple
 ### Website Crawler
 
  - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
+    - Can optionally detect and ignore redundant pages automatically.
  - URL exclusion filter based on regular expressions.
  - URL inclusion filter based on regular expressions.
  - Can optionally follow subdomains.
  - Adjustable link count limit.
  - Adjustable redirect limit.
+ - Adjustable depth limit.
  - Modular path extraction via "Path Extractor" components.
  - Can read paths from multiple user supplied files (to both restrict and extend the scope of the crawl).
+
+### Auditor
+
+ - Can audit:
+    - Forms
+    - Links
+    - Cookies
+    - Headers
+ - Can ignore binary/non-text pages.
+ - Can optionally audit forms and links using both ```GET``` and ```POST``` HTTP methods.
+ - Can optionally submit all links and forms of the page along with the cookie permutations to provide extensive cookie-audit coverage.
+ - Can exclude specific input vectors by name.
 
 ### HTML Parser
 
@@ -151,6 +168,7 @@ Can extract and analyze:
  - Helper audit methods:
     - For form, link, cookie and header auditing.
     - A wide range of injection strings/input combinations.
+    - For taint analysis, timing attacks, differential analysis, server-side file/directory detection and more.
     - Writing RFI, SQL injection, XSS etc modules is a matter of minutes, if not seconds.
  - Currently available modules:
     - Audit:
@@ -239,7 +257,7 @@ Can extract and analyze:
     - Resolver -- Resolves vulnerable hostnames to IP addresses.
     - VectorFeed -- Reads in vector data from which it creates elements to be audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
         Useful for unit-testing or a gazillion other things.
-
+    - Script -- Loads and runs an external Ruby script under the scope of a plugin, used for debugging and general hackery.
 
 ### Trainer subsystem
 
