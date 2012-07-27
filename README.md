@@ -145,6 +145,7 @@ From a user's or a component developer's point of view everything appears simple
 
  - Can audit:
     - Forms
+        - Can refresh nonce tokens.
     - Links
     - Cookies
     - Headers
