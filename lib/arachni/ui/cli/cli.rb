@@ -680,6 +680,11 @@ class CLI
                                   (It'll make it easier on the sys-admins during log reviews.)
                                   (Will be appended to the user-agent string.)
 
+    --login-check-url           A URL used to verify that the scanner is still logged in to the web application.
+                                  (Requires 'login-check-pattern'.)
+
+    --login-check-pattern       A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
+                                  (Requires 'login-check-url'.)
 
     Profiles -----------------------
 

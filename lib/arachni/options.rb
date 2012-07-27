@@ -464,6 +464,9 @@ class Options
 
     attr_accessor :auto_redundant
 
+    attr_accessor :login_check_url
+    attr_accessor :login_check_pattern
+
     alias :extensive_cookies? :extensive_cookies
 
     def initialize
@@ -755,7 +758,9 @@ class Options
             [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
             [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ],
             [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
-            [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ]
+            [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -989,10 +994,23 @@ class Options
 
                     when '--auto-redundant'
                         @auto_redundant = arg.empty? ? nil : arg.to_i
+
+                    when '--login-check-url'
+                        @login_check_url = arg
+
+                    when '--login-check-pattern'
+                        @login_check_pattern = arg
                 end
             end
+
+            if @login_check_url.nil? || @login_check_pattern.nil?
+                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+            end
+
         rescue => e
-            puts e.inspect
+            puts Arachni::BANNER
+            puts
+            puts e
             exit
         end
 

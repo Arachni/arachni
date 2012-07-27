@@ -69,7 +69,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.7'
+    REVISION = '0.2.7'
 
     #
     # Instance options
@@ -122,7 +122,8 @@ class Framework
     #
     # A block used to login to the webapp.
     #
-    # The block should return +true+ on success, +false+ on failure.
+    # The block should log the framework into the webapp and return +true+ on
+    # success, +false+ on failure.
     #
     # @return   [Block]
     #
@@ -133,7 +134,19 @@ class Framework
     #
     # The block should return +true+ on success, +false+ on failure.
     #
+    # The proc should expect 2 parameters, the first one being a hash of HTTP
+    # options and the second one an optional block.
+    #
+    # If a block has been set, the check should work async and pass the result
+    # to the block, otherwise it should simply return the result.
+    #
+    # The result of the check should be +true+ or +false+.
+    #
+    # A good example of this can be found in {#set_login_check_url}.
+    #
     # @return   [Block]
+    #
+    # @see #set_login_check_url
     #
     attr_accessor :login_check
 
@@ -237,17 +250,59 @@ class Framework
     #                               +nil+ if no {#login_sequence} has been set.
     #
     def login
-        login_sequence.call if login_sequence
+        login_sequence.call if has_login_sequence?
+    end
+
+    # @return   [Bool]  +true+ if a login sequence exists, +false+ otherwise
+    def has_login_sequence?
+        !!login_sequence
     end
 
     #
     # Uses the block in {#logged_check} to check in we're logged in to the webapp.
     #
+    # @param    [Hash]   http_opts   extra HTTP options to use for the check
+    # @param    [Block]  &block       if a block has been provided the check
+    #                                   will be async and the result will be passed
+    #                                   to it, otherwise the method will return
+    #                                   the result.
+    #
+    #
     # @return   [Bool, nil]     +true+ if we're logged-in, +false+ if not,
     #                               +nil+ if no {#login_sequence} has been set.
     #
-    def logged_in?
-        login_check.call if login_sequence
+    def logged_in?( http_opts = {}, &block )
+        login_check.call( http_opts, block ) if has_login_check?
+    end
+
+    # @return   [Bool]  +true+ if a login check exists, +false+ otherwise
+    def has_login_check?
+        !!login_check
+    end
+
+    def login_check
+        if @opts.login_check_url && @opts.login_check_pattern
+            set_login_check_url( @opts.login_check_url, @opts.login_check_pattern )
+        end
+        @login_check
+    end
+
+    #
+    # Sets a login check using the provided +url+ and +regexp+.
+    #
+    # @param    [String, #to_s]  url        URL to request
+    # @param    [String, Regexp] pattern   pattern to match against the body of the response
+    #
+    def set_login_check_url( url, pattern )
+        self.login_check = proc do |opts, block|
+            bool = nil
+            http.get( url.to_s, opts.merge( async: !!block ) ) do |res|
+                bool = !!res.body.match( pattern )
+                block.call( bool ) if block
+            end
+
+            bool
+        end
     end
 
     #
