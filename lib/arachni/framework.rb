@@ -120,6 +120,24 @@ class Framework
     attr_reader :url_queue_total_size
 
     #
+    # A block used to login to the webapp.
+    #
+    # The block should return +true+ on success, +false+ on failure.
+    #
+    # @return   [Block]
+    #
+    attr_accessor :login_sequence
+
+    #
+    # A block used to check whether or not we're logged in to the webapp.
+    #
+    # The block should return +true+ on success, +false+ on failure.
+    #
+    # @return   [Block]
+    #
+    attr_accessor :login_check
+
+    #
     # Initializes system components.
     #
     # @param    [Options]    opts
@@ -185,6 +203,51 @@ class Framework
         exception_jail { @reports.run( audit_store ) } if !@reports.empty?
 
         true
+    end
+
+    # @return   [Bool]  +true+ if there is log-in capability, +false+ otherwise
+    def can_login?
+        @login_sequence && @login_check
+    end
+
+    # @return   [Bool, nil] +true+ if logged-in, +false+ otherwise, +nil+ if
+    #                           there's no log-in capability
+    def ensure_logged_in
+        return if !can_login?
+        return true if logged_in?
+
+        print_bad 'The scanner has been logged out.'
+        print_info 'Trying to re-login...'
+
+        login
+
+        if !logged_in?
+            print_bad 'Could not re-login.'
+            false
+        else
+            print_ok 'Logged-in successfully.'
+            true
+        end
+    end
+
+    #
+    # Uses the block in {#login_sequence} to login to the webapp.
+    #
+    # @return   [Bool, nil]     +true+ if login was successful, +false+ if not,
+    #                               +nil+ if no {#login_sequence} has been set.
+    #
+    def login
+        login_sequence.call if login_sequence
+    end
+
+    #
+    # Uses the block in {#logged_check} to check in we're logged in to the webapp.
+    #
+    # @return   [Bool, nil]     +true+ if we're logged-in, +false+ if not,
+    #                               +nil+ if no {#login_sequence} has been set.
+    #
+    def logged_in?
+        login_check.call if login_sequence
     end
 
     #
@@ -744,10 +807,12 @@ class Framework
         http.run
 
         http.trainer.flush.each { |page| push_to_page_queue( page ) }
+
+        ensure_logged_in
     end
 
     #
-    # Passes a page to the module and runs it.<br/>
+    # Passes a page to the module and runs it.
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
