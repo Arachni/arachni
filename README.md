@@ -128,7 +128,7 @@ From a user's or a component developer's point of view everything appears simple
     - Remote monitoring
     - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
 
-### Website Crawler
+### Crawler
 
  - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
