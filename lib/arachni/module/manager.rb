@@ -84,6 +84,8 @@ class Manager < Arachni::Component::Manager
             preferred.merge!( update )
         end
 
+        schedule |= preferred_over.keys.map { |n| self[n] }
+
         schedule.to_a
     end
 

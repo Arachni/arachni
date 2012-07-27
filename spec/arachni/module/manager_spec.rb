@@ -41,6 +41,11 @@ describe Arachni::Module::Manager do
 
             @modules.load :test
             @modules.schedule.should == [@modules[:test]]
+
+            @modules.clear
+
+            @modules.load :test, :test3
+            @modules.schedule.should == [@modules[:test], @modules[:test3]]
         end
     end
 
