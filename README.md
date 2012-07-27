@@ -336,6 +336,8 @@ rake spec:reports         # for the reports
 rake spec:path_extractors # for the path extractors
 ```
 
+**Note**: _The module specs will take about 90 minutes due to the ones which perform timing attacks._
+
 ## Contributing
 
 We're happy to accept help from fellow code-monkeys and these are the steps you
