@@ -281,7 +281,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see parse_set_cookies
+    # @see parse_set_cookie
     #
     def self.from_document( url, document )
         # optimizations in case there are no cookies in the doc,
@@ -299,7 +299,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
         Arachni::Utilities.exception_jail {
             document.search( "//meta[@http-equiv]" ).map do |elem|
                 next if elem['http-equiv'].downcase != 'set-cookie'
-                parse_set_cookies( url, elem['content'] )
+                parse_set_cookie( url, elem['content'] )
             end.flatten.compact
         } rescue []
     end
@@ -312,7 +312,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see parse_set_cookies
+    # @see parse_set_cookie
     #
     def self.from_headers( url, headers )
         set_strings = []
@@ -320,7 +320,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
 
         return set_strings if set_strings.empty?
         exception_jail {
-            set_strings.map { |c| parse_set_cookies( url, c ) }.flatten
+            set_strings.map { |c| parse_set_cookie( url, c ) }.flatten
         } rescue []
     end
 
@@ -332,7 +332,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    def self.parse_set_cookies( url, str )
+    def self.parse_set_cookie( url, str )
         WEBrick::Cookie.parse_set_cookies( str ).flatten.uniq.map do |cookie|
             cookie_hash = {}
             cookie.instance_variables.each do |var|

@@ -70,6 +70,10 @@ module Utilities
         Arachni::Parser::Element::Cookie.from_document( *args )
     end
 
+    def parse_set_cookie( *args )
+        Arachni::Parser::Element::Cookie.parse_set_cookie( *args )
+    end
+
     # @see Arachni::Parser::Element::Cookie.from_file
     def cookies_from_file( *args )
         Arachni::Parser::Element::Cookie.from_file( *args )
