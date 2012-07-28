@@ -83,17 +83,7 @@ class Server < WEBrick::HTTPProxyServer
     end
 
     def perform_proxy_request( req, res )
-        uri = URI( req.request_uri )
-
-        opts_uri = URI( Arachni::Options.url )
-        uri.scheme = opts_uri.scheme
-        uri.host = opts_uri.host
-        uri.port = opts_uri.port
-
-        header = setup_proxy_header( req, res )
-        header['Host'] = "#{opts_uri.host}:#{opts_uri.port}"
-
-        response = yield( uri.to_s, header )
+        response = yield( req.unparsed_uri, setup_proxy_header( req, res ) )
 
         # Persistent connection requirements are mysterious for me.
         # So I will close the connection in every response.
