@@ -298,7 +298,7 @@ class HTTP
             end
 
             headers           = @headers.merge( headers )
-            headers['Cookie'] = cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+            headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
