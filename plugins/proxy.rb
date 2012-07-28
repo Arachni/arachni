@@ -14,6 +14,9 @@
     limitations under the License.
 =end
 
+require 'stringio'
+require 'zlib'
+
 #
 # Passive proxy.
 #
@@ -51,10 +54,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              BindAddress:         options['bind_address'],
              Port:                options['port'],
              ProxyVia:            false,
-             ProxyContentHandler: method( :handler) ,
+             ProxyContentHandler: method( :handler ) ,
              ProxyURITest:        method( :allowed? ),
              AccessLog:           [],
-             Logger:              WEBrick::Log::new( '/dev/null', 7 )
+             #Logger:              WEBrick::Log::new( '/dev/null', 7 )
         )
     end
 
