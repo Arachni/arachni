@@ -71,7 +71,7 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
         return block.call( self.class.session_cookie ) if self.class.session_cookie
 
         http.cookies.each do |cookie|
-            framework.logged_in?( { cookies: { cookie.name => '' } } ) do |bool|
+            framework.logged_in?( cookies: { cookie.name => '' } ) do |bool|
                 next if bool
                 print_info "Found session cookie named: #{cookie.name}"
                 block.call( self.class.session_cookie = cookie.name )
