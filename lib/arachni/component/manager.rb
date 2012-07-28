@@ -181,7 +181,7 @@ class Manager < Hash
                         load << component
                     else
                         raise( Arachni::Exceptions::ComponentNotFound,
-                            "Error: Component #{component} wasn't found." )
+                            "Component '#{component}' could not be found." )
                     end
                 end
             end
