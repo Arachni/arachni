@@ -24,10 +24,8 @@ require Options.dir['arachni']
 module UI
 
 #
-# Arachni::UI:CLI class
-#
-# Provides a command line interface for the Arachni Framework.<br/>
-# Most of the logic is in the Framework class however profiles can only<br/>
+# Provides a command line interface for the Arachni Framework.
+# Most of the logic is in the Framework class however profiles can only
 # be loaded and saved at this level.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
@@ -206,7 +204,7 @@ class CLI
     # Handles Ctrl+C interrupts
     #
     # Once an interrupt has been trapped the system pauses and waits
-    # for user input. <br/>
+    # for user input.
     # The user can either continue or exit.
     #
     # The interrupt will be handled after a module has finished.
@@ -315,7 +313,7 @@ class CLI
     #
     # It parses and processes the user options.
     #
-    # Loads modules, reports, saves/loads profiles etc.<br/>
+    # Loads modules, reports, saves/loads profiles etc.
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     #
     def parse_opts
@@ -597,7 +595,7 @@ class CLI
     end
 
     #
-    # Saves options to an Arachni Framework Profile file.<br/>
+    # Saves options to an Arachni Framework Profile file.
     # The file will be appended with the {PROFILE_EXT} extension.
     #
     # @param    [String]    filename
@@ -619,7 +617,7 @@ class CLI
     end
 
     #
-    # Outputs Arachni banner.<br/>
+    # Outputs Arachni banner.
     # Displays version number, revision number, author details etc.
     #
     # @see VERSION
@@ -634,7 +632,7 @@ class CLI
     end
 
     #
-    # Outputs help/usage information.<br/>
+    # Outputs help/usage information.
     # Displays supported options and parameters.
     #
     # @return [void]
