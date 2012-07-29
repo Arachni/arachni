@@ -18,7 +18,9 @@
 # Passive proxy.
 #
 # Will gather data based on user actions and exchanged HTTP traffic and push that
-# data to the {Framework#push_to_page_queue} to be audited.
+# data to {Framework#push_to_page_queue} to be audited.
+#
+# Supports SSL interception.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -67,7 +69,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     #
-    # Called by the proxy to process each page
+    # Called by the proxy to process each request.
     #
     def handler( req, res )
         return res if res.request_method.to_s.downcase == 'connect'
@@ -131,9 +133,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     #
-    # Checks if the URL is allowed.
-    #
-    # URLs outside the scope of the scan are not allowed.
+    # Checks whether the URL is outside the scope of the scan.
     #
     def allowed?( url )
         print_status "Requesting: #{url}"
@@ -153,7 +153,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         if !reasons.empty?
             print_info MSG_DISALLOWED
-            reasons.each{ |msg| print_info " *  #{msg}" }
+            reasons.each { |msg| print_info " *  #{msg}" }
             reasons << MSG_DISALLOWED
         end
 
@@ -171,10 +171,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def self.info
         {
             name:        'Proxy',
-            description: %q{Gathers data based on user actions and exchanged HTTP
-                traffic and pushes that data to the framework's page-queue to be audited.
-                It also updates the framework cookies with the cookies of the HTTP requests and
-                responses, thus it can also be used to login to a web application.},
+            description: %q{
+                * Gathers data based on user actions and exchanged HTTP
+                    traffic and pushes that data to the framework's page-queue to be audited.
+                * Updates the framework cookies with the cookies of the HTTP requests and
+                    responses, thus it can also be used to login to a web application.
+                * Supports SSL interception.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             options:     [

@@ -21,12 +21,21 @@ class Arachni::Plugins::Proxy
 #
 # We add our own type of WEBrick::HTTPProxyServer class that supports
 # notifications when the user tries to access a resource irrelevant
-# to the scan and does not restrict header exchange.
+# to the scan, does not restrict header exchange and supports SSL interception.
+#
+# SSL interception is achieved by redirecting traffic to a 2nd (SSL enabled)
+# instance of this server by hijacking the browser's CONNECT request.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Server < WEBrick::HTTPProxyServer
 
+    #
+    # Transfers headers from the webapp HTTP response to the Proxy HTTP response.
+    #
+    # @param    [#[], #each]    src     headers of the webapp response
+    # @param    [#[]=]    dst     headers of the forwarded/proxy response
+    #
     def choose_header( src, dst )
         connections = split_field( src['connection'] )
 
@@ -45,12 +54,22 @@ class Server < WEBrick::HTTPProxyServer
         end
     end
 
+    #
+    # Performs a GET request.
+    #
+    # @see Webrick::HTTPProxyServer#proxy_service
+    #
     def do_GET( req, res )
         perform_proxy_request( req, res ) do |url, header|
             Arachni::HTTP.get( url , http_opts( headers: header ) ).response
         end
     end
 
+    #
+    # Performs a POST request.
+    #
+    # @see Webrick::HTTPProxyServer#proxy_service
+    #
     def do_POST( req, res )
         perform_proxy_request( req, res ) do |url, header|
             params = Arachni::Utilities.parse_query( "?#{req.body}" )
@@ -58,22 +77,40 @@ class Server < WEBrick::HTTPProxyServer
         end
     end
 
+    #
+    # Hijacks CONNECT requests and redirects them to our SSL interceptor proxy
+    # which listens on {#interceptor_port}.
+    #
+    # @see #service
+    # @see Webrick::HTTPProxyServer#service
+    #
     def do_CONNECT( req, res )
         req.instance_variable_set( :@unparsed_uri, "localhost:#{interceptor_port}" )
         start_ssl_interceptor
         super( req, res )
     end
 
+    #
+    # Performs a HEAD request.
+    #
+    # @see Webrick::HTTPProxyServer#proxy_service
+    #
     def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
             Arachni::HTTP.request( url , http_opts( method: :head, headers: header ) ).response
         end
     end
 
+    # @param    [Hash]  opts    merges HTTP opts with some defaults
     def http_opts( opts = {} )
         opts.merge( no_cookiejar: true, async: false )
     end
 
+    #
+    # Starts the SSL interceptor proxy server.
+    #
+    # The interceptor will listen on {#interceptor_port}.
+    #
     def start_ssl_interceptor
         return @interceptor if @interceptor
 
@@ -109,10 +146,12 @@ class Server < WEBrick::HTTPProxyServer
         @interceptor
     end
 
+    # @return    [Integer]   picks and stores an available port number for the interceptor
     def interceptor_port
         @interceptor_port ||= available_port
     end
 
+    # @return    [Integer]   returns an available port number
     def available_port
         loop do
             port = 5555 + rand( 9999 )
@@ -126,6 +165,12 @@ class Server < WEBrick::HTTPProxyServer
         end
     end
 
+    #
+    # Makes sure that we stay inside the audit scope and don't service irrelevant
+    # requests.
+    #
+    # @see Webrick::HTTPProxyServer#service
+    #
     def service( req, res )
         if req.request_method.downcase == 'connect'
             super( req, res )
@@ -137,10 +182,12 @@ class Server < WEBrick::HTTPProxyServer
         if exclude_reasons.empty?
             super( req, res )
         else
-            notify( exclude_reasons, req, res )
+            notify( exclude_reasons, res )
         end
     end
 
+    # Communicates with the endpoint webapp and forwards its responses to the
+    # proxy which then sends it to the browser.
     def perform_proxy_request( req, res )
         response = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
 
@@ -157,7 +204,8 @@ class Server < WEBrick::HTTPProxyServer
         res.body = response.body
     end
 
-    def notify( reasons, req, res )
+    # Updates the HTTP response with an array of system notifications.
+    def notify( reasons, res )
         res.header['content-type'] = 'text/plain'
         res.header.delete( 'content-encoding' )
 
