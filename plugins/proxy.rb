@@ -14,9 +14,6 @@
     limitations under the License.
 =end
 
-require 'stringio'
-require 'zlib'
-
 #
 # Passive proxy.
 #
@@ -25,7 +22,7 @@ require 'zlib'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.4
+# @version 0.2
 #
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
@@ -57,7 +54,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              ProxyContentHandler: method( :handler ) ,
              ProxyURITest:        method( :allowed? ),
              AccessLog:           [],
-             #Logger:              WEBrick::Log::new( '/dev/null', 7 )
+             Logger:              WEBrick::Log::new( '/dev/null', 7 )
         )
     end
 
@@ -73,17 +70,14 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     # Called by the proxy to process each page
     #
     def handler( req, res )
-        if res.header['content-encoding'] == 'gzip'
-            res.header.delete( 'content-encoding' )
-            res.body = Zlib::GzipReader.new( StringIO.new( res.body ) ).read
-        end
+        return res if res.request_method.to_s.downcase == 'connect'
 
         headers = {}
         headers.merge!( res.header.dup )    if res.header
         headers['set-cookie'] = res.cookies if !res.cookies.empty?
 
         page = page_from_response( Typhoeus::Response.new(
-                effective_url: req.unparsed_uri,
+                effective_url: res.request_uri.to_s,
                 body:          res.body,
                 headers_hash:  headers,
                 method:        res.request_method,
@@ -98,7 +92,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info " *  #{page.cookies.size} cookies"
 
         framework.push_to_page_queue( page.dup )
-
         res
     end
 
@@ -142,14 +135,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     # URLs outside the scope of the scan are not allowed.
     #
-    def allowed?( uri )
-        url = URI( uri )
-
+    def allowed?( url )
         print_status "Requesting: #{url}"
-
-        # if !(url.to_s =~ /http(s):\/\//)
-        #     url = URI( @framework.opts.url.scheme + '://' + url.to_s )
-        # end
 
         reasons = []
 
@@ -189,7 +176,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 It also updates the framework cookies with the cookies of the HTTP requests and
                 responses, thus it can also be used to login to a web application.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.4',
+            version:     '0.2',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] )

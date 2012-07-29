@@ -34,8 +34,9 @@ class Server < WEBrick::HTTPProxyServer
             key = key.downcase
 
             if HopByHop.member?( key )          || # RFC2616: 13.5.1
-                connections.member?( key )       #|| # RFC2616: 14.10
+                connections.member?( key )       || # RFC2616: 14.10
                  #ShouldNotTransfer.member?(key)    # pragmatics
+                key == 'content-encoding'
                 @logger.debug( "choose_header: `#{key}: #{value}'" )
                 next
             end
@@ -57,23 +58,81 @@ class Server < WEBrick::HTTPProxyServer
         end
     end
 
-    #def do_CONNECT( req, res )
-    #end
+    def do_CONNECT( req, res )
+        req.instance_variable_set( :@unparsed_uri, "localhost:#{interceptor_port}" )
+        start_ssl_interceptor
+        super( req, res )
+    end
 
-    def do_HEAD(req, res)
+    def do_HEAD( req, res )
         perform_proxy_request( req, res ) do |url, header|
             Arachni::HTTP.request( url , http_opts( method: :head, headers: header ) ).response
         end
     end
 
     def http_opts( opts = {} )
-        opts[:headers] ||= {}
-
         opts.merge( no_cookiejar: true, async: false )
     end
 
+    def start_ssl_interceptor
+        return @interceptor if @interceptor
+
+        dir = File.dirname( __FILE__ ) + '/'
+        cert = OpenSSL::X509::Certificate.new( File.read( dir + 'ssl-interceptor-cert.pem' ) )
+        pkey = OpenSSL::PKey::RSA.new( File.read( dir + 'ssl-interceptor-pkey.pem' ) )
+
+        @interceptor = self.class.new(
+            BindAddress:    'localhost',
+            Port:           interceptor_port,
+            SSLEnable:      true,
+            SSLCertName:    [ [ "CN", WEBrick::Utils::getservername ] ],
+            SSLEnable:      true,
+            SSLCertificate: cert,
+            SSLPrivateKey:  pkey,
+            ArachniProxy:   method( :proxy_service ),
+            ProxyURITest:   @config[:ProxyURITest],
+            Logger:         WEBrick::Log::new( '/dev/null', 7 ),
+        )
+
+        def @interceptor.service( req, res )
+            exclude_reasons = @config[:ProxyURITest].call( req.request_uri )
+
+            if exclude_reasons.empty?
+                @config[:ArachniProxy].call( req, res )
+            else
+                notify( exclude_reasons, req, res )
+            end
+        end
+
+        Thread.new { @interceptor.start }
+        sleep 1
+        @interceptor
+    end
+
+    def interceptor_port
+        @interceptor_port ||= available_port
+    end
+
+    def available_port
+        loop do
+            port = 5555 + rand( 9999 )
+            begin
+                socket = Socket.new( :INET, :STREAM, 0 )
+                socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
+                socket.close
+                return port
+            rescue Errno::EADDRINUSE
+            end
+        end
+    end
+
     def service( req, res )
-        exclude_reasons = @config[:ProxyURITest].call( req.unparsed_uri )
+        if req.request_method.downcase == 'connect'
+            super( req, res )
+            return
+        end
+
+        exclude_reasons = @config[:ProxyURITest].call( req.request_uri )
 
         if exclude_reasons.empty?
             super( req, res )
@@ -83,7 +142,7 @@ class Server < WEBrick::HTTPProxyServer
     end
 
     def perform_proxy_request( req, res )
-        response = yield( req.unparsed_uri, setup_proxy_header( req, res ) )
+        response = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
 
         # Persistent connection requirements are mysterious for me.
         # So I will close the connection in every response.
