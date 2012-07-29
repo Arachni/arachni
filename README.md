@@ -1,6 +1,17 @@
 # Experimental/unstable branch -- used for development/integration
 
+## Nightlies
+
 For self-contained, nightly snapshot packages take a look at: http://downloads.arachni-scanner.com/nightlies/
+
+## Source
+
+To work with the source code you'll need the following system libraries:
+
+    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev
+
+You will also need to have Ruby 1.9.2 (or later) installed *including* the dev package/headers.<br/>
+The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby](http://www.ruby-lang.org/en/downloads/) manually.
 
 To install from source:
 
