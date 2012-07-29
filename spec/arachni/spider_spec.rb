@@ -113,7 +113,7 @@ describe Arachni::Spider do
             context 'when crawling is then enabled using Options.crawl' do
                 it 'should perform a crawl' do
                     @opts.crawl
-                    Arachni::Spider.new.run.size.should == 3
+                    Arachni::Spider.new.run.should be_any
                 end
             end
         end
