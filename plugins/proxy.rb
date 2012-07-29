@@ -176,7 +176,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                     traffic and pushes that data to the framework's page-queue to be audited.
                 * Updates the framework cookies with the cookies of the HTTP requests and
                     responses, thus it can also be used to login to a web application.
-                * Supports SSL interception.},
+                * Supports SSL interception.
+
+                To skip crawling and only audit elements discovered by using the proxy
+                set '--link-count=0'.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2',
             options:     [
