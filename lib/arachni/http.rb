@@ -18,6 +18,7 @@ require 'typhoeus'
 require 'singleton'
 
 module Arachni
+require Options.instance.dir['lib'] + 'typhoeus/utils'
 require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
