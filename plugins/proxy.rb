@@ -86,8 +86,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 code:          res.status.to_i
             )
         )
-        page = update_forms( page, req ) if req.body
-        page = update_framework_cookies( page, req )
+        page = update_forms( page, req, res ) if req.body
+        page = update_framework_cookies( page, req, res )
 
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
@@ -97,13 +97,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         res
     end
 
-    def update_framework_cookies( page, req )
+    def update_framework_cookies( page, req, res )
         print_debug 'Updating framework cookies...'
 
         cookies = if req['Cookie']
             req['Cookie'].split( ';' ).map do |cookie|
                 k, v = cookie.split( '=', 2 )
-                Parser::Element::Cookie.new( req.unparsed_uri, k.strip => v.strip )
+                Parser::Element::Cookie.new( res.request_uri.to_s, k.strip => v.strip )
             end
         else
             []
@@ -123,9 +123,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         page
     end
 
-    def update_forms( page, req )
-        page.forms << Parser::Element::Form.new( req.unparsed_uri,
-            action: req.unparsed_uri,
+    def update_forms( page, req, res )
+        page.forms << Parser::Element::Form.new( res.request_uri.to_s,
+            action: res.request_uri.to_s,
             method: req.request_method,
             inputs: parse_query( "?#{req.body}" )
         )
