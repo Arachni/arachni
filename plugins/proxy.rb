@@ -111,7 +111,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         if cookies.empty?
             print_debug 'Could not extract cookies...'
-            page
+            return page
         end
 
         page.cookies |= cookies
