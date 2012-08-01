@@ -127,7 +127,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         page.forms << Parser::Element::Form.new( res.request_uri.to_s,
             action: res.request_uri.to_s,
             method: req.request_method,
-            inputs: parse_query( "?#{req.body}" )
+            inputs: "#{req.body}".split( '&' ).inject( {} ) do |h, pair|
+                name, value = pair.split( '=', 2 )
+                h[URI.decode( name.to_s )] = URI.decode( value.to_s.gsub( '+', ' ' ) )
+                h
+            end
         )
         page
     end
