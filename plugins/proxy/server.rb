@@ -72,7 +72,11 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_POST( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            params = Arachni::Utilities.parse_query( "?#{req.body}" )
+            params = req.body.to_s.split( '&' ).inject( {} ) do |h, pair|
+                name, value = pair.split( '=', 2 )
+                h[URI.decode( name.to_s )] = URI.decode( value.to_s.gsub( '+', ' ' ) )
+                h
+            end
             Arachni::HTTP.post( url, http_opts( params: params, headers: header ) ).response
         end
     end
