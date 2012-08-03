@@ -288,8 +288,8 @@ class HTTP
             if !opts[:no_cookiejar]
                 cookies = begin
                     @cookie_jar.for_url( url ).inject({}) do |h, c|
-                    h[c.name] = c.value
-                    h
+                        h[c.name] = c.value
+                        h
                     end.merge( cookies )
                 rescue => e
                     print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
