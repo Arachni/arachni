@@ -269,7 +269,7 @@ module Arachni::Parser::Element::Analysis::Timeout
         orig_opts = opts
 
         print_info 'Waiting for the effects of the timing attack to wear off.'
-        print_info "Max waiting time: #{d_opts[:timeout] /1000} seconds."
+        print_info "Max waiting time: #{limit} seconds."
 
         @auditable = @orig
         res = submit( d_opts ).response
