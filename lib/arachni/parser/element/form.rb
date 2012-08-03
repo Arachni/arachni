@@ -259,7 +259,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
     def self.encode( str )
-        ::URI.encode( ::URI.encode( str ) , '+;&\\' )
+        ::URI.encode( ::URI.encode( str, '+' ).gsub( ' ', '+' ), ';&\\=' )
     end
 
     def encode( str )

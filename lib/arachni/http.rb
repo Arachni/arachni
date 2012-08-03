@@ -330,7 +330,7 @@ class HTTP
                 end
             else
                 cparams = cparams.inject( {} ) do |h, (k, v)|
-                    h[form_encode( k )] = form_encode( v ) if v
+                    h[form_encode( k )] = form_encode( v ) if v && k
                     h
                 end
             end

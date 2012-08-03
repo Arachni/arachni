@@ -518,4 +518,10 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '.encode' do
+        it 'should form encode the passed string' do
+            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+        end
+    end
+
 end
