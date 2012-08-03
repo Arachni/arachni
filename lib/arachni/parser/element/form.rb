@@ -258,6 +258,14 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         field['type'].to_s.downcase
     end
 
+    def self.encode( str )
+        ::URI.encode( ::URI.encode( str ) , '+;&\\' )
+    end
+
+    def encode( str )
+        self.class.encode( str )
+    end
+
     def dup
         f = super
         f.nonce_name = nonce_name.dup if nonce_name

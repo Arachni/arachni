@@ -42,6 +42,11 @@ module Utilities
         Arachni::Parser::Element::Form.from_document( *args )
     end
 
+    # @see Arachni::Parser::Element::Form.encode
+    def form_encode( *args )
+        Arachni::Parser::Element::Form.encode( *args )
+    end
+
     # @see Arachni::Parser::Element::Link.from_response
     def links_from_response( *args )
         Arachni::Parser::Element::Link.from_response( *args )
