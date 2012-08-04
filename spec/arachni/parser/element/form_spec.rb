@@ -523,5 +523,54 @@ describe Arachni::Parser::Element::Form do
             Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
         end
     end
+    describe '#encode' do
+        it 'should form encode the passed string' do
+            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+        end
+    end
+
+    describe '.decode' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+        end
+    end
+    describe '#decode' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+        end
+    end
+
+    describe '.parse_request_body' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
+                {
+                    "value\\ +=&;" => "value\\ +=&;",
+                    "testID" => "53738",
+                    "deliveryID" => "53618",
+                    "testIDs" => "",
+                    "deliveryIDs" => "",
+                    "selectedRows" => "2",
+                    "event" => "",
+                    "section" => "",
+                    "event=manage&amp;section=exam" => "Manage selected exam"
+                }
+        end
+    end
+    describe '#parse_request_body' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
+                {
+                    "value\\ +=&;" => "value\\ +=&;",
+                    "testID" => "53738",
+                    "deliveryID" => "53618",
+                    "testIDs" => "",
+                    "deliveryIDs" => "",
+                    "selectedRows" => "2",
+                    "event" => "",
+                    "section" => "",
+                    "event=manage&amp;section=exam" => "Manage selected exam"
+                }
+        end
+    end
 
 end

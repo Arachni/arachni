@@ -258,12 +258,29 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         field['type'].to_s.downcase
     end
 
+    def self.parse_request_body( body )
+        body.to_s.split( '&' ).inject( {} ) do |h, pair|
+            name, value = pair.split( '=', 2 )
+            h[decode( name.to_s )] = decode( value )
+            h
+        end
+    end
+    def parse_request_body( body )
+        self.class.parse_request_body( body )
+    end
+
     def self.encode( str )
         ::URI.encode( ::URI.encode( str, '+' ).gsub( ' ', '+' ), ';&\\=' )
     end
-
     def encode( str )
         self.class.encode( str )
+    end
+
+    def self.decode( str )
+        URI.decode( str.to_s.gsub( '+', ' ' ) )
+    end
+    def decode( str )
+        self.class.decode( str )
     end
 
     def dup
