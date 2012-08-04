@@ -206,7 +206,6 @@ class Server < WEBrick::HTTPProxyServer
         sc = response.headers_hash['Set-Cookie']
         sc.each { |c| res.cookies << c } if sc.is_a?( Array )
         res.header.delete( 'set-cookie' )
-        res.header
 
         #set_cookie( response, res )
         set_via( res )
