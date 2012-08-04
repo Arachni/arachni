@@ -50,8 +50,10 @@ class Server < WEBrick::HTTPProxyServer
                 next
             end
 
-            dst[key.to_s.split(/_|-/).map { |segment| segment.capitalize }.join("-")] = value
+            field = key.to_s.split( /_|-/ ).map { |segment| segment.capitalize }.join( '-' )
+            dst[field] = value
         end
+
     end
 
     #
@@ -72,11 +74,7 @@ class Server < WEBrick::HTTPProxyServer
     #
     def do_POST( req, res )
         perform_proxy_request( req, res ) do |url, header|
-            params = req.body.to_s.split( '&' ).inject( {} ) do |h, pair|
-                name, value = pair.split( '=', 2 )
-                h[URI.decode( name.to_s )] = URI.decode( value.to_s.gsub( '+', ' ' ) )
-                h
-            end
+            params = Arachni::Utilities.form_parse_request_body( req.body )
             Arachni::HTTP.post( url, http_opts( params: params, headers: header ) ).response
         end
     end
@@ -107,7 +105,7 @@ class Server < WEBrick::HTTPProxyServer
 
     # @param    [Hash]  opts    merges HTTP opts with some defaults
     def http_opts( opts = {} )
-        opts.merge( no_cookiejar: true, async: false )
+        opts.merge( no_cookiejar: true, async: false, follow_location: false )
     end
 
     #
@@ -203,7 +201,14 @@ class Server < WEBrick::HTTPProxyServer
         # Convert Typhoeus::Response to WEBrick::HTTPResponse
         res.status = response.code.to_i
         choose_header( response, res )
-        #set_cookie(response, res)
+
+        # scrub the existing cookies clean and pass the new ones
+        sc = response.headers_hash['Set-Cookie']
+        sc.each { |c| res.cookies << c } if sc.is_a?( Array )
+        res.header.delete( 'set-cookie' )
+        res.header
+
+        #set_cookie( response, res )
         set_via( res )
         res.body = response.body
     end
