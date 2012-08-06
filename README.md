@@ -1,6 +1,6 @@
 # Experimental/unstable branch -- used for development/integration
 
-## Nightlies
+## Nightlies (Linux only)
 
 For self-contained, nightly snapshot packages take a look at: http://downloads.arachni-scanner.com/nightlies/
 
