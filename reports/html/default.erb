@@ -17,7 +17,7 @@
 
       <script type="text/javascript">
       //<![CDATA[
-        <%=erb 'js/init.js', { :conf => conf, :graph_data => graph_data } %>
+        <%=erb 'js/init.js', { graph_data: graph_data } %>
       //]]>
       </script>
 
@@ -37,7 +37,7 @@
 
         <div id="contentreport">
             <header>
-                <h1>Report for <%=escapeHTML(audit_store.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
+                <h1>Report for <%=escapeHTML(auditstore.options['url'])%> (Generated on <strong><%=Time.now%></strong>)</h1>
                 <span style="float: right">Found a false positive? <a href="<%=escapeHTML(ISSUES_URL)%>">Report it here</a>.</span>
             </header>
 
@@ -52,29 +52,30 @@
             </nav>
 
             <section class="tab" id="summary">
-                <%= erb :summary, { :audit_store => audit_store} %>
+                <%= erb :summary, { auditstore: auditstore } %>
             </section>
 
             <section class="tab" id="configuration">
-                <%= erb :configuration, { :audit_store => audit_store} %>
+                <%= erb :configuration, { auditstore: auditstore} %>
             </section>
 
             <section class="tab" id="issues">
                 <%= erb :issues, {
-                        :audit_store => audit_store,
-                        :filtered_hashes  => filtered_hashes,
-                        :anomalous_hashes => anomalous_hashes,
-                        :anomalous_meta_results => anomalous_meta_results,
-                        :crypto_issues => crypto_issues
-                    } %>
+                        auditstore:             auditstore,
+                        filtered_hashes:        filtered_hashes,
+                        anomalous_hashes:       anomalous_hashes,
+                        anomalous_meta_results: anomalous_meta_results,
+                        crypto_issues:          crypto_issues
+                    }
+                %>
             </section>
 
             <section class="tab" id="plugins">
-                <%= erb :plugins, { :audit_store => audit_store, :plugins => plugins } %>
+                <%= erb :plugins, { auditstore: auditstore, plugins: plugins } %>
             </section>
 
             <section class="tab" id="sitemap">
-                <%= erb :sitemap, { :audit_store => audit_store } %>
+                <%= erb :sitemap, { auditstore: auditstore } %>
             </section>
 
         </div>

@@ -304,8 +304,8 @@ describe Arachni::Parser::Element::Cookie do
                     cookie.expired?.should == true
                 end
             end
-            context 'with a Nokogiri::HTML::Document' do
-                it 'should return an array of cookies' do
+            context 'with an empty string' do
+                it 'should return an empty array' do
                      Arachni::Parser::Element::Cookie.from_document( '', '' ).should be_empty
                 end
             end
@@ -326,11 +326,31 @@ describe Arachni::Parser::Element::Cookie do
                     cookies.first.value.should == 'blah val2@'
                 end
             end
-            context 'with a Nokogiri::HTML::Document' do
-                it 'should return an array of cookies' do
+            context 'with an empty string' do
+                it 'should return an empty array' do
                      Arachni::Parser::Element::Cookie.from_headers( '', {} ).should be_empty
                 end
             end
+        end
+    end
+
+    describe '.parse_set_cookie' do
+        it 'should parse the contents of the Set-Cookie header field into cookies' do
+            sc = "SomeCookie=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D"
+            c1 = Arachni::Parser::Element::Cookie.parse_set_cookie( 'http://test.com', sc ).first
+
+            sc2 = "SomeCookie=\"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==\""
+            c2 = Arachni::Parser::Element::Cookie.parse_set_cookie( 'http://test.com', sc2 ).first
+
+            c1.should == c2
+            c1.name.should == 'SomeCookie'
+            c1.value.should == 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA=='
+
+            sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
+            cookies = Arachni::Parser::Element::Cookie.parse_set_cookie( 'http://test.com', sc3 )
+            cookies.size.should == 1
+            cookies.first.name.should == 'coo@ki e2'
+            cookies.first.value.should == 'blah val2@'
         end
     end
 

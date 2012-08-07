@@ -13,6 +13,46 @@ describe Arachni::Options do
         Arachni::Options.url.should == url
     end
 
+    describe '#auto_redundant?' do
+        describe 'when the option has been enabled' do
+            it 'should return true' do
+                Arachni::Options.auto_redundant = 10
+                Arachni::Options.auto_redundant?.should be_true
+            end
+        end
+        describe 'when the option has been disabled' do
+            it 'should return false' do
+                Arachni::Options.auto_redundant = nil
+                Arachni::Options.auto_redundant?.should be_false
+            end
+        end
+        describe 'by default' do
+            it 'should return false' do
+                Arachni::Options.auto_redundant?.should be_false
+            end
+        end
+    end
+
+    describe '#exclude_binaries?' do
+        describe 'when the option has been enabled' do
+            it 'should return true' do
+                Arachni::Options.exclude_binaries = true
+                Arachni::Options.exclude_binaries?.should be_true
+            end
+        end
+        describe 'when the option has been disabled' do
+            it 'should return false' do
+                Arachni::Options.exclude_binaries = false
+                Arachni::Options.exclude_binaries?.should be_false
+            end
+        end
+        describe 'by default' do
+            it 'should return false' do
+                Arachni::Options.exclude_binaries?.should be_false
+            end
+        end
+    end
+
     describe '#do_not_crawl' do
         it 'should set the link_count_limit to 0' do
             Arachni::Options.do_not_crawl

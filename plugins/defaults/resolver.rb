@@ -29,11 +29,18 @@ class Arachni::Plugins::Resolver < Arachni::Plugin::Base
         print_status 'Resolving hostnames...'
 
         host_to_ipaddress = {}
-        framework.audit_store.deep_clone.issues.each_with_index do |issue|
-            exception_jail( false ) {
-                host = uri_parse( issue.url ).host
+        framework.auditstore.issues.each_with_index do |issue|
+            uri = uri_parse( issue.url.dup )
+            next if !uri
+
+            host = uri.host
+
+            begin
                 host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
-            }
+            rescue
+                print_bad "Could not resolve #{host}."
+                next
+            end
         end
 
         print_status 'Done!'

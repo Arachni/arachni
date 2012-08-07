@@ -49,6 +49,10 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
         audit_rdiff( self.class.opts )
     end
 
+    def self.preferred
+        %w(sqli)
+    end
+
     def self.info
         {
             name:        'Blind (rDiff) SQL Injection',

@@ -21,6 +21,16 @@ describe Arachni::HTTP do
         body.should == 'success'
     end
 
+    it 'should preserve set-cookies' do
+        body = nil
+        @http.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
+        @http.run
+        @http.cookies.first.value.should == "=stuf \00 here=="
+        @http.get( @opts.url + 'cookies' ) { |res| body = res.body }
+        @http.run
+        body.should == "stuff==stuf \00 here=="
+    end
+
     describe 'Arachni::Options#http_req_limit' do
         context Integer do
             it 'should use it as a max_concurrency' do
@@ -483,14 +493,14 @@ describe Arachni::HTTP do
             context 'POST' do
                 it 'should encode special characters' do
                     body = nil
-                    params = { 'param' => 'value +;', 'nil' => nil }
+                    params = { 'param\ +=&;' => 'value\ +=&;', 'nil' => nil }
                     @http.request( @url + '/echo',
                                    method: :post,
                                    params: params,
                                    remove_id: true
                     ) { |res| body = res.body }
                     @http.run
-                    { 'nil' => '', 'param' => 'value +;' }.to_s.should == body
+                    { 'param\ +=&;' => 'value\ +=&;' }.to_s.should == body
                 end
             end
 
@@ -764,7 +774,7 @@ describe Arachni::HTTP do
     describe '#cookie' do
         it 'should perform a GET request' do
             body = nil
-            cookies = { 'name' => 'v%+;al' }
+            cookies = { 'name' => "v%+;al\00=" }
             @http.cookie( @url + '/cookies', params: cookies ) { |res| body = res.body }
             @http.run
             body.should == cookies.keys.first + '=' + cookies.values.first

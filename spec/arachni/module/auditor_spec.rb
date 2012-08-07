@@ -34,10 +34,8 @@ class AuditorTest
 
     def self.info
         {
-            :name => 'Test auditor',
-            :issue => {
-                :name => 'Test issue'
-            }
+            name:  'Test auditor',
+            issue: { name: 'Test issue' }
         }
     end
 end

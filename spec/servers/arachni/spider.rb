@@ -110,3 +110,20 @@ end
 
 get '/with_cookies3' do
 end
+
+get '/auto-redundant' do
+    str = ''
+    10.times do
+        str += <<-EOHTML
+        <a href='/auto-redundant?stuff=#{rand( 999 )}'>Stuff</a>
+    EOHTML
+    end
+
+    10.times do
+        str += <<-EOHTML
+        <a href='/auto-redundant?stuff=#{rand( 999 )}&ha=#{rand( 999 )}'>Stuff</a>
+        EOHTML
+    end
+
+    str
+end

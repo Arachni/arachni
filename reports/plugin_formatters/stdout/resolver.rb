@@ -14,38 +14,16 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::Resolver < Arachni::Plugin::Formatter
 
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class Resolver < Arachni::Plugin::Formatter
-
-        def run
-            print_status( 'Resolver' )
-            print_info( '~~~~~~~~~~~~~~' )
-
-            print_info( 'Description: ' + @description )
-            print_line
-
-            @results.each {
-                |hostname, ipaddress|
-                print_info( hostname + ': ' + ipaddress )
-            }
-            print_line
-        end
-
+    def run
+        results.each { |hostname, ipaddress| print_info( hostname.to_s + ': ' + ipaddress.to_s ) }
     end
-
-end
-end
 
 end
 end

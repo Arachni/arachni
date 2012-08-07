@@ -12,16 +12,22 @@
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
     - Replaced ```Set``` with ```Arachni::BloomFilter```, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
+- Framework - Can be configured to detect logouts and re-login between page audits. (**New**)
 - Options
     - Removed
         - ```--http-harvest-last```
     - Added (**New**)
+        - ```--login-check-url``` --  A URL used to verify that the scanner is still logged in to the web application.
+        - ```--login-check-pattern``` -- A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
+        - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
         - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods.
         - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.
         - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
         - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
+    - Scheduling - Expensive modules are now scheduled to be run after cheaper ones
+        of similar type and only audit elements missed by the cheaper ones.
     - API
         - Updated to provide access to running plugins.
         - Updated remote file detection and logging helpers to improve performance and accuracy in case of custom 404s.
@@ -36,7 +42,12 @@
     - XSS -- Improved detection accuracy.
     - RFI -- Added a seed URL without a protocol.
     - Path traversal -- Added seeds with file:// URLs and for Tomcat webapps.
+    - Added (**New**)
+        - Session fixation
 - Plugins - Every single one has been cleaned up and have had RSpec tests added.
+    - AutoLogin
+        - Added a mandatory verifier regexp to make sure that the login was successful. (**New**)
+        - Now configures the ```Framework``` to be able to detect logouts and re-login during the audit. (**New**)
     - Proxy -- Fixed typo in code which prevented headers from being properly.
       forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.

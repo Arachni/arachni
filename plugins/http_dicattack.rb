@@ -102,8 +102,8 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
             options:     [
-                Arachni::Component::Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
-                Arachni::Component::Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] )
+                Options::Path.new( 'username_list', [true, 'File with a list of usernames (newline separated).'] ),
+                Options::Path.new( 'password_list', [true, 'File with a list of passwords (newline separated).'] )
             ]
         }
     end

@@ -87,17 +87,17 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             author: 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version: '0.1.2',
             options: [
-                Arachni::OptString.new('to', [true, 'E-mail address of the receiver.']),
-                Arachni::OptString.new('cc', [false, 'E-mail address to which to send a carbon copy of the notification.']),
-                Arachni::OptString.new('bcc', [false, 'E-mail address for a blind carbon copy.']),
-                Arachni::OptString.new('from', [true, 'E-mail address of the sender.']),
-                Arachni::OptAddress.new('server_address', [true, 'Address of the SMTP server to use.']),
-                Arachni::OptPort.new('server_port', [true, 'SMTP port.']),
-                Arachni::OptBool.new('tls', [false, 'Use TLS/SSL?.']),
-                Arachni::OptString.new('username', [true, 'SMTP username.']),
-                Arachni::OptString.new('password', [true, 'SMTP password.']),
-                Arachni::OptString.new('authentication', [false, 'Authentication.', 'plain', ['plain', 'login', 'cram_md5', '']]),
-                Arachni::OptEnum.new('report', [false, 'Report type to send as an attachment.', 'txt', ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']])
+                Options::String.new( 'to', [true, 'E-mail address of the receiver.'] ),
+                Options::String.new( 'cc', [false, 'E-mail address to which to send a carbon copy of the notification.'] ),
+                Options::String.new( 'bcc', [false, 'E-mail address for a blind carbon copy.'] ),
+                Options::String.new( 'from', [true, 'E-mail address of the sender.'] ),
+                Options::Address.new( 'server_address', [true, 'Address of the SMTP server to use.'] ),
+                Options::Port.new( 'server_port', [true, 'SMTP port.'] ),
+                Options::Bool.new( 'tls', [false, 'Use TLS/SSL?.'] ),
+                Options::String.new( 'username', [true, 'SMTP username.'] ),
+                Options::String.new( 'password', [true, 'SMTP password.'] ),
+                Options::String.new( 'authentication', [false, 'Authentication.', 'plain', ['plain', 'login', 'cram_md5', '']] ),
+                Options::Enum.new( 'report', [false, 'Report type to send as an attachment.', 'txt', ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']] )
             ]
 
         }

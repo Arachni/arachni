@@ -60,6 +60,14 @@ describe Arachni::Parser::Element::Mutable do
             e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.mutations_for( @seed ).should == e.mutations( @seed )
         end
+        it 'should be aliased to #permutations' do
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+            e.permutations( @seed ).should == e.mutations( @seed )
+        end
+        it 'should be aliased to #permutations_for' do
+            e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )
+            e.permutations_for( @seed ).should == e.mutations( @seed )
+        end
 
         it 'should only affect #auditable and #altered' do
             e = Arachni::Parser::Element::Link.new( 'http://test.com', inputs: @inputs )

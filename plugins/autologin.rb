@@ -30,12 +30,14 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     MSG_SUCCESS     = 'Form submitted successfully.'
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
     MSG_NO_RESPONSE = 'Form submitted but no response was returned.'
+    MSG_NO_MATCH    = 'Form submitted but the response did not match the verifier.'
 
     def prepare
         framework.pause
         print_info 'System paused.'
 
-        @params = parse_url_vars( '?' + options['params'] )
+        @params   = parse_url_vars( '?' + options['params'] )
+        @verifier = Regexp.new( options['check'] )
     end
 
     def run
@@ -63,6 +65,37 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             print_bad MSG_NO_RESPONSE
             return
         end
+
+        check_url = res.effective_url
+        body = if res.redirection?
+            check_url = to_absolute( res.location )
+            http.get( check_url, async: false, follow_location: true ).response.body
+        else
+            res.body
+        end
+
+        if !body.match( @verifier )
+            register_results( code: -2, msg: MSG_NO_MATCH )
+            print_bad MSG_NO_MATCH
+            return
+        end
+
+        # summarize what we did above
+        framework.login_sequence = proc do
+            res = http.get( options['url'], async: false ).response
+            next false if !res
+
+            login_form = nil
+            forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
+            next false if !login_form
+
+            login_form.update( @params )
+            res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+            next false if !res
+
+            true
+        end
+        framework.set_login_check_url( check_url, @verifier )
 
         cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
 
@@ -92,8 +125,10 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.5',
             options:     [
-                Arachni::Component::Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
-                Arachni::Component::Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] )
+                Options::URL.new( 'url', [true, 'The URL that contains the login form.'] ),
+                Options::String.new( 'params', [true, 'Form parameters to submit. ( username=user&password=pass )'] ),
+                Options::String.new( 'check', [true, 'A pattern which will be used to verify a successful login.
+                    For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ],
             order:       0 # run before any other plugin
         }

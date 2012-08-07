@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Modules
-
-class Test < Arachni::Module::Base
+class Arachni::Modules::Test < Arachni::Module::Base
 
     def prepare
         @prepared = true
@@ -58,6 +55,4 @@ class Test < Arachni::Module::Base
         }
     end
 
-end
-end
 end

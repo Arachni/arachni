@@ -74,6 +74,10 @@ get '/sleep' do
     sleep 5
 end
 
+get '/set_and_preserve_cookies' do
+    cookies['stuff'] = "=stuf \00 here=="
+end
+
 get '/cookies' do
     cookies.map { |k, v| k.to_s + '=' + v.to_s }.join( ";" )
 end

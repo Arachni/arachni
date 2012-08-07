@@ -14,18 +14,10 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
-
-class WithFormatters < Arachni::Report::Base
+class Arachni::Reports::WithFormatters < Arachni::Report::Base
 
     def run
-        File.open( "with_formatters", "w" ) do |f|
-            f.write( format_plugin_results( @audit_store.plugins ) )
-        end
+        File.open( 'with_formatters', 'w' ) { |f| f.write( format_plugin_results ) }
     end
 
-end
-
-end
 end

@@ -54,7 +54,39 @@ class Manager < Arachni::Component::Manager
     # @param    [::Arachni::Parser::Page]   page    page to audit
     #
     def run( page )
-        values.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
+        schedule.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
+    end
+
+    #
+    # Returns the modules in proper running order.
+    #
+    # @return   [Array]
+    #
+    def schedule
+        schedule       = Set.new
+        preferred_over = Hash.new([])
+
+        preferred = self.reject do |name, klass|
+            preferred_over[name] = klass.preferred if klass.preferred.any?
+        end
+
+        return self.values if preferred_over.empty? || preferred.empty?
+
+        preferred_over.size.times do
+            update = {}
+            preferred.each do |name, klass|
+                schedule << klass
+                preferred_over.select { |_, v| v.include?( name ) }.each do |k, v|
+                    schedule << (update[k] = self[k])
+                end
+            end
+
+            preferred.merge!( update )
+        end
+
+        schedule |= preferred_over.keys.map { |n| self[n] }
+
+        schedule.to_a
     end
 
     #
@@ -64,10 +96,40 @@ class Manager < Arachni::Component::Manager
     # @param    [::Arachni::Parser::Page]   page    page to audit
     #
     def run_one( mod, page )
+        return false if !run_module?( mod, page )
+
         mod_new = mod.new( page, @framework )
         mod_new.prepare
         mod_new.run
         mod_new.clean_up
+    end
+
+    #
+    # Determines whether or not to run the module against the given page
+    # depending on which elements exist in the page, which elements the module
+    # is configured to audit and user options.
+    #
+    # @param    [Class]   mod      the module to run
+    # @param    [Page]    page
+    #
+    # @return   [Bool]
+    #
+    def run_module?( mod, page )
+        elements = mod.info[:elements]
+        return true if !elements || elements.empty?
+
+        elems = {
+            Issue::Element::LINK => page.links && page.links.any? && @opts.audit_links,
+            Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
+            Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
+            Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
+            Issue::Element::BODY   => page.body && !page.body.empty?,
+            Issue::Element::PATH   => true,
+            Issue::Element::SERVER => true
+        }
+
+        elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }
+        false
     end
 
     def self.on_register_results( &block )

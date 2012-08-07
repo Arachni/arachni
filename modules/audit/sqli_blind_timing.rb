@@ -39,11 +39,11 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
         )
     end
 
-    def redundant
+    def self.preferred
         # We add ourselves to the list too.
         # We don't want more than one timing-attack variation per issue,
         # it's too expensive.
-        %w(sqli sqli_blind_rdiff sqli_blind_timing)
+        %w(sqli sqli_blind_rdiff)
     end
 
     def self.info

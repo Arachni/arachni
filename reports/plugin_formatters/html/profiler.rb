@@ -15,6 +15,7 @@
 =end
 
 require 'json'
+class Arachni::Reports::HTML
 
 #
 # HTML formatter for the results of the Profiler plugin
@@ -24,11 +25,12 @@ require 'json'
 #
 # @version 0.2.2
 #
-class Arachni::Reports::HTML::PluginFormatters::Profiler < Arachni::Plugin::Formatter
-    include Arachni::Reports::HTML::Utils
+class PluginFormatters::Profiler < Arachni::Plugin::Formatter
+    include Utils
 
     def run
         ERB.new( IO.read( File.dirname( __FILE__ ) + '/profiler/template.erb' ) ).result( binding )
     end
 
+end
 end

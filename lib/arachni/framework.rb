@@ -69,7 +69,7 @@ class Framework
     include Arachni::Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.7'
+    REVISION = '0.2.7'
 
     #
     # Instance options
@@ -118,6 +118,37 @@ class Framework
     # @return   [Integer]
     #
     attr_reader :url_queue_total_size
+
+    #
+    # A block used to login to the webapp.
+    #
+    # The block should log the framework into the webapp and return +true+ on
+    # success, +false+ on failure.
+    #
+    # @return   [Block]
+    #
+    attr_accessor :login_sequence
+
+    #
+    # A block used to check whether or not we're logged in to the webapp.
+    #
+    # The block should return +true+ on success, +false+ on failure.
+    #
+    # The proc should expect 2 parameters, the first one being a hash of HTTP
+    # options and the second one an optional block.
+    #
+    # If a block has been set, the check should work async and pass the result
+    # to the block, otherwise it should simply return the result.
+    #
+    # The result of the check should be +true+ or +false+.
+    #
+    # A good example of this can be found in {#set_login_check_url}.
+    #
+    # @return   [Block]
+    #
+    # @see #set_login_check_url
+    #
+    attr_accessor :login_check
 
     #
     # Initializes system components.
@@ -185,6 +216,93 @@ class Framework
         exception_jail { @reports.run( audit_store ) } if !@reports.empty?
 
         true
+    end
+
+    # @return   [Bool]  +true+ if there is log-in capability, +false+ otherwise
+    def can_login?
+        @login_sequence && @login_check
+    end
+
+    # @return   [Bool, nil] +true+ if logged-in, +false+ otherwise, +nil+ if
+    #                           there's no log-in capability
+    def ensure_logged_in
+        return if !can_login?
+        return true if logged_in?
+
+        print_bad 'The scanner has been logged out.'
+        print_info 'Trying to re-login...'
+
+        login
+
+        if !logged_in?
+            print_bad 'Could not re-login.'
+            false
+        else
+            print_ok 'Logged-in successfully.'
+            true
+        end
+    end
+
+    #
+    # Uses the block in {#login_sequence} to login to the webapp.
+    #
+    # @return   [Bool, nil]     +true+ if login was successful, +false+ if not,
+    #                               +nil+ if no {#login_sequence} has been set.
+    #
+    def login
+        login_sequence.call if has_login_sequence?
+    end
+
+    # @return   [Bool]  +true+ if a login sequence exists, +false+ otherwise
+    def has_login_sequence?
+        !!login_sequence
+    end
+
+    #
+    # Uses the block in {#logged_check} to check in we're logged in to the webapp.
+    #
+    # @param    [Hash]   http_opts   extra HTTP options to use for the check
+    # @param    [Block]  &block       if a block has been provided the check
+    #                                   will be async and the result will be passed
+    #                                   to it, otherwise the method will return
+    #                                   the result.
+    #
+    #
+    # @return   [Bool, nil]     +true+ if we're logged-in, +false+ if not,
+    #                               +nil+ if no {#login_sequence} has been set.
+    #
+    def logged_in?( http_opts = {}, &block )
+        login_check.call( http_opts, block ) if has_login_check?
+    end
+
+    # @return   [Bool]  +true+ if a login check exists, +false+ otherwise
+    def has_login_check?
+        !!login_check
+    end
+
+    def login_check
+        if @opts.login_check_url && @opts.login_check_pattern
+            set_login_check_url( @opts.login_check_url, @opts.login_check_pattern )
+        end
+        @login_check
+    end
+
+    #
+    # Sets a login check using the provided +url+ and +regexp+.
+    #
+    # @param    [String, #to_s]  url        URL to request
+    # @param    [String, Regexp] pattern   pattern to match against the body of the response
+    #
+    def set_login_check_url( url, pattern )
+        self.login_check = proc do |opts, block|
+            bool = nil
+            http.get( url.to_s, opts.merge( async: !!block ) ) do |res|
+                bool = !!res.body.match( pattern )
+                block.call( bool ) if block
+            end
+
+            bool
+        end
     end
 
     #
@@ -720,7 +838,7 @@ class Framework
 
         @current_url = page.url.to_s
 
-        @modules.values.each do |mod|
+        @modules.schedule.each do |mod|
             wait_if_paused
             run_mod( mod, page )
         end
@@ -744,10 +862,12 @@ class Framework
         http.run
 
         http.trainer.flush.each { |page| push_to_page_queue( page ) }
+
+        ensure_logged_in
     end
 
     #
-    # Passes a page to the module and runs it.<br/>
+    # Passes a page to the module and runs it.
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
@@ -756,44 +876,14 @@ class Framework
     # @param    [Page]    page
     #
     def run_mod( mod, page )
-        return if !run_mod?( mod, page )
-
         begin
             @modules.run_one( mod, page )
         rescue SystemExit
             raise
-        rescue Exception => e
+        rescue => e
             print_error "Error in #{mod.to_s}: #{e.to_s}"
-            print_error_backtrace( e )
+            print_error_backtrace e
         end
-    end
-
-    #
-    # Determines whether or not to run the module against the given page
-    # depending on which elements exist in the page, which elements the module
-    # is configured to audit and user options.
-    #
-    # @param    [Class]   mod      the module to run
-    # @param    [Page]    page
-    #
-    # @return   [Bool]
-    #
-    def run_mod?( mod, page )
-        elements = mod.info[:elements]
-        return true if !elements || elements.empty?
-
-        elems = {
-            Issue::Element::LINK => page.links && page.links.any? && @opts.audit_links,
-            Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
-            Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
-            Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
-            Issue::Element::BODY   => page.body && !page.body.empty?,
-            Issue::Element::PATH   => true,
-            Issue::Element::SERVER => true
-        }
-
-        elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }
-        false
     end
 
     def lsrep_match?( path )

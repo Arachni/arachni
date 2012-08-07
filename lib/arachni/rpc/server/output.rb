@@ -37,8 +37,8 @@ module Output
 
     def self.reset_output_options
         old_reset_output_options
-        @@buffer_cap = 30
-        @@buffer ||= []
+        @@output_buffer_cap = 30
+        @@output_buffer ||= []
     end
 
     reset_output_options
@@ -51,17 +51,17 @@ module Output
     # @return   [Array<Hash>]
     #
     def flush_buffer
-        buf = @@buffer.dup
-        @@buffer.clear
+        buf = @@output_buffer.dup
+        @@output_buffer.clear
         buf
     end
 
     def set_buffer_cap( cap )
-        @@buffer_cap = cap
+        @@output_buffer_cap = cap
     end
 
     def uncap_buffer
-        @@buffer_cap = nil
+        @@output_buffer_cap = nil
     end
 
     # Prints an error message
@@ -73,7 +73,7 @@ module Output
     # @return    [void]
     #
     def print_error( str = '' )
-        buffer( :error => str )
+        push_to_output_buffer( :error => str )
         print_color( '[-]', 31, str, $stderr )
     end
     def print_error_backtrace( e )
@@ -89,7 +89,7 @@ module Output
     # @param    [String]    str
     #
     def print_bad( str = '' )
-        buffer( bad: str )
+        push_to_output_buffer( bad: str )
     end
 
     # Prints a status message
@@ -104,7 +104,7 @@ module Output
     #
     def print_status( str = '' )
         return if only_positives?
-        buffer( status: str )
+        push_to_output_buffer( status: str )
     end
 
     # Prints an info message
@@ -119,7 +119,7 @@ module Output
     #
     def print_info( str = '' )
         return if only_positives?
-        buffer( info: str )
+        push_to_output_buffer( info: str )
     end
 
     # Prints a good message, something that went very very right,
@@ -131,7 +131,7 @@ module Output
     # @return    [void]
     #
     def print_ok( str = '' )
-        buffer( ok: str )
+        push_to_output_buffer( ok: str )
     end
 
     # Prints a debugging message
@@ -148,7 +148,7 @@ module Output
         return if !debug?
 
         if reroute_to_file?
-            buffer( debug: str )
+            push_to_output_buffer( debug: str )
         else
             print_color( '[!]', 36, str, $stderr )
         end
@@ -166,7 +166,7 @@ module Output
     #
     def print_verbose( str = '' )
         return if !verbose?
-        buffer( verbose: str )
+        push_to_output_buffer( verbose: str )
     end
 
     # Prints a line of message
@@ -181,7 +181,7 @@ module Output
     #
     def print_line( str = '' )
         return if only_positives?
-        buffer( line: str )
+        push_to_output_buffer( line: str )
     end
 
     def reroute_to_file( file )
@@ -194,7 +194,7 @@ module Output
 
     private
 
-    def buffer( msg )
+    def push_to_output_buffer( msg )
         if file = @@reroute_to_file
             File.open( file, 'a+' ) do |f|
                 type = msg.keys[0]
@@ -204,9 +204,9 @@ module Output
                 f.write( "[#{Time.now.asctime}] [#{type}]  #{str}\n" )
             end
         else
-            @@buffer << msg
-            if @@buffer_cap.is_a?( Integer)
-                @@buffer.slice!( (@@buffer.size - @@buffer_cap)..@@buffer.size )
+            @@output_buffer << msg
+            if @@output_buffer_cap.is_a?( Integer )
+                @@output_buffer.slice!( (@@output_buffer.size - @@output_buffer_cap)..@@output_buffer.size )
             end
         end
     end

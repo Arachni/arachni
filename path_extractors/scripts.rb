@@ -18,8 +18,7 @@
 # Extracts paths from "script" HTML elements.<br/>
 # Both from "src" and the text inside the scripts.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @version 0.1.1
 #

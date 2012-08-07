@@ -14,40 +14,24 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# Stdout formatter for the results of the Discovery plugin.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class PluginFormatters::Discovery < Arachni::Plugin::Formatter
 
-    #
-    # Stdout formatter for the results of the Discovery plugin.
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class Discovery < Arachni::Plugin::Formatter
-
-        def run
-            print_status( ' --- Discovery:' )
-            print_info( 'Description: ' + @description )
-
-            print_line
-            print_info( 'Relevant issues:' )
-            print_info( '--------------------' )
-            @results.each {
-                |issue|
-                print_ok( "[\##{issue['index']}] #{issue['name']} at #{issue['url']}." )
-            }
-
-            print_line
+    def run
+        print_info 'Relevant issues:'
+        print_info '--------------------'
+        results.each do |issue|
+            print_ok "[\##{issue['index']}] #{issue['name']} at #{issue['url']}."
         end
-
     end
 
-end
-end
 end
 end

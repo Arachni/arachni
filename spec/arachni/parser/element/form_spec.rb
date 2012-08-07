@@ -43,6 +43,16 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#id' do
+        context 'when the action it contains path parameters' do
+            it 'should ignore them' do
+                e = Arachni::Parser::Element::Form.new( 'http://test.com/path;p=v?p1=v1&p2=v2', @inputs[:inputs] )
+                c = Arachni::Parser::Element::Form.new( 'http://test.com/path?p1=v1&p2=v2', @inputs[:inputs] )
+                e.id.should == c.id
+            end
+        end
+    end
+
     describe '#field_type_for' do
         it 'should return a field\'s type' do
             e = Arachni::Parser::Element::Form.new( 'http://test.com',
@@ -505,6 +515,61 @@ describe Arachni::Parser::Element::Form do
                 end
             end
 
+        end
+    end
+
+    describe '.encode' do
+        it 'should form encode the passed string' do
+            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+        end
+    end
+    describe '#encode' do
+        it 'should form encode the passed string' do
+            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+        end
+    end
+
+    describe '.decode' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+        end
+    end
+    describe '#decode' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+        end
+    end
+
+    describe '.parse_request_body' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
+                {
+                    "value\\ +=&;" => "value\\ +=&;",
+                    "testID" => "53738",
+                    "deliveryID" => "53618",
+                    "testIDs" => "",
+                    "deliveryIDs" => "",
+                    "selectedRows" => "2",
+                    "event" => "",
+                    "section" => "",
+                    "event=manage&amp;section=exam" => "Manage selected exam"
+                }
+        end
+    end
+    describe '#parse_request_body' do
+        it 'should form decode the passed string' do
+            Arachni::Parser::Element::Form.parse_request_body( 'value%5C+%2B%3D%26%3B=value%5C+%2B%3D%26%3B&testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam' ).should ==
+                {
+                    "value\\ +=&;" => "value\\ +=&;",
+                    "testID" => "53738",
+                    "deliveryID" => "53618",
+                    "testIDs" => "",
+                    "deliveryIDs" => "",
+                    "selectedRows" => "2",
+                    "event" => "",
+                    "section" => "",
+                    "event=manage&amp;section=exam" => "Manage selected exam"
+                }
         end
     end
 

@@ -90,10 +90,9 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [String]    unique form ID
     #
     def id
-        #simple['attrs'].to_s << auditable.keys.reject { |name| name.include?( seed ) }.sort.to_s
-        #simple['attrs'].to_s << auditable.keys.sort.to_s
         query_vars = parse_url_vars( self.action )
-        "#{self.action.split( '?' ).first}::#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
+        "#{self.action.split( '?' ).first.to_s.split( ';' ).first}::" <<
+            "#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
     end
 
     #
@@ -257,6 +256,31 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         field = @raw['auditable'].select { |f| f['name'] == name }.first
         return if !field
         field['type'].to_s.downcase
+    end
+
+    def self.parse_request_body( body )
+        body.to_s.split( '&' ).inject( {} ) do |h, pair|
+            name, value = pair.split( '=', 2 )
+            h[decode( name.to_s )] = decode( value )
+            h
+        end
+    end
+    def parse_request_body( body )
+        self.class.parse_request_body( body )
+    end
+
+    def self.encode( str )
+        ::URI.encode( ::URI.encode( str, '+' ).gsub( ' ', '+' ), ';&\\=' )
+    end
+    def encode( str )
+        self.class.encode( str )
+    end
+
+    def self.decode( str )
+        URI.decode( str.to_s.gsub( '+', ' ' ) )
+    end
+    def decode( str )
+        self.class.decode( str )
     end
 
     def dup

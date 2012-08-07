@@ -14,46 +14,21 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the WAF Detector plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::WAFDetector < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
-
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the WAF Detector plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class WAFDetector < Arachni::Plugin::Formatter
-
-        include Buffer
-
-        def run
-            start_tag( 'waf_detector' )
-            simple_tag( 'description', @description )
-
-            start_tag( 'results' )
-
-            simple_tag( 'message', @results[:msg] )
-            simple_tag( 'code', @results[:code].to_s )
-
-            end_tag( 'results' )
-            end_tag( 'waf_detector' )
-
-            return buffer( )
-        end
-
+    def run
+        simple_tag( 'message', results[:msg] )
+        simple_tag( 'code', results[:code] )
+        buffer
     end
-
-end
-end
 
 end
 end

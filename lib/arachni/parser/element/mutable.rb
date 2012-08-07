@@ -131,7 +131,7 @@ module Mutable
         hash = auditable.dup
 
         var_combo = []
-        return [] if !hash || hash.size == 0
+        return [] if !hash || hash.empty?
 
         chash = hash.dup
         hash.keys.each do |k|
@@ -150,7 +150,7 @@ module Mutable
 
         end
 
-        if opts[:param_flip] #&& !self.is_a?( Arachni::Parser::Element::Cookie )
+        if opts[:param_flip]
             elem = self.dup
 
             # when under HPG mode element auditing is strictly regulated
@@ -159,7 +159,7 @@ module Mutable
             elem.override_instance_scope
 
             elem.altered = 'Parameter flip'
-            elem.auditable = elem.auditable.merge( injection_str => seed )
+            elem[injection_str] = seed
             var_combo << elem
         end
 
@@ -181,6 +181,14 @@ module Mutable
     # alias for #mutations
     def mutations_for( *args )
         mutations( *args )
+    end
+    # alias for #mutations
+    def permutations( *args )
+        mutations( *args )
+    end
+    # alias for #mutations
+    def permutations_for( *args )
+        permutations( *args )
     end
 
     private

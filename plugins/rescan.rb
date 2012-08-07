@@ -51,7 +51,7 @@ class Arachni::Plugins::ReScan < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
             options:     [
-                Arachni::Component::Options::Path.new( 'afr', [true, 'Path to the AFR report.'] )
+                Options::Path.new( 'afr', [true, 'Path to the AFR report.'] )
             ]
         }
     end

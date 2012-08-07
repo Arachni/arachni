@@ -2,9 +2,9 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 get '/' do
-    cookies[:success] = false
+    cookies[:success] ||= false
 
-    if cookies[:success]
+    if cookies[:success] == 'true'
         <<-HTML
             <a href='/congrats'>Hi there logged-in user!</a>
         HTML
@@ -14,8 +14,6 @@ get '/' do
 end
 
 get '/login' do
-    redirect '/' if session['logged_in']
-
     <<-HTML
         <form method='post' name='login_form' action="/login">
             <input name='username' value='' />
@@ -29,7 +27,7 @@ post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
         params['token'] == 'secret!'
         cookies[:success] = true
-        'Logged in!'
+        redirect '/'
     else
         'Boohoo...'
     end

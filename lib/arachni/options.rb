@@ -462,6 +462,11 @@ class Options
 
     attr_accessor :exclude_binaries
 
+    attr_accessor :auto_redundant
+
+    attr_accessor :login_check_url
+    attr_accessor :login_check_pattern
+
     alias :extensive_cookies? :extensive_cookies
 
     def initialize
@@ -497,6 +502,7 @@ class Options
         @fuzz_methods      = false
         @extensive_cookies = false
         @exclude_binaries  = false
+        @auto_redundant    = false
 
         @depth_limit      = -1
         @link_count_limit = -1
@@ -558,6 +564,14 @@ class Options
 
     def exclude_binaries?
         self.exclude_binaries
+    end
+
+    def auto_redundant?
+        !!@auto_redundant
+    end
+
+    def auto_redundant
+        @auto_redundant || 10
     end
 
     def fuzz_methods?
@@ -743,7 +757,10 @@ class Options
             [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
             [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
             [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ],
-            [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ]
+            [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
+            [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -974,10 +991,27 @@ class Options
 
                     when '--exclude-binaries'
                         @exclude_binaries = true
+
+                    when '--auto-redundant'
+                        @auto_redundant = arg.empty? ? nil : arg.to_i
+
+                    when '--login-check-url'
+                        @login_check_url = arg
+
+                    when '--login-check-pattern'
+                        @login_check_pattern = arg
                 end
             end
+
+            if (!@login_check_url && @login_check_pattern) ||
+                (@login_check_url && !@login_check_pattern)
+                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+            end
+
         rescue => e
-            puts e.inspect
+            puts Arachni::BANNER
+            puts
+            puts e
             exit
         end
 

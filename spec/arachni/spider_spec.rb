@@ -105,7 +105,7 @@ describe Arachni::Spider do
 
     describe '#run' do
         context 'Options.do_not_crawl' do
-            it 'should now crawl the site' do
+            it 'should not crawl the site' do
                 @opts.do_not_crawl
                 Arachni::Spider.new.run.should be_nil
             end
@@ -113,7 +113,16 @@ describe Arachni::Spider do
             context 'when crawling is then enabled using Options.crawl' do
                 it 'should perform a crawl' do
                     @opts.crawl
-                    Arachni::Spider.new.run.size.should == 3
+                    Arachni::Spider.new.run.should be_any
+                end
+            end
+        end
+        context 'Options.auto_redundant' do
+            describe 5 do
+                it 'should only crawl 5 URLs with identical query parameter names' do
+                    @opts.auto_redundant = 5
+                    @opts.url += 'auto-redundant'
+                    Arachni::Spider.new.run.size.should == 11
                 end
             end
         end

@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-require 'datamapper'
 require 'net/ssh'
 require 'net/scp'
 require 'digest/md5'
@@ -31,7 +30,7 @@ class AutoDeploy
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1.2
 #
 class Manager

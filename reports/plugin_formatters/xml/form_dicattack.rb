@@ -14,45 +14,21 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the FormDicattack plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::FormDicattack < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
+    def run
+        add_credentials( results[:username], results[:password] )
 
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the FormDicattack plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class FormDicattack < Arachni::Plugin::Formatter
-
-        include Buffer
-
-        def run
-            start_tag( 'form_dicattack' )
-            simple_tag( 'description', @description )
-
-            start_tag( 'results' )
-
-            add_credentials( @results[:username], @results[:password] )
-
-            end_tag( 'results' )
-            end_tag( 'form_dicattack' )
-
-            return buffer( )
-        end
-
+        buffer
     end
-
-end
-end
 
 end
 end

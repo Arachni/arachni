@@ -14,48 +14,24 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the TimingAttacks plugin.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::TimingAttacks < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
-
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the TimingAttacks plugin.
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class TimingAttacks < Arachni::Plugin::Formatter
-
-        include Arachni::Reports::Buffer
-
-        def run
-            start_tag( 'timeout_notice' )
-            simple_tag( 'description', @description )
-            start_tag( 'results' )
-
-            @results.each { |issue| add_issue( issue ) }
-
-            end_tag( 'results' )
-            end_tag( 'timeout_notice' )
+    def run
+        results.each do |issue|
+            append "<issue hash=\"#{issue['hash'].to_s}\" " +
+               " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
+               " url=\"#{issue['url']}\" element=\"#{issue['elem']}\" " +
+               " variable=\"#{issue['var']}\" method=\"#{issue['method']}\" />"
         end
-
-        def add_issue( issue )
-            __buffer( "<issue hash=\"#{issue['hash'].to_s}\" " +
-                " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
-                " url=\"#{issue['url']}\" element=\"#{issue['elem']}\" " +
-                " variable=\"#{issue['var']}\" method=\"#{issue['method']}\" />" )
-        end
-
     end
 
-end
-end
 end
 end

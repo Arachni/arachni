@@ -2,7 +2,7 @@ shared_examples_for "report" do
     include_examples 'component'
 
     before( :all ) { framework.reports.load name }
-    before( :each ) { framework.reports.reset }
+    #before( :each ) { framework.reports.reset }
 
     after( :each ) { File.delete( outfile ) rescue nil }
 
@@ -25,14 +25,7 @@ shared_examples_for "report" do
 
         #report_name = File.basename( caller.first.split( ':' ).first, '_spec.rb' )
 
-        out = $stdout.dup
-        $stdout = StringIO.new
-
-        r = framework.reports.run_one( name, auditstore, opts )
-
-        $stdout = out
-
-        r
+        framework.reports.run_one( name, auditstore, opts )
     end
 
     def full_report

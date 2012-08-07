@@ -14,49 +14,30 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# Stdout formatter for the results of the CookieCollector plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
 
-    #
-    # Stdout formatter for the results of the CookieCollector plugin
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class CookieCollector < Arachni::Plugin::Formatter
+    def run
+        results.each_with_index do |result, i|
+            print_info "[#{(i + 1).to_s}] On #{result[:time]}"
+            print_info "URL: " + result[:res]['effective_url']
 
-        def run
-            print_status( 'Cookie collector' )
-            print_info( '~~~~~~~~~~~~~~~~~~' )
-
-            print_info( 'Description: ' + @description )
-            print_line
-
-            @results.each_with_index {
-                |result, i|
-
-                print_info( "[#{(i + 1).to_s}] On #{result[:time]}" )
-                print_info( "URL: " + result[:res]['effective_url'] )
-                print_info( 'Cookies forced to: ' )
-                result[:cookies].each_pair{
-                    |name, value|
-                    print_info( "    #{name} => #{value}" )
-                }
-                print_line
-            }
+            print_info 'Cookies forced to: '
+            result[:cookies].each_pair do |name, value|
+                print_info "    #{name} => #{value}"
+            end
 
             print_line
         end
-
     end
-
-end
-end
 
 end
 end

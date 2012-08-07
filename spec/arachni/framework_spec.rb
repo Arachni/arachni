@@ -60,20 +60,56 @@ describe Arachni::Framework do
 
                 f.run
 
-                s1 = ["/elem_combo",
-                     "/log_remote_file_if_exists/true",
-                     "/elem_combo?link_input=--seed",
-                     "/elem_combo?form_input=--seed",
-                     "/elem_combo?form_input=form_blah&link_input=--seed"].sort.map { |p| @url + p }
-                s2 =  ["/elem_combo",
-                       "/elem_combo?form_input=--seed",
-                       "/elem_combo?form_input=form_blah&link_input=link_blah--seed",
-                       "/elem_combo?link_input=link_blah--seed",
-                       "/log_remote_file_if_exists/true"].sort.map { |p| @url + p }
-
-                sitemap = f.auditstore.sitemap.sort
-                (sitemap == s1 || sitemap == s2 ).should be_true
+                sitemap = f.auditstore.sitemap.sort.map { |u| u.split( '?' ).first }
+                sitemap.uniq.should == f.opts.restrict_paths.sort
                 f.modules.clear
+            end
+        end
+
+        describe '#login_check_url and #login_check_pattern' do
+            it 'should be used to set a login check' do
+                url = server_url_for( :framework ) + '/'
+
+                f = Arachni::Framework.new
+                f.opts.url = "#{url}/congrats"
+
+                f.has_login_sequence?.should be_false
+                f.login_sequence = proc do
+                    res = f.http.get( url, async: false, follow_location: true ).response
+                    return false if !res
+
+                    login_form = f.forms_from_response( res ).first
+                    next false if !login_form
+
+                    login_form['username'] = 'john'
+                    login_form['password'] = 'doe'
+                    res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                    return false if !res
+
+                    true
+                end
+                f.has_login_sequence?.should be_true
+
+                f.has_login_check?.should be_false
+                f.opts.login_check_url     = url
+                f.opts.login_check_pattern = 'logged-in user'
+                f.has_login_check?.should be_true
+
+                f.logged_in?.should be_false
+                f.login.should be_true
+                f.logged_in?.should be_true
+
+                bool = false
+                f.logged_in? { |b| bool = b }
+                f.http.run
+                bool.should be_true
+
+                not_bool = true
+                f.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
+                f.http.run
+                not_bool.should be_false
+
+                f.reset
             end
         end
     end
@@ -102,6 +138,95 @@ describe Arachni::Framework do
     describe '#http' do
         it 'should provide access to the HTTP interface' do
             @f.http.is_a?( Arachni::HTTP ).should be_true
+        end
+    end
+
+    describe '#can_login?' do
+        context 'when there are no login sequences' do
+            it 'should return false' do
+                @f.can_login?.should be_false
+            end
+        end
+        context 'when there are login sequences' do
+            it 'should return true' do
+                @f.login_sequence = proc {}
+                @f.login_check = proc {}
+                @f.can_login?.should be_true
+            end
+        end
+    end
+
+    describe '#login' do
+        context 'when there is no login capability' do
+            it 'should return nil' do
+                @f.can_login?.should be_false
+                @f.has_login_sequence?.should be_false
+                @f.login.should be_nil
+            end
+        end
+    end
+
+    describe '#logged_in?' do
+        context 'when there is no login check' do
+            it 'should return nil' do
+                @f.can_login?.should be_false
+                @f.has_login_check?.should be_false
+                @f.logged_in?.should be_nil
+            end
+        end
+    end
+
+    describe '#ensure_logged_in' do
+        context 'when there is no login capability' do
+            it 'should return nil' do
+                @f.can_login?.should be_false
+                @f.ensure_logged_in.should be_nil
+            end
+        end
+    end
+
+    describe '#set_login_check_url' do
+        it 'should set a login check using a URL and regular expression' do
+            f = Arachni::Framework.new
+            url = server_url_for( :framework ) + '/'
+            f.opts.url = "#{url}/congrats"
+
+            f.has_login_sequence?.should be_false
+            f.login_sequence = proc do
+                res = f.http.get( url, async: false, follow_location: true ).response
+                return false if !res
+
+                login_form = f.forms_from_response( res ).first
+                next false if !login_form
+
+                login_form['username'] = 'john'
+                login_form['password'] = 'doe'
+                res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                return false if !res
+
+                true
+            end
+            f.has_login_sequence?.should be_true
+
+            f.has_login_check?.should be_false
+            f.set_login_check_url( url, 'logged-in user' )
+            f.has_login_check?.should be_true
+
+            f.logged_in?.should be_false
+            f.login.should be_true
+            f.logged_in?.should be_true
+
+            bool = false
+            f.logged_in? { |b| bool = b }
+            f.http.run
+            bool.should be_true
+
+            not_bool = true
+            f.logged_in?( no_cookiejar: true ) { |b| not_bool = b }
+            f.http.run
+            not_bool.should be_false
+
+            f.reset
         end
     end
 
@@ -570,6 +695,41 @@ describe Arachni::Framework do
                 end
             end
 
+        end
+
+        context 'when it has log-in capabilities and gets logged out' do
+            it 'should log-in again before continuing with the audit' do
+                f = Arachni::Framework.new
+                url = server_url_for( :framework ) + '/'
+                f.opts.url = "#{url}/congrats"
+
+                f.opts.audit :links, :forms
+                f.modules.load_all
+
+                f.login_sequence = proc do
+                    res = f.http.get( url, async: false, follow_location: true ).response
+                    return false if !res
+
+                    login_form = f.forms_from_response( res ).first
+                    next false if !login_form
+
+                    login_form['username'] = 'john'
+                    login_form['password'] = 'doe'
+                    res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
+                    return false if !res
+
+                    true
+                end
+
+                f.login_check = proc do
+                    !!f.http.get( url, async: false, follow_location: true ).
+                        response.body.match( 'logged-in user' )
+                end
+
+                f.run
+                f.auditstore.issues.size.should == 1
+                f.reset
+            end
         end
 
         it 'should perform the audit' do

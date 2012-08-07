@@ -16,177 +16,134 @@
 
 require 'base64'
 
-module Arachni
-
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
-
-module Reports
-
 #
 # Creates an XML report of the audit.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.1
+# @version 0.2.2
 #
-class XML < Arachni::Report::Base
+class Arachni::Reports::XML < Arachni::Report::Base
+    require Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+    include Buffer
 
-    include Arachni::Reports::Buffer
+    def run
+        print_line
+        print_status 'Creating XML report...'
 
-    #
-    # @param [AuditStore]  audit_store
-    # @param [Hash]        options    options passed to the report
-    #
-    def initialize( audit_store, options )
-        @audit_store = audit_store
-        @outfile     = options['outfile']
-
-        # XML buffer
-        @__buffer = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-    end
-
-    def run( )
-
-        print_line( )
-        print_status( 'Creating XML report...' )
-
-        start_tag( 'arachni_report' )
+        append "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+        start_tag 'arachni_report'
 
         simple_tag( 'title', 'Web Application Security Report - Arachni Framework' )
-        simple_tag( 'generated_on', Time.now.to_s )
+        simple_tag( 'generated_on', Time.now )
         simple_tag( 'report_false_positives', REPORT_FP )
 
-        start_tag( 'system' )
-        simple_tag( 'version', @audit_store.version )
-        simple_tag( 'revision', @audit_store.revision )
-        simple_tag( 'start_datetime', @audit_store.start_datetime )
-        simple_tag( 'finish_datetime', @audit_store.finish_datetime )
-        simple_tag( 'delta_time', @audit_store.delta_time )
+        start_tag 'system'
+        simple_tag( 'version', auditstore.version )
+        simple_tag( 'revision', auditstore.revision )
+        simple_tag( 'start_datetime', auditstore.start_datetime )
+        simple_tag( 'finish_datetime', auditstore.finish_datetime )
+        simple_tag( 'delta_time', auditstore.delta_time )
 
-        simple_tag( 'url', @audit_store.options['url'] )
-        simple_tag( 'user_agent', @audit_store.options['user_agent'] )
+        simple_tag( 'url', auditstore.options['url'] )
+        simple_tag( 'user_agent', auditstore.options['user_agent'] )
 
-        start_tag( 'audited_elements' )
-        simple_tag( 'element', 'links' ) if @audit_store.options['audit_links']
-        simple_tag( 'element', 'forms' ) if @audit_store.options['audit_forms']
-        simple_tag( 'element', 'cookies' ) if @audit_store.options['audit_cookies']
-        simple_tag( 'element', 'headers' ) if @audit_store.options['audit_headers']
-        end_tag( 'audited_elements' )
+        start_tag 'audited_elements'
+        simple_tag( 'element', 'links' ) if auditstore.options['audit_links']
+        simple_tag( 'element', 'forms' ) if auditstore.options['audit_forms']
+        simple_tag( 'element', 'cookies' ) if auditstore.options['audit_cookies']
+        simple_tag( 'element', 'headers' ) if auditstore.options['audit_headers']
+        end_tag 'audited_elements'
 
-        start_tag( 'modules')
-        @audit_store.options['mods'].each { |mod| add_mod( mod ) }
-        end_tag( 'modules' )
+        start_tag 'modules'
+        auditstore.options['mods'].each { |mod| add_mod( mod ) }
+        end_tag 'modules'
 
-        start_tag( 'filters' )
-        if @audit_store.options['exclude']
-            start_tag( "exclude" )
-            @audit_store.options['exclude'].each {
-                |ex|
-                simple_tag( 'regexp', ex )
-            }
-            end_tag( "exclude" )
+        start_tag 'filters'
+
+        %w(exclude include).each do |type|
+            if auditstore.options[type]
+                start_tag type
+                auditstore.options[type].each { |ex| simple_tag( 'regexp', ex ) }
+                end_tag type
+            end
         end
 
-
-        if @audit_store.options['include']
-            start_tag( "include" )
-            @audit_store.options['include'].each {
-                |inc|
-                simple_tag( 'regexp', inc )
-            }
-            end_tag( "include" )
+        if auditstore.options['redundant']
+            start_tag 'redundant'
+            auditstore.options['redundant'].each do |regexp, counter|
+                simple_tag( 'filter', "#{regexp}:#{counter}" )
+            end
+            end_tag 'redundant'
         end
+        end_tag 'filters'
 
-
-        if @audit_store.options['redundant']
-            start_tag( "redundant" )
-            @audit_store.options['redundant'].each {
-                |regexp, counter|
-                simple_tag( 'filter', regexp + ':' + counter.to_s )
-            }
-            end_tag( "redundant" )
+        start_tag 'cookies'
+        if auditstore.options['cookies']
+            auditstore.options['cookies'].each { |name, value| add_cookie( name, value ) }
         end
-        end_tag( 'filters' )
+        end_tag 'cookies'
 
+        end_tag 'system'
 
-        start_tag( 'cookies' )
-        if( @audit_store.options['cookies'] )
-            @audit_store.options['cookies'].each {
-                |name, value|
-                add_cookie( name, value )
-            }
-        end
-        end_tag( 'cookies' )
+        start_tag 'issues'
+        auditstore.issues.each do |issue|
+            start_tag 'issue'
 
-
-        end_tag( 'system' )
-
-
-        start_tag( 'issues' )
-        @audit_store.issues.each {
-            |issue|
-
-            start_tag( 'issue' )
-
-            issue.each_pair {
-                |k, v|
+            issue.each_pair do |k, v|
                 next if !v.is_a?( String )
                 simple_tag( k, v )
-            }
+            end
 
-            add_tags( [issue.tags].flatten.compact )
+            add_tags [issue.tags].flatten.compact
 
-            start_tag( 'references' )
-            issue.references.each{
-                |name, url|
-                add_reference( name, url )
-            }
-            end_tag( 'references' )
+            start_tag 'references'
+            issue.references.each { |name, url| add_reference( name, url ) }
+            end_tag 'references'
 
+            add_variations issue
 
-            add_variations( issue )
+            end_tag 'issue'
+        end
+        end_tag 'issues'
 
-            end_tag( 'issue' )
-        }
-
-        end_tag( 'issues' )
-
-        start_tag( 'plugins' )
-
+        start_tag 'plugins'
         # get XML formatted plugin data and append them to the XML buffer
-        format_plugin_results( @audit_store.plugins ).values.compact.each { |xml| append( xml ) }
+        # along with some generic info
+        format_plugin_results.each do |plugin, results|
+            start_tag plugin
+            simple_tag( 'name', auditstore.plugins[plugin][:name] )
+            simple_tag( 'description', auditstore.plugins[plugin][:description] )
 
-        end_tag( 'plugins' )
+            start_tag 'results'
+            append( results )
+            end_tag 'results'
 
-        end_tag( 'arachni_report' )
+            end_tag plugin
+        end
+        end_tag 'plugins'
 
-        xml_write( )
-        print_status( 'Saved in \'' + @outfile + '\'.' )
+        end_tag 'arachni_report'
+
+        File.open( outfile, 'w' ) { |f| f.write( buffer ) }
+        print_status "Saved in '#{outfile}'."
     end
-
-    def xml_write( )
-        file = File.new( @outfile, 'w' )
-        file.write( @__buffer )
-        file.close
-    end
-
 
     def self.info
         {
-            :name           => 'XML report',
-            :description    => %q{Exports a report as an XML file.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.2.1',
-            :options        => [ Arachni::Report::Options.outfile( '.xml' ) ]
+            name:        'XML report',
+            description: %q{Exports a report as an XML file.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.2.2',
+            options:     [ Options.outfile( '.xml' ) ]
         }
     end
 
     def add_variations( issue )
-        start_tag( 'variations' )
-        issue.variations.each_with_index {
-            |var|
-            start_tag( 'variation' )
+        start_tag 'variations'
+
+        issue.variations.each_with_index do |var|
+            start_tag 'variation'
 
             simple_tag( 'url', var['url'] )
             simple_tag( 'id', URI.encode( var['id'] ) ) if var['id']
@@ -194,7 +151,7 @@ class XML < Arachni::Report::Base
             simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
             simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
 
-            start_tag( 'headers' )
+            start_tag 'headers'
 
             if var['headers']['request'].is_a?( Hash )
                 add_headers( 'request', var['headers']['request'] )
@@ -204,29 +161,27 @@ class XML < Arachni::Report::Base
             if var['headers']['response'].is_a?( Hash )
                 response = var['headers']['response']
             else
-                var['headers']['response'].split( "\n" ).each {
-                    |line|
+                var['headers']['response'].split( "\n" ).each do |line|
                     field, value = line.split( ':', 2 )
                     next if !value
                     response[field] = value
-                }
+                end
             end
 
             if response.is_a?( Hash )
                 add_headers( 'response', response )
             end
 
-            end_tag( 'headers' )
+            end_tag 'headers'
 
             if var['response'] && !var['response'].empty?
                 simple_tag( 'html', Base64.encode64( var['response'] ) )
             end
 
-            end_tag( 'variation' )
-        }
-        end_tag( 'variations' )
+            end_tag 'variation'
+        end
+
+        end_tag 'variations'
     end
 
-end
-end
 end

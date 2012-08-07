@@ -168,21 +168,17 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
         query = uri_parse( url ).query
         return {} if !query || query.empty?
 
-        var_hash = {}
-        query.split( '&' ).each do |pair|
+        query.to_s.split( '&' ).inject( {} ) do |h, pair|
             name, value = pair.split( '=' )
-
-            #next if value == seed
-            var_hash[name] = value
+            h[name.to_s] = value.to_s
+            h
         end
-
-        var_hash
     end
 
     # @see Base#action=
     def action=( url )
         v = super( url )
-        @audit_id_url = self.action.split( '?', 2 ).first
+        @audit_id_url = self.action.split( '?' ).first.to_s.split( ';' ).first
         v
     end
 

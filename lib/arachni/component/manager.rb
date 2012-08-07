@@ -63,6 +63,10 @@ class Manager < Hash
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
+    def load_all
+        load '*'
+    end
+
     #
     # Loads components by tags.
     #
@@ -177,7 +181,7 @@ class Manager < Hash
                         load << component
                     else
                         raise( Arachni::Exceptions::ComponentNotFound,
-                            "Error: Component #{component} wasn't found." )
+                            "Component '#{component}' could not be found." )
                     end
                 end
             end

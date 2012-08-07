@@ -14,61 +14,38 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
+class Arachni::Reports::Stdout
 
-class Stdout
-module PluginFormatters
+#
+# Stdout formatter for the results of the HealthMap plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::HealthMap < Arachni::Plugin::Formatter
 
-    #
-    # Stdout formatter for the results of the HealthMap plugin
-    #
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class HealthMap < Arachni::Plugin::Formatter
+    def run
+        print_info 'Legend:'
+        print_ok 'No issues'
+        print_bad 'Has issues'
+        print_line
 
-        def run
-            print_status( 'URL health-map' )
-            print_info( '~~~~~~~~~~~~~~~~' )
+        results[:map].each do |i|
+            state = i.keys[0]
+            url   = i.values[0]
 
-            print_line
-            print_info( 'Legend:' )
-            print_ok( 'No issues' )
-            print_bad( 'Has issues' )
-            print_line
-
-            @results[:map].each {
-                |i|
-
-                state = i.keys[0]
-                url   = i.values[0]
-
-                if state == :unsafe
-                    print_bad( url )
-                else
-                    print_ok( url )
-                end
-            }
-
-            print_line
-
-            print_info( 'Total: ' + @results[:total].to_s )
-            print_ok( 'Without issues: ' + @results[:safe].to_s )
-            print_bad( 'With issues: ' + @results[:unsafe].to_s +
-                " ( #{@results[:issue_percentage].to_s}% )" )
-
-            print_line
-
+            if state == :unsafe
+                print_bad( url )
+            else
+                print_ok( url )
+            end
         end
 
-    end
+        print_line
 
-end
-end
+        print_info "Total: #{results[:total]}"
+        print_ok "Without issues: #{results[:safe]}"
+        print_bad "With issues: #{results[:unsafe]} ( #{results[:issue_percentage].to_s}% )"
+    end
 
 end
 end

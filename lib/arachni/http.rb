@@ -18,6 +18,7 @@ require 'typhoeus'
 require 'singleton'
 
 module Arachni
+require Options.instance.dir['lib'] + 'typhoeus/utils'
 require Options.instance.dir['lib'] + 'typhoeus/hydra'
 require Options.instance.dir['lib'] + 'typhoeus/request'
 require Options.instance.dir['lib'] + 'typhoeus/response'
@@ -287,8 +288,8 @@ class HTTP
             if !opts[:no_cookiejar]
                 cookies = begin
                     @cookie_jar.for_url( url ).inject({}) do |h, c|
-                    h[c.name] = c.value
-                    h
+                        h[c.name] = c.value
+                        h
                     end.merge( cookies )
                 rescue => e
                     print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
@@ -298,7 +299,7 @@ class HTTP
             end
 
             headers           = @headers.merge( headers )
-            headers['Cookie'] = cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
+            headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
@@ -328,7 +329,10 @@ class HTTP
                     return
                 end
             else
-                cparams.each { |k, v| cparams[k] = ::URI.encode( ::URI.encode( v ) , '+;&\\' ) if v }
+                cparams = cparams.inject( {} ) do |h, (k, v)|
+                    h[form_encode( k )] = form_encode( v ) if v && k
+                    h
+                end
             end
 
             opts = {
@@ -514,7 +518,7 @@ class HTTP
             proc{ path + random_string + '/' }
         ]
 
-        @_404_gathered ||= Hash.new( false )
+        @_404_gathered ||= BloomFilter.new
 
         gathered = 0
         body = res.body
@@ -529,16 +533,16 @@ class HTTP
             # }
         # }
 
-        if !@_404_gathered[path]
+        if !@_404_gathered.include?( path )
             generators.each.with_index do |generator, i|
                 @_404[path][i] ||= {}
 
                 precision.times {
-                    get( generator.call, remove_id: true ) do |c_res|
+                    get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
                         if gathered == generators.size * precision
-                            @_404_gathered[path] = true
+                            @_404_gathered << path
                             block.call is_404?( path, body )
                         else
                             @_404[path][i]['rdiff_now'] ||= false
@@ -559,6 +563,7 @@ class HTTP
         else
             block.call is_404?( path, body )
         end
+        nil
     end
 
     def self.method_missing( sym, *args, &block )
@@ -610,15 +615,15 @@ class HTTP
 
         @request_count += 1
 
-        print_debug( '------------' )
-        print_debug( 'Queued request.' )
-        print_debug( 'ID#: ' + req.id.to_s )
-        print_debug( 'URL: ' + req.url )
-        print_debug( 'Method: ' + req.method.to_s  )
-        print_debug( 'Params: ' + req.params.to_s  )
-        print_debug( 'Headers: ' + req.headers.to_s  )
-        print_debug( 'Train?: ' + req.train?.to_s  )
-        print_debug(  '------------' )
+        print_debug '------------'
+        print_debug 'Queued request.'
+        print_debug "ID#: #{req.id}"
+        print_debug "URL: #{req.url}"
+        print_debug "Method: #{req.method}"
+        print_debug "Params: #{req.params}"
+        print_debug "Headers: #{req.headers}"
+        print_debug "Train?: #{req.train?}"
+        print_debug  '------------'
 
         req.on_complete( true ) do |res|
 
@@ -630,25 +635,25 @@ class HTTP
 
             parse_and_set_cookies( res ) if req.update_cookies?
 
-            print_debug( '------------' )
-            print_debug( 'Got response.' )
-            print_debug( 'Request ID#: ' + res.request.id.to_s )
-            print_debug( 'URL: ' + res.effective_url )
-            print_debug( 'Method: ' + res.request.method.to_s  )
-            print_debug( 'Params: ' + res.request.params.to_s  )
-            print_debug( 'Headers: ' + res.request.headers.to_s  )
-            print_debug( 'Train?: ' + res.request.train?.to_s  )
-            print_debug( '------------' )
+            print_debug '------------'
+            print_debug 'Got response.'
+            print_debug "Request ID#: #{res.request.id}"
+            print_debug "URL: #{res.effective_url}"
+            print_debug "Method: #{res.request.method}"
+            print_debug "Params: #{res.request.params}"
+            print_debug "Headers: #{res.request.headers}"
+            print_debug "Train?: #{res.request.train?}"
+            print_debug '------------'
 
             if res.timed_out?
-                #print_bad( 'Request timed-out! -- ID# ' + res.request.id.to_s )
+                print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
                 @time_out_count += 1
             end
 
             if req.train?
                 # handle redirections
                 if res.redirection? && res.location.is_a?( String )
-                    get( to_absolute( res.location, trainer.page.url ), remove_id: true ) do |res2|
+                    get( to_absolute( res.location, trainer.page.url ) ) do |res2|
                         @trainer.push( res2 )
                     end
                 else
@@ -669,8 +674,8 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].map { |_404| _404['body'].rdiff( body ) == _404['rdiff'] }.
-            include?( true )
+        @_404[path].each { |_404| return true if _404['body'].rdiff( body ) == _404['rdiff'] }
+        false
     end
 
     def random_string

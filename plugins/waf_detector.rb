@@ -152,7 +152,7 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.2',
             options:     [
-                Arachni::Component::Options::Int.new( 'precision', [false, 'Stage precision (how many times to perform each detection stage).', 5] )
+                Options::Int.new( 'precision', [false, 'Stage precision (how many times to perform each detection stage).', 5] )
             ]
         }
     end

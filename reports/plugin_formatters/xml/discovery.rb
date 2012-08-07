@@ -14,47 +14,23 @@
     limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the Discovery plugin.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::Discovery < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
-
-class XML
-module PluginFormatters
-
-    #
-    # XML formatter for the results of the Discovery plugin.
-    #
-    # @author Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      
-    # @version 0.1
-    #
-    class Discovery < Arachni::Plugin::Formatter
-
-        include Arachni::Reports::Buffer
-
-        def run
-            start_tag( 'discovery' )
-            simple_tag( 'description', @description )
-            start_tag( 'results' )
-
-            @results.each { |issue| add_issue( issue ) }
-
-            end_tag( 'results' )
-            end_tag( 'discovery' )
-        end
-
-        def add_issue( issue )
-            __buffer( "<issue hash=\"#{issue['hash'].to_s}\" " +
+    def run
+        results.each do |issue|
+            "<issue hash=\"#{issue['hash'].to_s}\" " +
                 " index=\"#{issue['index'].to_s}\" name=\"#{issue['name']}\"" +
-                " url=\"#{issue['url']}\" />" )
+                " url=\"#{issue['url']}\" />"
         end
-
     end
 
-end
-end
 end
 end

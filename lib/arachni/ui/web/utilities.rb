@@ -23,7 +23,7 @@ module Web
 #
 # @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      
+#
 # @version 0.1
 #
 module Utilities
@@ -105,24 +105,6 @@ module Utilities
     end
 
     #
-    # Constructs an instance URL by port using its dispatcher's url.
-    #
-    # @param    [Integer]   port
-    # @param    [String]   dispatcher_url   URL of the dispatcher
-    # @param    [Bool]     no_scheme        include scheme in the URL?
-    #
-    # @return   [String]
-    #
-    def port_to_url( port, dispatcher_url, no_scheme = nil )
-        uri = URI( dispatcher_url )
-        uri.port = port.to_i
-        uri = uri.to_s
-
-        uri = remove_proto( uri ) if no_scheme
-        return uri
-    end
-
-    #
     # Removes the protocol from URL string.
     #
     # @param    [String]    url
@@ -130,13 +112,14 @@ module Utilities
     # @return   [String]
     #
     def remove_proto( url )
-        begin
-            url = URI.parse( url )
-            scheme = url.scheme + '://'
-            escape( url.to_s.gsub( scheme, '' ) )
-        rescue
-            return url
-        end
+        url
+        #begin
+        #    url = URI.parse( url )
+        #    scheme = url.scheme + '://'
+        #    escape( url.to_s.gsub( scheme, '' ) )
+        #rescue
+        #    return url
+        #end
     end
 
 end
