@@ -421,9 +421,11 @@ class CLI
                     rescue ::Errno::ENOENT
                         print_error "Report file '#{arg}' doesn't exist."
                         exit 1
-                    rescue
-                        raise
+                    rescue => e
+                        print_error e
+                        print_error_backtrace e
                     end
+                    exit
             end
         end
 
