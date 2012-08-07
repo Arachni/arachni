@@ -38,6 +38,9 @@ class Arachni::Modules::SSN < Arachni::Module::Base
                 'haliphax' # tweaked regexp
             ],
             version:     '0.1.2',
+            references: {
+                'ssa.gov' => 'http://www.ssa.gov/pubs/10064.html/'
+            },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Disclosed US Social Security Number.},
