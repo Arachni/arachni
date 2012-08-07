@@ -403,6 +403,7 @@ class CLI
                         print_info 'Use the \'--lsrep\' parameter to see a detailed list of all available reports.'
                         exit 1
                     end
+
                 when 'plugins'
                     begin
                         @arachni.plugins.load( arg.keys )
