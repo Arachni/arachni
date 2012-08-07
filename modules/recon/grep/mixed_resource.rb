@@ -78,12 +78,13 @@ class Arachni::Modules::MixedResource < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Mixed Resource},
-                description: %q{Serving resources over an unencrypted channel
+                name:            %q{Mixed Resource},
+                description:     %q{Serving resources over an unencrypted channel
     while the HTML code is served over HTTPS can lead to
     Man-In-The-Middle attacks and provide a false sense of security.},
-                tags:        %w(unencrypted resource javascript stylesheet),
-                severity:    Severity::MEDIUM
+                tags:            %w(unencrypted resource javascript stylesheet),
+                severity:        Severity::MEDIUM,
+                remedy_guidance: %q{Configure server to serve resources over the encrypted channel.}
             }
 
         }

@@ -74,7 +74,8 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
                 description:     %q{Transmission of password does not use an encrypted channel.},
                 tags:            %w(unencrypted password form),
                 cwe:             '319',
-                severity:        Severity::MEDIUM
+                severity:        Severity::MEDIUM,
+                remedy_guidance: %q{Forms with sensitve content like password must be sent over HTTPS.}
             }
 
         }

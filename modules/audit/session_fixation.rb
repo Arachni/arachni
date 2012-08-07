@@ -91,11 +91,13 @@ class Arachni::Modules::SessionFixation < Arachni::Module::Base
              },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Session fixation},
-                description: %q{The web application allows the session ID to be fixed by a 3rd party.},
-                tags:        %w(session cookie injection fixation hijacking),
-                cwe:         '384',
-                severity:    Severity::HIGH
+                name:            %q{Session fixation},
+                description:     %q{The web application allows the session ID to be fixed by a 3rd party.},
+                tags:            %w(session cookie injection fixation hijacking),
+                cwe:             '384',
+                severity:        Severity::HIGH,
+                remedy_guidance: %q{Regenerate a session identifier every time a user enters an authenticated session 
+                and destroy the identifier when the user logs out of an authenticated session or stays idle for a certain amount of time.}
             }
         }
     end

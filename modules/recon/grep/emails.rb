@@ -36,13 +36,17 @@ class Arachni::Modules::EMails < Arachni::Module::Base
             description: %q{Greps pages for disclosed e-mail addresses.},
             elements:    [ Element::BODY ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            references: {
+                  'Wikipedia' => 'http://en.wikipedia.org/wiki/Address_munging'
+            },
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Disclosed e-mail address.},
-                description: %q{An e-mail address is being disclosed.},
-                cwe:         '200',
-                severity:    Severity::INFORMATIONAL
+                name:            %q{Disclosed e-mail address.},
+                description:     %q{An e-mail address is being disclosed.},
+                cwe:             '200',
+                severity:        Severity::INFORMATIONAL,
+                remedy_guidance: %q{E-mail addresses should be presented in such a way that it is hard to process them automatically.} 
             }
         }
     end

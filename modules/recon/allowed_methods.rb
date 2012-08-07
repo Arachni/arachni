@@ -62,12 +62,16 @@ class Arachni::Modules::AllowedMethods < Arachni::Module::Base
             elements:    [Element::SERVER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
+            references:  {
+                  'Apache.org' => 'http://httpd.apache.org/docs/2.2/mod/core.html#limitexcept'
+            },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Allowed HTTP methods},
                 description:     %q{The webserver claims that it supports the logged methods.},
                 tags:            %w(http methods options),
-                severity:        Severity::INFORMATIONAL
+                severity:        Severity::INFORMATIONAL,
+                remedy_guidance: %q{Configure your web server properly to disallow unnecessary HTTP method.}
             }
         }
     end

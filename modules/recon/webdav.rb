@@ -62,11 +62,12 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{WebDAV},
-                description: %q{WebDAV is enabled on the server.
+                name:             %q{WebDAV},
+                description:      %q{WebDAV is enabled on the server.
     Consider auditing further using a specialised tool.},
-                tags:        %w(webdav options methods server),
-                severity:    Severity::INFORMATIONAL
+                tags:             %w(webdav options methods server),
+                severity:         Severity::INFORMATIONAL,
+                remedy_guidance:  %q{Disable WebDAV if not required. If it is required, perform audit using specialized tools.}
             }
 
         }

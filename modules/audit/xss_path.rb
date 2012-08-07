@@ -94,7 +94,9 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
                 tags:            %w(xss path injection regexp),
                 cwe:             '79',
                 severity:        Severity::HIGH,
-                cvssv2:          '9.0'
+                cvssv2:          '9.0',
+                remedy_guidance: %q{Path must be validated and filtered
+before being returned as part of the HTML code of a page.}
             }
 
         }

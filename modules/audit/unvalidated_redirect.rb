@@ -60,6 +60,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
                 tags: %w(unvalidated redirect injection header location),
                 cwe:             '819',
                 severity:        Severity::MEDIUM,
+                remedy_guidance: %q{Server side verification should be employed to verifies whether or not the redirected destination is its original intent.}
             }
         }
     end
