@@ -57,7 +57,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         else
             print_info "Found fields: #{@uid_field}, #{@password_field}"
-            @params.merge!(@uid_field : @params['user_name'], @password_field : @params['password'])
+            @params.merge!(@uid_field => @params['user_name'], @password_field => @params['password'])
         end
 
         print_status "Found log-in form with name: #{login_form.name || '<n/a>'}"
