@@ -86,6 +86,9 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),
+            references:  {
+                'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
+            },
             issue:       {
                 name:        %q{Interesting server response.},
                 description: %q{The server responded with a non 200 (OK) code. },

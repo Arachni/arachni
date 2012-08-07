@@ -37,10 +37,12 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
         {
             name:        'Private IP address finder',
             description: %q{Scans pages for private IP addresses.},
-            elements:    [],
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             targets:     %w(Generic),
+            references: {
+                'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
+            },
             issue:       {
                 name:            %q{Private IP address disclosure.},
                 description:     %q{A private IP address is disclosed in the body of the HTML page},

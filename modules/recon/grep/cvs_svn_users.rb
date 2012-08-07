@@ -47,6 +47,9 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.3',
             targets:     %w(Generic),
+            references: {
+                'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
+            },
             issue:       {
                 name:            %q{CVS/SVN user disclosure.},
                 description:     %q{A CVS or SVN user is disclosed in the body of the HTML page.},

@@ -41,11 +41,16 @@ class Arachni::Modules::Htaccess < Arachni::Module::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
             targets:     %w(Generic),
+            references: {
+                'Apache.org' => 'http://httpd.apache.org/docs/2.2/mod/core.html#limit'
+            },
             issue:       {
                 name:        %q{Misconfiguration in LIMIT directive of .htaccess file.},
                 description: %q{The .htaccess file blocks GET requests but allows POST.},
                 tags:        %w(htaccess server limit),
-                severity:    Severity::HIGH
+                severity:    Severity::HIGH,
+                remedy_guidance:  %q{Do not use the LIMIT tag.
+                    If you are in a situation where you want to allow specific request methods, you should use LimitExcept instead.}
             }
         }
     end

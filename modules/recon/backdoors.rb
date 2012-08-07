@@ -43,6 +43,9 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
             targets:     %w(Generic),
+            references:  {
+                'Blackhat' => 'https://www.blackhat.com/presentations/bh-usa-07/Wysopal_and_Eng/Presentation/bh-usa-07-wysopal_and_eng.pdf'
+            },
             issue:       {
                 name:            %q{A backdoor file exists on the server.},
                 description:     %q{ The server response indicates that a file matching
@@ -50,7 +53,9 @@ class Arachni::Modules::Backdoors < Arachni::Module::Base
     This indicates that the server has been compromised and can
     (to some extent) be remotely controled by unauthorised users.},
                 tags:            %w(path backdoor file discovery),
-                severity:        Severity::HIGH
+                severity:        Severity::HIGH,
+                remedy_guidance: %q{Perform a source code and deployment audit to eliminate any
+                    unwanted files/resources and lines of code. Preferably perform a fresh deployment.}
             }
 
         }

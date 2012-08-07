@@ -67,12 +67,13 @@ class Arachni::Modules::XST < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{The TRACE HTTP method is enabled.},
-                description: %q{This type of attack can occur when the there
+                name:            %q{The TRACE HTTP method is enabled.},
+                description:     %q{This type of attack can occur when the there
     is an XSS vulnerability and the server supports HTTP TRACE.},
-                tags:        %w(xst methods trace server),
-                cwe:         '693',
-                severity:    Severity::MEDIUM
+                tags:            %w(xst methods trace server),
+                cwe:             '693',
+                severity:        Severity::MEDIUM,
+                remedy_guidance: %q{Disable the TRACE method if not required or use input/output validation.}
             }
 
         }

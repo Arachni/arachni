@@ -39,6 +39,9 @@ class Arachni::Modules::SSN < Arachni::Module::Base
             ],
             version:     '0.1.2',
             targets:     %w(Generic),
+            references: {
+                'ssa.gov' => 'http://www.ssa.gov/pubs/10064.html'
+            },
             issue:       {
                 name:            %q{Disclosed US Social Security Number.},
                 description:     %q{A US Social Security Number is being disclosed.},

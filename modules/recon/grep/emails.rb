@@ -39,10 +39,12 @@ class Arachni::Modules::EMails < Arachni::Module::Base
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Disclosed e-mail address.},
-                description: %q{An e-mail address is being disclosed.},
-                cwe:         '200',
-                severity:    Severity::INFORMATIONAL
+                name:            %q{Disclosed e-mail address.},
+                description:     %q{An e-mail address is being disclosed.},
+                cwe:             '200',
+                severity:        Severity::INFORMATIONAL,
+                remedy_guidance: %q{E-mail addresses should be presented in such
+                    a way that it is hard to process them automatically.}
             }
         }
     end

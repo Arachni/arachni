@@ -44,6 +44,7 @@
     - Path traversal -- Added seeds with file:// URLs and for Tomcat webapps.
     - Added (**New**)
         - Session fixation
+    - Lots of information updates for things such as remedy guidances and references. (Thanks to Samil Kumar)
 - Plugins - Every single one has been cleaned up and have had RSpec tests added.
     - AutoLogin
         - Added a mandatory verifier regexp to make sure that the login was successful. (**New**)
