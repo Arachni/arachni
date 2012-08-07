@@ -25,7 +25,7 @@
 #
 # @version 0.1.5
 #
-class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
+class Arachni::Plugins::AutoLogin2 < Arachni::Plugin::Base
 
     MSG_SUCCESS     = 'Form submitted successfully.'
     MSG_FAILURE     = 'Could not find a form suiting the provided params at: '
