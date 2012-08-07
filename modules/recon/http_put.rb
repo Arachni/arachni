@@ -55,13 +55,17 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
+            references: {
+                  'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
+            },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{HTTP PUT is enabled.},
-                description: %q{3rd parties can upload files to the web-server.},
-                tags:        %w(http methods put server),
-                cwe:         '650',
-                severity:    Severity::HIGH
+                name:            %q{HTTP PUT is enabled.},
+                description:     %q{3rd parties can upload files to the web-server.},
+                tags:            %w(http methods put server),
+                cwe:             '650',
+                severity:        Severity::HIGH,
+                remedy_guidance: %q{Disable the PUT method on the Web Server, or disable write permissions to the web server directory.}
             }
         }
     end

@@ -40,6 +40,9 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
             elements:    [],
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
+            references: {
+                'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
+            },
             targets:     %w(Generic),
             issue:       {
                 name:            %q{Private IP address disclosure.},

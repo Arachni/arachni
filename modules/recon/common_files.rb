@@ -42,11 +42,15 @@ class Arachni::Modules::CommonFiles < Arachni::Module::Base
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.2',
+            references: {
+                'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html'
+            },
             targets:     %w(Generic),
             issue:       {
-                name:     %q{A common sensitive file exists on the server.},
-                tags:     %w(common path file discovery),
-                severity: Severity::LOW
+                name:            %q{A common sensitive file exists on the server.},
+                tags:            %w(common path file discovery),
+                severity:        Severity::LOW,
+                remedy_guidance: %q{Do not expose file and directory information to the user.} 
             }
         }
     end

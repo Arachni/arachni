@@ -49,12 +49,17 @@ class Arachni::Modules::CommonDirectories < Arachni::Module::Base
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
             version:     '0.2.1',
+            references: {
+                  'CWE'   => 'http://cwe.mitre.org/data/definitions/538.html',
+                  'OWASP' => 'https://www.owasp.org/index.php/Forced_browsing'
+            },
             targets:     %w(Generic),
             issue:       {
-                name:     %q{A common directory exists on the server.},
-                tags:     %w(path directory common discovery),
-                cwe:      '538',
-                severity: Severity::MEDIUM
+                name:            %q{A common directory exists on the server.},
+                tags:            %w(path directory common discovery),
+                cwe:             '538',
+                severity:        Severity::MEDIUM,
+                remedy_guidance: %q{Do not expose file and directory information to the user.}
             }
 
         }

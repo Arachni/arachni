@@ -93,14 +93,19 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.4',
+            references: {
+                  'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'
+            },
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Directory listing is enabled.},
-                description: %q{In most circumstances enabling directory listings is a bad practise
+                name:            %q{Directory listing is enabled.},
+                description:     %q{In most circumstances enabling directory listings is a bad practise
     as it allows an attacker to better grasp the web application's structure.},
-                tags:        %w(path directory listing index),
-                cwe:         '548',
-                severity:    Severity::LOW
+                tags:            %w(path directory listing index),
+                cwe:             '548',
+                severity:        Severity::LOW,
+                remedy_guidance: %q{Restrict access to important directories or files by adopting a need to know requirement for both the document and server root, 
+and turn off features such as Automatic Directory Listings.}
             }
         }
     end
