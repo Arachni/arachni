@@ -34,7 +34,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
 
         def normalize( str )
             return '' if !str || str.empty?
-            str.encode( 'UTF-8', invalid: :replace, undef: :replace )
+            str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
         end
 
         def escapeHTML( str )

@@ -368,7 +368,7 @@ class Issue
 
     def encode( str )
         return str if !str.is_a?( String )
-        str.encode( 'UTF-8', invalid: :replace, undef: :replace )
+        str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
     end
 
     def normalize_name( name )
