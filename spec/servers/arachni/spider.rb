@@ -19,6 +19,16 @@ get '/something' do
     'Stuff'
 end
 
+get '/foreign_domain' do
+    <<EOHTML
+    <a href='/goto_foreign_domain'>goto_foreign_domain</a>
+EOHTML
+end
+
+get '/goto_foreign_domain' do
+    redirect 'http://google.com/'
+end
+
 get '/redirect' do
     redirect '/'
 end

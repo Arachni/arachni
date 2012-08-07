@@ -27,6 +27,11 @@ describe Arachni::Spider do
             include?( @url + 'with_cookies3' ).should be_true
     end
 
+    it 'should not follow redirections to foreign domains' do
+        @opts.url = @url + 'foreign_domain'
+        Arachni::Spider.new.run.should == [ @opts.url ]
+    end
+
     describe '#new' do
         it 'should be initialized using the passed options' do
             Arachni::Spider.new( @opts ).url.should == @url
