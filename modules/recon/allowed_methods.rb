@@ -57,7 +57,7 @@ class Arachni::Modules::AllowedMethods < Arachni::Module::Base
 
     def self.info
         {
-            name:        'AllowedMethods',
+            name:        'Allowed methods',
             description: %q{Checks for supported HTTP methods.},
             elements:    [Element::SERVER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
