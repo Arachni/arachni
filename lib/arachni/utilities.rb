@@ -203,9 +203,6 @@ module Utilities
     # @return   [Bool]
     #
     def exclude_path?( url )
-        #opts = Arachni::Options.instance
-        #opts.exclude.each { |pattern| return true if url.to_s =~ pattern }
-        #false
         uri_parse( url ).exclude?( Arachni::Options.instance.exclude )
     end
 
@@ -217,14 +214,6 @@ module Utilities
     # @return   [Bool]
     #
     def include_path?( url )
-        #opts = Arachni::Options.instance
-        #return true if !opts.include || opts.include.empty?
-        #
-        #opts.include.each do |pattern|
-        #    pattern = Regexp.new( pattern ) if pattern.is_a?( String )
-        #    return true if url.to_s =~ pattern
-        #end
-        #false
         uri_parse( url ).include?( Arachni::Options.instance.include )
     end
 
