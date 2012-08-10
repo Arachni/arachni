@@ -53,7 +53,6 @@ class Server < WEBrick::HTTPProxyServer
             field = key.to_s.split( /_|-/ ).map { |segment| segment.capitalize }.join( '-' )
             dst[field] = value
         end
-
     end
 
     #
@@ -105,7 +104,8 @@ class Server < WEBrick::HTTPProxyServer
 
     # @param    [Hash]  opts    merges HTTP opts with some defaults
     def http_opts( opts = {} )
-        opts.merge( no_cookiejar: true, async: false, follow_location: false )
+        opts.merge( no_cookiejar: true, async: false, follow_location: false,
+                    timeout: @config[:Timeout] )
     end
 
     #

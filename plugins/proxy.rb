@@ -56,7 +56,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              ProxyContentHandler: method( :handler ) ,
              ProxyURITest:        method( :allowed? ),
              AccessLog:           [],
-             Logger:              WEBrick::Log::new( '/dev/null', 7 )
+             Logger:              WEBrick::Log::new( '/dev/null', 7 ),
+             Timeout:             options['timeout']
         )
     end
 
@@ -184,7 +185,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             version:     '0.2',
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
-                 Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] )
+                 Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] ),
+                 Options::Int.new( 'timeout', [false, 'How long to wait for a request to complete, in milliseconds.', 5000] )
              ]
         }
     end
