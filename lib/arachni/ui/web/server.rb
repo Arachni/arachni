@@ -106,7 +106,7 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 module Web
 
-    VERSION = '0.3'
+    VERSION = '0.3.0.1'
 
 class Server < Sinatra::Base
 
