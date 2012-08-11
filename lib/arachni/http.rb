@@ -266,7 +266,7 @@ class HTTP
         raise 'URL cannot be empty.' if !url
 
         params    = opts[:params] || {}
-        remove_id = opts[:remove_id]
+        #remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
         cookies   = opts[:cookies] || {}
