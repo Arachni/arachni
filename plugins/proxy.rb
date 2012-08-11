@@ -186,7 +186,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             options:     [
                  Options::Port.new( 'port', [false, 'Port to bind to.', 8282] ),
                  Options::Address.new( 'bind_address', [false, 'IP address to bind to.', '0.0.0.0'] ),
-                 Options::Int.new( 'timeout', [false, 'How long to wait for a request to complete, in milliseconds.', 5000] )
+                 Options::Int.new( 'timeout', [false, 'How long to wait for a request to complete, in milliseconds.', 20000] )
              ]
         }
     end
