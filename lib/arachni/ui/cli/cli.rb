@@ -786,7 +786,9 @@ class CLI
 
 
     -m <modname,modname..>
-    --mods=<modname,modname..>  Comma separated list of modules to load.
+    --modules=<modname,modname..>
+
+                                Comma separated list of modules to load.
                                   (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
                                    Use '*' as a module name to deploy all modules or as a wildcard, like so:
                                       xss*   to load all xss modules

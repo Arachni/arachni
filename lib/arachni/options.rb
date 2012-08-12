@@ -463,6 +463,7 @@ class Options
 
     attr_accessor :exclude_binaries
 
+    # @return   [Bool]   configure the {Spider}'s auto-redundant feature
     attr_accessor :auto_redundant
 
     attr_accessor :login_check_url
@@ -679,6 +680,8 @@ class Options
             instance_variable_set( "@#{m}".to_sym, arg )
         end
     end
+    alias :modules :mods
+    alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
     [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
@@ -708,6 +711,7 @@ class Options
             [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--modules',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -841,7 +845,7 @@ class Options
                         @lsrep << Regexp.new( arg.to_s )
 
                     when '--http-req-limit'
-                      @http_req_limit = arg.to_i
+                        @http_req_limit = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true
@@ -858,7 +862,7 @@ class Options
                     when '--audit-headers'
                         @audit_headers = true
 
-                    when '--mods'
+                    when '--mods', '--modules'
                         @mods = arg.to_s.split( /,/ )
 
                     when '--report'
