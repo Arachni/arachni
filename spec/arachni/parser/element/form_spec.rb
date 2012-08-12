@@ -520,23 +520,23 @@ describe Arachni::Parser::Element::Form do
 
     describe '.encode' do
         it 'should form encode the passed string' do
-            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+            Arachni::Parser::Element::Form.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
         end
     end
     describe '#encode' do
         it 'should form encode the passed string' do
-            Arachni::Parser::Element::Form.encode( 'value\ +=&;' ).should == 'value%5C+%2B%3D%26%3B'
+            Arachni::Parser::Element::Form.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
         end
     end
 
     describe '.decode' do
         it 'should form decode the passed string' do
-            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+            Arachni::Parser::Element::Form.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
     describe '#decode' do
         it 'should form decode the passed string' do
-            Arachni::Parser::Element::Form.decode( 'value%5C+%2B%3D%26%3B' ).should == 'value\ +=&;'
+            Arachni::Parser::Element::Form.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
 
