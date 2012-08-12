@@ -46,9 +46,15 @@ class Manager < Arachni::Component::Manager
         @jobs = []
     end
 
-    def load_defaults
+    def load_default
         load( DEFAULT )
     end
+    alias :load_defaults :load_default
+
+    def default
+        parse( DEFAULT )
+    end
+    alias :defaults :default
 
     #
     # Runs each plug-in in its own thread.
