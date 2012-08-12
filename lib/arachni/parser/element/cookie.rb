@@ -178,7 +178,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
             muts << elem
         end
 
-        if !orphan? && Arachni::Options.extensive_cookies?
+        if !orphan? && Arachni::Options.audit_cookies_extensively?
             # submit all links and forms of the page along with our cookie mutations
             muts |= muts.map do |m|
                 (auditor.page.links | auditor.page.forms).map do |e|

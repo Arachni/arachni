@@ -769,7 +769,7 @@ class CLI
 
     Coverage -----------------------
 
-    --extensive-cookies         Submit all links and forms of the page along with the cookie permutations.
+    --audit-cookies-extensively Submit all links and forms of the page along with the cookie permutations.
                                   (*WARNING*: This will severely increase the scan-time.)
 
     --fuzz-methods              Audit links, forms and cookies using both GET and POST requests.
