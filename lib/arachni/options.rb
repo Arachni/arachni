@@ -219,6 +219,9 @@ class Options
     #
     attr_accessor :audit_cookies
 
+    attr_accessor :audit_cookies_extensively
+    alias :audit_cookies_extensively? :audit_cookies_extensively
+
     #
     # Should Arachni audit HTTP headers?
     #
@@ -277,7 +280,7 @@ class Options
     #
     # @return    [String]
     #
-    attr_accessor :proxy_addr
+    attr_accessor :proxy_host
 
     #
     # The port to connect on the proxy server
@@ -291,14 +294,14 @@ class Options
     #
     # @return    [String]
     #
-    attr_accessor :proxy_pass
+    attr_accessor :proxy_password
 
     #
     # The proxy user
     #
     # @return    [String]
     #
-    attr_accessor :proxy_user
+    attr_accessor :proxy_username
 
     #
     # The proxy type
@@ -458,16 +461,13 @@ class Options
 
     attr_accessor :fuzz_methods
 
-    attr_accessor :extensive_cookies
-
     attr_accessor :exclude_binaries
 
+    # @return   [Bool]   configure the {Spider}'s auto-redundant feature
     attr_accessor :auto_redundant
 
     attr_accessor :login_check_url
     attr_accessor :login_check_pattern
-
-    alias :extensive_cookies? :extensive_cookies
 
     def initialize
         reset
@@ -500,7 +500,7 @@ class Options
 
         @obey_robots_txt   = false
         @fuzz_methods      = false
-        @extensive_cookies = false
+        @audit_cookies_extensively = false
         @exclude_binaries  = false
         @auto_redundant    = false
 
@@ -680,6 +680,8 @@ class Options
             instance_variable_set( "@#{m}".to_sym, arg )
         end
     end
+    alias :modules :mods
+    alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
     [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
@@ -709,6 +711,7 @@ class Options
             [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--modules',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -756,7 +759,7 @@ class Options
             [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
             [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
-            [ '--extensive-cookies',      GetoptLong::NO_ARGUMENT ],
+            [ '--audit-cookies-extensively',      GetoptLong::NO_ARGUMENT ],
             [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
             [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
@@ -842,7 +845,7 @@ class Options
                         @lsrep << Regexp.new( arg.to_s )
 
                     when '--http-req-limit'
-                      @http_req_limit = arg.to_i
+                        @http_req_limit = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true
@@ -859,7 +862,7 @@ class Options
                     when '--audit-headers'
                         @audit_headers = true
 
-                    when '--mods'
+                    when '--mods', '--modules'
                         @mods = arg.to_s.split( /,/ )
 
                     when '--report'
@@ -893,11 +896,11 @@ class Options
                         @authed_by = arg
 
                     when '--proxy'
-                        @proxy_addr, @proxy_port =
+                        @proxy_host, @proxy_port =
                             arg.to_s.split( /:/ )
 
                     when '--proxy-auth'
-                        @proxy_user, @proxy_pass =
+                        @proxy_username, @proxy_password =
                             arg.to_s.split( /:/ )
 
                     when '--proxy-type'
@@ -986,8 +989,8 @@ class Options
                     when '--fuzz-methods'
                         @fuzz_methods = true
 
-                    when '--extensive-cookies'
-                        @extensive_cookies = true
+                    when '--audit-cookies-extensively'
+                        @audit_cookies_extensively = true
 
                     when '--exclude-binaries'
                         @exclude_binaries = true
@@ -1221,7 +1224,7 @@ class Options
                 return
 
             when 'proxy-addr'
-                return "--proxy=#{self.proxy_addr}:#{self.proxy_port}"
+                return "--proxy=#{self.proxy_host}:#{self.proxy_port}"
         end
 
         if var.is_a?( TrueClass )

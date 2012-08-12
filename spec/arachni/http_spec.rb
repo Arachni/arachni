@@ -493,14 +493,14 @@ describe Arachni::HTTP do
             context 'POST' do
                 it 'should encode special characters' do
                     body = nil
-                    params = { 'param\ +=&;' => 'value\ +=&;', 'nil' => nil }
+                    params = { '% param\ +=&;' => '% value\ +=&;', 'nil' => nil }
                     @http.request( @url + '/echo',
                                    method: :post,
                                    params: params,
                                    remove_id: true
                     ) { |res| body = res.body }
                     @http.run
-                    { 'param\ +=&;' => 'value\ +=&;' }.to_s.should == body
+                    body.should == { '% param\ +=&;' => '% value\ +=&;' }.to_s
                 end
             end
 

@@ -209,6 +209,16 @@ describe Arachni::Options do
             @opts.mods = mods
             @opts.mods.should == mods
         end
+
+        it 'should be aliased to #modules=' do
+            mods = %w(my_mods my_other_mods)
+
+            @opts.mods = mods.first
+            @opts.modules.should == [mods.first]
+
+            @opts.modules = mods
+            @opts.mods.should == mods
+        end
     end
 
     describe '#restrict_paths=' do

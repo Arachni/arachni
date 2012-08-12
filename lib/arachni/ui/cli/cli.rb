@@ -769,7 +769,7 @@ class CLI
 
     Coverage -----------------------
 
-    --extensive-cookies         Submit all links and forms of the page along with the cookie permutations.
+    --audit-cookies-extensively Submit all links and forms of the page along with the cookie permutations.
                                   (*WARNING*: This will severely increase the scan-time.)
 
     --fuzz-methods              Audit links, forms and cookies using both GET and POST requests.
@@ -786,7 +786,9 @@ class CLI
 
 
     -m <modname,modname..>
-    --mods=<modname,modname..>  Comma separated list of modules to load.
+    --modules=<modname,modname..>
+
+                                Comma separated list of modules to load.
                                   (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to list all.
                                    Use '*' as a module name to deploy all modules or as a wildcard, like so:
                                       xss*   to load all xss modules

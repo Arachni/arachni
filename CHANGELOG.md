@@ -21,7 +21,7 @@
         - ```--login-check-pattern``` -- A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
         - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
         - ```--fuzz-methods``` -- Audits links, forms and cookies using both ```GET``` and ```POST``` HTTP methods.
-        - ```--extensive-cookies``` -- Submits all links and forms of the page along with the cookie permutations.
+        - ```--audit-cookies-extensively``` -- Submits all links and forms of the page along with the cookie permutations.
         - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
         - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.

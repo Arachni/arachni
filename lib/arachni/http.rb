@@ -138,11 +138,11 @@ class HTTP
 
         proxy_opts = {}
         proxy_opts = {
-            proxy:          "#{opts.proxy_addr}:#{opts.proxy_port}",
-            proxy_username: opts.proxy_user,
-            proxy_password: opts.proxy_pass,
+            proxy:          "#{opts.proxy_host}:#{opts.proxy_port}",
+            proxy_username: opts.proxy_username,
+            proxy_password: opts.proxy_password,
             proxy_type:     opts.proxy_type
-        } if opts.proxy_addr
+        } if opts.proxy_host
 
         opts.redirect_limit ||= REDIRECT_LIMIT
         @opts = {
