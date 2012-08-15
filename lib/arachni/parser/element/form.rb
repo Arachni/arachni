@@ -242,7 +242,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             base_url = url
         end
         document.search( '//form' ).map do |form|
-            form = form_from_element( base_url, form )
+            next if !(form = form_from_element( base_url, form ))
             form.url = url
             form
         end.compact
@@ -312,6 +312,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
         begin
              action = to_absolute( action.dup, url ).to_s
+             return if skip_path? action
         rescue
         end
 

@@ -267,6 +267,37 @@ describe Arachni::Parser::Element::Form do
                 end
             end
 
+            context 'when the action match a skip rule' do
+                it 'should be ignored' do
+                    Arachni::Options.url     = @url
+                    Arachni::Options.exclude = 'skip-this'
+
+                    url = "http://test.com/this_is_the_base/"
+
+                    html = <<-HTML
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                            <form method="get" action="#{url}" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                            <form method="get" action="?skip-this" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                        </body>
+                    </html>
+                    HTML
+
+                    Arachni::Parser::Element::Form.from_document( @url, html ).size.should == 1
+                    Arachni::Options.reset
+                end
+            end
+
             context 'with radio inputs' do
                 it 'should return an array of forms' do
                     html = '
