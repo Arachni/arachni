@@ -104,13 +104,19 @@ module Utilities
         Arachni::Parser::Page.from_response( *args )
     end
 
+    def page_from_url( *args )
+        Arachni::Parser::Page.from_url( *args )
+    end
+
     def html_decode( str )
         ::CGI.unescapeHTML( str )
     end
+    alias :html_unescape :html_decode
 
     def html_encode( str )
         ::CGI.escapeHTML( str )
     end
+    alias :html_escape :html_encode
 
     # @return [URI::Parser] cached URI parser
     def uri_parser
