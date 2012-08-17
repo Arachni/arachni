@@ -56,6 +56,7 @@ module Utilities
     def form_parse_request_body( *args )
         Arachni::Parser::Element::Form.parse_request_body( *args )
     end
+    alias :parse_request_body :form_parse_request_body
 
     # @see Arachni::Parser::Element::Link.from_response
     def links_from_response( *args )
