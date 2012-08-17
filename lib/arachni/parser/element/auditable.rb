@@ -131,6 +131,13 @@ module Auditable
         self.auditable
     end
 
+    def has_inputs?( *args )
+        keys = args.flatten.compact.map do |a|
+            (a.is_a?( Hash ) ? a.keys : [a]).map( &:to_s )
+        end.flatten
+        (self.auditable.keys & keys).size == keys.size
+    end
+
     #
     # @param    [Hash]  hash  key=>value pair of inputs/params with which to
     #                               update the #auditable inputs
