@@ -145,6 +145,10 @@ class Page
         !!@text
     end
 
+    def title
+        document.css( 'title' ).first.text rescue nil
+    end
+
     def to_hash
         instance_variables.reduce({}) do |h, iv|
             if iv != :@document
@@ -152,6 +156,24 @@ class Page
             end
             h
         end
+    end
+
+    def hash
+        ((links.map { |e| e.hash } + forms.map { |e| e.hash } +
+            cookies.map { |e| e.hash } + headers.map { |e| e.hash }).sort.join +
+            body.to_s).hash
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+
+    def eql?( other )
+        self == other
+    end
+
+    def dup
+        self.deep_clone
     end
 
     private
