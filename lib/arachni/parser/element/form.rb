@@ -209,6 +209,11 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         var_combo.uniq
     end
 
+    def has_password?
+        return if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
+        self.raw['input'].select { |i| i['type'] == 'password' }.any?
+    end
+
     # @return   [String]    'form'
     def type
         Arachni::Module::Auditor::Element::FORM

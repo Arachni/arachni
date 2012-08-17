@@ -73,6 +73,42 @@ describe Arachni::Parser::Element::Form do
         end
     end
 
+    describe '#has_password?' do
+        context 'when the form has a password field' do
+            it 'should return true' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                Arachni::Parser::Element::Form.from_document( @url, html ).
+                    first.has_password?.should be_true
+            end
+        end
+        context 'when the form does not have a password field' do
+            it 'should return false' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                Arachni::Parser::Element::Form.from_document( @url, html ).
+                    first.has_password?.should be_false
+            end
+        end
+    end
+
     describe '#mutations' do
         it 'should only affect #auditable and #altered (unless #original? or #sample?)' do
             inputs = { inputs: { 'param_name' => 'param_value', 'stuff' => nil } }
