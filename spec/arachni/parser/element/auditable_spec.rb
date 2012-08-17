@@ -57,7 +57,7 @@ describe Arachni::Parser::Element::Auditable do
     end
 
     describe '#update' do
-        it 'should update the auditable inputs using the given hash' do
+        it 'should update the auditable inputs using the given hash and return self' do
             a = @auditable.dup
 
             updates = { 'param' => 'val1', 'another_param' => 'val3' }
@@ -71,6 +71,11 @@ describe Arachni::Parser::Element::Auditable do
             a.update( cupdates )
             a.auditable.should == updates.merge( cupdates )
             c.should_not == a
+
+            c = a.dup
+            c.update( stuff: '1' ).update( other_stuff: '2' )
+            c['stuff'].should == '1'
+            c['other_stuff'].should == '2'
         end
 
         it 'should convert all inputs to strings' do

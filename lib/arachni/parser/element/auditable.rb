@@ -140,6 +140,7 @@ module Auditable
     #
     def update( hash )
         self.auditable = self.auditable.merge( hash )
+        self
     end
 
     #
