@@ -90,9 +90,13 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     # @return   [String]    unique form ID
     #
     def id
+        id_from :auditable
+    end
+
+    def id_from( type = :auditable )
         query_vars = parse_url_vars( self.action )
         "#{self.action.split( '?' ).first.to_s.split( ';' ).first}::" <<
-            "#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
+            "#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
     #
@@ -209,9 +213,46 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
         var_combo.uniq
     end
 
+    #
+    # Refreshes the form's inputs and re-applies user updates.
+    #
+    # The way it works is by requesting the {#url}, parsing the response
+    # and updating the form with the fresh form's inputs.
+    #
+    # @param    [Hash]   http_opts   HTTP options to pass to the request
+    # @param    [Block]  &block       if a block is given the request will be async
+    #                                    and the block will be called with the
+    #                                    updated form.
+    #
+    # @return   [Form]  self
+    #
+    def refresh( http_opts = {}, &block )
+        updated = nil
+        http.get( url.to_s, http_opts.merge( async: !!block ) ) do |res|
+            # find ourselves
+            f = self.class.from_response( res ).select { |f| f.id == id_from( :original ) }.first
+            # get user updates
+            updates = changes
+            # update the form's inputs with the fresh ones and re-apply the user changes
+            updated = update( f.auditable ).update( updates )
+            block.call( updated ) if block_given?
+        end
+        updated
+    end
+
     def has_password?
         return if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
         self.raw['input'].select { |i| i['type'] == 'password' }.any?
+    end
+
+    def has_nonce?
+        !!!nonce_name
+    end
+
+    def field_type_for( name )
+        field = @raw['auditable'].select { |f| f['name'] == name }.first
+        return if !field
+        field['type'].to_s.downcase
     end
 
     # @return   [String]    'form'
@@ -251,16 +292,6 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
             form.url = url
             form
         end.compact
-    end
-
-    def has_nonce?
-        !!!nonce_name
-    end
-
-    def field_type_for( name )
-        field = @raw['auditable'].select { |f| f['name'] == name }.first
-        return if !field
-        field['type'].to_s.downcase
     end
 
     def self.parse_request_body( body )
