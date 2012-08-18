@@ -266,7 +266,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                         when '/record/stop'
                             record_stop
-                            erb :verify_login_check, verify_fail: false
+                            erb :verify_login_check, verify_fail: false, params: {
+                                'url'     => framework.opts.login_check_url,
+                                'pattern' => framework.opts.login_check_pattern
+                            }
 
                         when '/verify/login_check'
 
