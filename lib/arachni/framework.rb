@@ -280,11 +280,30 @@ class Framework
         !!login_check
     end
 
-    def login_check
+    def login_check( &block )
+        return @login_check = block if block_given?
+
         if @opts.login_check_url && @opts.login_check_pattern
             set_login_check_url( @opts.login_check_url, @opts.login_check_pattern )
         end
+
         @login_check
+    end
+
+    #
+    # A block used to login to the webapp.
+    #
+    # The block should log the framework into the webapp and return +true+ on
+    # success, +false+ on failure.
+    #
+    # @param    [Block] &block  if a block has been given it will be set as
+    #                               the login sequence
+    #
+    # @return   [Block]
+    #
+    def login_sequence( &block )
+        return @login_sequence if !block_given?
+        @login_sequence = block
     end
 
     #
