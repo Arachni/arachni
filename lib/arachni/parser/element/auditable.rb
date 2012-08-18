@@ -150,6 +150,15 @@ module Auditable
         self
     end
 
+    def changes
+        (self.orig.keys | self.auditable.keys).inject( {} ) do |h, k|
+            if self.orig[k] != self.auditable[k]
+                h[k] = self.auditable[k]
+            end
+            h
+        end
+    end
+
     #
     # Shorthand {#auditable} reader
     #

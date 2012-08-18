@@ -157,12 +157,28 @@ describe Arachni::Parser::Element::Auditable do
             c.update( stuff: '1' ).update( other_stuff: '2' )
             c['stuff'].should == '1'
             c['other_stuff'].should == '2'
+
         end
 
         it 'should convert all inputs to strings' do
             e = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'stuff' } )
             e.update( { 'key' => nil } )
             e.auditable.should == { 'key' => '' }
+        end
+    end
+
+    describe '#changes' do
+        it 'should return the changes the inputs have sustained' do
+            [
+                { 'param' => 'val1', 'another_param' => 'val3' },
+                { 'another_param' => 'val3' },
+                { 'new stuff' => 'houa!' },
+                {}
+            ].each do |updates|
+                a = @auditable.dup
+                a.update( updates )
+                a.changes.should == updates
+            end
         end
     end
 
