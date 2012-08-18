@@ -105,7 +105,7 @@ class Server < WEBrick::HTTPProxyServer
     # @param    [Hash]  opts    merges HTTP opts with some defaults
     def http_opts( opts = {} )
         opts.merge( no_cookiejar: true, async: false, follow_location: false,
-                    timeout: @config[:Timeout] )
+                    timeout: @config[:Timeout], update_cookies: true )
     end
 
     #
@@ -167,27 +167,6 @@ class Server < WEBrick::HTTPProxyServer
         end
     end
 
-    #
-    # Makes sure that we stay inside the audit scope and don't service irrelevant
-    # requests.
-    #
-    # @see Webrick::HTTPProxyServer#service
-    #
-    def service( req, res )
-        if req.request_method.downcase == 'connect'
-            super( req, res )
-            return
-        end
-
-        exclude_reasons = @config[:ProxyURITest].call( req.request_uri )
-
-        if exclude_reasons.empty?
-            super( req, res )
-        else
-            notify( exclude_reasons, res )
-        end
-    end
-
     # Communicates with the endpoint webapp and forwards its responses to the
     # proxy which then sends it to the browser.
     def perform_proxy_request( req, res )
@@ -210,15 +189,6 @@ class Server < WEBrick::HTTPProxyServer
         #set_cookie( response, res )
         set_via( res )
         res.body = response.body
-    end
-
-    # Updates the HTTP response with an array of system notifications.
-    def notify( reasons, res )
-        res.header['content-type'] = 'text/plain'
-        res.header.delete( 'content-encoding' )
-
-        res.body << "#{reasons.pop}\n"
-        res.body << reasons.map { |msg| "  *  #{msg}" }.join( "\n" )
     end
 
 end

@@ -1,0 +1,18 @@
+<%
+   rp, lp = []
+   if pages.any?
+       rp, lp = *pages.chunk( 2 )
+   end
+
+   rp ||= []
+   rl ||= []
+%>
+
+<div class="row">
+    <div class="span6">
+        <%= render :page_accordion, pages: lp  %>
+    </div>
+    <div class="span6">
+        <%= render :page_accordion, pages: rp  %>
+    </div>
+</div>

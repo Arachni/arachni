@@ -1,0 +1,30 @@
+.faded {
+    opacity: 0.3;
+}
+
+a:hover .faded {
+    opacity: 1;
+}
+
+.record-icon {
+    background-image: url("/img/record.png");
+    background-position: 14px 14px;
+}
+
+.navbar {
+    box-shadow: 0 0 2px 1px #313131 inset, 0 1px 5px #080808;
+}
+
+#loading {
+    display: none;
+}
+
+.progress {
+    margin-bottom: 0px;
+    padding: 9px 10px 11px;
+    background: none;
+}
+
+.progress.active .bar {
+    width: 300px
+}

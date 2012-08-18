@@ -1,0 +1,31 @@
+<% content_for :title, 'Finalize login settings' %>
+
+<div class="hero-unit">
+    <h1>A bit more info</h1>
+    <h2>and we'll have you on your way in no time.</h2>
+</div>
+
+<div class="well">
+    <h2>Configure the login-check</h2>
+
+    <% if verify_fail %>
+        <div class="alert alert-error">
+            <a class="close" data-dismiss="alert" href="#">×</a>
+            Login check was not successful, please review your settings and try again.
+        </div>
+    <% end %>
+
+    <form action="<%= root_url %>verify/login_check" method="post">
+        <input type="text" name="url" class="span11" placeholder="URL"
+            value="<%= html_encode params['url'] %>"/>
+        <input type="text" name="pattern" class="span11" placeholder="Pattern"
+            value="<%= html_encode params['pattern'] %>"/>
+
+        <span class="help-block">
+            The pattern will be matched against the response body of the URL.
+            A successful match should indicate that the scanner is logged in.
+        </span>
+
+        <button type="submit" class="btn btn-primary">Next &rarr;</button>
+    </form>
+</div>
