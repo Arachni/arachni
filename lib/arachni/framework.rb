@@ -313,7 +313,7 @@ class Framework
     # @param    [String, Regexp] pattern   pattern to match against the body of the response
     #
     def set_login_check_url( url, pattern )
-        self.login_check = proc do |opts, block|
+        login_check do |opts, block|
             bool = nil
             http.get( url.to_s, opts.merge( async: !!block ) ) do |res|
                 bool = !!res.body.match( pattern )
