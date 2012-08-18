@@ -110,12 +110,12 @@ module Utilities
     end
 
     def html_decode( str )
-        ::CGI.unescapeHTML( str )
+        ::CGI.unescapeHTML( str.to_s )
     end
     alias :html_unescape :html_decode
 
     def html_encode( str )
-        ::CGI.escapeHTML( str )
+        ::CGI.escapeHTML( str.to_s )
     end
     alias :html_escape :html_encode
 
