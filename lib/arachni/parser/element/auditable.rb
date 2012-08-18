@@ -72,6 +72,7 @@ module Auditable
     # @return   [Hash]
     #
     attr_reader   :orig
+    alias :original :orig
 
     #
     # @return [Hash]    audit and general options for convenience's sake
@@ -131,6 +132,13 @@ module Auditable
         self.auditable
     end
 
+    #
+    # Checks whether or not the given inputs match the auditable ones.
+    #
+    # @param    [Hash, Array, String, Symbol]   input names to check (also accepts var-args)
+    #
+    # @return   [Bool]
+    #
     def has_inputs?( *args )
         keys = args.flatten.compact.map do |a|
             (a.is_a?( Hash ) ? a.keys : [a]).map( &:to_s )
@@ -142,6 +150,8 @@ module Auditable
     # @param    [Hash]  hash  key=>value pair of inputs/params with which to
     #                               update the #auditable inputs
     #
+    # @return   [Arachni::Parser::Element::Auditable]   self
+    #
     # @see #auditable
     # @see #auditable=
     #
@@ -150,6 +160,11 @@ module Auditable
         self
     end
 
+    #
+    # Returns changes make to the auditable's inputs.
+    #
+    # @param    [Hash]  hash  key=>value pair of updated inputs/params
+    #
     def changes
         (self.orig.keys | self.auditable.keys).inject( {} ) do |h, k|
             if self.orig[k] != self.auditable[k]

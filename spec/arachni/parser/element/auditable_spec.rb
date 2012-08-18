@@ -173,6 +173,7 @@ describe Arachni::Parser::Element::Auditable do
                 { 'param' => 'val1', 'another_param' => 'val3' },
                 { 'another_param' => 'val3' },
                 { 'new stuff' => 'houa!' },
+                { 'new stuff' => 'houa!' },
                 {}
             ].each do |updates|
                 a = @auditable.dup
@@ -227,6 +228,9 @@ describe Arachni::Parser::Element::Auditable do
                 @orig.orig.should == orig_auditable
                 @orig.auditable = orig_auditable.dup
             end
+        end
+        it 'should be aliased to #original' do
+            @orig.orig.should == @orig.original
         end
     end
 
