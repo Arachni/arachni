@@ -448,6 +448,24 @@ class HTTP
         request( url, opts, &block )
     end
 
+    def sandbox( &block )
+        h = {}
+        instance_variables.each do |iv|
+            val = instance_variable_get( iv )
+            h[iv] = val.deep_clone rescue val.dup rescue val
+        end
+
+        hooks = {}
+        @__hooks.each { |k, v| hooks[k] = v.dup }
+
+        ret = block.call( self )
+
+        h.each { |iv, val| instance_variable_set( iv, val ) }
+        @__hooks = hooks
+
+        ret
+    end
+
     #
     # Updates the cookie-jar with the passed cookies
     #
