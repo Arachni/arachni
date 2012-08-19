@@ -75,7 +75,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
     def audit( *args )
-        if Arachni::Options.instance.exclude_cookies.include?( name )
+        if Arachni::Options.exclude_cookies.include?( name )
             auditor.print_info "Skipping audit of '#{name}' cookie."
             return
         end
@@ -140,7 +140,7 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     # @return   [String]    name of the current element, 'cookie' in this case.
     #
     def type
-        Arachni::Module::Auditor::Element::COOKIE
+        Arachni::Parser::Element::COOKIE
     end
 
     def dup
@@ -371,3 +371,5 @@ class Arachni::Parser::Element::Cookie < Arachni::Parser::Element::Base
     end
 
 end
+
+Arachni::Cookie = Arachni::Parser::Element::Cookie

@@ -36,10 +36,10 @@ class Base
     # I hate keep typing this all the time...
     include Arachni
 
-    include Module::Utilities
-    extend  Module::Utilities
+    include Utilities
+    extend  Utilities
 
-    include Module::Auditor
+    include Auditor
 
     #
     # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.

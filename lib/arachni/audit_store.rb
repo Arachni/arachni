@@ -17,7 +17,7 @@
 require 'digest/md5'
 module Arachni
 
-require Options.instance.dir['lib'] + 'issue'
+require Options.dir['lib'] + 'issue'
 
 #
 # Represents a finished audit session.
@@ -77,10 +77,10 @@ class AuditStore
     MODULE_NAMESPACE = ::Arachni::Modules
 
     ORDER = [
-        ::Arachni::Issue::Severity::HIGH,
-        ::Arachni::Issue::Severity::MEDIUM,
-        ::Arachni::Issue::Severity::LOW,
-        ::Arachni::Issue::Severity::INFORMATIONAL
+        Severity::HIGH,
+        Severity::MEDIUM,
+        Severity::LOW,
+        Severity::INFORMATIONAL
     ]
 
     def initialize( opts = {} )

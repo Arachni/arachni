@@ -605,16 +605,71 @@ class Options
         require @dir['lib'] + 'cache'
         require @dir['lib'] + 'utilities'
 
-        parsed = Arachni::Utilities.uri_parse( url.to_s )
+        parsed = Utilities.uri_parse( url.to_s )
         if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
-            fail( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
+            fail( Exceptions::InvalidURL, "Invalid URL argument." )
         end
 
         @url = parsed.to_s
     end
 
+    #
+    # Enables auditing of element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
     def audit( *element_types )
-        element_types.each { |type| self.send( "audit_#{type}=", true ) }
+        element_types.flatten.compact.each do |type|
+            begin
+                self.send( "audit_#{type}=", true )
+            rescue
+                begin
+                    self.send( "audit_#{type}s=", true )
+                rescue
+                end
+            end
+        end
+        true
+    end
+
+    #
+    # Disables auditing of element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
+    def dont_audit( *element_types )
+        element_types.flatten.compact.each do |type|
+            begin
+                self.send( "audit_#{type}=", false )
+            rescue
+                begin
+                    self.send( "audit_#{type}s=", false )
+                rescue
+                end
+            end
+        end
+        true
+    end
+
+
+    #
+    # Get audit settings for the given element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
+    # @return   [Bool]
+    #
+    def audit?( *element_types )
+        !element_types.flatten.compact.map do |type|
+            !!begin
+                self.send( "audit_#{type}" )
+            rescue
+                begin
+                    self.send( "audit_#{type}s" )
+                rescue
+                end
+            end
+        end.uniq.include?( false )
     end
 
     #
@@ -1012,7 +1067,7 @@ class Options
             end
 
         rescue => e
-            puts Arachni::BANNER
+            puts BANNER
             puts
             puts e
             exit

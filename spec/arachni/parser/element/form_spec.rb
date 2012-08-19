@@ -24,6 +24,10 @@ describe Arachni::Parser::Element::Form do
         @http = Arachni::HTTP.instance
     end
 
+    it 'should be assigned to Arachni::Form for easy access' do
+        Arachni::Form.should == Arachni::Parser::Element::Form
+    end
+
     describe '#new' do
         context 'when passed opts without a method' do
             it 'should default to "post"' do

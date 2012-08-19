@@ -80,7 +80,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
                     next if !(element = hash_to_element( vector ))
 
-                    pages[element.url] ||= Arachni::Parser::Page.new(
+                    pages[element.url] ||= Page.new(
                         code: 200,
                         url: element.url
                     )
@@ -108,7 +108,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
     end
 
     def page_from_body_vector( vector )
-        Arachni::Parser::Page.new(
+        Page.new(
             code:             Integer( vector['code'] || 200 ),
             url:              vector['url'] || framework.opts.url.to_s,
             body:             vector['body'] || '',
@@ -126,23 +126,23 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         return if !inputs || inputs.empty?
 
         e = case type
-            when Arachni::Issue::Element::LINK
-                Arachni::Parser::Element::Link.new( owner,
+            when Element::LINK
+                Link.new( owner,
                     action: action,
                     inputs: inputs,
                 )
-            when Arachni::Issue::Element::FORM
-                Arachni::Parser::Element::Form.new( owner,
+            when Element::FORM
+                Form.new( owner,
                     method: method,
                     action: action,
                     inputs: inputs
                 )
-            when Arachni::Issue::Element::COOKIE
-                Arachni::Parser::Element::Cookie.new( action, inputs )
-            when Arachni::Issue::Element::HEADER
-                Arachni::Parser::Element::Header.new( action, inputs )
+            when Element::COOKIE
+                Cookie.new( action, inputs )
+            when Element::HEADER
+                Header.new( action, inputs )
             else
-                Arachni::Parser::Element::Link.new( owner,
+                Link.new( owner,
                     action: action,
                     inputs: inputs
                 )

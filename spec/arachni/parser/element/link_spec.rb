@@ -10,6 +10,10 @@ describe Arachni::Parser::Element::Link do
         @link = Arachni::Parser::Element::Link.new( @url, @inputs )
     end
 
+    it 'should be assigned to Arachni::Link for easy access' do
+        Arachni::Link.should == Arachni::Parser::Element::Link
+    end
+
     describe '#new' do
         context 'when only a url is provided' do
             it 'should be used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do

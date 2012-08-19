@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
-class WithOptions < Arachni::Plugin::Base
+class Arachni::Plugins::WithOptions < Arachni::Plugin::Base
     def self.info
         {
             name:        'Component',
@@ -25,13 +22,10 @@ class WithOptions < Arachni::Plugin::Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             options:     [
-                Arachni::OptString.new( 'req_opt', [ true, 'Required option' ] ),
-                Arachni::OptString.new( 'opt_opt', [ false, 'Optional option' ] ),
-                Arachni::OptString.new( 'default_opt', [ false, 'Option with default value', 'value' ] ),
+                Options::String.new( 'req_opt', [ true, 'Required option' ] ),
+                Options::String.new( 'opt_opt', [ false, 'Optional option' ] ),
+                Options::String.new( 'default_opt', [ false, 'Option with default value', 'value' ] )
             ]
         }
     end
-end
-
-end
 end

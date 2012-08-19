@@ -14,7 +14,7 @@
     limitations under the License.
 =end
 
-lib = Arachni::Options.instance.dir['lib'] + 'cache/'
+lib = Arachni::Options.dir['lib'] + 'cache/'
 require lib + 'base'
 require lib + 'least_recently_used'
 require lib + 'random_replacement'

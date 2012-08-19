@@ -26,7 +26,7 @@ module Plugin
 #
 class Formatter
     # get the output interface
-    include Arachni::UI::Output
+    include UI::Output
 
     attr_reader :results
     attr_reader :description

@@ -14,13 +14,14 @@
     limitations under the License.
 =end
 
-lib = Arachni::Options.dir['lib']
+module Arachni
+
+lib = Options.dir['lib']
 require lib + 'bloom_filter'
 require lib + 'module/utilities'
 require lib + 'issue'
 require lib + 'parser/element/mutable'
 
-module Arachni
 class Parser
 module Element
 
@@ -38,8 +39,8 @@ end
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditable
-    include Arachni::Utilities
-    include Arachni::Parser::Element::Mutable
+    include Utilities
+    include Element::Mutable
 
     # load and include all available analysis/audit techniques
     lib = Options.instance.dir['lib'] + 'parser/element/analysis/*.rb'
@@ -82,9 +83,9 @@ module Auditable
     #
     # Holds constants that describe the HTML elements to be audited.
     #
-    module Element
-        include Arachni::Issue::Element
-    end
+    #module Element
+    #    include Arachni::Issue::Element
+    #end
 
     #
     # Default audit options.
@@ -293,7 +294,7 @@ module Auditable
     # @return   [Arachni::HTTP]
     #
     def http
-        orphan? ? Arachni::HTTP : @auditor.http
+        HTTP
     end
 
     #
@@ -361,7 +362,7 @@ module Auditable
     # @see #submit
     #
     def audit( injection_str, opts = { }, &block )
-        raise 'Block required.' if !block_given?
+        fail 'Block required.' if !block_given?
 
         if skip_path?( self.action )
             print_debug "Element's action matches skip rule, bailing out (#{self.action})."
@@ -385,7 +386,7 @@ module Auditable
         # iterate through all variation and audit each one
         mutations( injection_str, opts ).each do |elem|
 
-            if Arachni::Options.instance.exclude_vectors.include?( elem.altered )
+            if Options.exclude_vectors.include?( elem.altered )
                 print_info "Skipping audit of '#{elem.altered}' #{type} vector."
                 next
             end

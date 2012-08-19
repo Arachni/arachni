@@ -14,7 +14,6 @@
     limitations under the License.
 =end
 
-
 #
 # Private IP address recon module.
 #
@@ -40,6 +39,7 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
             author:      'Tasos Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             targets:     %w(Generic),
+            elements:    [ Element::BODY, Element::HEADER ],
             references: {
                 'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
             },

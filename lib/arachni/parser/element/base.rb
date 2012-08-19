@@ -14,19 +14,21 @@
     limitations under the License.
 =end
 
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'parser/element/mutable'
-require opts.dir['lib'] + 'parser/element/auditable'
-
 #
 # Should be extended/implemented by all HTML/HTTP modules.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 # @abstract
 #
-class Arachni::Parser::Element::Base
-    include Arachni::Parser::Element::Auditable
-    extend Arachni::Utilities
+module Arachni
+
+lib = Options.dir['lib']
+require lib + 'parser/element/mutable'
+require lib + 'parser/element/auditable'
+
+class Parser::Element::Base
+    include Element::Auditable
+    extend Utilities
 
     #
     # Relatively 'raw' (frozen) hash holding the element's HTML attributes, values, etc.
@@ -138,4 +140,5 @@ class Arachni::Parser::Element::Base
         new
     end
 
+end
 end

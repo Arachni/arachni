@@ -16,7 +16,7 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'module/manager'
+require Options.dir['lib'] + 'module/manager'
 
 module RPC
 class Server

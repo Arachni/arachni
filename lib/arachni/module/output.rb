@@ -24,7 +24,7 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Output
-    include Arachni::UI::Output
+    include UI::Output
 
     def print_error( str = '' )
         super( fancy_name + ": " + str )

@@ -16,7 +16,7 @@
 
 module Arachni
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
+require Options.dir['lib'] + 'rpc/client/base'
 
 module RPC
 class Client
@@ -24,10 +24,7 @@ class Client
 #
 # RPC client for remote instances spawned by a remote dispatcher
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1.3
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
 
@@ -48,7 +45,7 @@ class Instance
             call  = "#{@remote}.#{sym.to_s}"
 
             if !args.empty? && !sym.to_s.end_with?( '=' ) &&
-                Arachni::Options.instance.methods.include?( "#{sym}=".to_sym  )
+                Options.instance.methods.include?( "#{sym}=".to_sym  )
                 call += '='
             end
 

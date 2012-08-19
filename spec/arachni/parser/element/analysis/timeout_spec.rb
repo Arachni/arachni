@@ -45,7 +45,7 @@ describe Arachni::Parser::Element::Analysis::Timeout do
         before do
             @timeout_opts = {
                 format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                elements: [ Arachni::Issue::Element::LINK ]
+                elements: [ Arachni::Element::LINK ]
             }
             issues.clear
         end

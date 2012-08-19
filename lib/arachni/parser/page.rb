@@ -53,7 +53,7 @@ class Page
     #
     # Request headers
     #
-    # @return    [Array<Arachni::Parser::Element::Header>]
+    # @return    [Array<Arachni::Header>]
     #
     attr_reader :headers
 
@@ -67,28 +67,28 @@ class Page
     #
     # @see Parser#links
     #
-    # @return    [Array<Arachni::Parser::Element::Link>]
+    # @return    [Array<Arachni::Link>]
     #
     attr_accessor :links
 
     #
     # @see Parser#forms
     #
-    # @return    [Array<Arachni::Parser::Element::Form>]
+    # @return    [Array<Arachni::Form>]
     #
     attr_accessor :forms
 
     #
     # @see Parser#cookies
     #
-    # @return    [Array<Arachni::Parser::Element::Cookie>]
+    # @return    [Array<Arachni::Cookie>]
     #
     attr_accessor :cookies
 
     #
     # Cookies extracted from the supplied cookiejar
     #
-    # @return    [Array<Arachni::Parser::Element::Cookie>]
+    # @return    [Array<Arachni::Cookie>]
     #
     attr_accessor :cookiejar
 
@@ -110,8 +110,8 @@ class Page
         end
     end
 
-    def self.from_response( res, opts = Arachni::Options )
-        Arachni::Parser.new( res, opts ).run
+    def self.from_response( res, opts = Options )
+        Parser.new( res, opts ).run
     end
     class << self; alias :from_http_response :from_response end
 
@@ -129,7 +129,7 @@ class Page
 
         opts.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
 
-        @url    = Arachni::Utilities.normalize_url( @url )
+        @url    = Utilities.normalize_url( @url )
         @body ||= ''
     end
 
@@ -185,3 +185,5 @@ class Page
 end
 end
 end
+
+Arachni::Page = Arachni::Parser::Page

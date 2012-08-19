@@ -37,6 +37,10 @@ describe Arachni::Parser::Page do
         @empty_page = Arachni::Parser::Page.new
     end
 
+    it 'should be assigned to Arachni::Page for easy access' do
+        Arachni::Page.should == Arachni::Parser::Page
+    end
+
     describe '#text?' do
         context 'when the HTTP response was text based' do
             it 'should return true' do

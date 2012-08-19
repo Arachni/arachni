@@ -38,7 +38,7 @@ module Options
     # @return   [Arachni::OptString]
     #
     def outfile( ext = '', desc = 'Where to save the report.' )
-        Arachni::Component::Options::String.new( 'outfile', [ false, desc,
+        Options::String.new( 'outfile', [ false, desc,
             Time.now.to_s.gsub( ':', '.' ) + ext ] )
     end
 

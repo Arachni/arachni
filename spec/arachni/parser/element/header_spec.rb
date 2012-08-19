@@ -8,6 +8,10 @@ describe Arachni::Parser::Element::Header do
         @header = Arachni::Parser::Element::Header.new( @url, @inputs )
     end
 
+    it 'should be assigned to Arachni::Header for easy access' do
+        Arachni::Header.should == Arachni::Parser::Element::Header
+    end
+
     it 'should retain its assigned inputs' do
         @header.auditable.should == @inputs
     end

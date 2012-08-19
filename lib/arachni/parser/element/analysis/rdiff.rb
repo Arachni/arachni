@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require Arachni::Options.dir['lib'] + 'bloom_filter'
-
 #
 # Performs boolean, fault injection and behavioral analysis (using the rDiff algorithm)
 # in order to determine whether the web application is responding to the injected data and how.
@@ -25,17 +23,21 @@ require Arachni::Options.dir['lib'] + 'bloom_filter'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-module Arachni::Parser::Element::Analysis::RDiff
+module Arachni
+
+require Options.dir['lib'] + 'bloom_filter'
+
+module Element::Analysis::RDiff
 
     def self.included( mod )
         # the rdiff attack performs it own redundancy checks so we need this to
         # keep track of audited elements
-        @@rdiff_audited ||= Arachni::BloomFilter.new
+        @@rdiff_audited ||= BloomFilter.new
     end
 
     RDIFF_OPTIONS =  {
         # append our seeds to the default values
-        format:    [Arachni::Parser::Element::Mutable::Format::APPEND],
+        format:    [Element::Mutable::Format::APPEND],
 
         # allow duplicate requests
         redundant: true,
@@ -234,4 +236,5 @@ module Arachni::Parser::Element::Analysis::RDiff
         @action + @auditable.keys.to_s
     end
 
+end
 end

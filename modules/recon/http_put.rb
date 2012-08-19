@@ -36,8 +36,8 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
         return if audited?( path )
         audited( path )
 
-        http.request( path, method: :put, body: self.class.body, remove_id: true ) do |res|
-            http.get( path, remove_id: true ) { |c_res| check_and_log( c_res ) } if res.code == 201
+        http.request( path, method: :put, body: self.class.body ) do |res|
+            http.get( path ) { |c_res| check_and_log( c_res ) } if res.code == 201
         end
     end
 

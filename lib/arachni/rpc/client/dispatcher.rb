@@ -16,7 +16,7 @@
 
 module Arachni
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/base'
+require Options.dir['lib'] + 'rpc/client/base'
 
 module RPC
 class Client
@@ -25,8 +25,6 @@ class Client
 # RPC Dispatcher client
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-# @version 0.1.3
 #
 class Dispatcher
 

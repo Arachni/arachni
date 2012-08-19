@@ -292,9 +292,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                             form = find_login_form
                             framework.login_sequence do
-                                form.submit( async:           false,
-                                             update_cookies:  true,
-                                             follow_location: false ).response
+                                form.refresh.
+                                    submit( async:           false,
+                                            update_cookies:  true,
+                                            follow_location: false ).response
                             end
 
                             logged_in = false
@@ -439,7 +440,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def update_forms( page, req, res )
-        page.forms << Parser::Element::Form.new( res.request_uri.to_s,
+        page.forms << Form.new( res.request_uri.to_s,
             action: res.request_uri.to_s,
             method: req.request_method,
             inputs: form_parse_request_body( req.body )

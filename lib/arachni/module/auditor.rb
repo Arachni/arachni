@@ -39,32 +39,32 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Auditor
-    include Arachni::Module::Output
+    include Output
 
     def self.reset
         audited.clear
     end
 
     def self.timeout_audit_blocks
-        Arachni::Parser::Element::Auditable.timeout_audit_blocks
+        Element::Auditable.timeout_audit_blocks
     end
     def self.timeout_loaded_modules
-        Arachni::Parser::Element::Auditable.timeout_loaded_modules
+        Element::Auditable.timeout_loaded_modules
     end
     def self.on_timing_attacks( &block )
-        Arachni::Parser::Element::Auditable.on_timing_attacks( &block )
+        Element::Auditable.on_timing_attacks( &block )
     end
     def self.running_timeout_attacks?
-        Arachni::Parser::Element::Auditable.running_timeout_attacks?
+        Element::Auditable.running_timeout_attacks?
     end
     def self.timeout_audit_run
-        Arachni::Parser::Element::Auditable.timeout_audit_run
+        Element::Auditable.timeout_audit_run
     end
     def self.timeout_audit_operations_cnt
-        Arachni::Parser::Element::Auditable.timeout_audit_operations_cnt
+        Element::Auditable.timeout_audit_operations_cnt
     end
     def self.current_timeout_audit_operations_cnt
-        Arachni::Parser::Element::Auditable.current_timeout_audit_operations_cnt
+        Element::Auditable.current_timeout_audit_operations_cnt
     end
 
     #
@@ -73,7 +73,7 @@ module Auditor
     # @see #audited?
     #
     def audited( id )
-        Arachni::Module::Auditor.audited << "#{self.class}-#{id}"
+        Auditor.audited << "#{self.class}-#{id}"
     end
 
     #
@@ -84,30 +84,26 @@ module Auditor
     # @see #audited
     #
     def audited?( id )
-        Arachni::Module::Auditor.audited.include?( "#{self.class}-#{id}" )
+        Auditor.audited.include?( "#{self.class}-#{id}" )
     end
 
     #
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
     #
-    module Format
-        include Arachni::Parser::Element::Mutable::Format
-    end
+    Format = Element::Mutable::Format
 
     #
     # Holds constants that describe the HTML elements to be audited.
     #
-    module Element
-        include Arachni::Issue::Element
-    end
+    #module Element
+    #    include Issue::Element
+    #end
 
     #
     # Holds constants that describe Issue severities.
     #
-    module Severity
-        include Arachni::Issue::Severity
-    end
+    #Severity = Issue::Severity
 
     OPTIONS = {
         #
@@ -171,7 +167,7 @@ module Auditor
 
     # @return   [Arachni::HTTP]
     def http
-        Arachni::HTTP.instance
+        HTTP
     end
 
     #
@@ -182,7 +178,7 @@ module Auditor
     # @see Arachni::Module::Manager.register_results
     #
     def register_results( issues )
-        Arachni::Module::Manager.register_results( issues )
+        Module::Manager.register_results( issues )
     end
 
     #
@@ -226,7 +222,7 @@ module Auditor
     # @param    [String]    url
     #
     def remote_file_exist?( url, &block )
-        req  = http.get( url, remove_id: true )
+        req  = http.get( url )
         return false if !req
 
         req.on_complete do |res|
@@ -275,7 +271,7 @@ module Auditor
     #
     def log_issue( opts )
         # register the issue
-        register_results( [ Arachni::Issue.new( opts.merge( self.class.info ) ) ] )
+        register_results( [ Issue.new( opts.merge( self.class.info ) ) ] )
     end
 
     #
@@ -443,7 +439,7 @@ module Auditor
 
         elements = []
         opts[:elements].each do |elem|
-            next if !Arachni::Options.instance.instance_variable_get( "@audit_#{elem}s".to_sym )
+            next if !Options.audit?( elem )
 
             elements |= case elem
                 when Element::LINK
@@ -460,7 +456,7 @@ module Auditor
 
                 when Element::BODY
                 else
-                    raise( 'Unknown element to audit:  ' + elem.to_s )
+                    failt "Unknown element to audit: #{elem}"
             end
         end
 

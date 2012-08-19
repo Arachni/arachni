@@ -23,7 +23,7 @@ class HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class CookieJar
-    include Arachni::Utilities
+    include Utilities
 
     #
     # Same as {#initialize}.
@@ -46,12 +46,12 @@ class CookieJar
     # @param    [String]    cookie_jar_file path to a Netscape cookie-jar
     # @param    [String]    url     cookie owner
     #
-    # @return   [Arachni::HTTP::CookieJar]  self
+    # @return   [CookieJar]  self
     #
     def load( cookie_jar_file, url = '' )
         # make sure that the provided cookie-jar file exists
         if !File.exist?( cookie_jar_file )
-            raise( Arachni::Exceptions::NoCookieJar,
+            fail( Exceptions::NoCookieJar,
                    'Cookie-jar \'' + cookie_jar_file + '\' doesn\'t exist.' )
         end
         update( cookies_from_file( url, cookie_jar_file ) )
@@ -61,9 +61,9 @@ class CookieJar
     #
     # Updates the jar with +cookie+.
     #
-    # @param    [Arachni::Parser::Element::Cookie]  cookie
+    # @param    [Cookie]  cookie
     #
-    # @return   [Arachni::HTTP::CookieJar]  self
+    # @return   [CookieJar]  self
     #
     def <<( cookie )
         ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
@@ -73,9 +73,9 @@ class CookieJar
     #
     # Updates the jar with +cookies+.
     #
-    # @param    [Array<Arachni::Parser::Element::Cookie>]  cookies
+    # @param    [Array<Cookie>]  cookies
     #
-    # @return   [Arachni::HTTP::CookieJar]  self
+    # @return   [CookieJar]  self
     #
     def update( cookies )
         [cookies].flatten.compact.each { |c| self << c }
@@ -87,7 +87,7 @@ class CookieJar
     #
     # @param    [String]    url
     #
-    # @return   [Array<Arachni::Parser::Element::Cookie>]
+    # @return   [Array<Cookie>]
     #
     def for_url( url )
         uri = to_uri( url )
@@ -114,7 +114,7 @@ class CookieJar
     #
     # @param    [Bool]  include_expired    include expired cookies
     #
-    # @return   [Array<Arachni::Parser::Element::Cookie>]
+    # @return   [Array<Cookie>]
     #
     def cookies( include_expired = false )
         @domains.values.map do |paths|
@@ -153,7 +153,7 @@ class CookieJar
     end
 
     def to_uri( url )
-        u = url.is_a?( ::URI ) || url.is_a?( Arachni::URI ) ? url : uri_parse( url.to_s )
+        u = url.is_a?( ::URI ) || url.is_a?( ::Arachni::URI ) ? url : uri_parse( url.to_s )
         fail 'Complete absolute URL required.' if u.relative?
         u
     end

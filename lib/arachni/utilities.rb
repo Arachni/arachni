@@ -32,81 +32,81 @@ module Utilities
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
 
-    # @see Arachni::Parser::Element::Form.from_response
+    # @see Form.from_response
     def forms_from_response( *args )
-        Arachni::Parser::Element::Form.from_response( *args )
+        Form.from_response( *args )
     end
 
-    # @see Arachni::Parser::Element::Form.from_document
+    # @see Form.from_document
     def forms_from_document( *args )
-        Arachni::Parser::Element::Form.from_document( *args )
+        Form.from_document( *args )
     end
 
-    # @see Arachni::Parser::Element::Form.encode
+    # @see Form.encode
     def form_encode( *args )
-        Arachni::Parser::Element::Form.encode( *args )
+        Form.encode( *args )
     end
 
-    # @see Arachni::Parser::Element::Form.decode
+    # @see Form.decode
     def form_decode( *args )
-        Arachni::Parser::Element::Form.decode( *args )
+        Form.decode( *args )
     end
 
-    # @see Arachni::Parser::Element::Form.parse_request_body
+    # @see Form.parse_request_body
     def form_parse_request_body( *args )
-        Arachni::Parser::Element::Form.parse_request_body( *args )
+        Form.parse_request_body( *args )
     end
     alias :parse_request_body :form_parse_request_body
 
-    # @see Arachni::Parser::Element::Link.from_response
+    # @see Link.from_response
     def links_from_response( *args )
-        Arachni::Parser::Element::Link.from_response( *args )
+        Link.from_response( *args )
     end
 
-    # @see Arachni::Parser::Element::Link.from_document
+    # @see Link.from_document
     def links_from_document( *args )
-        Arachni::Parser::Element::Link.from_document( *args )
+        Link.from_document( *args )
     end
 
-    # @see Arachni::Parser::Element::Link.parse_query_vars
+    # @see Link.parse_query_vars
     def parse_url_vars( *args )
-        Arachni::Parser::Element::Link.parse_query_vars( *args )
+        Link.parse_query_vars( *args )
     end
     def parse_query( *args )
-        Arachni::Parser::Element::Link.parse_query_vars( *args )
+        Link.parse_query_vars( *args )
     end
 
-    # @see Arachni::Parser::Element::Cookie.from_response
+    # @see Cookie.from_response
     def cookies_from_response( *args )
-        Arachni::Parser::Element::Cookie.from_response( *args )
+        Cookie.from_response( *args )
     end
 
-    # @see Arachni::Parser::Element::Cookie.from_document
+    # @see Cookie.from_document
     def cookies_from_document( *args )
-        Arachni::Parser::Element::Cookie.from_document( *args )
+        Cookie.from_document( *args )
     end
 
     def parse_set_cookie( *args )
-        Arachni::Parser::Element::Cookie.parse_set_cookie( *args )
+        Cookie.parse_set_cookie( *args )
     end
 
-    # @see Arachni::Parser::Element::Cookie.from_file
+    # @see Cookie.from_file
     def cookies_from_file( *args )
-        Arachni::Parser::Element::Cookie.from_file( *args )
+        Cookie.from_file( *args )
     end
 
-    # @see Arachni::Parser::Element::Cookie.encode
+    # @see Cookie.encode
     def cookie_encode( *args )
-        Arachni::Parser::Element::Cookie.encode( *args )
+        Cookie.encode( *args )
     end
 
     # @see Arachni::Parser::Page.from_response
     def page_from_response( *args )
-        Arachni::Parser::Page.from_response( *args )
+        Page.from_response( *args )
     end
 
     def page_from_url( *args )
-        Arachni::Parser::Page.from_url( *args )
+        Page.from_url( *args )
     end
 
     def html_decode( str )
@@ -140,7 +140,7 @@ module Utilities
     end
 
     # @see URI.to_absolute
-    def to_absolute( relative_url, reference_url = Arachni::Options.instance.url.to_s )
+    def to_absolute( relative_url, reference_url = Options.instance.url.to_s )
         URI.to_absolute( relative_url, reference_url )
     end
 
@@ -184,7 +184,7 @@ module Utilities
     # @see URI.too_deep?
     #
     def path_too_deep?( url )
-        uri_parse( url ).too_deep?( Arachni::Options.instance.depth_limit )
+        uri_parse( url ).too_deep?( Options.depth_limit )
     end
 
     #
@@ -198,8 +198,8 @@ module Utilities
     #
     # @see URI.in_domain?
     #
-    def path_in_domain?( url, reference = Arachni::Options.instance.url )
-        uri_parse( url ).in_domain?( !Arachni::Options.instance.follow_subdomains, reference )
+    def path_in_domain?( url, reference = Options.url )
+        uri_parse( url ).in_domain?( !Options.follow_subdomains, reference )
     end
 
     #
@@ -210,7 +210,7 @@ module Utilities
     # @return   [Bool]
     #
     def exclude_path?( url )
-        uri_parse( url ).exclude?( Arachni::Options.instance.exclude )
+        uri_parse( url ).exclude?( Options.exclude )
     end
 
     #
@@ -221,7 +221,7 @@ module Utilities
     # @return   [Bool]
     #
     def include_path?( url )
-        uri_parse( url ).include?( Arachni::Options.instance.include )
+        uri_parse( url ).include?( Options.include )
     end
 
     #

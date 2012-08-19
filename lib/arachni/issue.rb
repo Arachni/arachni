@@ -37,20 +37,6 @@ class Issue
     end
 
     #
-    # Holds constants to describe the {Issue#elem} of a
-    # vulnerability.
-    #
-    module Element
-        LINK    = 'link'
-        FORM    = 'form'
-        COOKIE  = 'cookie'
-        HEADER  = 'header'
-        BODY    = 'body'
-        PATH    = 'path'
-        SERVER  = 'server'
-    end
-
-    #
     # The name of the issue
     #
     # @return    [String]
@@ -273,7 +259,7 @@ class Issue
     end
 
     def url=( v )
-        @url = Arachni::Utilities.normalize_url( v )
+        @url = Utilities.normalize_url( v )
 
         # last resort sanitization
         @url = v.split( '?' ).first if @url.to_s.empty?
@@ -377,3 +363,5 @@ class Issue
 
 end
 end
+
+Arachni::Severity = Arachni::Issue::Severity

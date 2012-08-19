@@ -114,7 +114,7 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
 
     # @return [String]  'link'
     def type
-        Arachni::Module::Auditor::Element::LINK
+        Arachni::Parser::Element::LINK
     end
 
     #
@@ -202,3 +202,5 @@ class Arachni::Parser::Element::Link < Arachni::Parser::Element::Base
     end
 
 end
+
+Arachni::Link = Arachni::Parser::Element::Link

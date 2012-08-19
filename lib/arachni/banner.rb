@@ -21,14 +21,17 @@ require 'bundler/setup'
 
 module Arachni
 
+    WEBSITE = 'http://arachni-scanner.com'
+    WIKI    = "#{WEBSITE}/wiki"
+
     BANNER =<<EOBANNER
 Arachni - Web Application Security Scanner Framework v#{VERSION}
    Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 
            (With the support of the community and the Arachni Team.)
 
-   Website:       http://arachni-scanner.com
-   Documentation: http://arachni-scanner.com/wiki
+   Website:       #{WEBSITE}
+   Documentation: #{WIKI}
 EOBANNER
 
 end

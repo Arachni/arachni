@@ -14,16 +14,8 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
-
-class AFR < Arachni::Report::Base
-
+class Arachni::Reports::AFR < Arachni::Report::Base
     def run
         File.open( "afr", "w" ) {}
     end
-
-end
-
-end
 end

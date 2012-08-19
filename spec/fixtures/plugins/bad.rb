@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
-class Bad < Arachni::Plugin::Base
+class Arachni::Plugins::Bad < Arachni::Plugin::Base
 
     def prepare
         @prepared = true
@@ -34,19 +31,16 @@ class Bad < Arachni::Plugin::Base
     end
 
     def self.gems
-        [ 'foobar' ]
+        %w(foobar)
     end
 
     def self.info
         {
-            :name           => '',
-            :description    => %q{},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            name:        '',
+            description: %q{},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1'
         }
     end
 
-end
-
-end
 end

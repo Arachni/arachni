@@ -16,13 +16,12 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/client/instance'
-require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'rpc/client/instance'
+require Options.dir['lib'] + 'rpc/client/dispatcher'
 
-require Options.instance.dir['lib'] + 'rpc/server/base'
-require Options.instance.dir['lib'] + 'rpc/server/output'
-
-require Options.instance.dir['lib'] + 'rpc/server/framework'
+require Options.dir['lib'] + 'rpc/server/base'
+require Options.dir['lib'] + 'rpc/server/output'
+require Options.dir['lib'] + 'rpc/server/framework'
 
 module RPC
 class Server
@@ -38,8 +37,8 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
-    include Arachni::UI::Output
-    include Arachni::Utilities
+    include UI::Output
+    include Utilities
 
     #
     # Initializes the RPC interface, the HTTP(S) server and the framework.
@@ -126,14 +125,14 @@ class Instance
 
     def dispatcher
         @dispatcher ||=
-            Arachni::RPC::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+            Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
     end
 
     #
     # Initialises the RPC framework.
     #
     def prep_framework
-        @framework = Arachni::RPC::Server::Framework.new( Options.instance )
+        @framework = Server::Framework.new( Options.instance )
     end
 
     #

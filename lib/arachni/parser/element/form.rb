@@ -257,7 +257,7 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
 
     # @return   [String]    'form'
     def type
-        Arachni::Module::Auditor::Element::FORM
+        Arachni::Parser::Element::FORM
     end
 
     #
@@ -455,3 +455,5 @@ class Arachni::Parser::Element::Form < Arachni::Parser::Element::Base
     end
 
 end
+
+Arachni::Form = Arachni::Parser::Element::Form

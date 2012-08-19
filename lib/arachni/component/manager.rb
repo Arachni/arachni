@@ -16,7 +16,7 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'component/options'
+require Options.dir['lib'] + 'component/options'
 
 module Component
 
@@ -29,7 +29,7 @@ module Component
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Hash
-    include Arachni::UI::Output
+    include UI::Output
 
     class InvalidOptions < RuntimeError
     end
@@ -80,7 +80,7 @@ class Manager < Hash
         tags = [tags].flatten.compact.map( &:to_s )
         return [] if tags.empty?
 
-        load( '*' )
+        load_all
         map do |k, v|
             component_tags  = [v.info[:tags]]
             component_tags |= [v.info[:issue][:tags]] if v.info[:issue]
@@ -132,7 +132,7 @@ class Manager < Hash
         end
 
         if !errors.empty?
-            raise InvalidOptions.new( format_error_string( component_name, errors ) )
+            fail InvalidOptions.new( format_error_string( component_name, errors ) )
         end
 
         options
@@ -180,7 +180,7 @@ class Manager < Hash
                     if avail_components.include?( component )
                         load << component
                     else
-                        raise( Arachni::Exceptions::ComponentNotFound,
+                        fail( Exceptions::ComponentNotFound,
                             "Component '#{component}' could not be found." )
                     end
                 end
@@ -282,20 +282,6 @@ class Manager < Hash
     end
 
     def format_error_string( name, errors )
-        #print_line
-        #print_line
-        #
-        #print_error( "Invalid options for component: #{name}" )
-        #
-        #errors.each do |optname, error|
-        #    val = error[:value].nil? ? '<empty>' : error[:value]
-        #    msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
-        #
-        #    print_error( " *  #{msg}: #{optname} => #{val}" )
-        #    print_error( " *  Expected type: #{error[:opt].type}" )
-        #    print_line
-        #end
-
         "Invalid options for component: #{name}\n" +
         errors.map do |optname, error|
             val = error[:value].nil? ? '<empty>' : error[:value]

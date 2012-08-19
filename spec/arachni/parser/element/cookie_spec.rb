@@ -8,6 +8,10 @@ describe Arachni::Parser::Element::Cookie do
         @http = Arachni::HTTP.instance
     end
 
+    it 'should be assigned to Arachni::Cookie for easy access' do
+        Arachni::Cookie.should == Arachni::Parser::Element::Cookie
+    end
+
     describe '#submit' do
         it 'should perform the appropriate HTTP request with appropriate params' do
             body_should = @c.auditable.map { |k, v| k.to_s + v.to_s }.join( "\n" )
@@ -355,3 +359,4 @@ describe Arachni::Parser::Element::Cookie do
     end
 
 end
+
