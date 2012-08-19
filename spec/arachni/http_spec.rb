@@ -578,7 +578,7 @@ describe Arachni::HTTP do
         describe :train do
             before( :all ) do
                 res = @http.get( @url, async: false, remove_id: true ).response
-                @page = Arachni::Parser::Page.from_response( res, @opts )
+                @page = Arachni::Page.from_response( res, @opts )
             end
             describe 'nil' do
                 it 'should not pass the response to the Trainer' do
@@ -650,9 +650,9 @@ describe Arachni::HTTP do
 
                 it 'should only send the appropriate cookies for the domain' do
                     cookies = []
-                    cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com',
+                    cookies << Arachni::Element::Cookie.new( 'http://test.com',
                         'key1' => 'val1' )
-                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                    cookies << Arachni::Element::Cookie.new( @url,
                         'key2' => 'val2' )
 
                     @http.cookie_jar.update( cookies )
@@ -728,7 +728,7 @@ describe Arachni::HTTP do
             describe 'nil' do
                 it 'should not update the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                    cookies << Arachni::Element::Cookie.new( @url,
                         'key2' => 'val2' )
                     @http.update_cookies( cookies )
                     body = nil
@@ -741,7 +741,7 @@ describe Arachni::HTTP do
             describe false do
                 it 'should not update the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                    cookies << Arachni::Element::Cookie.new( @url,
                         'key2' => 'val2' )
                     @http.update_cookies( cookies )
                     body = nil
@@ -754,7 +754,7 @@ describe Arachni::HTTP do
             describe true do
                 it 'should update the cookiejar' do
                     cookies = []
-                    cookies << Arachni::Parser::Element::Cookie.new( @url,
+                    cookies << Arachni::Element::Cookie.new( @url,
                         'key2' => 'val2' )
                     @http.update_cookies( cookies )
                     body = nil
@@ -837,7 +837,7 @@ describe Arachni::HTTP do
     describe '#update_cookies' do
         it 'should update the cookies' do
             cookies = []
-            cookies << Arachni::Parser::Element::Cookie.new( @url,
+            cookies << Arachni::Element::Cookie.new( @url,
                 'key2' => 'val2' )
             @http.cookies.should be_empty
             @http.update_cookies( cookies )
@@ -848,7 +848,7 @@ describe Arachni::HTTP do
     describe '#on_new_cookies' do
         it 'should add blocks to be called when new cookies arrive' do
             cookies = []
-            cookies << Arachni::Parser::Element::Cookie.new( @url,
+            cookies << Arachni::Element::Cookie.new( @url,
                 'name' => 'value' )
             res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
 
@@ -868,7 +868,7 @@ describe Arachni::HTTP do
     describe '#parse_and_set_cookies' do
         it 'should update the cookies from a response and call on_new_cookies blocks' do
             cookies = []
-            cookies << Arachni::Parser::Element::Cookie.new( @url,
+            cookies << Arachni::Element::Cookie.new( @url,
                 'name' => 'value' )
             res = Typhoeus::Response.new( effective_url: @url, headers_hash: { 'Set-Cookie' => 'name=value' } )
 

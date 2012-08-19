@@ -6,10 +6,10 @@ describe Arachni::Module::ElementDB do
         @edb = Class.new
         @edb.extend Arachni::Module::ElementDB
 
-        @page = Arachni::Parser::Page.new(
+        @page = Arachni::Page.new(
             :url => 'http://blah.com',
             :links => [
-                Arachni::Parser::Element::Link.new(
+                Arachni::Element::Link.new(
                     'http://blah.com',
                     :inputs => {
                         'link_input' => 'link_value'
@@ -17,7 +17,7 @@ describe Arachni::Module::ElementDB do
                 )
             ],
             :forms => [
-                Arachni::Parser::Element::Form.new(
+                Arachni::Element::Form.new(
                     'http://blah.com',
                     :inputs => {
                         'form_input' => 'form_value'
@@ -25,13 +25,13 @@ describe Arachni::Module::ElementDB do
                 )
             ],
             :cookies => [
-                Arachni::Parser::Element::Cookie.new(
+                Arachni::Element::Cookie.new(
                     'http://blah.com',
                     'cookie_input' => 'cookie_value'
                 )
             ],
             :headers => [
-                Arachni::Parser::Element::Header.new(
+                Arachni::Element::Header.new(
                     'http://blah.com',
                     'header_input' => 'header_value'
                 )
@@ -44,7 +44,7 @@ describe Arachni::Module::ElementDB do
     describe '#update_links' do
         context 'when there are new links' do
             it 'should add them to the DB and return them' do
-                link = Arachni::Parser::Element::Link.new(
+                link = Arachni::Element::Link.new(
                     'http://blah.com',
                     :inputs => {
                         'new_link_input' => 'new_link_value'
@@ -69,7 +69,7 @@ describe Arachni::Module::ElementDB do
     describe '#update_forms' do
         context 'when there are new forms' do
             it 'should add them to the DB and return them' do
-                form = Arachni::Parser::Element::Form.new(
+                form = Arachni::Element::Form.new(
                     'http://blah.com',
                     :inputs => {
                         'new_form_input' => 'new_form_value'
@@ -94,7 +94,7 @@ describe Arachni::Module::ElementDB do
     describe '#update_cookies' do
         context 'when there are new cookies' do
             it 'should add them to the DB, return all cookies but only return the count of the new ones' do
-                cookie = Arachni::Parser::Element::Cookie.new(
+                cookie = Arachni::Element::Cookie.new(
                     'http://blah.com',
                     'new_cookie_input' => 'new_cookie_value'
                 )
@@ -107,7 +107,7 @@ describe Arachni::Module::ElementDB do
 
         context 'when there are cookies with existing names but have different values' do
             it 'should update the values' do
-                cookie = Arachni::Parser::Element::Cookie.new(
+                cookie = Arachni::Element::Cookie.new(
                     'http://blah.com',
                     'cookie_input' => 'foo!'
                 )

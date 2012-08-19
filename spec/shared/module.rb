@@ -2,7 +2,7 @@ shared_examples_for "module" do
     include_examples 'component'
 
     module Format
-        include Arachni::Parser::Element::Mutable::Format
+        include Arachni::Element::Capabilities::Mutable::Format
     end
 
     module Element
@@ -35,7 +35,7 @@ shared_examples_for "module" do
 
     after( :each ) do
         Arachni::Module::ElementDB.reset
-        Arachni::Parser::Element::Auditable.reset
+        Arachni::Element::Capabilities::Auditable.reset
         Arachni::Module::Manager.results.clear
         Arachni::Module::Manager.do_not_store
 

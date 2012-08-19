@@ -46,7 +46,7 @@ class Trainer
     #
     # Inits the element DB and sets the current working page.
     #
-    # @param    [Arachni::Parser::Page]    page
+    # @param    [Arachni::Page]    page
     #
     def init( page )
         init_db_from_page( page )
@@ -56,7 +56,7 @@ class Trainer
     #
     # Sets the current working page.
     #
-    # @param    [Arachni::Parser::Page]    page
+    # @param    [Arachni::Page]    page
     #
     def page=( page )
         @page = page.deep_clone
@@ -65,7 +65,7 @@ class Trainer
     #
     # Flushes the page buffer
     #
-    # @return   [Array<Arachni::Parser::Page>]
+    # @return   [Array<Arachni::Page>]
     #
     def flush
         pages = @pages.dup

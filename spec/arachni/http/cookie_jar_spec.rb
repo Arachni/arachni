@@ -118,49 +118,49 @@ describe Arachni::HTTP::CookieJar do
     describe '#for_url' do
         it 'should return all cookies for that particular URL' do
             cookies = {}
-            cookies[:with_path] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:with_path] = Arachni::Element::Cookie.new( '',
                 'name'  => 'my_cookie',
                 'value' => 'my_value',
                 'domain'=> 'domain.com',
                 'path'  => '/my/path'
             )
 
-            cookies[:without_path] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:without_path] = Arachni::Element::Cookie.new( '',
                 'name'  => 'my_cookie1',
                 'value' => 'my_value2',
                 'domain'=> 'domain.com',
                 'path'  => '/'
             )
 
-            cookies[:another_domain] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:another_domain] = Arachni::Element::Cookie.new( '',
                 'name'  => 'my_cookie1',
                 'value' => 'my_value2',
                 'domain'=> 'mydomain.com',
                 'path'  => '/'
             )
 
-            cookies[:tailmatching] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:tailmatching] = Arachni::Element::Cookie.new( '',
                 'name'  => 'tail_name',
                 'value' => 'tail_value',
                 'domain'=> '.mydomain.com',
                 'path'  => '/'
             )
 
-            cookies[:subdomain] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:subdomain] = Arachni::Element::Cookie.new( '',
                 'name'  => 'name',
                 'value' => 'value',
                 'domain'=> 'sub.domain.com',
                 'path'  => '/'
             )
 
-            cookies[:subdomain_tailmatching] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:subdomain_tailmatching] = Arachni::Element::Cookie.new( '',
                 'name'  => 'tail_name',
                 'value' => 'tail_value',
                 'domain'=> '.sub.domain.com',
                 'path'  => '/'
             )
 
-            cookies[:expired] = Arachni::Parser::Element::Cookie.new( '',
+            cookies[:expired] = Arachni::Element::Cookie.new( '',
                 'name'  => 'expired_name',
                 'value' => 'expired_value',
                 'domain'=> 'expired.com',
@@ -188,14 +188,14 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#cookies' do
         before( :each ) do
-            @jar << Arachni::Parser::Element::Cookie.new( '',
+            @jar << Arachni::Element::Cookie.new( '',
                 'name'  => 'expired_name',
                 'value' => 'expired_value',
                 'domain'=> 'expired.com',
                 'path'  => '/',
                 'expires' => Time.now - 999999
             )
-            @jar << Arachni::Parser::Element::Cookie.new( '',
+            @jar << Arachni::Element::Cookie.new( '',
                 'name'  => 'my_name',
                 'value' => 'my_value',
                 'domain'=> 'domain.com',

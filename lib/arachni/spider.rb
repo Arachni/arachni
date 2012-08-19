@@ -85,7 +85,7 @@ class Spider
     #
     # Runs the Spider and passes the requested object to the block.
     #
-    # @param [Bool] pass_pages_to_block  decides weather the block should be passed [Arachni::Parser::Page]s
+    # @param [Bool] pass_pages_to_block  decides weather the block should be passed [Arachni::Page]s
     #                           or [Typhoeus::Response]s
     # @param [Block] block  to be passed each page as visited
     #
@@ -126,7 +126,7 @@ class Spider
         sitemap
     end
 
-    # Tells the crawler to pass [Arachni::Parser::Page]s to {#on_each_page} blocks.
+    # Tells the crawler to pass [Arachni::Page]s to {#on_each_page} blocks.
     def pass_pages
         @pass_pages = true
     end
@@ -144,7 +144,7 @@ class Spider
     #
     # Sets blocks to be called every time a page is visited.
     #
-    # By default, the blocks will be passed [Arachni::Parser::Page]s;
+    # By default, the blocks will be passed [Arachni::Page]s;
     # if you want HTTP responses you need to call {#pass_responses}.
     #
     # @param    [Block]     block

@@ -170,7 +170,7 @@ describe Arachni::Spider do
                 pages = []
                 spider.run { |page| pages << page }
                 pages.size.should == spider.sitemap.size
-                pages.first.is_a?( Arachni::Parser::Page ).should be_true
+                pages.first.is_a?( Arachni::Page ).should be_true
             end
         end
         context 'when a redirect that is outside the scope is encountered' do
@@ -196,7 +196,7 @@ describe Arachni::Spider do
                         pages = []
                         spider.run( true ) { |page| pages << page }
                         pages.size.should == spider.sitemap.size
-                        pages.first.is_a?( Arachni::Parser::Page ).should be_true
+                        pages.first.is_a?( Arachni::Page ).should be_true
                     end
                 end
                 describe false do
@@ -228,7 +228,7 @@ describe Arachni::Spider do
                 pages.should == pages2
 
                 pages.size.should == s.sitemap.size
-                pages.first.is_a?( Arachni::Parser::Page ).should be_true
+                pages.first.is_a?( Arachni::Page ).should be_true
             end
         end
         context 'when #pass_responses has been called' do

@@ -140,7 +140,7 @@ class Options
     attr_accessor :debug
 
     #
-    # Filters for redundant links in the form of {pattern => counter}.
+    # Filters for redundant links in the form of (pattern => counter).
     #
     # @return    [Hash[Regexp, Integer]]
     #

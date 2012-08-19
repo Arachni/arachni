@@ -261,8 +261,8 @@ describe Arachni::Framework do
                     f.opts.audit_links = true
                     f.modules.load %w(body)
 
-                    link = Arachni::Parser::Element::Link.new( 'http://test' )
-                    p = Arachni::Parser::Page.new( url: 'http://test', body: 'stuff' )
+                    link = Arachni::Element::Link.new( 'http://test' )
+                    p = Arachni::Page.new( url: 'http://test', body: 'stuff' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -278,8 +278,8 @@ describe Arachni::Framework do
                     f.opts.audit_links = true
                     f.modules.load %w(body)
 
-                    link = Arachni::Parser::Element::Link.new( 'http://test' )
-                    p = Arachni::Parser::Page.new( url: 'http://test', body: '' )
+                    link = Arachni::Element::Link.new( 'http://test' )
+                    p = Arachni::Page.new( url: 'http://test', body: '' )
                     f.push_to_page_queue( p )
 
                     f.run
@@ -299,8 +299,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = true
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -315,8 +315,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = true
                         f.modules.load %w(path server)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -331,8 +331,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = true
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -351,8 +351,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = false
                         f.modules.load %w(links forms cookies headers flch)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -367,8 +367,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = true
                         f.modules.load %w(path server)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -383,8 +383,8 @@ describe Arachni::Framework do
                         f.opts.audit_links = true
                         f.modules.load %w(nil empty)
 
-                        link = Arachni::Parser::Element::Link.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', links: [link] )
+                        link = Arachni::Element::Link.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', links: [link] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -406,8 +406,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = true
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -422,8 +422,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = true
                         f.modules.load %w(path server)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -438,8 +438,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = true
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -458,8 +458,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = false
                         f.modules.load %w(links forms cookies headers flch)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -474,8 +474,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = false
                         f.modules.load %w(path server)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -490,8 +490,8 @@ describe Arachni::Framework do
                         f.opts.audit_forms = false
                         f.modules.load %w(nil empty)
 
-                        form = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', forms: [form] )
+                        form = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', forms: [form] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -513,8 +513,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = true
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Parser::Element::Cookie.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Cookie.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -529,8 +529,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = true
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -545,8 +545,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = true
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -565,8 +565,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = false
                         f.modules.load %w(links forms cookies headers flch)
 
-                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -581,8 +581,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = false
                         f.modules.load %w(path server)
 
-                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -597,8 +597,8 @@ describe Arachni::Framework do
                         f.opts.audit_cookies = false
                         f.modules.load %w(nil empty)
 
-                        cookie = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', cookies: [cookie] )
+                        cookie = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', cookies: [cookie] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -620,8 +620,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = true
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Parser::Element::Cookie.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Cookie.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -636,8 +636,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = true
                         f.modules.load %w(path server)
 
-                        header = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -652,8 +652,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = true
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -672,8 +672,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = false
                         f.modules.load %w(links forms cookies headers flch)
 
-                        header = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -688,8 +688,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = false
                         f.modules.load %w(path server)
 
-                        header = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -704,8 +704,8 @@ describe Arachni::Framework do
                         f.opts.audit_headers = false
                         f.modules.load %w(nil empty)
 
-                        header = Arachni::Parser::Element::Form.new( 'http://test' )
-                        p = Arachni::Parser::Page.new( url: 'http://test', headers: [header] )
+                        header = Arachni::Element::Form.new( 'http://test' )
+                        p = Arachni::Page.new( url: 'http://test', headers: [header] )
                         f.push_to_page_queue( p )
 
                         f.run
@@ -808,7 +808,7 @@ describe Arachni::Framework do
     describe '#push_to_page_queue' do
         it 'should push a page to the page audit queue' do
             res = @f.http.get( @url + '/train/true', async: false ).response
-            page = Arachni::Parser::Page.from_response( res, @f.opts )
+            page = Arachni::Page.from_response( res, @f.opts )
 
             @f.opts.audit_links = true
             @f.opts.audit_forms = true

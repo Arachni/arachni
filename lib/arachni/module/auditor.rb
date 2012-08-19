@@ -28,7 +28,7 @@ module Module
 # * Differential analysis -- {#audit_rdiff}
 #
 # It should be noted that actual analysis takes place at the element level,
-# and to be more specific, the {Arachni::Parser::Element::Auditable} element level.
+# and to be more specific, the {Arachni::Element::Capabilities::Auditable} element level.
 #
 # The module also provides:
 # * discovery helpers for checking and logging the existence of remote files
@@ -46,25 +46,25 @@ module Auditor
     end
 
     def self.timeout_audit_blocks
-        Element::Auditable.timeout_audit_blocks
+        Element::Capabilities::Auditable.timeout_audit_blocks
     end
     def self.timeout_loaded_modules
-        Element::Auditable.timeout_loaded_modules
+        Element::Capabilities::Auditable.timeout_loaded_modules
     end
     def self.on_timing_attacks( &block )
-        Element::Auditable.on_timing_attacks( &block )
+        Element::Capabilities::Auditable.on_timing_attacks( &block )
     end
     def self.running_timeout_attacks?
-        Element::Auditable.running_timeout_attacks?
+        Element::Capabilities::Auditable.running_timeout_attacks?
     end
     def self.timeout_audit_run
-        Element::Auditable.timeout_audit_run
+        Element::Capabilities::Auditable.timeout_audit_run
     end
     def self.timeout_audit_operations_cnt
-        Element::Auditable.timeout_audit_operations_cnt
+        Element::Capabilities::Auditable.timeout_audit_operations_cnt
     end
     def self.current_timeout_audit_operations_cnt
-        Element::Auditable.current_timeout_audit_operations_cnt
+        Element::Capabilities::Auditable.current_timeout_audit_operations_cnt
     end
 
     #
@@ -91,7 +91,7 @@ module Auditor
     # Holds constant bitfields that describe the preferred formatting
     # of injection strings.
     #
-    Format = Element::Mutable::Format
+    Format = Element::Capabilities::Mutable::Format
 
     #
     # Holds constants that describe the HTML elements to be audited.
@@ -134,7 +134,7 @@ module Auditor
     #
     # Must return the Page object you wish to be audited.
     #
-    # @return   [Arachni::Parser::Page]
+    # @return   [Arachni::Page]
     # @abstract
     #
     attr_reader :page
@@ -395,12 +395,12 @@ module Auditor
     end
 
     #
-    # This is called right before an [Arachni::Parser::Element]
+    # This is called right before an [Arachni::Element]
     # is audited and is used to determine whether to skip it or not.
     #
     # Running modules can override this as they wish *but* at their own peril.
     #
-    # @param    [Arachni::Parser::Element]  elem
+    # @param    [Arachni::Element]  elem
     #
     def skip?( elem )
         if framework
@@ -426,7 +426,7 @@ module Auditor
     #
     # @param  [Hash]    opts  options as described in {OPTIONS} -- only interested in opts[:elements]
     #
-    # @return   [Array<Arachni::Parser::Element::Auditable]   array of auditable elements
+    # @return   [Array<Arachni::Element::Capabilities::Auditable]   array of auditable elements
     #
     def candidate_elements( opts = {} )
         if !opts.include?( :elements) || !opts[:elements] || opts[:elements].empty?
@@ -464,13 +464,13 @@ module Auditor
     end
 
     #
-    # If a block has been provided it calls {Arachni::Parser::Element::Auditable#audit}
+    # If a block has been provided it calls {Arachni::Element::Capabilities::Auditable#audit}
     # for every element, otherwise, it defaults to {#audit_taint}.
     #
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Parser::Element::Auditable#audit
+    # @see Arachni::Element::Capabilities::Auditable#audit
     # @see #audit_taint
     #
     def audit( injection_str, opts = {}, &block )
@@ -488,7 +488,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Parser::Element::Analysis::Taint
+    # @see Arachni::Element::Analysis::Taint
     #
     def audit_taint( taint, opts = {} )
         opts = OPTIONS.merge( opts )
@@ -501,7 +501,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Parser::Element::Analysis::RDiff
+    # @see Arachni::Element::Analysis::RDiff
     #
     def audit_rdiff( opts = {}, &block )
         opts = OPTIONS.merge( opts )
@@ -514,7 +514,7 @@ module Auditor
     # Uses {#candidate_elements} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Parser::Element::Analysis::Timeout
+    # @see Arachni::Element::Analysis::Timeout
     #
     def audit_timeout( strings, opts = {} )
         opts = OPTIONS.merge( opts )

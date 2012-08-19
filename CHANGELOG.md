@@ -12,6 +12,13 @@
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
     - Replaced ```Set``` with ```Arachni::BloomFilter```, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
+    - Namespace cleanup
+        - Moved ```Parser::Element``` classes directly under ```Arachni```;
+        - Moved ```Parser::Page``` class directly under ```Arachni```;
+        - Moved ```Auditable``` and ```Mutable``` under ```Element::Capabilities```;
+        - Added ```Element::Capabilities::Refreshable``` -- refreshes the input values of a link/form;
+        - Moved analysis techniques out of ```Analysis``` and directly under ```Element::Capabilities::Auditable```;
+        - Added constants for each element directly under the ```Arachni``` namespace to facilitate easy access ( like ```Arachni::Link```, ```Arachni::Form```, etc.)
 - Framework - Can be configured to detect logouts and re-login between page audits. (**New**)
 - Options
     - Removed
@@ -49,8 +56,12 @@
     - AutoLogin
         - Added a mandatory verifier regexp to make sure that the login was successful. (**New**)
         - Now configures the ```Framework``` to be able to detect logouts and re-login during the audit. (**New**)
-    - Proxy -- Fixed typo in code which prevented headers from being properly.
-      forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
+    - Proxy
+        - Fixed typo in code which prevented headers from being properly forwarded which
+            resulted in non-existent content-types which prevented proper parsing. [Issue #135]
+        - Updated to use the framework HTTP interface instead of Net::HTTP
+        - Now injects a handy little control panel into each responce which allows recording of
+            login sequences and inspection of discovered pages/elements.
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.
       Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
       Useful for unit-testing or a gazillion other things. (**New**)

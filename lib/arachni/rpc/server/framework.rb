@@ -541,7 +541,7 @@ class Framework < ::Arachni::Framework
     # Restricts the scope of the audit to individual elements.
     #
     # @param    [Array<String>]     elements    list of element IDs (as created
-    #                                               by {Arachni::Parser::Element::Auditable#scope_audit_id})
+    #                                               by {Arachni::Element::Capabilities::Auditable#scope_audit_id})
     # @param    [String]    token       privileged token, prevents this method
     #                                       from being called by 3rd parties when
     #                                       this instance is a master.
@@ -552,14 +552,14 @@ class Framework < ::Arachni::Framework
     #
     def restrict_to_elements( elements, token = nil )
         return false if high_performance? && !valid_token?( token )
-        Element::Auditable.restrict_to_elements( elements )
+        Element::Capabilities::Auditable.restrict_to_elements( elements )
         true
     end
 
     #
     # Updates the page queue with the provided pages.
     #
-    # @param    [Array<Arachni::Parser::Page>]     pages       list of pages
+    # @param    [Array<Arachni::Page>]     pages       list of pages
     # @param    [String]    token       privileged token, prevents this method
     #                                       from being called by 3rd parties when
     #                                       this instance is a master.

@@ -457,7 +457,7 @@ class Server < Sinatra::Base
             if name == 'cookiejar' && value[:tempfile]
                 cparams['cookies'] = {}
                 cparams['cookie_string'] = ''
-                Arachni::Parser::Element::Cookie.from_file( '', value[:tempfile] ).each do |c|
+                Arachni::Element::Cookie.from_file( '', value[:tempfile] ).each do |c|
                     cparams['cookies'][c.name] = c.value
                     cparams['cookie_string'] += c.to_s + ';'
                 end

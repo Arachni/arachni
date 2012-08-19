@@ -74,7 +74,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
     #
     # Tries to detect if a form is protected using an anti-CSRF token.
     #
-    # @param    [Arachni::Parser::Element::Form]  form
+    # @param    [Arachni::Element::Form]  form
     #
     # @return   [Bool]  +true+ if the form has no anti-CSRF token, +false+ otherwise
     #

@@ -85,7 +85,7 @@ module Distributor
     # @param    [Array<Array<String>>]     chunks   of URLs, each chuck corresponds to each slave
     # @param    [Hash<Array>]     element_ids_per_page   hash with page urls for
     #                                                        keys and arrays of element scope IDs
-    #                                                        ({Arachni::Parser::Element::Auditable#scope_audit_id})
+    #                                                        ({Arachni::Element::Capabilities::Auditable#scope_audit_id})
     #                                                        for values
     #
     def distribute_elements( chunks, element_ids_per_page )
@@ -274,7 +274,7 @@ module Distributor
     # @param    [Hash]      auditables
     #                        * urls:     Array<String>    urls to audit -- will be passed to restrict_paths
     #                        * elements: Array<String>    scope IDs of elements to audit
-    #                        * pages:    Array<Arachni::Parser::Page>    pages to audit
+    #                        * pages:    Array<Arachni::Page>    pages to audit
     #
     # @param    [Proc]      block   to be passed a hash containing the url and token of the instance
     #

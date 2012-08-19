@@ -400,7 +400,7 @@ describe Arachni::RPC::Server::Framework do
             opts = { async: false, remove_id: true }
             res = Arachni::HTTP.instance.get( inst.opts.url.to_s, opts ).response
 
-            link = Arachni::Parser::Element::Link.from_response( res ).pop
+            link = Arachni::Element::Link.from_response( res ).pop
             inst.framework.restrict_to_elements(  [ link.scope_audit_id ] ).should be_true
 
             inst.framework.run.should be_true
@@ -423,7 +423,7 @@ describe Arachni::RPC::Server::Framework do
             url_to_audit = url +  '/restrict_to_elements'
             res = Arachni::HTTP.instance.get( url_to_audit, opts ).response
 
-            page = Arachni::Parser::Page.from_response( res, @opts )
+            page = Arachni::Page.from_response( res, @opts )
             inst.framework.update_page_queue( [ page ] ).should be_true
 
             inst.framework.run.should be_true

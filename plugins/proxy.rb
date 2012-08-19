@@ -339,7 +339,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     # Tries to determine which form is the login one from the logged requests in
     # the recorded login sequence.
     #
-    # @return   [Array<Arachni::Parser::Element::Form>]
+    # @return   [Array<Arachni::Element::Form>]
     #
     def find_login_form
         @login_sequence.each do |r|
@@ -355,7 +355,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     # @param    [WEBrick::HTTPRequest]  request
     #
-    # @return   [Array<Arachni::Parser::Element::Form>]
+    # @return   [Array<Arachni::Element::Form>]
     #
     # @see #forms_with_password
     #
@@ -372,7 +372,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     # Goes through the logged pages and returns all forms which contain password fields
     #
-    # @return   [Array<Arachni::Parser::Element::Form>]
+    # @return   [Array<Arachni::Element::Form>]
     #
     def forms_with_password
         @pages.map { |p| p.forms.select { |f| f.has_password? } }.flatten

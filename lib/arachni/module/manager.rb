@@ -51,7 +51,7 @@ class Manager < Arachni::Component::Manager
     #
     # Runs all modules against 'page'.
     #
-    # @param    [::Arachni::Parser::Page]   page    page to audit
+    # @param    [::Arachni::Page]   page    page to audit
     #
     def run( page )
         schedule.each { |mod| exception_jail( false ){ run_one( mod, page ) } }
@@ -93,7 +93,7 @@ class Manager < Arachni::Component::Manager
     # Runs a single module against 'page'.
     #
     # @param    [::Arachni::Module::Base]   mod    module to run as a class
-    # @param    [::Arachni::Parser::Page]   page    page to audit
+    # @param    [::Arachni::Page]   page    page to audit
     #
     def run_one( mod, page )
         return false if !run_module?( mod, page )

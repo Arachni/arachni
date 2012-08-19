@@ -100,7 +100,7 @@ module Utilities
         Cookie.encode( *args )
     end
 
-    # @see Arachni::Parser::Page.from_response
+    # @see Arachni::Page.from_response
     def page_from_response( *args )
         Page.from_response( *args )
     end

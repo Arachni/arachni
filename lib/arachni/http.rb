@@ -229,7 +229,7 @@ class HTTP
         @hydra.max_concurrency
     end
 
-    # @return   [Array<Arachni::Parser::Element::Cookie>]   all cookies in the jar
+    # @return   [Array<Arachni::Element::Cookie>]   all cookies in the jar
     def cookies
         @cookie_jar.cookies
     end
@@ -302,7 +302,7 @@ class HTTP
             headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-            headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
+            headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
             # There are cases where the url already has a query and we also have
             # some params to work with. Some webapp frameworks will break
@@ -462,7 +462,7 @@ class HTTP
     #
     # Updates the cookie-jar with the passed cookies
     #
-    # @param    [Array<Arachni::Parser::Element::Cookie>]   cookies
+    # @param    [Array<Arachni::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )

@@ -260,10 +260,10 @@ class Framework
     end
 
     #
-    # Uses the block in {#logged_check} to check in we're logged in to the webapp.
+    # Uses the block in {#login_check} to check in we're logged in to the webapp.
     #
     # @param    [Hash]   http_opts   extra HTTP options to use for the check
-    # @param    [Block]  &block       if a block has been provided the check
+    # @param    [Block]  block       if a block has been provided the check
     #                                   will be async and the result will be passed
     #                                   to it, otherwise the method will return
     #                                   the result.
@@ -297,7 +297,7 @@ class Framework
     # The block should log the framework into the webapp and return +true+ on
     # success, +false+ on failure.
     #
-    # @param    [Block] &block  if a block has been given it will be set as
+    # @param    [Block] block  if a block has been given it will be set as
     #                               the login sequence
     #
     # @return   [Block]
@@ -698,7 +698,7 @@ class Framework
     def self.reset
         Module::Auditor.reset
         Module::ElementDB.reset
-        Element::Auditable.reset
+        Element::Capabilities::Auditable.reset
         Module::Manager.reset
         Plugin::Manager.reset
         Report::Manager.reset
