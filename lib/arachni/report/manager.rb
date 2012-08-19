@@ -32,8 +32,8 @@ module Report
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-    include Arachni::Utilities
-    extend Arachni::Utilities
+    include Utilities
+    extend  Utilities
 
     NAMESPACE = Arachni::Reports
 

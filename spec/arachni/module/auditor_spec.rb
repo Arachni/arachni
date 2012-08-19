@@ -87,7 +87,7 @@ describe Arachni::Module::Auditor do
             logged_issue.should be_true
 
             logged_issue.url.split( '?' ).first.should == file
-            logged_issue.elem.should == Arachni::Issue::Element::PATH
+            logged_issue.elem.should == Arachni::Element::PATH
             logged_issue.id.should == 'true'
             logged_issue.injected.should == 'true'
             logged_issue.mod_name.should == @auditor.class.info[:name]
@@ -179,7 +179,7 @@ describe Arachni::Module::Auditor do
             logged_issue.should be_true
 
             logged_issue.url.split( '?' ).first.should == file
-            logged_issue.elem.should == Arachni::Issue::Element::PATH
+            logged_issue.elem.should == Arachni::Element::PATH
             logged_issue.id.should == 'true'
             logged_issue.injected.should == 'true'
             logged_issue.mod_name.should == @auditor.class.info[:name]
@@ -223,10 +223,10 @@ describe Arachni::Module::Auditor do
                     logged_issue.should be_true
 
                     logged_issue.url.should == @opts.url.to_s
-                    logged_issue.elem.should == Arachni::Issue::Element::BODY
+                    logged_issue.elem.should == Arachni::Element::BODY
                     logged_issue.opts[:regexp].should == regexp.to_s
                     logged_issue.opts[:match].should == 'Match'
-                    logged_issue.opts[:element].should == Arachni::Issue::Element::BODY
+                    logged_issue.opts[:element].should == Arachni::Element::BODY
                     logged_issue.regexp.should == regexp.to_s
                     logged_issue.verification.should be_false
                 end
@@ -250,10 +250,10 @@ describe Arachni::Module::Auditor do
                 logged_issue.should be_true
 
                 logged_issue.url.should == @opts.url.to_s
-                logged_issue.elem.should == Arachni::Issue::Element::BODY
+                logged_issue.elem.should == Arachni::Element::BODY
                 logged_issue.opts[:regexp].should == regexp.to_s
                 logged_issue.opts[:match].should == 'Match'
-                logged_issue.opts[:element].should == Arachni::Issue::Element::BODY
+                logged_issue.opts[:element].should == Arachni::Element::BODY
                 logged_issue.regexp.should == regexp.to_s
                 logged_issue.verification.should be_false
             end
@@ -274,7 +274,7 @@ describe Arachni::Module::Auditor do
                 id: 'foo id',
                 regexp: /foo regexp/,
                 match: 'foo regexp match',
-                element: Arachni::Issue::Element::LINK
+                element: Arachni::Element::LINK
             }
         end
 
@@ -292,10 +292,10 @@ describe Arachni::Module::Auditor do
                     logged_issue.should be_true
 
                     logged_issue.url.should == res.effective_url
-                    logged_issue.elem.should == Arachni::Issue::Element::LINK
+                    logged_issue.elem.should == Arachni::Element::LINK
                     logged_issue.opts[:regexp].should == @log_opts[:regexp].to_s
                     logged_issue.opts[:match].should == @log_opts[:match]
-                    logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
+                    logged_issue.opts[:element].should == Arachni::Element::LINK
                     logged_issue.regexp.should == @log_opts[:regexp].to_s
                     logged_issue.verification.should be_false
                 end
@@ -310,10 +310,10 @@ describe Arachni::Module::Auditor do
                 logged_issue.should be_true
 
                 logged_issue.url.should == @auditor.page.url
-                logged_issue.elem.should == Arachni::Issue::Element::LINK
+                logged_issue.elem.should == Arachni::Element::LINK
                 logged_issue.opts[:regexp].should == @log_opts[:regexp].to_s
                 logged_issue.opts[:match].should == @log_opts[:match]
-                logged_issue.opts[:element].should == Arachni::Issue::Element::LINK
+                logged_issue.opts[:element].should == Arachni::Element::LINK
                 logged_issue.regexp.should == @log_opts[:regexp].to_s
                 logged_issue.verification.should be_false
             end
@@ -344,68 +344,68 @@ describe Arachni::Module::Auditor do
 
                 before { @auditor.load_page_from( @url + '/elem_combo' ) }
 
-                describe 'Arachni::Module::Auditor::Element::LINK' do
+                describe 'Arachni::Element::LINK' do
                     it 'should audit links' do
                         @auditor.audit( @seed,
                             format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Module::Auditor::Element::LINK ]
+                            elements: [ Arachni::Element::LINK ]
                          )
                         @framework.http.run
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
-                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.elem.should == Arachni::Element::LINK
                         issue.var.should == 'link_input'
                     end
                 end
-                describe 'Arachni::Module::Auditor::Element::FORM' do
+                describe 'Arachni::Element::FORM' do
                     it 'should audit forms' do
                         @auditor.audit( @seed,
                             format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Module::Auditor::Element::FORM ]
+                            elements: [ Arachni::Element::FORM ]
                          )
                         @framework.http.run
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
-                        issue.elem.should == Arachni::Module::Auditor::Element::FORM
+                        issue.elem.should == Arachni::Element::FORM
                         issue.var.should == 'form_input'
                     end
                 end
-                describe 'Arachni::Module::Auditor::Element::COOKIE' do
+                describe 'Arachni::Element::COOKIE' do
                     it 'should audit cookies' do
                         @auditor.audit( @seed,
                             format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Module::Auditor::Element::COOKIE ]
+                            elements: [ Arachni::Element::COOKIE ]
                          )
                         @framework.http.run
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
-                        issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
+                        issue.elem.should == Arachni::Element::COOKIE
                         issue.var.should == 'cookie_input'
                     end
                     it 'should maintain the session while auditing cookies' do
                         @auditor.load_page_from( @url + '/session' )
                         @auditor.audit( @seed,
                                         format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                                        elements: [ Arachni::Module::Auditor::Element::COOKIE ]
+                                        elements: [ Arachni::Element::COOKIE ]
                         )
                         @framework.http.run
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
-                        issue.elem.should == Arachni::Module::Auditor::Element::COOKIE
+                        issue.elem.should == Arachni::Element::COOKIE
                         issue.var.should == 'vulnerable'
                     end
 
                 end
-                describe 'Arachni::Module::Auditor::Element::HEADER' do
+                describe 'Arachni::Element::HEADER' do
                     it 'should audit headers' do
                         @auditor.audit( @seed,
                             format: [ Arachni::Module::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Module::Auditor::Element::HEADER ]
+                            elements: [ Arachni::Element::HEADER ]
                          )
                         @framework.http.run
                         @framework.modules.results.size.should == 1
                         issue = @framework.modules.results.first
-                        issue.elem.should == Arachni::Module::Auditor::Element::HEADER
+                        issue.elem.should == Arachni::Element::HEADER
                         issue.var.should == 'Referer'
                     end
                 end
@@ -447,7 +447,7 @@ describe Arachni::Module::Auditor do
 
                         issue = @framework.modules.results.first
                         issue.should be_true
-                        issue.elem.should == Arachni::Module::Auditor::Element::LINK
+                        issue.elem.should == Arachni::Element::LINK
                         issue.var.should == 'you_made_it'
                     end
                 end
@@ -477,7 +477,7 @@ describe Arachni::Module::Auditor do
 
                         issue = issues.first
                         issue.should be_true
-                        issue.elem.should == Arachni::Module::Auditor::Element::FORM
+                        issue.elem.should == Arachni::Element::FORM
                         issue.var.should == 'you_made_it'
                     end
                 end

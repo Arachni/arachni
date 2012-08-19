@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
-class Loop < Arachni::Plugin::Base
+class Arachni::Plugins::Loop < Arachni::Plugin::Base
 
     def run
         loop { sleep 1 }
@@ -25,14 +22,11 @@ class Loop < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => '',
-            :description    => %q{},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1'
+            name:        '',
+            description: %q{},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1'
         }
     end
 
-end
-
-end
 end

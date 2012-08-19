@@ -1,0 +1,66 @@
+<% content_for :title, 'Help' %>
+
+<div class="hero-unit">
+    <h1>Fear not,</h1>
+    <h2>help is at hand.</h2>
+</div>
+
+<div class="alert">
+    <strong>Warning!</strong>
+    You will need to clear your browser's cookies for the site before using
+    the proxy.
+</div>
+
+
+<div class="well">
+    <h2>Recording a log-in sequence</h2>
+    <div class="alert">
+        <strong>Warning!</strong>
+        <p>Log-out detection and automated re-login are performed on a best-effort basis.</p>
+        <p>They do not remove the need to exclude paths which can interfere with the session (like log-out links)
+        using the appropriate options (like <code>--exclude='pattern'</code> for the command line UI).</p>
+        <p>In fact, accurately specifying destructive paths to exclude should be your priority.</p>
+    </div>
+
+    <p>
+        You can click the little circle on the left of the control-panel to
+        start recording a login sequence.
+        Once you are done, you will be asked to provide some more details
+        and verify that the information the proxy managed to deduce is accurate.
+    </p>
+    <p>
+        If everything goes as planned, by the end, Arachni will have been configured
+        in a way that will allow it to maintain a valid session with the web
+        application and re-login as needed.
+    </p>
+
+    <h3>Caveats</h3>
+    <p>
+        If there is JavaScript involved in the generation of the login form the
+        proxy may be unable to spot it.
+    </p>
+</div>
+
+<div class="well">
+    <h2>Inspecting discovered pages</h2>
+    <div class="alert alert-info">
+        <strong>Heads up!</strong>
+        The proxy will actually log all sorts of responses, even images and documents,
+        however you won't be presented with these.
+    </div>
+
+    <p>
+        You can review the logged pages along with their elements by clicking the
+        open-eye icon.
+    </p>
+
+</div>
+
+<div class="well">
+    <h2>Shutting down and starting the scan</h2>
+    <p>
+        To shutdown the proxy and continue with the audit, hit the power-off button.
+        After a couple of seconds the proxy will shutdown and the system will move
+        on with the scan.
+    </p>
+</div>

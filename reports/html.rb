@@ -18,8 +18,6 @@ require 'erb'
 require 'base64'
 require 'cgi'
 
-require Arachni::Options.instance.dir['lib'] + 'crypto/rsa_aes_cbc'
-
 #
 # Creates an HTML report of the audit.
 #
@@ -28,7 +26,6 @@ require Arachni::Options.instance.dir['lib'] + 'crypto/rsa_aes_cbc'
 # @version 0.3.1
 #
 class Arachni::Reports::HTML < Arachni::Report::Base
-    include Arachni::Module::Utilities
 
     module Utils
 
@@ -174,22 +171,22 @@ class Arachni::Reports::HTML < Arachni::Report::Base
     def prepare_data
         graph_data = {
             severities:       {
-                Issue::Severity::HIGH          => 0,
-                Issue::Severity::MEDIUM        => 0,
-                Issue::Severity::LOW           => 0,
-                Issue::Severity::INFORMATIONAL => 0
+                Severity::HIGH          => 0,
+                Severity::MEDIUM        => 0,
+                Severity::LOW           => 0,
+                Severity::INFORMATIONAL => 0
             },
             issues:           {},
             trusted_issues:   {},
             untrusted_issues: {},
             elements:         {
-                Issue::Element::FORM   => 0,
-                Issue::Element::LINK   => 0,
-                Issue::Element::COOKIE => 0,
-                Issue::Element::HEADER => 0,
-                Issue::Element::BODY   => 0,
-                Issue::Element::PATH   => 0,
-                Issue::Element::SERVER => 0
+                Element::FORM   => 0,
+                Element::LINK   => 0,
+                Element::COOKIE => 0,
+                Element::HEADER => 0,
+                Element::BODY   => 0,
+                Element::PATH   => 0,
+                Element::SERVER => 0
             },
             verification:     {
                 'Yes' => 0,

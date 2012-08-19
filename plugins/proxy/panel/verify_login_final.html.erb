@@ -1,0 +1,26 @@
+<% content_for :title, 'Finalize login settings' %>
+
+<% if ok %>
+    <div class="hero-unit">
+        <h1>Hooray,</h1>
+        <h2>everything seems to be in order, carry on.</h2>
+    </div>
+
+    <div class="alert alert-success">
+        <a class="close" data-dismiss="alert" href="#">×</a>
+        Login form verified, you're good to go.
+    </div>
+<% else %>
+    <div class="hero-unit">
+        <h1>Aouch,</h1>
+        <h2>couldn't login using the form.</h2>
+    </div>
+
+    <div class="alert alert-error">
+        <a class="close" data-dismiss="alert" href="#">×</a>
+        Something didn't go quite as planned.
+        Would you mind <a href="https://github.com/Arachni/arachni/issues">letting us know</a>?
+    </div>
+<% end %>
+
+<a href="#" id="close" class="btn btn-inverse">Close</a>

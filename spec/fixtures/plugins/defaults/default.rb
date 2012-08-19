@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
-class Default < Arachni::Plugin::Base
+class Arachni::Plugins::Default < Arachni::Plugin::Base
 
     def prepare
         @prepared = true
@@ -35,17 +32,14 @@ class Default < Arachni::Plugin::Base
 
     def self.info
         {
-            :name           => 'Default',
-            :description    => %q{Some description},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [
-                Arachni::OptInt.new( 'int_opt', [ false, 'An integer.', 4 ] )
+            name:        'Default',
+            description: %q{Some description},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1',
+            options:     [
+                Options::Int.new( 'int_opt', [false, 'An integer.', 4] )
             ]
         }
     end
 
-end
-
-end
 end

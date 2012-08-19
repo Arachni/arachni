@@ -54,7 +54,7 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
     end
 
     def type
-        Arachni::Module::Auditor::Element::HEADER
+        Arachni::Parser::Element::HEADER
     end
 
     private
@@ -63,3 +63,5 @@ class Arachni::Parser::Element::Header < Arachni::Parser::Element::Base
     end
 
 end
+
+Arachni::Header = Arachni::Parser::Element::Header

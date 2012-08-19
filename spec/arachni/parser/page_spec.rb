@@ -37,6 +37,10 @@ describe Arachni::Parser::Page do
         @empty_page = Arachni::Parser::Page.new
     end
 
+    it 'should be assigned to Arachni::Page for easy access' do
+        Arachni::Page.should == Arachni::Parser::Page
+    end
+
     describe '#text?' do
         context 'when the HTTP response was text based' do
             it 'should return true' do
@@ -56,6 +60,139 @@ describe Arachni::Parser::Page do
             it 'should return false' do
                 res = Typhoeus::Response.new( effective_url: 'http://test.com' )
                 Arachni::Parser.new( res, @opts ).page.text?.should be_false
+            end
+        end
+    end
+
+    describe '#==' do
+        context 'when the pages are different' do
+            it 'should return false' do
+                p = Arachni::Parser::Page.new( body: 'stuff here')
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+
+                c = p.dup
+                c.body << 'test'
+                c.should_not == p
+
+                c = p.dup
+                c.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not == p
+
+                c = p.dup
+                c.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not == p
+
+                c = p.dup
+                c.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not == p
+
+                c = p.dup
+                c.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not == p
+            end
+        end
+        context 'when the pages are identical' do
+            it 'should return true' do
+                p = Arachni::Parser::Page.new( body: 'stuff here')
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+
+                c = p.dup
+                c.should == p
+
+                c = p.dup
+                p.body << 'test'
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+
+                c.body << 'test'
+                c.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                c.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                c.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                c.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should == p
+            end
+        end
+    end
+
+    describe '#eql?' do
+        context 'when the pages are different' do
+            it 'should return false' do
+                p = Arachni::Parser::Page.new( body: 'stuff here')
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+
+                c = p.dup
+                c.body << 'test'
+                c.should_not eql p
+
+                c = p.dup
+                c.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not eql p
+
+                c = p.dup
+                c.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not eql p
+
+                c = p.dup
+                c.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not eql p
+
+                c = p.dup
+                c.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should_not eql p
+            end
+        end
+        context 'when the pages are identical' do
+            it 'should return true' do
+                p = Arachni::Parser::Page.new( body: 'stuff here')
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff' )
+
+                c = p.dup
+                c.should eql p
+
+                c = p.dup
+                p.body << 'test'
+                p.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                p.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                p.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                p.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+
+                c.body << 'test'
+                c.links << Arachni::Parser::Element::Link.new( 'http://test.com', 'test' => 'stuff2' )
+                c.forms << Arachni::Parser::Element::Form.new( 'http://test.com', 'test' => 'stuff2' )
+                c.cookies << Arachni::Parser::Element::Cookie.new( 'http://test.com', 'test' => 'stuff2' )
+                c.headers << Arachni::Parser::Element::Header.new( 'http://test.com', 'test' => 'stuff2' )
+                c.should eql p
+            end
+        end
+    end
+
+    describe '#title' do
+        context 'when the page has a title' do
+            it 'should return the page title' do
+                title = 'Stuff here'
+                Arachni::Parser::Page.new( body: "<title>#{title}</title>").title.should == title
+
+                Arachni::Parser::Page.new( body: "<title></title>").title.should == ''
+            end
+        end
+        context 'when the page does not have a title' do
+            it 'should return nil' do
+                Arachni::Parser::Page.new.title.should be_nil
+                Arachni::Parser::Page.new( body: "" ).title.should be_nil
             end
         end
     end

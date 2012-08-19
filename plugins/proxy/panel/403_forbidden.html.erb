@@ -1,0 +1,11 @@
+<% content_for :title, 'Forbidden request - trying to reach a foreign resource' %>
+
+<div class="hero-unit">
+    <h1><em>403</em> Forbidden,</h1>
+    <h2>because:</h2>
+    <ul>
+        <% reasons.each do |reason| %>
+        <li><%= reason %></li>
+        <% end %>
+    </ul>
+</div>

@@ -106,6 +106,85 @@ describe Arachni::Options do
         end
     end
 
+    describe '#dont_audit' do
+        it 'should enable auditing of the given element types' do
+            Arachni::Options.audit :links, :forms, :cookies, :headers
+
+            Arachni::Options.audit_links.should be_true
+            Arachni::Options.audit_forms.should be_true
+            Arachni::Options.audit_cookies.should be_true
+            Arachni::Options.audit_headers.should be_true
+
+            Arachni::Options.dont_audit :links, :forms, :cookies, :headers
+
+            Arachni::Options.audit_links.should be_false
+            Arachni::Options.audit_forms.should be_false
+            Arachni::Options.audit_cookies.should be_false
+            Arachni::Options.audit_headers.should be_false
+        end
+    end
+
+    describe '#audit?' do
+        it 'should return a boolean value if he given element is to be audited' do
+            Arachni::Options.audit_links.should be_false
+            Arachni::Options.audit?( :links ).should be_false
+            Arachni::Options.audit?( :link ).should be_false
+            Arachni::Options.audit?( 'links' ).should be_false
+            Arachni::Options.audit?( 'link' ).should be_false
+
+            Arachni::Options.audit_forms.should be_false
+            Arachni::Options.audit?( :forms ).should be_false
+            Arachni::Options.audit?( :form ).should be_false
+            Arachni::Options.audit?( 'forms' ).should be_false
+            Arachni::Options.audit?( 'form' ).should be_false
+
+            Arachni::Options.audit_cookies.should be_false
+            Arachni::Options.audit?( :cookies ).should be_false
+            Arachni::Options.audit?( :cookie ).should be_false
+            Arachni::Options.audit?( 'cookies' ).should be_false
+            Arachni::Options.audit?( 'cookie' ).should be_false
+
+            Arachni::Options.audit_headers.should be_false
+            Arachni::Options.audit?( :headers ).should be_false
+            Arachni::Options.audit?( :header ).should be_false
+            Arachni::Options.audit?( 'headers' ).should be_false
+            Arachni::Options.audit?( 'header' ).should be_false
+
+            Arachni::Options.audit?( :header, :link, :form, :cookie ).should be_false
+            Arachni::Options.audit?( [:header, :link, :form, :cookie] ).should be_false
+
+            Arachni::Options.audit :links, :forms, :cookies, :headers
+
+            Arachni::Options.audit_links.should be_true
+            Arachni::Options.audit?( :links ).should be_true
+            Arachni::Options.audit?( :link ).should be_true
+            Arachni::Options.audit?( 'links' ).should be_true
+            Arachni::Options.audit?( 'link' ).should be_true
+
+            Arachni::Options.audit_forms.should be_true
+            Arachni::Options.audit?( :forms ).should be_true
+            Arachni::Options.audit?( :form ).should be_true
+            Arachni::Options.audit?( 'forms' ).should be_true
+            Arachni::Options.audit?( 'form' ).should be_true
+
+            Arachni::Options.audit_cookies.should be_true
+            Arachni::Options.audit?( :cookies ).should be_true
+            Arachni::Options.audit?( :cookie ).should be_true
+            Arachni::Options.audit?( 'cookies' ).should be_true
+            Arachni::Options.audit?( 'cookie' ).should be_true
+
+            Arachni::Options.audit_headers.should be_true
+            Arachni::Options.audit?( :headers ).should be_true
+            Arachni::Options.audit?( :header ).should be_true
+            Arachni::Options.audit?( 'headers' ).should be_true
+            Arachni::Options.audit?( 'header' ).should be_true
+
+            Arachni::Options.audit?( :header, :link, :form, :cookie ).should be_true
+            Arachni::Options.audit?( [:header, :link, :form, :cookie] ).should be_true
+        end
+    end
+
+
     describe '#url' do
         it 'should normalize its param and set it as the target URL' do
             @opts.url = 'http://test.com/my path'

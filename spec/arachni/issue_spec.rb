@@ -4,7 +4,7 @@ describe Arachni::Issue do
     before( :all ) do
         @issue_data = {
             name: 'Module name',
-            elem: Arachni::Issue::Element::LINK,
+            elem: Arachni::Element::LINK,
             method: 'GET',
             description: 'Issue description',
             references: {
@@ -40,44 +40,6 @@ describe Arachni::Issue do
         @issue = Arachni::Issue.new( @issue_data.deep_clone )
     end
 
-    describe Arachni::Issue::Element do
-        describe 'Arachni::Issue::Element::LINK' do
-            it 'should return "link"' do
-                Arachni::Issue::Element::LINK.should == 'link'
-            end
-        end
-        describe 'Arachni::Issue::Element::FORM' do
-            it 'should return "form"' do
-                Arachni::Issue::Element::FORM.should == 'form'
-            end
-        end
-        describe 'Arachni::Issue::Element::COOKIE' do
-            it 'should return "cookie"' do
-                Arachni::Issue::Element::COOKIE.should == 'cookie'
-            end
-        end
-        describe 'Arachni::Issue::Element::HEADER' do
-            it 'should return "header"' do
-                Arachni::Issue::Element::HEADER.should == 'header'
-            end
-        end
-        describe 'Arachni::Issue::Element::BODY' do
-            it 'should return "body"' do
-                Arachni::Issue::Element::BODY.should == 'body'
-            end
-        end
-        describe 'Arachni::Issue::Element::PATH' do
-            it 'should return "path"' do
-                Arachni::Issue::Element::PATH.should == 'path'
-            end
-        end
-        describe 'Arachni::Issue::Element::SERVER' do
-            it 'should return "server"' do
-                Arachni::Issue::Element::SERVER.should == 'server'
-            end
-        end
-    end
-
     describe Arachni::Issue::Severity do
         describe 'Arachni::Issue::Severity::HIGH' do
             it 'should return "High"' do
@@ -98,6 +60,10 @@ describe Arachni::Issue do
             it 'should return "Informational"' do
                 Arachni::Issue::Severity::INFORMATIONAL.should == 'Informational'
             end
+        end
+
+        it 'should be assigned to Arachni::Severity for easy access' do
+            Arachni::Severity.should == Arachni::Issue::Severity
         end
     end
 

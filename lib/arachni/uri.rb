@@ -43,11 +43,11 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class URI
-    include Arachni::UI::Output
-    extend Arachni::UI::Output
+    include UI::Output
+    extend  UI::Output
 
-    include Arachni::Utilities
-    extend Arachni::Utilities
+    include Utilities
+    extend  Utilities
 
     CACHE_SIZES = {
         parse:       600,
@@ -59,11 +59,11 @@ class URI
 
     CACHE = {
         parser:      ::URI::Parser.new,
-        ruby_parse:  Arachni::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
-        parse:       Arachni::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        cheap_parse: Arachni::Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
-        normalize:   Arachni::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
-        to_absolute: Arachni::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
+        ruby_parse:  Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
+        parse:       Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
+        cheap_parse: Cache::RandomReplacement.new( CACHE_SIZES[:cheap_parse] ),
+        normalize:   Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
+        to_absolute: Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
     }
 
     # @return [URI::Parser] cached URI parser
@@ -352,7 +352,7 @@ class URI
     #
     # @return   [String]  absolute URL (frozen)
     #
-    def self.to_absolute( relative, reference = Arachni::Options.instance.url.to_s )
+    def self.to_absolute( relative, reference = Options.instance.url.to_s )
         return reference if !relative || relative.empty?
         key = relative + ' :: ' + reference
 
@@ -446,7 +446,7 @@ class URI
     #   (for +::URI::Generic.build+). Also accepts {Arachni::URI} for convenience.
     #
     def initialize( url )
-        @arachni_opts = Arachni::Options.instance
+        @arachni_opts = Options.instance
 
         @parsed_url = case url
                           when String

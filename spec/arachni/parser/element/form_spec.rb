@@ -24,6 +24,10 @@ describe Arachni::Parser::Element::Form do
         @http = Arachni::HTTP.instance
     end
 
+    it 'should be assigned to Arachni::Form for easy access' do
+        Arachni::Form.should == Arachni::Parser::Element::Form
+    end
+
     describe '#new' do
         context 'when passed opts without a method' do
             it 'should default to "post"' do
@@ -70,6 +74,42 @@ describe Arachni::Parser::Element::Form do
 
             e.field_type_for( 'my_pass' ).should == 'password'
             e.field_type_for( 'hidden_field' ).should == 'hidden'
+        end
+    end
+
+    describe '#has_password?' do
+        context 'when the form has a password field' do
+            it 'should return true' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                Arachni::Parser::Element::Form.from_document( @url, html ).
+                    first.has_password?.should be_true
+            end
+        end
+        context 'when the form does not have a password field' do
+            it 'should return false' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                Arachni::Parser::Element::Form.from_document( @url, html ).
+                    first.has_password?.should be_false
+            end
         end
     end
 
@@ -158,6 +198,58 @@ describe Arachni::Parser::Element::Form do
                 f.audit( 'fff', opts ) { |_, _, elem| altered << (elem.sample? || elem.original?) }
                 @http.run
                 altered.count( true ).should == 0
+            end
+        end
+    end
+
+    describe '#refresh' do
+        context 'when called without a block' do
+            it 'should refresh the inputs of the form in blocking mode' do
+                url = @url + 'with_nonce'
+                res = @http.get( url, async: false ).response
+                f   = Arachni::Parser::Element::Form.from_response( res ).select do |f|
+                    !!f.auditable['nonce']
+                end.first
+
+                nonce = f.auditable['nonce'].dup
+
+                updates = { 'new' => 'stuff', 'param_name' => 'other stuff' }
+                f.update updates
+
+                refreshed = f.refresh
+                refreshed.auditable['nonce'].should_not == nonce
+                refreshed.original['nonce'].should      == nonce
+
+                updates['nonce'] = f.refresh.auditable['nonce']
+                f.auditable.should == updates
+            end
+        end
+        context 'when called with a block' do
+            it 'should refresh the inputs of the form in async mode' do
+                url = @url + 'with_nonce'
+                res = @http.get( url, async: false ).response
+                f   = Arachni::Parser::Element::Form.from_response( res ).select do |f|
+                    !!f.auditable['nonce']
+                end.first
+
+                nonce = f.auditable['nonce'].dup
+
+                updates = { 'new' => 'stuff', 'param_name' => 'other stuff' }
+                f.update updates
+
+                ran = false
+                f.refresh do |form|
+                    form.auditable['nonce'].should_not == nonce
+                    form.original['nonce'].should      == nonce
+
+                    updates['nonce'] = form.refresh.auditable['nonce']
+                    form.auditable.should == updates
+
+                    ran = true
+                end
+
+                @http.run
+                ran.should be_true
             end
         end
     end
@@ -264,6 +356,37 @@ describe Arachni::Parser::Element::Form do
                         'my_first_input'  => 'my_first_value',
                         'my_second_input' => 'my_second_value'
                     }
+                end
+            end
+
+            context 'when the action match a skip rule' do
+                it 'should be ignored' do
+                    Arachni::Options.url     = @url
+                    Arachni::Options.exclude = 'skip-this'
+
+                    url = "http://test.com/this_is_the_base/"
+
+                    html = <<-HTML
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                            <form method="get" action="#{url}" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                            <form method="get" action="?skip-this" name="my_form">
+                                <input name="my_first_input" value="my_first_value" />
+                            </form>
+
+                        </body>
+                    </html>
+                    HTML
+
+                    Arachni::Parser::Element::Form.from_document( @url, html ).size.should == 1
+                    Arachni::Options.reset
                 end
             end
 

@@ -43,7 +43,7 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
 
         dirs = [ page.url ] | self.class.dirs.map { |dir| path + dir } | [ path ]
         dirs.each_with_index do |url, i|
-            http.get( url, remove_id: true ) do |res|
+            http.get( url ) do |res|
                 next if !res
                 @harvested[i] = res
                 check_and_log( path ) if done_harvesting?

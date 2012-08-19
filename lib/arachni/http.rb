@@ -18,14 +18,15 @@ require 'typhoeus'
 require 'singleton'
 
 module Arachni
-require Options.instance.dir['lib'] + 'typhoeus/utils'
-require Options.instance.dir['lib'] + 'typhoeus/hydra'
-require Options.instance.dir['lib'] + 'typhoeus/request'
-require Options.instance.dir['lib'] + 'typhoeus/response'
-require Options.instance.dir['lib'] + 'utilities'
-require Options.instance.dir['lib'] + 'module/trainer'
-require Options.instance.dir['lib'] + 'mixins/observable'
-require Options.instance.dir['lib'] + 'http/cookie_jar'
+lib = Options.dir['lib']
+require lib + 'typhoeus/utils'
+require lib + 'typhoeus/hydra'
+require lib + 'typhoeus/request'
+require lib + 'typhoeus/response'
+require lib + 'utilities'
+require lib + 'module/trainer'
+require lib + 'mixins/observable'
+require lib + 'http/cookie_jar'
 
 #
 # Provides a system-wide, simple and high-performance HTTP interface.
@@ -34,9 +35,9 @@ require Options.instance.dir['lib'] + 'http/cookie_jar'
 #
 class HTTP
     include Singleton
-    include Arachni::Module::Output
-    include Arachni::Utilities
-    include Arachni::Mixins::Observable
+    include Module::Output
+    include Utilities
+    include Mixins::Observable
 
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
@@ -88,7 +89,7 @@ class HTTP
     # @return   [Arachni::HTTP] self
     #
     def reset
-        opts = Options.instance
+        opts = Options
 
         req_limit = opts.http_req_limit || 20
 
@@ -114,9 +115,9 @@ class HTTP
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
 
-        @trainer = Arachni::Module::Trainer.new( opts )
+        @trainer = Module::Trainer.new( opts )
 
-        opts.user_agent ||= USER_AGENT + Arachni::VERSION.to_s
+        opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent'    => opts.user_agent
@@ -131,7 +132,7 @@ class HTTP
         if opts.cookie_string
             cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
                 k, v = *cookie_pair.split( '=', 2 )
-                Arachni::Parser::Element::Cookie.new( opts.url.to_s, k.strip => v.strip )
+                Cookie.new( opts.url.to_s, k.strip => v.strip )
             end.flatten.compact
             update_cookies( cookies )
         end
@@ -263,10 +264,9 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def request( url = @url, opts = {}, &block )
-        raise 'URL cannot be empty.' if !url
+        fail 'URL cannot be empty.' if !url
 
         params    = opts[:params] || {}
-        #remove_id = opts[:remove_id]
         train     = opts[:train]
         timeout   = opts[:timeout]
         cookies   = opts[:cookies] || {}
@@ -304,19 +304,12 @@ class HTTP
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
             headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
 
-            # if we are going to train (i.e. parse the response and feed the new
-            # page back to the framework) we need a way to keep track of
-            # what we tainted
-            #params = params.merge( @rand_seed => '' ) if train
-
-            #
             # There are cases where the url already has a query and we also have
             # some params to work with. Some webapp frameworks will break
             # or get confused...plus the url will not be RFC compliant.
             #
             # Thus we need to merge the provided params with the
             # params of the url query and remove the latter from the url.
-            #
             cparams = params.dup
             curl    = normalize_url( url ).dup
 
@@ -448,6 +441,24 @@ class HTTP
         request( url, opts, &block )
     end
 
+    def sandbox( &block )
+        h = {}
+        instance_variables.each do |iv|
+            val = instance_variable_get( iv )
+            h[iv] = val.deep_clone rescue val.dup rescue val
+        end
+
+        hooks = {}
+        @__hooks.each { |k, v| hooks[k] = v.dup }
+
+        ret = block.call( self )
+
+        h.each { |iv, val| instance_variable_set( iv, val ) }
+        @__hooks = hooks
+
+        ret
+    end
+
     #
     # Updates the cookie-jar with the passed cookies
     #
@@ -466,11 +477,11 @@ class HTTP
     # @param    [Typhoeus::Response]    res
     #
     def parse_and_set_cookies( res )
-        cookies = Arachni::Parser::Element::Cookie.from_response( res )
+        cookies = Cookie.from_response( res )
         update_cookies( cookies )
 
         # update framework cookies
-        Arachni::Options.instance.cookies = cookies
+        Options.cookies = cookies
 
         call_on_new_cookies( cookies, res )
     end
@@ -523,7 +534,7 @@ class HTTP
         gathered = 0
         body = res.body
         # (precision - 1).times {
-            # get( res.effective_url, :remove_id => true ).on_complete {
+            # get( res.effective_url ).on_complete {
                 # |c_res|
                 # body = body.rdiff( c_res.body )
                 # gathered += 1

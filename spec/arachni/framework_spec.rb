@@ -185,6 +185,26 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#login_sequence' do
+        context 'when a block is given' do
+            it 'should set it as a login sequence' do
+                @f.login_sequence { :yeah! }
+                @f.login_sequence.call.should == :yeah!
+                @f.login.should == :yeah!
+            end
+        end
+    end
+
+    describe '#login_check' do
+        context 'when a block is given' do
+            it 'should set it as a login sequence' do
+                @f.login_check { :yeah! }
+                @f.login_check.call.should == :yeah!
+                @f.logged_in?.should == :yeah!
+            end
+        end
+    end
+
     describe '#set_login_check_url' do
         it 'should set a login check using a URL and regular expression' do
             f = Arachni::Framework.new

@@ -6,11 +6,11 @@ shared_examples_for "module" do
     end
 
     module Element
-        include Arachni::Issue::Element
+        include Arachni::Element
     end
 
     module Severity
-        include Arachni::Issue::Severity
+        include Arachni::Severity
     end
 
     before( :all ) do
@@ -43,10 +43,7 @@ shared_examples_for "module" do
 
         http.cookie_jar.clear
 
-        framework.opts.audit_links = false
-        framework.opts.audit_forms = false
-        framework.opts.audit_cookies = false
-        framework.opts.audit_headers = false
+        framework.opts.dont_audit :links, :forms, :cookies, :headers
     end
 
     describe '.info' do
@@ -64,10 +61,11 @@ shared_examples_for "module" do
             else
                 current_module.info[:elements].should == self.class.elements
             end
+
         end
     end
 
-    def self.easy_test( &block )
+    def self.easy_test( run_checks = true, &block )
         targets  = !self.targets || self.targets.empty? ? %w(Generic) : self.targets
         elements = !self.elements || self.elements.empty? ? %w(Generic) : self.elements
 
@@ -82,7 +80,7 @@ shared_examples_for "module" do
                                 raise 'No issue count provided via a suitable method.'
                             end
 
-                            audit type.to_sym
+                            audit type.to_sym, run_checks
 
                             if issue_count
                                 issues.size.should == issue_count
@@ -125,13 +123,7 @@ shared_examples_for "module" do
     end
 
     def audit( element_type, logs_issues = true )
-        e = element_type.to_s
-        e << 's' if element_type.to_s[-1] != 's'
-
-        begin
-            options.send( "audit_#{e}=", true )
-        rescue
-        end
+        options.audit element_type
         run
 
         e = element_type.to_s
@@ -142,7 +134,7 @@ shared_examples_for "module" do
 
         if logs_issues && element_type.to_s.downcase != 'generic'
             # make sure we ONLY got results for the requested element type
-            c = Arachni::Issue::Element.const_get( e.upcase.to_sym )
+            c = Arachni::Element.const_get( e.upcase.to_sym )
             issues.should be_any
             issues.map { |i| i.elem }.uniq.should == [c]
 

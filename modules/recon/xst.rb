@@ -42,7 +42,7 @@ class Arachni::Modules::XST < Arachni::Module::Base
 
         print_status( "Checking..." )
 
-        http.trace( page.url, remove_id: true ) do |res|
+        http.trace( page.url ) do |res|
             next if res.code != 200 || res.body.to_s.empty?
 
             log( { element: Element::SERVER }, res )

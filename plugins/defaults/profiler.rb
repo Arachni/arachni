@@ -38,7 +38,7 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
     #
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
-    class Auditor < Arachni::Module::Base
+    class Auditor < Module::Base
 
         def seed_id
             @seed_id ||= Digest::SHA2.hexdigest( rand( 1000 ).to_s )
@@ -63,14 +63,14 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         def find_landing_header_fields( res )
             elems = []
 
-            parser = Arachni::Parser.new( res )
+            parser = Parser.new( res )
             parser.cookies.each do |cookie|
                 elems << cookie if cookie.auditable.to_s.substring?( seed_id )
             end
 
             res.headers_hash.each_pair do |k, v|
                 next if !v.to_s.substring?( seed_id )
-                elems << Arachni::Parser::Element::Header.new( res.effective_url, { k => v.to_s } )
+                elems << Header.new( res.effective_url, { k => v.to_s } )
             end
 
             elems
@@ -80,12 +80,12 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
             elems = []
             elems << Struct::Body.new( 'body', nil, { 'attrs' => {} } )
 
-            parser = Arachni::Parser.new( res )
+            parser = Parser.new( res )
             parser.forms.each do |form|
                 elems << form if form.auditable.to_s.substring?( seed_id )
             end
 
-            self_url = Arachni::Parser::Element::Link.new( res.effective_url )
+            self_url = Link.new( res.effective_url )
             parser.links.each do |link|
                 if link.auditable.to_s.substring?( seed_id )
                     # skip ourselves

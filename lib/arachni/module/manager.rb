@@ -30,10 +30,10 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-    include Arachni::Utilities
-    extend Arachni::Utilities
+    include Utilities
+    extend Utilities
 
-    NAMESPACE = Arachni::Modules
+    NAMESPACE = ::Arachni::Modules
 
     @@results             ||= []
     @@issue_set           ||= BloomFilter.new
@@ -119,13 +119,13 @@ class Manager < Arachni::Component::Manager
         return true if !elements || elements.empty?
 
         elems = {
-            Issue::Element::LINK => page.links && page.links.any? && @opts.audit_links,
-            Issue::Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
-            Issue::Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
-            Issue::Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
-            Issue::Element::BODY   => page.body && !page.body.empty?,
-            Issue::Element::PATH   => true,
-            Issue::Element::SERVER => true
+            Element::LINK => page.links && page.links.any? && @opts.audit_links,
+            Element::FORM => page.forms && page.forms.any? && @opts.audit_forms,
+            Element::COOKIE => page.cookies && page.cookies.any? && @opts.audit_cookies,
+            Element::HEADER => page.headers && page.headers.any? && @opts.audit_headers,
+            Element::BODY   => page.body && !page.body.empty?,
+            Element::PATH   => true,
+            Element::SERVER => true
         }
 
         elems.each_pair { |elem, expr| return true if elements.include?( elem ) && expr }

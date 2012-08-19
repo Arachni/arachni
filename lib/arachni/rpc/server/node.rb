@@ -16,12 +16,9 @@
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/server/output'
+require Options.dir['lib'] + 'rpc/server/output'
 
 module RPC
-class Server
-
-class Dispatcher
 
 #
 # Dispatcher node class, helps maintain a list of all available Dispatchers in the grid
@@ -37,8 +34,8 @@ class Dispatcher
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Node
-    include Arachni::UI::Output
+class Server::Dispatcher::Node
+    include UI::Output
 
     DEFAULT_PING_INTERVAL = 60
 
@@ -57,7 +54,7 @@ class Node
 
         reroute_to_file( logfile ) if logfile
 
-        print_status( 'Initing grid node...' )
+        print_status 'Initing grid node...'
 
         @dead_nodes = []
         @neighbours = Set.new
@@ -70,7 +67,7 @@ class Node
             # grab the neighbour's neighbours
             peer = connect_to_peer( neighbour )
             peer.neighbours do |urls|
-                raise "Neighbour '#{neighbour}' is unreachable." if urls.rpc_exception?
+                fail "Neighbour '#{neighbour}' is unreachable." if urls.rpc_exception?
                 urls.each { |url| @neighbours << url if url != @url }
             end
         end
@@ -106,7 +103,7 @@ class Node
         connect_to_peer( node_url ).add_neighbour( @url, propagate ) do |res|
             next if !res.rpc_exception?
             add_dead_neighbour( node_url )
-            print_status( "Neighbour seems dead: #{node_url} " )
+            print_status "Neighbour seems dead: #{node_url}"
         end
         true
     end
@@ -121,7 +118,7 @@ class Node
     end
 
     def neighbours_with_info( &block )
-        raise( "This method requires a block!" ) if !block_given?
+        fail "This method requires a block!" if !block_given?
 
         @neighbours_cmp = ''
         if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
@@ -135,7 +132,7 @@ class Node
                     |info|
 
                     if info.rpc_exception?
-                        print_info( 'Neighbour seems dead: ' + neighbour )
+                        print_info "Neighbour seems dead: #{neighbour}"
                         add_dead_neighbour( neighbour )
                         log_updated_neighbours
 
@@ -194,7 +191,7 @@ class Node
         if !neighbours.empty?
             neighbours.each { |node| print_info( '---- ' + node ) }
         else
-            print_info( '<empty>' )
+            print_info '<empty>'
         end
     end
 
@@ -203,7 +200,7 @@ class Node
             connect_to_peer( neighbour ).alive? do |res|
                 next if !res.rpc_exception?
                 add_dead_neighbour( neighbour )
-                print_status( "Found dead neighbour: #{neighbour} " )
+                print_status "Found dead neighbour: #{neighbour} "
             end
         end
     end
@@ -214,7 +211,7 @@ class Node
             neighbour.alive? do |res|
                 next if res.rpc_exception?
 
-                print_status( 'Dispatcher came back to life: ' + url )
+                print_status "Dispatcher came back to life: #{url}"
                 ([@url] | neighbours).each do |node|
                     neighbour.add_neighbour( node ){}
                 end
@@ -231,7 +228,7 @@ class Node
     # @param    [String]    node    URL
     #
     def announce( node )
-        print_status 'Advertising: ' + node
+        print_status "Advertising: #{node}"
 
         neighbours.each do |peer|
             next if peer == node
@@ -244,12 +241,8 @@ class Node
     end
 
     def connect_to_peer( url )
-        Arachni::RPC::Client::Dispatcher.new( @opts, url ).node
+        Client::Dispatcher.new( @opts, url ).node
     end
-
-end
-
-end
 
 end
 end

@@ -43,7 +43,7 @@ RSpec.configure do |config|
 
         Arachni::Framework.reset
         reset_options
-        Arachni::HTTP.instance.reset
+        Arachni::HTTP.reset
     end
 
     config.after( :suite ) do

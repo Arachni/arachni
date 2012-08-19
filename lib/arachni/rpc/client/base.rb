@@ -22,10 +22,7 @@ module RPC
 class Client
 
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#
-# @version 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Base < ::Arachni::RPC::EM::Client
     attr_reader :url

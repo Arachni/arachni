@@ -10,6 +10,10 @@ describe Arachni::Parser::Element::Link do
         @link = Arachni::Parser::Element::Link.new( @url, @inputs )
     end
 
+    it 'should be assigned to Arachni::Link for easy access' do
+        Arachni::Link.should == Arachni::Parser::Element::Link
+    end
+
     describe '#new' do
         context 'when only a url is provided' do
             it 'should be used for both the owner #url and #action and be parsed in order to extract #auditable inputs' do
@@ -181,6 +185,29 @@ describe Arachni::Parser::Element::Link do
                         'param_one'  => 'value_one',
                         'param_two'  => 'value_two'
                     }
+                end
+            end
+            context 'when the action match a skip rule' do
+                it 'should be ignored' do
+                    Arachni::Options.url     = @url
+                    Arachni::Options.exclude = 'skip-this'
+
+                    base_url = "http://test.com/this_is_the_base/"
+                    html = <<-HTML
+                    <html>
+                        <head>
+                            <base href="#{base_url}" />
+                        </head>
+                        <body>
+                            <a href="test?param_one=value_one&param_two=value_two"></a>
+                            <a href="#{@url}/test?param_one=value_one&param_two=value_two"></a>
+                            <a href="#{@url}/test?param_one=value_one&param_two=skip-this"></a>
+                        </body>
+                    </html>
+                    HTML
+
+                    Arachni::Parser::Element::Link.from_document( @url, html ).size.should == 1
+                    Arachni::Options.reset
                 end
             end
         end

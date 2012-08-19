@@ -135,6 +135,49 @@ describe Arachni::HTTP do
         end
     end
 
+    describe '#sandbox' do
+        it 'should preserve state, run the block and then restore it' do
+
+            @http.cookies.should be_empty
+            body = nil
+            @http.get( @opts.url + 'set_and_preserve_cookies', update_cookies: true )
+            @http.run
+            @http.cookies.should be_any
+
+            headers = @http.headers.dup
+
+            signals = []
+            @http.add_on_complete do |r|
+                signals << :out
+            end
+
+            @http.get( @opts.url + 'out', async: false )
+            @http.sandbox do
+                @http.cookies.should be_any
+                @http.cookie_jar.clear
+                @http.cookies.should be_empty
+
+                @http.headers.should == headers
+                @http.headers['X-Custom'] = 'stuff'
+                @http.headers.include?( 'X-Custom' ).should be_true
+
+                @http.add_on_complete do |r|
+                    signals << :in
+                end
+
+                @http.get( @opts.url + 'in', async: false )
+                @http.run
+            end
+            @http.get( @opts.url + 'out', async: false )
+
+            signals.delete( :out )
+            signals.size.should == 1
+
+            @http.headers.include?( 'X-Custom' ).should be_false
+            @http.cookies.should be_any
+        end
+    end
+
     describe '#url' do
         it 'should return the URL in opts' do
             @http.url.should == @opts.url.to_s

@@ -38,7 +38,7 @@ class Arachni::Modules::AllowedMethods < Arachni::Module::Base
         return if self.class.ran?
 
         print_status( "Checking..." )
-        http.request( page.url, method: :options, remove_id: true ) { |res| check_and_log( res ) }
+        http.request( page.url, method: :options ) { |res| check_and_log( res ) }
     end
 
     def clean_up

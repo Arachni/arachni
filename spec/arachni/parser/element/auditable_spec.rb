@@ -23,6 +23,87 @@ describe Arachni::Parser::Element::Auditable do
         @default_input_value = @auditable.auditable['param']
     end
 
+    describe '#has_inputs?' do
+        before do
+            @has_inputs = Arachni::Parser::Element::Link.new( @url,
+                inputs: {
+                    'param' => 'val',
+                    'param2' => 'val2'
+                }
+            )
+        end
+        context 'when the given inputs are' do
+            context 'Variable arguments' do
+                context 'when it has the given inputs' do
+                    it 'should return true' do
+                        @has_inputs.has_inputs?( :param, :param2 ).should be_true
+                        @has_inputs.has_inputs?( 'param', 'param2' ).should be_true
+
+                        @has_inputs.has_inputs?( :param ).should be_true
+                        @has_inputs.has_inputs?( 'param' ).should be_true
+
+                        @has_inputs.has_inputs?( :param2 ).should be_true
+                        @has_inputs.has_inputs?( 'param2' ).should be_true
+                    end
+                end
+                context 'when it does not have the given inputs' do
+                    it 'should return false' do
+                        @has_inputs.has_inputs?( :param1, :param2 ).should be_false
+                        @has_inputs.has_inputs?( 'param1', 'param2' ).should be_false
+
+                        @has_inputs.has_inputs?( :param1 ).should be_false
+                        @has_inputs.has_inputs?( 'param1' ).should be_false
+                    end
+                end
+            end
+
+            context Array do
+                context 'when it has the given inputs' do
+                    it 'should return true' do
+                        @has_inputs.has_inputs?( :param, :param2 ).should be_true
+                        @has_inputs.has_inputs?( [:param, :param2] ).should be_true
+
+                        @has_inputs.has_inputs?( 'param', 'param2' ).should be_true
+                        @has_inputs.has_inputs?( %w(param param2) ).should be_true
+
+                        @has_inputs.has_inputs?( :param ).should be_true
+                        @has_inputs.has_inputs?( 'param' ).should be_true
+
+                        @has_inputs.has_inputs?( :param2 ).should be_true
+                        @has_inputs.has_inputs?( 'param2' ).should be_true
+                    end
+                end
+                context 'when it does not have the given inputs' do
+                    it 'should return false' do
+                        @has_inputs.has_inputs?( :param1, :param2 ).should be_false
+                        @has_inputs.has_inputs?( [:param1, :param2] ).should be_false
+
+                        @has_inputs.has_inputs?( 'param1', 'param2' ).should be_false
+                        @has_inputs.has_inputs?( %w(param1 param2) ).should be_false
+
+                        @has_inputs.has_inputs?( :param1 ).should be_false
+                        @has_inputs.has_inputs?( 'param1' ).should be_false
+                    end
+                end
+            end
+
+            context Hash do
+                context 'when it has the given inputs' do
+                    it 'should return true' do
+                        @has_inputs.has_inputs?( param: 1, param2: 2 ).should be_true
+                        @has_inputs.has_inputs?( 'param' => 1, 'param2' => 2 ).should be_true
+                    end
+                end
+                context 'when it does not have the given inputs' do
+                    it 'should return false' do
+                        @has_inputs.has_inputs?( param1: 1, param2: 2 ).should be_false
+                        @has_inputs.has_inputs?( 'param1' => 1, 'param2' => 2 ).should be_false
+                    end
+                end
+            end
+        end
+    end
+
     describe '#auditable' do
         it 'should return a frozen hash of auditable inputs' do
             @auditable.auditable.should == { 'param' => 'val' }
@@ -57,7 +138,7 @@ describe Arachni::Parser::Element::Auditable do
     end
 
     describe '#update' do
-        it 'should update the auditable inputs using the given hash' do
+        it 'should update the auditable inputs using the given hash and return self' do
             a = @auditable.dup
 
             updates = { 'param' => 'val1', 'another_param' => 'val3' }
@@ -71,12 +152,34 @@ describe Arachni::Parser::Element::Auditable do
             a.update( cupdates )
             a.auditable.should == updates.merge( cupdates )
             c.should_not == a
+
+            c = a.dup
+            c.update( stuff: '1' ).update( other_stuff: '2' )
+            c['stuff'].should == '1'
+            c['other_stuff'].should == '2'
+
         end
 
         it 'should convert all inputs to strings' do
             e = Arachni::Parser::Element::Link.new( @url, inputs: { 'key' => 'stuff' } )
             e.update( { 'key' => nil } )
             e.auditable.should == { 'key' => '' }
+        end
+    end
+
+    describe '#changes' do
+        it 'should return the changes the inputs have sustained' do
+            [
+                { 'param' => 'val1', 'another_param' => 'val3' },
+                { 'another_param' => 'val3' },
+                { 'new stuff' => 'houa!' },
+                { 'new stuff' => 'houa!' },
+                {}
+            ].each do |updates|
+                a = @auditable.dup
+                a.update( updates )
+                a.changes.should == updates
+            end
         end
     end
 
@@ -125,6 +228,9 @@ describe Arachni::Parser::Element::Auditable do
                 @orig.orig.should == orig_auditable
                 @orig.auditable = orig_auditable.dup
             end
+        end
+        it 'should be aliased to #original' do
+            @orig.orig.should == @orig.original
         end
     end
 

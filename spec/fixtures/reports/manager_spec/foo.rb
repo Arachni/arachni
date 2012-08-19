@@ -14,19 +14,13 @@
     limitations under the License.
 =end
 
-module Arachni
-module Reports
-
-class Foo < Arachni::Report::Base
+class Arachni::Reports::Foo < Arachni::Report::Base
 
     def run
         File.open( "foo", "w" ) {}
     end
 
     def self.info
-        super.merge( options: [ Arachni::Report::Options.outfile( 'foo' ) ] )
+        super.merge( options: [ Options.outfile( 'foo' ) ] )
     end
-end
-
-end
 end

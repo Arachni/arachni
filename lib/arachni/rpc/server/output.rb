@@ -17,7 +17,7 @@
 module Arachni
 
 # get some basics from the CLI UI's output interface
-require Options.instance.dir['lib'] + 'ui/cli/output'
+require Options.dir['lib'] + 'ui/cli/output'
 
 module UI
 

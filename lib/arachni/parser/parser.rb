@@ -16,16 +16,6 @@
 
 module Arachni
 
-lib = Arachni::Options.dir['lib']
-require lib + 'ruby/webrick'
-require lib + 'parser/element/link'
-require lib + 'parser/element/form'
-require lib + 'parser/element/cookie'
-require lib + 'parser/element/header'
-require lib + 'parser/page'
-require lib + 'module/utilities'
-require lib + 'component/manager'
-
 #
 # Analyzer class
 #
@@ -53,8 +43,30 @@ require lib + 'component/manager'
 #
 #
 class Parser
-    include Arachni::UI::Output
-    include Arachni::Utilities
+    include UI::Output
+    include Utilities
+
+    module Element
+        LINK    = 'link'
+        FORM    = 'form'
+        COOKIE  = 'cookie'
+        HEADER  = 'header'
+        BODY    = 'body'
+        PATH    = 'path'
+        SERVER  = 'server'
+    end
+
+    ::Arachni::Element = Element
+
+    lib = Options.dir['lib']
+    require lib + 'ruby/webrick'
+    require lib + 'parser/element/link'
+    require lib + 'parser/element/form'
+    require lib + 'parser/element/cookie'
+    require lib + 'parser/element/header'
+    require lib + 'parser/page'
+    require lib + 'module/utilities'
+    require lib + 'component/manager'
 
     module Extractors
         #
@@ -99,7 +111,7 @@ class Parser
     # @param  [Typhoeus::Responses, Array<Typhoeus::Responses>] res
     # @param  [Options] opts
     #
-    def initialize( res, opts = Arachni::Options )
+    def initialize( res, opts = Options )
         @opts = opts
 
         if res.is_a? Array
@@ -108,11 +120,12 @@ class Parser
             res = res.shift
         end
 
-        @code = res.code
+        @code     = res.code
         self.url  = res.effective_url
-        @html = res.body
-        @response_headers = res.headers_hash
+        @html     = res.body
         @response = res
+
+        @response_headers = res.headers_hash
 
         @doc   = nil
         @paths = nil
@@ -157,7 +170,7 @@ class Parser
         rescue
         end
 
-        self_link = Arachni::Parser::Element::Link.new( @url, inputs: link_vars( @url ) )
+        self_link = Link.new( @url, inputs: link_vars( @url ) )
 
         # non text files won't contain any auditable elements
         if !text?
@@ -194,7 +207,7 @@ class Parser
         end
 
         # grab cookies from the HTTP cookiejar and filter out old ones, as usual
-        from_http_jar = Arachni::HTTP.instance.cookie_jar.cookies.reject do |c|
+        from_http_jar = HTTP.instance.cookie_jar.cookies.reject do |c|
             cookie_names.include?( c.name )
         end
 
@@ -268,7 +281,7 @@ class Parser
             'User-Agent' => @opts.user_agent || '',
             'Referer'    => @url,
             'Pragma'     => 'no-cache'
-        }.map { |k, v| Element::Header.new( @url, { k => v } ) }
+        }.map { |k, v| Header.new( @url, { k => v } ) }
     end
 
     #
@@ -281,13 +294,13 @@ class Parser
     def forms( html = nil )
         return [] if !text? && !html
 
-        f = Element::Form.from_document( @url, html || doc )
+        f = Form.from_document( @url, html || doc )
 
         if @secondary_responses
             @secondary_responses.each do |response|
                 next if response.body.to_s.empty?
 
-                Element::Form.from_document( @url, response.body ).each do |form2|
+                Form.from_document( @url, response.body ).each do |form2|
                     f.each do |form|
                         next if form.auditable.keys.sort != form2.auditable.keys.sort
                         form.auditable.each do |k, v|
@@ -314,10 +327,10 @@ class Parser
         return [] if !text? && !html
 
         if !(vars = link_vars( @url )).empty? || @response.redirection?
-            [Element::Link.new( @url, vars )]
+            [Link.new( @url, vars )]
         else
             []
-        end | Element::Link.from_document( @url, html || doc )
+        end | Link.from_document( @url, html || doc )
     end
 
     #
@@ -330,7 +343,7 @@ class Parser
     # @return   [Hash]    name=>value pairs
     #
     def link_vars( url )
-        Element::Link.parse_query_vars( url )
+        Link.parse_query_vars( url )
     end
 
     #
@@ -339,8 +352,8 @@ class Parser
     # @return   [Array<Element::Cookie>]
     #
     def cookies
-        ( Element::Cookie.from_document( @url, doc ) |
-          Element::Cookie.from_headers( @url, @response_headers ) )
+        ( Cookie.from_document( @url, doc ) |
+          Cookie.from_headers( @url, @response_headers ) )
     end
 
     #
@@ -375,8 +388,7 @@ class Parser
     #
     def run_extractors
         begin
-            @@manager ||=
-                ::Arachni::Component::Manager.new( @opts.dir['path_extractors'], Extractors )
+            @@manager ||= Component::Manager.new( @opts.dir['path_extractors'], Extractors )
 
             return @@manager.available.map do |name|
                 exception_jail( false ){ @@manager[name].new.run( doc ) }

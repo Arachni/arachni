@@ -14,14 +14,14 @@
     limitations under the License.
 =end
 
-lib = Arachni::Options.instance.dir['lib']
+module Arachni
+
+lib = Options.dir['lib']
 
 require lib + 'bloom_filter'
 require lib + 'module/utilities'
 require 'nokogiri'
 require lib + 'nokogiri/xml/node'
-
-module Arachni
 
 #
 # Crawls the target webapp until there are no new paths left.
@@ -29,8 +29,8 @@ module Arachni
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Spider
-    include Arachni::UI::Output
-    include Arachni::Utilities
+    include UI::Output
+    include Utilities
 
     # @return [Arachni::Options]
     attr_reader :opts
@@ -46,7 +46,7 @@ class Spider
     #
     # @param  [Arachni::Options] opts
     #
-    def initialize( opts = Arachni::Options.instance )
+    def initialize( opts = Options.instance )
         @opts = opts
         @url  = @opts.url.to_s
 
@@ -106,7 +106,7 @@ class Spider
 
                 visit( url ) do |res|
                     obj = if pass_pages?
-                        Arachni::Parser::Page.from_response( res, @opts )
+                        Page.from_response( res, @opts )
                     else
                         Parser.new( res, @opts )
                     end
@@ -150,7 +150,7 @@ class Spider
     # @param    [Block]     block
     #
     def on_each_page( &block )
-        raise 'Block is mandatory!' if !block_given?
+        fail 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
         self
     end
@@ -161,7 +161,7 @@ class Spider
     # @param    [Block]    block
     #
     def on_complete( &block )
-        raise 'Block is mandatory!' if !block_given?
+        fail 'Block is mandatory!' if !block_given?
         @on_complete_blocks << block
         self
     end
@@ -228,7 +228,7 @@ class Spider
 
     # @return   [Arachni::HTTP]   HTTP interface
     def http
-        Arachni::HTTP
+        HTTP
     end
 
     #
@@ -280,12 +280,12 @@ class Spider
     end
 
     def auto_redundant?( url )
-        return false if !Options.auto_redundant?
+        return false if !@opts.auto_redundant?
         @auto_redundant ||= Hash.new( 0 )
 
         h = "#{url.split( '?' ).first}#{parse_query( url ).keys.sort}".hash
 
-        if @auto_redundant[h] >= Options.auto_redundant
+        if @auto_redundant[h] >= @opts.auto_redundant
             print_verbose "Discarding auto-redundant page: #{url}"
             return true
         end
@@ -313,7 +313,6 @@ class Spider
 
         opts = {
             timeout:         nil,
-            remove_id:       true,
             follow_location: true,
             update_cookies:  true
         }.merge( opts )

@@ -17,11 +17,11 @@
 require 'rubygems'
 require 'bundler/setup'
 
-require_relative 'arachni/version'
-require_relative 'arachni/banner'
-
 module Arachni
 end
+
+require_relative 'arachni/version'
+require_relative 'arachni/banner'
 
 #
 # If there's no UI driving us then there's no output interface.

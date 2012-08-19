@@ -1,2 +1,2 @@
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'parser/parser'
+lib = Arachni::Options.dir['lib']
+require lib + 'parser/parser'

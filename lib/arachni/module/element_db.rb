@@ -28,7 +28,7 @@ module Module
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module ElementDB
-    include Arachni::Utilities
+    include Utilities
 
     #
     # page forms

@@ -26,6 +26,48 @@ describe Arachni::Parser do
         @parser = Arachni::Parser.new( @response, @opts )
     end
 
+    describe Arachni::Parser::Element do
+        describe 'Arachni::Parser::Element::LINK' do
+            it 'should return "link"' do
+                Arachni::Parser::Element::LINK.should == 'link'
+            end
+        end
+        describe 'Arachni::Parser::Element::FORM' do
+            it 'should return "form"' do
+                Arachni::Parser::Element::FORM.should == 'form'
+            end
+        end
+        describe 'Arachni::Parser::Element::COOKIE' do
+            it 'should return "cookie"' do
+                Arachni::Parser::Element::COOKIE.should == 'cookie'
+            end
+        end
+        describe 'Arachni::Parser::Element::HEADER' do
+            it 'should return "header"' do
+                Arachni::Parser::Element::HEADER.should == 'header'
+            end
+        end
+        describe 'Arachni::Parser::Element::BODY' do
+            it 'should return "body"' do
+                Arachni::Parser::Element::BODY.should == 'body'
+            end
+        end
+        describe 'Arachni::Parser::Element::PATH' do
+            it 'should return "path"' do
+                Arachni::Parser::Element::PATH.should == 'path'
+            end
+        end
+        describe 'Arachni::Parser::Element::SERVER' do
+            it 'should return "server"' do
+                Arachni::Parser::Element::SERVER.should == 'server'
+            end
+        end
+
+        it 'should be assigned to Arachni::Element for easy access' do
+            Arachni::Element.should == Arachni::Parser::Element
+        end
+    end
+
     describe '#url' do
         it 'should hold the effective URL of the response' do
             @parser.url.should == @url

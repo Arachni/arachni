@@ -1,0 +1,7 @@
+<% content_for :title, 'Discovered elements' %>
+
+<div class="hero-unit">
+    <h1><em><%= pages.size %></em> pages with auditable elements thus far</h1>
+</div>
+
+<%= render :page_twin_accordion, pages: pages  %>

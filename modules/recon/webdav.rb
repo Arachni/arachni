@@ -45,7 +45,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
         path = get_path( page.url )
         return if self.class.found? || audited?( path )
 
-        http.request( path, method: :options, remove_id: true ) { |res| check_and_log( res ) }
+        http.request( path, method: :options ) { |res| check_and_log( res ) }
         audited( path )
     end
 

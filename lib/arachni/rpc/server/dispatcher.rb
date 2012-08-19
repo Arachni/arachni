@@ -19,10 +19,10 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Options.instance.dir['lib'] + 'rpc/server/base'
-require Options.instance.dir['lib'] + 'rpc/server/instance'
-require Options.instance.dir['lib'] + 'rpc/server/output'
+require Options.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'rpc/server/base'
+require Options.dir['lib'] + 'rpc/server/instance'
+require Options.dir['lib'] + 'rpc/server/output'
 
 module RPC
 class Server
@@ -45,10 +45,10 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Dispatcher
-    require Options.instance.dir['lib'] + 'rpc/server/node'
+    require Options.dir['lib'] + 'rpc/server/node'
 
-    include Arachni::Utilities
-    include Arachni::UI::Output
+    include Utilities
+    include UI::Output
     include ::Sys
 
     def initialize( opts )
@@ -314,18 +314,18 @@ USAGE
 
             pid = ::EM.fork_reactor { exception_jail {
                 @opts.rpc_port = random_port
-                Arachni::RPC::Server::Instance.new( @opts, token )
+                Server::Instance.new( @opts, token )
             }}
 
             print_status( "Instance added to pool -- PID: #{pid} - " +
                 "Port: #{@opts.rpc_port} - Owner: #{owner}" )
 
             @pool << {
-                'token' => token,
-                'pid'   => pid,
-                'port'  => random_port,
-                'url'   => "#{@opts.rpc_address}:#{random_port}",
-                'owner' => owner,
+                'token'     => token,
+                'pid'       => pid,
+                'port'      => random_port,
+                'url'       => "#{@opts.rpc_address}:#{random_port}",
+                'owner'     => owner,
                 'birthdate' => Time.now
             }
 

@@ -18,9 +18,10 @@ require 'em-synchrony'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'framework'
-require Options.instance.dir['lib'] + 'rpc/server/module/manager'
-require Options.instance.dir['lib'] + 'rpc/server/plugin/manager'
+lib = Options.dir['lib']
+require lib + 'framework'
+require lib + 'rpc/server/module/manager'
+require lib + 'rpc/server/plugin/manager'
 
 module RPC
 class Server
@@ -38,9 +39,9 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework < ::Arachni::Framework
-    require Options.instance.dir['lib'] + 'rpc/server/distributor'
+    require Options.dir['lib'] + 'rpc/server/distributor'
 
-    include Arachni::Utilities
+    include Utilities
     include Distributor
 
     # make this inherited methods visible again
@@ -50,7 +51,7 @@ class Framework < ::Arachni::Framework
             :status, :clean_up!
 
     alias :old_clean_up :clean_up
-    alias :auditstore    :audit_store
+    alias :auditstore   :audit_store
 
     private :old_clean_up
 
@@ -60,8 +61,8 @@ class Framework < ::Arachni::Framework
         # already inherited but lets make it explicit
         @opts = opts
 
-        @modules = Arachni::RPC::Server::Module::Manager.new( self )
-        @plugins = Arachni::RPC::Server::Plugin::Manager.new( self )
+        @modules = Module::Manager.new( self )
+        @plugins = Plugin::Manager.new( self )
 
         # holds all running instances
         @instances = []
@@ -194,7 +195,7 @@ class Framework < ::Arachni::Framework
 
                 @status = :crawling
                 # start the crawl and extract all paths
-                Arachni::Spider.new( @opts ).run do |page|
+                Spider.new( @opts ).run do |page|
                     @override_sitemap << page.url
                     element_ids_per_page[page.url] = build_elem_list( page )
                 end
@@ -485,7 +486,7 @@ class Framework < ::Arachni::Framework
     alias :auditstore_as_hash :report
 
     def report_as( name )
-        fail Arachni::Exceptions::ComponentNotFound, "Report '#{name}' could not be found." if !reports.available.include?( name.to_s )
+        fail Exceptions::ComponentNotFound, "Report '#{name}' could not be found." if !reports.available.include?( name.to_s )
         fail TypeError, "Report '#{name}' cannot format the audit results as a String." if !reports[name].has_outfile?
 
         outfile = "/tmp/arachn_report_as.#{name}"
@@ -551,7 +552,7 @@ class Framework < ::Arachni::Framework
     #
     def restrict_to_elements( elements, token = nil )
         return false if high_performance? && !valid_token?( token )
-        ::Arachni::Parser::Element::Auditable.restrict_to_elements( elements )
+        Element::Auditable.restrict_to_elements( elements )
         true
     end
 

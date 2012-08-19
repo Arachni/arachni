@@ -30,8 +30,8 @@ module Plugin
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Arachni::Component::Manager
-    include Arachni::Utilities
-    extend Arachni::Utilities
+    include Utilities
+    extend  Utilities
 
     NAMESPACE = Arachni::Plugins
     DEFAULT   = %w(defaults/*)
@@ -47,12 +47,12 @@ class Manager < Arachni::Component::Manager
     end
 
     def load_default
-        load( DEFAULT )
+        load DEFAULT
     end
     alias :load_defaults :load_default
 
     def default
-        parse( DEFAULT )
+        parse DEFAULT
     end
     alias :defaults :default
 
@@ -90,7 +90,7 @@ class Manager < Arachni::Component::Manager
                     print_bad( "\tgem install #{deps}" )
                 end
 
-                raise "Plug-in dependencies not met: #{name} -- #{deps}"
+                fail "Plug-in dependencies not met: #{name} -- #{deps}"
             end
 
             opts = @framework.opts.plugins[name]

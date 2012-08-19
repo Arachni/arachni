@@ -14,8 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Module
+module Arachni::Module
 
 #
 # KeyFiller class
@@ -85,5 +84,4 @@ class KeyFiller
 
 end
 
-end
 end

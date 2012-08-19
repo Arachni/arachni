@@ -138,7 +138,7 @@ module Mutable
             # don't audit parameter flips
             next if hash[k] == seed || immutables.include?( k )
 
-            chash = Arachni::Module::KeyFiller.fill( chash )
+            chash = Module::KeyFiller.fill( chash )
             opts[:format].each do |format|
                 str = format_str( injection_str, chash[k], format )
 

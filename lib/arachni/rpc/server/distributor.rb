@@ -413,11 +413,11 @@ module Distributor
     def connect_to_instance( instance )
         @tokens  ||= {}
         @tokens[instance['url']] = instance['token'] if instance['token']
-        Arachni::RPC::Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
     def connect_to_dispatcher( url )
-        Arachni::RPC::Client::Dispatcher.new( @opts, url )
+        Client::Dispatcher.new( @opts, url )
     end
 
     def dispatcher

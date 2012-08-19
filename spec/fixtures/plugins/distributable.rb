@@ -14,10 +14,7 @@
     limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
-class Distributable < Arachni::Plugin::Base
+class Arachni::Plugins::Distributable < Arachni::Plugin::Base
 
     def run
         wait_while_framework_running
@@ -44,7 +41,4 @@ class Distributable < Arachni::Plugin::Base
         }
     end
 
-end
-
-end
 end

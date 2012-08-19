@@ -89,12 +89,13 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
             next false if !login_form
 
-            login_form.update( @params )
-            res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
-            next false if !res
-
-            true
+            login_form.update( @params ).
+                submit( async: false,
+                        update_cookies: true,
+                        follow_location: false ).
+                response
         end
+
         framework.set_login_check_url( check_url, @verifier )
 
         cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}

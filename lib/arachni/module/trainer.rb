@@ -14,10 +14,11 @@
     limitations under the License.
 =end
 
-require Arachni::Options.instance.dir['lib'] + 'module/element_db'
-require Arachni::Options.instance.dir['lib'] + 'module/output'
-
 module Arachni
+
+require Options.dir['lib'] + 'module/element_db'
+require Options.dir['lib'] + 'module/output'
+
 module Module
 
 #
@@ -130,7 +131,7 @@ class Trainer
             page_data[:doc]              = @parser.doc
             page_data[:response_headers] = res.headers_hash
 
-            @pages << Arachni::Parser::Page.new( page_data )
+            @pages << Page.new( page_data )
 
             @updated = false
         end
