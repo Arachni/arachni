@@ -43,6 +43,7 @@ require lib + 'http'
 require lib + 'report'
 require lib + 'database'
 require lib + 'component/manager'
+require lib + 'session'
 
 require Options.dir['mixins'] + 'progress_bar'
 
@@ -94,6 +95,9 @@ class Framework
     #
     attr_reader :plugins
 
+    # @return   [Session]   webapp session helper
+    attr_reader :session
+
     #
     # @return   [Arachni::HTTP]     HTTP instance
     #
@@ -121,37 +125,6 @@ class Framework
     attr_reader :url_queue_total_size
 
     #
-    # A block used to login to the webapp.
-    #
-    # The block should log the framework into the webapp and return +true+ on
-    # success, +false+ on failure.
-    #
-    # @return   [Block]
-    #
-    attr_accessor :login_sequence
-
-    #
-    # A block used to check whether or not we're logged in to the webapp.
-    #
-    # The block should return +true+ on success, +false+ on failure.
-    #
-    # The proc should expect 2 parameters, the first one being a hash of HTTP
-    # options and the second one an optional block.
-    #
-    # If a block has been set, the check should work async and pass the result
-    # to the block, otherwise it should simply return the result.
-    #
-    # The result of the check should be +true+ or +false+.
-    #
-    # A good example of this can be found in {#set_login_check_url}.
-    #
-    # @return   [Block]
-    #
-    # @see #set_login_check_url
-    #
-    attr_accessor :login_check
-
-    #
     # Initializes system components.
     #
     # @param    [Options]    opts
@@ -166,6 +139,8 @@ class Framework
         @modules = Module::Manager.new( self )
         @reports = Report::Manager.new( @opts )
         @plugins = Plugin::Manager.new( self )
+
+        @session = Session.new( @opts )
 
         @http = HTTP.instance
 
@@ -217,112 +192,6 @@ class Framework
         exception_jail { @reports.run( audit_store ) } if !@reports.empty?
 
         true
-    end
-
-    # @return   [Bool]  +true+ if there is log-in capability, +false+ otherwise
-    def can_login?
-        @login_sequence && @login_check
-    end
-
-    # @return   [Bool, nil] +true+ if logged-in, +false+ otherwise, +nil+ if
-    #                           there's no log-in capability
-    def ensure_logged_in
-        return if !can_login?
-        return true if logged_in?
-
-        print_bad 'The scanner has been logged out.'
-        print_info 'Trying to re-login...'
-
-        login
-
-        if !logged_in?
-            print_bad 'Could not re-login.'
-            false
-        else
-            print_ok 'Logged-in successfully.'
-            true
-        end
-    end
-
-    #
-    # Uses the block in {#login_sequence} to login to the webapp.
-    #
-    # @return   [Bool, nil]     +true+ if login was successful, +false+ if not,
-    #                               +nil+ if no {#login_sequence} has been set.
-    #
-    def login
-        login_sequence.call if has_login_sequence?
-    end
-
-    # @return   [Bool]  +true+ if a login sequence exists, +false+ otherwise
-    def has_login_sequence?
-        !!login_sequence
-    end
-
-    #
-    # Uses the block in {#login_check} to check in we're logged in to the webapp.
-    #
-    # @param    [Hash]   http_opts   extra HTTP options to use for the check
-    # @param    [Block]  block       if a block has been provided the check
-    #                                   will be async and the result will be passed
-    #                                   to it, otherwise the method will return
-    #                                   the result.
-    #
-    #
-    # @return   [Bool, nil]     +true+ if we're logged-in, +false+ if not,
-    #                               +nil+ if no {#login_sequence} has been set.
-    #
-    def logged_in?( http_opts = {}, &block )
-        login_check.call( http_opts, block ) if has_login_check?
-    end
-
-    # @return   [Bool]  +true+ if a login check exists, +false+ otherwise
-    def has_login_check?
-        !!login_check
-    end
-
-    def login_check( &block )
-        return @login_check = block if block_given?
-
-        if @opts.login_check_url && @opts.login_check_pattern
-            set_login_check_url( @opts.login_check_url, @opts.login_check_pattern )
-        end
-
-        @login_check
-    end
-
-    #
-    # A block used to login to the webapp.
-    #
-    # The block should log the framework into the webapp and return +true+ on
-    # success, +false+ on failure.
-    #
-    # @param    [Block] block  if a block has been given it will be set as
-    #                               the login sequence
-    #
-    # @return   [Block]
-    #
-    def login_sequence( &block )
-        return @login_sequence if !block_given?
-        @login_sequence = block
-    end
-
-    #
-    # Sets a login check using the provided +url+ and +regexp+.
-    #
-    # @param    [String, #to_s]  url        URL to request
-    # @param    [String, Regexp] pattern   pattern to match against the body of the response
-    #
-    def set_login_check_url( url, pattern )
-        login_check do |opts, block|
-            bool = nil
-            http.get( url.to_s, opts.merge( async: !!block ) ) do |res|
-                bool = !!res.body.match( pattern )
-                block.call( bool ) if block
-            end
-
-            bool
-        end
     end
 
     #
@@ -883,7 +752,7 @@ class Framework
 
         http.trainer.flush.each { |page| push_to_page_queue( page ) }
 
-        ensure_logged_in
+        session.ensure_logged_in
     end
 
     #

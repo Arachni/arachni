@@ -151,6 +151,10 @@ class Base
         }
     end
 
+    def session
+        framework.session
+    end
+
     def http
         framework.http
     end

@@ -121,6 +121,10 @@ class Base
         framework.plugins if framework
     end
 
+    def session
+        framework.session if framework
+    end
+
     #
     # OPTIONAL
     #

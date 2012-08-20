@@ -86,7 +86,7 @@ describe Arachni::Element::Form do
         end
     end
 
-    describe '#has_password?' do
+    describe '#requires_password?' do
         context 'when the form has a password field' do
             it 'should return true' do
                 html = '
@@ -101,7 +101,7 @@ describe Arachni::Element::Form do
                     </html>'
 
                 Arachni::Element::Form.from_document( @url, html ).
-                    first.has_password?.should be_true
+                    first.requires_password?.should be_true
             end
         end
         context 'when the form does not have a password field' do
@@ -117,7 +117,7 @@ describe Arachni::Element::Form do
                     </html>'
 
                 Arachni::Element::Form.from_document( @url, html ).
-                    first.has_password?.should be_false
+                    first.requires_password?.should be_false
             end
         end
     end

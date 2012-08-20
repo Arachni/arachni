@@ -33,48 +33,31 @@
 #
 class Arachni::Modules::SessionFixation < Arachni::Module::Base
 
-    def self.session_cookie=( name )
-        @session_cookie = name
-    end
-
-    def self.session_cookie
-        @session_cookie
-    end
-
     def token
         '_arachni_sf_' + seed
     end
 
     def run
-        if !framework.has_login_check?
+        if !session.has_login_check?
             print_info 'No login-check has been set, cannot continue.'
             return
         end
 
-        framework.logged_in? do |logged_in|
+        session.logged_in? do |logged_in|
             if !logged_in
                 print_bad 'We seem to have been logged out, cannot continue'
                 next
             end
 
-            find_session_cookie do |name|
+            session.cookie do |cookie|
+                name = cookie.name
+                print_info "Found session cookie named: #{name}"
+
                 audit( token ) do |response, opts, _|
                     cookie = cookies_from_response( response ).select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
                     log( opts, response )
                 end
-            end
-        end
-    end
-
-    def find_session_cookie( &block )
-        return block.call( self.class.session_cookie ) if self.class.session_cookie
-
-        http.cookies.each do |cookie|
-            framework.logged_in?( cookies: { cookie.name => '' } ) do |bool|
-                next if bool
-                print_info "Found session cookie named: #{cookie.name}"
-                block.call( self.class.session_cookie = cookie.name )
             end
         end
     end

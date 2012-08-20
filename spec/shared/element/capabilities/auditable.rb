@@ -79,22 +79,28 @@ shared_examples_for 'auditable' do |options = {}|
             end
 
             context Hash do
-                context 'when it has the given inputs' do
+                context 'when it has the given inputs (names and values)' do
                     it 'should return true' do
-                        hash_keys     = @keys.inject( {} ) { |h, k| h[k] = rand( 999 ).to_s; h}
-                        hash_sym_keys = @keys.inject( {} ) { |h, k| h[k.to_sym] = rand( 999 ).to_s; h}
+                        hash     = @has_inputs.auditable.
+                            inject( {} ) { |h, (k, v)| h[k] = v; h}
 
-                        @has_inputs.has_inputs?( hash_sym_keys ).should be_true
-                        @has_inputs.has_inputs?( hash_keys ).should be_true
+                        hash_sym = @has_inputs.auditable.
+                            inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h}
+
+                        @has_inputs.has_inputs?( hash_sym ).should be_true
+                        @has_inputs.has_inputs?( hash ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do
                     it 'should return false' do
-                        hash_keys     = @non_existent_keys.inject( {} ) { |h, k| h[k] = rand( 999 ).to_s; h}
-                        hash_sym_keys = @non_existent_keys.inject( {} ) { |h, k| h[k.to_sym] = rand( 999 ).to_s; h}
+                        hash     = @has_inputs.auditable.
+                            inject( {} ) { |h, (k, v)| h[k] = "#{v}1"; h}
 
-                        @has_inputs.has_inputs?( hash_sym_keys ).should be_false
-                        @has_inputs.has_inputs?( hash_keys ).should be_false
+                        hash_sym = @has_inputs.auditable.
+                            inject( {} ) { |h, (k, v)| h[k.to_sym] = "#{v}1"; h}
+
+                        @has_inputs.has_inputs?( hash_sym ).should be_false
+                        @has_inputs.has_inputs?( hash ).should be_false
                     end
                 end
             end

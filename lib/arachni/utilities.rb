@@ -105,8 +105,8 @@ module Utilities
         Page.from_response( *args )
     end
 
-    def page_from_url( *args )
-        Page.from_url( *args )
+    def page_from_url( *args, &block )
+        Page.from_url( *args, &block )
     end
 
     def html_decode( str )

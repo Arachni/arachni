@@ -75,6 +75,7 @@
     - Implemented a Cookiejar. (**New**)
     - Removed tagging of requests with the system-wide seed.
     - Added a maximum queue size limit -- once the request limit has been reached the queued requests will be fired in order to unload the queue.
+    - Added ```#sandbox``` -- isolates the given block from the rest of the HTTP env and executes it.
 - Spider -- Re-written, much cleaner design and code. (**New**)
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
@@ -84,6 +85,7 @@
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added
+    - ```Arachni::Session``` - Session manager, handling session maintenance, login sequences, log-out detection etc.
     - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency. (**New**)
     - ```Arachni::BloomFilter``` class, a ```Hash```-based, lightweight Bloom-filter implementation requiring minimum storage space and providing fast look-ups.
     - ```Arachni::Cache``` classes (**New**)

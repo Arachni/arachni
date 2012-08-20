@@ -135,10 +135,12 @@ module Auditable
     # @return   [Bool]
     #
     def has_inputs?( *args )
-        keys = args.flatten.compact.map do |a|
-            (a.is_a?( Hash ) ? a.keys : [a]).map( &:to_s )
-        end.flatten
-        (self.auditable.keys & keys).size == keys.size
+        if (h = args.first).is_a?( Hash )
+            h.each { |k, v| return false if self[k] != v }
+        else
+            keys = args.flatten.compact.map { |a| [a].map( &:to_s ) }.flatten
+            (self.auditable.keys & keys).size == keys.size
+        end
     end
 
     #

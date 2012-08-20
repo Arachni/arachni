@@ -52,7 +52,7 @@ class Page
     #
     # Request headers
     #
-    # @return    [Array<Arachni::Header>]
+    # @return    [Array<Element::Header>]
     #
     attr_reader :headers
 
@@ -61,33 +61,34 @@ class Page
     #
     attr_reader :response_headers
 
+    # @return    [Array<String>]
     attr_reader :paths
 
     #
     # @see Parser#links
     #
-    # @return    [Array<Arachni::Link>]
+    # @return    [Array<Element::Link>]
     #
     attr_accessor :links
 
     #
     # @see Parser#forms
     #
-    # @return    [Array<Arachni::Form>]
+    # @return    [Array<Element::Form>]
     #
     attr_accessor :forms
 
     #
     # @see Parser#cookies
     #
-    # @return    [Array<Arachni::Cookie>]
+    # @return    [Array<Element::Cookie>]
     #
     attr_accessor :cookies
 
     #
     # Cookies extracted from the supplied cookiejar
     #
-    # @return    [Array<Arachni::Cookie>]
+    # @return    [Array<Element::Cookie>]
     #
     attr_accessor :cookiejar
 
@@ -99,18 +100,18 @@ class Page
             HTTP.get( url ) do |res|
                 responses << res
                 next if responses.size != opts[:precision]
-                block.call( Parser.new( responses ).run ) if block_given?
+                block.call( from_response( responses ) ) if block_given?
             end
         }
 
         if !block_given?
             HTTP.run
-            Parser.new( responses ).run
+            from_response( responses )
         end
     end
 
     def self.from_response( res, opts = Options )
-        Parser.new( res, opts ).run
+        Parser.new( res, opts ).page
     end
     class << self; alias :from_http_response :from_response end
 

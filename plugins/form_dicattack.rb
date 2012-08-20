@@ -43,7 +43,8 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
     end
 
     def run
-        if !form = login_form
+        form = session.find_login_form( url: @url, inputs: [ @user_field, @passwd_field ] )
+        if !form
             print_bad "Could not find a form suiting the provided params at: #{@url }"
             return
         end
@@ -97,23 +98,6 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
     def clean_up
         # continue with the scan
         framework.resume
-    end
-
-    def login_form
-        # grab the page containing the login form
-        res = http.get( @url, async: false ).response
-
-        # find the login form
-        forms_from_response( res ).select { |cform| login_form?( cform ) }.first
-    end
-
-    def login_form?( form )
-        avail    = form.auditable.keys
-        provided = [ @user_field, @passwd_field ]
-
-        provided.each { |name| return false if !avail.include?( name ) }
-
-        true
     end
 
     def self.info

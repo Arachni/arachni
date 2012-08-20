@@ -267,8 +267,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/record/stop'
                             record_stop
                             erb :verify_login_check, verify_fail: false, params: {
-                                'url'     => framework.opts.login_check_url,
-                                'pattern' => framework.opts.login_check_pattern
+                                'url'     => session.opts.login_check_url,
+                                'pattern' => session.opts.login_check_pattern
                             }
 
                         when '/verify/login_check'
@@ -276,9 +276,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             if req.request_method != 'POST'
                                 erb :verify_login_check, verify_fail: false
                             else
-                                framework.set_login_check_url( params['url'], params['pattern'] )
+                                session.set_login_check( params['url'], params['pattern'] )
 
-                                if !framework.logged_in?
+                                if !session.logged_in?
                                     erb :verify_login_check, verify_fail: true
                                 else
                                     erb :verify_login_sequence,
@@ -290,19 +290,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
                         when '/verify/login_sequence'
 
-                            form = find_login_form
-                            framework.login_sequence do
-                                form.refresh.
-                                    submit( async:           false,
-                                            update_cookies:  true,
-                                            follow_location: false ).response
-                            end
+                            session.login_form = find_login_form
 
                             logged_in = false
                             framework.http.sandbox do |http|
                                 http.cookie_jar.clear
-                                framework.login
-                                logged_in = framework.logged_in?
+                                session.login
+                                logged_in = session.logged_in?
                             end
 
                             erb :verify_login_final, ok: logged_in
@@ -361,12 +355,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     def find_login_form_from_request( request )
         return if (params = parse_request_body( request.body )).empty?
-        forms_with_password.select do |f|
-            if normalize_url( request.unparsed_uri ) == f.action && f.has_inputs?( params )
-                return f.update( params )
-            end
-        end
-        nil
+
+        f = session.find_login_form( pages:  @pages,
+                                     action: normalize_url( request.unparsed_uri ),
+                                     inputs: params.keys )
+
+        return if !f
+        f.update( params )
     end
 
     #
@@ -375,7 +370,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     # @return   [Array<Arachni::Element::Form>]
     #
     def forms_with_password
-        @pages.map { |p| p.forms.select { |f| f.has_password? } }.flatten
+        @pages.map { |p| p.forms.select { |f| f.requires_password? } }.flatten
     end
 
     #

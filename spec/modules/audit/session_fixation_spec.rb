@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'module'
 
     before :all do
-        framework.set_login_check_url( url, /dear user/ )
+        session.set_login_check( url, /dear user/ )
     end
 
     def self.targets
