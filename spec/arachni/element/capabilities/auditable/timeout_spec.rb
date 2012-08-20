@@ -65,7 +65,9 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
             context 'when not set' do
                 it 'should not modify the final timeout value' do
-                    @positive.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
+                    c = @positive.dup
+                    c[:multi] = true
+                    c.timeout_analysis( '__TIME__', @timeout_opts.merge( timeout: 2000 ))
                     @run.call
 
                     issues.should be_any
