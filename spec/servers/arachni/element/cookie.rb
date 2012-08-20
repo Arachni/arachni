@@ -1,3 +1,4 @@
+require 'yaml'
 require 'sinatra'
 require 'sinatra/contrib'
 set :logging, false
