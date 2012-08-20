@@ -77,6 +77,12 @@ class Cookie < Arachni::Element::Base
         @orig.freeze
     end
 
+    #
+    # Overrides {Capabilities::Auditable#audit} to enforce cookie exclusion
+    # settings from {Arachni::Options#exclude_cookies}.
+    #
+    # @see Capabilities::Auditable#audit
+    #
     def audit( *args )
         if Arachni::Options.exclude_cookies.include?( name )
             auditor.print_info "Skipping audit of '#{name}' cookie."
@@ -152,6 +158,11 @@ class Cookie < Arachni::Element::Base
         d
     end
 
+    #
+    # Sets auditable cookie name and value
+    #
+    # @param    [Hash]  inputs   name => value pair
+    #
     def auditable=( inputs )
         k = inputs.keys.first
         v = inputs.values.first
@@ -169,6 +180,12 @@ class Cookie < Arachni::Element::Base
         end
     end
 
+    #
+    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific limitations
+    # and the {Arachni::Options#audit_cookies_extensively} option.
+    #
+    # @see Capabilities::Mutable#mutations
+    #
     def mutations( injection_str, opts = {} )
         flip = opts.delete( :param_flip )
         muts = super( injection_str, opts )
@@ -262,6 +279,13 @@ class Cookie < Arachni::Element::Base
         end.flatten.compact
     end
 
+    #
+    # Converts a cookie's 'expires' atribute to a Ruby {Time} object.
+    #
+    # @param    [String]    expires
+    #
+    # @return   [Time]
+    #
     def self.expires_to_time( expires )
         (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
     end
@@ -355,16 +379,36 @@ class Cookie < Arachni::Element::Base
         end.flatten.compact
     end
 
+    #
+    # Encodes a {String} in order to prepare it for the Cookie header field.
+    #
+    # @param    [String]    str
+    #
     def self.encode( str )
         URI.encode( str, "+;%=\0" )
     end
+    #
+    # Encodes a {String} in order to prepare it for the Cookie header field.
+    #
+    # @param    [String]    str
+    #
     def encode( str )
         self.class.encode( str )
     end
 
+    #
+    # Decodes a {String} encoded for the Cookie header field.
+    #
+    # @param    [String]    str
+    #
     def self.decode( str )
-        URI.decode( str.gsub( '+', ' ' ), )
+        URI.decode( str.gsub( '+', ' ' ) )
     end
+    #
+    # Decodes a {String} encoded for the Cookie header field.
+    #
+    # @param    [String]    str
+    #
     def decode( str )
         self.class.decode( str )
     end
