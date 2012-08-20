@@ -23,7 +23,7 @@
 - Options
     - Removed
         - ```--http-harvest-last```
-    - Added (**New**)
+    - Added
         - ```--login-check-url``` --  A URL used to verify that the scanner is still logged in to the web application.
         - ```--login-check-pattern``` -- A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
         - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
@@ -86,9 +86,9 @@
     - Added full test suite using RSpec. (**New**)
 - Added
     - ```Arachni::Session``` - Session manager, handling session maintenance, login sequences, log-out detection etc.
-    - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency. (**New**)
+    - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency.
     - ```Arachni::BloomFilter``` class, a ```Hash```-based, lightweight Bloom-filter implementation requiring minimum storage space and providing fast look-ups.
-    - ```Arachni::Cache``` classes (**New**)
+    - ```Arachni::Cache``` classes
         - ```LeastCostReplacement``` -- Least Cost Replacement cache implementation.
         - ```LeastRecentlyUsed``` -- Least Recently Used cache implementation.
         - ```RandomReplacement``` -- Random Replacement cache implementation.
