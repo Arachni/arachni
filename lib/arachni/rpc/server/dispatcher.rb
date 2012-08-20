@@ -192,6 +192,7 @@ class Dispatcher
         stats_h['node']['score']  = (rs_score = resource_consumption_score) > 0 ? rs_score : 1
         stats_h['node']['score'] *= stats_h['node']['weight'] if stats_h['node']['weight']
 
+        stats_h['node']['score'] = Float( stats_h['node']['score'] )
         stats_h
     end
 
@@ -208,8 +209,8 @@ class Dispatcher
     private
 
     def resource_consumption_score
-        mem = 0
-        cpu = 0
+        mem = 0.0
+        cpu = 0.0
         jobs.each do |job|
             mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
             cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
