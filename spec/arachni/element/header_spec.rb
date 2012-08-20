@@ -1,7 +1,8 @@
 require_relative '../../spec_helper'
 
 describe Arachni::Element::Header do
-    it_should_behave_like 'auditable', url: server_url_for( :header ), single_input: true
+    it_should_behave_like 'auditable', url: server_url_for( :header ),
+                          single_input: true
 
     before( :all ) do
         @url = server_url_for( :header )
