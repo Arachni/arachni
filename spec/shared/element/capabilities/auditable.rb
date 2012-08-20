@@ -4,7 +4,7 @@ shared_examples_for 'auditable' do |options = {}|
     let( :opts ) do
         {
             single_input: false,
-            url:          nil,
+            url:          nil
         }.merge( options )
     end
 
@@ -606,7 +606,9 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 describe 'Arachni::Module::Auditor::Format::NULL' do
-                    it 'should terminate the seed with a null character' do
+                    it 'should terminate the seed with a null character',
+                       if: described_class != Arachni::Element::Header  do
+
                         injected = nil
                         cnt = 0
                         @auditable.audit( @seed,
