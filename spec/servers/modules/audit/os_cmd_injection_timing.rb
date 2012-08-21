@@ -1,11 +1,18 @@
 require 'sinatra'
 require 'sinatra/contrib'
 
+#REGEXP = {
+#    linux: 'ping -n (\d+) localhost',
+#    bsd: 'ping \-n (\d+) localhost',
+#    windows: 'ping \-c (\d+) localhost',
+#    solaris: '\/usr\/sbin\/ping \-s localhost 1000 (\d+)',
+#}
+
 REGEXP = {
-    linux: 'ping -n (\d+) localhost',
-    bsd: 'ping \-n (\d+) localhost',
-    windows: 'ping \-c (\d+) localhost',
-    solaris: '\/usr\/sbin\/ping \-s localhost 1000 (\d+)',
+    linux:   'sleep (\d+)',
+    bsd:     'sleep (\d+)',
+    windows: 'sleep (\d+)',
+    solaris: 'sleep (\d+)'
 }
 
 def exec( platform, str, prefix = nil, postfix = nil )
