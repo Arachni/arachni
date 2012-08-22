@@ -33,6 +33,15 @@ class Dispatcher
     def initialize( opts, url )
         @client = Base.new( opts, url )
         @node = RemoteObjectMapper.new( @client, 'node' )
+
+        # map Dispatcher handlers
+        glob_handlers = "#{Options.dir['lib']}rpc/server/dispatcher_handlers/*.rb"
+        Dir.glob( glob_handlers ).each do |handler|
+            name = File.basename( handler, '.rb' )
+
+            self.class.send( :attr_reader, name.to_sym )
+            instance_variable_set( "@#{name}".to_sym, RemoteObjectMapper.new( @client, name ) )
+        end
     end
 
     private

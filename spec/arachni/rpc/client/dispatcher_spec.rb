@@ -9,14 +9,26 @@ describe Arachni::RPC::Client::Dispatcher do
         @opts.rpc_port = random_port
         @opts.pool_size = 0
 
+        @handler_lib = Arachni::Options.dir['lib'] + 'rpc/server/dispatcher_handlers/'
+        FileUtils.cp( "#{fixtures_path}dispatcher_handlers/echo.rb", @handler_lib )
+
         fork_em { Arachni::RPC::Server::Dispatcher.new( @opts ) }
         sleep 1
 
         @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}" )
     end
 
+    after( :all ) do
+        FileUtils.rm( "#{@handler_lib}echo.rb" )
+    end
+
     it 'should be able to connect to a dispatcher' do
         @dispatcher.alive?.should be_true
+    end
+
+    it 'should map the remote handlers to local objects' do
+        args = [ 'stuff', 'here', { blah: true } ]
+        @dispatcher.echo.echo( *args ).should == args
     end
 
     describe '#node' do

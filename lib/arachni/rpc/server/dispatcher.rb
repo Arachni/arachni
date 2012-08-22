@@ -51,6 +51,21 @@ class Dispatcher
     include UI::Output
     include ::Sys
 
+    class Handler
+
+        attr_reader :opts
+        attr_reader :dispatcher
+
+        def initialize( opts, dispatcher )
+            @opts       = opts
+            @dispatcher = dispatcher
+        end
+
+    end
+
+    HANDLER_LIB       = File.dirname( __FILE__ ) + '/dispatcher_handlers/'
+    HANDLER_NAMESPACE = Handler
+
     def initialize( opts )
         banner
 
@@ -100,7 +115,15 @@ class Dispatcher
         @node = Node.new( @opts, @logfile )
         @server.add_handler( 'node', @node )
 
+        _handlers.each do |name, handler|
+            @server.add_handler( name, handler.new( @opts, self ) )
+        end
+
         run
+    end
+
+    def handlers
+        _handlers.keys
     end
 
     # @return   [TrueClass]   true
@@ -207,6 +230,19 @@ class Dispatcher
     end
 
     private
+
+    def self._handlers
+        @handlers ||= nil
+        return @handlers if @handlers
+
+        @handlers = Component::Manager.new( HANDLER_LIB, HANDLER_NAMESPACE )
+        @handlers.load_all
+        @handlers
+    end
+
+    def _handlers
+        self.class._handlers
+    end
 
     def resource_consumption_score
         cpu = mem = 0.0
