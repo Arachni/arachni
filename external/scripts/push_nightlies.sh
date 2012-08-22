@@ -25,7 +25,7 @@ source $path_to_readlink_function
 root="$(dirname "$(readlink_f "${0}")")"
 nightlies="$HOME/builds/nightlies"
 
-package_patterns="arachn*.gz arachn*installer.sh"
+package_patterns="arachn*.gz"
 dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 
 output_log_32bit="$root/32bit.log"
