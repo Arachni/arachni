@@ -157,9 +157,6 @@ class HTTP
         @response_count = 0
         @time_out_count = 0
 
-        # we'll use it to identify our requests
-        @rand_seed = seed( )
-
         @curr_res_time = 0
         @curr_res_cnt  = 0
         @burst_runtime = 0
