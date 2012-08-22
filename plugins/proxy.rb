@@ -356,7 +356,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def find_login_form_from_request( request )
         return if (params = parse_request_body( request.body )).empty?
 
-        f = session.find_login_form( pages:  @pages,
+        f = session.find_login_form( pages:  @pages.to_a,
                                      action: normalize_url( request.unparsed_uri ),
                                      inputs: params.keys )
 
