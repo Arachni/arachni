@@ -97,7 +97,7 @@ class Page
 
         opts[:precision] ||= 1
         opts[:precision].times {
-            HTTP.get( url ) do |res|
+            HTTP.get( url, opts[:http] || {} ) do |res|
                 responses << res
                 next if responses.size != opts[:precision]
                 block.call( from_response( responses ) ) if block_given?
