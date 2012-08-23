@@ -92,6 +92,7 @@ arachni_tarball_url="https://github.com/Arachni/arachni/tarball/experimental"
 # All system library dependencies in proper order
 #
 libs=(
+    http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz
     http://zlib.net/zlib-1.2.7.tar.gz
     http://www.openssl.org/source/openssl-1.0.1c.tar.gz
     http://www.sqlite.org/sqlite-autoconf-3071300.tar.gz
@@ -109,6 +110,7 @@ libs=(
 # They should correspond with the entries in the 'libs' array.
 #
 libs_so=(
+    libiconv
     libz
     libssl
     libsqlite3
