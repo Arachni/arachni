@@ -26,6 +26,55 @@ module Component
 #
 # It is usually extended to fill-in for system specific functionality.
 #
+# @example
+#
+#    # create a namespace for our components
+#    module Components
+#    end
+#
+#    LIB       = "#{File.dirname( __FILE__ )}/lib/"
+#    NAMESPACE = Components
+#
+#    # $ ls LIB
+#    #   component1.rb  component2.rb
+#    #
+#    # $ cat LIB/component1.rb
+#    #   class Components::Component1
+#    #   end
+#    #
+#    # $ cat LIB/component2.rb
+#    #   class Components::Component2
+#    #   end
+#
+#
+#    components = Arachni::Component::Manager.new( LIB, NAMESPACE )
+#    #=> {}
+#
+#    components.available
+#    #=> ["component2", "component1"]
+#
+#    components.load_all
+#    #=> ["component2", "component1"]
+#
+#    components
+#    #=> {"component2"=>Components::Component2, "component1"=>Components::Component1}
+#
+#    components.clear
+#    #=> {}
+#
+#    components.load :component1
+#    #=> ["component1"]
+#
+#    components
+#    #=> {"component1"=>Components::Component1}
+#
+#    components.clear
+#    #=> {}
+#
+#    p components[:component2]
+#    #=> Components::Component2
+#
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Manager < Hash
@@ -47,7 +96,7 @@ class Manager < Hash
 
     #
     # @param    [String]    lib       the path to the component library/folder
-    # @param    [Module]    namespace    the namespace of the components
+    # @param    [Module,Class]    namespace    the namespace of the components
     #
     def initialize( lib, namespace )
         @lib    = lib
@@ -59,16 +108,27 @@ class Manager < Hash
     #
     # @param    [Array]    components    array of names of components to load
     #
+    # @return   [Array] names of loaded components
+    #
     def load( *components )
         parse( [components].flatten ).each { |component| self.[]( component ) }
     end
 
+    #
+    # Loads all components, equivalent of:
+    #   load '*'
+    #
+    # @return   [Array] names of loaded components
+    #
     def load_all
         load '*'
     end
 
     #
-    # Loads components by tags.
+    # Loads components by the tags found in the {Hash} returned by their +.info+ method.
+    #
+    # Tags should be in either:
+    #   :tags or :issue[:tags]
     #
     # @param    [Array] tags    tags to look for in components
     #
@@ -195,11 +255,11 @@ class Manager < Hash
     end
 
     #
-    # Returns a component class object by name, loading it on the fly need be.
+    # Fetches a component's class by name, loading it on the fly if need be.
     #
-    # @param    [String]    name    component name
+    # @param    [String, Symbol]    name    component name
     #
-    # @return   [Class]
+    # @return   [Class] component
     #
     def []( name )
         name = name.to_s
@@ -207,22 +267,29 @@ class Manager < Hash
         self[name] = load_from_path( name_to_path( name ) )
     end
 
+    # Unloads all loaded components.
     def clear
         keys.each { |l| delete( l ) }
     end
+    alias :unload_all :clear
 
-    def delete( k )
-        k = k.to_s
+    #
+    # Unloads a component by name
+    #
+    # @param    [String, Symbol]    name   component name
+    #
+    def delete( name )
+        name = name.to_s
         begin
-            @namespace.send( :remove_const, fetch( k ).to_s.split( ':' ).last.to_sym )
+            @namespace.send( :remove_const, fetch( name ).to_s.split( ':' ).last.to_sym )
         rescue
         end
-        super( k )
+        super( name )
     end
     alias :unload :delete
 
     #
-    # Returns array of available component names.
+    # Returns an array of available component names.
     #
     # @return    [Array]
     #
@@ -231,7 +298,7 @@ class Manager < Hash
     end
 
     #
-    # Returns array of loaded component names.
+    # Returns an array of loaded component names.
     #
     # @return    [Array]
     #
@@ -244,7 +311,7 @@ class Manager < Hash
     #
     # @param    [String]    name    the name of the component
     #
-    # @return   [String]
+    # @return   [String]    path to component file
     #
     def name_to_path( name )
         paths.each { |path| return path if name.to_s == path_to_name( path ) }
@@ -256,7 +323,7 @@ class Manager < Hash
     #
     # @param    [String]    path    the file-path of the component
     #
-    # @return   [String]
+    # @return   [String]    component name
     #
     def path_to_name( path )
         File.basename( path, '.rb' )
