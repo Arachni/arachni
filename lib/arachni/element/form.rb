@@ -1184,16 +1184,41 @@ class Form < Arachni::Element::Base
         self.class.parse_request_body( body )
     end
 
+    #
+    # Encodes a {String}'s reserved characters in order to prepare it
+    # to be included in a request body.
+    #
+    # #example
+    #    p Form.encode "+% ;&\\=\0"
+    #    #=> "%2B%25+%3B%26%5C%3D%00"
+    #
+    # @param    [String]    str
+    #
+    # @return   [String]    the encoded string
+    #
     def self.encode( str )
         ::URI.encode( ::URI.encode( str, '+%' ).gsub( ' ', '+' ), ";&\\=\0" )
     end
+    # @see .encode
     def encode( str )
         self.class.encode( str )
     end
 
+    #
+    # Decodes a {String} encoded for an HTTP request's body.
+    #
+    # @example
+    #    p Form.decode "%2B%25+%3B%26%5C%3D%5C0"
+    #    #=> "+% ;&\\=\\0"
+    #
+    # @param    [String]    str
+    #
+    # @return   [String]    the decoded string
+    #
     def self.decode( str )
         URI.decode( str.to_s.gsub( '+', ' ' ) )
     end
+    # @see .decode
     def decode( str )
         self.class.decode( str )
     end
