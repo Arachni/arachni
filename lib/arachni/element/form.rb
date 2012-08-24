@@ -141,12 +141,70 @@ class Form < Arachni::Element::Base
         id_from :auditable
     end
 
+    #
+    # @example
+    #    f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
+    #    #=> #<Arachni::Element::Form:0x01da8d78
+    #    #     attr_accessor :action = "http://stuff.com/",
+    #    #     attr_accessor :auditable = {
+    #    #         "name" => "value"
+    #    #     },
+    #    #     attr_accessor :method = "get",
+    #    #     attr_accessor :url = "http://stuff.com/",
+    #    #     attr_reader :hash = -277024459210456651,
+    #    #     attr_reader :opts = {},
+    #    #     attr_reader :orig = {
+    #    #         "name" => "value"
+    #    #     },
+    #    #     attr_reader :raw = {
+    #    #         :inputs => {
+    #    #             :name => "value"
+    #    #         }
+    #    #     }
+    #    # >
+    #
+    #    f.action
+    #    #=> "http://stuff.com/"
+    #
+    #    f.method
+    #    #=> "post"
+    #
+    #    f.auditable.keys
+    #    #=> ["name"]
+    #
+    #    f.id_from :auditable
+    #    #=> "http://stuff.com/::post::[\"name\"]"
+    #
+    #    f.id
+    #    #=> "http://stuff.com/::post::[\"name\"]"
+    #
+    #    f.id_from :original
+    #    #=> "http://stuff.com/::post::[\"name\"]"
+    #
+    #    f['new-input'] = 'new value'
+    #
+    #    f.id_from :auditable
+    #    #=> "http://stuff.com/::post::[\"name\", \"new-input\"]"
+    #
+    #    f.id
+    #    #=> "http://stuff.com/::post::[\"name\", \"new-input\"]"
+    #
+    #    f.id_from :original
+    #    #=> "http://stuff.com/::post::[\"name\"]"
+    #
     def id_from( type = :auditable )
         query_vars = parse_url_vars( self.action )
         "#{self.action.split( '?' ).first.to_s.split( ';' ).first}::" <<
             "#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
     end
 
+    #
+    # @example
+    #    Form.new( 'http://stuff.com', inputs: { name: 'value' } ).simple
+    #    #=> {"auditable"=>{"name"=>"value"}, "attrs"=>{"method"=>"post", "action"=>"http://stuff.com/"}}
+    #
+    #    Form.new( 'http://stuff.com', method: 'post', inputs: { name: 'value' } ).simple
+    #    #=> {"auditable"=>{"name"=>"value"}, "attrs"=>{"method"=>'post', "action"=>"http://stuff.com/"}}
     #
     # @return   [Hash]    a simple representation of self including attributes and auditables
     #
@@ -177,7 +235,65 @@ class Form < Arachni::Element::Base
         form.dup
     end
 
+    #
+    # @example
+    #    mutations = Form.new( 'http://stuff.com', inputs: { name: 'value' } ).mutations( 'seed' )
+    #
+    #    # mutations generally have seeds injected into their auditable inputs
+    #    mutations.first
+    #    #=> <Arachni::Element::Form:0x0327fdf0
+    #    #    attr_accessor :action = "http://stuff.com/",
+    #    #    attr_accessor :altered = "name",
+    #    #    attr_accessor :auditable = {
+    #    #        "name" => "seed"
+    #    #    },
+    #    #    attr_accessor :auditor = nil,
+    #    #    attr_accessor :method = "get",
+    #    #    attr_accessor :url = "http://stuff.com/",
+    #    #    attr_reader :hash = -3646163768215054761,
+    #    #    attr_reader :opts = {},
+    #    #    attr_reader :orig = {
+    #    #        "name" => "value"
+    #    #    },
+    #    #    attr_reader :raw = {
+    #    #        :inputs => {
+    #    #            :name => "value"
+    #    #        }
+    #    #    }
+    #    #>
+    #
+    #    p mutations.first.original?
+    #    #=> false
+    #
+    #    # but forms need to also be submitted with their default values
+    #    # for training purposes
+    #    original = mutations.select { |m| m.altered == Form::ORIGINAL_VALUES }.first
+    #    #=> #<Arachni::Element::Form:0x022a5a60
+    #    #     attr_accessor :action = "http://stuff.com/",
+    #    #     attr_accessor :altered = "__original_values__",
+    #    #     attr_accessor :auditable = {
+    #    #         "name" => "value"
+    #    #     },
+    #    #     attr_accessor :auditor = nil,
+    #    #     attr_accessor :method = "get",
+    #    #     attr_accessor :url = "http://stuff.com/",
+    #    #     attr_reader :hash = -608155834642701428,
+    #    #     attr_reader :opts = {},
+    #    #     attr_reader :orig = {
+    #    #         "name" => "value"
+    #    #     },
+    #    #     attr_reader :raw = {
+    #    #         :inputs => {
+    #    #             :name => "value"
+    #    #         }
+    #    #     }
+    #    # >
+    #
+    #    p original.original?
+    #    #=> true
+    #
     # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
+    #
     def original?
         self.altered == ORIGINAL_VALUES
     end
