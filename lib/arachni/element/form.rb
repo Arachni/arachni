@@ -298,7 +298,61 @@ class Form < Arachni::Element::Base
         self.altered == ORIGINAL_VALUES
     end
 
-    # @return   [Bool]  +true+ if the element has been populated with sample values,
+    #
+    # @example
+    #    mutations = Form.new( 'http://stuff.com', inputs: { name: '' } ).mutations( 'seed' )
+    #
+    #    # mutations generally have seeds injected into their auditable inputs
+    #    mutations.first
+    #    #=> <Arachni::Element::Form:0x0327fdf0
+    #    #    attr_accessor :action = "http://stuff.com/",
+    #    #    attr_accessor :altered = "name",
+    #    #    attr_accessor :auditable = {
+    #    #        "name" => "seed"
+    #    #    },
+    #    #    attr_accessor :auditor = nil,
+    #    #    attr_accessor :method = "get",
+    #    #    attr_accessor :url = "http://stuff.com/",
+    #    #    attr_reader :hash = -3646163768215054761,
+    #    #    attr_reader :opts = {},
+    #    #    attr_reader :orig = {
+    #    #        "name" => "value"
+    #    #    },
+    #    #    attr_reader :raw = {
+    #    #        :inputs => {
+    #    #            :name => "value"
+    #    #        }
+    #    #    }
+    #    #>
+    #
+    #    # when values are missing the inputs are filled in using sample values
+    #    sample = mutations.select { |m| m.altered == Form::SAMPLE_VALUES }.first
+    #    #=> #<Arachni::Element::Form:0x02b23020
+    #    #     attr_accessor :action = "http://stuff.com/",
+    #    #     attr_accessor :altered = "__sample_values__",
+    #    #     attr_accessor :auditable = {
+    #    #         "name" => "arachni_name"
+    #    #     },
+    #    #     attr_accessor :auditor = nil,
+    #    #     attr_accessor :method = "get",
+    #    #     attr_accessor :url = "http://stuff.com/",
+    #    #     attr_reader :hash = 205637814585882034,
+    #    #     attr_reader :opts = {},
+    #    #     attr_reader :orig = {
+    #    #         "name" => ""
+    #    #     },
+    #    #     attr_reader :raw = {
+    #    #         :inputs => {
+    #    #             :name => ""
+    #    #         }
+    #    #     }
+    #    # >
+    #
+    #    sample.sample?
+    #    #=> true
+    #
+    #
+    # @return   [Bool]  +true+ if the element has been populated with sample ({Module::KeyFiller}) values,
     #                     +false+ otherwise.
     def sample?
         self.altered == SAMPLE_VALUES
