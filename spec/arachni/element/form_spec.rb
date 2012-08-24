@@ -173,7 +173,7 @@ describe Arachni::Element::Form do
 
                 e.mutations( 'seed' ).reject do |m|
                     m.auditable['my_pass'] != m.auditable['my_pass_validation']
-                end.size.should == 3
+                end.size.should == 6
             end
         end
 
@@ -183,6 +183,42 @@ describe Arachni::Element::Form do
                 mutations = e.mutations( @seed, skip_orig: true )
                 mutations.size.should == 4
                 mutations.reject { |m| m.mutated? }.size.should == 0
+            end
+        end
+    end
+
+    describe '#nonce_name=' do
+        it 'should set the name of the input holding the nonce' do
+            f = Arachni::Element::Form.new( @url, nonce: 'value' )
+            f.nonce_name = 'nonce'
+            f.nonce_name.should == 'nonce'
+        end
+
+        context 'when there is no input called nonce_name' do
+            it 'should raise an exception' do
+                raised = false
+                begin
+                    Arachni::Element::Form.new( @url, name: 'value' ).nonce_name = 'stuff'
+                rescue
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+    end
+
+    describe '#has_nonce?' do
+        context 'when the form has a nonce' do
+            it 'should return true' do
+                f = Arachni::Element::Form.new( @url, nonce: 'value' )
+                f.nonce_name = 'nonce'
+                f.has_nonce?.should be_true
+            end
+        end
+        context 'when the form does not have a nonce' do
+            it 'should return false' do
+                f = Arachni::Element::Form.new( @url, nonce: 'value' )
+                f.has_nonce?.should be_false
             end
         end
     end

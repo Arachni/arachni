@@ -27,16 +27,8 @@ class Form < Arachni::Element::Base
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
-    #
-    # When nonce_name is set the value of the equivalent input will be
-    # refreshed every time the form is to be submitted.
-    #
-    # Use only when strictly necessary because it comes with a hefty performance
-    # penalty as the operation will need to be in blocking mode.
-    #
     # @return [String] the name of the input name that holds the nonce
-    #
-    attr_accessor :nonce_name
+    attr_reader :nonce_name
 
     #
     # Creates a new Form element from a URL and auditable data.
@@ -354,6 +346,9 @@ class Form < Arachni::Element::Base
     #
     # @return   [Bool]  +true+ if the element has been populated with sample ({Module::KeyFiller}) values,
     #                     +false+ otherwise.
+    #
+    # @see Arachni::Module::KeyFiller.fill
+    #
     def sample?
         self.altered == SAMPLE_VALUES
     end
@@ -377,16 +372,495 @@ class Form < Arachni::Element::Base
     # for mutations with:
     # * sample values (filled by {Arachni::Module::KeyFiller.fill})
     # * original values
-    # * password fields with identical values (in order to pass server-side validation)
+    # * password fields requiring identical values (in order to pass server-side validation)
+    #
+    # @example Default
+    #    Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed' )
+    #    #=> [
+    #    #    [0] #<Arachni::Element::Form:0x017a74b0
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "seed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = -1192640691543074696,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [1] #<Arachni::Element::Form:0x0157e8c8
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "arachni_nameseed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1303250124082341093,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [2] #<Arachni::Element::Form:0x0157ce38
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "seed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1320080946243198326,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [3] #<Arachni::Element::Form:0x0157aa98
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "arachni_nameseed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 460190056788056230,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [4] #<Arachni::Element::Form:0x01570890
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "__original_values__",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1705259843882941132,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [5] #<Arachni::Element::Form:0x0156de38
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "__sample_values__",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "arachni_name"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = -2130848815716189861,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >
+    #    #]
+    #
+    # @example skip_orig: true
+    #    Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed', skip_orig: true )
+    #    #=> [
+    #    #    [0] #<Arachni::Element::Form:0x01b7ff10
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "seed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 629695739693886457,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [1] #<Arachni::Element::Form:0x01b42f20
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "arachni_nameseed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = -232906949296507781,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [2] #<Arachni::Element::Form:0x01b412d8
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "seed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = -2864669958217534791,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >,
+    #    #    [3] #<Arachni::Element::Form:0x01b466e8
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "name",
+    #    #        attr_accessor :auditable = {
+    #    #            "name" => "arachni_nameseed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1368563420578923320,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #            "name" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #            :name => ""
+    #    #        }
+    #    #    >
+    #    #]
+    #
+    # @example With mirrored password fields
+    #
+    #    html_form = <<-HTML
+    #    <form>
+    #        <input type='password' name='pasword' />
+    #        <input type='password' name='password-verify'/>
+    #    </form>
+    #    HTML
+    #
+    #    Form.from_document( 'http://stuff.com', html_form ).first.mutations( 'seed' )
+    #    #=> [
+    #    #    [0] #<Arachni::Element::Form:0x03193298
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "pasword",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "5543!%arachni_secret",
+    #    #            "password-verify" => "5543!%arachni_secret"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 2997273381350449172,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >,
+    #    #    [1] #<Arachni::Element::Form:0x0314b628
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "password-verify",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "seed",
+    #    #            "password-verify" => "seed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 173670487606368134,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >,
+    #    #    [2] #<Arachni::Element::Form:0x0314a3e0
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "password-verify",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "5543!%arachni_secretseed",
+    #    #            "password-verify" => "5543!%arachni_secretseed"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1194840267632333783,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >,
+    #    #    [3] #<Arachni::Element::Form:0x0314f228
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "password-verify",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "seed\x00",
+    #    #            "password-verify" => "seed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 1541287776305441593,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >,
+    #    #    [4] #<Arachni::Element::Form:0x0314e058
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "password-verify",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "5543!%arachni_secretseed\x00",
+    #    #            "password-verify" => "5543!%arachni_secretseed\x00"
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = -3700401397051376057,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >,
+    #    #    [5] #<Arachni::Element::Form:0x03154f20
+    #    #        attr_accessor :action = "http://stuff.com/",
+    #    #        attr_accessor :altered = "__original_values__",
+    #    #        attr_accessor :auditable = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_accessor :auditor = nil,
+    #    #        attr_accessor :method = "get",
+    #    #        attr_accessor :url = "http://stuff.com/",
+    #    #        attr_reader :hash = 4290791575672400429,
+    #    #        attr_reader :opts = {},
+    #    #        attr_reader :orig = {
+    #    #                    "pasword" => "",
+    #    #            "password-verify" => ""
+    #    #        },
+    #    #        attr_reader :raw = {
+    #    #                "attrs" => {
+    #    #                "action" => "http://stuff.com/",
+    #    #                "method" => "get"
+    #    #            },
+    #    #             "textarea" => [],
+    #    #                "input" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ],
+    #    #               "select" => [],
+    #    #            "auditable" => [
+    #    #                [0] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "pasword"
+    #    #                },
+    #    #                [1] {
+    #    #                    "type" => "password",
+    #    #                    "name" => "password-verify"
+    #    #                }
+    #    #            ]
+    #    #        }
+    #    #    >
+    #    #]
+    #
+    # @param    [String]    seed    seed to inject
+    # @param    [Hash]      opts    mutation options
+    # @option   opts    [Bool]  :skip_orig  Whether or not to skip adding a
+    #                               mutation holding original values and sample
+    #                               values
     #
     # @return   [Array<Form>]
     #
-    # @see Arachni::Element::Mutable#mutations
-    # @see Arachni::Module::KeyFiller.fill
+    # @see Capabilities::Mutable#mutations
+    # @see Module::KeyFiller.fill
     #
-    def mutations( injection_str, opts = {} )
+    def mutations( seed, opts = {} )
         opts = MUTATION_OPTIONS.merge( opts )
-        var_combo = super( injection_str, opts )
+        var_combo = super( seed, opts )
 
         if !opts[:skip_orig]
             # this is the original hash, in case the default values
@@ -401,48 +875,122 @@ class Form < Arachni::Element::Base
             var_combo << elem
         end
 
-        return var_combo.uniq if !@raw['auditable']
-
         # if there are two password type fields in the form there's a good
         # chance that it's a 'please retype your password' thing so make sure
         # that we have a variation which has identical password values
-        filled_auditables = Arachni::Module::KeyFiller.fill( auditable.dup )
-        delem = self.dup
+        password_fields = auditable.keys.
+            select { |input| field_type_for( input ) == 'password' }
 
-        found_passwords = false
-        @raw['auditable'].each do |input|
-            if input['type'] == 'password'
-                delem.altered = input['name']
-
-                opts[:format].each do |format|
-                    filled_auditables[input['name']] =
-                        format_str( injection_str, filled_auditables[input['name']], format )
-                end
-
-                found_passwords = true
-            end
-        end
-
-        if found_passwords
-            delem.auditable = filled_auditables
-            var_combo << delem
+        # mirror the password fields
+        if password_fields.size == 2
+            var_combo.each do |f|
+                f[password_fields[0]] = f[password_fields[1]]
+            end.compact
         end
 
         var_combo.uniq
     end
 
+    #
+    # Checks whether or not the form contains 1 or more password fields.
+    #
+    # @example With password
+    #    html_form = <<-HTML
+    #       <form>
+    #            <input type='password' name='pasword' />
+    #       </form>
+    #    HTML
+    #
+    #    Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
+    #    #=> true
+    #
+    # @example Without password
+    #    html_form = <<-HTML
+    #       <form>
+    #            <input type='text' name='stuff' />
+    #       </form>
+    #    HTML
+    #
+    #    Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
+    #    #=> false
+    #
+    # @return   [Bool]  +true+ if the form contains passwords fields,
+    #                       +false+ otherwise.
+    #
     def requires_password?
         return if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
         self.raw['input'].select { |i| i['type'] == 'password' }.any?
     end
 
+    #
+    # @example
+    #    f = Form.new( 'http://stuff.com', { nonce_input: '' } )
+    #    p f.has_nonce?
+    #    #=> false
+    #
+    #    f.nonce_name = 'nonce_input'
+    #    p f.has_nonce?
+    #    #=> true
+    #
+    # @return   [Bool]  +true+ if the form contains a nonce, +false+ otherwise.
+    #
     def has_nonce?
-        !!!nonce_name
+        !!nonce_name
     end
 
+    #
+    # When +nonce_name+ is set the value of the equivalent input will be
+    # refreshed every time the form is to be submitted.
+    #
+    # Use only when strictly necessary because it comes with a hefty performance
+    # penalty as the operation will need to be in blocking mode.
+    #
+    # Will raise an exception if +field_name+ could not be found in the form's inputs.
+    #
+    # @example
+    #   Form.new( 'http://stuff.com', { nonce_input: '' } ).nonce_name = 'blah'
+    #   #=> #<RuntimeError: Could not find field named 'blah'.>
+    #
+    # @param    [String]    field_name name of the field holding the nonce
+    #
+    def nonce_name=( field_name )
+        fail "Could not find field named '#{field_name}'." if !has_inputs?( field_name )
+        @nonce_name = field_name
+    end
+
+    #
+    # Retrieves a field type for the given field +name+.
+    #
+    # @example
+    #    html_form = <<-HTML
+    #    <form>
+    #        <input type='text' name='text-input' />
+    #        <input type='password' name='passwd' />
+    #        <input type='hidden' name='cant-see-this' />
+    #    </form>
+    #    HTML
+    #
+    #    f = Form.from_document( 'http://stuff.com', html_form ).first
+    #
+    #    p f.field_type_for 'text-input'
+    #    #=> "text"
+    #
+    #    p f.field_type_for 'passwd'
+    #    #=> "password"
+    #
+    #    p f.field_type_for 'cant-see-this'
+    #    #=> "hidden"
+    #
+    # @param    [String]    name    field name
+    #
+    # @return   [String]
+    #
     def field_type_for( name )
+        return if !@raw['auditable']
+
         field = @raw['auditable'].select { |f| f['name'] == name }.first
         return if !field
+
         field['type'].to_s.downcase
     end
 
@@ -454,6 +1002,50 @@ class Form < Arachni::Element::Base
     #
     # Returns an array of forms by parsing the body of an HTTP response.
     #
+    # @example
+    #    body = <<-HTML
+    #       <form action='/submit'>
+    #            <input type='text' name='text-input' />
+    #       </form>
+    #    HTML
+    #
+    #    res = Typhoeus::Response.new( effective_url: 'http://host', body: body )
+    #
+    #    Form.from_response( res ).first
+    #    #=> #<Arachni::Element::Form:0x017c7788
+    #    #    attr_accessor :action = "http://host/submit",
+    #    #    attr_accessor :auditable = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_accessor :method = "get",
+    #    #    attr_accessor :url = "http://host/",
+    #    #    attr_reader :hash = 343244616730070569,
+    #    #    attr_reader :opts = {},
+    #    #    attr_reader :orig = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_reader :raw = {
+    #    #            "attrs" => {
+    #    #            "action" => "http://host/submit",
+    #    #            "method" => "get"
+    #    #        },
+    #    #         "textarea" => [],
+    #    #            "input" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ],
+    #    #           "select" => [],
+    #    #        "auditable" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ]
+    #    #    }
+    #    #>
+    #
     # @param   [Typhoeus::Response]    response
     #
     # @return   [Array<Form>]
@@ -464,6 +1056,84 @@ class Form < Arachni::Element::Base
 
     #
     # Returns an array of forms from an HTML document.
+    #
+    # @example
+    #    html_form = <<-HTML
+    #    <form action='/submit'>
+    #        <input type='text' name='text-input' />
+    #    </form>
+    #    HTML
+    #
+    #    Form.from_document( 'http://stuff.com', html_form ).first
+    #    #=> #<Arachni::Element::Form:0x03123600
+    #    #    attr_accessor :action = "http://stuff.com/submit",
+    #    #    attr_accessor :auditable = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_accessor :method = "get",
+    #    #    attr_accessor :url = "http://stuff.com/",
+    #    #    attr_reader :hash = 3370163854416367834,
+    #    #    attr_reader :opts = {},
+    #    #    attr_reader :orig = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_reader :raw = {
+    #    #            "attrs" => {
+    #    #            "action" => "http://stuff.com/submit",
+    #    #            "method" => "get"
+    #    #        },
+    #    #         "textarea" => [],
+    #    #            "input" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ],
+    #    #           "select" => [],
+    #    #        "auditable" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ]
+    #    #    }
+    #    #>
+    #
+    #    Form.from_document( 'http://stuff.com', Nokogiri::HTML( html_form ) ).first
+    #    #=> #<Arachni::Element::Form:0x03123600
+    #    #    attr_accessor :action = "http://stuff.com/submit",
+    #    #    attr_accessor :auditable = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_accessor :method = "get",
+    #    #    attr_accessor :url = "http://stuff.com/",
+    #    #    attr_reader :hash = 3370163854416367834,
+    #    #    attr_reader :opts = {},
+    #    #    attr_reader :orig = {
+    #    #        "text-input" => ""
+    #    #    },
+    #    #    attr_reader :raw = {
+    #    #            "attrs" => {
+    #    #            "action" => "http://stuff.com/submit",
+    #    #            "method" => "get"
+    #    #        },
+    #    #         "textarea" => [],
+    #    #            "input" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ],
+    #    #           "select" => [],
+    #    #        "auditable" => [
+    #    #            [0] {
+    #    #                "type" => "text",
+    #    #                "name" => "text-input"
+    #    #            }
+    #    #        ]
+    #    #    }
+    #    #>
+    #
     #
     # @param    [String]    url     request URL
     # @param    [String, Nokogiri::HTML::Document]    document
@@ -485,6 +1155,23 @@ class Form < Arachni::Element::Base
         end.compact
     end
 
+    #
+    # Parses an HTTP request body generated by submitting a form.
+    #
+    # @example Simple
+    #    p Form.parse_request_body 'first_name=John&last_name=Doe'
+    #    #=> {"first_name"=>"John", "last_name"=>"Doe"}
+    #
+    # @example Weird
+    #    body = 'testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2' +
+    #        '&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam'
+    #    Form.parse_request_body body
+    #    #=> {"testID"=>"53738", "deliveryID"=>"53618", "testIDs"=>"", "deliveryIDs"=>"", "selectedRows"=>"2", "event"=>"", "section"=>"", "event=manage&amp;section=exam"=>"Manage selected exam"}
+    #
+    # @param    [String]    body
+    #
+    # @return   [Hash]      key=>value parameter pairs
+    #
     def self.parse_request_body( body )
         body.to_s.split( '&' ).inject( {} ) do |h, pair|
             name, value = pair.split( '=', 2 )
@@ -492,6 +1179,7 @@ class Form < Arachni::Element::Base
             h
         end
     end
+    # @see .parse_request_body
     def parse_request_body( body )
         self.class.parse_request_body( body )
     end
