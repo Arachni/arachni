@@ -189,7 +189,7 @@ describe Arachni::Element::Cookie do
 
     describe '#encode' do
         it 'should encode the string in a way that makes is suitable to be included in a cookie header' do
-            Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some stuff %3B%25%3D'
+            Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25%3D'
         end
     end
 
@@ -199,7 +199,7 @@ describe Arachni::Element::Cookie do
                                                       'name'  => 'blah=ha%',
                                                       'value' => 'some stuff ;',
             )
-            c.to_s.should == 'blah%3Dha%25=some stuff %3B'
+            c.to_s.should == 'blah%3Dha%25=some+stuff+%3B'
         end
     end
 
@@ -336,20 +336,22 @@ describe Arachni::Element::Cookie do
         end
     end
 
-    describe '.parse_set_cookie' do
+    describe '.from_set_cookie' do
         it 'should parse the contents of the Set-Cookie header field into cookies' do
             sc = "SomeCookie=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D"
-            c1 = Arachni::Element::Cookie.parse_set_cookie( 'http://test.com', sc ).first
+            c1 = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc ).first
+
+            c1.should == Arachni::Element::Cookie.parse_set_cookie( 'http://test.com', sc ).first
 
             sc2 = "SomeCookie=\"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==\""
-            c2 = Arachni::Element::Cookie.parse_set_cookie( 'http://test.com', sc2 ).first
+            c2 = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc2 ).first
 
             c1.should == c2
             c1.name.should == 'SomeCookie'
             c1.value.should == 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA=='
 
             sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
-            cookies = Arachni::Element::Cookie.parse_set_cookie( 'http://test.com', sc3 )
+            cookies = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc3 )
             cookies.size.should == 1
             cookies.first.name.should == 'coo@ki e2'
             cookies.first.value.should == 'blah val2@'
