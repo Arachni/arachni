@@ -27,6 +27,15 @@ class Form < Arachni::Element::Base
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
+    #
+    # When nonce_name is set the value of the equivalent input will be
+    # refreshed every time the form is to be submitted.
+    #
+    # Use only when strictly necessary because it comes with a hefty performance
+    # penalty as the operation will need to be in blocking mode.
+    #
+    # @return [String] the name of the input name that holds the nonce
+    #
     attr_accessor :nonce_name
 
     #
@@ -46,6 +55,8 @@ class Form < Arachni::Element::Base
     #   For an method +String+ in:
     #   * 'method'
     #   * :method
+    #
+    #   Method defaults to 'get'.
     #
     #   For an auditable inputs +Hash+ in:
     #   * 'inputs'
@@ -69,7 +80,7 @@ class Form < Arachni::Element::Base
             self.method = @raw['method'] || @raw[:method] || @raw['attrs']['method']
             was_opts_hash = true
         rescue
-            self.method = 'post'
+            self.method = 'get'
         end
 
         if !was_opts_hash && (@raw.keys & [:inputs, 'inputs', 'auditable']).empty?
@@ -85,12 +96,44 @@ class Form < Arachni::Element::Base
     end
 
     #
+    # @example
+    #    p f = Form.from_document( 'http://stuff.com', '<form name="stuff"></form>' ).first
+    #    #=> #<Arachni::Element::Form:0x00000001ddfa08 @raw={"attrs"=>{"name"=>"stuff", "action"=>"http://stuff.com/", "method"=>"get"}, "textarea"=>[], "input"=>[], "select"=>[], "auditable"=>[]}, @url="http://stuff.com/", @hash=1935432807676141374, @opts={}, @action="http://stuff.com/", @method="get", @auditable={}, @orig={}>
+    #
+    #    p f.name
+    #    #=> "stuff"
+    #
+    #    p f = Form.new( 'http://stuff.com', 'attrs' => { 'name' => 'john' } )
+    #    #=> #<Arachni::Element::Form:0x00000002b46160 @raw={"attrs"=>{"name"=>"john"}}, @url="http://stuff.com/", @hash=2710248079644781147, @opts={}, @action="http://stuff.com/", @method=nil, @auditable={}, @orig={}>
+    #
+    #    p f.name
+    #    #=> "john"
+    #
+    #    p Form.new( 'http://stuff.com' ).name
+    #    #=> nil
+    #
     # @return   [String, nil]   name of the form if it has one
     #
     def name
         @raw['attrs']['name'] if @raw['attrs'].is_a?( Hash )
     end
 
+    #
+    # @example
+    #    f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
+    #    #=> #<Arachni::Element::Form:0x00000002190f80 @raw={:inputs=>{:name=>"value"}}, @url="http://stuff.com/", @hash=-432844557667991308, @opts={}, @action="http://stuff.com/", @method="post", @auditable={"name"=>"value"}, @orig={"name"=>"value"}>
+    #
+    #    f.action
+    #    #=> "http://stuff.com/"
+    #
+    #    f.method
+    #    #=> "post"
+    #
+    #    f.auditable.keys
+    #    #=> ["name"]
+    #
+    #    f.id
+    #    #=> "http://stuff.com/::post::[\"name\"]"
     #
     # @return   [String]    unique form ID
     #

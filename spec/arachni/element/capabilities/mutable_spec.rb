@@ -146,9 +146,9 @@ describe Arachni::Element::Capabilities::Mutable do
                         m = e.mutations( 'stuff', respect_method: false )
                         m.size.should == 9
 
-                        m.select { |f| f.method.to_s.downcase == 'get' }.size.should == 4
+                        m.select { |f| f.method.to_s.downcase == 'post' }.size.should == 4
                         m.select { |f| f.method.to_s.downcase == 'get' }.size.should ==
-                            m.select { |f| f.method.to_s.downcase == 'get' }.size
+                            m.select { |f| f.method.to_s.downcase == 'post' }.size + 1
                     end
                 end
                 describe 'nil' do

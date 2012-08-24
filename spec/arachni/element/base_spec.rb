@@ -56,7 +56,7 @@ describe Arachni::Element::Base do
             c.should == e
 
             e = Arachni::Element::Form.new( @url, inputs: { 'name' => 'val' } )
-            c = Arachni::Element::Form.new( @url, method: 'get', inputs: { 'name' => 'val' } )
+            c = Arachni::Element::Form.new( @url, method: 'post', inputs: { 'name' => 'val' } )
 
             c.should_not == e
 

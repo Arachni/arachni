@@ -39,8 +39,8 @@ describe Arachni::Element::Form do
 
     describe '#new' do
         context 'when passed opts without a method' do
-            it 'should default to "post"' do
-                Arachni::Element::Form.new( @url, @inputs ).method.should == 'post'
+            it 'should default to "get"' do
+                Arachni::Element::Form.new( @url, @inputs ).method.should == 'get'
             end
         end
         context 'when passed opts without an action URL' do

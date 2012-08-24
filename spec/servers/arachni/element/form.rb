@@ -6,6 +6,18 @@ get '/' do
     env['REQUEST_METHOD'].downcase + params.to_s
 end
 
+get '/submit' do
+    params.to_hash.to_yaml
+end
+
+get '/sleep' do
+    sleep 2
+    <<-EOHTML
+    <a href='?input=blah'>Inject here</a>
+    #{params[:input]}
+    EOHTML
+end
+
 post '/' do
     env['REQUEST_METHOD'].downcase + env['rack.request.form_hash'].to_s
 end
