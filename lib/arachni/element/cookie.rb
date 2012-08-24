@@ -999,6 +999,8 @@ class Cookie < Arachni::Element::Base
     #
     # @param    [String]    str
     #
+    # @return   [String]    the encoded string
+    #
     def self.encode( str )
         URI.encode( str, "+;%=\0" ).gsub( ' ', '+' )
     end
@@ -1015,6 +1017,8 @@ class Cookie < Arachni::Element::Base
     #    #=> "+;%=\x00 "
     #
     # @param    [String]    str
+    #
+    # @return   [String]    the decoded string
     #
     def self.decode( str )
         URI.decode( str.gsub( '+', ' ' ) )
