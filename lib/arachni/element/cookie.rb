@@ -99,6 +99,13 @@ class Cookie < Arachni::Element::Base
     #
     # Indicates whether the cookie must be only sent over an encrypted channel.
     #
+    # @example
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; secure' ).first.secure?
+    #    #=> true
+    #
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.secure?
+    #    #=> false
+    #
     # @return   [Bool]
     #
     def secure?
@@ -107,6 +114,13 @@ class Cookie < Arachni::Element::Base
 
     #
     # Indicates whether the cookie is safe from modification from client-side code.
+    #
+    # @example
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; httpOnly' ).first.http_only?
+    #    #=> true
+    #
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.http_only?
+    #    #=> false
     #
     # @return   [Bool]
     #
@@ -119,6 +133,15 @@ class Cookie < Arachni::Element::Base
     #
     # Doesn't play a role during the scan but it can provide useful info to modules and such.
     #
+    # @example
+    #    # doesn't have an expiration date, i.e. it should be discarded at the end of the session
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.session?
+    #    #=> true
+    #
+    #    # does have an expiration date, i.e. not a session cookie
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.session?
+    #    #=> false
+    #
     # @return   [Bool]
     #
     def session?
@@ -126,14 +149,52 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # @return   [Time, NilClass]    expiration time of the cookie or nil if it
+    # @example
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.expires_at
+    #    #=> nil
+    #
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.expires_at
+    #    #=> 1970-01-01 02:00:01 +0200
+    #
+    #
+    # @return   [Time, NilClass]    expiration +Time+ of the cookie or +nil+ if it
     #                               doesn't have one (i.e. is a session cookie)
     #
     def expires_at
         expires
     end
     #
-    # Indicates whether the cookie has expired.
+    # Indicates whether or not the cookie has expired.
+    #
+    # @example Without a time argument.
+    #
+    #    # session cookie
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.expired?
+    #    #=> false
+    #
+    #    # cookie with the expiration date in the future
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 2020 00:00:01 GMT' ).first.expired?
+    #    #=> true
+    #
+    #    # expired cookie
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.expired?
+    #    #=> true
+    #
+    # @example With a time argument.
+    #
+    #    future_time = Cookie.expires_to_time( 'Thu, 01 Jan 2021 00:00:01 GMT' )
+    #
+    #    # session cookie
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.expired?( future_time )
+    #    #=> false
+    #
+    #    # cookie with the expiration date in the future
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 2020 00:00:01 GMT' ).first.expired?( future_time )
+    #    #=> true
+    #
+    #    # expired cookie
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.expired?( future_time )
+    #    #=> true
     #
     # @param    [Time]    time    to compare against
     #
@@ -144,15 +205,18 @@ class Cookie < Arachni::Element::Base
     end
 
     #
+    # @example
+    #    Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first.simple
+    #    #=> {"session"=>"stuffstuffstuff"}
+    #
+    #
     # @return   [Hash]    simple representation of the cookie as a hash with the
-    #                     value as key and the cookie value as value.
+    #                     cookie name as key and the cookie value as value.
     def simple
         self.auditable.dup
     end
 
-    #
     # @return   [String]    name of the current element, 'cookie' in this case.
-    #
     def type
         Arachni::Element::COOKIE
     end
@@ -164,13 +228,27 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Sets auditable cookie name and value
+    # Sets auditable inputs as a key=>value pair.
+    #
+    # @example
+    #    c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
+    #    #=> ["session=stuffstuffstuff"]
+    #
+    #    c.auditable
+    #    #=> {"session"=>"stuffstuffstuff"}
+    #
+    #    c.auditable = { 'new-name' => 'new-value' }
+    #    #=> {"new-name"=>"new-value"}
+    #
+    #    c
+    #    #=> new-name=new-value
+    #
     #
     # @param    [Hash]  inputs   name => value pair
     #
     def auditable=( inputs )
-        k = inputs.keys.first
-        v = inputs.values.first
+        k = inputs.keys.first.to_s
+        v = inputs.values.first.to_s
 
         raw = @raw.dup
         raw['name']  = k
@@ -188,6 +266,136 @@ class Cookie < Arachni::Element::Base
     #
     # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific limitations
     # and the {Arachni::Options#audit_cookies_extensively} option.
+    #
+    #     c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
+    #
+    # @example Default
+    #     c.mutations 'seed'
+    #     #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00]
+    #
+    # @example With parameter flip
+    #    p c.mutations 'seed', param_flip: true
+    #    #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00, seed=eb987f5d6a6948193f3677ee70eaedf0e1454f1eb715322ec627f0a32848f8bd]
+    #
+    # @example Extensive audit
+    #
+    #    Arachni::Options.audit_cookies_extensively = true
+    #
+    #    # this option presupposes that an auditor (with page) is available
+    #    Auditor = Class.new do
+    #        include Arachni::Module::Auditor
+    #
+    #        def page
+    #            Page.new( links: [Link.new( 'http://owner-url.com', input1: 'value1' )] )
+    #        end
+    #
+    #        def self.info
+    #            { name: 'My custom auditor' }
+    #        end
+    #    end
+    #
+    #    c.auditor = Auditor.new
+    #
+    #    mutations = c.mutations( 'seed' )
+    #    #=> [session=seed, session=stuffstuffstuffseed, session=seed%00, session=stuffstuffstuffseed%00, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1, http://owner-url.com/?input1=value1]
+    #
+    #    # if we take a closer look at the Link mutations we see that this link will be submitted with various cookie mutations
+    #    mutations.select { |m| m.is_a? Link }
+    #    # [
+    #    #     [0] #<Arachni::Element::Link:0x02de90e8
+    #    #         @audit_id_url = "http://owner-url.com/",
+    #    #         attr_accessor :action = "http://owner-url.com/",
+    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
+    #    #         attr_accessor :auditable = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
+    #    #         attr_accessor :method = "get",
+    #    #         attr_accessor :url = "http://owner-url.com/",
+    #    #         attr_reader :hash = -4537574543719230301,
+    #    #         attr_reader :opts = {
+    #    #             :cookies => {
+    #    #                 "session" => "seed"
+    #    #             }
+    #    #         },
+    #    #         attr_reader :orig = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_reader :raw = {
+    #    #             :input1 => "value1"
+    #    #         }
+    #    #     >,
+    #    #     [1] #<Arachni::Element::Link:0x02df3f98
+    #    #         @audit_id_url = "http://owner-url.com/",
+    #    #         attr_accessor :action = "http://owner-url.com/",
+    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
+    #    #         attr_accessor :auditable = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
+    #    #         attr_accessor :method = "get",
+    #    #         attr_accessor :url = "http://owner-url.com/",
+    #    #         attr_reader :hash = -4537574543719230301,
+    #    #         attr_reader :opts = {
+    #    #             :cookies => {
+    #    #                 "session" => "stuffstuffstuffseed"
+    #    #             }
+    #    #         },
+    #    #         attr_reader :orig = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_reader :raw = {
+    #    #             :input1 => "value1"
+    #    #         }
+    #    #     >,
+    #    #     [2] #<Arachni::Element::Link:0x02adcf80
+    #    #         @audit_id_url = "http://owner-url.com/",
+    #    #         attr_accessor :action = "http://owner-url.com/",
+    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
+    #    #         attr_accessor :auditable = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
+    #    #         attr_accessor :method = "get",
+    #    #         attr_accessor :url = "http://owner-url.com/",
+    #    #         attr_reader :hash = -4537574543719230301,
+    #    #         attr_reader :opts = {
+    #    #             :cookies => {
+    #    #                 "session" => "seed\x00"
+    #    #             }
+    #    #         },
+    #    #         attr_reader :orig = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_reader :raw = {
+    #    #             :input1 => "value1"
+    #    #         }
+    #    #     >,
+    #    #     [3] #<Arachni::Element::Link:0x02b0c0a0
+    #    #         @audit_id_url = "http://owner-url.com/",
+    #    #         attr_accessor :action = "http://owner-url.com/",
+    #    #         attr_accessor :altered = "mutation for the 'session' cookie",
+    #    #         attr_accessor :auditable = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_accessor :auditor = #<Auditor:0x000000029e7648>,
+    #    #         attr_accessor :method = "get",
+    #    #         attr_accessor :url = "http://owner-url.com/",
+    #    #         attr_reader :hash = -4537574543719230301,
+    #    #         attr_reader :opts = {
+    #    #             :cookies => {
+    #    #                 "session" => "stuffstuffstuffseed\x00"
+    #    #             }
+    #    #         },
+    #    #         attr_reader :orig = {
+    #    #             "input1" => "value1"
+    #    #         },
+    #    #         attr_reader :raw = {
+    #    #             :input1 => "value1"
+    #    #         }
+    #    #     >
+    #    # ]
+    #
     #
     # @see Capabilities::Mutable#mutations
     #
@@ -210,7 +418,7 @@ class Cookie < Arachni::Element::Base
 
         if !orphan? && Arachni::Options.audit_cookies_extensively?
             # submit all links and forms of the page along with our cookie mutations
-            muts |= muts.map do |m|
+            muts << muts.map do |m|
                 (auditor.page.links | auditor.page.forms).map do |e|
                     next if e.auditable.empty?
                     c = e.dup
@@ -221,6 +429,7 @@ class Cookie < Arachni::Element::Base
                     c
                 end
             end.flatten.compact
+            muts.flatten!
         end
 
         muts
@@ -229,9 +438,18 @@ class Cookie < Arachni::Element::Base
     #
     # Uses the method name as a key to cookie attributes in {DEFAULT}.
     #
-    # Like:
-    #    cookie.name
-    #    cookie.domain
+    # @example
+    #    c = Cookie.from_set_cookie( 'http://owner-url.com/stuff', 'session=stuffstuffstuff' ).first
+    #
+    #    p c.name
+    #    #=> "session"
+    #
+    #    p c.value
+    #    #=> "stuffstuffstuff"
+    #
+    #    p c.path
+    #    #=> "/stuff"
+    #
     #
     def method_missing( sym, *args, &block )
         return @raw[sym.to_s] if respond_to?( sym )
@@ -247,6 +465,14 @@ class Cookie < Arachni::Element::Base
         @raw.include?( sym.to_s ) || super( sym )
     end
 
+    #
+    # @example
+    #    p Cookie.from_set_cookie( 'http://owner-url.com/', 'session=stuffstuffstuff' ).first.to_s
+    #    #=> "session=stuffstuffstuff"
+    #
+    #    p Cookie.new( 'http://owner-url.com/', '% ; freaky name' => 'freaky value;%' ).to_s
+    #    #=> "%25+%3B+freaky+name=freaky+value%3B%25"
+    #
     #
     # @return   [String]    to be used in a 'Cookie' request header. (name=value)
     #
@@ -390,7 +616,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Converts a cookie's 'expires' attribute to a Ruby +Time+ object.
+    # Converts a cookie's expiration date to a Ruby +Time+ object.
     #
     # @example String time format
     #   Cookie.expires_to_time "Tue, 02 Oct 2012 19:25:57 GMT"
@@ -537,7 +763,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from a document based on 'Set-Cookie' http-equiv meta tags.
+    # Returns an array of cookies from a document based on +Set-Cookie+ http-equiv meta tags.
     #
     # @example
     #
@@ -645,7 +871,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from a the 'Set-Cookie' header field.
+    # Returns an array of cookies from the +Set-Cookie+ header field.
     #
     # @example
     #    Cookie.from_headers 'http://owner-url.com', { 'Set-Cookie' => "coo%40ki+e2=blah+val2%40" }
@@ -701,7 +927,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Parses a 'set-cookie' string into cookie elements.
+    # Parses the +Set-Cookie+ header value into cookie elements.
     #
     # @example
     #    Cookie.from_set_cookie 'http://owner-url.com', "coo%40ki+e2=blah+val2%40"
@@ -741,7 +967,7 @@ class Cookie < Arachni::Element::Base
     #
     #
     # @param    [String]    url     request URL
-    # @param    [Hash]      str     set-cookie string
+    # @param    [Hash]      str     +Set-Cookie+ string
     #
     # @return   [Array<Cookie>]
     #
@@ -764,35 +990,36 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Encodes a {String} in order to prepare it for the Cookie header field.
+    # Encodes a {String}'s reserved characters in order to prepare it for
+    # the 'Cookie' header field.
+    #
+    # #example
+    #    Cookie.encode "+;%=\0 "
+    #    #=> "%2B%3B%25%3D%00+"
     #
     # @param    [String]    str
     #
     def self.encode( str )
         URI.encode( str, "+;%=\0" ).gsub( ' ', '+' )
     end
-    #
-    # Encodes a {String} in order to prepare it for the Cookie header field.
-    #
-    # @param    [String]    str
-    #
+    # @see .encode
     def encode( str )
         self.class.encode( str )
     end
 
     #
-    # Decodes a {String} encoded for the Cookie header field.
+    # Decodes a {String} encoded for the +Cookie+ header field.
+    #
+    # @example
+    #    Cookie.decode "%2B%3B%25%3D%00+"
+    #    #=> "+;%=\x00 "
     #
     # @param    [String]    str
     #
     def self.decode( str )
         URI.decode( str.gsub( '+', ' ' ) )
     end
-    #
-    # Decodes a {String} encoded for the Cookie header field.
-    #
-    # @param    [String]    str
-    #
+    # @see .decode
     def decode( str )
         self.class.decode( str )
     end
