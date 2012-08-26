@@ -112,19 +112,19 @@ class Form < Arachni::Element::Base
 
     #
     # @example
-    #    f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
+    #    p f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
     #    #=> #<Arachni::Element::Form:0x00000002190f80 @raw={:inputs=>{:name=>"value"}}, @url="http://stuff.com/", @hash=-432844557667991308, @opts={}, @action="http://stuff.com/", @method="post", @auditable={"name"=>"value"}, @orig={"name"=>"value"}>
     #
-    #    f.action
+    #    p f.action
     #    #=> "http://stuff.com/"
     #
-    #    f.method
+    #    p f.method
     #    #=> "post"
     #
-    #    f.auditable.keys
+    #    p f.auditable.keys
     #    #=> ["name"]
     #
-    #    f.id
+    #    p f.id
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
     # @return   [String]    unique form ID
@@ -135,7 +135,7 @@ class Form < Arachni::Element::Base
 
     #
     # @example
-    #    f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
+    #    ap f = Form.new( 'http://stuff.com', inputs: { name: 'value' } )
     #    #=> #<Arachni::Element::Form:0x01da8d78
     #    #     attr_accessor :action = "http://stuff.com/",
     #    #     attr_accessor :auditable = {
@@ -155,33 +155,33 @@ class Form < Arachni::Element::Base
     #    #     }
     #    # >
     #
-    #    f.action
+    #    p f.action
     #    #=> "http://stuff.com/"
     #
-    #    f.method
+    #    p f.method
     #    #=> "post"
     #
-    #    f.auditable.keys
+    #    p f.auditable.keys
     #    #=> ["name"]
     #
-    #    f.id_from :auditable
+    #    p f.id_from :auditable
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
-    #    f.id
+    #    p f.id
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
-    #    f.id_from :original
+    #    p f.id_from :original
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
     #    f['new-input'] = 'new value'
     #
-    #    f.id_from :auditable
+    #    p f.id_from :auditable
     #    #=> "http://stuff.com/::post::[\"name\", \"new-input\"]"
     #
-    #    f.id
+    #    p f.id
     #    #=> "http://stuff.com/::post::[\"name\", \"new-input\"]"
     #
-    #    f.id_from :original
+    #    p f.id_from :original
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
     def id_from( type = :auditable )
@@ -192,10 +192,10 @@ class Form < Arachni::Element::Base
 
     #
     # @example
-    #    Form.new( 'http://stuff.com', inputs: { name: 'value' } ).simple
+    #    p Form.new( 'http://stuff.com', inputs: { name: 'value' } ).simple
     #    #=> {"auditable"=>{"name"=>"value"}, "attrs"=>{"method"=>"post", "action"=>"http://stuff.com/"}}
     #
-    #    Form.new( 'http://stuff.com', method: 'post', inputs: { name: 'value' } ).simple
+    #    p Form.new( 'http://stuff.com', method: 'post', inputs: { name: 'value' } ).simple
     #    #=> {"auditable"=>{"name"=>"value"}, "attrs"=>{"method"=>'post', "action"=>"http://stuff.com/"}}
     #
     # @return   [Hash]    a simple representation of self including attributes and auditables
@@ -232,7 +232,7 @@ class Form < Arachni::Element::Base
     #    mutations = Form.new( 'http://stuff.com', inputs: { name: 'value' } ).mutations( 'seed' )
     #
     #    # mutations generally have seeds injected into their auditable inputs
-    #    mutations.first
+    #    ap mutations.first
     #    #=> <Arachni::Element::Form:0x0327fdf0
     #    #    attr_accessor :action = "http://stuff.com/",
     #    #    attr_accessor :altered = "name",
@@ -259,7 +259,7 @@ class Form < Arachni::Element::Base
     #
     #    # but forms need to also be submitted with their default values
     #    # for training purposes
-    #    original = mutations.select { |m| m.altered == Form::ORIGINAL_VALUES }.first
+    #    ap original = mutations.select { |m| m.altered == Form::ORIGINAL_VALUES }.first
     #    #=> #<Arachni::Element::Form:0x022a5a60
     #    #     attr_accessor :action = "http://stuff.com/",
     #    #     attr_accessor :altered = "__original_values__",
@@ -295,7 +295,7 @@ class Form < Arachni::Element::Base
     #    mutations = Form.new( 'http://stuff.com', inputs: { name: '' } ).mutations( 'seed' )
     #
     #    # mutations generally have seeds injected into their auditable inputs
-    #    mutations.first
+    #    ap mutations.first
     #    #=> <Arachni::Element::Form:0x0327fdf0
     #    #    attr_accessor :action = "http://stuff.com/",
     #    #    attr_accessor :altered = "name",
@@ -318,7 +318,7 @@ class Form < Arachni::Element::Base
     #    #>
     #
     #    # when values are missing the inputs are filled in using sample values
-    #    sample = mutations.select { |m| m.altered == Form::SAMPLE_VALUES }.first
+    #    ap sample = mutations.select { |m| m.altered == Form::SAMPLE_VALUES }.first
     #    #=> #<Arachni::Element::Form:0x02b23020
     #    #     attr_accessor :action = "http://stuff.com/",
     #    #     attr_accessor :altered = "__sample_values__",
@@ -340,7 +340,7 @@ class Form < Arachni::Element::Base
     #    #     }
     #    # >
     #
-    #    sample.sample?
+    #    p sample.sample?
     #    #=> true
     #
     #
@@ -375,7 +375,7 @@ class Form < Arachni::Element::Base
     # * password fields requiring identical values (in order to pass server-side validation)
     #
     # @example Default
-    #    Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed' )
+    #    ap Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed' )
     #    #=> [
     #    #    [0] #<Arachni::Element::Form:0x017a74b0
     #    #        attr_accessor :action = "http://stuff.com/",
@@ -488,7 +488,7 @@ class Form < Arachni::Element::Base
     #    #]
     #
     # @example skip_orig: true
-    #    Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed', skip_orig: true )
+    #    ap Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed', skip_orig: true )
     #    #=> [
     #    #    [0] #<Arachni::Element::Form:0x01b7ff10
     #    #        attr_accessor :action = "http://stuff.com/",
@@ -573,7 +573,7 @@ class Form < Arachni::Element::Base
     #    </form>
     #    HTML
     #
-    #    Form.from_document( 'http://stuff.com', html_form ).first.mutations( 'seed' )
+    #    ap Form.from_document( 'http://stuff.com', html_form ).first.mutations( 'seed' )
     #    #=> [
     #    #    [0] #<Arachni::Element::Form:0x03193298
     #    #        attr_accessor :action = "http://stuff.com/",
@@ -901,7 +901,7 @@ class Form < Arachni::Element::Base
     #       </form>
     #    HTML
     #
-    #    Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
+    #    p Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
     #    #=> true
     #
     # @example Without password
@@ -911,7 +911,7 @@ class Form < Arachni::Element::Base
     #       </form>
     #    HTML
     #
-    #    Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
+    #    p Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
     #    #=> false
     #
     # @return   [Bool]  +true+ if the form contains passwords fields,
@@ -1011,7 +1011,7 @@ class Form < Arachni::Element::Base
     #
     #    res = Typhoeus::Response.new( effective_url: 'http://host', body: body )
     #
-    #    Form.from_response( res ).first
+    #    ap Form.from_response( res ).first
     #    #=> #<Arachni::Element::Form:0x017c7788
     #    #    attr_accessor :action = "http://host/submit",
     #    #    attr_accessor :auditable = {
@@ -1064,7 +1064,7 @@ class Form < Arachni::Element::Base
     #    </form>
     #    HTML
     #
-    #    Form.from_document( 'http://stuff.com', html_form ).first
+    #    ap Form.from_document( 'http://stuff.com', html_form ).first
     #    #=> #<Arachni::Element::Form:0x03123600
     #    #    attr_accessor :action = "http://stuff.com/submit",
     #    #    attr_accessor :auditable = {
@@ -1099,7 +1099,7 @@ class Form < Arachni::Element::Base
     #    #    }
     #    #>
     #
-    #    Form.from_document( 'http://stuff.com', Nokogiri::HTML( html_form ) ).first
+    #    ap Form.from_document( 'http://stuff.com', Nokogiri::HTML( html_form ) ).first
     #    #=> #<Arachni::Element::Form:0x03123600
     #    #    attr_accessor :action = "http://stuff.com/submit",
     #    #    attr_accessor :auditable = {
@@ -1165,7 +1165,7 @@ class Form < Arachni::Element::Base
     # @example Weird
     #    body = 'testID=53738&deliveryID=53618&testIDs=&deliveryIDs=&selectedRows=2' +
     #        '&event=&section=&event%3Dmanage%26amp%3Bsection%3Dexam=Manage+selected+exam'
-    #    Form.parse_request_body body
+    #    p Form.parse_request_body body
     #    #=> {"testID"=>"53738", "deliveryID"=>"53618", "testIDs"=>"", "deliveryIDs"=>"", "selectedRows"=>"2", "event"=>"", "section"=>"", "event=manage&amp;section=exam"=>"Manage selected exam"}
     #
     # @param    [String]    body
