@@ -70,6 +70,7 @@ deps="
     grep
     make
     expr
+    perl
 "
 for dep in $deps; do
     echo -n "  * $dep"
