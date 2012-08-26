@@ -47,28 +47,28 @@ module Component
 #    #   end
 #
 #
-#    components = Arachni::Component::Manager.new( LIB, NAMESPACE )
+#    p components = Arachni::Component::Manager.new( LIB, NAMESPACE )
 #    #=> {}
 #
-#    components.available
+#    p components.available
 #    #=> ["component2", "component1"]
 #
-#    components.load_all
+#    p components.load_all
 #    #=> ["component2", "component1"]
 #
-#    components
+#    p components
 #    #=> {"component2"=>Components::Component2, "component1"=>Components::Component1}
 #
-#    components.clear
+#    p components.clear
 #    #=> {}
 #
-#    components.load :component1
+#    p components.load :component1
 #    #=> ["component1"]
 #
-#    components
+#    p components
 #    #=> {"component1"=>Components::Component1}
 #
-#    components.clear
+#    p components.clear
 #    #=> {}
 #
 #    p components[:component2]
@@ -125,7 +125,7 @@ class Manager < Hash
     end
 
     #
-    # Loads components by the tags found in the {Hash} returned by their +.info+ method.
+    # Loads components by the tags found in the +Hash+ returned by their +.info+ method.
     #
     # Tags should be in either:
     #   :tags or :issue[:tags]
