@@ -22,7 +22,6 @@ To install from source:
 
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 ```bundle exec <executable>```.
-
 If you get permission errors retry using ```sudo```.
 
 # Arachni - Web Application Security Scanner Framework
@@ -124,7 +123,6 @@ or complicating their tasks.
 
 Although some parts of the Framework are fairly complex you will never have
 to deal them directly.
-
 From a user's or a component developer's point of view everything appears simple
 and straight-forward all the while providing power, performance and flexibility.
 
