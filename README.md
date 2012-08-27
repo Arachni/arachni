@@ -11,18 +11,17 @@ To work with the source code you'll need the following system packages:
 
     sudo apt-get install git build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
 
-To install from source:
+To use the source:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
-    gem install bundler
-    bundle install # to resolve possible dev dependencies
-    rake install   # to install to PATH
+    sudo gem install bundler
+    bundle install    # to resolve possible dev dependencies
+    sudo rake install # to install to PATH
 
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
-```bundle exec <executable>```. <br/>
-If you get permission errors retry using ```sudo```.
+```bundle exec <executable>```.
 
 # Arachni - Web Application Security Scanner Framework
 
@@ -352,8 +351,6 @@ To install Arachni:
 
     sudo gem install arachni
 
-If you get permission errors retry using ```sudo```.
-
 ### Source
 
 If you want to clone the repository and work with the source code you'll need to
@@ -362,11 +359,12 @@ the following to install all gem dependencies and Arachni:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    gem install bundler
-    bundle install # to resolve possible dev dependencies
-    rake install   # to install to PATH
+    sudo gem install bundler
+    bundle install    # to resolve possible dev dependencies
+    sudo rake install # to install to PATH
 
-If you get permission errors retry using ```sudo```.
+If you get an error when trying to run Arachni, use ```bundle exec``` like so:
+```bundle exec <executable>```.
 
 ## Usage
 
