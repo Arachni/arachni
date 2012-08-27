@@ -21,7 +21,7 @@ To install from source:
     rake install   # to install to PATH
 
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
-```bundle exec <executable>```.
+```bundle exec <executable>```. <br/>
 If you get permission errors retry using ```sudo```.
 
 # Arachni - Web Application Security Scanner Framework
