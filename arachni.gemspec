@@ -51,7 +51,7 @@ Gem::Specification.new do |s|
 
       s.add_dependency 'bundler',         ">= 1.0.0"
       s.add_dependency "typhoeus",        "~> 0.3.3"
-      s.add_dependency "addressable",     ">= 2.2.6"
+      #s.add_dependency "addressable",     "~> 2.2.6"
       s.add_dependency "pony"
       s.add_dependency "awesome_print"
       s.add_dependency "json"
