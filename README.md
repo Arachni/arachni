@@ -2,16 +2,14 @@
 
 ## Nightlies (Linux only)
 
-For self-contained, nightly snapshot packages take a look at: http://downloads.arachni-scanner.com/nightlies/
+For self-contained, nightly snapshot packages take a look at:
+http://downloads.arachni-scanner.com/nightlies/
 
 ## Source
 
-To work with the source code you'll need the following system libraries:
+To work with the source code you'll need the following system packages:
 
-    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev
-
-You will also need to have Ruby 1.9.2 (or later) installed *including* the dev package/headers.<br/>
-The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby](http://www.ruby-lang.org/en/downloads/) manually.
+    sudo apt-get install git build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
 
 To install from source:
 
@@ -25,6 +23,7 @@ To install from source:
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 ```bundle exec <executable>```.
 
+If you get permission errors retry using ```sudo```.
 
 # Arachni - Web Application Security Scanner Framework
 
@@ -81,35 +80,53 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 Arachni is a feature-full, modular, high-performance Ruby framework aimed towards helping
 penetration testers and administrators evaluate the security of web applications.
 
-Arachni is smart, it trains itself by learning from the HTTP responses it receives during the audit process and
-is able to perform meta-analysis using a number of factors in order to correctly assess the trustworthiness of results and intelligently identify false-positives.
+Arachni is smart, it trains itself by learning from the HTTP responses it receives
+during the audit process and is able to perform meta-analysis using a number of
+factors in order to correctly assess the trustworthiness of results and intelligently
+identify false-positives.
 
-Unlike other scanners, it takes into account the dynamic nature of web applications, can detect changes caused while travelling<br/>
-through the paths of a web application's cyclomatic complexity and is able to adjust itself accordingly.<br/>
-This way attack/input vectors that would otherwise be undetectable by non-humans are seamlessly handled by Arachni.
+Unlike other scanners, it takes into account the dynamic nature of web applications,
+can detect changes caused while travelling through the paths of a web application's
+cyclomatic complexity and is able to adjust itself accordingly.
 
-Moreover, Arachni yields great performance due to its asynchronous HTTP model (courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)) --
-especially when combined with a High Performance Grid setup which allows you to combine the resources of multiple nodes for lightning fast scans.<br/>
+This way attack/input vectors that would otherwise be undetectable by non-humans
+are seamlessly handled by Arachni.
+
+Moreover, Arachni yields great performance due to its asynchronous HTTP model
+(courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)) -- especially when
+combined with a High Performance Grid setup which allows you to combine the
+resources of multiple nodes for lightning fast scans.
+
 Thus, you'll only be limited by the responsiveness of the server under audit.
 
-Finally, it is versatile enough to cover a great deal of use cases,
-ranging from a simple command line scanner utility, to a global high performance grid of scanners, to a Ruby library allowing for scripted audits.
+Finally, it is versatile enough to cover a great deal of use cases, ranging from a
+simple command line scanner utility, to a global high performance grid of scanners,
+to a Ruby library allowing for scripted audits.
 
-**Note**: _Despite the fact that Arachni is mostly targeted towards web application security, it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules._
+**Note**: _Despite the fact that Arachni is mostly targeted towards web
+application security, it can easily be used for general purpose scraping,
+data-mining, etc with the addition of custom modules._
 
 
 ### Arachni offers:
 
 #### A stable, efficient, high-performance framework
 
-Module, report and plugin writers are allowed to easily and quickly create and deploy their components
-with the minimum amount of restrictions imposed upon them, while provided with the necessary infrastructure to accomplish their goals.<br/>
-Furthermore, they are encouraged to take full advantage of the Ruby language under a unified framework that will increase their productivity
-without stifling them or complicating their tasks.<br/>
+Module, report and plugin writers are allowed to easily and quickly create and
+deploy their components with the minimum amount of restrictions imposed upon
+them, while provided with the necessary infrastructure to accomplish their goals.
+
+Furthermore, they are encouraged to take full advantage of the Ruby language under
+a unified framework that will increase their productivity without stifling them
+or complicating their tasks.
 
 #### Simplicity
-Although some parts of the Framework are fairly complex you will never have to deal them directly.<br/>
-From a user's or a component developer's point of view everything appears simple and straight-forward all the while providing power, performance and flexibility.
+
+Although some parts of the Framework are fairly complex you will never have
+to deal them directly.
+
+From a user's or a component developer's point of view everything appears simple
+and straight-forward all the while providing power, performance and flexibility.
 
 ## Feature List
 
@@ -122,7 +139,8 @@ From a user's or a component developer's point of view everything appears simple
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLM and others).
- - Automatic log-out detection and re-login during the audit (when the initial login was performed via the AutoLogin plugin).
+ - Automatic log-out detection and re-login during the audit (when the initial
+    login was performed via the AutoLogin plugin).
  - Custom 404 page detection.
  - Highlighted command line output.
  - UI abstraction:
@@ -137,11 +155,13 @@ From a user's or a component developer's point of view everything appears simple
     - Parallel scans
     - SSL encryption (with peer authentication)
     - Remote monitoring
-    - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG) configuration, combining the resources of multiple nodes to perform fast scans.
+    - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG)
+        configuration, combining the resources of multiple nodes to perform fast scans.
 
 ### Crawler
 
- - Filters for redundant pages like galleries, catalogs, etc based on regular expressions and counters.
+ - Filters for redundant pages like galleries, catalogs, etc based on regular
+    expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
  - URL exclusion filter based on regular expressions.
  - URL inclusion filter based on regular expressions.
@@ -150,7 +170,8 @@ From a user's or a component developer's point of view everything appears simple
  - Adjustable redirect limit.
  - Adjustable depth limit.
  - Modular path extraction via "Path Extractor" components.
- - Can read paths from multiple user supplied files (to both restrict and extend the scope of the crawl).
+ - Can read paths from multiple user supplied files (to both restrict and extend
+    the scope of the crawl).
 
 ### Auditor
 
@@ -162,7 +183,8 @@ From a user's or a component developer's point of view everything appears simple
     - Headers
  - Can ignore binary/non-text pages.
  - Can optionally audit forms and links using both ```GET``` and ```POST``` HTTP methods.
- - Can optionally submit all links and forms of the page along with the cookie permutations to provide extensive cookie-audit coverage.
+ - Can optionally submit all links and forms of the page along with the cookie
+    permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
 
 ### HTML Parser
@@ -232,14 +254,16 @@ Can extract and analyze:
  - Modular design.
  - Currently available reports:
     - Standard output
-    - HTML (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com) for designing the new HTML report template.)
+    - HTML (Cheers to [Christos Chiotis](mailto:chris@survivetheinternet.com)
+        for designing the new HTML report template.)
     - XML
     - TXT
     - AFR -- The default Arachni Framework Report format.
     - JSON
     - Marshal
     - YAML
-    - Metareport -- Providing Metasploit integration to allow for [automated and assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
+    - Metareport -- Providing Metasploit integration to allow for [automated and
+        assisted exploitation](http://arachni.github.com/arachni/file.EXPLOITATION.html).
 
 ### Plug-in Management
 
@@ -247,36 +271,53 @@ Can extract and analyze:
  - Plug-ins are framework demi-gods, they have direct access to the framework instance.
  - Can be used to add any functionality to Arachni.
  - Currently available plugins:
-    - ReScan -- It uses the AFR report of a previous scan to extract the sitemap in order to avoid a redundant crawl.
-    - Passive Proxy -- Analyzes requests and responses between the web app and the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
+    - ReScan -- It uses the AFR report of a previous scan to extract the sitemap
+        in order to avoid a redundant crawl.
+    - Passive Proxy -- Analyzes requests and responses between the web app and
+        the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit
     - Form based AutoLogin
     - Dictionary attacker for HTTP Auth
     - Dictionary attacker for form based authentication
     - Profiler -- Performs taint analysis (with benign inputs) and response time analysis
     - Cookie collector -- Keeps track of cookies while establishing a timeline of changes
     - Healthmap -- Generates sitemap showing the health of each crawled/audited URL
-    - Content-types -- Logs content-types of server responses aiding in the identification of interesting (possibly leaked) files
-    - WAF (Web Application Firewall) Detector -- Establishes a baseline of normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
-    - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for maximum bandwidth utilization
-    - TimingAttacks -- Provides a notice for issues uncovered by timing attacks when the affected audited pages returned unusually high response times to begin with.</br>
+    - Content-types -- Logs content-types of server responses aiding in the
+        identification of interesting (possibly leaked) files
+    - WAF (Web Application Firewall) Detector -- Establishes a baseline of
+        normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes
+    - AutoThrottle -- Dynamically adjusts HTTP throughput during the scan for
+        maximum bandwidth utilization
+    - TimingAttacks -- Provides a notice for issues uncovered by timing attacks
+        when the affected audited pages returned unusually high response times to begin with.</br>
          It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
-    - Uniformity -- Reports inputs that are uniformly vulnerable across a number of pages hinting to the lack of a central point of input sanitization.
-    - Discovery -- Performs anomaly detection on issues logged by discovery modules and warns of the possibility of false positives where applicable.
+    - Uniformity -- Reports inputs that are uniformly vulnerable across a number
+        of pages hinting to the lack of a central point of input sanitization.
+    - Discovery -- Performs anomaly detection on issues logged by discovery
+        modules and warns of the possibility of false positives where applicable.
     - BeepNotify -- Beeps when the scan finishes.
-    - LibNotify -- Uses the libnotify library to send notifications for each discovered issue and a summary at the end of the scan.
-    - EmailNotify -- Sends a notification (and optionally a report) over SMTP at the end of the scan.
-    - Manual verification -- Flags issues that require manual verification as untrusted in order to reduce the signal-to-noise ratio.
+    - LibNotify -- Uses the libnotify library to send notifications for each
+        discovered issue and a summary at the end of the scan.
+    - EmailNotify -- Sends a notification (and optionally a report) over SMTP at
+        the end of the scan.
+    - Manual verification -- Flags issues that require manual verification as
+        untrusted in order to reduce the signal-to-noise ratio.
     - Resolver -- Resolves vulnerable hostnames to IP addresses.
-    - VectorFeed -- Reads in vector data from which it creates elements to be audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+    - VectorFeed -- Reads in vector data from which it creates elements to be
+        audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
         Useful for unit-testing or a gazillion other things.
-    - Script -- Loads and runs an external Ruby script under the scope of a plugin, used for debugging and general hackery.
+    - Script -- Loads and runs an external Ruby script under the scope of a plugin,
+        used for debugging and general hackery.
 
 ### Trainer subsystem
 
-The Trainer is what enables Arachni to learn from the scan it performs and incorporate that knowledge, on the fly, for the duration of the audit.
+The Trainer is what enables Arachni to learn from the scan it performs and
+incorporate that knowledge, on the fly, for the duration of the audit.
 
-Modules have the ability to individually force the Framework to learn from the HTTP responses they are going to induce.<br/>
-However, this is usually not required since Arachni is aware of which requests are more likely to uncover new elements or attack vectors and will adapt itself accordingly.
+Modules have the ability to individually force the Framework to learn from the
+HTTP responses they are going to induce.
+
+However, this is usually not required since Arachni is aware of which requests
+are more likely to uncover new elements or attack vectors and will adapt itself accordingly.
 
 Still, this can be an invaluable asset to Fuzzer modules.
 
@@ -284,40 +325,50 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ### CDE packages for Linux
 
-Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html) for your convinience.<br/>
-CDE packages are self contained and thus alleviate the need for Ruby and other dependencies to be installed or root access.<br/>
-You can download the latest CDE package from the [download](https://github.com/Arachni/arachni/downloads) page and escape the dependency hell.<br/>
+Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html)
+for your convinience.
+CDE packages are self contained and thus alleviate the need for Ruby and other
+dependencies to be installed or root access.
+You can download the latest CDE package from the [download](https://github.com/Arachni/arachni/downloads)
+page and escape the dependency hell.
+
 If you decide to go the CDE route you can skip the rest, you're done.
 
 ### Cygwin packages for Windows
 
-Arachni does not yet run natively on Windows systems, however until that day comes you can download a pre-configured Cygwin environment containing Arachni and its dependencies.
-All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/), select a directory for it, open it up and then execute the Cygwin batch file.
+Arachni does not yet run natively on Windows systems, however until that day
+comes you can download a pre-configured Cygwin environment containing Arachni
+and its dependencies.
+
+All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/),
+select a directory for it, open it up and then execute the Cygwin batch file.
 You will then be presented with a Bash shell, after that you'll be able to use Arachni as if you were on a Linux system.
 
 ### Gem
 
-To install the Gem or work with the source code you'll also need the following system libraries:
+To install the Gem you'll need the following system libraries:
 
-    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev
-
-You will also need to have Ruby 1.9.2 (or later) installed *including* the dev package/headers.<br/>
-The prefered ways to accomplish this is by either using [RVM](http://rvm.beginrescueend.com/) or by downloading and compiling the source code for [Ruby](http://www.ruby-lang.org/en/downloads/) manually.
-
+    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
 
 To install Arachni:
 
-    gem install arachni
+    sudo gem install arachni
+
+If you get permission errors retry using ```sudo```.
 
 ### Source
 
-If you want to clone the repository and work with the source code then you'll need to run the following to install all gem dependencies and Arachni:
+If you want to clone the repository and work with the source code you'll need to
+install the system packages described in the "Gem" section above and then run
+the following to install all gem dependencies and Arachni:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     gem install bundler
-    rake install
+    bundle install # to resolve possible dev dependencies
+    rake install   # to install to PATH
 
+If you get permission errors retry using ```sudo```.
 
 ## Usage
 
@@ -330,11 +381,15 @@ If you want to clone the repository and work with the source code then you'll ne
 
 ## Configuration of <em>extras</em>
 
-The <em>extras</em> directory holds components that are considered too specialised, dangerous or in some way unsuitable for utilising without explicit user interaction. <br/>
-This directory was mainly added to distribute modules which can be helpful but should not be put in the default <em>modules</em> directory to prevent them from being
-automatically loaded.
+The <em>extras</em> directory holds components that are considered too specialised,
+dangerous or in some way unsuitable for utilising without explicit user interaction.
 
-Should you want to use these extra components simply move them from the <em>extras</em> folder to their appropriate system directories.
+This directory was mainly added to distribute modules which can be helpful but
+should not be put in the default <em>modules</em> directory to prevent them from
+being automatically loaded.
+
+Should you want to use these extra components simply move them from the
+<em>extras</em> folder to their appropriate system directories.
 
 ## Running the specs
 
@@ -357,16 +412,19 @@ need to follow in order to contribute code:
 * [Fork the project](https://github.com/Arachni/arachni/fork_select)
 * Develop on the experimental branch (```git checkout experimental```)
 * Add specs for your code
-* Run the spec suite to make sure you didn't break anything (```rake spec:core``` for the core libs or ```rake spec``` for everything)
+* Run the spec suite to make sure you didn't break anything (```rake spec:core```
+    for the core libs or ```rake spec``` for everything)
 * Issue a pull request and wait for your code to be reviewed
 
 That's all. :)
 
 ## Supported platforms
 
-Arachni should work on all *nix and POSIX compliant platforms with Ruby and the aforementioned requirements.
+Arachni should work on all *nix and POSIX compliant platforms with Ruby and the
+aforementioned requirements.
 
-Windows users can download the pre-configured Cygwin package, see the [installation instructions](https://github.com/Arachni/arachni/wiki/Installation).
+Windows users can download the pre-configured Cygwin package, see the
+[installation instructions](https://github.com/Arachni/arachni/wiki/Installation).
 
 ## Bug reports/Feature requests
 Please send your feedback using Github's issue system at
@@ -374,11 +432,13 @@ Please send your feedback using Github's issue system at
 
 
 ## License
+
 Arachni is licensed under the Apache License Version 2.0.<br/>
 See the [LICENSE](file.LICENSE.html) file for more information.
 
 
 ## Disclaimer
+
 Arachni is free software and you are allowed to use it as you see fit.<br/>
 However, I can't be held responsible for your actions or for any damage
 caused by the use of this software.
