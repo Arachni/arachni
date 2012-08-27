@@ -17,6 +17,8 @@
 Gem::Specification.new do |s|
       require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
+      s.required_ruby_version = '>= 1.9.2'
+
       s.name              = "arachni"
       s.version           = Arachni::VERSION
       s.date              = Time.now.strftime( '%Y-%m-%d' )
