@@ -41,7 +41,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
         <th>Blog</th>
         <td><a href="http://arachni-scanner.com/blog">http://arachni-scanner.com/blog</a></td>
     <tr>
-        <th>Github page</th>
+        <th>Github</th>
         <td><a href="http://github.com/Arachni/arachni">http://github.com/Arachni/arachni</a></td>
      <tr/>
     <tr>
@@ -50,11 +50,11 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
     </tr>
     <tr>
         <th>Code Documentation</th>
-        <td><a href="http://arachni.github.com/arachni/">http://arachni.github.com/arachni/</a></td>
+        <td><a href="http://rubydoc.info/github/Arachni/arachni">http://rubydoc.info/github/Arachni/arachni</a></td>
     </tr>
     <tr>
-        <th>Google Group</th>
-        <td><a href="http://groups.google.com/group/arachni">http://groups.google.com/group/arachni</a></td>
+        <th>Support</th>
+        <td><a href="http://support.arachni-scanner.com">http://support.arachni-scanner.com</a></td>
     </tr>
     <tr>
        <th>Author</th>
