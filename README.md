@@ -19,7 +19,7 @@ To run from source:
     sudo gem install bundler
     bundle install # to resolve dev dependencies
 
-Then you can run Arachni using the the executables under ```/bin```.<br/>
+Then you can run Arachni using the the executables under ```bin/```.<br/>
 If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 ```bundle exec <executable>```.
 
