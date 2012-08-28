@@ -31,8 +31,8 @@ module Module
 class Manager < ::Arachni::Module::Manager
 
     # make these inherited methods visible again
-    private :load, :available, :loaded
-    public :load, :available, :loaded
+    private :load, :available, :loaded, :load_all
+    public :load, :available, :loaded, :load_all
 
     def load( mods )
         @opts.mods = super( mods )
