@@ -55,7 +55,8 @@ echo "Building packages, this could take a while; to monitor the progress of the
 echo "  * 32bit build: tail -f $output_log_32bit"
 echo "  * 64bit build: tail -f $output_log_64bit"
 
-if $OSX_SSH_CMD; then
+
+if [ -n "${OSX_SSH_CMD+x}" ]; then
     echo "  * OSX build: tail -f $output_log_osx"
 fi
 
@@ -74,7 +75,7 @@ bash -c "touch 64bit_build.lock && \
 
 echo $! > 64bit.pid
 
-if $OSX_SSH_CMD; then
+if [ -n "${OSX_SSH_CMD+x}" ]; then
     bash -c "touch osx_build.lock && \
         eval \"$OSX_SSH_CMD\" 2>> $output_log_osx 1>> $output_log_osx &&\
         rm osx_build.lock" &
@@ -86,7 +87,7 @@ fi
 while [ ! -e "32bit_build.lock" ]; do sleep 0.1; done
 while [ ! -e "64bit_build.lock" ]; do sleep 0.1; done
 
-if $OSX_SSH_CMD; then
+if [ -n "${OSX_SSH_CMD+x}" ]; then
     while [ ! -e "osx_build.lock" ]; do sleep 0.1; done
 fi
 
@@ -98,7 +99,7 @@ echo '  * 32bit package ready'
 while [ -e "64bit_build.lock" ]; do sleep 0.1; done
 echo '  * 64bit package ready'
 
-if $OSX_SSH_CMD; then
+if [ -n "${OSX_SSH_CMD+x}" ]; then
     while [ -e "osx_build.lock" ]; do sleep 0.1; done
     echo '  * OSX package ready'
 fi
