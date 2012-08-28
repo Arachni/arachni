@@ -25,11 +25,15 @@ source $path_to_readlink_function
 root="$(dirname "$(readlink_f "${0}")")"
 nightlies="$HOME/builds/nightlies"
 
-package_patterns="arachn*.gz"
+package_patterns="arachni*.gz"
 dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 
 output_log_32bit="$root/32bit.log"
 output_log_64bit="$root/64bit.log"
+
+if $OSX_SSH_CMD; then
+    output_log_osx="$root/osx.log"
+fi
 
 mkdir -p $nightlies
 cd $nightlies
@@ -50,6 +54,11 @@ rm -f *.log
 echo "Building packages, this could take a while; to monitor the progress of the:"
 echo "  * 32bit build: tail -f $output_log_32bit"
 echo "  * 64bit build: tail -f $output_log_64bit"
+
+if $OSX_SSH_CMD; then
+    echo "  * OSX build: tail -f $output_log_osx"
+fi
+
 echo
 echo 'You better go grab some coffee now...'
 
@@ -65,9 +74,22 @@ bash -c "touch 64bit_build.lock && \
 
 echo $! > 64bit.pid
 
+if $OSX_SSH_CMD; then
+    bash -c "touch osx_build.lock && \
+        eval $OSX_SSH_CMD 2>> $output_log_osx 1>> $output_log_osx &&\
+        rm osx_build.lock" &
+
+    echo $! > 64bit.pid
+fi
+
 # wait for the locks to be created
 while [ ! -e "32bit_build.lock" ]; do sleep 0.1; done
 while [ ! -e "64bit_build.lock" ]; do sleep 0.1; done
+
+if $OSX_SSH_CMD; then
+    while [ ! -e "osx_build.lock" ]; do sleep 0.1; done
+fi
+
 
 # and then wait for the locks to be removed
 while [ -e "32bit_build.lock" ]; do sleep 0.1; done
@@ -76,6 +98,12 @@ echo '  * 32bit package ready'
 while [ -e "64bit_build.lock" ]; do sleep 0.1; done
 echo '  * 64bit package ready'
 
+if $OSX_SSH_CMD; then
+    while [ -e "osx_build.lock" ]; do sleep 0.1; done
+    echo '  * OSX package ready'
+fi
+
+
 echo
 echo -n 'Removing PID files'
 rm *.pid
@@ -83,8 +111,8 @@ echo ' - done.'
 echo
 
 echo 'Pushing to server, this could take a while also...'
-rsync --human-readable --progress --executability --compress --stats \
-    $package_patterns $dest
+#rsync --human-readable --progress --executability --compress --stats \
+#    $package_patterns $dest
 
 echo
 echo 'All done.'
