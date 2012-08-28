@@ -76,7 +76,7 @@ echo $! > 64bit.pid
 
 if $OSX_SSH_CMD; then
     bash -c "touch osx_build.lock && \
-        eval $OSX_SSH_CMD 2>> $output_log_osx 1>> $output_log_osx &&\
+        eval \"$OSX_SSH_CMD\" 2>> $output_log_osx 1>> $output_log_osx &&\
         rm osx_build.lock" &
 
     echo $! > 64bit.pid
@@ -111,8 +111,8 @@ echo ' - done.'
 echo
 
 echo 'Pushing to server, this could take a while also...'
-#rsync --human-readable --progress --executability --compress --stats \
-#    $package_patterns $dest
+rsync --human-readable --progress --executability --compress --stats \
+    $package_patterns $dest
 
 echo
 echo 'All done.'
