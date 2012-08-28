@@ -31,7 +31,7 @@ dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 output_log_32bit="$root/32bit.log"
 output_log_64bit="$root/64bit.log"
 
-if $OSX_SSH_CMD; then
+if [ -n "${OSX_SSH_CMD+x}" ]; then
     output_log_osx="$root/osx.log"
 fi
 
