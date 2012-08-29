@@ -17,13 +17,6 @@
 module Typhoeus
 class Response
 
-    alias :old_headers_hash :headers_hash
-    def headers_hash
-        old_headers_hash
-    rescue
-        {}
-    end
-
     def []( k )
         find_header_value( k )
     end
