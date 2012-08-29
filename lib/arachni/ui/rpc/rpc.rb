@@ -645,18 +645,6 @@ class RPC
                                   (Default: 60)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
-    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
-                                 and harvest the HTTP responses at the end of the crawl.
-                                 (In some test cases this option has split the scan time in half.)
-                                 (Default: responses will be harvested for each page)
-                                 (*NOTE*: If you are scanning a high-end server and
-                                   you are using a powerful machine with enough bandwidth
-                                   *and* you feel dangerous you can use
-                                   this flag with an increased '--http-req-limit'
-                                   to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
-                                  of pages this could eat up all your memory pretty quickly.)
-
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
 
 
