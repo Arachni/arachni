@@ -320,60 +320,7 @@ Still, this can be an invaluable asset to Fuzzer modules.
 
 ## [Installation](https://github.com/Arachni/arachni/wiki/Installation)
 
-### CDE packages for Linux
-
-Arachni is released as [CDE packages](http://stanford.edu/~pgbovine/cde.html)
-for your convinience.
-CDE packages are self contained and thus alleviate the need for Ruby and other
-dependencies to be installed or root access.
-You can download the latest CDE package from the [download](https://github.com/Arachni/arachni/downloads)
-page and escape the dependency hell.
-
-If you decide to go the CDE route you can skip the rest, you're done.
-
-### Cygwin packages for Windows
-
-Arachni does not yet run natively on Windows systems, however until that day
-comes you can download a pre-configured Cygwin environment containing Arachni
-and its dependencies.
-
-All you need to do is download the [latest self-extracting archive](http://downloads.segfault.gr/arachni/),
-select a directory for it, open it up and then execute the Cygwin batch file.
-You will then be presented with a Bash shell, after that you'll be able to use Arachni as if you were on a Linux system.
-
-### Gem
-
-To install the Gem you'll need the following system libraries:
-
-    sudo apt-get install build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
-
-To install Arachni:
-
-    sudo gem install arachni
-
-### Source
-
-If you want to clone the repository and work with the source code you'll need to
-install the system packages described in the "Gem" section above and then run
-the following to install all gem dependencies and Arachni:
-
-    git clone git://github.com/Arachni/arachni.git
-    cd arachni
-    sudo gem install bundler
-    bundle install    # to resolve possible dev dependencies
-    sudo rake install # to install to PATH
-
-If you get an error when trying to run Arachni, use ```bundle exec``` like so:
-```bundle exec <executable>```.
-
-## Usage
-
-### [Command line interface](https://github.com/Arachni/arachni/wiki/Command-line-user-interface)
-
-### [WebUI](https://github.com/Arachni/arachni/wiki/Web-user-interface)
-
-### [Starting a Dispatcher](https://github.com/Arachni/arachni/wiki/RPC-server)
-
+## [Usage](https://github.com/Arachni/arachni/wiki/User-guide)
 
 ## Configuration of <em>extras</em>
 
@@ -414,17 +361,10 @@ need to follow in order to contribute code:
 
 That's all. :)
 
-## Supported platforms
-
-Arachni should work on all *nix and POSIX compliant platforms with Ruby and the
-aforementioned requirements.
-
-Windows users can download the pre-configured Cygwin package, see the
-[installation instructions](https://github.com/Arachni/arachni/wiki/Installation).
-
 ## Bug reports/Feature requests
-Please send your feedback using Github's issue system at
-[http://github.com/Arachni/arachni/issues](http://github.com/Arachni/arachni/issues).
+
+Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues).<br/>
+Get support via the [Support Portal](http://support.arachni-scanner.com).
 
 
 ## License
