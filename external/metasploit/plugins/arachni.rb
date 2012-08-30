@@ -508,10 +508,14 @@ class Plugin::Arachni < Msf::Plugin
 		super
 		# console dispatcher commands.
 		add_console_dispatcher( ArachniCommandDispatcher )
+		framework.modules.add_module_path(File.join(File.dirname(__FILE__),"arachni","modules")).each do |m| 
+                        print_good("Added #{m.last} #{m.first.capitalize} modules for Arachni")
+                end 
 	end
 
 	def cleanup
 		remove_console_dispatcher( 'Arachni' )
+		framework.modules.remove_module_path(File.join(File.dirname(__FILE__),"arachni","modules"))
 	end
 
 	def name
