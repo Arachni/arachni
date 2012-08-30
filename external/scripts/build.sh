@@ -583,6 +583,9 @@ echo "  * Removing docs"
 rm -rf $root/usr/share/*
 rm -rf $root/gems/doc/*
 
+cp `dirname $scriptdir`/README.tpl $root/README
+cp `dirname $scriptdir`/LICENSE.tpl $root/LICENSE
+
 echo
 cat<<EOF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -596,13 +599,17 @@ executables from anywhere:
     echo 'export PATH=$root/bin:\$PATH' >> ~/.bash_profile
     source ~/.bash_profile
 
-Useful resources:
-    * Homepage     - http://arachni-scanner.com/
-    * Blog         - http://arachni-scanner.com/blog
-    * Wiki         - http://arachni-scanner.com/wiki
-    * GitHub page  - http://github.com/Arachni/arachni
-    * Google Group - http://groups.google.com/group/arachni
-    * Twitter      - http://twitter.com/ArachniScanner
+Useful info:
+    * Homepage           - http://arachni-scanner.com
+    * Blog               - http://arachni-scanner.com/blog
+    * Documentation      - http://arachni-scanner.com/wiki
+    * Support            - http://support.arachni-scanner.com
+    * GitHub page        - http://github.com/Arachni/arachni
+    * Code Documentation - http://rubydoc.info/github/Arachni/arachni
+    * Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
+    * Twitter            - http://twitter.com/ArachniScanner
+    * Copyright          - 2010-2012 Tasos Laskos
+    * License            - Apache License v2
 
 Have fun ;)
 
