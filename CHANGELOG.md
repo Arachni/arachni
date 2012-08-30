@@ -84,6 +84,8 @@
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
     - Form
       - Nonce tokens are being automatically detected and refreshed before submission.
+- WebUI
+    - Removed the AutoDeploy add-on -- no sense maintaining it since the WebUI is about to be scrapped (and no-one used it anyways).
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added
