@@ -6,7 +6,7 @@ class Plugin::Arachni < Msf::Plugin
 	#
 	# This class implements an exploitation platform for web app vulnerabilities
 	# discovered by the Arachni WebApp Security Scaner Framework
-	# (http://github.com/Zapotek/arachni)
+	# (http://github.com/Arachni/arachni)
 	#
 	###
 	class ArachniCommandDispatcher
@@ -508,10 +508,14 @@ class Plugin::Arachni < Msf::Plugin
 		super
 		# console dispatcher commands.
 		add_console_dispatcher( ArachniCommandDispatcher )
+		framework.modules.add_module_path(File.join(File.dirname(__FILE__),"arachni","modules")).each do |m| 
+                        print_good("Added #{m.last} #{m.first.capitalize} modules for Arachni")
+                end 
 	end
 
 	def cleanup
 		remove_console_dispatcher( 'Arachni' )
+		framework.modules.remove_module_path(File.join(File.dirname(__FILE__),"arachni","modules"))
 	end
 
 	def name
@@ -521,7 +525,7 @@ class Plugin::Arachni < Msf::Plugin
 	def desc
 		%q{Provides an exploitation platform for web app vulnerabilities
 		discovered by the Arachni WebApp Security Scaner Framework
-		(http://github.com/Zapotek/arachni)}
+		(http://github.com/Arachni/arachni)}
 	end
 
 end
