@@ -14,8 +14,6 @@
     limitations under the License.
 =end
 
-require Arachni::Options.instance.dir['reports'] + 'metareport/arachni_metareport.rb'
-
 #
 # Metareport
 #
@@ -23,14 +21,11 @@ require Arachni::Options.instance.dir['reports'] + 'metareport/arachni_metarepor
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 #
 class Arachni::Reports::Metareport < Arachni::Report::Base
 
     def run
-        print_info 'Apologies, the metareport is currently out of commission.'
-        return
-
         print_line
         print_status 'Creating file for the Metasploit framework...'
 
@@ -47,9 +42,6 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
 
                 method = issue.elem if issue.elem == 'cookie' || issue.elem == 'header'
 
-                # pp issue
-                # pp variation['opts']
-
                 params = variation['opts'][:combo]
                 next if !params[issue.var]
                 params[issue.var] = params[issue.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
@@ -63,7 +55,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
                 # ap sub_cookie( variation['headers']['request']['cookie'], params )
 
                 uri = URI( url )
-                msf << ArachniMetareport.new(
+                msf << {
                     host:        uri.host,
                     port:        uri.port,
                     vhost:       '',
@@ -80,13 +72,11 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
                     description: issue.description,
                     category:    'n/a',
                     exploit:     issue.metasploitable
-                )
+                }
             end
         end
 
-        # pp msf
-
-        File.open( outfile, 'w' ) { |f| ::YAML.dump( msf, outfile ) }
+        File.open( outfile, 'w' ) { |f| ::YAML.dump( msf, f ) }
 
         print_status "Saved in '#{outfile}'."
     end
@@ -106,7 +96,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
             name:        'Metareport',
             description: %q{Creates a file to be used with the Arachni MSF plug-in.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             options:     [ Options.outfile( '.msf' ) ]
 
         }
