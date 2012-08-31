@@ -17,16 +17,10 @@
 module Typhoeus
 class Response
 
-    def body
-        @repacked ||= nil
-        @repacked   = false if @repacked.nil?
-
-        if @body && !@repacked
-            @body = @body.repack
-            @repacked = true
-        end
-
-        @body
+    alias :old_initialize :initialize
+    def initialize( *args )
+        old_initialize( *args )
+        @body = @body.repack if @body
     end
 
     def []( k )
@@ -63,7 +57,6 @@ class Response
         hash['headers_hash'] = {}
         headers_hash.to_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
 
-        hash['body'] = body
         hash.delete( 'request' )
         hash
     end
