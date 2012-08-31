@@ -1197,7 +1197,7 @@ class Form < Arachni::Element::Base
     # @return   [String]    the encoded string
     #
     def self.encode( str )
-        ::URI.encode( ::URI.encode( str, '+%' ).gsub( ' ', '+' ), ";&\\=\0" )
+        ::URI.encode( ::URI.encode( str, '+%' ).unpack("C*").pack("U*").gsub( ' ', '+' ), ";&\\=\0" )
     end
     # @see .encode
     def encode( str )
