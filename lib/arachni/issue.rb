@@ -238,6 +238,7 @@ class Issue
             end
         end if opts[:issue]
 
+        @headers ||= {}
         if opts[:headers] && opts[:headers][:request]
             @headers[:request] = {}.merge( opts[:headers][:request] )
         end
@@ -246,12 +247,14 @@ class Issue
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
-        @method = @method.to_s.upcase
+        @method   = @method.to_s.upcase
         @mod_name = opts[:name]
 
         # remove this block because it won't be able to be serialized
         @opts.delete( :each_mutation )
         @tags ||= []
+
+        @response = (@response || '').repack
     end
 
     def match
@@ -354,7 +357,7 @@ class Issue
 
     def encode( str )
         return str if !str.is_a?( String )
-        str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
+        str.recode
     end
 
     def normalize_name( name )
