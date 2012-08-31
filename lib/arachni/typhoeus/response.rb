@@ -17,6 +17,18 @@
 module Typhoeus
 class Response
 
+    def body
+        @repacked ||= nil
+        @repacked   = false if @repacked.nil?
+
+        if @body && !@repacked
+            @body = @body.repack
+            @repacked = true
+        end
+
+        @body
+    end
+
     def []( k )
         find_header_value( k )
     end

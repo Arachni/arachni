@@ -253,8 +253,6 @@ class Issue
         # remove this block because it won't be able to be serialized
         @opts.delete( :each_mutation )
         @tags ||= []
-
-        @response = (@response || '').repack
     end
 
     def match
