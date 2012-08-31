@@ -63,6 +63,7 @@ class Response
         hash['headers_hash'] = {}
         headers_hash.to_hash.each_pair { |k, v| hash['headers_hash'][k] = v }
 
+        hash['body'] = body
         hash.delete( 'request' )
         hash
     end
