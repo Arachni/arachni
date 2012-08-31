@@ -24,3 +24,8 @@ To see the available CLI options:
 For detailed documentation see:
     http://arachni-scanner.com/wiki/User-guide
 
+Disclaimer
+--------------
+Arachni is free software and you are allowed to use it as you see fit.
+However, I can't be held responsible for your actions or for any damage
+caused by the use of this software.
