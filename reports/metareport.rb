@@ -34,25 +34,25 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
             next if !issue.metasploitable
 
             issue.variations.each do |variation|
-                url = if ( method = issue.method.dup ) != 'post'
-                    variation['url'].gsub( /\?.*/, '' )
+                url = if (method = issue.method.dup) != 'post'
+                    variation.url.split( '?', 2 ).first
                 else
-                    variation['url']
+                    variation.url
                 end
 
                 method = issue.elem if issue.elem == 'cookie' || issue.elem == 'header'
 
-                params = variation['opts'][:combo]
+                params = variation.opts[:combo]
                 next if !params[issue.var]
-                params[issue.var] = params[issue.var].gsub( variation['opts'][:injected_orig], 'XXinjectionXX' )
+                params[issue.var] = params[issue.var].gsub( variation.opts[:injected_orig], 'XXinjectionXX' )
 
-                if method == 'cookie'
+                if method == 'cookie' && variation.headers['request']['cookie']
                     params[issue.var] = URI.encode( params[issue.var], ';' )
-                    cookies = sub_cookie( variation['headers']['request']['cookie'], params )
-                    variation['headers']['request']['cookie'] = cookies.dup
+                    cookies = sub_cookie( variation.headers['request']['cookie'], params )
+                    variation.headers['request']['cookie'] = cookies.dup
                 end
 
-                # ap sub_cookie( variation['headers']['request']['cookie'], params )
+                # ap sub_cookie( variation.headers['request']['cookie'], params )
 
                 uri = URI( url )
                 msf << {
@@ -83,7 +83,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
 
     def sub_cookie( str, params )
         hash = {}
-        str.split( ';' ).each do |cookie|
+        str.to_s.split( ';' ).each do |cookie|
             k, v = cookie.split( '=', 2 )
             hash[k] = v
         end
