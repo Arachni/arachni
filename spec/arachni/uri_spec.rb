@@ -153,6 +153,8 @@ describe Arachni::URI do
             @urls.each do |url|
                 @uri.normalize( url ).should == @ref_normalizer.call( url )
             end
+            with_whitespace = 'http://test.com/stuff '
+            @uri.normalize( with_whitespace ).to_s.should == with_whitespace.strip
         end
     end
 

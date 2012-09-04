@@ -396,8 +396,8 @@ class URI
 
         cache = CACHE[__method__]
 
-        url   = url.to_s.dup
-        c_url = url.to_s.dup
+        url   = url.to_s.strip.dup
+        c_url = url.to_s.strip.dup
 
         begin
             if (v = cache[url]) && v == :err
