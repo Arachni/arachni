@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 class Arachni::Reports::Metareport < Arachni::Report::Base
 
@@ -96,7 +96,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
             name:        'Metareport',
             description: %q{Creates a file to be used with the Arachni MSF plug-in.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             options:     [ Options.outfile( '.msf' ) ]
 
         }
