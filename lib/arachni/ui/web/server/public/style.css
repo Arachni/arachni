@@ -8,7 +8,7 @@ body {
 }
 
 .wrapper {
-    background: #ddd url('bodybg.png') repeat-x scroll top left;
+    background: url('bodybg.png') repeat-x scroll top left;
 }
 
 .subpage {
