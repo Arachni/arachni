@@ -643,6 +643,8 @@ class Framework
     # Audits the URL and Page queues
     #
     def audit_queue
+        return if modules.empty?
+
         # goes through the URLs discovered by the spider, repeats the request
         # and parses the responses into page objects
         #
