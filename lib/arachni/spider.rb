@@ -35,9 +35,6 @@ class Spider
     # @return [Arachni::Options]
     attr_reader :opts
 
-    # @return [String]  seed url
-    attr_reader :url
-
     # @return [Array<String>]   URLs that caused redirects
     attr_reader :redirects
 
@@ -48,20 +45,24 @@ class Spider
     #
     def initialize( opts = Options.instance )
         @opts = opts
-        @url  = @opts.url.to_s
 
         @sitemap   = {}
         @redirects = []
+        @paths     = []
         @visited   = BloomFilter.new
 
-        @on_each_page_blocks = []
-        @on_complete_blocks  = []
+        @on_each_page_blocks     = []
+        @on_each_response_blocks = []
+        @on_complete_blocks      = []
 
         @pass_pages       = true
         @pending_requests = 0
 
-        @paths = dedup( @url )
-        push( @opts.extend_paths )
+        seed_paths
+    end
+
+    def url
+        @opts.url
     end
 
     # @return   [Array<String>]  Working paths, paths that haven't yet been followed.
@@ -91,12 +92,14 @@ class Spider
     #
     # @return [Array<String>]   sitemap
     #
-    def run( pass_pages_to_block = pass_pages?, &block )
+    def run( pass_pages_to_block = true, &block )
         return if !@opts.crawl?
 
+        # options could have changed so reseed
+        seed_paths
+
         if block_given?
-            pass_pages_to_block ? pass_pages : pass_responses
-            on_each_page( &block )
+            pass_pages_to_block ? on_each_page( &block ) : on_each_response( &block )
         end
 
         while !done?
@@ -105,13 +108,20 @@ class Spider
                 wait_if_paused
 
                 visit( url ) do |res|
-                    obj = if pass_pages?
+                    obj = if pass_pages_to_block
                         Page.from_response( res, @opts )
                     else
                         Parser.new( res, @opts )
                     end
 
-                    call_on_each_page_blocks( pass_pages? ? obj.dup : res )
+                    if @on_each_response_blocks.any?
+                        call_on_each_response_blocks( res )
+                    end
+
+                    if @on_each_page_blocks.any?
+                        call_on_each_page_blocks( pass_pages_to_block ? obj : Page.from_response( res, @opts ) )
+                    end
+
                     push( obj.paths )
                 end
             end
@@ -126,32 +136,25 @@ class Spider
         sitemap
     end
 
-    # Tells the crawler to pass [Arachni::Page]s to {#on_each_page} blocks.
-    def pass_pages
-        @pass_pages = true
-    end
-
-    # @return   [Bool]  true unless {#pass_responses} has been called
-    def pass_pages?
-        @pass_pages
-    end
-
-    # Tells the crawler to pass [Typhoeus::Responses]s to {#on_each_page} blocks.
-    def pass_responses
-        @pass_pages = false
-    end
-
     #
     # Sets blocks to be called every time a page is visited.
-    #
-    # By default, the blocks will be passed [Arachni::Page]s;
-    # if you want HTTP responses you need to call {#pass_responses}.
     #
     # @param    [Block]     block
     #
     def on_each_page( &block )
         fail 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
+        self
+    end
+
+    #
+    # Sets blocks to be called every time a response is received.
+    #
+    # @param    [Block]     block
+    #
+    def on_each_response( &block )
+        fail 'Block is mandatory!' if !block_given?
+        @on_each_response_blocks << block
         self
     end
 
@@ -218,8 +221,17 @@ class Spider
 
     private
 
+    def seed_paths
+        push url
+        push @opts.extend_paths
+    end
+
     def call_on_each_page_blocks( obj )
         @on_each_page_blocks.each { |b| exception_jail { b.call( obj ) } }
+    end
+
+    def call_on_each_response_blocks( obj )
+        @on_each_response_blocks.each { |b| exception_jail { b.call( obj ) } }
     end
 
     def call_on_complete_blocks
@@ -297,7 +309,7 @@ class Spider
     def dedup( paths )
         return [] if !paths || paths.empty?
 
-        [paths].flatten.uniq.compact.map { |p| to_absolute( p, @url ) }.
+        [paths].flatten.uniq.compact.map { |p| to_absolute( p, url ) }.
             reject { |p| skip?( p ) }.uniq.compact
     end
 

@@ -213,67 +213,40 @@ describe Arachni::Spider do
     end
 
     describe '#on_each_page' do
-        context 'when no modifier has been previously called' do
-            it 'should be passed each page as visited' do
-                pages  = []
-                pages2 = []
+        it 'should be passed each page as visited' do
+            pages  = []
+            pages2 = []
 
-                s = Arachni::Spider.new
+            s = Arachni::Spider.new
 
-                s.on_each_page { |page| pages << page }.should == s
-                s.on_each_page { |page| pages2 << page }.should == s
+            s.on_each_page { |page| pages << page }.should == s
+            s.on_each_page { |page| pages2 << page }.should == s
 
-                s.run
+            s.run
 
-                pages.should == pages2
+            pages.should == pages2
 
-                pages.size.should == s.sitemap.size
-                pages.first.is_a?( Arachni::Page ).should be_true
-            end
-        end
-        context 'when #pass_responses has been called' do
-            it 'should be passed each HTTP response as received' do
-                spider = Arachni::Spider.new
-
-                responses  = []
-                responses2 = []
-
-                spider.pass_responses
-
-                spider.on_each_page { |res| responses << res }.should == spider
-                spider.on_each_page { |res| responses2 << res }.should == spider
-
-                spider.run
-
-                responses.should == responses2
-
-                responses.size.should == spider.sitemap.size
-                responses.first.is_a?( Typhoeus::Response ).should be_true
-            end
+            pages.size.should == s.sitemap.size
+            pages.first.is_a?( Arachni::Page ).should be_true
         end
     end
 
-    describe '#pass_pages?' do
-        context 'when no modifier has been previously called' do
-            it 'should return true' do
-                Arachni::Spider.new.pass_pages?.should be_true
-            end
-        end
-        context 'when #pass_responses has been called' do
-            it 'should return false' do
-                s = Arachni::Spider.new
-                s.pass_responses
-                s.pass_pages?.should be_false
-            end
-        end
-        context 'when #pass_pages has been called' do
-            it 'should return true' do
-                s = Arachni::Spider.new
-                s.pass_responses
-                s.pass_pages?.should be_false
-                s.pass_pages
-                s.pass_pages?.should be_true
-            end
+    describe '#on_each_response' do
+        it 'should be passed each response as received' do
+            responses  = []
+            responses2 = []
+
+            s = Arachni::Spider.new
+
+            s.on_each_response { |response| responses << response }.should == s
+            s.on_each_response { |response| responses2 << response }.should == s
+
+            s.run
+
+            responses.should == responses2
+
+            responses.size.should == s.sitemap.size
+            responses.first.is_a?( Typhoeus::Response ).should be_true
         end
     end
 

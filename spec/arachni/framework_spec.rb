@@ -94,6 +94,12 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#spider' do
+        it 'should provide access to the Spider' do
+            @f.spider.is_a?( Arachni::Spider ).should be_true
+        end
+    end
+
     describe '#run' do
 
         context 'when the page has a body which is' do
