@@ -151,6 +151,10 @@ class Base
         }
     end
 
+    def spider
+        framework.spider
+    end
+
     def session
         framework.session
     end
