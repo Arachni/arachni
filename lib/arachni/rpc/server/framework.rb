@@ -195,7 +195,7 @@ class Framework < ::Arachni::Framework
 
                 @status = :crawling
                 # start the crawl and extract all paths
-                Spider.new( @opts ).run do |page|
+                spider.run do |page|
                     @override_sitemap << page.url
                     element_ids_per_page[page.url] = build_elem_list( page )
                 end
