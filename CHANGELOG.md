@@ -79,6 +79,7 @@
     - Added a maximum queue size limit -- once the request limit has been reached the queued requests will be fired in order to unload the queue.
     - Added ```#sandbox``` -- isolates the given block from the rest of the HTTP env and executes it.
 - Spider -- Re-written, much cleaner design and code. (**New**)
+    - Ignores path parameters to avoid infinite loops (like ```http://stuff.com/deep/path;jsessid=deadbeef```).
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
