@@ -570,10 +570,6 @@ class Options
         !!@auto_redundant
     end
 
-    def auto_redundant
-        @auto_redundant || 10
-    end
-
     def fuzz_methods?
         self.fuzz_methods
     end
@@ -1051,7 +1047,7 @@ class Options
                         @exclude_binaries = true
 
                     when '--auto-redundant'
-                        @auto_redundant = arg.empty? ? nil : arg.to_i
+                        @auto_redundant = arg.empty? ? 10 : arg.to_i
 
                     when '--login-check-url'
                         @login_check_url = arg
