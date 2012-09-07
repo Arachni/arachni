@@ -49,7 +49,7 @@ class Spider
         @sitemap   = {}
         @redirects = []
         @paths     = []
-        @visited   = BloomFilter.new
+        @visited   = Set.new
 
         @on_each_page_blocks     = []
         @on_each_response_blocks = []
@@ -257,13 +257,19 @@ class Spider
         visited?( url ) || skip_path?( url )
     end
 
+    def remove_path_params( url )
+        uri = URI( url ).dup
+        uri.path = uri.path.split( ';' ).first
+        uri.to_s
+    end
+
     #
     # @param    [String]    url
     #
     # @return   [Bool]  true if the url has already been visited, false otherwise
     #
     def visited?( url )
-        @visited.include?( url )
+        @visited.include?( remove_path_params( url ) )
     end
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
@@ -358,7 +364,7 @@ class Spider
     end
 
     def visited( url )
-        @visited << url
+        @visited << remove_path_params( url )
     end
 
 end

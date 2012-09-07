@@ -19,6 +19,15 @@ get '/something' do
     'Stuff'
 end
 
+get '/path_params' do
+    <<EOHTML
+    <a href='/something;test=stuff'>path_params</a>
+    <a href='/something;test=stuff1'>path_params</a>
+    <a href='/something;test=stuff2'>path_params</a>
+    <a href='/something;test=stuff3'>path_params</a>
+EOHTML
+end
+
 get '/foreign_domain' do
     <<EOHTML
     <a href='/goto_foreign_domain'>goto_foreign_domain</a>

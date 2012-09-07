@@ -210,6 +210,13 @@ describe Arachni::Spider do
                 end
             end
         end
+
+        it 'should ignore path parameters' do
+            @opts.url = @url + '/path_params'
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
+        end
     end
 
     describe '#on_each_page' do
