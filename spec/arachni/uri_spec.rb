@@ -6,6 +6,10 @@ describe Arachni::URI do
 
     before( :all ) do
         @urls = [
+            'http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich',
+            'http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment',
+            'http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich',
+            'http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment',
             'another/path',
             '/some/path',
             'http://test.com',

@@ -219,6 +219,7 @@ class URI
 
             url = html_decode( url )
 
+            dupped_url = url.dup
             has_path = true
 
             splits = url.split( ':' )
@@ -228,7 +229,7 @@ class URI
                 components[:scheme].downcase! if components[:scheme]
 
                 if url = splits.shift
-                    splits = url.split( '@', 2 )
+                    splits = url.split( '?' ).first.split( '@', 2 )
 
                     if splits.size > 1
                         components[:userinfo] = splits.first
@@ -272,9 +273,9 @@ class URI
                                 Addressable::URI::CharacterClasses::PATH )
                 end
 
-                if components[:query] = splits.shift
+                if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
                     components[:query] =
-                        encode( decode( components[:query] ),
+                        encode( decode( query ),
                                 Addressable::URI::CharacterClasses::QUERY )
                 end
             end
