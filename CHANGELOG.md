@@ -33,7 +33,7 @@
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
         - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.
 - Dispatcher
-    - Added modularity by way of support for handler components whose API can be exposed over RPC.
+    - Added modularity by way of support for handler components whose API can be exposed over RPC (under ```rpcd_handlers/```).
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
     - Scheduling - Expensive modules are now scheduled to be run after cheaper ones
         of similar type and only audit elements missed by the cheaper ones.

@@ -486,7 +486,9 @@ class Options
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
         @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['path_extractors']    = @dir['root'] + 'path_extractors/'
+        @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
+        @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
+
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]

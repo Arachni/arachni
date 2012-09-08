@@ -63,7 +63,7 @@ class Dispatcher
 
     end
 
-    HANDLER_LIB       = File.dirname( __FILE__ ) + '/dispatcher_handlers/'
+    HANDLER_LIB       = Options.dir['rpcd_handlers']
     HANDLER_NAMESPACE = Handler
 
     def initialize( opts )

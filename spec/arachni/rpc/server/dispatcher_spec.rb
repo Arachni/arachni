@@ -15,8 +15,8 @@ describe Arachni::RPC::Server::Dispatcher do
         @opts.nickname = 'blah'
         @opts.cost = 12
 
-        @handler_lib = Arachni::Options.dir['lib'] + 'rpc/server/dispatcher_handlers/'
-        FileUtils.cp( "#{fixtures_path}dispatcher_handlers/echo.rb", @handler_lib )
+        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb",
+                      Arachni::Options.dir['rpcd_handlers'] )
 
         fork_em {
             Arachni::RPC::Server::Dispatcher.new( @opts )
@@ -37,7 +37,7 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     after( :all ) do
-        FileUtils.rm( "#{@handler_lib}echo.rb" )
+        FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
         @dispatcher.stats['consumed_pids'].each { |p| pids << p }
     end
 

@@ -9,8 +9,8 @@ describe Arachni::RPC::Client::Dispatcher do
         @opts.rpc_port = random_port
         @opts.pool_size = 0
 
-        @handler_lib = Arachni::Options.dir['lib'] + 'rpc/server/dispatcher_handlers/'
-        FileUtils.cp( "#{fixtures_path}dispatcher_handlers/echo.rb", @handler_lib )
+        @handler_lib = Arachni::Options.dir['rpcd_handlers']
+        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb", @handler_lib )
 
         fork_em { Arachni::RPC::Server::Dispatcher.new( @opts ) }
         sleep 1
