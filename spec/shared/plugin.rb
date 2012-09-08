@@ -1,8 +1,17 @@
 shared_examples_for "plugin" do
     include_examples 'component'
 
-    before( :all ) { framework.plugins.load name }
-    before( :each ) { framework.plugins.reset }
+    before( :all ) do
+        FileUtils.cp "#{fixtures_path}modules/test2.rb", options.dir['modules']
+        framework.modules.load :test2
+
+        framework.plugins.load name
+    end
+    before( :each ) do
+        framework.plugins.reset
+    end
+
+    after( :all ) { FileUtils.rm "#{options.dir['modules']}test2.rb" }
 
     def results
     end
