@@ -41,18 +41,6 @@ describe Arachni::RPC::Server::Dispatcher do
         @dispatcher.stats['consumed_pids'].each { |p| pids << p }
     end
 
-    describe 'Handlers' do
-        it 'should have access to the Dispatcher and its options' do
-            @dispatcher.echo.jobs.should == @dispatcher.jobs
-            @dispatcher.echo.hash_opts.should ==
-                @opts.to_hash.merge( 'datastore' => { dispatcher_url: @url } )
-        end
-
-        it 'should support async methods' do
-            @dispatcher.echo.async.should be_true
-        end
-    end
-
     describe '#alive?' do
         it 'should return true' do
             @dispatcher.alive?.should == true
@@ -61,7 +49,7 @@ describe Arachni::RPC::Server::Dispatcher do
 
     describe '#handlers' do
         it 'should return an array of loaded handlers' do
-            @dispatcher.handlers.should == %w(echo)
+            @dispatcher.handlers.include?( 'echo' ).should be_true
         end
     end
 

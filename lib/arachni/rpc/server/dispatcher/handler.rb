@@ -33,7 +33,7 @@ class Server::Dispatcher::Handler
 
     # @return   [Server::Dispatcher::Node]  local node
     def node
-        dispatcher.node
+        dispatcher.instance_eval { @node }
     end
 
     #
@@ -72,7 +72,7 @@ class Server::Dispatcher::Handler
 
     # @return   [Array<Hash>]   all running instances
     def instances
-        jobs.select { |j| !j['proc'].empty? }
+        dispatcher.jobs.select { |j| !j['proc'].empty? }
     end
 
     #
@@ -83,7 +83,7 @@ class Server::Dispatcher::Handler
     # @return   [Client::Dispatcher]
     #
     def connect_to_dispatcher( url )
-        Client::Dispatcher.new( @opts, url )
+        Client::Dispatcher.new( opts, url )
     end
 
     #
@@ -104,12 +104,12 @@ class Server::Dispatcher::Handler
         if args.size == 2
             url, token = *args
         elsif args.first.is_a? Hash
-            opts    = args.first
-            url     = opts['url'] || opts[:url]
-            token   = opts['token'] || opts[:token]
+            options = args.first
+            url     = options['url'] || options[:url]
+            token   = options['token'] || options[:token]
         end
 
-        Client::Instance.new( @opts, url, token )
+        Client::Instance.new( opts, url, token )
     end
 
 end

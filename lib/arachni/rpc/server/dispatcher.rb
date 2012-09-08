@@ -19,7 +19,7 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'rpc/client'
 require Options.dir['lib'] + 'rpc/server/base'
 require Options.dir['lib'] + 'rpc/server/instance'
 require Options.dir['lib'] + 'rpc/server/output'
