@@ -45,23 +45,13 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Dispatcher
-    require Options.dir['lib'] + 'rpc/server/node'
+    require Options.dir['lib'] + 'rpc/server/dispatcher/node'
+    require Options.dir['lib'] + 'rpc/server/dispatcher/handler'
 
     include Utilities
     include UI::Output
     include ::Sys
 
-    class Handler
-
-        attr_reader :opts
-        attr_reader :dispatcher
-
-        def initialize( opts, dispatcher )
-            @opts       = opts
-            @dispatcher = dispatcher
-        end
-
-    end
 
     HANDLER_LIB       = Options.dir['rpcd_handlers']
     HANDLER_NAMESPACE = Handler

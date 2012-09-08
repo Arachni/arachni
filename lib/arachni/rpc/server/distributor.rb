@@ -72,7 +72,7 @@ module Distributor
     #
     # @param    [Array]    arr
     #
-    # @return   <::EM::Iterator>  iterator for the provided array
+    # @return   [::EM::Iterator]  iterator for the provided array
     #
     def iterator_for( arr )
         ::EM::Iterator.new( arr, MAX_CONCURRENCY )

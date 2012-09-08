@@ -1,4 +1,4 @@
-require_relative '../../../spec_helper'
+require_relative '../../../../spec_helper'
 
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
