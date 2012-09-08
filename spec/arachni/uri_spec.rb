@@ -13,6 +13,7 @@ describe Arachni::URI do
             'another/path',
             '/some/path',
             'http://test.com',
+            'http://test.com/?stuff=test&ss=blah',
             'style.css',
             'http://test.com/path/here',
             'http://user@test.com/path/here',

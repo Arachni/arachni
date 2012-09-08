@@ -238,8 +238,6 @@ class URI
 
                     if !splits.empty?
                         splits = splits.last.split( '/', 2 )
-                        has_path = false if !splits[1] || splits[1].empty?
-
                         url = splits.last
 
                         splits = splits.first.split( ':', 2 )
@@ -247,6 +245,7 @@ class URI
                             host = splits.first
                             components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
                             components[:port] = nil if components[:port] == 80
+                            url.gsub!( ':' + components[:port].to_s, '' )
                         else
                             host = splits.last
                         end
