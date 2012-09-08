@@ -15,6 +15,12 @@
 =end
 
 module Arachni::RPC
+
+#
+# Base class and namespace for all RPCD/Dispatcher handlers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Server::Dispatcher::Handler
 
     attr_reader :opts
