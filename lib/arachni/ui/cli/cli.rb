@@ -696,7 +696,7 @@ class CLI
     --load-profile=<filepath>   Load a run profile from <filepath>.
                                   (Can be used multiple times.)
                                   (You can complement it with more options, except for:
-                                      * --mods
+                                      * --modules
                                       * --redundant)
 
     --show-profile              Will output the running profile as CLI arguments.
@@ -796,7 +796,7 @@ class CLI
                                       etc.
 
                                    You can exclude modules by prefixing their name with a minus sign:
-                                      --mods=*,-backup_files,-xss
+                                      --modules=*,-backup_files,-xss
                                    The above will load all modules except for the 'backup_files' and 'xss' modules.
 
                                    Or mix and match:
