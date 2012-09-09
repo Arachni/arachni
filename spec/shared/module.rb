@@ -43,6 +43,7 @@ shared_examples_for "module" do
 
         http.cookie_jar.clear
 
+        framework.reset_spider
         framework.opts.dont_audit :links, :forms, :cookies, :headers
     end
 
@@ -72,7 +73,12 @@ shared_examples_for "module" do
         context "when the target is" do
             targets.each do |target|
                 context target do
-                    before( :all ) { options.url = url + target.downcase if target.to_s.downcase != 'generic' }
+                    before( :all ) do
+                        if target.to_s.downcase != 'generic'
+                            options.url = url + target.downcase
+                            options.include = options.url
+                        end
+                    end
 
                     elements.each do |type|
                         it "should log vulnerable #{type}s" do
