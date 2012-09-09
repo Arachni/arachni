@@ -16,10 +16,10 @@ describe name_from_filename do
 - :safe: __URL__
 - :safe: __URL__safe
 - :unsafe: __URL__vuln
-:total: 3
-:safe: 2
+:total: 4
+:safe: 3
 :unsafe: 1
-:issue_percentage: 33
+:issue_percentage: 25
 YAML
     end
 
