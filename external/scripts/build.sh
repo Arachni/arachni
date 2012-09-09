@@ -390,12 +390,12 @@ get_ruby_environment() {
     cd "$env_root/usr/lib/ruby/1.9.1/"
     arch_dir=$(echo x86_64*)
     if [[ -d "$arch_dir" ]]; then
-        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir"
+        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir:\$MY_RUBY_HOME/site_ruby/1.9.1/$arch_dir"
     fi
 
     arch_dir=$(echo i386*)
     if [[ -d "$arch_dir" ]]; then
-        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir"
+        platform_lib=":\$MY_RUBY_HOME/1.9.1/$arch_dir:\$MY_RUBY_HOME/site_ruby/1.9.1/$arch_dir"
     fi
 
     cat<<EOF
@@ -587,7 +587,11 @@ cp `dirname $scriptdir`/README.tpl $root/README
 cp `dirname $scriptdir`/LICENSE.tpl $root/LICENSE
 
 echo "  * Adjusting shebangs"
-find $root/ -type f -exec sed -i 's/#!\/.*\/ruby/#!\/usr\/bin\/env ruby/g' {} \;
+if [[ `uname` == "Darwin" ]]; then
+    find $root/ -type f -exec sed -i '' 's/#!\/.*\/ruby/#!\/usr\/bin\/env ruby/g' {} \;
+else
+    find $root/ -type f -exec sed -i 's/#!\/.*\/ruby/#!\/usr\/bin\/env ruby/g' {} \;
+fi
 
 echo
 cat<<EOF
