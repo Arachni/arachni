@@ -259,7 +259,7 @@ class Spider
 
     def remove_path_params( url )
         uri = URI( url ).dup
-        uri.path = uri.path.split( ';' ).first
+        uri.path = uri.path.split( ';' ).first.to_s
         uri.to_s
     end
 
@@ -323,15 +323,20 @@ class Spider
         ::IO::select( nil, nil, nil, 1 ) while( paused? )
     end
 
+    def hit_redirect_limit?
+        @opts.redirect_limit > 0 && @opts.redirect_limit >= @followed_redirects
+    end
+
     def visit( url, opts = {}, &block )
         return if skip?( url ) || redundant?( url ) || auto_redundant?( url )
         visited( url )
 
+        @followed_redirects ||= 0
         @pending_requests += 1
 
         opts = {
             timeout:         nil,
-            follow_location: true,
+            follow_location: false,
             update_cookies:  true
         }.merge( opts )
 
@@ -340,10 +345,12 @@ class Spider
 
             if res.redirection?
                 @redirects << res.request.url
-                if skip?( effective_url )
+                if hit_redirect_limit? || skip?( res.location )
                     decrease_pending
                     next
                 end
+                @followed_redirects += 1
+                push res.location
             end
 
             print_status( "[HTTP: #{res.code}] " + effective_url )

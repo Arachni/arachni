@@ -184,6 +184,7 @@ describe Arachni::Spider do
         end
         it 'should follow stacked redirects' do
             @opts.url = @url + '/stacked_redirect'
+            @opts.redirect_limit = -1
 
             spider = Arachni::Spider.new
             spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
