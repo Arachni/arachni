@@ -586,6 +586,9 @@ rm -rf $root/gems/doc/*
 cp `dirname $scriptdir`/README.tpl $root/README
 cp `dirname $scriptdir`/LICENSE.tpl $root/LICENSE
 
+echo "  * Adjusting shebangs"
+find $root/ -type f -exec sed -i 's/#!\/.*\/ruby/#!\/usr\/bin\/env ruby/g' {} \;
+
 echo
 cat<<EOF
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
