@@ -107,7 +107,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 Options::String.new( 'check', [true, 'A pattern which will be used to verify a successful login.
                     For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ],
-            order:       0 # run before any other plugin
+            priority:    0 # run before any other plugin
         }
     end
 

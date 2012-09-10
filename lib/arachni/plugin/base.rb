@@ -141,13 +141,13 @@ class Base
                 # Component::Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
                 # Component::Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
             ],
-            # specify an execution order group
+            # specify an execution priority group
             # plug-ins will be separated in groups based on this number
-            # and be run in the specified order
+            # and lowest will be first
             #
             # if this option is omitted the plug-in will be run last
             #
-            order:       0
+            priority:    0
         }
     end
 
