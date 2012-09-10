@@ -567,6 +567,7 @@ rm -rf "$root/logs"
 
 echo "  * Removing sources"
 rm -rf $src_path
+rm -rf $root/usr/include/*
 
 echo "  * Removing downloaded archives"
 rm -rf $archives_path
