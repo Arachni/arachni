@@ -445,10 +445,6 @@ get_wrapper_template() {
     get_wrapper_environment "ruby $1 \"\$@\""
 }
 
-get_update_script() {
-    get_wrapper_environment 'gem update arachni'
-}
-
 get_shell_script() {
     get_wrapper_environment '; export PATH="$env_root/bin:$PATH"; export PS1="arachni-shell\$ "; bash --noprofile --norc'
 }
@@ -519,10 +515,6 @@ install_bin_wrappers() {
     chmod +x "$root/bin/arachni_shell"
     echo "  * $root/bin/arachni_shell"
 
-    get_update_script > "$root/bin/arachni_update"
-    chmod +x "$root/bin/arachni_update"
-    echo "  * $root/bin/arachni_update"
-
     get_test_script > "$root/bin/arachni_test"
     chmod +x "$root/bin/arachni_test"
     echo "  * $root/bin/arachni_test"
@@ -582,6 +574,9 @@ rm -rf $archives_path
 echo "  * Removing docs"
 rm -rf $root/usr/share/*
 rm -rf $root/gems/doc/*
+
+echo "  * Removing gem cache"
+rm -rf $root/gems/cache/*
 
 cp `dirname $scriptdir`/README.tpl $root/README
 cp `dirname $scriptdir`/LICENSE.tpl $root/LICENSE
