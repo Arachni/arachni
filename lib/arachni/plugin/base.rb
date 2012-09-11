@@ -150,9 +150,9 @@ class Base
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
             options:     [
-                #                                   option name        required?       description                        default
-                # Component::Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
-                # Component::Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
+                #                       option name        required?       description                        default
+                # Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
+                # Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
             ],
             # specify an execution priority group
             # plug-ins will be separated in groups based on this number
