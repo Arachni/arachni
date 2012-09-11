@@ -23,6 +23,8 @@
 #
 class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
+    is_distributable
+
     def prepare
         @cookies = []
     end
@@ -51,10 +53,6 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
     def clean_up
         wait_while_framework_running
         register_results( @cookies )
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

@@ -102,11 +102,24 @@ class Base
     # across instances this method should return 'false'.
     #
     def self.distributable?
-        false
+        @distributable ||= false
+    end
+
+    # Should the plug-in be distributed
+    # across all instances or only run by the master
+    # prior to any distributed operations?
+    def self.distributable
+        @distributable = true
+    end
+    # Should the plug-in be distributed
+    # across all instances or only run by the master
+    # prior to any distributed operations?
+    def self.is_distributable
+        distributable
     end
 
     #
-    # REQUIRED IF self.distributable? RETURNS 'TRUE'
+    # REQUIRED IF self.distributable? returns 'true' and the plugins stores results.
     #
     # Only used when in Grid mode.
     #

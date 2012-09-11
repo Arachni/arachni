@@ -25,6 +25,8 @@
 #
 class Arachni::Plugins::Profiler < Arachni::Plugin::Base
 
+    is_distributable
+
     #
     # Assumes the identity of an Auditor.
     #
@@ -156,10 +158,6 @@ class Arachni::Plugins::Profiler < Arachni::Plugin::Base
         end
 
         @inputs << result
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

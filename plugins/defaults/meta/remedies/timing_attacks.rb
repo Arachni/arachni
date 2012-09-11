@@ -24,6 +24,8 @@
 #
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
+    is_distributable
+
     # look for issue by tag name
     TAG = 'timing'
 
@@ -82,10 +84,6 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         end.compact
 
         register_results( inconclusive ) if !inconclusive.empty?
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

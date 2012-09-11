@@ -21,6 +21,8 @@
 #
 class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
 
+    is_distributable
+
     def prepare
         wait_while_framework_running
     end
@@ -53,10 +55,6 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
             unsafe:           issue_cnt,
             issue_percentage: ((issue_cnt.to_f / map.size.to_f) * 100).round
         )
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

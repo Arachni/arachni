@@ -23,6 +23,8 @@
 #
 class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
 
+    is_distributable
+
     # Will decrease concurrency if avg response times are bellow this threshold -- in ms.
     THRESHOLD = 0.9
 
@@ -59,10 +61,6 @@ class Arachni::Plugins::AutoThrottle < Arachni::Plugin::Base
                 http.max_concurrency = http.max_concurrency + STEP_UP
             end
         }
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.info
