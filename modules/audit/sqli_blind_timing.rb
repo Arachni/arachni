@@ -27,6 +27,11 @@
 #
 class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
+    # We add ourselves to the list too.
+    # We don't want more than one timing-attack variation per issue,
+    # it's too expensive.
+    prefer :sqli, :sqli_blind_rdiff
+
     def self.sleep_codes
         @sleep_codes ||= read_file( 'payloads.txt' )
     end
@@ -37,13 +42,6 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
             timeout:         4000,
             timeout_divider: 1000
         )
-    end
-
-    def self.preferred
-        # We add ourselves to the list too.
-        # We don't want more than one timing-attack variation per issue,
-        # it's too expensive.
-        %w(sqli sqli_blind_rdiff)
     end
 
     def self.info

@@ -126,25 +126,6 @@ class Base
     end
 
     #
-    # OPTIONAL
-    #
-    # Schedules self to be run *after* the specified modules and prevents
-    # auditing elements that have been previously logged by any of the modules
-    # returned by this method.
-    #
-    # @return   [Array]     module names
-    #
-    # @abstract
-    #
-    def self.preferred
-        # [ 'sqli', 'sqli_blind_rdiff' ]
-        []
-    end
-    def preferred
-        self.class.preferred
-    end
-
-    #
     # REQUIRED
     #
     # Provides information about the module.
@@ -194,6 +175,29 @@ class Base
             }
         }
     end
+
+    #
+    # Schedules self to be run *after* the specified modules and prevents
+    # auditing elements that have been previously logged by any of these modules.
+    #
+    # @return   [Array]     module names
+    #
+    def self.prefer( *args )
+        @preferred = args.flatten.compact
+    end
+
+    #
+    # @return   [Array]     names of modules which should be preferred over this one
+    #
+    # @see #prefer
+    #
+    def self.preferred
+        @preferred ||= []
+    end
+    def preferred
+        self.class.preferred
+    end
+
 
 end
 end

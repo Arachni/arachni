@@ -16,9 +16,7 @@ limitations under the License.
 
 class Arachni::Modules::Test3 < Arachni::Module::Base
 
-    def self.preferred
-        %w(test2)
-    end
+    prefer :test2
 
     def self.info
         {
