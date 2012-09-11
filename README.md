@@ -91,9 +91,8 @@ This way attack/input vectors that would otherwise be undetectable by non-humans
 are seamlessly handled by Arachni.
 
 Moreover, Arachni yields great performance due to its asynchronous HTTP model
-(courtesy of [Typhoeus](https://github.com/pauldix/typhoeus)) -- especially when
-combined with a High Performance Grid setup which allows you to combine the
-resources of multiple nodes for lightning fast scans.
+ -- especially when combined with a High Performance Grid setup which allows you
+to combine the resources of multiple nodes for lightning fast scans.
 
 Thus, you'll only be limited by the responsiveness of the server under audit.
 
