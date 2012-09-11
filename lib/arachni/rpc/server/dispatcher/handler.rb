@@ -19,6 +19,28 @@ module Arachni::RPC
 #
 # Base class and namespace for all RPCD/Dispatcher handlers.
 #
+# == RPC accessibility
+#
+# Only PUBLIC methods YOU have defined will be accessible over RPC.
+#
+# == Blocking operations
+#
+# Please try to avoid blocking operations as they will block the main Reactor loop.
+#
+# However, if you really need to perform such operations, you can update the
+# relevant methods to expect a block and then pass the desired return value to that block
+# instead of returning it the usual way.
+#
+# This will result in the method's payload to be deferred into a Thread of its own.
+#
+# In addition, you can use the {#defer} and {#run_asap} methods is you need more
+# control over what gets deferred and general scheduling.
+#
+# == Asynchronous operations
+#
+# Methods which perform async operations should expect a block and pass their
+# results to that block instead of returning a value.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Server::Dispatcher::Handler
