@@ -72,6 +72,7 @@
     - All modules under <tt>/extras</tt> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
     - Improved detection of custom 404 pages.
+    - Now accepts a global timeout (```--http-timeout```) in milliseconds.
     - Updated ```#add_on_queue``` hook (called by ```#queue```) which allows HTTP requests to be intercepted and modified before being fired.
     - Fixed burst average requests/second calculation.
     - Implemented a Cookiejar. (**New**)

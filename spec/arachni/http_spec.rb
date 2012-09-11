@@ -48,6 +48,34 @@ describe Arachni::HTTP do
         end
     end
 
+    describe 'Arachni::Options#http_timeout' do
+        context Integer do
+            it 'should use it as an HTTP timeout' do
+                @opts.http_timeout = 10000000000
+                timed_out = false
+                @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                @http.run
+                timed_out.should be_false
+
+                @opts.http_timeout = 1
+                @http.reset
+                timed_out = false
+                @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                @http.run
+                timed_out.should be_true
+            end
+        end
+        context 'nil' do
+            it 'should use a default timeout setting' do
+                timed_out = false
+                @http.request( @url + '/sleep' ) { |res| timed_out = res.timed_out? }
+                @http.run
+                timed_out.should be_false
+            end
+        end
+    end
+
+
     describe 'Arachni::Options#url' do
         context 'when the target URL includes auth credentials' do
             it 'should use them globally' do

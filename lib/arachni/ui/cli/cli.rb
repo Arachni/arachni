@@ -664,6 +664,8 @@ class CLI
                                   (Be careful not to kill your server.)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
+    --http-timeout=<integer>    HTTP request timeout in milliseconds.
+
     --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
 
     --cookie-string='<name>=<value>; <name2>=<value2>'

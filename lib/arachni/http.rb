@@ -150,7 +150,7 @@ class HTTP
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
-            timeout:                       50000
+            timeout:                       opts.http_timeout || 50000
         }.merge( proxy_opts )
 
         @request_count  = 0

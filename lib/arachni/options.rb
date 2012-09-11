@@ -469,6 +469,9 @@ class Options
     attr_accessor :login_check_url
     attr_accessor :login_check_pattern
 
+    # @return   [Integer]   HTTP request timeout in milliseconds
+    attr_accessor :http_timeout
+
     def initialize
         reset
     end
@@ -782,6 +785,7 @@ class Options
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
@@ -899,6 +903,9 @@ class Options
 
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
+
+                    when '--http-timeout'
+                        @http_timeout = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true
