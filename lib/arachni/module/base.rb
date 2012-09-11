@@ -153,13 +153,18 @@ class Base
             #     Element::HEADER
             # ],
             elements:    [],
-            author:      'zapotek',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
-            references:  {},
+            references:  {
+                'Title' => 'http://ref.url'
+            },
             targets:     %W(Generic),
             issue:       {
-                 description:    %q{},
-                 cwe:            '',
+                name:           %q{Serious issue},
+                description:    %q{This issue is a serious issue and you
+                    should consider it seriously},
+                # CWE ID number
+                cwe:            '',
                 #
                 # Severity can be:
                 #
@@ -168,10 +173,10 @@ class Base
                 # Severity::LOW
                 # Severity::INFORMATIONAL
                 #
-                severity:        '',
-                cvssv2:          '',
-                remedy_guidance: '',
-                remedy_code:     '',
+                severity:        Severity::HIGH,
+                cvssv2:          '', # CVSSV2 score
+                remedy_guidance: %q{Paint it blue and throw it in the sea.},
+                remedy_code:     %q{sudo rm -rf /}
             }
         }
     end
