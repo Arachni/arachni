@@ -2,7 +2,7 @@
 
 ## Source
 
-The SVG files under the ```source``` directory are Inkscape[1] SVG.
+The SVG files under the ```source/``` directory are Inkscape[1] SVG.
 
 ## Compiled
 
