@@ -61,14 +61,9 @@ task :docs do
     sh "inkscape gfx/icon.svg --export-png=#{outdir}/favicon.ico"
     sh "inkscape gfx/banner.svg --export-png=#{outdir}/banner.png"
 
-    sh "yardoc --verbose --title \
-      \"Arachni - Web Application Security Scanner Framework\" \
-      external/* path_extractors/* plugins/* reports/* modules/* metamodules/* lib/* -o #{outdir} \
-      - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
-      CONTRIBUTORS.md ACKNOWLEDGMENTS.md"
+    sh "yardoc -o #{outdir}"
 
-
-    sh "rm -rf .yard*"
+    sh "rm -rf .yardoc"
 end
 
 

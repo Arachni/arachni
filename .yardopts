@@ -1,0 +1,15 @@
+--title "Arachni - Web Application Security Scanner Framework"
+path_extractors/**/*.rb
+plugins/**/*.rb
+reports/**/*.rb
+modules/**/*.rb
+rpcd_handlers/**/*.rb
+lib/**/*.rb
+-
+EXPLOITATION.md
+HACKING.md
+CHANGELOG.md
+LICENSE.md
+AUTHORS.md
+CONTRIBUTORS.md
+ACKNOWLEDGMENTS.md
