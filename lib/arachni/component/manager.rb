@@ -267,6 +267,11 @@ class Manager < Hash
         self[name] = load_from_path( name_to_path( name ) )
     end
 
+    def include?( k )
+        super( k.to_s )
+    end
+    alias :loaded? :include?
+
     # Unloads all loaded components.
     def clear
         keys.each { |l| delete( l ) }

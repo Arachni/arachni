@@ -311,7 +311,7 @@ describe Arachni::Component::Manager do
         end
     end
 
-    describe :[] do
+    describe '#[]' do
         context 'when passed a' do
             context String do
                 it 'should load and return the component' do
@@ -325,6 +325,47 @@ describe Arachni::Component::Manager do
                     @components.loaded.should be_empty
                     @components[:wait].name.should == 'Arachni::Plugins::Wait'
                     @components.loaded.should == %w(wait)
+                end
+            end
+        end
+    end
+
+    describe '#include?' do
+        context 'when passed a' do
+            context String do
+                context 'when the component has been loaded' do
+                    it 'should return true' do
+                        @components.loaded.should be_empty
+                        @components['wait'].name.should == 'Arachni::Plugins::Wait'
+                        @components.loaded.should == %w(wait)
+                        @components.loaded?( 'wait' ).should be_true
+                        @components.include?( 'wait' ).should be_true
+                    end
+                end
+                context 'when the component has not been loaded' do
+                    it 'should return false' do
+                        @components.loaded.should be_empty
+                        @components.loaded?( 'wait' ).should be_false
+                        @components.include?( 'wait' ).should be_false
+                    end
+                end
+            end
+            context Symbol do
+                context 'when the component has been loaded' do
+                    it 'should return true' do
+                        @components.loaded.should be_empty
+                        @components[:wait].name.should == 'Arachni::Plugins::Wait'
+                        @components.loaded.should == %w(wait)
+                        @components.loaded?( :wait ).should be_true
+                        @components.include?( :wait ).should be_true
+                    end
+                end
+                context 'when the component has not been loaded' do
+                    it 'should return false' do
+                        @components.loaded.should be_empty
+                        @components.loaded?( :wait ).should be_false
+                        @components.include?( :wait ).should be_false
+                    end
                 end
             end
         end
