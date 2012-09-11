@@ -46,6 +46,20 @@ class Handler::Echo < Handler
         connect_to_instance( *args ).framework.busy?{ |b| block.call !!b }
     end
 
+    def test_defer( *args, &block )
+        defer do
+            block.call args
+        end
+    end
+
+    def test_defer_two_args( *args, &block )
+        defer( proc { args }, proc { |r| block.call r } )
+    end
+
+    def test_run_asap( *args, &block )
+        run_asap { block.call args }
+    end
+
     def echo( *args )
         args
     end

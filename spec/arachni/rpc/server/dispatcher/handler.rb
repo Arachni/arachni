@@ -78,6 +78,23 @@ describe Arachni::RPC::Server::Dispatcher::Handler do
         end
     end
 
+    describe '#defer' do
+        it 'should defer the given block' do
+            args = [1, 'stuff']
+            @dispatcher.echo.test_defer( *args ).should == args
+
+            @dispatcher.echo.test_defer_two_args( *args ).should == args
+        end
+    end
+
+    describe '#run_asap' do
+        it 'should run the given block as soon as possible' do
+            args = [1, 'stuff']
+            @dispatcher.echo.test_run_asap( *args ).should == args
+        end
+    end
+
+
     describe '#iterator_for' do
         it 'should provide an asynchronous iterator' do
             @dispatcher.echo.test_iterator_for.should be_true

@@ -62,6 +62,32 @@ class Server::Dispatcher::Handler
     end
 
     #
+    # Defers a blocking operation in order to avoid blocking the main Reactor loop.
+    #
+    # The operation will be run in its own Thread - DO NOT block forever.
+    #
+    # Accepts either 2 parameters (an +operation+ and a +callback+) or an operation
+    # as a block.
+    #
+    # @param    [Proc]  operation   operation to defer
+    # @param    [Proc]  callback    block to call with the results of the operation
+    #
+    # @param    [Block]  block      operation to defer
+    #
+    def defer( operation = nil, callback = nil, &block )
+        ::EM.defer( *[operation, callback].compact, &block )
+    end
+
+    #
+    # Runs a block as soon as possible in the Reactor loop.
+    #
+    # @param    [Block] block
+    #
+    def run_asap( &block )
+        ::EM.next_tick( &block )
+    end
+
+    #
     # @param    [Array]    arr
     #
     # @return   [::EM::Iterator]  iterator for the provided array
