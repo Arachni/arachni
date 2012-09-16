@@ -48,30 +48,8 @@ class Base
     # @param  [Arachni::Framework]  framework
     #
     def initialize( page, framework = nil )
-        @page  = page
+        @page       = http.page = page
         @framework  = framework
-
-        http.trainer.page = page
-
-        # update the cookies
-        http.update_cookies( @page.cookiejar ) if !@page.cookiejar.empty?
-
-        #
-        # This is slightly tricky...
-        #
-        # Each loaded module is instantiated for each page,
-        # however modules share the elements of each page and access them
-        # via the ElementsDB.
-        #
-        # Since the ElementDB is dynamically updated by the Trainer
-        # during the audit, is should only be initialized *once*
-        # for each page and not overwritten every single time a module is instantiated.
-        #
-        @@__last_url ||= ''
-        if @@__last_url != page.url
-            http.trainer.init( page )
-            @@__last_url = page.url
-        end
     end
 
     #

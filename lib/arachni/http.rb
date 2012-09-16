@@ -167,6 +167,19 @@ class HTTP
         self
     end
 
+    #
+    # Sets the current working page, passes it to the {#trainer} and updates the
+    # {#cookie_jar} using the page's cookiejar.
+    #
+    # @param    [Arachni::Page]    page
+    #
+    def page=( page )
+        trainer.page = page
+        # update the cookies
+        update_cookies( page.cookiejar ) if !page.cookiejar.empty?
+        page
+    end
+
     # Runs all queued requests
     def run
         exception_jail {

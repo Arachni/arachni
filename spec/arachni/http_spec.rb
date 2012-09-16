@@ -212,6 +212,21 @@ describe Arachni::HTTP do
         end
     end
 
+    describe '#page=' do
+        it 'should update the trainer and the cookiejar using the given page' do
+            cookies = []
+            cookies << Arachni::Element::Cookie.new( 'http://test.com',
+                                                     'key1' => 'val1' )
+            cookies << Arachni::Element::Cookie.new( @url,
+                                                     'key2' => 'val2' )
+
+            page = Arachni::Page.new( cookiejar: cookies )
+            @http.page = page
+            @http.cookies.should == cookies
+            @http.trainer.page.should == page
+        end
+    end
+
     describe '#headers' do
         it 'should provide access to default headers' do
             headers = @http.headers

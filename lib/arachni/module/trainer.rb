@@ -44,23 +44,15 @@ class Trainer
     end
 
     #
-    # Inits the element DB and sets the current working page.
-    #
-    # @param    [Arachni::Page]    page
-    #
-    def init( page )
-        init_db_from_page( page )
-        self.page = page
-    end
-
-    #
-    # Sets the current working page.
+    # Sets the current working page and inits the element DB.
     #
     # @param    [Arachni::Page]    page
     #
     def page=( page )
+        init_db_from_page( page )
         @page = page.deep_clone
     end
+    alias :init :page=
 
     #
     # Flushes the page buffer
