@@ -275,18 +275,21 @@ module Utilities
     def exception_jail( raise_exception = true, &block )
         block.call
     rescue Exception => e
-        print_error e.inspect
-        print_error_backtrace e
-        print_error
-        print_error 'Parent:'
-        print_error  self.class.to_s
-        print_error
-        print_error 'Block:'
-        print_error block.to_s
-        print_error
-        print_error 'Caller:'
-        ::Kernel.caller.each { |l| print_error l }
-        print_error '-' * 80
+        begin
+            print_error e.inspect
+            print_error_backtrace e
+            print_error
+            print_error 'Parent:'
+            print_error  self.class.to_s
+            print_error
+            print_error 'Block:'
+            print_error block.to_s
+            print_error
+            print_error 'Caller:'
+            ::Kernel.caller.each { |l| print_error l }
+            print_error '-' * 80
+        rescue
+        end
         raise e if raise_exception
     end
 
