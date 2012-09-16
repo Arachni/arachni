@@ -434,6 +434,16 @@ class HTTP
         request( url, opts, &block )
     end
 
+    #
+    # Executes a +block+ under a sandbox.
+    #
+    # Cookies or new callbacks set as a result of the block won't affect the
+    # HTTP singleton.
+    #
+    # @param    [Block] block
+    #
+    # @return   [Object]    return value of the block
+    #
     def sandbox( &block )
         h = {}
         instance_variables.each do |iv|
