@@ -193,7 +193,8 @@ class HTTP
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
-        }
+            true
+        } rescue nil
     end
 
     # Aborts the running requests on a best effort basis
