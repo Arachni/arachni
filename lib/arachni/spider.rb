@@ -227,15 +227,15 @@ class Spider
     end
 
     def call_on_each_page_blocks( obj )
-        @on_each_page_blocks.each { |b| exception_jail { b.call( obj ) } }
+        @on_each_page_blocks.each { |b| exception_jail( false ) { b.call( obj ) } }
     end
 
     def call_on_each_response_blocks( obj )
-        @on_each_response_blocks.each { |b| exception_jail { b.call( obj ) } }
+        @on_each_response_blocks.each { |b| exception_jail( false ) { b.call( obj ) } }
     end
 
     def call_on_complete_blocks
-        @on_complete_blocks.each { |b| exception_jail { b.call } }
+        @on_complete_blocks.each { |b| exception_jail( false ) { b.call } }
     end
 
     # @return   [Arachni::HTTP]   HTTP interface
