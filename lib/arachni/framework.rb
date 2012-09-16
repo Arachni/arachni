@@ -192,7 +192,7 @@ class Framework
         @status = :done
 
         # run reports
-        exception_jail { @reports.run( audit_store ) } if !@reports.empty?
+        @reports.run( audit_store ) if !@reports.empty?
 
         true
     end
@@ -656,16 +656,14 @@ class Framework
         # responses of the spider to consume them here because there's no way
         # of knowing how big the site will be.
         #
-        while !@url_queue.empty? && url = @url_queue.pop
-            Page.from_url( url, precision: 2 ) do |page|
-                # audit the page
-                exception_jail{ run_mods( page ) }
-
-                # don't let the page queue build up,
-                # consume it as soon as possible because the pages are stored
-                # in the FS and thus take up precious system resources
-                audit_page_queue
+        while !@url_queue.empty?
+            Page.from_url( @url_queue.pop, precision: 2 ) do |page|
+                push_to_page_queue( page )
             end
+            #http.run
+            harvest_http_responses
+
+            audit_page_queue
 
             harvest_http_responses
         end
@@ -678,9 +676,8 @@ class Framework
     #
     def audit_page_queue
         # this will run until no new elements appear for the given page
-        while !@page_queue.empty? && page = @page_queue.pop
-            # audit the page
-            exception_jail{ run_mods( page ) }
+        while !@page_queue.empty?
+            run_mods( @page_queue.pop )
             harvest_http_responses
         end
     end
