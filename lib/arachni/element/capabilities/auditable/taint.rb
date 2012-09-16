@@ -72,16 +72,12 @@ module Auditable::Taint
     private
 
     #
-    # Tries to identify an issue through regexp pattern matching.
+    # Tries to identify an issue through pattern matching.
     #
-    # If a issue is found a message will be printed and a hash
-    # will be returned describing the conditions under which
-    # the issue was discovered.
+    # If a issue is found a message will be printed and the issue will be logged.
     #
     # @param  [Typhoeus::Response]  res
     # @param  [Hash]  opts
-    #
-    # @return  [Hash]
     #
     def get_matches( res, opts )
         [opts[:regexp]].flatten.compact.each { |regexp| match_regexp_and_log( regexp, res, opts ) }
@@ -92,7 +88,7 @@ module Auditable::Taint
         opts[:verification] = false
 
         # an annoying encoding exception may be thrown by scan()
-        # the sob started occuring again....
+        # the sob started occurring again....
         begin
             opts[:verification] = true if @auditor.page.body.substring?( substring )
         rescue
