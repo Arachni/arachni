@@ -273,17 +273,21 @@ module Utilities
     # @param    [Block]     block   to call
     #
     def exception_jail( raise_exception = true, &block )
-        begin
-            block.call
-        rescue Exception => e
-            begin
-                err_name = !e.to_s.empty? ? e.to_s : e.class.name
-                print_error( err_name )
-                print_error_backtrace( e )
-            rescue
-            end
-            raise e if raise_exception
-        end
+        block.call
+    rescue Exception => e
+        print_error e.inspect
+        print_error_backtrace e
+        print_error
+        print_error 'Parent:'
+        print_error  self.class.to_s
+        print_error
+        print_error 'Block:'
+        print_error block.to_s
+        print_error
+        print_error 'Caller:'
+        ::Kernel.caller.each { |l| print_error l }
+        print_error '-' * 80
+        raise e if raise_exception
     end
 
     def remove_constants( mod, skip = [], children_only = true )
