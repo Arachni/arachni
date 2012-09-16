@@ -76,6 +76,8 @@ task :gfx do
     end
 
     cp "#{outdir}/icon.png", "#{outdir}/favicon.ico"
+
+    sh 'rm -f ~/.fonts/Beneath_the_Surface.ttf'
 end
 
 #
