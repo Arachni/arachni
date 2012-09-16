@@ -167,12 +167,7 @@ class HTTP
         self
     end
 
-    #
-    # Runs Hydra (all the asynchronous queued HTTP requests)
-    #
-    # Should only be called by the framework
-    # after all module threads have been joined!
-    #
+    # Runs all queued requests
     def run
         exception_jail {
             @burst_runtime = nil
@@ -195,7 +190,8 @@ class HTTP
 
     # @return   [Integer]   amount of time (in seconds) that the current burst has been running
     def burst_runtime
-        @burst_runtime.to_i > 0 ? @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
+        @burst_runtime.to_i > 0 ?
+            @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
     end
 
     # @return   [Integer]   average response time for the running requests (i.e. the current burst)
@@ -280,7 +276,7 @@ class HTTP
         #
         # how cool is Ruby? Seriously....
         #
-        exception_jail {
+        exception_jail( false ) {
 
             if !opts[:no_cookiejar]
                 cookies = begin
@@ -581,21 +577,23 @@ class HTTP
     private
 
     def hydra_run
+        @running = true
         @burst_runtime ||= 0
         @burst_runtime_start = Time.now
         @hydra.run
-        @burst_runtime += Time.now - @burst_runtime_start
         @queue_size = 0
+        @running = false
+        @burst_runtime += Time.now - @burst_runtime_start
     end
 
     #
-    # Queues a Tyhpoeus::Request and calls the following callbacks:
+    # Queues a {Typhoeus::Request} and calls the following callbacks:
     # * on_queue() -- intersects a queued request and gets passed the original
     #   and the async method. If the block returns one or more request
     #   objects these will be queued instead of the original request.
     # * on_complete() -- calls the block with the each requests as it arrives.
     #
-    # @param  [Tyhpoeus::Request]  req  the request to queue
+    # @param  [Typhoeus::Request]  req  the request to queue
     # @param  [Bool]  async  run request async?
     # @param  [Block]  block  callback
     #
@@ -672,13 +670,16 @@ class HTTP
 
         req.on_complete( &block ) if block_given?
 
-        hydra_run if emergency_run?
+        if emergency_run?
+            print_info 'Request queue reached its maximum size, performing an emergency run.'
+            hydra_run
+        end
 
         exception_jail { @hydra_sync.run } if !async
     end
 
     def emergency_run?
-        @queue_size >= MAX_QUEUE_SIZE
+        @queue_size >= MAX_QUEUE_SIZE && !@running
     end
 
     def is_404?( path, body )
