@@ -93,7 +93,8 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
                 inconclusive
             end
         }
-        http.run
+
+        http_run
     end
 
     def clean_up

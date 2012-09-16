@@ -23,6 +23,7 @@ module Plugin
 #
 # Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
 #
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Formatter
     # get the output interface
@@ -174,6 +175,23 @@ class Base
 
     def http
         framework.http
+    end
+
+    #
+    # Provides a thread-safe way to run the queued HTTP requests.
+    #
+    def http_run
+        synchronize { http.run }
+    end
+
+    #
+    # Provides plugin-wide synchronization.
+    #
+    def self.synchronize( &block )
+        (@mutex ||= Mutex.new).synchronize( &block )
+    end
+    def synchronize( &block )
+        self.class.synchronize( &block )
     end
 
     #

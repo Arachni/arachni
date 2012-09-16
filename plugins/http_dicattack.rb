@@ -57,7 +57,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
             @passwds.each do |pass|
                 url.password = pass.strip
 
-                framework.http.get( url.to_s ).on_complete do |res|
+                http.get( url.to_s ).on_complete do |res|
                     next if @found
 
                     print_status "Username: '#{user}' -- Password: '#{pass}'"
@@ -79,7 +79,7 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
         end
 
         print_status "Waiting for the requests to complete..."
-        http.run
+        http_run
         print_bad "Couldn't find a match."
     end
 

@@ -91,7 +91,7 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
         end
 
         print_status 'Waiting for the requests to complete...'
-        http.run
+        http_run
         print_bad 'Couldn\'t find a match.' if !@found
     end
 
