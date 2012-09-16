@@ -87,12 +87,11 @@ if [[ $fail ]]; then
     exit 1
 fi
 
-branch="experimental"
-if [[ -e "build_branch" ]]; then
-    branch=`cat build_branch`
+if [[ !$ARACHNI_BUILD_BRANCH ]]; then
+    ARACHNI_BUILD_BRANCH="experimental"
 fi
 
-arachni_tarball_url="https://github.com/Arachni/arachni/tarball/$branch"
+arachni_tarball_url="https://github.com/Arachni/arachni/tarball/$ARACHNI_BUILD_BRANCH"
 
 #
 # All system library dependencies in proper order
