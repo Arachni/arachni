@@ -1334,11 +1334,15 @@ class Form < Arachni::Element::Base
             print_debug_trainer( opts )
         end
 
-        if nonce_name
+        opts = opts.dup
+        opts[:method] = self.method.downcase.to_s.to_sym
+
+        if has_nonce?
             print_info "Refreshing nonce for '#{nonce_name}'."
 
-            res = http.get( @url, async: false ).response
-            f = self.class.from_response( res ).select { |f| f.auditable.keys == auditable.keys }.first
+            f = self.class.from_response( http.get( @url, async: false ).response ).
+                    select { |f| f.auditable.keys == auditable.keys }.first
+
             if !f
                 print_bad 'Could not refresh nonce because the form could not be found.'
             else
@@ -1349,13 +1353,9 @@ class Form < Arachni::Element::Base
                 opts[:params][nonce_name] = nonce
                 opts[:async] = false
             end
-
-            self.method.downcase.to_s != 'get' ?
-                http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
-        else
-            self.method.downcase.to_s != 'get' ?
-                http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
         end
+
+        http.request( self.action, opts, &block )
     end
 
 end
