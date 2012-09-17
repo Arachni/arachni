@@ -1,6 +1,5 @@
    Arachni - Web Application Security Scanner Framework
 
-Version            - 0.4.1
 Homepage           - http://arachni-scanner.com
 Blog               - http://arachni-scanner.com/blog
 Documentation      - http://arachni-scanner.com/wiki
