@@ -609,7 +609,7 @@ class Options
         parsed = Utilities.uri_parse( url.to_s )
         if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
             fail Exceptions::InvalidURL,
-                 "Invalid URL argument, please provide an absolute URL and try again."
+                 "Invalid URL argument, please provide a full absolute URL and try again."
         end
 
         @url = parsed.to_s
