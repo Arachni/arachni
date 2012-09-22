@@ -24,7 +24,11 @@
         <td><a href="http://arachni.github.com/arachni/">http://arachni.github.com/arachni/</a></td>
     </tr>
     <tr>
-        <th>Google Group</th>
+        <th>Support</th>
+        <td><a href="http://support.arachni-scanner.com">http://support.arachni-scanner.com</a></td>
+    </tr>
+    <tr>
+        <th>Google Group (old support)</th>
         <td><a href="http://groups.google.com/group/arachni">http://groups.google.com/group/arachni</a></td>
     </tr>
     <tr>
