@@ -449,8 +449,8 @@ module Auditable
         str = ''
         str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
 
-        str << "#{@action}:" + "#{type}:#{vars}"
-        str << "=#{injection_str.to_s}" if !opts[:no_injection_str]
+        str << "#{@action}:#{type}:#{vars}"
+        str << "=#{injection_str}" if !opts[:no_injection_str]
         str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
 
         str
