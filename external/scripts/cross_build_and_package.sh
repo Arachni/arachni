@@ -16,5 +16,5 @@
 
 chroot_path="/var/chroots/32bit"
 
-schroot --chroot=32bit -d /home/zapotek/builds '../arachni/external/scripts/build_and_package.sh'
+schroot --chroot=32bit -d /home/zapotek/builds -p '../arachni/external/scripts/build_and_package.sh'
 mv $chroot_path/home/zapotek/builds/*.* . &> /dev/null

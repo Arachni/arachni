@@ -34,8 +34,8 @@ source $path_to_readlink_function
 
 cat<<EOF
 
-            Arachni builder (experimental)
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+               Arachni builder (experimental)
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  It will create an environment, download and install all dependencies in it,
  configure it and install Arachni itself in it.
@@ -87,7 +87,11 @@ if [[ $fail ]]; then
     exit 1
 fi
 
-arachni_tarball_url="https://github.com/Arachni/arachni/tarball/experimental"
+if [[ !$ARACHNI_BUILD_BRANCH ]]; then
+    ARACHNI_BUILD_BRANCH="experimental"
+fi
+
+arachni_tarball_url="https://github.com/Arachni/arachni/tarball/$ARACHNI_BUILD_BRANCH"
 
 #
 # All system library dependencies in proper order
