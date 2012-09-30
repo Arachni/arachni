@@ -1,11 +1,17 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
@@ -15,10 +21,10 @@ module Web
 #
 # General utility methods.
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1
+#
+# @version 0.1
 #
 module Utilities
 
@@ -32,7 +38,7 @@ module Utilities
     # @see CGI.escapeHTML
     #
     def escape( str )
-        CGI.escapeHTML( str )
+        CGI.escapeHTML( str || '' )
     end
 
     #
@@ -45,7 +51,7 @@ module Utilities
     # @see CGI.unescapeHTML
     #
     def unescape( str )
-        CGI.unescapeHTML( str )
+        CGI.unescapeHTML( str || '' )
     end
 
     #
@@ -99,24 +105,6 @@ module Utilities
     end
 
     #
-    # Constructs an instance URL by port using its dispatcher's url.
-    #
-    # @param    [Integer]   port
-    # @param    [String]   dispatcher_url   URL of the dispatcher
-    # @param    [Bool]     no_scheme        include scheme in the URL?
-    #
-    # @return   [String]
-    #
-    def port_to_url( port, dispatcher_url, no_scheme = nil )
-        uri = URI( dispatcher_url )
-        uri.port = port.to_i
-        uri = uri.to_s
-
-        uri = remove_proto( uri ) if no_scheme
-        return uri
-    end
-
-    #
     # Removes the protocol from URL string.
     #
     # @param    [String]    url
@@ -124,13 +112,14 @@ module Utilities
     # @return   [String]
     #
     def remove_proto( url )
-        begin
-            url = URI.parse( url )
-            scheme = url.scheme + '://'
-            escape( url.to_s.gsub( scheme, '' ) )
-        rescue
-            return url
-        end
+        url
+        #begin
+        #    url = URI.parse( url )
+        #    scheme = url.scheme + '://'
+        #    escape( url.to_s.gsub( scheme, '' ) )
+        #rescue
+        #    return url
+        #end
     end
 
 end

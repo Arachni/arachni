@@ -1,86 +1,61 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::XML
 
-require Arachni::Options.instance.dir['reports'] + '/xml/buffer.rb'
+#
+# XML formatter for the results of the ContentTypes plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
+    include Buffer
 
-module Reports
+    def run
+        results.each_pair do |type, responses|
+            start_content_type( type )
 
-class XML
-module PluginFormatters
+            responses.each do |res|
+                start_tag 'response'
 
-    #
-    # XML formatter for the results of the ContentTypes plugin
-    #
-    # @author: Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
-    # @version: 0.1
-    #
-    class ContentTypes < Arachni::Plugin::Formatter
+                simple_tag( 'url', res[:url] )
+                simple_tag( 'method', res[:method] )
 
-        include Buffer
+                if res[:params] && res[:method].downcase == 'post'
+                    start_tag 'params'
+                    res[:params].each { |name, value| add_param( name, value ) }
+                    end_tag 'params'
+                end
 
-        def run
-            start_tag( 'content_types' )
-            simple_tag( 'description', @description )
+                end_tag 'response'
+            end
 
-            start_tag( 'results' )
-            @results.each_pair {
-                |type, responses|
-
-                start_content_type( type )
-
-                responses.each {
-                    |res|
-
-                    start_tag( 'response' )
-
-                    simple_tag( 'url', res[:url] )
-                    simple_tag( 'method', res[:method] )
-
-                    if res[:params] && res[:method].downcase == 'post'
-                        start_tag( 'params' )
-                        res[:params].each_pair {
-                            |name, value|
-                            add_param( name, value )
-                        }
-                        end_tag( 'params' )
-                    end
-
-                    end_tag( 'response' )
-                }
-
-                end_content_type
-            }
-
-            end_tag( 'results' )
-            end_tag( 'content_types' )
-
-            return buffer( )
+            end_content_type
         end
 
-        def start_content_type( type )
-            __buffer( "<content_type name=\"#{type}\">" )
-        end
-
-        def end_content_type
-            __buffer( "</content_type>" )
-        end
-
-
+        buffer
     end
 
-end
-end
+    def start_content_type( type )
+        append "<content_type name=\"#{type}\">"
+    end
+
+    def end_content_type
+        append "</content_type>"
+    end
 
 end
 end

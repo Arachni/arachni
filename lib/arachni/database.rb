@@ -1,4 +1,4 @@
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'database/base'
-require opts.dir['lib'] + 'database/queue'
-require opts.dir['lib'] + 'database/hash'
+lib = Arachni::Options.dir['lib']
+require lib + 'database/base'
+require lib + 'database/queue'
+require lib + 'database/hash'

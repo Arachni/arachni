@@ -1,131 +1,105 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
-
-module Arachni
-module Modules
 
 #
 # XSS in path audit module.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.6
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.8
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
 #
-class XSSPath < Arachni::Module::Base
+class Arachni::Modules::XSSPath < Arachni::Module::Base
 
-    include Arachni::Module::Utilities
+    def self.tag
+        @tag ||= 'my_tag_' + seed
+    end
 
-    def prepare
-        @_tag_name = 'my_tag_' + seed
-        @str = '<' + @_tag_name + ' />'
-        @__injection_strs = [
-            @str,
-            '?' + @str,
-            '?>"\'>' + @str,
-            '?=>"\'>' + @str
+    def self.string
+        @string ||= '<' + tag + '/>'
+    end
+
+    def self.requests
+        @requests ||= [
+            [ string, {} ],
+            [ '>"\'>' + string, {} ],
+
+            [ '', { string => '' } ],
+            [ '', { '>"\'>' + string => '' } ],
+
+            [ '', { '' => string } ],
+            [ '', { '' => '>"\'>' + string } ]
         ]
-
-        @@audited ||= Set.new
     end
 
     def run
-        path = get_path( @page.url )
+        path = get_path( page.url )
 
-        return if @@audited.include?( path )
-        @@audited << path
+        return if audited?( path )
+        audited( path )
 
-        @__injection_strs.each {
-            |str|
-
+        self.class.requests.each do |str, params|
             url  = path + str
 
             print_status( "Checking for: #{url}" )
 
-            req  = @http.get( url )
-
-            req.on_complete {
-                |res|
-                check_and_log( res, str )
-            }
-        }
+            http.get( url, params: params ) { |res| check_and_log( res, str ) }
+        end
     end
 
     def check_and_log( res, str )
-        # check for the existence of the tag name before parsing to verify
-        # no reason to waste resources...
-        return if ! res.body.substring?( @_tag_name )
-
-        doc = Nokogiri::HTML( res.body )
+        # check for the existence of the tag name in the response before
+        # parsing to verify, no reason to waste resources...
+        return if !res.body || !res.body.include?( self.class.string )
 
         # see if we managed to successfully inject our element
-        if !doc.xpath( "//#{@_tag_name}" ).empty?
-            __log_results( res, str )
-        end
+        return if Nokogiri::HTML( res.body ).css( self.class.tag ).empty?
+
+        log( { element: Element::PATH, injected: str }, res )
     end
 
 
     def self.info
         {
-            :name           => 'XSSPath',
-            :description    => %q{Cross-Site Scripting module for path injection},
-            :elements       => [ ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.6',
-            :references     => {
+            name:        'XSSPath',
+            description: %q{Cross-Site Scripting module for path injection},
+            elements:    [ Element::PATH ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1.8',
+            references:  {
                 'ha.ckers' => 'http://ha.ckers.org/xss.html',
                 'Secunia'  => 'http://secunia.com/advisories/9716/'
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Cross-Site Scripting (XSS) in path},
-                :description => %q{Client-side code, like JavaScript, can
-                    be injected into the web application.},
-                :tags        => [ 'xss', 'path', 'injection', 'regexp' ],
-                :cwe         => '79',
-                :severity    => Issue::Severity::HIGH,
-                :cvssv2       => '9.0',
-                :remedy_guidance    => '',
-                :remedy_code => '',
+            targets:     %w(Generic),
+            issue:       {
+                name:            %q{Cross-Site Scripting (XSS) in path},
+                description:     %q{Client-side code, like JavaScript, can
+    be injected into the web application.},
+                tags:            %w(xss path injection regexp),
+                cwe:             '79',
+                severity:        Severity::HIGH,
+                cvssv2:          '9.0',
+                remedy_guidance: %q{Path must be validated and filtered
+                    before being returned as part of the HTML code of a page.}
             }
 
         }
     end
 
-    def __log_results( res, id )
-        url = res.effective_url
-        log_issue(
-            :var          => 'n/a',
-            :url          => url,
-            :injected     => id,
-            :id           => id,
-            :regexp       => 'n/a',
-            :regexp_match => 'n/a',
-            :elem         => Issue::Element::PATH,
-            :response     => res.body,
-            :headers      => {
-                :request    => res.request.headers,
-                :response   => res.headers,
-            }
-        )
-
-        # inform the user that we have a match
-        print_ok( "Match at #{url}" )
-        print_verbose( "Injected string: #{id}" )
-    end
-
-
-end
-end
 end

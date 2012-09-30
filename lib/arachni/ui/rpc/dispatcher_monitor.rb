@@ -9,10 +9,10 @@ module UI
 
 #
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+#
+# @version 0.1.2
 #
 class DispatcherMonitor
 
@@ -22,7 +22,7 @@ class DispatcherMonitor
 
         @opts = opts
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
         # print banner message
         banner
@@ -157,16 +157,9 @@ class DispatcherMonitor
     # @return [void]
     #
     def banner
-        print_line 'Arachni - Web Application Security Scanner Framework
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://github.com/Arachni/arachni
-       Documentation: http://github.com/Arachni/arachni/wiki'
+        print_line BANNER
         print_line
         print_line
-
     end
 
     #

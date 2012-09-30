@@ -1,4 +1,4 @@
-opts = Arachni::Options.instance
-require opts.dir['lib'] + 'component_manager'
-require opts.dir['lib'] + 'module/base'
-require opts.dir['lib'] + 'module/manager'
+lib = Arachni::Options.dir['lib']
+require lib + 'component/manager'
+require lib + 'module/base'
+require lib + 'module/manager'

@@ -8,13 +8,34 @@ adhere to the following guidelines:
 
  - 4 spaces, no tabs.
  - Maximum line length 75-80 columns, try not to exceed that limit.
- - {} instead of "`do`" for blocks and keep the iterator var in it's own line.<br/>
-    Like so:
-        arr.each {
-            |item|
-        }
+ - For single-line blocks, use:
 
-In general, take a look at the existing code and try to follow that style.
+```ruby
+    arr.each { |item| stuff( item ) }
+```
+
+- For multi-line blocks which expect parameters use:
+
+```ruby
+    arr.each do |item|
+        stuff( item )
+    end
+```
+
+ - Use space before, between, and after method parameters:
+
+```ruby
+    my_method( param1, param2 )
+```
+
+ - Use the new syntax when defining hashes, i.e. ':' instead of '=>'.
+ - Use '?' at the end of methods which are expected to return a boolean result.
+ - Use '!' at the end of methods only for ones which perform a similar operation
+   but requiring extra attention from the ones without.
+   Do not use it to just signify destructive action.
+
+In general, take a look at the existing code and try to follow that style **but**
+keep in mind that these guidelines should be given higher priority.
 
 
 ## Code No-Nos
@@ -32,7 +53,7 @@ It is unlikely that you will need it, but if you do, use
 
 
 **3. Avoid creating your own instance of Net::HTTP or other lib.**<br/>
-You are provided with a pre-configured wrapper ({Arachni::Module::Base#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
+You are provided with a pre-configured wrapper ({Arachni::Module::Auditor#http}) of [Typhoeus](http://github.com/pauldix/typhoeus).
 
 Take a look in the tutorial module to see what you get: {Arachni::Modules::RFI}
 
@@ -96,6 +117,4 @@ Via the framework they have access to all Arachni subsystems and can alter or ex
 Plug-ins run in parallel to the framework and are executed right before the scan process starts.
 
 ## Licensing
-All code must be contributed with a GPL v2 compatible license.<br/>
-Do place licensing information in your code files.
-
+All code must be contributed with an Apache License Version 2.0 compatible license.

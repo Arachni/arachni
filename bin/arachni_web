@@ -1,27 +1,27 @@
 #!/usr/bin/env ruby
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-require_relative "../lib/arachni/options"
+require_relative '../lib/arachni'
 
-Arachni::Options.instance.parse!
+Arachni::Options.parse
 
 def print_help( root )
         puts <<USAGE
-Arachni - Web Application Security Scanner Framework
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://arachni.segfault.gr - http://github.com/Arachni/arachni
-       Documentation: http://github.com/Arachni/arachni/wiki
+#{Arachni::BANNER}
 
   Usage:  arachni_web \[options\]
 
@@ -41,9 +41,8 @@ Arachni - Web Application Security Scanner Framework
 USAGE
 end
 
-options = Arachni::Options.instance
-if options.help
-    print_help( options.root_path )
+if Arachni::Options.help
+    print_help( Arachni::Options.root_path )
     exit
 end
 
@@ -51,5 +50,5 @@ require 'eventmachine'
 
 ::EM.run do
     # Sinatra will run automatically
-    require Arachni::Options.instance.dir['lib'] + 'ui/web/server'
+    require Arachni::Options.dir['lib'] + 'ui/web/server'
 end

@@ -1,23 +1,25 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-module Arachni
-module Plugins
-
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
 #
-class Resolver < Arachni::Plugin::Base
+# @version 0.1.1
+#
+class Arachni::Plugins::Resolver < Arachni::Plugin::Base
 
     def prepare
         wait_while_framework_running
@@ -27,29 +29,32 @@ class Resolver < Arachni::Plugin::Base
         print_status 'Resolving hostnames...'
 
         host_to_ipaddress = {}
-        @framework.audit_store.deep_clone.issues.each_with_index {
-            |issue|
-            exception_jail( false ) {
-                host = URI( issue.url ).host
-                host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
-            }
-        }
-        print_status 'Done!'
+        framework.auditstore.issues.each_with_index do |issue|
+            uri = uri_parse( issue.url.dup )
+            next if !uri
 
+            host = uri.host
+
+            begin
+                host_to_ipaddress[host] ||= ::IPSocket.getaddress( host )
+            rescue
+                print_bad "Could not resolve #{host}."
+                next
+            end
+        end
+
+        print_status 'Done!'
         register_results( host_to_ipaddress )
     end
 
     def self.info
         {
-            :name           => 'Resolver',
-            :description    => %q{Resolves vulnerable hostnames to IP addresses.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :tags           => [ 'ip address', 'hostname' ],
-            :version        => '0.1'
+            name:        'Resolver',
+            description: %q{Resolves vulnerable hostnames to IP addresses.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            tags:        [ 'ip address', 'hostname' ],
+            version:     '0.1.1'
         }
     end
 
-end
-
-end
 end

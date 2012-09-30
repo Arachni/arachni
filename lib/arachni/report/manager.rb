@@ -1,11 +1,17 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
@@ -23,20 +29,16 @@ module Report
 #
 # Holds and manages the registry of the reports.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr> <br/>
-# @version: 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class Manager < Arachni::ComponentManager
+class Manager < Arachni::Component::Manager
+    include Utilities
+    extend  Utilities
 
-    include Arachni::Module::Utilities
-
-    # the extension of the Arachni Framework Report files
-    EXTENSION   = '.afr'
+    NAMESPACE = Arachni::Reports
 
     def initialize( opts )
-        super( opts.dir['reports'], Arachni::Reports )
+        super( opts.dir['reports'], NAMESPACE )
         @opts = opts
     end
 
@@ -54,31 +56,30 @@ class Manager < Arachni::ComponentManager
             delete( 'afr' )
         end
 
-        self.each {
-            |name, report|
-            exception_jail( false ){
-                run_one( name, audit_store.deep_clone )
-            }
-        }
+        loaded.each do |name|
+            exception_jail( false ){ run_one( name, audit_store.deep_clone ) }
+        end
     end
 
-    def run_one( name, audit_store )
-        report = self.[](name).new( audit_store.deep_clone,
-            prep_opts( name, self.[](name), @opts.reports[name] ) )
+    def run_one( name, audit_store, opts = {} )
+        report = self[name].new( audit_store.deep_clone,
+            prep_opts( name, self[name], opts.empty? ? @opts.reports[name] : opts ) )
 
-        report.run( )
+        report.run
+        report
     end
 
+    def self.reset
+        remove_constants( NAMESPACE )
+    end
+    def reset
+        self.class.reset
+    end
+
+    private
     def paths
-        cpaths = paths = Dir.glob( File.join( "#{@lib}", "*.rb" ) )
-        return paths.reject { |path| helper?( path ) }
+        Dir.glob( File.join( "#{@lib}", "*.rb" ) ).reject { |path| helper?( path ) }
     end
-
-
-    def extension
-        return EXTENSION
-    end
-
 end
 
 end

@@ -1,27 +1,28 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
+require 'digest/sha2'
 
-#
-# Vulnerability class.
-#
-# It represents a detected vulnerability.
-#
-#
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.1
-#
 module Arachni
 
+#
+# Represents a detected issues.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Issue
 
     #
@@ -33,20 +34,6 @@ class Issue
         MEDIUM        = 'Medium'
         LOW           = 'Low'
         INFORMATIONAL = 'Informational'
-    end
-
-    #
-    # Holds constants to describe the {Issue#elem} of a
-    # vulnerability.
-    #
-    module Element
-        LINK    = 'link'
-        FORM    = 'form'
-        COOKIE  = 'cookie'
-        HEADER  = 'header'
-        BODY    = 'body'
-        PATH    = 'path'
-        SERVER  = 'server'
     end
 
     #
@@ -80,7 +67,7 @@ class Issue
     #
     # The headers exchanged during the attack
     #
-    # @return [Hash<String, Hash>]  request and reply headers
+    # @return [Hash<Symbol, Hash>]  :request and :reply headers
     #
     attr_accessor :headers
 
@@ -214,16 +201,18 @@ class Issue
     #
     attr_accessor :metasploitable
 
+    # @return [Hash]    audit options associated with the issue
     attr_reader   :opts
 
     attr_accessor :internal_modname
+
+    # @return [Array<String>]
     attr_accessor :tags
-    attr_accessor :_hash
 
     #
     # Sets up the instance attributes
     #
-    # @param    Hash    configuration hash
+    # @param    [Hash]    opts  configuration hash
     #                     Usually the returned data of a module's
     #                     info() method for the references
     #                     merged with a name=>value pair hash holding
@@ -231,23 +220,25 @@ class Issue
     #
     def initialize( opts = {} )
         @verification = false
+        @references   = {}
+        @opts         = { regexp: '' }
 
-        opts.each {
-            |k, v|
+        opts.each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue Exception => e
+            rescue
             end
-        }
+        end
 
-        opts[:issue].each {
-            |k, v|
+        opts[:regexp] = opts[:regexp].to_s if opts[:regexp]
+        opts[:issue].each do |k, v|
             begin
                 send( "#{k.to_s.downcase}=", encode( v ) )
-            rescue Exception => e
+            rescue
             end
-        } if opts[:issue]
+        end if opts[:issue]
 
+        @headers ||= {}
         if opts[:headers] && opts[:headers][:request]
             @headers[:request] = {}.merge( opts[:headers][:request] )
         end
@@ -256,32 +247,58 @@ class Issue
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
 
-        if( @cwe )
-            @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
-        end
+        @method   = @method.to_s.upcase
+        @mod_name = opts[:name]
 
-        @mod_name   = opts[:name]
-        @references = opts[:references] || {}
+        # remove this block because it won't be able to be serialized
+        @opts.delete( :each_mutation )
+        @tags ||= []
+    end
+
+    def match
+        self.regexp_match
+    end
+
+    def url=( v )
+        @url = Utilities.normalize_url( v )
+
+        # last resort sanitization
+        @url = v.split( '?' ).first if @url.to_s.empty?
+        @url
+    end
+
+    def cwe=( v )
+        return if !v || v.to_s.empty?
+        @cwe = v.to_s
+        @cwe_url = "http://cwe.mitre.org/data/definitions/" + @cwe + ".html"
+        @cwe
+    end
+
+    def references=( refs )
+        @references = refs || {}
     end
 
     def regexp=( regexp )
-        return if !regexp
         @regexp = regexp.to_s
     end
 
     def opts=( hash )
-        return if !hash
+        if !hash
+            @opts = { regexp: '' }
+            return
+        end
         hash[:regexp] = hash[:regexp].to_s
-        hash[:match]  ||= false
         @opts = hash.dup
     end
 
     def []( k )
+        send( "#{k}" )
+    rescue
         instance_variable_get( "@#{k.to_s}".to_sym )
     end
 
     def []=( k, v )
-        v= encode( v )
+        v = encode( v )
         begin
             send( "#{k.to_s}=", v )
         rescue
@@ -289,27 +306,45 @@ class Issue
         end
     end
 
+    def each( &block )
+        to_h.each( &block )
+    end
+
+    def each_pair( &block )
+        to_h.each_pair( &block )
+    end
+
     def to_h
         h = {}
-        each_pair {
-            |k, v|
-            h[k] = v
-        }
+        self.instance_variables.each do |var|
+            h[normalize_name( var )] = instance_variable_get( var )
+        end
+        h[:digest] = h[:_hash] = digest
+        h[:hash]  = hash
+        h[:unique_id] = unique_id
         h
     end
+    alias :to_hash :to_h
 
-    def each
-        self.instance_variables.each {
-            |var|
-            yield( { normalize_name( var ) => instance_variable_get( var ) } )
-        }
+    def unique_id
+        "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
 
-    def each_pair
-        self.instance_variables.each {
-            |var|
-            yield normalize_name( var ), instance_variable_get( var )
-        }
+    def ==( other )
+        hash == other.hash
+    end
+
+    def hash
+        unique_id.hash
+    end
+
+    def digest
+        Digest::SHA2.hexdigest( unique_id )
+    end
+    alias :_hash :digest
+
+    def eql?( other )
+        hash == other.hash
     end
 
     def remove_instance_var( var )
@@ -319,8 +354,8 @@ class Issue
     private
 
     def encode( str )
-        return str if !str || !str.is_a?( String )
-        str.encode( 'UTF-8', :invalid => :replace, :undef => :replace )
+        return str if !str.is_a?( String )
+        str.recode
     end
 
     def normalize_name( name )
@@ -329,3 +364,5 @@ class Issue
 
 end
 end
+
+Arachni::Severity = Arachni::Issue::Severity

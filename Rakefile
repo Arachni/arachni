@@ -1,37 +1,84 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
+require 'bundler'
 require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
+
+begin
+    require 'rspec'
+    require 'rspec/core/rake_task'
+
+    namespace :spec do
+        RSpec::Core::RakeTask.new( :core ) do |t|
+            t.pattern = FileList[ "spec/arachni/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :modules ) do |t|
+            t.pattern = FileList[ "spec/modules/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :reports ) do |t|
+            t.pattern = FileList[ "spec/reports/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :plugins ) do |t|
+            t.pattern = FileList[ "spec/plugins/**/*_spec.rb" ]
+        end
+
+        RSpec::Core::RakeTask.new( :path_extractors ) do |t|
+            t.pattern = FileList[ "spec/path_extractors/**/*_spec.rb" ]
+        end
+    end
+
+    RSpec::Core::RakeTask.new
+rescue LoadError
+    puts 'If you want to run the tests please install rspec first:'
+    puts '  gem install rspec'
+end
 
 desc "Generate docs"
 
 task :docs do
 
-    outdir = "../arachni-gh-pages"
-    sh "mkdir #{outdir}" if !File.directory?( outdir )
+    outdir = "../arachni-docs"
+    sh "rm -rf #{outdir}"
+    sh "mkdir -p #{outdir}"
 
-    sh "inkscape gfx/logo.svg --export-png=#{outdir}/logo.png"
-    sh "inkscape gfx/icon.svg --export-png=#{outdir}/icon.png"
-    sh "inkscape gfx/icon.svg --export-png=#{outdir}/favicon.ico"
-    sh "inkscape gfx/banner.svg --export-png=#{outdir}/banner.png"
+    sh "yardoc -o #{outdir}"
 
-    sh "yardoc --verbose --title \
-      \"Arachni - Web Application Security Scanner Framework\" \
-      external/* path_extractors/* plugins/* reports/* modules/* metamodules/* lib/* -o #{outdir} \
-      - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
-      CONTRIBUTORS.md ACKNOWLEDGMENTS.md"
-
-
-    sh "rm -rf .yard*"
+    sh "rm -rf .yardoc"
 end
 
+desc "Generate graphics"
+task :gfx do
+
+    outdir = 'gfx/compiled'
+    srcdir = 'gfx/source'
+
+    sh 'mkdir -p ~/.fonts'
+    sh 'cp gfx/font/Beneath_the_Surface.ttf ~/.fonts'
+
+    Dir.glob( "#{srcdir}/*.svg" ).each do |src|
+        sh "inkscape #{src} --export-png=#{outdir}/#{File.basename( src, '.svg' )}.png"
+    end
+
+    cp "#{outdir}/icon.png", "#{outdir}/favicon.ico"
+
+    sh 'rm -f ~/.fonts/Beneath_the_Surface.ttf'
+end
 
 #
 # Simple profiler using perftools[1].
@@ -43,10 +90,17 @@ end
 #
 desc "Profile Arachni"
 task :profile do
-    sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
-        "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
-        " ./bin/arachni http://demo.testfire.net --link-count=5 && " +
-        "pprof.rb --gif /tmp/profile.dat > profile.gif"
+
+    if !Gem::Specification.find_all_by_name( 'perftools.rb' ).empty?
+        sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
+               "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
+               " ./bin/arachni http://demo.testfire.net && " +
+               "pprof.rb --gif /tmp/profile.dat > profile.gif"
+    else
+        puts 'If you want to run the profiler please install perftools.rb first:'
+        puts '  gem install perftools.rb'
+    end
+
 end
 
 #
@@ -55,12 +109,14 @@ end
 desc "Cleaning report and log files."
 task :clean do
 
+    sh "rm error.log || true"
     sh "rm *.afr || true"
     sh "rm *.yaml || true"
     sh "rm *.json || true"
     sh "rm *.marshal || true"
     sh "rm *.gem || true"
     sh "rm logs/*.log || true"
+    sh "rm spec/logs/*.log || true"
     sh "rm lib/arachni/ui/web/server/db/*.* || true"
     sh "rm lib/arachni/ui/web/server/db/welcomed || true"
     sh "rm lib/arachni/ui/web/server/public/reports/*.* || true"
@@ -68,28 +124,10 @@ task :clean do
 end
 
 
-#
-# Building
-#
-desc "Build the arachni gem."
-task :build  => [ :clean ] do
-    sh "gem build arachni.gemspec"
-end
+Bundler::GemHelper.install_tasks
 
+desc "Push a new version to RubyGems"
+task :publish => [ :release ]
 
-#
-# Installing
-#
-desc "Build and install the arachni gem."
-task :install  => [ :build ] do
-    sh "gem install arachni-#{Arachni::VERSION}.gem"
-end
-
-
-#
-# Publishing
-#
-desc "Push a new version to Gemcutter"
-task :publish => [ :build ] do
-    sh "gem push arachni-#{Arachni::VERSION}.gem"
-end
+desc "Build Arachni and run all the tests."
+task :default => [ :build, :spec ]

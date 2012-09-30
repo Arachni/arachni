@@ -1,0 +1,7 @@
+PostgreSQL query failed:
+supplied argument is not a valid PostgreSQL result
+pg_query() [:
+pg_exec() [:
+PostgreSQL.*ERROR
+Warning stuff pg_ stuff
+valid PostgreSQL result

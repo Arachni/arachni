@@ -1,3 +1,5 @@
+Gemfile.lock
+.idea/
 .buildpath
 .project
 .settings/
@@ -7,6 +9,7 @@
 /todo.txt
 /tmp
 /logs/
+#/spec/logs/
 /private.pem
 generate-autodeploy.sh
 tests/fp_discover.php

@@ -1,20 +1,25 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
-
 
 module Arachni
 
 require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Options.instance.dir['lib'] + 'rpc/client/instance'
 
-require Options.instance.dir['lib'] + 'module/utilities'
+require Options.instance.dir['lib'] + 'utilities'
 require Options.instance.dir['lib'] + 'ui/cli/output'
 require Options.instance.dir['lib'] + 'framework'
 
@@ -31,15 +36,11 @@ module UI
 # in your own client, this is just to provide some other info to the user.
 #
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class RPC
-
     include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
 
     def initialize( opts )
 
@@ -51,7 +52,7 @@ class RPC
             load_profile( @opts.load_profile )
         end
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
         # we don't need the framework for much,
         # in this case only for report generation, version number etc.
@@ -84,7 +85,7 @@ class RPC
 
 
         # Check for missing url
-        if( !@opts.url && @opts.lsmod.empty? )
+        if !@opts.url && @opts.lsmod.empty?
             print_bad( "Missing url argument." )
             exit 0
         end
@@ -150,7 +151,7 @@ class RPC
             print_line
 
             # grab the RPC server output while a scan is running
-            while( @server.framework.busy? )
+            while @server.framework.busy?
                 output
 
                 pause if @pause
@@ -173,7 +174,7 @@ class RPC
     # Loads an Arachni Framework Profile file and merges it with the
     # user supplied options.
     #
-    # @param    [String]    filename    the file to load
+    # @param    [Array<String>]    profiles    the files to load
     #
     def load_profile( profiles )
         exception_jail{
@@ -231,7 +232,7 @@ class RPC
     def pause( )
 
         print_status( 'Paused...' )
-        @server.framework.pause!
+        @server.framework.pause
 
         print_line
         print_info( 'Results thus far:' )
@@ -254,7 +255,7 @@ class RPC
 
         if gets[0] == 'e'
             print_status( 'Aborting scan...' )
-            @server.framework.clean_up!
+            @server.framework.clean_up
             report
             shutdown
             print_info( 'Exiting...' )
@@ -262,7 +263,7 @@ class RPC
         end
 
         @pause = false
-        @server.framework.resume!
+        @server.framework.resume
     end
 
     #
@@ -356,7 +357,7 @@ class RPC
             opts.delete( 'cookie_jar' )
         end
 
-        @framework.plugins.load_defaults!.each {
+        @framework.plugins.load_defaults.each {
             |plugin|
             @opts.plugins[plugin] = {} if !@opts.plugins.include?( plugin )
         }
@@ -411,7 +412,9 @@ class RPC
                 'Cookie-jar \'' + jar + '\' doesn\'t exist.' )
         end
 
-        return Arachni::Module::HTTP.parse_cookiejar( jar )
+        Arachni::Element::Cookie.from_file( @opts.url.to_s, jar ).inject({}) do |h, e|
+            h.merge!( e.simple ); h
+        end
     end
 
     #
@@ -454,10 +457,19 @@ class RPC
             end
 
             print_line( "Targets:" )
-            info[:targets].keys.each {
-                |key|
-                print_info( key + "\t\t" + info[:targets][key] )
-            }
+            if info[:targets]
+                print_line( "Targets:" )
+
+                if info[:targets].is_a?( Hash )
+                    info[:targets].keys.each do |key|
+                        print_info( key + "\t\t" + info[:targets][key] )
+                    end
+                else
+                    info[:targets].each do |target|
+                        print_info( target )
+                    end
+                end
+            end
 
             if( info[:issue] &&
                 ( sploit = info[:issue]['metasploitable'] ) )
@@ -580,17 +592,9 @@ class RPC
     # @return [void]
     #
     def banner
-        print_line 'Arachni - Web Application Security Scanner Framework v' +
-            @framework.version + ' [' + @framework.revision + ']
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://arachni.segfault.gr - http://github.com/Arachni/arachni
-       Documentation: http://github.com/Arachni/arachni/wiki'
+        print_line BANNER
         print_line
         print_line
-
     end
 
     def print_profile( )
@@ -640,18 +644,6 @@ class RPC
                                   (Be carefull not to kill your server.)
                                   (Default: 60)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
-
-    --http-harvest-last         build up the HTTP request queue of the audit for the whole site
-                                 and harvest the HTTP responses at the end of the crawl.
-                                 (In some test cases this option has split the scan time in half.)
-                                 (Default: responses will be harvested for each page)
-                                 (*NOTE*: If you are scanning a high-end server and
-                                   you are using a powerful machine with enough bandwidth
-                                   *and* you feel dangerous you can use
-                                   this flag with an increased '--http-req-limit'
-                                   to get maximum performance out of your scan.)
-                                 (*WARNING*: When scanning large websites with hundreads
-                                  of pages this could eat up all your memory pretty quickly.)
 
     --cookie-jar=<cookiejar>    netscape HTTP cookie file, use curl to create it
 
@@ -738,7 +730,8 @@ class RPC
 
     -m <modname,modname..>
     --mods=<modname,modname..>  comma separated list of modules to deploy
-                                  (Use '*' as a module name to deploy all modules or inside module names like so:
+                                  (Modules are referenced by their filename without the '.rb' extension, use '--lsmod' to see all.
+                                  Use '*' as a module name to deploy all modules or inside module names like so:
                                       xss_*   to load all xss modules
                                       sqli_*  to load all sql injection modules
                                       etc.
@@ -761,6 +754,7 @@ class RPC
     --report='<report>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <report>: the name of the report as displayed by '--lsrep'
+                                    (Reports are referenced by their filename without the '.rb' extension, use '--lsrep' to see all.)
                                     (Default: stdout)
                                     (Can be used multiple times.)
 
@@ -772,6 +766,7 @@ class RPC
     --plugin='<plugin>:<optname>=<val>,<optname2>=<val2>,...'
 
                                   <plugin>: the name of the plugin as displayed by '--lsplug'
+                                    (Plugins are referenced by their filename without the '.rb' extension, use '--lsplug' to see all.)
                                     (Can be used multiple times.)
 
 USAGE

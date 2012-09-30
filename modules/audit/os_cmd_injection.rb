@@ -1,99 +1,81 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
-
-module Arachni
-
-module Modules
 
 #
 # Simple OS command injection module.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
 #
-class OSCmdInjection < Arachni::Module::Base
+class Arachni::Modules::OSCmdInjection < Arachni::Module::Base
 
-    include Arachni::Module::Utilities
+    def self.opts
+        @opts ||= {
+            regexp: [
+                /root:x:0:0:.+:[0-9a-zA-Z\/]+/,
+                /\[boot loader\](.*)\[operating systems\]/
+            ],
+            format: [ Format::STRAIGHT, Format::APPEND ]
+        }
+    end
 
-    def prepare
-
-        @__opts = {}
-        @__opts[:regexp]   = [
-            /root:x:0:0:.+:[0-9a-zA-Z\/]+/i,
-            /\[boot loader\](.*)\[operating systems\]/i
-        ]
-        @__opts[:format]   = [ Format::STRAIGHT ]
-
-        @@__injection_str ||= []
-
-        if @@__injection_str.empty?
-            read_file( 'payloads.txt' ) {
-                |str|
-
-                [ '', '&&', '|', ';' ].each {
-                    |sep|
-                    @@__injection_str << sep + " " + str
-                }
-
-                @@__injection_str << "`" + " " + str + "`"
-            }
+    def self.payloads
+        @payloads ||= []
+        if @payloads.empty?
+            read_file( 'payloads.txt' ) do |str|
+                [ '', '&&', '|', ';' ].each { |sep| @payloads << sep + " " + str }
+                @payloads << "`" + " " + str + "`"
+            end
         end
-
+        @payloads
     end
 
     def run
-        @@__injection_str.each {
-            |str|
-            audit( str, @__opts )
-        }
+        self.class.payloads.each { |str| audit( str, self.class.opts ) }
     end
-
 
     def self.info
         {
-            :name           => 'OS command injection',
-            :description    => %q{Tries to find operating system command injections.},
-            :elements       => [
-                Issue::Element::FORM,
-                Issue::Element::LINK,
-                Issue::Element::COOKIE,
-                Issue::Element::HEADER
-            ],
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            :version        => '0.1.5',
-            :references     => {
-                 'OWASP'         => 'http://www.owasp.org/index.php/OS_Command_Injection'
+            name:        'OS command injection',
+            description: %q{Tries to find operating system command injections.},
+            elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            version:     '0.1.6',
+            references:  {
+                'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{Operating system command injection},
-                :description => %q{The web application allows an attacker to
-                    execute arbitrary OS commands.},
-                :tags        => [ 'os', 'command', 'code', 'injection', 'regexp' ],
-                :cwe         => '78',
-                :severity    => Issue::Severity::HIGH,
-                :cvssv2       => '9.0',
-                :remedy_guidance    => %q{User inputs must be validated and filtered
-                    before being evaluated as OS level commands.},
-                :remedy_code => '',
-                :metasploitable => 'unix/webapp/arachni_exec'
+            targets:     %w(Windows Unix),
+            issue:       {
+                name:            %q{Operating system command injection},
+                description:     %q{The web application allows an attacker to
+    execute arbitrary OS commands.},
+                tags:            %w(os command code injection regexp),
+                cwe:             '78',
+                severity:        Severity::HIGH,
+                cvssv2:          '9.0',
+                remedy_guidance: %q{User inputs must be validated and filtered
+    before being evaluated as OS level commands.},
+                remedy_code:     '',
+                metasploitable:  'unix/webapp/arachni_exec'
             }
-
         }
     end
 
-end
-end
 end

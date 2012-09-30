@@ -1,11 +1,17 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 require 'digest/sha1'
@@ -22,10 +28,10 @@ module Database
     # It's not interchangeable with Ruby's Hash as it lacks a lot of the
     # stdlib methods.
     #
-    # @author: Tasos "Zapotek" Laskos
+    # @author Tasos "Zapotek" Laskos
     #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
-    # @version: 0.1
+    #                                      
+    # @version 0.1
     #
     class Hash < Base
 
@@ -51,6 +57,8 @@ module Database
         #
         # @param    [Object]    k   key
         # @param    [Object]    v   value
+        #
+        # @return   [Object]    returns value
         #
         def []=( k, v )
             @h[k] = dump( v ) {
@@ -123,8 +131,8 @@ module Database
         # @return   [Array]
         #
         def shift
-            k, v = @h.shift
-            [ k, load_and_delete_file( v ) ]
+            k, v = @h.first
+            [ k, delete( k ) ]
         end
 
         #
@@ -205,8 +213,9 @@ module Database
             return if !value?( val )
             each {
                 |k, v|
-                return k if val == self[val]
+                return k if val == self[k]
             }
+            nil
         end
 
         #
@@ -345,7 +354,7 @@ module Database
                 eql = {}
                 h.to_hash.each {
                     |k, v|
-                    eql[k] = eql_hash( v.to_yaml )
+                    eql[k] = eql_hash( serialize( v ) )
                 }
                 @eql_h == eql
             else

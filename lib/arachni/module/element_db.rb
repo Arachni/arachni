@@ -1,12 +1,19 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
+
 module Arachni
 module Module
 
@@ -18,49 +25,57 @@ module Module
 #
 # For each page that is audited the database is reset.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module ElementDB
-
-    include Arachni::Module::Utilities
+    include Utilities
 
     #
     # page forms
     #
-    @@forms    ||= Set.new
+    @@forms    ||= BloomFilter.new
 
     #
     # page links
     #
-    @@links    ||= Set.new
+    @@links    ||= BloomFilter.new
 
     #
     # page cookies
     #
     @@cookies  ||= Set.new
 
+    def self.reset
+        @@forms.clear
+        @@links.clear
+        @@cookies.clear
+    end
+
+    def init_db_from_page( page )
+        init_links( page.links )
+        init_forms( page.forms )
+        init_cookies( page.cookies )
+    end
+
     #
     # Initializes @@forms with the cookies found during the crawl/analysis
     #
     def init_forms( forms )
-      @@forms |= forms.map { |form| form.id }
+        forms.each { |form| @@forms << form.id }
     end
 
     #
     # Initializes @@links with the links found during the crawl/analysis
     #
     def init_links( links )
-      @@links |= links.map { |link| link.id }
+        links.each { |link| @@links << link.id }
     end
 
     #
     # Initializes @@cookies with the cookies found during the crawl/analysis
     #
     def init_cookies( cookies )
-      @@cookies = cookies
+        @@cookies = cookies
     end
 
     #
@@ -70,26 +85,19 @@ module ElementDB
     # @param    [Array<Element::Form>] forms
     #
     def update_forms( forms )
-
         return [], 0 if forms.size == 0
 
         form_cnt = 0
         new_forms ||= []
 
-        forms.each {
-            |form|
+        forms.each do |form|
+            next if @@forms.include?( form.id )
+            @@forms   << form.id
+            new_forms << form
+            form_cnt += 1
+        end
 
-            next if form.action.include?( seed )
-            next if form.auditable.size == 0
-
-            if !@@forms.include?( form.id )
-                @@forms << form.id
-                new_forms << form
-                form_cnt += 1
-            end
-        }
-
-        return new_forms, form_cnt
+        [new_forms, form_cnt]
     end
 
     #
@@ -103,20 +111,14 @@ module ElementDB
 
       link_cnt = 0
       new_links ||= []
-      links.each {
-          |link|
+      links.each do |link|
+          next if @@links.include?( link.id )
+          @@links   << link.id
+          new_links << link
+          link_cnt += 1
+      end
 
-          next if !link
-          next if link.action.include?( seed )
-
-          if !@@links.include?( link.id )
-              @@links    << link.id
-              new_links << link
-              link_cnt += 1
-          end
-      }
-
-      return new_links, link_cnt
+      [new_links, link_cnt]
     end
 
     #
@@ -131,33 +133,26 @@ module ElementDB
         cookie_cnt = 0
         @new_cookies ||= []
 
-        cookies.each_with_index {
-            |cookie|
-
-            @@cookies.each_with_index {
-                |page_cookie, i|
-
-                if( page_cookie.raw['name'] == cookie.raw['name'] )
+        cookies.reverse.each do |cookie|
+            @@cookies.each_with_index do |page_cookie, i|
+                if page_cookie.raw['name'] == cookie.raw['name']
                     @@cookies[i] = cookie
                 elsif !cookie_in_jar?( cookie )
                     @new_cookies << cookie
                     cookie_cnt += 1
                 end
-            }
-        }
+            end
+        end
 
         @@cookies.flatten!
         @@cookies |= @new_cookies
 
-        return [ @@cookies, cookie_cnt ]
+        [@@cookies, cookie_cnt]
     end
 
     def cookie_in_jar?( cookie )
-        @@cookies.each {
-            |c|
-            return true if c.raw['name'] == cookie.raw['name']
-        }
-        return false
+        @@cookies.each { |c| return true if c.raw['name'] == cookie.raw['name'] }
+        false
     end
 
 end

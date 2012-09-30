@@ -11,7 +11,7 @@ Document Axis does not allow any context Location Steps
 Empty Path Expression
 Empty Relative Location Path
 Empty Union Expression
-Expected '\)' in
+Expected ')' in
 Expected node test or name specification after axis operator
 Incompatible XPath key
 Incorrect Variable Binding
@@ -20,7 +20,6 @@ xmlsec library function
 error '80004005'
 A document must contain exactly one root element.
 Expression must evaluate to a node-set.
-Expected token '\]'
+Expected token ']'
 <p>msxml4.dll</font>
 <p>msxml3.dll</font>
-4005 Notes error: Query is not understandable

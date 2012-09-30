@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+=begin
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+=end
+
+require_relative '../lib/arachni/ui/cli/output'
+require_relative '../lib/arachni'
+require 'irb'
+require 'irb/completion'
+
+include Arachni
+include UI::Output
+
+puts BANNER
+puts
+puts "(Call the 'mute' method to mute framework output.)"
+
+IRB.setup nil
+IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context
+
+HISTFILE = '~/.irb_history'
+MAXHISTSIZE = 300
+
+begin
+    histfile = File.expand_path( HISTFILE )
+    if File.exists?( histfile )
+        lines = IO.readlines( histfile ).map { |line| line.chomp }
+        Readline::HISTORY.push( *lines )
+    end
+    Kernel.at_exit do
+        lines = Readline::HISTORY.to_a.reverse.uniq.reverse
+        lines = lines[-MAXHISTSIZE, MAXHISTSIZE] if lines.size > MAXHISTSIZE
+        File.open( histfile, 'a' ) { |f| f.write( lines.join( "\n" ) ) }
+    end
+rescue => e
+    puts "Error when configuring permanent history: #{e}"
+end
+
+require 'irb/ext/multi-irb'
+IRB.irb nil, Arachni

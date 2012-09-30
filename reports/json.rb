@@ -1,51 +1,49 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 require 'json'
 
-module Arachni
-module Reports
-
 #
 # Converts the AuditStore to a Hash which it then dumps in JSON format into a file.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-class JSON < Arachni::Report::Base
+# @version 0.1.1
+#
+class Arachni::Reports::JSON < Arachni::Report::Base
 
     def run
-        print_line( )
-        print_status( 'Dumping audit results in \'' + @options['outfile']  + '\'.' )
+        print_line
+        print_status "Dumping audit results in #{outfile}."
 
-        File.open( @options['outfile'], 'w' ) {
-            |f|
-            f.write( ::JSON::pretty_generate( @audit_store.to_h ) )
-        }
+        File.open( outfile, 'w' ) do |f|
+            f.write ::JSON::pretty_generate( auditstore.to_hash )
+        end
 
-        print_status( 'Done!' )
+        print_status 'Done!'
     end
 
     def self.info
         {
-            :name           => 'JSON Report',
-            :description    => %q{Exports the audit results as a JSON file.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [ Arachni::Report::Options.outfile( '.json' ) ]
+            name:        'JSON Report',
+            description: %q{Exports the audit results as a JSON file.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1.1',
+            options:     [ Options.outfile( '.json' ) ]
         }
     end
 
-end
-
-end
 end

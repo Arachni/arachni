@@ -1,11 +1,17 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
@@ -17,11 +23,14 @@ module Plugin
 #
 # Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
 #
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Formatter
-
     # get the output interface
-    include Arachni::UI::Output
+    include UI::Output
+
+    attr_reader :results
+    attr_reader :description
 
     def initialize( plugin_data )
         @results     = plugin_data[:results]
@@ -29,28 +38,29 @@ class Formatter
     end
 
     def run
-
     end
 
 end
 
 #
-# Arachni::Plugin::Base class
+# An abstract class which all plugins must extend.
 #
-# An abstract class for the plugins.<br/>
-# All plugins must extend this.
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.1
 # @abstract
 #
 class Base
+    # I hate keep typing this all the time...
+    include Arachni
 
     # get the output interface
-    include Arachni::Module::Output
-    include Arachni::Module::Utilities
+    include Module::Output
+    include Module::Utilities
+
+    include Component
+
+    attr_reader :options
+    attr_reader :framework
 
     #
     # @param    [Arachni::Framework]    framework
@@ -61,34 +71,22 @@ class Base
         @options   = options
     end
 
-
     #
     # OPTIONAL
     #
-    def prepare( )
-
+    def prepare
     end
 
     #
     # REQUIRED
     #
-    def run( )
-
+    def run
     end
 
     #
     # OPTIONAL
     #
-    def clean_up( )
-
-    end
-
-    def wait_while_framework_running
-        ::IO.select( nil, nil, nil, 1 ) while( @framework.running? )
-    end
-
-    def self.gems
-        [ ]
+    def clean_up
     end
 
     #
@@ -105,11 +103,24 @@ class Base
     # across instances this method should return 'false'.
     #
     def self.distributable?
-        false
+        @distributable ||= false
+    end
+
+    # Should the plug-in be distributed
+    # across all instances or only run by the master
+    # prior to any distributed operations?
+    def self.distributable
+        @distributable = true
+    end
+    # Should the plug-in be distributed
+    # across all instances or only run by the master
+    # prior to any distributed operations?
+    def self.is_distributable
+        distributable
     end
 
     #
-    # REQUIRED IF self.distributable? RETURNS 'TRUE'
+    # REQUIRED IF self.distributable? returns 'true' and the plugins stores results.
     #
     # Only used when in Grid mode.
     #
@@ -120,27 +131,85 @@ class Base
     end
 
     #
+    # Should return an array of plugin related gem dependencies.
+    #
+    # @return   [Array]
+    #
+    def self.gems
+        []
+    end
+
+    #
     # REQUIRED
     #
     # Do not omit any of the info.
     #
     def self.info
         {
-            :name           => 'Abstract plugin class',
-            :description    => %q{Abstract plugin class.},
-            :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            :version        => '0.1',
-            :options        => [
-                #                        option name       required?       description                     default
-                # Arachni::OptBool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
-                # Arachni::OptString.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
-            ]
+            name:        'Abstract plugin class',
+            description: %q{Abstract plugin class.},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1',
+            options:     [
+                #                       option name        required?       description                        default
+                # Options::Bool.new( 'print_framework', [ false, 'Do you want to print the framework?', false ] ),
+                # Options::String.new( 'my_name_is',    [ false, 'What\'s you name?', 'Tasos' ] ),
+            ],
+            # specify an execution priority group
+            # plug-ins will be separated in groups based on this number
+            # and lowest will be first
+            #
+            # if this option is omitted the plug-in will be run last
+            #
+            priority:    0
         }
     end
 
-    def register_results( results )
-        @framework.plugin_store( self, results )
+    def spider
+        framework.spider
     end
+
+    def session
+        framework.session
+    end
+
+    def http
+        framework.http
+    end
+
+    #
+    # Provides a thread-safe way to run the queued HTTP requests.
+    #
+    def http_run
+        synchronize { http.run }
+    end
+
+    #
+    # Provides plugin-wide synchronization.
+    #
+    def self.synchronize( &block )
+        (@mutex ||= Mutex.new).synchronize( &block )
+    end
+    def synchronize( &block )
+        self.class.synchronize( &block )
+    end
+
+    #
+    # Registers the plugin's results with the framework.
+    #
+    # @param    [Object]    results
+    #
+    def register_results( results )
+        framework.plugins.register_results( self, results )
+    end
+
+    #
+    # Will block until the scan finishes.
+    #
+    def wait_while_framework_running
+        ::IO.select( nil, nil, nil, 1 ) while( framework.running? )
+    end
+
 end
 
 end

@@ -1,12 +1,23 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
+
+require 'rubygems'
+require 'bundler/setup'
+
+require 'base64'
 
 require 'yaml'
 YAML::ENGINE.yamler = 'syck'
@@ -17,18 +28,13 @@ require 'getoptlong'
 module Arachni
 
 #
-# Options class.
+# Options storage class.
 #
-# Implements the Singleton pattern and formally defines
-# all of Arachni's runtime options.
+# Implements the Singleton pattern and formally defines all of Arachni's runtime options.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Options
-
     include Singleton
 
     #
@@ -49,12 +55,27 @@ class Options
     #
     attr_reader   :datastore
 
+    # @return [Integer] maximum retries for failed RPC calls
+    attr_accessor :max_retries
+
+    #
+    # Supported values:
+    # * high_performance
+    #
+    # If +nil+, it won't make use of the Grid.
+    #
+    # @return   [String]    current grid mode
     attr_accessor :grid_mode
 
     #
     # @return   [String]    the URL of a neighbouring Dispatcher
     #
     attr_accessor :neighbour
+
+    #
+    # @return   [Float]    how soon to check for neighbour node status
+    #
+    attr_accessor :node_ping_interval
 
     #
     # @return   [Float]    cost of using the Dispatcher
@@ -119,9 +140,9 @@ class Options
     attr_accessor :debug
 
     #
-    # Filters for redundant links
+    # Filters for redundant links in the form of (pattern => counter).
     #
-    # @return    [Array]
+    # @return    [Hash[Regexp, Integer]]
     #
     attr_accessor :redundant
 
@@ -198,6 +219,9 @@ class Options
     #
     attr_accessor :audit_cookies
 
+    attr_accessor :audit_cookies_extensively
+    alias :audit_cookies_extensively? :audit_cookies_extensively
+
     #
     # Should Arachni audit HTTP headers?
     #
@@ -256,7 +280,7 @@ class Options
     #
     # @return    [String]
     #
-    attr_accessor :proxy_addr
+    attr_accessor :proxy_host
 
     #
     # The port to connect on the proxy server
@@ -270,14 +294,14 @@ class Options
     #
     # @return    [String]
     #
-    attr_accessor :proxy_pass
+    attr_accessor :proxy_password
 
     #
     # The proxy user
     #
     # @return    [String]
     #
-    attr_accessor :proxy_user
+    attr_accessor :proxy_username
 
     #
     # The proxy type
@@ -303,6 +327,11 @@ class Options
     attr_accessor :cookie_jar
 
     #
+    # @return    [String]   cookies in the form of "name=value; name2=value2"
+    #
+    attr_accessor :cookie_string
+
+    #
     # The HTTP user-agent to use
     #
     # @return    [String]
@@ -310,23 +339,32 @@ class Options
     attr_accessor :user_agent
 
     #
-    # Exclude filters <br/>
-    # URL matching any of these patterns won't be followed
+    # Exclusion filters.
+    #
+    # URLs matching any of these patterns won't be followed or audited.
     #
     # @return    [Array]
     #
     attr_accessor :exclude
 
     #
-    # Cookies to exclude from audit<br/>
+    # Cookies to exclude from the audit
     #
     # @return    [Array]
     #
     attr_accessor :exclude_cookies
 
     #
-    # Include filters <br/>
-    # Only URLs that match any of these patterns will be followed
+    # Vectors to exclude from the audit
+    #
+    # @return    [Array]
+    #
+    attr_accessor :exclude_vectors
+
+    #
+    # Inclusion filters.
+    #
+    # Only URLs that match any of these patterns will be followed.
     #
     # @return    [Array]
     #
@@ -339,67 +377,108 @@ class Options
     #
     attr_accessor :follow_subdomains
 
-    #
-    # Harvest the HTTP responses for the whole site at the end or
-    # for each page?
-    #
-    # @return    [Bool]
-    #
-    attr_accessor :http_harvest_last
-
-    # to be populated by the framework
+    # @return   [Time]  to be populated by the framework
     attr_accessor :start_datetime
-    # to be populated by the framework
+
+    # @return   [Time]   to be populated by the framework
     attr_accessor :finish_datetime
-    # to be populated by the framework
+
+    # @return   [Integer]   to be populated by the framework
     attr_accessor :delta_time
 
+    # @return   [Array<Regexp>] regexps to use to select which plugins to list
     attr_accessor :lsplug
+
+    # @return   [Array<String>] plugins to load, by name
     attr_accessor :plugins
 
+    # @return   [Integer]   port for the RPC server to listen to
     attr_accessor :rpc_port
+
+    # @return   [String]   (hostname or IP) address for the RPC server to bind to
     attr_accessor :rpc_address
 
+    # @return   [Array<Integer>]
+    #   Range of ports to use when spawning instances,
+    #   first element should be the lowest port number, last the max port number.
     attr_accessor :rpc_instance_port_range
 
+    # @return   [Bool]  +true+ if SSL should be enabled, +false+ otherwise.
     attr_accessor :ssl
+
+    # @return   [String]  path to a PEM private key
     attr_accessor :ssl_pkey
+
+    # @return   [String]  path to a PEM certificate
     attr_accessor :ssl_cert
+
+    # @return   [String]  path to a PEM CA file
     attr_accessor :ssl_ca
 
+    # @return   [String]  path to a client PEM private key for the grid nodes
     attr_accessor :node_ssl_pkey
+
+    # @return   [String]  path to a client PEM certificate key for the grid nodes
     attr_accessor :node_ssl_cert
 
+    # @return   [String]  URL of an RPC dispatcher (used by the CLI RPC client interface)
     attr_accessor :server
 
+    # @return   [Bool]  +true+ if the output of the RPC instances should be
+    #                       redirected to a file, +false+ otherwise
     attr_accessor :reroute_to_logfile
+
+    # @return   [Integer]   amount of Instances to keep in the pool
     attr_accessor :pool_size
 
+    # @return   [String]    username for the WebUI
     attr_accessor :webui_username
+
+    # @return   [String]    password for the WebUI
     attr_accessor :webui_password
 
+    # @return   [Hash<String, String>]    custom HTTP headers to be included
+    #                                           for every HTTP Request
     attr_accessor :custom_headers
 
+    # @return   [Array<String>] paths to use instead of crawling the webapp
     attr_accessor :restrict_paths
+
+    # @return   [String] path to file containing {#restrict_paths}
     attr_accessor :restrict_paths_filepath
 
+    # @return   [Array<String>] paths to use in addition to crawling the webapp
     attr_accessor :extend_paths
+
+    # @return   [String] path to file containing {#extend_paths}
     attr_accessor :extend_paths_filepath
 
+    # @return   [Integer]   minimum pages per RPC Instance when in High Performance Mode
     attr_accessor :min_pages_per_instance
+
+    # @return   [Integer]   maximum amount of slave Instances to use
     attr_accessor :max_slaves
 
+    attr_accessor :fuzz_methods
+
+    attr_accessor :exclude_binaries
+
+    # @return   [Bool]   configure the {Spider}'s auto-redundant feature
+    attr_accessor :auto_redundant
+
+    attr_accessor :login_check_url
+    attr_accessor :login_check_pattern
+
+    # @return   [Integer]   HTTP request timeout in milliseconds
+    attr_accessor :http_timeout
 
     def initialize
-        reset!
+        reset
     end
 
-    def reset!
+    def reset
         # nil everything out
-        self.instance_variables.each {
-            |var|
-            instance_variable_set( var.to_s, nil )
-        }
+        self.instance_variables.each { |var| instance_variable_set( var.to_s, nil ) }
 
         @dir            = {}
         @dir['root']    = root_path
@@ -410,7 +489,9 @@ class Options
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
         @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['path_extractors']    = @dir['root'] + 'path_extractors/'
+        @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
+        @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
+
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]
@@ -420,9 +501,13 @@ class Options
         # their data types for later verification
 
         @datastore  = {}
-        @redundant  = []
+        @redundant  = {}
 
-        @obey_robots_txt = false
+        @obey_robots_txt   = false
+        @fuzz_methods      = false
+        @audit_cookies_extensively = false
+        @exclude_binaries  = false
+        @auto_redundant    = false
 
         @depth_limit      = -1
         @link_count_limit = -1
@@ -439,6 +524,7 @@ class Options
 
         @exclude    = []
         @exclude_cookies    = []
+        @exclude_vectors    = []
 
         @include    = []
 
@@ -447,7 +533,6 @@ class Options
 
         @rpc_instance_port_range = [1025, 65535]
 
-        @exclude_cookies    = []
         @load_profile       = []
         @restrict_paths     = []
         @extend_paths       = []
@@ -455,10 +540,215 @@ class Options
 
         @min_pages_per_instance = 30
         @max_slaves = 10
+        self
     end
 
-    def parse!
+    #
+    # Checks is the provided URL matches a redundant filter
+    # and decreases its counter if so.
+    #
+    # If a filter's counter has reached 0 the method returns true.
+    #
+    # @param    [String]    url
+    # @param    [Block]     block   to be called for each match and be passed
+    #                                   the count, regexp and url
+    #
+    # @return   [Bool]  true if the url is redundant, false otherwise
+    #
+    def redundant?( url, &block )
+        redundant.each do |regexp, count|
+            next if !(url =~ regexp)
+            return true if count == 0
 
+            block.call( count, regexp, url ) if block_given?
+
+            redundant[regexp] -= 1
+        end
+        false
+    end
+
+    def exclude_binaries?
+        self.exclude_binaries
+    end
+
+    def auto_redundant?
+        !!@auto_redundant
+    end
+
+    def fuzz_methods?
+        self.fuzz_methods
+    end
+
+    def do_not_crawl
+        self.link_count_limit = 0
+    end
+
+    def crawl
+        self.link_count_limit = -1
+    end
+
+    def crawl?
+        self.link_count_limit != 0
+    end
+
+    #
+    # Normalizes and sets +url+ as the target URL.
+    #
+    # @param    [String]    url     absolute URL of the targeted web app
+    #
+    # @return   [String]    normalized +url+
+    #
+    def url=( url )
+        return if !url
+
+        require @dir['lib'] + 'exceptions'
+        require @dir['lib'] + 'ruby'
+        require @dir['lib'] + 'cache'
+        require @dir['lib'] + 'utilities'
+
+        parsed = Utilities.uri_parse( url.to_s )
+        if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
+            fail Exceptions::InvalidURL,
+                 "Invalid URL argument, please provide a full absolute URL and try again."
+        end
+
+        @url = parsed.to_s
+    end
+
+    #
+    # Enables auditing of element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
+    def audit( *element_types )
+        element_types.flatten.compact.each do |type|
+            begin
+                self.send( "audit_#{type}=", true )
+            rescue
+                begin
+                    self.send( "audit_#{type}s=", true )
+                rescue
+                end
+            end
+        end
+        true
+    end
+
+    #
+    # Disables auditing of element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
+    def dont_audit( *element_types )
+        element_types.flatten.compact.each do |type|
+            begin
+                self.send( "audit_#{type}=", false )
+            rescue
+                begin
+                    self.send( "audit_#{type}s=", false )
+                rescue
+                end
+            end
+        end
+        true
+    end
+
+
+    #
+    # Get audit settings for the given element types.
+    #
+    # @param    [String, Symbol, Array] element_types [Allowed: links, forms, cookies, headers]
+    #
+    # @return   [Bool]
+    #
+    def audit?( *element_types )
+        !element_types.flatten.compact.map do |type|
+            !!begin
+                self.send( "audit_#{type}" )
+            rescue
+                begin
+                    self.send( "audit_#{type}s" )
+                rescue
+                end
+            end
+        end.uniq.include?( false )
+    end
+
+    #
+    # Configures options via a Hash object
+    #
+    # @param    [Hash]  options     options to set
+    #
+    # @return   [TrueClass]
+    #
+    def set( options )
+        options.each_pair do |k, v|
+            begin
+                send( "#{k.to_s}=", v )
+            rescue => e
+                #ap e
+                #ap e.backtrace
+            end
+        end
+        true
+    end
+
+    # @param    [Hash]  data
+    def datastore=( data )
+        @datastore = Hash[data]
+    end
+
+    #
+    # Sets the redundancy filters.
+    #
+    # Filter example:
+    #    {
+    #        # regexp           counter
+    #        /calendar\.php/ => 5
+    #        'gallery\.php' => '3'
+    #    }
+    #
+    # @param     [Hash]  filters
+    #
+    def redundant=( filters )
+        @redundant = if filters.is_a?( Array ) ||
+            (filters.is_a?( Hash ) && (filters.keys & %w(regexp count)).size == 2)
+            [filters].flatten.inject({})  do |h, filter|
+                regexp = filter['regexp'].is_a?( Regexp ) ?
+                    filter['regexp'] : Regexp.new( filter['regexp'].to_s )
+
+                h.merge!( regexp => Integer( filter['count'] ) )
+                h
+            end
+        else
+            filters.inject({}) do |h, (regexp, counter)|
+                regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+                h.merge!( regexp => Integer( counter ) )
+                h
+            end
+        end
+    end
+
+    # these options need to contain Array<String>
+    [ :exclude_cookies, :exclude_vectors, :mods, :restrict_paths,
+      :extend_paths ].each do |m|
+        define_method( "#{m}=".to_sym ) do |arg|
+            arg = [arg].flatten.map { |s| s.to_s }
+            instance_variable_set( "@#{m}".to_sym, arg )
+        end
+    end
+    alias :modules :mods
+    alias :modules= :mods=
+
+    # these options need to contain Array<Regexp>
+    [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+        define_method( "#{m}=".to_sym ) do |arg|
+            arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+            instance_variable_set( "@#{m}".to_sym, arg )
+        end
+    end
+
+    def parse( require_url = true )
         # Construct getops struct
         opts = GetoptLong.new(
             [ '--help',              '-h', GetoptLong::NO_ARGUMENT ],
@@ -478,6 +768,7 @@ class Options
             [ '--redirect-limit',    '-q', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--link-count',        '-u', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--mods',              '-m', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--modules',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--report',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--repload',                 GetoptLong::REQUIRED_ARGUMENT ],
             [ '--authed-by',               GetoptLong::REQUIRED_ARGUMENT ],
@@ -488,17 +779,20 @@ class Options
             [ '--proxy-auth',        '-x', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--proxy-type',        '-y', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--cookie-jar',        '-j', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--cookie-string'          , GetoptLong::REQUIRED_ARGUMENT ],
             [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
-            [ '--http-harvest-last', '-s', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
             [ '--plugin',                  GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--lsplug',                  GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--serialized-opts',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl',                     GetoptLong::NO_ARGUMENT ],
             [ '--ssl-pkey',                GetoptLong::REQUIRED_ARGUMENT ],
             [ '--ssl-cert',                GetoptLong::REQUIRED_ARGUMENT ],
@@ -520,19 +814,28 @@ class Options
             [ '--custom-header',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--restrict-paths',         GetoptLong::REQUIRED_ARGUMENT ],
             [ '--extend-paths',           GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--port-range',             GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-harvest-last',      GetoptLong::NO_ARGUMENT ],
+            [ '--fuzz-methods',           GetoptLong::NO_ARGUMENT ],
+            [ '--audit-cookies-extensively',      GetoptLong::NO_ARGUMENT ],
+            [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
+            [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
+            [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
         )
 
         opts.quiet = true
 
         begin
-            opts.each {
-                |opt, arg|
+            opts.each do |opt, arg|
 
                 case opt
 
                     when '--help'
                         @help = true
+
+                    when '--serialized-opts'
+                        merge!( unserialize( arg ) )
 
                     when '--only-positives'
                         @only_positives = true
@@ -547,7 +850,7 @@ class Options
                         plugin, opt_str = arg.split( ':', 2 )
 
                         opts = {}
-                        if( opt_str )
+                        if opt_str
                             opt_arr = opt_str.split( ',' )
                             opt_arr.each {
                                 |c_opt|
@@ -559,10 +862,8 @@ class Options
                         @plugins[plugin] = opts
 
                     when '--redundant'
-                        @redundant << {
-                            'regexp'  => Regexp.new( arg.to_s.split( /:/ )[0] ),
-                            'count'   => Integer( arg.to_s.split( /:/ )[1] ),
-                        }
+                        regexp, counter = arg.to_s.split( ':', 2 )
+                        @redundant[ Regexp.new( regexp ) ] = Integer( counter )
 
                     when '--port-range'
                         first, last = arg.to_s.split( '-' )
@@ -602,7 +903,10 @@ class Options
                         @lsrep << Regexp.new( arg.to_s )
 
                     when '--http-req-limit'
-                      @http_req_limit = arg.to_i
+                        @http_req_limit = arg.to_i
+
+                    when '--http-timeout'
+                        @http_timeout = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true
@@ -619,14 +923,14 @@ class Options
                     when '--audit-headers'
                         @audit_headers = true
 
-                    when '--mods'
+                    when '--mods', '--modules'
                         @mods = arg.to_s.split( /,/ )
 
                     when '--report'
                         report, opt_str = arg.split( ':' )
 
                         opts = {}
-                        if( opt_str )
+                        if opt_str
                             opt_arr = opt_str.split( ',' )
                             opt_arr.each {
                                 |c_opt|
@@ -653,11 +957,11 @@ class Options
                         @authed_by = arg
 
                     when '--proxy'
-                        @proxy_addr, @proxy_port =
+                        @proxy_host, @proxy_port =
                             arg.to_s.split( /:/ )
 
                     when '--proxy-auth'
-                        @proxy_user, @proxy_pass =
+                        @proxy_username, @proxy_password =
                             arg.to_s.split( /:/ )
 
                     when '--proxy-type'
@@ -665,6 +969,9 @@ class Options
 
                     when '--cookie-jar'
                         @cookie_jar = arg.to_s
+
+                    when '--cookie-string'
+                        @cookie_string = arg.to_s
 
                     when '--user-agent'
                         @user_agent = arg.to_s
@@ -678,11 +985,16 @@ class Options
                     when '--exclude-cookie'
                         @exclude_cookies << arg
 
+                    when '--exclude-vector'
+                        @exclude_vectors << arg
+
                     when '--follow-subdomains'
                         @follow_subdomains = true
 
                     when '--http-harvest-last'
-                        @http_harvest_last = true
+                        puts 'The http-harvest-last option has been removed.'
+                        puts 'Please adjust your command-line arguments and try again.'
+                        exit
 
                     when '--ssl'
                         @ssl = true
@@ -735,42 +1047,95 @@ class Options
                     when '--password'
                         @webui_password = arg.to_s
 
+                    when '--fuzz-methods'
+                        @fuzz_methods = true
+
+                    when '--audit-cookies-extensively'
+                        @audit_cookies_extensively = true
+
+                    when '--exclude-binaries'
+                        @exclude_binaries = true
+
+                    when '--auto-redundant'
+                        @auto_redundant = arg.empty? ? 10 : arg.to_i
+
+                    when '--login-check-url'
+                        @login_check_url = arg
+
+                    when '--login-check-pattern'
+                        @login_check_pattern = arg
                 end
-            }
-        rescue Exception => e
-            puts e.inspect
+            end
+
+            if (!@login_check_url && @login_check_pattern) ||
+                (@login_check_url && !@login_check_pattern)
+                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+            end
+
+        rescue => e
+            puts BANNER
+            puts
+            puts e
             exit
         end
 
-        self.url = ARGV.shift
+        self.url = ARGV.shift if require_url
     end
 
+    # @return   [String]    root path of the framework
     def root_path
         File.dirname( File.dirname( File.dirname( File.expand_path( File.expand_path(  __FILE__  ) ) ) ) ) + '/'
     end
 
     #
-    # Saves 'self' to file
+    # @return   [String]    Single-line, Base64 encoded serialized version of self.
+    #
+    # @see #unserialize
+    #
+    def serialize
+        Base64.encode64( to_yaml ).split( "\n" ).join
+    end
+
+    #
+    # Unserializes what is returned by {#serialize}.
+    #
+    # @param    [String]    str return value of {#serialize}
+    #
+    # @return   [Arachni::Options]
+    #
+    # @see #serialize
+    #
+    def unserialize( str )
+        YAML.load( Base64.decode64( str ) )
+    end
+
+    #
+    # Saves 'self' to +file+.
     #
     # @param    [String]    file
     #
     def save( file )
 
-        dir           = @dir.clone
-        load_profile  = @load_profile.clone if @load_profile
-        save_profile  = @save_profile.clone if @save_profile
-        authed_by     = @authed_by.clone if @authed_by
+        dir = @dir.clone
 
-        restrict_paths = @restrict_paths.clone if @restrict_paths
-        extend_paths   = @extend_paths.clone if @extend_paths
+        load_profile    = []
+        save_profile    = nil
+        authed_by       = nil
+        restrict_paths  = []
+        extend_paths    = []
 
-        @dir          = nil
-        @load_profile = nil
-        @save_profile = nil
-        @authed_by    = nil
-        @restrict_paths = nil
-        @extend_paths   = nil
+        load_profile   = @load_profile.clone    if @load_profile
+        save_profile   = @save_profile.clone    if @save_profile
+        authed_by      = @authed_by.clone       if @authed_by
+        restrict_paths = @restrict_paths.clone  if @restrict_paths
+        extend_paths   = @extend_paths.clone    if @extend_paths
 
+        @dir            = nil
+        @load_profile   = []
+        @save_profile   = nil
+        @authed_by      = nil
+        @restrict_paths = []
+        @extend_paths   = []
 
         begin
             f = File.open( file, 'w' )
@@ -789,11 +1154,18 @@ class Options
             @extend_paths   = extend_paths
         end
 
-        return f.path
+        f.path
     end
 
-    def load( filename )
-        opts = YAML::load( IO.read( filename ) )
+    #
+    # Loads a file created by {#save}.
+    #
+    # @param    [String]    filepath    path to the file created by {#save}
+    #
+    # @return   [Arachni::Options]
+    #
+    def load( filepath )
+        opts = YAML::load( IO.read( filepath ) )
 
         if opts.restrict_paths_filepath
             opts.restrict_paths = paths_from_file( opts.restrict_paths_filepath )
@@ -803,29 +1175,7 @@ class Options
             opts.extend_paths   = paths_from_file( opts.extend_paths_filepath )
         end
 
-        return opts
-    end
-
-    def url=( str )
-        return if !str
-
-        require 'uri'
-        require @dir['lib'] + 'exceptions'
-        require @dir['lib'] + 'module/utilities'
-
-        begin
-            @url = URI( Arachni::Module::Utilities.normalize_url( str.to_s ) )
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-            raise( Arachni::Exceptions::InvalidURL, "Invalid URL argument." )
-        end
-
-        return str
-    end
-
-    def restrict_paths=( urls )
-        @restrict_paths = [urls].flatten
+        opts
     end
 
     #
@@ -834,50 +1184,48 @@ class Options
     # @return    [Hash]
     #
     def to_h
-        hash = Hash.new
-        self.instance_variables.each {
-            |var|
+        hash = {}
+        self.instance_variables.each do |var|
             hash[normalize_name( var )] = self.instance_variable_get( var )
-        }
+        end
         hash
+    end
+    alias :to_hash :to_h
+
+    #
+    # Compares 2 {Arachni::Options} objects.
+    #
+    # @param    [Arachni::Options]  other
+    #
+    # @return   [Bool]  +true+ if +self == other+, +false+ otherwise
+    #
+    def ==( other )
+        to_hash == other.to_hash
     end
 
     #
-    # Merges self with the object in 'options'
+    # Merges +self+ with the object in +options+, skipping +nils+ and empty +Array+s or +Hash+es.
     #
-    # @param    [Options]
+    # @param    [Arachni::Options, #to_hash]   options
+    #
+    # @return   [Arachni::Options]   updated +self+
     #
     def merge!( options )
-        options.to_h.each_pair {
-            |k, v|
-
+        options.to_hash.each_pair do |k, v|
+            next if !v
             next if ( v.is_a?( Array ) || v.is_a?( Hash ) ) && v.empty?
-            send( "#{k}=", v ) if v
-        }
+            send( "#{k.to_s}=", v )
+        end
+        self
     end
 
     def to_args
-
-        cli_args = ''
-
-        self.to_h.keys.each {
-            |key|
-
-            arg = self.to_arg( key )
-
-            cli_args += " #{arg.to_s}" if arg
-        }
-
-        return cli_args += " #{self.url}"
+        ' ' + to_hash.map { |key, val| to_arg( key ) if val }.compact.join( ' ' ) + " #{self.url}"
     end
 
     def to_arg( key )
 
-        do_not_parse = [
-            'show_profile',
-            'url',
-            'dir',
-        ]
+        do_not_parse = %w(show_profile url dir)
 
         var = self.instance_variable_get( "@#{key}" )
 
@@ -885,9 +1233,10 @@ class Options
         return if ( var.is_a?( Array ) || var.is_a?( Hash ) ) && var.empty?
         return if do_not_parse.include?( key )
         return if key == 'include' && var == [/.*/]
-        return if key == 'reports' && var.keys == ['stdout']
+        return if key == 'reports' && var.keys == %w(stdout)
 
         key = 'exclude_cookie' if key == 'exclude_cookies'
+        key = 'exclude_vector' if key == 'exclude_vectors'
         key = 'report'         if key == 'reports'
 
         key = key.gsub( '_', '-' )
@@ -912,16 +1261,14 @@ class Options
                 key = 'verbosity'
 
             when 'redundant'
-                var.each {
-                    |rule|
+                var.each do |rule|
                     arg += " --#{key}=#{rule['regexp'].source}:#{rule['count']}"
-                }
+                end
                 return arg
 
             when 'plugins','report'
                 arg = ''
-                var.each {
-                    |opt, val|
+                var.each do |opt, val|
                     arg += " --#{key.chomp( 's' )}=#{opt}"
                     arg += ':' if !val.empty?
 
@@ -931,48 +1278,36 @@ class Options
                     }
 
                     arg.chomp!( ',' )
-                }
+                end
                 return arg
 
             when 'proxy-port'
                 return
 
             when 'proxy-addr'
-                return "--proxy=#{self.proxy_addr}:#{self.proxy_port}"
-
-
+                return "--proxy=#{self.proxy_host}:#{self.proxy_port}"
         end
 
-        if( var.is_a?( TrueClass ) )
+        if var.is_a?( TrueClass )
             arg = "--#{key}"
-        end
-
-        if( var.is_a?( String ) || var.is_a?( Fixnum ) )
+        elsif var.is_a?( String ) || var.is_a?( Fixnum )
             arg = "--#{key}=#{var.to_s}"
-        end
-
-        if( var.is_a?( Array ) )
-
-            var.each {
-                |i|
-
+        elsif var.is_a?( Array )
+            var.each do |i|
                 i = i.source if i.is_a?( Regexp )
-
                 arg += " --#{key}=#{i}"
-            }
-
+            end
         end
 
-        return arg
+        arg
     end
 
     def paths_from_file( file )
-        IO.read( file ).lines.map {
-            |path|
-            path.gsub!( "\n", '' )
-            path.gsub!( "\r", '' )
-            path
-        }
+        IO.read( file ).lines.map { |p| p.strip }
+    end
+
+    def self.method_missing( sym, *args, &block )
+        instance.send( sym, *args, &block )
     end
 
     private
@@ -980,7 +1315,6 @@ class Options
     def normalize_name( name )
         name.to_s.gsub( '@', '' )
     end
-
 
 end
 end

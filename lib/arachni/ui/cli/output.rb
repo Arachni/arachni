@@ -1,11 +1,17 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
@@ -18,62 +24,66 @@ module UI
 # Provides a command line output interface to the framework.<br/>
 # All UIs should provide an Arachni::UI::Output module with these methods.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Output
 
-    # verbosity flag
-    #
-    # if it's on verbose messages will be enabled
-    @@verbose = false
+    def self.reset_output_options
+        # verbosity flag
+        #
+        # if it's on verbose messages will be enabled
+        @@verbose = false
 
-    # debug flag
-    #
-    # if it's on debugging messages will be enabled
-    @@debug   = false
+        # debug flag
+        #
+        # if it's on debugging messages will be enabled
+        @@debug   = false
 
-    # only_positives flag
-    #
-    # if it's on status messages will be disabled
-    @@only_positives  = false
+        @@mute = false
 
-    @@mute  = false
+        # only_positives flag
+        #
+        # if it's on status messages will be disabled
+        @@only_positives  = false
 
-    @@opened = false
+        @@reroute_to_file = false
+
+        @@opened = false
+    end
+
+    reset_output_options
 
     # Prints an error message
     #
     # It ignores all flags, error messages will be output under all
     # circumstances.
     #
-    # @param    [String]    error string
-    # @return    [void]
+    # @param    [String]    str
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
-        File.open( 'error.log', 'a' ){
-            |f|
+        File.open( 'error.log', 'a' ) do |f|
             if !@@opened
                 f.puts
                 f.puts "#{Time.now} " + ( "-" * 80 )
 
-                h = {}
-                ENV.each { |k, v| h[k] = v }
-                f.puts 'ENV:'
-                f.puts h.to_yaml
+                begin
+                    h = {}
+                    ENV.each { |k, v| h[k] = v }
+                    f.puts 'ENV:'
+                    f.puts h.to_yaml
 
-                f.puts "-" * 80
+                    f.puts "-" * 80
 
-                f.puts 'OPTIONS:'
-                f.puts Arachni::Options.instance.to_yaml
+                    f.puts 'OPTIONS:'
+                    f.puts Arachni::Options.instance.to_yaml
+                rescue
+                end
 
                 f.puts "-" * 80
             end
             print_color( "[#{Time.now}]", 31, str, f, true )
-        }
+        end
 
         @@opened = true
     end
@@ -83,7 +93,8 @@ module Output
     #
     # Used mainly to draw attention.
     #
-    # @param    [String]    error string
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_bad( str = '', unmute = false )
         return if muted? && !unmute
@@ -97,11 +108,11 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    status string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_status( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         print_color( '[*]', 34, str, $stdout, unmute )
     end
 
@@ -112,11 +123,11 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    info string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_info( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         print_color( '[~]', 30, str, $stdout, unmute )
     end
 
@@ -125,8 +136,8 @@ module Output
     #
     # Disregards all flags.
     #
-    # @param    [String]    ok string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_ok( str = '', unmute = false )
         print_color( '[+]', 32, str, $stdout, unmute )
@@ -137,13 +148,13 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
-    # @param    [String]    debugging string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_debug( str = '', unmute = false )
-        if !@@debug then return end
+        return if !debug?
         print_color( '[!]', 36, str, $stderr, unmute )
     end
 
@@ -153,13 +164,12 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
-    # @param    [Object]
-    # @return    [void]
+    # @param    [Object]    obj
     #
     def print_debug_pp( obj = nil )
-        if !@@debug then return end
+        return if !debug?
         pp obj
     end
 
@@ -168,13 +178,12 @@ module Output
     # Obeys {@@debug}
     #
     # @see #debug?
-    # @see #debug!
+    # @see #debug
     #
-    # @param    [Exception]
-    # @return    [void]
+    # @param    [Exception] e
     #
     def print_debug_backtrace( e )
-        if !@@debug then return end
+        return if !debug?
         e.backtrace.each{ |line| print_debug( line ) }
     end
 
@@ -190,11 +199,11 @@ module Output
     # @see #verbose?
     # @see #verbose!
     #
-    # @param    [String]    verbose string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_verbose( str = '', unmute = false )
-        if !@@verbose then return end
+        return if !verbose?
         print_color( '[v]', 37, str, $stdout, unmute )
     end
 
@@ -205,13 +214,18 @@ module Output
     # @see #only_positives?
     # @see #only_positives!
     #
-    # @param    [String]    string
-    # @return    [void]
+    # @param    [String]    str
+    # @param    [Bool]    unmute    override mute
     #
     def print_line( str = '', unmute = false )
-        if @@only_positives then return end
+        return if only_positives?
         return if muted? && !unmute
-        puts str
+
+        # we may get IO errors...freaky stuff...
+        begin
+            puts str
+        rescue
+        end
     end
 
     # Sets the {@@verbose} flag to true
@@ -220,13 +234,13 @@ module Output
     #
     # @return    [void]
     #
-    def verbose!
+    def verbose
         @@verbose = true
     end
 
     # Returns the {@@verbose} flag
     #
-    # @see #verbose!
+    # @see #verbose
     #
     # @return    [Bool]    @@verbose
     #
@@ -240,13 +254,18 @@ module Output
     #
     # @return    [void]
     #
-    def debug!
+    def debug_on
         @@debug = true
+    end
+    alias :debug :debug_on
+
+    def debug_off
+        @@debug = false
     end
 
     # Returns the {@@debug} flag
     #
-    # @see #debug!
+    # @see #debug
     #
     # @return    [Bool]    @@debug
     #
@@ -260,8 +279,12 @@ module Output
     #
     # @return    [void]
     #
-    def only_positives!
+    def only_positives
         @@only_positives = true
+    end
+
+    def disable_only_positives
+        @@only_positives = false
     end
 
     # Returns the {@@only_positives} flag
@@ -274,14 +297,13 @@ module Output
         @@only_positives
     end
 
-    def mute!
+    def mute
         @@mute = true
     end
 
-    def unmute!
+    def unmute
         @@mute = false
     end
-
 
     def muted?
         @@mute
@@ -294,18 +316,24 @@ module Output
     # Disregards all flags.
     #
     # @param    [String]    sign
-    # @param    [Integer]   shell color number
-    # @param    [String]    the string to output
+    # @param    [Integer]   color     shell color number
+    # @param    [String]    string    the string to output
+    # @param    [IO]        out        output stream
+    # @param    [Bool]      unmute    override mute
     #
     # @return    [void]
     #
     def print_color( sign, color, string, out = $stdout, unmute = false )
         return if muted? && !unmute
 
-        if out.tty?
-            out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n";
-        else
-            out.print "#{sign} #{string}\n";
+        # we may get IO errors...freaky stuff...
+        begin
+            if out.tty?
+                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n"
+            else
+                out.print "#{sign} #{string}\n"
+            end
+        rescue
         end
     end
 

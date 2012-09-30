@@ -1,14 +1,19 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-require 'datamapper'
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'ui/web/utilities'
 
@@ -20,10 +25,10 @@ module Web
 # Schedules and executes scan jobs.
 #
 #
-# @author: Tasos "Zapotek" Laskos
+# @author Tasos "Zapotek" Laskos
 #                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.2
+#                                      
+# @version 0.1.2
 #
 class Scheduler
 
@@ -64,8 +69,8 @@ class Scheduler
     # Runs a job.
     #
     # @param    [Job]   job
-    # @param    [Hash]  Sinatra environment
-    # @param    [Hash]  Rack session
+    # @param    [Hash]  env  Sinatra environment
+    # @param    [Hash]  session  Rack session
     #
     # @return   [String]    URL of the laucnhed scanner instance
     #

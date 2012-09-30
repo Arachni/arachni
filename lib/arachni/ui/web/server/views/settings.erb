@@ -6,7 +6,7 @@
 
         </div>
 
-        <button onclick="$('#help').dialog( { height: 530, width: 500 } );"/>Help</button>
+        <button onclick="$('#help').dialog( { height: 530, width: 500 } );">Help</button>
 
         <script type="text/javascript">
             $(function() {
@@ -57,6 +57,10 @@
                         Cookies to exclude: <textarea rows="2" cols="20" name="exclude_cookies"><%=session['opts']['settings']['exclude_cookies']%></textarea>
                         <br/>(Newline separated)
                     </p>
+                    <p>
+                        Input vectors (parameters) to exclude (by name): <textarea rows="2" cols="20" name="exclude_vectors"><%=session['opts']['settings']['exclude_vectors']%></textarea>
+                        <br/>(Newline separated)
+                    </p>
                 </fieldset>
 
                 <fieldset>
@@ -68,11 +72,12 @@
                         <br/>
                     </p>
                     <p>
-                        HTTP harvest last: <input type="checkbox" name="http_harvest_last" <% if session['opts']['settings']['http_harvest_last'] == true %> checked="checked" <% end %> />
-                    </p>
-                    <p>
                         Cookie jar: <input type="file" name="cookiejar" size="25" />
                     </p>
+                  <p>
+                      Cookie string: <input name="cookie_string" size="50" value="<%=session['opts']['settings']['cookie_string']%>"/>
+                      <br/>(In the form of: <pre style='display: inline'>cookie_name=cookie_value; cookie_name_2=cookie_value_2;</pre>)
+                  </p>
                     <p>
                         User agent: <input name="user_agent" value="<%=session['opts']['settings']['user_agent']%>"/>
                     </p>
@@ -80,16 +85,16 @@
                         Authorized by: <input name="authed_by" value="<%=session['opts']['settings']['authed_by']%>"/>
                     </p>
                     <p>
-                        Proxy address: <input name="proxy_addr" value="<%=session['opts']['settings']['proxy_addr']%>"/>
+                        Proxy address: <input name="proxy_host" value="<%=session['opts']['settings']['proxy_host']%>"/>
                     </p>
                     <p>
                         Proxy port: <input name="proxy_port" value="<%=session['opts']['settings']['proxy_port']%>"/>
                     </p>
                     <p>
-                        Proxy username: <input name="proxy_user" value="<%=session['opts']['settings']['proxy_user']%>"/>
+                        Proxy username: <input name="proxy_username" value="<%=session['opts']['settings']['proxy_username']%>"/>
                     </p>
                     <p>
-                        Proxy password: <input name="proxy_pass" value="<%=session['opts']['settings']['proxy_pass']%>"/>
+                        Proxy password: <input name="proxy_password" value="<%=session['opts']['settings']['proxy_password']%>"/>
                     </p>
                     <p>
                         Proxy type:

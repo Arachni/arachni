@@ -1,30 +1,33 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-module Arachni
-module Module
+module Arachni::Module
 
 #
 # KeyFiller class
 #
-# Included by {Module::Auditor}.<br/>
-# Tries to fill in webapp parameters with values of proper type
+# Included by {Module::Auditor}
+#
+# Tries to fill in input parameters with values of proper type
 # based on their name.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.1
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class KeyFiller
-  
+
     # Hash of regexps for the parameter keys
     # and the values to to fill in
     #
@@ -42,7 +45,11 @@ class KeyFiller
         'account' => '12',
         'id'      => '1'
     }
-        
+
+    def self.regexps
+        @@regexps
+    end
+
     #
     # Tries to fill a hash with values of appropriate type<br/>
     # based on the key of the parameter.
@@ -52,36 +59,29 @@ class KeyFiller
     # @return   [Hash]
     #
     def self.fill( hash )
-        
-        hash.keys.each{
-            |key|
-            
+        hash = hash.dup
+        hash.keys.each do |key|
             next if hash[key] && !hash[key].empty?
-            
+
             if val = self.match?( key )
                 hash[key] = val
             end
-            
+
             # moronic default value...
-            # will figure  out ssomething better in the future...
+            # will figure  out something better in the future...
             hash[key] = '1' if( !hash[key] || hash[key].empty? )
-        }
-        
-        return hash
+        end
+
+        hash
     end
-    
+
     private
-    
+
     def self.match?( str )
-      @@regexps.keys.each {
-        |key|
-        return @@regexps[key] if( str =~ Regexp.new( key, 'i' ) )
-        
-      }
-      return false
+      @@regexps.keys.each { |key| return @@regexps[key] if str =~ Regexp.new( key, 'i' ) }
+      false
     end
-    
-end
 
 end
+
 end

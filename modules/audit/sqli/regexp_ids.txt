@@ -1,5 +1,4 @@
 System\.Data\.OleDb\.OleDbException
-\[SQL Server\]
 \[Microsoft\]\[ODBC SQL Server Driver\]
 \[SQLServer JDBC Driver\]
 \[SqlException
@@ -7,24 +6,20 @@ System\.Data\.SqlClient\.SqlException
 Unclosed quotation mark after the character string
 '80040e14'
 mssql_query\(\)
-odbc_exec\(\)
 Microsoft OLE DB Provider for ODBC Drivers
 Microsoft OLE DB Provider for SQL Server
 Incorrect syntax near
 Sintaxis incorrecta cerca de
 Syntax error in string in query expression
-ADODB\.Field \(0x800A0BCD\)<br>
-Procedure '[^']+' requires parameter '[^']+'
-ADODB\.Recordset\'
+ADODB\.Field \(0x800A0BCD\)
+odbc_exec\(\)
+Procedure or function .* expects parameter
 Unclosed quotation mark before the character string
 DB2 SQL error:
-\[IBM\]\[CLI Driver\]\[DB26000\]
-\[CLI Driver\]
-\[DB26000\]
+\[IBM\]\[CLI Driver\]\[DB2/6000\]
 Sybase message:
-Syntax error in query expression
+Syntax error .* in query expression
 Data type mismatch in criteria expression\.
-Microsoft JET Database Engine
 \[Microsoft\]\[ODBC Microsoft Access Driver\]
 (PLS|ORA)-[0-9][0-9][0-9][0-9]
 PostgreSQL query failed:
@@ -43,17 +38,13 @@ Column count doesn't match
 the used select statements have different number of columns
 Table '[^']+' doesn't exist
 com\.informix\.jdbc
-Dynamic Page Generation Error:
 An illegal character has been found in the statement
 <b>Warning<b>: ibase_
-Dynamic SQL Error
 \[DM_QUERY_E_SYNTAX\]
 has occurred in the vicinity of:
-A Parser Error \(syntax error\)
 java\.sql\.SQLException
 Unexpected end of command in statement
 \[Macromedia\]\[SQLServer JDBC Driver\]
-where clause
 SQL syntax.*MySQL
 Warning.*mysql_.*
 valid MySQL result
@@ -64,11 +55,8 @@ Driver.*SQL[\-\_\ ]*Server
 OLE DB.*SQL Server
 SQL Server.*Driver
 Warning.*mssql_.*
-Access.*Driver
-Driver.*Access
 JET Database Engine
 Access Database Engine
-ORA-[0-9][0-9][0-9][0-9]
 Oracle error
 Oracle.*Driver
 Warning.*oci_.*
@@ -76,8 +64,6 @@ Warning.*ora_.*
 CLI Driver.*DB2
 DB2 SQL error
 Exception.*Informix
-Sybase message
-Dynamic SQL Error
 Warning.*sqlite_.*
 SQLite/JDBCDriver
 SQLite\.Exception

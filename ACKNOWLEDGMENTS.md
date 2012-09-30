@@ -11,4 +11,4 @@ I’d like to thank:
 for allowing me to test Arachni against their websites during the early stages of development.
 
 All the people on [GitHub](http://github.com/Arachni/arachni/issues)
-that have submitted bugs and given constructive feedback.
+who have submitted bugs and given constructive feedback.

@@ -1,37 +1,51 @@
+# encoding: utf-8
+
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
+
+require 'rubygems'
+require 'bundler/setup'
 
 require 'ap'
 require 'pp'
-require 'rubygems'
 
 require File.expand_path( File.dirname( __FILE__ ) ) + '/options'
-opts = Arachni::Options.instance
-
-require opts.dir['lib'] + 'version'
-require opts.dir['lib'] + 'ruby'
-require opts.dir['lib'] + 'exceptions'
-require opts.dir['lib'] + 'spider'
-require opts.dir['lib'] + 'parser'
-require opts.dir['lib'] + 'issue'
-require opts.dir['lib'] + 'module'
-require opts.dir['lib'] + 'plugin'
-require opts.dir['lib'] + 'audit_store'
-require opts.dir['lib'] + 'http'
-require opts.dir['lib'] + 'report'
-require opts.dir['lib'] + 'database'
-require opts.dir['lib'] + 'component_manager'
-require opts.dir['mixins'] + 'progress_bar'
-
 
 module Arachni
+
+lib = Options.dir['lib']
+require lib + 'version'
+require lib + 'ruby'
+require lib + 'exceptions'
+require lib + 'cache'
+require lib + 'utilities'
+require lib + 'uri'
+require lib + 'spider'
+require lib + 'parser'
+require lib + 'issue'
+require lib + 'module'
+require lib + 'plugin'
+require lib + 'audit_store'
+require lib + 'http'
+require lib + 'report'
+require lib + 'database'
+require lib + 'component/manager'
+require lib + 'session'
+
+require Options.dir['mixins'] + 'progress_bar'
 
 #
 # The Framework class ties together all the components.
@@ -43,25 +57,21 @@ module Arachni
 # It runs the audit, loads modules and reports and runs them according to
 # user options.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2.5
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Framework
-
     #
     # include the output interface but try to use it as little as possible
     #
     # the UI classes should take care of communicating with the user
     #
-    include Arachni::UI::Output
+    include UI::Output
 
-    include Arachni::Module::Utilities
-    include Arachni::Mixins::Observable
+    include Utilities
+    include Mixins::Observable
 
     # the version of *this* class
-    REVISION     = '0.2.5'
+    REVISION = '0.2.7'
 
     #
     # Instance options
@@ -85,10 +95,16 @@ class Framework
     #
     attr_reader :plugins
 
-    #
-    # @return   [Arachni::Spider]   spider
-    #
+    # @return   [Session]   webapp session helper
+    attr_reader :session
+
+    # @return   [Spider]   webapp spider
     attr_reader :spider
+
+    #
+    # @return   [Arachni::HTTP]     HTTP instance
+    #
+    attr_reader :http
 
     #
     # URLs of all discovered pages
@@ -98,25 +114,11 @@ class Framework
     attr_reader :sitemap
 
     #
-    # Array of URLs that have been audited
-    #
-    # @return   [Array]
-    #
-    attr_reader :auditmap
-
-    #
     # Total number of pages added to their audit queue
     #
     # @return   [Integer]
     #
     attr_reader :page_queue_total_size
-
-    #
-    # Current amount of pages in the audit queue
-    #
-    # @return   [Integer]
-    #
-    attr_reader :page_queue_size
 
     #
     # Total number of urls added to their audit queue
@@ -126,28 +128,24 @@ class Framework
     attr_reader :url_queue_total_size
 
     #
-    # Current amount of urls in the audit queue
-    #
-    # @return   [Integer]
-    #
-    attr_reader :url_queue_size
-
-
-    #
     # Initializes system components.
     #
     # @param    [Options]    opts
     #
-    def initialize( opts )
+    def initialize( opts = Arachni::Options.instance )
 
-        Encoding.default_external = "BINARY"
-        Encoding.default_internal = "BINARY"
+        Encoding.default_external = 'BINARY'
+        Encoding.default_internal = 'BINARY'
 
         @opts = opts
 
-        @modules = Arachni::Module::Manager.new( @opts )
-        @reports = Arachni::Report::Manager.new( @opts )
-        @plugins = Arachni::Plugin::Manager.new( self )
+        @modules = Module::Manager.new( self )
+        @reports = Report::Manager.new( @opts )
+        @plugins = Plugin::Manager.new( self )
+
+        @session = Session.new( @opts )
+        reset_spider
+        @http    = HTTP.instance
 
         # will store full-fledged pages generated by the Trainer since these
         # may not be be accessible simply by their URL
@@ -160,18 +158,13 @@ class Framework
         @url_queue = Queue.new
         @url_queue_total_size = 0
 
-        prepare_cookie_jar( )
-        prepare_user_agent( )
-
         # deep clone the redundancy rules to preserve their counter
         # for the reports
         @orig_redundant = @opts.redundant.deep_clone
 
         @running = false
+        @status  = :ready
         @paused  = []
-
-        @plugin_store = {}
-        @store = nil
 
         @auditmap = []
         @sitemap  = []
@@ -180,61 +173,48 @@ class Framework
     end
 
     #
-    # @return   [Arachni::HTTP]     HTTP instance
-    #
-    def http
-        Arachni::HTTP.instance
-    end
-
-    #
-    # Prepares the framework for the audit.
-    #
-    # Sets the status to 'running', starts the clock and runs the plugins.
-    #
-    # Must be called just before calling {#audit}.
-    #
-    def prepare
-        @running = true
-        @opts.start_datetime = Time.now
-
-        # run all plugins
-        @plugins.run
-    end
-
-    #
     # Runs the system
     #
     # It parses the instance options, {#prepare}, runs the {#audit} and {#clean_up!}.
     #
-    # @param   [Block]     &block  a block to call after the audit has finished
+    # @param   [Block]  block  a block to call after the audit has finished
     #                                   but before running the reports
     #
     def run( &block )
         prepare
 
         # catch exceptions so that if something breaks down or the user opted to
-        # exit the reports will still run with whatever results
-        # Arachni managed to gather
-        begin
-            # start the audit
-            exception_jail{ audit( ) }
-        rescue Exception => e
-            # ap e
-            # ap e.backtrace
-        end
+        # exit the reports will still run with whatever results Arachni managed to gather
+        exception_jail( false ){ audit }
 
-        clean_up!
-        begin
-            block.call if block
-        rescue Exception
-        end
+        clean_up
+        exception_jail( false ){ block.call } if block_given?
+        @status = :done
 
         # run reports
-        if( @opts.reports && !@opts.reports.empty? )
-            exception_jail{ @reports.run( audit_store( ) ) }
-        end
+        @reports.run( audit_store ) if !@reports.empty?
 
-        return true
+        true
+    end
+
+    #
+    # Returns the status of the instance as a string.
+    #
+    # Possible values are (in order):
+    # * ready -- Just initialised and waiting for instructions
+    # * preparing -- Getting ready to start (i.e. initing plugins etc.)
+    # * crawling -- The instance is crawling the target webapp
+    # * auditing-- The instance is currently auditing the webapp
+    # * paused -- The instance has posed (if applicable)
+    # * cleanup -- The scan has completed and the instance is cleaning up
+    #   after itself (i.e. waiting for plugins to finish etc.).
+    # * done -- The scan has completed
+    #
+    # @return   [String]
+    #
+    def status
+        return 'paused' if paused?
+        @status.to_s
     end
 
     #
@@ -278,15 +258,8 @@ class Framework
             @opts.delta_time = Time.now - @opts.start_datetime
         end
 
-        curr_avg = 0
-        if http.curr_res_cnt > 0 && http.curr_res_time > 0
-            curr_avg = (http.curr_res_cnt / http.curr_res_time).to_i
-        end
-
         avg = 0
-        if res_cnt > 0
-            avg = ( res_cnt / @opts.delta_time ).to_i
-        end
+        avg = (res_cnt / @opts.delta_time).to_i if res_cnt > 0
 
         # we need to remove URLs that lead to redirects from the sitemap
         # when calculating the progress %.
@@ -296,11 +269,7 @@ class Framework
         # so the sitemap and auditmap will never match and the progress will
         # never get to 100% which may confuse users.
         #
-        if @spider
-            redir_sz = @spider.redirects.size
-        else
-            redir_sz = 0
-        end
+        redir_sz = spider.redirects.size
 
         #
         # There are 2 audit phases:
@@ -331,22 +300,16 @@ class Framework
         #
         # This is not very granular but it's good enough for now...
         #
-        if Arachni::Module::Auditor.timeout_loaded_modules.size > 0
-            multi = 50
-        else
-            multi = 100
-        end
+        multi = Module::Auditor.timeout_loaded_modules.size > 0 ? 50 : 100
+        progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * multi
 
-        progress = (Float( auditmap_sz ) /
-            ( sitemap_sz - redir_sz ) ) * multi
+        if Module::Auditor.running_timeout_attacks?
 
-        if Arachni::Module::Auditor.running_timeout_attacks?
-
-            called_blocks = Arachni::Module::Auditor.timeout_audit_operations_cnt -
-                Arachni::Module::Auditor.current_timeout_audit_operations_cnt
+            called_blocks = Module::Auditor.timeout_audit_operations_cnt -
+                Module::Auditor.current_timeout_audit_operations_cnt
 
             progress += ( Float( called_blocks ) /
-                Arachni::Module::Auditor.timeout_audit_operations_cnt ) * multi
+                Module::Auditor.timeout_audit_operations_cnt ) * multi
         end
 
         begin
@@ -358,23 +321,23 @@ class Framework
         # sometimes progress may slightly exceed 100%
         # which can cause a few strange stuff to happen
         progress = 100.0 if progress > 100.0
-
-        return {
-            :requests   => req_cnt,
-            :responses  => res_cnt,
-            :time_out_count  => http.time_out_count,
-            :time       => audit_store.delta_time,
-            :avg        => avg,
-            :sitemap_size  => @sitemap.size,
-            :auditmap_size => auditmap_sz,
-            :progress      => progress,
-            :curr_res_time => http.curr_res_time,
-            :curr_res_cnt  => http.curr_res_cnt,
-            :curr_avg      => curr_avg,
-            :average_res_time => http.average_res_time,
-            :max_concurrency  => http.max_concurrency,
-            :current_page     => @current_url,
-            :eta           => ::Arachni::Mixins::ProgressBar.eta( progress, @opts.start_datetime )
+        pb = Mixins::ProgressBar.eta( progress, @opts.start_datetime )
+        {
+            requests:         req_cnt,
+            responses:        res_cnt,
+            time_out_count:   http.time_out_count,
+            time:             audit_store.delta_time,
+            avg:              avg,
+            sitemap_size:     @sitemap.size,
+            auditmap_size:    auditmap_sz,
+            progress:         progress,
+            curr_res_time:    http.curr_res_time,
+            curr_res_cnt:     http.curr_res_cnt,
+            curr_avg:         http.curr_res_per_second,
+            average_res_time: http.average_res_time,
+            max_concurrency:  http.max_concurrency,
+            current_page:     @current_url,
+            eta:              pb
         }
     end
 
@@ -390,108 +353,10 @@ class Framework
     # Pushes a URL to the URL audit queue and updates {#url_queue_total_size}
     #
     def push_to_url_queue( url )
-        @url_queue << url
+        abs = to_absolute( url )
+        @url_queue.push( abs ? abs : url )
         @url_queue_total_size += 1
     end
-
-    #
-    # Performs the audit
-    #
-    # Runs the spider, pushes each page or url to their respective audit queue,
-    # calls {#audit_queue}, runs the timeout attacks ({Arachni::Module::Auditor.timeout_audit_run}) and finally re-runs
-    # {#audit_queue} in case the timing attacks uncovered a new page.
-    #
-    def audit
-        wait_if_paused
-
-        @spider = Arachni::Spider.new( @opts )
-
-        # if we're restricted to a given list of paths there's no reason to run the spider
-        if @opts.restrict_paths && !@opts.restrict_paths.empty?
-            @sitemap = @opts.restrict_paths
-            @sitemap.each {
-                |url|
-                push_to_url_queue( url_sanitize( url ) )
-            }
-        else
-            # initiates the crawl
-            @spider.run( false ) {
-                |response|
-                @sitemap |= @spider.sitemap
-                push_to_url_queue( url_sanitize( response.effective_url ) )
-            }
-        end
-
-        audit_queue
-
-        exception_jail {
-            if !Arachni::Module::Auditor.timeout_audit_blocks.empty?
-                print_line
-                print_status( 'Running timing attacks.' )
-                print_info( '---------------------------------------' )
-                Arachni::Module::Auditor.on_timing_attacks {
-                    |res, elem|
-                    @current_url = elem.action if !elem.action.empty?
-                }
-                Arachni::Module::Auditor.timeout_audit_run
-            end
-
-            audit_queue
-        }
-
-    end
-
-    #
-    # Audits the URL and Page queues
-    #
-    def audit_queue
-
-        # goes through the URLs discovered by the spider, repeats the request
-        # and parses the responses into page objects
-        #
-        # yes...repeating the request is wasteful but we can't store the
-        # responses of the spider to consume them here because there's no way
-        # of knowing how big the site will be.
-        #
-        while( !@url_queue.empty? && url = @url_queue.pop )
-
-            http.get( url, :remove_id => true ).on_complete {
-                |res|
-
-                page = Arachni::Parser::Page.from_http_response( res, @opts )
-
-                # audit the page
-                exception_jail{ run_mods( page ) }
-
-                # don't let the page queue build up,
-                # consume it as soon as possible because the pages are stored
-                # in the FS and thus take up precious system resources
-                audit_page_queue
-            }
-
-            harvest_http_responses if !@opts.http_harvest_last
-        end
-
-        harvest_http_responses if( @opts.http_harvest_last )
-
-        audit_page_queue
-
-        harvest_http_responses if( @opts.http_harvest_last )
-    end
-
-    #
-    # Audits the page queue
-    #
-    def audit_page_queue
-        # this will run until no new elements appear for the given page
-        while( !@page_queue.empty? && page = @page_queue.pop )
-
-            # audit the page
-            exception_jail{ run_mods( page ) }
-            harvest_http_responses if !@opts.http_harvest_last
-        end
-    end
-
 
     #
     # Returns the results of the audit as an {AuditStore} instance
@@ -500,66 +365,23 @@ class Framework
     #
     # @return    [AuditStore]
     #
-    def audit_store( fresh = true )
+    def audit_store
+        opts = @opts.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
-        @opts.redundant = @orig_redundant
-        opts = @opts.to_h
+        opts['redundant'] = @orig_redundant
         opts['mods'] = @modules.keys
 
-        if( !fresh && @store )
-            return @store
-        else
-            return @store = AuditStore.new( {
-                :version  => version( ),
-                :revision => REVISION,
-                :options  => opts,
-                :sitemap  => audit_store_sitemap || [],
-                :issues   => @modules.results( ).deep_clone,
-                :plugins  => @plugin_store
-            })
-         end
+        AuditStore.new(
+            version:  version,
+            revision: revision,
+            options:  opts,
+            sitemap:  auditstore_sitemap || [],
+            issues:   @modules.results.deep_clone,
+            plugins:  @plugins.results
+        )
     end
     alias :auditstore :audit_store
-
-    #
-    # Special sitemap for the auditstore.
-    #
-    # Used only under special circumstances, will usually return the {#sitemap}
-    # but can be overridden by the {::Arachni::RPC::Framework}.
-    #
-    # @return   [Array]
-    #
-    def audit_store_sitemap
-        @override_sitemap && !@override_sitemap.empty? ? @override_sitemap : @sitemap
-    end
-
-    #
-    # Adds an object to the plugin store.
-    #
-    # Should only be called once, if an entry for a plugin already exists
-    # it will just return.
-    #
-    # @param    [String]   plugin   plugin/owner name
-    # @param    [Object]   obj      object to store
-    #
-    def plugin_store( plugin, obj )
-        name = ''
-        @plugins.each_pair {
-            |k, v|
-
-            if plugin.class.name == v.name
-                name = k
-                break
-            end
-        }
-
-        return if @plugin_store[name]
-
-        @plugin_store[name] = {
-            :results => obj
-        }.merge( plugin.class.info )
-    end
 
     #
     # Returns an array of hashes with information
@@ -568,20 +390,21 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsmod
-        @modules.available.map {
-            |name|
-
+        loaded = @modules.loaded
+        @modules.clear
+        @modules.available.map do |name|
             path = @modules.name_to_path( name )
             next if !lsmod_match?( path )
 
             @modules[name].info.merge(
-                :mod_name => name,
-                :author   => [@modules[name].info[:author]].flatten.map { |a| a.strip },
-                :path     => path.strip
+                mod_name: name,
+                author:   [@modules[name].info[:author]].flatten.map { |a| a.strip },
+                path:     path.strip
             )
-        }.compact
+        end.compact
     ensure
         @modules.clear
+        @modules.load( loaded )
     end
 
     #
@@ -591,20 +414,21 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsrep
-        @reports.available.map {
-            |report|
-
+        loaded = @reports.loaded
+        @reports.clear
+        @reports.available.map do |report|
             path = @reports.name_to_path( report )
             next if !lsrep_match?( path )
 
             @reports[report].info.merge(
-                :rep_name => report,
-                :path     => path,
-                :author   => [@reports[report].info[:author]].flatten.map { |a| a.strip }
+                rep_name: report,
+                path:     path,
+                author:   [@reports[report].info[:author]].flatten.map { |a| a.strip }
             )
-        }.compact
+        end.compact
     ensure
         @reports.clear
+        @reports.load( loaded )
     end
 
     #
@@ -614,20 +438,21 @@ class Framework
     # @return    [Array<Hash>]
     #
     def lsplug
-        @plugins.available.map {
-            |plugin|
-
+        loaded = @plugins.loaded
+        @plugins.clear
+        @plugins.available.map do |plugin|
             path = @plugins.name_to_path( plugin )
             next if !lsplug_match?( path )
 
             @plugins[plugin].info.merge(
-                :plug_name => plugin,
-                :path      => path,
-                :author    => [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
+                plug_name: plugin,
+                path:      path,
+                author:    [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
             )
-        }.compact
+        end.compact
     ensure
         @plugins.clear
+        @plugins.load( loaded )
     end
 
     #
@@ -645,23 +470,25 @@ class Framework
     end
 
     #
-    # @return   [True]  pauses the framework on a best effort basis,
+    # @return   [TrueClass]  pauses the framework on a best effort basis,
     #                       might take a while to take effect
     #
-    def pause!
-        @spider.pause! if @spider
+    def pause
+        spider.pause
         @paused << caller
-        return true
+        true
     end
+    alias :pause! :pause
 
     #
-    # @return   [True]  resumes the scan/audit
+    # @return   [TrueClass]  resumes the scan/audit
     #
-    def resume!
+    def resume
         @paused.delete( caller )
-        @spider.resume! if @spider
-        return true
+        spider.resume
+        true
     end
+    alias :resume! :resume
 
     #
     # Returns the version of the framework
@@ -685,7 +512,7 @@ class Framework
     # Cleans up the framework; should be called after running the audit or
     # after canceling a running scan.
     #
-    # It stops the clock, waits for the plugins to finish up, register
+    # It stops the clock, waits for the plugins to finish up, registers
     # their results and also refreshes the auditstore.
     #
     # It also runs {#audit_queue} in case any new pages have been added by the plugins.
@@ -695,68 +522,187 @@ class Framework
     #
     # @return   [True]
     #
-    def clean_up!( skip_audit_queue = false )
-        @opts.finish_datetime = Time.now
+    def clean_up( skip_audit_queue = false )
+        @status = :cleanup
+
+        @opts.finish_datetime  = Time.now
+        @opts.start_datetime ||= Time.now
+
         @opts.delta_time = @opts.finish_datetime - @opts.start_datetime
 
         # make sure this is disabled or it'll break report output
-        @@only_positives = false
+        disable_only_positives
 
         @running = false
 
         # wait for the plugins to finish
-        @plugins.block!
+        @plugins.block
 
         # a plug-in may have updated the page queue, rock it!
         audit_queue if !skip_audit_queue
+        true
+    end
+    alias :clean_up! :clean_up
 
-        # refresh the audit store
-        audit_store( true )
+    def on_run_mods( &block )
+        add_on_run_mods( &block )
+    end
 
-        return true
+    def reset_spider
+        @spider = Spider.new( @opts )
+    end
+
+    #
+    # Resets everything and allows the framework to be re-used.
+    #
+    # You should first update {Arachni::Options}.
+    #
+    # Prefer this if you already have an instance.
+    #
+    def reset
+        reset_spider
+        @modules.clear
+        @reports.clear
+        @plugins.clear
+        self.class.reset
+    end
+
+    #
+    # Resets everything and allows the framework to be re-used.
+    #
+    # You should first update {Arachni::Options}.
+    #
+    def self.reset
+        Module::Auditor.reset
+        Module::ElementDB.reset
+        Element::Capabilities::Auditable.reset
+        Module::Manager.reset
+        Plugin::Manager.reset
+        Report::Manager.reset
+        HTTP.reset
     end
 
     private
 
+    #
+    # Prepares the framework for the audit.
+    #
+    # Sets the status to 'running', starts the clock and runs the plugins.
+    #
+    # Must be called just before calling {#audit}.
+    #
+    def prepare
+        @status = :preparing
+        @running = true
+        @opts.start_datetime = Time.now
+
+        # run all plugins
+        @plugins.run
+    end
+
+    #
+    # Performs the audit
+    #
+    # Runs the spider, pushes each page or url to their respective audit queue,
+    # calls {#audit_queue}, runs the timeout attacks ({Arachni::Module::Auditor.timeout_audit_run}) and finally re-runs
+    # {#audit_queue} in case the timing attacks uncovered a new page.
+    #
+    def audit
+        wait_if_paused
+
+        @status = :crawling
+
+        # if we're restricted to a given list of paths there's no reason to run the spider
+        if @opts.restrict_paths && !@opts.restrict_paths.empty?
+            @opts.restrict_paths = @opts.restrict_paths.map { |p| to_absolute( p ) }
+            @sitemap = @opts.restrict_paths.dup
+            @opts.restrict_paths.each { |url| push_to_url_queue( url ) }
+        else
+            # initiates the crawl
+            spider.run( false ) do |response|
+                @sitemap |= spider.sitemap
+                push_to_url_queue( url_sanitize( response.effective_url ) )
+            end
+        end
+
+        @status = :auditing
+        audit_queue
+
+        exception_jail {
+            if !Module::Auditor.timeout_audit_blocks.empty?
+                print_line
+                print_status 'Running timing attacks.'
+                print_info '---------------------------------------'
+                Module::Auditor.on_timing_attacks do |_, elem|
+                    @current_url = elem.action if !elem.action.empty?
+                end
+                Module::Auditor.timeout_audit_run
+            end
+
+            audit_queue
+        }
+    end
+
+    #
+    # Audits the URL and Page queues
+    #
+    def audit_queue
+        return if modules.empty?
+
+        # goes through the URLs discovered by the spider, repeats the request
+        # and parses the responses into page objects
+        #
+        # yes...repeating the request is wasteful but we can't store the
+        # responses of the spider to consume them here because there's no way
+        # of knowing how big the site will be.
+        #
+        while !@url_queue.empty?
+            Page.from_url( @url_queue.pop, precision: 2 ) do |page|
+                push_to_page_queue( page )
+            end
+            #http.run
+            harvest_http_responses
+
+            audit_page_queue
+
+            harvest_http_responses
+        end
+
+        audit_page_queue
+    end
+
+    #
+    # Audits the page queue
+    #
+    def audit_page_queue
+        # this will run until no new elements appear for the given page
+        while !@page_queue.empty?
+            run_mods( @page_queue.pop )
+            harvest_http_responses
+        end
+    end
+
+    #
+    # Special sitemap for the {#auditstore}.
+    #
+    # Used only under special circumstances, will usually return the {#sitemap}
+    # but can be overridden by the {::Arachni::RPC::Framework}.
+    #
+    # @return   [Array]
+    #
+    def auditstore_sitemap
+        @sitemap
+    end
+
     def caller
         if /^(.+?):(\d+)(?::in `(.*)')?/ =~ ::Kernel.caller[1]
-            return Regexp.last_match[1]
+            Regexp.last_match[1]
         end
     end
 
     def wait_if_paused
-        while( paused? )
-            ::IO::select( nil, nil, nil, 1 )
-        end
+        ::IO::select( nil, nil, nil, 1 ) while paused?
     end
-
-
-    #
-    # Prepares the user agent to be used throughout the system.
-    #
-    def prepare_user_agent
-        if( !@opts.user_agent )
-            @opts.user_agent = 'Arachni/' + version( )
-        end
-
-        if( @opts.authed_by )
-            authed_by         = " (Scan authorized by: #{@opts.authed_by})"
-            @opts.user_agent += authed_by
-        end
-
-    end
-
-    def prepare_cookie_jar(  )
-        return if !@opts.cookie_jar || !@opts.cookie_jar.is_a?( String )
-
-        # make sure that the provided cookie-jar file exists
-        if !File.exist?( @opts.cookie_jar )
-            raise( Arachni::Exceptions::NoCookieJar,
-                'Cookie-jar \'' + @opts.cookie_jar + '\' doesn\'t exist.' )
-        end
-
-    end
-
 
     #
     # Takes care of page audit and module execution
@@ -775,54 +721,48 @@ class Framework
     def run_mods( page )
         return if !page
 
+        if Options.exclude_binaries? && !page.text?
+            print_info "Ignoring page due to non text-based content-type: #{page.url}"
+            return
+        end
+
         print_line
-        print_status( "Auditing: [HTTP: #{page.code}] " + page.url )
+        print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
 
-
-        call_on_run_mods( page.deep_clone )
+        call_on_run_mods( page )
 
         @current_url = page.url.to_s
 
-        @modules.values.each {
-            |mod|
+        @modules.schedule.each do |mod|
             wait_if_paused
-            run_mod( mod, page.deep_clone )
-        }
+            run_mod( mod, page )
+        end
 
         @auditmap << page.url
         @sitemap |= @auditmap
         @sitemap.uniq!
 
-
-        if( !@opts.http_harvest_last )
-            harvest_http_responses( )
-        end
-
+        harvest_http_responses
     end
 
     def harvest_http_responses
-
-        print_status( 'Harvesting HTTP responses...' )
-        print_info( 'Depending on server responsiveness and network' +
-            ' conditions this may take a while.' )
+        print_status 'Harvesting HTTP responses...'
+        print_info 'Depending on server responsiveness and network' <<
+            ' conditions this may take a while.'
 
         # grab updated pages
-        http.trainer.flush_pages.each {
-            |page|
-            push_to_page_queue( page )
-        }
+        http.trainer.flush.each { |page| push_to_page_queue( page ) }
 
         # run all the queued HTTP requests and harvest the responses
         http.run
 
-        http.trainer.flush_pages.each {
-            |page|
-            push_to_page_queue( page )
-        }
+        http.trainer.flush.each { |page| push_to_page_queue( page ) }
+
+        session.ensure_logged_in
     end
 
     #
-    # Passes a page to the module and runs it.<br/>
+    # Passes a page to the module and runs it.
     # It also handles any exceptions thrown by the module at runtime.
     #
     # @see Page
@@ -831,47 +771,14 @@ class Framework
     # @param    [Page]    page
     #
     def run_mod( mod, page )
-        return if !run_mod?( mod, page )
-
         begin
-            @modules.run_one( mod, page, self )
+            @modules.run_one( mod, page )
         rescue SystemExit
             raise
-        rescue Exception => e
-            print_error( 'Error in ' + mod.to_s + ': ' + e.to_s )
-            print_error_backtrace( e )
+        rescue => e
+            print_error "Error in #{mod.to_s}: #{e.to_s}"
+            print_error_backtrace e
         end
-    end
-
-    #
-    # Determines whether or not to run the module against the given page
-    # depending on which elements exist in the page, which elements the module
-    # is configured to audit and user options.
-    #
-    # @param    [Class]   mod      the module to run
-    # @param    [Page]    page
-    #
-    # @return   [Bool]
-    #
-    def run_mod?( mod, page )
-        return true if( !mod.info[:elements] || mod.info[:elements].empty? )
-
-        elems = {
-            Issue::Element::LINK => page.links && page.links.size > 0 && @opts.audit_links,
-            Issue::Element::FORM => page.forms && page.forms.size > 0 && @opts.audit_forms,
-            Issue::Element::COOKIE => page.cookies && page.cookies.size > 0 && @opts.audit_cookies,
-            Issue::Element::HEADER => page.headers && page.headers.size > 0 && @opts.audit_headers,
-            Issue::Element::BODY   => true,
-            Issue::Element::PATH   => true,
-            Issue::Element::SERVER => true,
-        }
-
-        elems.each_pair {
-            |elem, expr|
-            return true if mod.info[:elements].include?( elem ) && expr
-        }
-
-        return false
     end
 
     def lsrep_match?( path )
@@ -888,11 +795,8 @@ class Framework
 
     def regexp_array_match( regexps, str )
         cnt = 0
-        regexps.each {
-            |filter|
-            cnt += 1 if str =~ filter
-        }
-        return true if cnt == regexps.size
+        regexps.each { |filter| cnt += 1 if str =~ filter }
+        cnt == regexps.size
     end
 
 end

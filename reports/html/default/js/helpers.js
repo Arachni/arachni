@@ -16,48 +16,6 @@ function renderResponse( id, html ){
     $( '#' + id ).html( $( '<iframe style="width: 100%; height: 400px" ' + 'src="' + html + '" />' ) );
 }
 
-// function report_fp(i) {
-//
-    // if (!email_address) {
-        // email_address = prompt("Please enter your e-mail address:", "")
-    // }
-//
-    // if (!email_address) return false;
-//
-    // // get some values from elements on the page:
-    // var $form = $("#false_positive_" + i),
-        // issue = $form.find('input[name="issue"]').val(),
-        // module = $form.find('input[name="module"]').val(),
-        // url = $form.find('input[name="url"]').val();
-//
-    // // Send the data using post and put the results in a div
-    // $.post("<%=REPORT_FP_URL%>", {
-        // email_address: email_address,
-        // url: url,
-        // module: module,
-        // issue: issue,
-        // configuration: configuration
-    // }, function () {
-        // $("#fp_report_msg").html("Done!")
-    // });
-//
-    // $(function () {
-        // var fp_txt = '<p>Please wait while the data is being transferred...</p>';
-        // $("#fp_report_msg").html(fp_txt);
-//
-        // $("#fp_report_msg").dialog({
-            // modal: true,
-            // buttons: {
-                // Ok: function () {
-                    // $(this).dialog("close");
-                    // $("#fp_report_msg").html(fp_txt);
-                // }
-            // }
-        // });
-    // });
-//
-// }
-
 function toggleElem(id) {
     elem = $( '#' + id);
 

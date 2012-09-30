@@ -1,23 +1,27 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/client/instance'
-require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'rpc/client/instance'
+require Options.dir['lib'] + 'rpc/client/dispatcher'
 
-require Options.instance.dir['lib'] + 'rpc/server/base'
-require Options.instance.dir['lib'] + 'rpc/server/output'
-require Options.instance.dir['lib'] + 'rpc/server/options'
-
-require Options.instance.dir['lib'] + 'rpc/server/framework'
+require Options.dir['lib'] + 'rpc/server/base'
+require Options.dir['lib'] + 'rpc/server/output'
+require Options.dir['lib'] + 'rpc/server/framework'
 
 module RPC
 class Server
@@ -28,18 +32,13 @@ class Server
 # Provides an RPC server to assist with general integration and UI development.
 #
 # Only instantiated by the Dispatcher to provide support for multiple
-# and concurent RPC clients/scans.
+# and concurrent RPC clients/scans.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.1.5
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
-
-    # the output interface for RPC
-    include Arachni::UI::Output
-    include Arachni::Module::Utilities
+    include UI::Output
+    include Utilities
 
     #
     # Initializes the RPC interface, the HTTP(S) server and the framework.
@@ -55,14 +54,15 @@ class Instance
         @token = token
         @server = Base.new( @opts, token )
 
+        @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
+
         @opts.datastore[:token] = token
 
-        debug! if @opts.debug
+        debug if @opts.debug
 
-
-        if logfile = @opts.reroute_to_logfile
+        if @opts.reroute_to_logfile
             reroute_to_file( @opts.dir['logs'] +
-                "Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
+                "/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
         else
             reroute_to_file( false )
         end
@@ -70,10 +70,9 @@ class Instance
         set_handlers
 
         # trap interrupts and exit cleanly when required
-        [ 'QUIT', 'INT' ].each {
-            |signal|
+        %w(QUIT INT).each do |signal|
             trap( signal ){ shutdown } if Signal.list.has_key?( signal )
-        }
+        end
 
         run
     end
@@ -96,20 +95,16 @@ class Instance
         print_status( 'Shutting down...' )
 
         t = []
-        @framework.instances.each {
-            |instance|
-            # Don't know why but this works better than EM's stuff
-            t << Thread.new {
-                @framework.instance_eval{
-                    connect_to_instance( instance ).service.shutdown!
-                }
-            }
+        @framework.instance_eval {
+            @instances.each do |instance|
+                # Don't know why but this works better than EM's stuff
+                t << Thread.new { connect_to_instance( instance ).service.shutdown! }
+            end
         }
-
         t.join
 
         @server.shutdown
-        return true
+        true
     end
     alias :shutdown! :shutdown
 
@@ -130,14 +125,14 @@ class Instance
 
     def dispatcher
         @dispatcher ||=
-            Arachni::RPC::Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+            Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
     end
 
     #
     # Initialises the RPC framework.
     #
     def prep_framework
-        @framework = Arachni::RPC::Server::Framework.new( Options.instance )
+        @framework = Server::Framework.new( Options.instance )
     end
 
     #
@@ -145,18 +140,9 @@ class Instance
     # Displays version number, revision number, author details etc.
     #
     def banner
-
-        puts 'Arachni - Web Application Security Scanner Framework v' +
-            @framework.version + ' [' + @framework.revision + ']
-       Author: Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-                                      <zapotek@segfault.gr>
-               (With the support of the community and the Arachni Team.)
-
-       Website:       http://github.com/Arachni/arachni
-       Documentation: http://github.com/Arachni/arachni/wiki'
+        puts BANNER
         puts
         puts
-
     end
 
     #
@@ -164,11 +150,10 @@ class Instance
     # It also prepares all the RPC handlers.
     #
     def set_handlers
-        @server.add_async_check {
-            |method|
+        @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include?( :block )
-        }
+        end
 
         @server.add_handler( "service",   self )
         @server.add_handler( "framework", @framework )

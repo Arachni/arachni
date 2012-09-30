@@ -1,13 +1,20 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
+require 'data_mapper'
 require 'eventmachine'
 require 'em-synchrony'
 require 'sinatra/async'
@@ -92,24 +99,21 @@ require Arachni::Options.instance.dir['lib'] + 'ui/web/addon_manager'
 #
 # It's basically an RPC client for Dispatchers and Instances wearing a pretty frock.
 #
-# @author: Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
-#                                      <zapotek@segfault.gr>
-# @version: 0.2
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 # @see Arachni::RPC::Client::Instance
 # @see Arachni::RPC::Client::Dispatcher
 #
 module Web
 
-    VERSION = '0.3'
+    VERSION = '0.3.0.1'
 
 class Server < Sinatra::Base
 
     register Sinatra::Flash
     register Sinatra::Async
 
-    include Arachni::Module::Utilities
+    include Arachni::Utilities
     include Utilities
 
     configure do
@@ -135,7 +139,7 @@ class Server < Sinatra::Base
         #
         # Converts seconds to a (00:00:00) (hours:minutes:seconds) string
         #
-        # @param    [String,Float,Integer]    seconds
+        # @param    [String,Float,Integer]    secs
         #
         # @return    [String]     hours:minutes:seconds
         #
@@ -180,13 +184,13 @@ class Server < Sinatra::Base
         end
 
         def format_redundants( rules )
-            return if !rules || !rules.is_a?( Array ) || rules.empty?
+            return if !rules || !rules.is_a?( Hash ) || rules.empty?
 
             str = ''
             rules.each {
-                |rule|
-                next if !rule['regexp'] || !rule['count']
-                str += rule['regexp'] + ':' + rule['count'] + "\r\n"
+                |regexp, counter|
+                next if !regexp || !counter
+                str += regexp.to_s + ':' + counter.to_s + "\r\n"
             }
             return str
         end
@@ -440,41 +444,38 @@ class Server < Sinatra::Base
     # @return   [Hash]  normalized hash
     #
     def prep_opts( params )
-
-        need_to_split = [
-            'exclude_cookies',
-            'exclude',
-            'include'
-        ]
+        need_to_split = %w(exclude_cookies exclude_vectors exclude include)
 
         cparams = {}
         params.each_pair {
             |name, value|
 
-            next if [ '_csrf', 'modules', 'plugins' ].include?( name ) || ( value.is_a?( String ) && value.empty?)
+            next if %w(_csrf modules plugins).include?( name ) || ( value.is_a?( String ) && value.empty?)
 
             value = true if value == 'on'
 
-            if name == 'cookiejar'
-               cparams['cookies'] = Arachni::HTTP.parse_cookiejar( value[:tempfile] )
-            elsif name == 'extend_paths'
+            if name == 'cookiejar' && value[:tempfile]
+                cparams['cookies'] = {}
+                cparams['cookie_string'] = ''
+                Arachni::Element::Cookie.from_file( '', value[:tempfile] ).each do |c|
+                    cparams['cookies'][c.name] = c.value
+                    cparams['cookie_string'] += c.to_s + ';'
+                end
+            elsif name == 'extend_paths' && !value.is_a?( Array ) && value[:tempfile]
                cparams['extend_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
-            elsif name == 'restrict_paths'
+            elsif name == 'restrict_paths' && !value.is_a?( Array ) && value[:tempfile]
                cparams['restrict_paths'] = Arachni::Options.instance.paths_from_file( value[:tempfile] )
             elsif need_to_split.include?( name ) && value.is_a?( String )
                 cparams[name] = value.split( "\r\n" )
 
-            elsif name == 'redundant'
-                cparams[name] = []
+            elsif name == 'redundant' && value.is_a?( String )
+                cparams[name] = {}
                 value.split( "\r\n" ).each {
                     |rule|
                     regexp, counter = rule.split( ':', 2 )
-                    cparams[name] << {
-                        'regexp'  => regexp,
-                        'count'   => counter
-                    }
+                    cparams[name][regexp] = counter
                 }
-            elsif name == 'custom_headers'
+            elsif name == 'custom_headers' && value.is_a?( String )
                 cparams[name] = {}
                 value.split( "\r\n" ).each {
                     |line|
@@ -639,11 +640,11 @@ class Server < Sinatra::Base
     #
     # Saves the report and shuts down the instance
     #
-    # @param    [Arachni::RPC::Client::Instance]   arachni
+    # @param    [String]   url  of the instance
     #
     def save_and_shutdown( url, &block )
         instance = instances.connect( url, session )
-        instance.framework.clean_up!{
+        instance.framework.clean_up{
             |res|
 
             if !res.rpc_connection_error?
@@ -958,24 +959,6 @@ class Server < Sinatra::Base
         show :settings, true
     end
 
-    aget "/instance/:url" do |url|
-        params['url'] = url
-        instances.connect( params[:url], session ).framework.paused? {
-            |paused|
-
-            if !paused.rpc_connection_error?
-                body erb :instance, { :layout => true }, :paused => paused,
-                    :shutdown => false, :params => params
-            else
-                msg = "Instance at #{url} has been shutdown."
-                body erb :instance, { :layout => true }, :shutdown => true,
-                    :flash => { :notice => msg }
-            end
-
-        }
-
-    end
-
     aget "/instance/:url/output.json" do |url|
         content_type :json
 
@@ -990,6 +973,7 @@ class Server < Sinatra::Base
         instances.connect( params[:url], session ).framework.progress_data {
             |prog|
 
+            params = aparams
             if !prog.rpc_exception?
 
                 @@output_streams ||= {}
@@ -1024,8 +1008,10 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        instances.connect( params[:url], session ).framework.pause!{
+        instances.connect( params[:url], session ).framework.pause{
             |paused|
+
+            params = aparams
             if !paused.rpc_connection_error?
                 log.instance_paused( env, params[:url] )
                 msg = "Instance at #{params[:url]} will pause as soon as the current page is audited."
@@ -1042,9 +1028,10 @@ class Server < Sinatra::Base
         params['url']   = url
 
         redir = '/' + splat + ( splat == 'instance' ? "/#{url}" : '' )
-        instances.connect( params[:url], session ).framework.resume!{
+        instances.connect( params[:url], session ).framework.resume{
             |res|
 
+            params = aparams
             if !res.rpc_connection_error?
                 log.instance_resumed( env, params[:url] )
 
@@ -1065,6 +1052,7 @@ class Server < Sinatra::Base
         save_and_shutdown( params[:url] ){
             |res|
 
+            params = aparams
             if !res.rpc_connection_error?
                 log.instance_shutdown( env, params[:url] )
                 msg = {
@@ -1078,6 +1066,24 @@ class Server < Sinatra::Base
             end
 
             async_redirect redir, :flash => { msg.keys[0] => msg.values[0] }
+        }
+
+    end
+
+    aget "/instance/*:*" do
+        params['url'] = params[:url] = params[:splat].first + ':' + params[:splat].last
+        instances.connect( params[:url], session ).framework.paused? {
+            |paused|
+
+            params = aparams
+            if !paused.rpc_connection_error?
+                body erb :instance, { :layout => true }, :paused => paused,
+                    :shutdown => false, :params => params
+            else
+                msg = "Instance at #{params[:url]} has been shutdown."
+                body erb :instance, { :layout => true }, :shutdown => true,
+                    :flash => { :notice => msg }
+            end
         }
 
     end

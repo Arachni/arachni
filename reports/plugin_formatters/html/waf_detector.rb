@@ -1,46 +1,38 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
 
-module Arachni
+class Arachni::Reports::HTML
 
-module Reports
+#
+# HTML formatter for the results of the WAF Detector plugin
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class PluginFormatters::WAFDetector < Arachni::Plugin::Formatter
 
-class HTML
-module PluginFormatters
-
-    #
-    # HTML formatter for the results of the WAF Detector plugin
-    #
-    # @author: Tasos "Zapotek" Laskos
-    #                                      <tasos.laskos@gmail.com>
-    #                                      <zapotek@segfault.gr>
-    # @version: 0.1
-    #
-    class WAFDetector < Arachni::Plugin::Formatter
-
-        def run
-            return ERB.new( tpl ).result( binding )
-        end
-
-        def tpl
-            %q{
-                <h3>Result</h3>
-                <blockquote><%=@results[:msg]%></blockquote>
-            }
-
-        end
-
+    def run
+        ERB.new( tpl ).result( binding )
     end
 
-end
-end
+    def tpl
+        <<-HTML
+            <h3>Result</h3>
+            <blockquote><%=results[:msg]%></blockquote>
+        HTML
+    end
 
 end
 end

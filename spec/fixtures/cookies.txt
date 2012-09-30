@@ -1,0 +1,9 @@
+# comment, should be ignored
+.domain.com	TRUE	/path/to/somewhere	TRUE	Tue, 02 Oct 2012 19:25:57 GMT	first_name	first_value
+
+# ignored again
+another-domain.com	FALSE	/	FALSE	second_name	second_value
+
+# with expiry date as seconds since epoch
+.blah-domain	TRUE	/	FALSE	1596981560	NAME	OP5jTLV6VhYHADJAbJ1ZR@L8~081210
+

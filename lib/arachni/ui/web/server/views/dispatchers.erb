@@ -152,10 +152,10 @@
                     });
 
                     $.getJSON( log_url, function(data) {
-                        elem = document.getElementById( 'log' )
+                        elem = document.getElementById( 'log' );
                         if ( data.error ) {
-                            elem.innerHTML = "Error: " + data.error + "\n\n"
-                            elem.innerHTML += "Backtrace: " + data.backtrace
+                            elem.innerHTML = "Error: " + data.error + "\n\n";
+                            elem.innerHTML += "Backtrace: " + data.backtrace;
                         } else {
                             elem.innerHTML = data.log;
                         }

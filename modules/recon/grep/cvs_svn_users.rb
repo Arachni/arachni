@@ -1,73 +1,63 @@
 =begin
-                  Arachni
-  Copyright (c) 2010-2012 Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
-  This is free software; you can copy and distribute and modify
-  this program under the term of the GPL v2.0 License
-  (See LICENSE file for details)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 =end
-
-module Arachni
-module Modules
 
 #
 # CVS/SVN users recon module.
 #
 # Scans every page for CVS/SVN users.
 #
-# @author: morpheuslaw <msidagni@nopsec.com>
-# @version: 0.1
+# @author   Tasos Laskos <tasos.laskos@gmail.com>
+# @version  0.3
 #
-class CvsSvnUsers < Arachni::Module::Base
+class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
 
-    def initialize( page )
-        @page = page
+    def self.regexps
+        @regexps ||= [
+            /\$Author: (\w+) \$/,
+            /\$Locker: (\w+) \$/,
+            /\$Header: .* (\w+) Exp \$/,
+            /\$Id: .* (\w+) Exp \$/,
+            /\$Header: .* (\w+) (?<!Exp )\$/,
+            /\$Id: .* (\w+) (?<!Exp )\$/
+        ]
     end
 
     def run
-        regexps = [
-            /\$Author: (.*) \$/,
-            /\$Locker: (.*) \$/,
-            /\$Header: .* (.*) (Exp )?\$/,
-            /\$Id: .* (.*) (Exp )?\$/
-        ]
-
-        matches = regexps.map {
-            |regexp|
-            @page.html.scan( regexp )
-        }.flatten.reject{ |match| !match || match =~ /Exp/ }.map{ |match| match.strip }.uniq
-
-        matches.each {
-            |match|
-            log(
-                :regexp  => regexps.to_s,
-                :match   => match,
-                :element => Issue::Element::BODY
-            )
-        }
-
+        match_and_log( self.class.regexps )
     end
 
     def self.info
         {
-            :name           => 'CVS/SVN users',
-            :description    => %q{Scans every page for CVS/SVN users.},
-            :author         => 'morpheuslaw <msidagni@nopsec.com>',
-            :version        => '0.1',
-            :targets        => { 'Generic' => 'all' },
-            :issue   => {
-                :name        => %q{CVS/SVN user disclosure.},
-                :description => %q{A CVS or SVN user is disclosed in the body of the HTML page.},
-                :cwe         => '200',
-                :severity    => Issue::Severity::LOW,
-                :cvssv2      => '0',
-                :remedy_guidance    => %q{Remove all CVS and SVN users from the body of the HTML page.},
-                :remedy_code => '',
+            name:        'CVS/SVN users',
+            description: %q{Scans every page for CVS/SVN users.},
+            elements:    [ Element::BODY ],
+            author:      'Tasos Laskos <tasos.laskos@gmail.com>',
+            version:     '0.3',
+            targets:     %w(Generic),
+            references: {
+                'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
+            },
+            issue:       {
+                name:            %q{CVS/SVN user disclosure.},
+                description:     %q{A CVS or SVN user is disclosed in the body of the HTML page.},
+                cwe:             '200',
+                severity:        Severity::LOW,
+                remedy_guidance: %q{Remove all CVS and SVN users from the body of the HTML page.},
             }
         }
     end
 
-end
-end
 end
