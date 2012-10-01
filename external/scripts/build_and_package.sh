@@ -23,7 +23,17 @@ fi
 source $path_to_readlink_function
 
 root="$(dirname "$(readlink_f "${0}")")"
-version=`cat $root/../../lib/version`
+
+if [[ !$ARACHNI_BUILD_BRANCH ]]; then
+    ARACHNI_BUILD_BRANCH="experimental"
+fi
+
+version=`wget -q -O - https://raw.github.com/Arachni/arachni/$ARACHNI_BUILD_BRANCH/lib/version`
+
+if [[ $? != 0 ]]; then
+    echo "Could not determine version number of branch '$ARACHNI_BUILD_BRANCH'."
+    exit 1
+fi
 
 os=`uname -s | awk '{print tolower($0)}'`
 
