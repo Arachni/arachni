@@ -1,34 +1,9 @@
-# Experimental/unstable branch -- used for development/integration
-
-## Nightlies (Linux only)
-
-For self-contained, nightly snapshot packages take a look at:
-http://downloads.arachni-scanner.com/nightlies/
-
-## Source
-
-To work with the source code you'll need the following system packages:
-
-    sudo apt-get install git build-essential libxml2-dev libxslt1-dev libcurl4-openssl-dev libsqlite3-dev libyaml-dev zlib1g-dev ruby1.9.1-dev ruby1.9.1
-
-To run from source:
-
-    git clone git://github.com/Arachni/arachni.git
-    cd arachni
-    git checkout experimental
-    sudo gem install bundler
-    bundle install # to resolve dev dependencies
-
-Then you can run Arachni using the the executables under ```bin/```.<br/>
-If you get an error when trying to run Arachni, use ```bundle exec``` like so:
-```bundle exec <executable>```.
-
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>0.0dev</td>
+        <td>0.4.1</td>
     </tr>
     <tr>
         <th>Homepage</th>
