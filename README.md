@@ -1,5 +1,11 @@
 # Experimental/unstable branch -- used for development/integration
 
+This branch is where all development takes place, once its code has been tested and
+is considered stable, it is then merged into the ```master``` branch and released.
+
+Do not be confused by the version of this branch, ```1.0dev``` is a placeholder
+which simply means _next release_.
+
 ## Nightlies (Linux only)
 
 For self-contained, nightly snapshot packages take a look at:
@@ -28,7 +34,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 <table>
     <tr>
         <th>Version</th>
-        <td>0.0dev</td>
+        <td>1.0dev</td>
     </tr>
     <tr>
         <th>Homepage</th>
