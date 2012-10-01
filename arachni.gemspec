@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
       s.files            += Dir.glob("plugins/**/**")
       s.files            += Dir.glob("profiles/**/**")
       s.files            += Dir.glob("reports/**/**")
+      s.files            += Dir.glob("rpcd_handlers/**/**")
       s.files            += Dir.glob("spec/**/**")
       s.files            += %w(Gemfile Rakefile arachni.gemspec)
 
