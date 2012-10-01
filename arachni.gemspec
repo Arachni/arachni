@@ -74,10 +74,29 @@ Gem::Specification.new do |s|
       s.add_dependency "em-synchrony",    ">= 1.0.0"
       s.add_dependency "arachni-rpc-em",  "= 0.1.2"
 
-      s.add_development_dependency 'rake', "~> 0.9.2.2"
+      s.add_development_dependency 'rake',  "~> 0.9.2.2"
       s.add_development_dependency 'rspec', "~> 2.8"
 
-      s.description = <<description
+      s.post_install_message = <<-msg
+        Thank you for installing Arachni, here are some resources which should
+        help you make the best of it:
+
+        Homepage           - http://arachni-scanner.com
+        Blog               - http://arachni-scanner.com/blog
+        Documentation      - http://arachni-scanner.com/wiki
+        Support            - http://support.arachni-scanner.com
+        GitHub page        - http://github.com/Arachni/arachni
+        Code Documentation - http://rubydoc.info/github/Arachni/arachni
+        Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
+        Twitter            - http://twitter.com/ArachniScanner
+        Copyright          - 2010-2012 Tasos Laskos
+        License            - Apache License v2
+
+        Please do not hesitate to ask for assistance (via the support portal)
+        or report a bug (via GitHub Issues) if you come across any problem.
+      msg
+
+      s.description = <<-description
         Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
         helping penetration testers and administrators evaluate the security of web applications.
 
@@ -98,5 +117,5 @@ Gem::Specification.new do |s|
 
         Note: Despite the fact that Arachni is mostly targeted towards web application security,
         it can easily be used for general purpose scraping, data-mining, etc with the addition of custom modules.
-description
+      description
 end
