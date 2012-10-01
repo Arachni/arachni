@@ -482,7 +482,7 @@ prepare_ruby() {
 
     cd $src_path/*-sys-proctable*
 
-    $usr_path/bin/rake install 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
+    $usr_path/bin/rake install --trace 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
     handle_failure "ruby_sys-proctable"
     $usr_path/bin/gem build sys-proctable.gemspec 2>> "$logs_path/ruby_sys-proctable" 1>> "$logs_path/ruby_sys-proctable"
     handle_failure "ruby_sys-proctable"
@@ -513,7 +513,7 @@ install_arachni() {
 #    handle_failure "arachni"
 
     echo "  * Installing"
-    $usr_path/bin/rake install 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
+    $usr_path/bin/rake install --trace 2>> "$logs_path/arachni" 1>> "$logs_path/arachni"
     handle_failure "arachni"
 }
 
