@@ -28,7 +28,7 @@ If you get an error when trying to run Arachni, use ```bundle exec``` like so:
 <table>
     <tr>
         <th>Version</th>
-        <td>0.4.1</td>
+        <td>0.0dev</td>
     </tr>
     <tr>
         <th>Homepage</th>
