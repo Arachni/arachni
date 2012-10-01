@@ -87,9 +87,14 @@ if [[ $fail ]]; then
     exit 1
 fi
 
-if [[ !$ARACHNI_BUILD_BRANCH ]]; then
+echo
+
+if [ -z "$ARACHNI_BUILD_BRANCH" ]; then
     ARACHNI_BUILD_BRANCH="experimental"
+    echo "---- No branch/tag specified, defaulting to: $ARACHNI_BUILD_BRANCH"
 fi
+
+echo "---- Building branch/tag: $ARACHNI_BUILD_BRANCH"
 
 arachni_tarball_url="https://github.com/Arachni/arachni/tarball/$ARACHNI_BUILD_BRANCH"
 

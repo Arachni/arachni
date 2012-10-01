@@ -24,16 +24,19 @@ source $path_to_readlink_function
 
 root="$(dirname "$(readlink_f "${0}")")"
 
-if [[ !$ARACHNI_BUILD_BRANCH ]]; then
+if [ -z "$ARACHNI_BUILD_BRANCH" ]; then
     ARACHNI_BUILD_BRANCH="experimental"
 fi
 
+echo "Getting system version from the '$ARACHNI_BUILD_BRANCH' branch/tag."
 version=`wget -q -O - https://raw.github.com/Arachni/arachni/$ARACHNI_BUILD_BRANCH/lib/version`
 
 if [[ $? != 0 ]]; then
-    echo "Could not determine version number of branch '$ARACHNI_BUILD_BRANCH'."
+    echo "Could not determine the version number of '$ARACHNI_BUILD_BRANCH'."
     exit 1
 fi
+
+echo "Building version: $version"
 
 os=`uname -s | awk '{print tolower($0)}'`
 

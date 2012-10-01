@@ -2,7 +2,9 @@
 
 This directory holds scripts used to build packages for Arachni.
 
-An explanation of each file follows.
+Set the ```ARACHNI_BUILD_BRANCH``` env variable to the branch/tag you
+want to build (only versions 0.4.1 and later are supported).
+If not set, it will default to ```experimental```.
 
 ## build.sh
 
