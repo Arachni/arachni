@@ -249,7 +249,7 @@ class Framework
 
         @opts.start_datetime = Time.now if !@opts.start_datetime
 
-        sitemap_sz  = @url_queue_total_size + @page_queue_total_size
+        sitemap_sz  = @sitemap.size
         auditmap_sz = @auditmap.size
 
         if( !refresh_time || auditmap_sz == sitemap_sz ) && !override_refresh
@@ -304,7 +304,6 @@ class Framework
         progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * multi
 
         if Module::Auditor.running_timeout_attacks?
-
             called_blocks = Module::Auditor.timeout_audit_operations_cnt -
                 Module::Auditor.current_timeout_audit_operations_cnt
 
@@ -347,6 +346,8 @@ class Framework
     def push_to_page_queue( page )
         @page_queue << page
         @page_queue_total_size += 1
+
+        @sitemap |= [page.url]
     end
 
     #
@@ -354,8 +355,11 @@ class Framework
     #
     def push_to_url_queue( url )
         abs = to_absolute( url )
+
         @url_queue.push( abs ? abs : url )
         @url_queue_total_size += 1
+
+        @sitemap |= [url]
     end
 
     #
@@ -660,7 +664,6 @@ class Framework
             Page.from_url( @url_queue.pop, precision: 2 ) do |page|
                 push_to_page_queue( page )
             end
-            #http.run
             harvest_http_responses
 
             audit_page_queue
@@ -721,6 +724,12 @@ class Framework
     def run_mods( page )
         return if !page
 
+        # we may end up ignoring it but being included in the auditmap means that
+        # it has been considered but didn't fit the criteria
+        @auditmap << page.url
+        @sitemap |= @auditmap
+        @sitemap.uniq!
+
         if Options.exclude_binaries? && !page.text?
             print_info "Ignoring page due to non text-based content-type: #{page.url}"
             return
@@ -737,10 +746,6 @@ class Framework
             wait_if_paused
             run_mod( mod, page )
         end
-
-        @auditmap << page.url
-        @sitemap |= @auditmap
-        @sitemap.uniq!
 
         harvest_http_responses
     end
