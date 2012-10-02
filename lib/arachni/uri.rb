@@ -123,9 +123,9 @@ class URI
         CACHE[__method__][url] ||= begin
             new( url )
         rescue => e
-            print_error "Failed to parse '#{url}', please report this."
-            print_error "Error: #{e}"
-            print_error_backtrace( e )
+            print_error "Failed to parse '#{url}'."
+            #print_error "Error: #{e}"
+            #print_error_backtrace( e )
             nil
         end
     end
@@ -149,9 +149,9 @@ class URI
             begin
                 parser.parse( normalize( url ).dup )
             rescue => e
-                print_error "Failed to parse '#{url}', please report this."
-                print_error "Error: #{e}"
-                print_error_backtrace( e )
+                print_error "Failed to parse '#{url}'."
+                #print_error "Error: #{e}"
+                #print_error_backtrace( e )
                 nil
             end
         end
@@ -286,16 +286,15 @@ class URI
             end.freeze
         rescue => e
             begin
-                print_error "Failed to fast-parse '#{c_url}', please report this."
-                print_error "Error: #{e}"
-                print_error "Falling back to slow-parse."
-                print_error_backtrace( e )
+                print_error "Failed to fast-parse '#{c_url}', falling back to slow-parse."
+                #print_error "Error: #{e}"
+                #print_error_backtrace( e )
 
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue => ex
-                print_error "Failed to parse '#{c_url}', please report this."
-                print_error "Error: #{ex}"
-                print_error_backtrace( ex )
+                print_error "Failed to parse '#{c_url}'."
+                #print_error "Error: #{ex}"
+                #print_error_backtrace( ex )
 
                 cache[c_url] = :err
                 nil
@@ -427,9 +426,9 @@ class URI
 
             cache[c_url] = normalized.freeze
         rescue => e
-            print_error "Failed to normalize '#{c_url}', please report this."
-            print_error "Error: #{e}"
-            print_error_backtrace( e )
+            print_error "Failed to normalize '#{c_url}'."
+            #print_error "Error: #{e}"
+            #print_error_backtrace( e )
 
             cache[c_url] = :err
             nil
