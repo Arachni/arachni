@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Version 0.4.1 _(Under development)_
+## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.
 - Major refactoring
     - ```Arachni::Parser::Element::Auditable``` and ```Arachni::Module::Auditor```.
