@@ -28,6 +28,8 @@ nightlies="$HOME/builds/nightlies"
 package_patterns="arachni*.gz"
 dest="segfault@downloads.arachni-scanner.com:www/arachni/downloads/nightlies/"
 
+rm -f $package_patterns
+
 output_log_32bit="$root/32bit.log"
 output_log_64bit="$root/64bit.log"
 
