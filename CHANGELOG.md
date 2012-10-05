@@ -4,8 +4,8 @@
 - ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]
 - ```Issue``` -- Response headers are now **always** Hash.
 - Reports
-  - HTML -- Removed response headers handling code.
-  - XML -- Removed response headers handling code.
+  - HTML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+  - XML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
 
 ## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.

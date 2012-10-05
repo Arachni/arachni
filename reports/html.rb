@@ -23,7 +23,7 @@ require 'cgi'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 #
 class Arachni::Reports::HTML < Arachni::Report::Base
 
@@ -149,10 +149,11 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             name:        'HTML Report',
             description: %q{Exports a report as an HTML document.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.3.1',
+            version:     '0.3.2',
             options:     [
                 Options::Path.new( 'tpl', [false, 'Template to use.', File.dirname( __FILE__ ) + '/html/default.erb'] ),
-                Options.outfile( '.html' )
+                Options.outfile( '.html' ),
+                Options.skip_responses
             ]
         }
     end
@@ -231,6 +232,12 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             issue.variations.each_with_index do |variation, j|
                 if variation['response'] && !variation['response'].empty?
                     variation['response'] = normalize( variation['response'] )
+
+                    if skip_responses?
+                        variation['response'] = 'Inclusion of HTTP response bodies has been disabled.'
+                    else
+                        variation['response'] = normalize( variation['response'] )
+                    end
 
                     auditstore.issues[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
