@@ -254,7 +254,7 @@ module Auditor
             response: res.body,
             headers:  {
                 request:  res.request.headers,
-                response: res.headers,
+                response: res.headers_hash,
             }
         )
 
@@ -339,7 +339,7 @@ module Auditor
         method   = nil
 
         if page
-            request_headers  = nil
+            request_headers  = page.request_headers
             response_headers = page.response_headers
             response         = page.body
             url              = page.url
@@ -348,7 +348,7 @@ module Auditor
 
         if res
             request_headers  = res.request.headers
-            response_headers = res.headers
+            response_headers = res.headers_hash
             response         = res.body
             url              = opts[:action] || res.effective_url
             method           = res.request.method.to_s.upcase
@@ -358,9 +358,10 @@ module Auditor
             response = nil
         end
 
-        var = opts[:altered] || opts[:var]
+        var     = opts[:altered] || opts[:var]
+        element = opts[:element] || opts[:elem]
 
-        msg = "In #{opts[:element]}"
+        msg = "In #{element}"
         msg << " var '#{var}'" if var
         print_ok "#{msg} ( #{url} )"
 
@@ -377,7 +378,7 @@ module Auditor
             id:           opts[:id],
             regexp:       opts[:regexp],
             regexp_match: opts[:match],
-            elem:         opts[:element],
+            elem:         element,
             verification: !!opts[:verification],
             method:       method,
             response:     response,

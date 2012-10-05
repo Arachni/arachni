@@ -229,24 +229,12 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             total_verifications += 1
 
             issue.variations.each_with_index do |variation, j|
-
                 if variation['response'] && !variation['response'].empty?
                     variation['response'] = normalize( variation['response'] )
 
                     auditstore.issues[i].variations[j]['escaped_response'] =
                         Base64.encode64( variation['response'] ).gsub( /\n/, '' )
                 end
-
-                response = {}
-                if !variation['headers']['response'].is_a?( Hash )
-                    variation['headers']['response'].split( "\n" ).each do |line|
-                        field, value = line.split( ':', 2 )
-                        next if !value
-                        response[field] = value
-                    end
-                end
-
-                variation['headers']['response'] = response.dup
             end
 
             if !anomalous?( anomalous_meta_results, issue )

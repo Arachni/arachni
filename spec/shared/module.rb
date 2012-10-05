@@ -18,11 +18,7 @@ shared_examples_for "module" do
         framework.modules.load name
 
         # do not dedup, the module tests need to see everything
-        current_module.instance_eval do
-            define_method( :skip? ) do |elem|
-                return false
-            end
-        end
+        current_module.instance_eval { define_method( :skip? ) { |elem| false } }
 
         http.headers['User-Agent'] = 'default'
 
@@ -38,6 +34,10 @@ shared_examples_for "module" do
         Arachni::Element::Capabilities::Auditable.reset
         Arachni::Module::Manager.results.clear
         Arachni::Module::Manager.do_not_store
+
+        # Leave this here, helps us save every kind of issue in order to test
+        # the reports.
+        #File.open( '../issues.yml', 'a' ){ |f| f.write @issues.to_yaml }
 
         @issues.clear
 

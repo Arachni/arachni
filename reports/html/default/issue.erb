@@ -150,23 +150,15 @@
 
                         <table>
                             <tr>
-                                <th colspan="2" style="text-align: center">Headers</th>
+                                <th colspan="4" style="text-align: center">Headers</th>
                             </tr>
                             <tr>
-                                <th>Request</th>
-                                <th>Response</th>
+                                <th colspan="2">Request</th>
+                                <th colspan="2">Response</th>
                             </tr>
                             <tr>
-                                <td>
-                                    <% if variation['headers']['request'].is_a?( Hash ) %>
-                                    <pre class="notice"><% variation['headers']['request'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + escapeHTML(val) + "\n"%><%end%></pre>
-                                    <%end%>
-                                </td>
-                                <td>
-                                    <% if variation['headers']['response'].is_a?( Hash ) %>
-                                    <pre class="notice"><% variation['headers']['response'].each_pair do |name, val| %><strong><%=name%></strong><%="\t" + escapeHTML(val) + "\n"%><%end%></pre>
-                                    <%end%>
-                                </td>
+                                <%= erb :headers, { headers: variation['headers']['request'] } %>
+                                <%= erb :headers, { headers: variation['headers']['response'] } %>
                             </tr>
                         </table>
 

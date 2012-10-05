@@ -67,6 +67,7 @@ describe Arachni::Parser do
             response = Typhoeus::Response.new(
                 effective_url: url,
                 body: '',
+                request: Typhoeus::Request.new( url ),
                 headers_hash: {
                     'Content-Type' => 'text/html',
                     'Set-Cookie'   => 'cname=cval'
