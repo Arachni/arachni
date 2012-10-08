@@ -607,7 +607,8 @@ class Options
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
-        if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
+        if !parsed || !parsed.absolute? ||
+            (!no_protocol_for_url? && !%w(http https).include?( parsed.scheme ))
             fail Exceptions::InvalidURL,
                  "Invalid URL argument, please provide a full absolute URL and try again."
         end
@@ -1080,6 +1081,14 @@ class Options
         end
 
         self.url = ARGV.shift if require_url
+    end
+
+    def no_protocol_for_url
+        @no_protocol_for_url = true
+    end
+
+    def no_protocol_for_url?
+        !!@no_protocol_for_url
     end
 
     # @return   [String]    root path of the framework

@@ -13,6 +13,22 @@ describe Arachni::Options do
         Arachni::Options.url.should == url
     end
 
+    describe '#no_protocol_for_url' do
+        it 'should not require the URL to include a protocol' do
+            raised = false
+            begin
+                Arachni::Options.url = 'stuff:80'
+            rescue
+                raised = true
+            end
+            raised.should be_true
+
+            Arachni::Options.no_protocol_for_url
+            Arachni::Options.url = 'stuff:80'
+            Arachni::Options.url.should == 'stuff:80'
+        end
+    end
+
     describe '#auto_redundant?' do
         describe 'when the option has been enabled' do
             it 'should return true' do
