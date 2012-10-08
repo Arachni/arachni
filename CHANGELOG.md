@@ -6,6 +6,7 @@
 - Reports
   - HTML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
   - XML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+- HTTP debugging output now includes Response data. [Issue #297]
 
 ## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.

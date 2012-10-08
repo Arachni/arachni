@@ -670,13 +670,12 @@ class HTTP
             parse_and_set_cookies( res ) if req.update_cookies?
 
             print_debug '------------'
-            print_debug 'Got response.'
-            print_debug "Request ID#: #{res.request.id}"
+            print_debug "Got response for request ID#: #{res.request.id}"
+            print_debug "Status: #{res.code}"
+            print_debug "Error msg: #{res.curl_error_message}"
             print_debug "URL: #{res.effective_url}"
-            print_debug "Method: #{res.request.method}"
-            print_debug "Params: #{res.request.params}"
-            print_debug "Headers: #{res.request.headers}"
-            print_debug "Train?: #{res.request.train?}"
+            print_debug "Headers:\n#{res.headers}"
+            print_debug "Parsed headers: #{res.headers_hash}"
             print_debug '------------'
 
             if res.timed_out?
