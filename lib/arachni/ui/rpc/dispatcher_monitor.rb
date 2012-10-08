@@ -1,25 +1,39 @@
+=begin
+    Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+=end
+
 require 'terminal-table/import'
 
 module Arachni
 
-require Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Options.instance.dir['lib'] + 'ui/cli/output'
+require Options.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'ui/cli/output'
 
 module UI
 
 #
+# Provides an simplistic Dispatcher monitoring user interface.
 #
-# @author Tasos "Zapotek" Laskos
-#                                      <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 #
 class DispatcherMonitor
-
-    include Arachni::UI::Output
+    include Output
 
     def initialize( opts )
-
         @opts = opts
 
         debug if @opts.debug
@@ -30,38 +44,37 @@ class DispatcherMonitor
         # if the user needs help, output it and exit
         if opts.help
             usage
-            exit 0
+            exit
         end
 
         if !@opts.url
             print_error "No server specified."
             print_line
             usage
-            exit 0
+            exit
         end
 
         begin
             # start the RPC client
             @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @opts.url.to_s )
-        rescue Exception => e
-            print_error( "Could not connect to server." )
-            print_error( "Error: #{e.to_s}." )
-            print_debug_backtrace( e )
-            exit 0
+            @dispatcher.alive?
+        rescue RPC::Exceptions::ConnectionError => e
+            print_error "Could not connect to server '#{@opts.url}'."
+            print_error "Error: #{e.to_s}."
+            print_debug_backtrace e
+            exit
         end
 
         # trap interupts and exit cleanly when required
-        trap( 'HUP' ) { exit 0 }
-        trap( 'INT' ) { exit 0 }
-
+        trap( 'HUP' ) { exit }
+        trap( 'INT' ) { exit }
     end
 
     def run
-
         print_line
 
         # grab the XMLRPC server output while a scan is running
-        while( 1 )
+        loop do
             stats        = @dispatcher.stats
             running_jobs = stats['running_jobs']
             clear_screen
@@ -83,31 +96,29 @@ class DispatcherMonitor
     private
 
     def print_job_table( jobs )
-
         headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Birthdate (Server-side)',
             'Start time (Server-side)', 'Current time (Server-side)', 'Age',
             'Run-time', 'Memory', 'Priority', 'State' ]
 
         rows = []
-        jobs.each {
-            |job|
+        jobs.each do |job|
             rows << [ job['proc']['ppid'], job['pid'], job['port'], job['owner'],
                 job['birthdate'].to_time, job['starttime'].to_time, job['currtime'].to_time,
                 secs_to_hms( job['age'] ), secs_to_hms( job['runtime'] ),
                 proc_mem( job['proc']['rss'] ), job['proc']['priority'],
                 proc_state( job['proc']['state'] ) ]
-        }
+        end
 
         return if rows.empty?
 
-        print_line( table( headings, *rows ) )
+        print_line table( headings, *rows )
     end
 
     def print_stats( stats )
-        print_info( 'Number of finished instances: ' + stats['finished_jobs'].size.to_s )
-        print_info( 'Number of running instances:  ' + stats['running_jobs'].size.to_s )
-        print_info( 'Initial pool size: ' + stats['init_pool_size'].to_s )
-        print_info( 'Current pool size: ' + stats['curr_pool_size'].to_s )
+        print_info 'Number of finished instances: ' + stats['finished_jobs'].size.to_s
+        print_info 'Number of running instances:  ' + stats['running_jobs'].size.to_s
+        print_info 'Initial pool size: ' + stats['init_pool_size'].to_s
+        print_info 'Current pool size: ' + stats['curr_pool_size'].to_s
     end
 
     def clear_screen
@@ -121,31 +132,22 @@ class DispatcherMonitor
 
     def proc_state( state )
         case state
-            when 'S'
-            return 'Sleeping'
+            when 'S'; 'Sleeping'
 
-            when 'D'
-            return 'Disk Sleep'
+            when 'D'; 'Disk Sleep'
 
-            when 'Z'
-            return 'Zombie'
+            when 'Z'; 'Zombie'
 
-            when 'T'
-            return 'Traced/Stoped'
+            when 'T'; 'Traced/Stoped'
 
-            when 'W'
-            return 'Paging'
+            when 'W'; 'Paging'
         end
     end
 
     def secs_to_hms( secs )
         secs = secs.to_i
-        return [secs/3600, secs/60 % 60, secs % 60].map {
-            |t|
-            t.to_s.rjust( 2, '0' )
-        }.join(':')
+        [secs/3600, secs/60 % 60, secs % 60].map { |t| t.to_s.rjust( 2, '0' ) }.join(':')
     end
-
 
     #
     # Outputs Arachni banner.<br/>
@@ -153,8 +155,6 @@ class DispatcherMonitor
     #
     # @see VERSION
     # @see REVISION
-    #
-    # @return [void]
     #
     def banner
         print_line BANNER
@@ -166,11 +166,9 @@ class DispatcherMonitor
     # Outputs help/usage information.<br/>
     # Displays supported options and parameters.
     #
-    # @return [void]
-    #
     def usage
         print_line <<USAGE
-  Usage:  arachni_rpcd_monitor  host:port
+  Usage:  arachni_rpcd_monitor host:port
 
   Supported options:
 
