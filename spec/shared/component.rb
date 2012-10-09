@@ -21,6 +21,10 @@ shared_examples_for "component" do
         @f ||= Arachni::Framework.new
     end
 
+    def session
+        framework.session
+    end
+
     def http
         framework.http
     end

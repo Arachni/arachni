@@ -219,6 +219,7 @@ class URI
 
             url = html_decode( url )
 
+            dupped_url = url.dup
             has_path = true
 
             splits = url.split( ':' )
@@ -228,7 +229,7 @@ class URI
                 components[:scheme].downcase! if components[:scheme]
 
                 if url = splits.shift
-                    splits = url.split( '@', 2 )
+                    splits = url.split( '?' ).first.split( '@', 2 )
 
                     if splits.size > 1
                         components[:userinfo] = splits.first
@@ -237,8 +238,6 @@ class URI
 
                     if !splits.empty?
                         splits = splits.last.split( '/', 2 )
-                        has_path = false if !splits[1] || splits[1].empty?
-
                         url = splits.last
 
                         splits = splits.first.split( ':', 2 )
@@ -246,6 +245,7 @@ class URI
                             host = splits.first
                             components[:port] = Integer( splits.last ) if splits.last && !splits.last.empty?
                             components[:port] = nil if components[:port] == 80
+                            url.gsub!( ':' + components[:port].to_s, '' )
                         else
                             host = splits.last
                         end
@@ -272,9 +272,9 @@ class URI
                                 Addressable::URI::CharacterClasses::PATH )
                 end
 
-                if components[:query] = splits.shift
+                if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
                     components[:query] =
-                        encode( decode( components[:query] ),
+                        encode( decode( query ),
                                 Addressable::URI::CharacterClasses::QUERY )
                 end
             end
@@ -396,8 +396,8 @@ class URI
 
         cache = CACHE[__method__]
 
-        url   = url.to_s.dup
-        c_url = url.to_s.dup
+        url   = url.to_s.strip.dup
+        c_url = url.to_s.strip.dup
 
         begin
             if (v = cache[url]) && v == :err

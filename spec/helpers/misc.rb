@@ -10,6 +10,10 @@ def spec_path
     @@root
 end
 
+def fixtures_path
+    "#{spec_path}/fixtures/"
+end
+
 def run_http
     Arachni::HTTP.run
 end

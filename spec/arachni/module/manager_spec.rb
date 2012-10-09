@@ -7,7 +7,7 @@ describe Arachni::Module::Manager do
         opts.dir['modules'] = spec_path + 'fixtures/modules/'
         @modules = Arachni::Framework.new.modules
 
-        @page  = Arachni::Parser::Page.new
+        @page  = Arachni::Page.new
         @issue = Arachni::Issue.new( url: 'http://blah' )
     end
 

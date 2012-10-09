@@ -17,11 +17,10 @@
 module Typhoeus
 class Response
 
-    alias :old_headers_hash :headers_hash
-    def headers_hash
-        old_headers_hash
-    rescue
-        {}
+    alias :old_initialize :initialize
+    def initialize( *args )
+        old_initialize( *args )
+        @body = @body.repack if @body
     end
 
     def []( k )

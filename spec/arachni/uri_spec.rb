@@ -6,9 +6,14 @@ describe Arachni::URI do
 
     before( :all ) do
         @urls = [
+            'http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich',
+            'http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment',
+            'http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich',
+            'http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment',
             'another/path',
             '/some/path',
             'http://test.com',
+            'http://test.com/?stuff=test&ss=blah',
             'style.css',
             'http://test.com/path/here',
             'http://user@test.com/path/here',
@@ -153,6 +158,8 @@ describe Arachni::URI do
             @urls.each do |url|
                 @uri.normalize( url ).should == @ref_normalizer.call( url )
             end
+            with_whitespace = 'http://test.com/stuff '
+            @uri.normalize( with_whitespace ).to_s.should == with_whitespace.strip
         end
     end
 

@@ -37,6 +37,8 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     MSG_NOT_FOUND    = %q{Could not detect any sign of filtering, a WAF doesn't seem to be present.}
 
     def prepare
+        framework.pause
+
         @precision = options['precision']
 
         bad = [
@@ -91,7 +93,12 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
                 inconclusive
             end
         }
-        http.run
+
+        http_run
+    end
+
+    def clean_up
+        framework.resume
     end
 
     def found

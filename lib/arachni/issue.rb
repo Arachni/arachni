@@ -238,15 +238,20 @@ class Issue
             end
         end if opts[:issue]
 
+        @headers ||= {}
         if opts[:headers] && opts[:headers][:request]
             @headers[:request] = {}.merge( opts[:headers][:request] )
         end
+        @headers[:request] ||= {}
 
-        if opts[:headers] && opts[:headers][:response].is_a?( Hash )
+        if opts[:headers] && opts[:headers][:response]
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
+        @headers[:response] ||= {}
 
-        @method = @method.to_s.upcase
+        @response ||= ''
+
+        @method   = @method.to_s.upcase
         @mod_name = opts[:name]
 
         # remove this block because it won't be able to be serialized
@@ -354,7 +359,7 @@ class Issue
 
     def encode( str )
         return str if !str.is_a?( String )
-        str.encode( 'utf-8', 'binary', invalid: :replace, undef: :replace )
+        str.recode
     end
 
     def normalize_name( name )

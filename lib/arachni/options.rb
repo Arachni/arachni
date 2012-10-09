@@ -140,7 +140,7 @@ class Options
     attr_accessor :debug
 
     #
-    # Filters for redundant links in the form of {pattern => counter}.
+    # Filters for redundant links in the form of (pattern => counter).
     #
     # @return    [Hash[Regexp, Integer]]
     #
@@ -469,6 +469,9 @@ class Options
     attr_accessor :login_check_url
     attr_accessor :login_check_pattern
 
+    # @return   [Integer]   HTTP request timeout in milliseconds
+    attr_accessor :http_timeout
+
     def initialize
         reset
     end
@@ -486,7 +489,9 @@ class Options
         @dir['modules'] = @dir['root'] + 'modules/'
         @dir['reports'] = @dir['root'] + 'reports/'
         @dir['plugins'] = @dir['root'] + 'plugins/'
-        @dir['path_extractors']    = @dir['root'] + 'path_extractors/'
+        @dir['rpcd_handlers']   = @dir['root'] + 'rpcd_handlers/'
+        @dir['path_extractors'] = @dir['root'] + 'path_extractors/'
+
         @dir['lib']     = @dir['root'] + 'lib/arachni/'
         @dir['mixins']  = @dir['lib'] + 'mixins/'
         @dir['arachni'] = @dir['lib'][0...-1]
@@ -570,10 +575,6 @@ class Options
         !!@auto_redundant
     end
 
-    def auto_redundant
-        @auto_redundant || 10
-    end
-
     def fuzz_methods?
         self.fuzz_methods
     end
@@ -606,8 +607,10 @@ class Options
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
-        if !parsed || !parsed.absolute? || !%w(http https).include?( parsed.scheme )
-            fail( Exceptions::InvalidURL, "Invalid URL argument." )
+        if !parsed || !parsed.absolute? ||
+            (!no_protocol_for_url? && !%w(http https).include?( parsed.scheme ))
+            fail Exceptions::InvalidURL,
+                 "Invalid URL argument, please provide a full absolute URL and try again."
         end
 
         @url = parsed.to_s
@@ -784,6 +787,7 @@ class Options
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
             [ '--debug',             '-w', GetoptLong::NO_ARGUMENT ],
             [ '--server',                  GetoptLong::REQUIRED_ARGUMENT ],
@@ -901,6 +905,9 @@ class Options
 
                     when '--http-req-limit'
                         @http_req_limit = arg.to_i
+
+                    when '--http-timeout'
+                        @http_timeout = arg.to_i
 
                     when '--audit-links'
                         @audit_links = true
@@ -1051,7 +1058,7 @@ class Options
                         @exclude_binaries = true
 
                     when '--auto-redundant'
-                        @auto_redundant = arg.empty? ? nil : arg.to_i
+                        @auto_redundant = arg.empty? ? 10 : arg.to_i
 
                     when '--login-check-url'
                         @login_check_url = arg
@@ -1074,6 +1081,14 @@ class Options
         end
 
         self.url = ARGV.shift if require_url
+    end
+
+    def no_protocol_for_url
+        @no_protocol_for_url = true
+    end
+
+    def no_protocol_for_url?
+        !!@no_protocol_for_url
     end
 
     # @return   [String]    root path of the framework

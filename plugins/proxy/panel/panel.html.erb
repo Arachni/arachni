@@ -51,11 +51,13 @@
 </div>
 
 <script type="text/javascript">
+    $(window).ready( function( $ ) {
 <% if content_for( :recording ) %>
-    $('#stop-recording').show();
-    $('#start-recording').hide();
+        $('#stop-recording').show();
+        $('#start-recording').hide();
 <% else %>
-    $('#start-recording').show();
-    $('#stop-recording').hide();
+        $('#start-recording').show();
+        $('#stop-recording').hide();
 <% end %>
+    })
 </script>

@@ -23,6 +23,8 @@
 #
 class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
+    is_distributable
+
     def prepare
         @results = {}
         @exclude = Regexp.new( options['exclude'] )
@@ -71,10 +73,6 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     def clean_up
         wait_while_framework_running
         register_results( @results )
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

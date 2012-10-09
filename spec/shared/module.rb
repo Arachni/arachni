@@ -2,7 +2,7 @@ shared_examples_for "module" do
     include_examples 'component'
 
     module Format
-        include Arachni::Parser::Element::Mutable::Format
+        include Arachni::Element::Capabilities::Mutable::Format
     end
 
     module Element
@@ -18,11 +18,7 @@ shared_examples_for "module" do
         framework.modules.load name
 
         # do not dedup, the module tests need to see everything
-        current_module.instance_eval do
-            define_method( :skip? ) do |elem|
-                return false
-            end
-        end
+        current_module.instance_eval { define_method( :skip? ) { |elem| false } }
 
         http.headers['User-Agent'] = 'default'
 
@@ -35,14 +31,19 @@ shared_examples_for "module" do
 
     after( :each ) do
         Arachni::Module::ElementDB.reset
-        Arachni::Parser::Element::Auditable.reset
+        Arachni::Element::Capabilities::Auditable.reset
         Arachni::Module::Manager.results.clear
         Arachni::Module::Manager.do_not_store
+
+        # Leave this here, helps us save every kind of issue in order to test
+        # the reports.
+        #File.open( '../issues.yml', 'a' ){ |f| f.write @issues.to_yaml }
 
         @issues.clear
 
         http.cookie_jar.clear
 
+        framework.reset_spider
         framework.opts.dont_audit :links, :forms, :cookies, :headers
     end
 
@@ -72,7 +73,12 @@ shared_examples_for "module" do
         context "when the target is" do
             targets.each do |target|
                 context target do
-                    before( :all ) { options.url = url + target.downcase if target.to_s.downcase != 'generic' }
+                    before( :all ) do
+                        if target.to_s.downcase != 'generic'
+                            options.url = url + target.downcase
+                            options.include = options.url
+                        end
+                    end
 
                     elements.each do |type|
                         it "should log vulnerable #{type}s" do

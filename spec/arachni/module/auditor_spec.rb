@@ -10,7 +10,7 @@ class AuditorTest
     end
 
     def page
-        @page ||= Arachni::Parser::Page.new(
+        @page ||= Arachni::Page.new(
             url:  @framework.opts.url.to_s,
             body: 'Match this!',
             method: 'get'
@@ -27,7 +27,7 @@ class AuditorTest
 
     def load_page_from( url )
         http.get( url ).on_complete do |res|
-            @page = Arachni::Parser::Page.from_http_response( res, framework.opts )
+            @page = Arachni::Page.from_http_response( res, framework.opts )
         end
         http.run
     end
@@ -327,7 +327,7 @@ describe Arachni::Module::Auditor do
             @seed = 'my_seed'
             @default_input_value = 'blah'
             issues.clear
-            Arachni::Parser::Element::Auditable.reset
+            Arachni::Element::Capabilities::Auditable.reset
          end
 
         context 'when called with no opts' do
@@ -429,7 +429,7 @@ describe Arachni::Module::Auditor do
 
                         page = nil
                         @framework.http.get( @url + '/train/default' ) do |res|
-                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                            page = Arachni::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run
 
@@ -459,7 +459,7 @@ describe Arachni::Module::Auditor do
 
                         page = nil
                         @framework.http.get( @url + '/train/true' ) do |res|
-                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                            page = Arachni::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run
 
@@ -489,7 +489,7 @@ describe Arachni::Module::Auditor do
 
                         page = nil
                         @framework.http.get( @url + '/train/true' ) do |res|
-                            page = Arachni::Parser::Page.from_http_response( res, @opts )
+                            page = Arachni::Page.from_http_response( res, @opts )
                         end
                         @framework.http.run
 

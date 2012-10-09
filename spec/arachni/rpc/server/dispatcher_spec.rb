@@ -1,7 +1,8 @@
 require_relative '../../../spec_helper'
+require 'fileutils'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/dispatcher'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
+require Arachni::Options.dir['lib'] + 'rpc/client/dispatcher'
+require Arachni::Options.dir['lib'] + 'rpc/server/dispatcher'
 
 describe Arachni::RPC::Server::Dispatcher do
     before( :all ) do
@@ -14,12 +15,16 @@ describe Arachni::RPC::Server::Dispatcher do
         @opts.nickname = 'blah'
         @opts.cost = 12
 
+        FileUtils.cp( "#{fixtures_path}rpcd_handlers/echo.rb",
+                      Arachni::Options.dir['rpcd_handlers'] )
+
         fork_em {
             Arachni::RPC::Server::Dispatcher.new( @opts )
         }
         sleep 1
 
-        @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, "#{@opts.rpc_address}:#{@opts.rpc_port}" )
+        @url = "#{@opts.rpc_address}:#{@opts.rpc_port}"
+        @dispatcher = Arachni::RPC::Client::Dispatcher.new( @opts, @url )
 
         @job_info_keys = %w(token pid port url owner birthdate starttime helpers currtime age runtime proc)
         @node_info = {
@@ -32,12 +37,19 @@ describe Arachni::RPC::Server::Dispatcher do
     end
 
     after( :all ) do
+        FileUtils.rm( "#{Arachni::Options.dir['rpcd_handlers']}echo.rb" )
         @dispatcher.stats['consumed_pids'].each { |p| pids << p }
     end
 
     describe '#alive?' do
         it 'should return true' do
             @dispatcher.alive?.should == true
+        end
+    end
+
+    describe '#handlers' do
+        it 'should return an array of loaded handlers' do
+            @dispatcher.handlers.include?( 'echo' ).should be_true
         end
     end
 

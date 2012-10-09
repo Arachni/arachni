@@ -19,7 +19,7 @@ require 'sys/proctable'
 
 module Arachni
 
-require Options.dir['lib'] + 'rpc/client/dispatcher'
+require Options.dir['lib'] + 'rpc/client'
 require Options.dir['lib'] + 'rpc/server/base'
 require Options.dir['lib'] + 'rpc/server/instance'
 require Options.dir['lib'] + 'rpc/server/output'
@@ -45,20 +45,25 @@ class Server
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Dispatcher
-    require Options.dir['lib'] + 'rpc/server/node'
+    require Options.dir['lib'] + 'rpc/server/dispatcher/node'
+    require Options.dir['lib'] + 'rpc/server/dispatcher/handler'
 
     include Utilities
     include UI::Output
     include ::Sys
+
+
+    HANDLER_LIB       = Options.dir['rpcd_handlers']
+    HANDLER_NAMESPACE = Handler
 
     def initialize( opts )
         banner
 
         @opts = opts
 
-        @opts.rpc_port     ||= 7331
-        @opts.rpc_address  ||= 'localhost'
-        @opts.pool_size    ||= 5
+        @opts.rpc_port    ||= 7331
+        @opts.rpc_address ||= 'localhost'
+        @opts.pool_size   ||= 5
 
         if @opts.help
             print_help
@@ -70,7 +75,7 @@ class Dispatcher
 
         @server.add_async_check do |method|
             # methods that expect a block are async
-            method.parameters.flatten.include?( :block )
+            method.parameters.flatten.include? :block
         end
 
         # let the instances in the pool know who to ask for routing instructions
@@ -79,9 +84,9 @@ class Dispatcher
 
         prep_logging
 
-        print_status( 'Initing RPC Server...' )
+        print_status 'Initing RPC Server...'
 
-        @server.add_handler( "dispatcher", self )
+        @server.add_handler( 'dispatcher', self )
 
         # trap interrupts and exit cleanly when required
         trap_interrupts { shutdown }
@@ -91,16 +96,24 @@ class Dispatcher
         @pool = ::EM::Queue.new
 
         if @opts.pool_size > 0
-            print_status( 'Warming up the pool...' )
+            print_status 'Warming up the pool...'
             @opts.pool_size.times{ add_instance_to_pool }
         end
 
-        print_status( 'Initialization complete.' )
+        print_status 'Initialization complete.'
 
         @node = Node.new( @opts, @logfile )
-        @server.add_handler( "node", @node )
+        @server.add_handler( 'node', @node )
+
+        _handlers.each do |name, handler|
+            @server.add_handler( name, handler.new( @opts, self ) )
+        end
 
         run
+    end
+
+    def handlers
+        _handlers.keys
     end
 
     # @return   [TrueClass]   true
@@ -118,7 +131,7 @@ class Dispatcher
     #
     def dispatch( owner = 'unknown', helpers = {}, &block )
         if @opts.pool_size <= 0
-            block.call( false )
+            block.call false
             return
         end
 
@@ -130,8 +143,8 @@ class Dispatcher
             cjob['starttime'] = Time.now
             cjob['helpers']   = helpers
 
-            print_status( "Instance dispatched -- PID: #{cjob['pid']} - " +
-                "Port: #{cjob['port']} - Owner: #{cjob['owner']}" )
+            print_status "Instance dispatched -- PID: #{cjob['pid']} - " +
+                "Port: #{cjob['port']} - Owner: #{cjob['owner']}"
 
             @jobs << cjob
 
@@ -152,9 +165,9 @@ class Dispatcher
             cjob = j.dup
 
             cjob['currtime'] = Time.now
-            cjob['age'] = cjob['currtime'] - cjob['birthdate']
+            cjob['age']      = cjob['currtime'] - cjob['birthdate']
             cjob['runtime']  = cjob['currtime'] - cjob['starttime']
-            cjob['proc'] =  proc( cjob['pid'] )
+            cjob['proc']     = proc( cjob['pid'] )
 
             return cjob
         end
@@ -180,24 +193,25 @@ class Dispatcher
         finished = cjobs - running
 
         stats_h = {
-            'running_jobs'    => running,
-            'finished_jobs'   => finished,
-            'init_pool_size'  => @opts.pool_size,
-            'curr_pool_size'  => @pool.size,
-            'consumed_pids'   => @consumed_pids
+            'running_jobs'   => running,
+            'finished_jobs'  => finished,
+            'init_pool_size' => @opts.pool_size,
+            'curr_pool_size' => @pool.size,
+            'consumed_pids'  => @consumed_pids
         }
 
         stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
 
         stats_h['node']['score']  = (rs_score = resource_consumption_score) > 0 ? rs_score : 1
         stats_h['node']['score'] *= stats_h['node']['weight'] if stats_h['node']['weight']
+        stats_h['node']['score'] = Float( stats_h['node']['score'] )
 
         stats_h
     end
 
     # @return   [String]    contents of the log file
     def log
-        IO.read( prep_logging )
+        IO.read prep_logging
     end
 
     # @return   [Hash]   the server's proc info
@@ -207,9 +221,21 @@ class Dispatcher
 
     private
 
+    def self._handlers
+        @handlers ||= nil
+        return @handlers if @handlers
+
+        @handlers = Component::Manager.new( HANDLER_LIB, HANDLER_NAMESPACE )
+        @handlers.load_all
+        @handlers
+    end
+
+    def _handlers
+        self.class._handlers
+    end
+
     def resource_consumption_score
-        mem = 0
-        cpu = 0
+        cpu = mem = 0.0
         jobs.each do |job|
             mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
             cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
@@ -295,12 +321,12 @@ USAGE
 
     # Starts the dispatcher's server
     def run
-        print_status( 'Starting the server...' )
+        print_status 'Starting the server...'
         @server.start
     end
 
     def shutdown
-        print_status( 'Shutting down...' )
+        print_status 'Shutting down...'
         @server.shutdown
     end
 
@@ -309,22 +335,22 @@ USAGE
         exception_jail {
 
             # get an available port for the child
-            random_port = avail_port
-            token       = generate_token
+            port  = avail_port
+            token = generate_token
 
-            pid = ::EM.fork_reactor { exception_jail {
-                @opts.rpc_port = random_port
+            pid = ::EM.fork_reactor {
+                @opts.rpc_port = port
                 Server::Instance.new( @opts, token )
-            }}
+            }
 
-            print_status( "Instance added to pool -- PID: #{pid} - " +
-                "Port: #{@opts.rpc_port} - Owner: #{owner}" )
+            print_status "Instance added to pool -- PID: #{pid} - " +
+                "Port: #{@opts.rpc_port} - Owner: #{owner}"
 
             @pool << {
                 'token'     => token,
                 'pid'       => pid,
-                'port'      => random_port,
-                'url'       => "#{@opts.rpc_address}:#{random_port}",
+                'port'      => port,
+                'url'       => "#{@opts.rpc_address}:#{port}",
                 'owner'     => owner,
                 'birthdate' => Time.now
             }
@@ -364,11 +390,7 @@ USAGE
     # @return   Fixnum  port number
     #
     def avail_port
-        port = rand_port
-        while !avail_port?( port )
-            port = rand_port
-        end
-
+        nil while !avail_port?( port = rand_port )
         port
     end
 
@@ -384,7 +406,7 @@ USAGE
 
     def generate_token
         secret = ''
-        1000.times { secret += rand( 1000 ).to_s }
+        1000.times { secret << rand( 1000 ).to_s }
         Digest::MD5.hexdigest( secret )
     end
 
@@ -398,11 +420,11 @@ USAGE
     def avail_port?( port )
         begin
             socket = Socket.new( :INET, :STREAM, 0 )
-            socket.bind( Addrinfo.tcp( "127.0.0.1", port ) )
+            socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
             socket.close
-            return true
+            true
         rescue
-            return false
+            false
         end
     end
 

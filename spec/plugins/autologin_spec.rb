@@ -28,13 +28,13 @@ describe name_from_filename do
         end
 
         it 'should provide a login sequence and login check to the framework' do
-            framework.logged_in?.should be_true
+            session.logged_in?.should be_true
 
             http.cookie_jar.clear
 
-            framework.logged_in?.should be_false
-            framework.login.should be_true
-            framework.logged_in?.should be_true
+            session.logged_in?.should be_false
+            session.login.should be_true
+            session.logged_in?.should be_true
         end
     end
 

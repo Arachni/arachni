@@ -16,13 +16,11 @@
 
 class Arachni::Plugins::Distributable < Arachni::Plugin::Base
 
+    is_distributable
+
     def run
         wait_while_framework_running
         register_results( stuff: 1 )
-    end
-
-    def self.distributable?
-        true
     end
 
     def self.merge( results )

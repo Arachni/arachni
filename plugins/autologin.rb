@@ -41,12 +41,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def run
-        # grab the page containing the login form
-        res = http.get( options['url'], async: false ).response
-
         # find the login form
-        login_form = nil
-        forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
+        login_form = session.find_login_form( url: options['url'], inputs: @params.keys )
 
         if !login_form
             register_results( code: 0, msg: MSG_FAILURE + options['url'] )
@@ -57,7 +53,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         print_status "Found log-in form with name: #{login_form.name || '<n/a>'}"
 
         # merge the input fields of the form with the user supplied parameters
-        login_form.update( @params )
+        login_form.update @params
 
         res = login_form.submit( async: false, update_cookies: true, follow_location: false ).response
         if !res
@@ -80,23 +76,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        # summarize what we did above
-        framework.login_sequence = proc do
-            res = http.get( options['url'], async: false ).response
-            next false if !res
-
-            login_form = nil
-            forms_from_response( res ).each { |form| login_form = form if login_form?( form ) }
-            next false if !login_form
-
-            login_form.update( @params ).
-                submit( async: false,
-                        update_cookies: true,
-                        follow_location: false ).
-                response
-        end
-
-        framework.set_login_check_url( check_url, @verifier )
+        session.login_form = login_form
+        session.set_login_check check_url, @verifier
 
         cookies = http.cookies.inject( {} ){ |h, c| h.merge!( c.simple ) } || {}
 
@@ -109,11 +90,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
     def clean_up
         framework.resume
-    end
-
-    def login_form?( form )
-        @params.keys.each { |name| return false if !form.auditable.include?( name ) }
-        true
     end
 
     def self.info
@@ -131,7 +107,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 Options::String.new( 'check', [true, 'A pattern which will be used to verify a successful login.
                     For example, if a logout link only appears when a user is logged in then it can be a perfect choice.'] )
             ],
-            order:       0 # run before any other plugin
+            priority:    0 # run before any other plugin
         }
     end
 

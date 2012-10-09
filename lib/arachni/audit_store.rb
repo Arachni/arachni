@@ -256,8 +256,6 @@ class AuditStore
 
         new_issues = {}
         issues.each do |issue|
-            issue.url = issue.url.split( '?' ).first
-
             __id  = issue.hash
             new_issues[__id] ||= issue
             new_issues[__id].variations ||= []

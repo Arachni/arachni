@@ -104,4 +104,16 @@ class String
         end
     end
 
+    def repack
+        unpack( 'C*' ).pack( 'U*' )
+    end
+
+    def recode!
+        encode!( 'utf-16be', invalid: :replace, undef: :replace ).encode("utf-8")
+    end
+
+    def recode
+        dup.recode!
+    end
+
 end

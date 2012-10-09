@@ -100,13 +100,13 @@ module Utilities
         Cookie.encode( *args )
     end
 
-    # @see Arachni::Parser::Page.from_response
+    # @see Arachni::Page.from_response
     def page_from_response( *args )
         Page.from_response( *args )
     end
 
-    def page_from_url( *args )
-        Page.from_url( *args )
+    def page_from_url( *args, &block )
+        Page.from_url( *args, &block )
     end
 
     def html_decode( str )
@@ -273,17 +273,24 @@ module Utilities
     # @param    [Block]     block   to call
     #
     def exception_jail( raise_exception = true, &block )
+        block.call
+    rescue Exception => e
         begin
-            block.call
-        rescue Exception => e
-            begin
-                err_name = !e.to_s.empty? ? e.to_s : e.class.name
-                print_error( err_name )
-                print_error_backtrace( e )
-            rescue
-            end
-            raise e if raise_exception
+            print_error e.inspect
+            print_error_backtrace e
+            print_error
+            print_error 'Parent:'
+            print_error  self.class.to_s
+            print_error
+            print_error 'Block:'
+            print_error block.to_s
+            print_error
+            print_error 'Caller:'
+            ::Kernel.caller.each { |l| print_error l }
+            print_error '-' * 80
+        rescue
         end
+        raise e if raise_exception
     end
 
     def remove_constants( mod, skip = [], children_only = true )

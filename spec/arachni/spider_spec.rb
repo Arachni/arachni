@@ -170,7 +170,7 @@ describe Arachni::Spider do
                 pages = []
                 spider.run { |page| pages << page }
                 pages.size.should == spider.sitemap.size
-                pages.first.is_a?( Arachni::Parser::Page ).should be_true
+                pages.first.is_a?( Arachni::Page ).should be_true
             end
         end
         context 'when a redirect that is outside the scope is encountered' do
@@ -184,6 +184,7 @@ describe Arachni::Spider do
         end
         it 'should follow stacked redirects' do
             @opts.url = @url + '/stacked_redirect'
+            @opts.redirect_limit = -1
 
             spider = Arachni::Spider.new
             spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
@@ -196,7 +197,7 @@ describe Arachni::Spider do
                         pages = []
                         spider.run( true ) { |page| pages << page }
                         pages.size.should == spider.sitemap.size
-                        pages.first.is_a?( Arachni::Parser::Page ).should be_true
+                        pages.first.is_a?( Arachni::Page ).should be_true
                     end
                 end
                 describe false do
@@ -210,70 +211,50 @@ describe Arachni::Spider do
                 end
             end
         end
+
+        it 'should ignore path parameters' do
+            @opts.url = @url + '/path_params'
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
+        end
     end
 
     describe '#on_each_page' do
-        context 'when no modifier has been previously called' do
-            it 'should be passed each page as visited' do
-                pages  = []
-                pages2 = []
+        it 'should be passed each page as visited' do
+            pages  = []
+            pages2 = []
 
-                s = Arachni::Spider.new
+            s = Arachni::Spider.new
 
-                s.on_each_page { |page| pages << page }.should == s
-                s.on_each_page { |page| pages2 << page }.should == s
+            s.on_each_page { |page| pages << page }.should == s
+            s.on_each_page { |page| pages2 << page }.should == s
 
-                s.run
+            s.run
 
-                pages.should == pages2
+            pages.should == pages2
 
-                pages.size.should == s.sitemap.size
-                pages.first.is_a?( Arachni::Parser::Page ).should be_true
-            end
-        end
-        context 'when #pass_responses has been called' do
-            it 'should be passed each HTTP response as received' do
-                spider = Arachni::Spider.new
-
-                responses  = []
-                responses2 = []
-
-                spider.pass_responses
-
-                spider.on_each_page { |res| responses << res }.should == spider
-                spider.on_each_page { |res| responses2 << res }.should == spider
-
-                spider.run
-
-                responses.should == responses2
-
-                responses.size.should == spider.sitemap.size
-                responses.first.is_a?( Typhoeus::Response ).should be_true
-            end
+            pages.size.should == s.sitemap.size
+            pages.first.is_a?( Arachni::Page ).should be_true
         end
     end
 
-    describe '#pass_pages?' do
-        context 'when no modifier has been previously called' do
-            it 'should return true' do
-                Arachni::Spider.new.pass_pages?.should be_true
-            end
-        end
-        context 'when #pass_responses has been called' do
-            it 'should return false' do
-                s = Arachni::Spider.new
-                s.pass_responses
-                s.pass_pages?.should be_false
-            end
-        end
-        context 'when #pass_pages has been called' do
-            it 'should return true' do
-                s = Arachni::Spider.new
-                s.pass_responses
-                s.pass_pages?.should be_false
-                s.pass_pages
-                s.pass_pages?.should be_true
-            end
+    describe '#on_each_response' do
+        it 'should be passed each response as received' do
+            responses  = []
+            responses2 = []
+
+            s = Arachni::Spider.new
+
+            s.on_each_response { |response| responses << response }.should == s
+            s.on_each_response { |response| responses2 << response }.should == s
+
+            s.run
+
+            responses.should == responses2
+
+            responses.size.should == s.sitemap.size
+            responses.first.is_a?( Typhoeus::Response ).should be_true
         end
     end
 

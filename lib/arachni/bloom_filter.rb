@@ -22,6 +22,8 @@
 #
 # This leads to decreased memory consumption and faster comparisons during look-ups.
 #
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Arachni::BloomFilter
 
     def initialize

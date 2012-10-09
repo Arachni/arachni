@@ -34,6 +34,8 @@
 #
 class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
 
+    prefer :code_injection
+
     def self.code_strings
         @code_strings ||= []
 
@@ -48,12 +50,6 @@ class Arachni::Modules::CodeInjectionTiming < Arachni::Module::Base
 
     def run
         audit_timeout( self.class.code_strings, format: [Format::STRAIGHT], timeout: 4000 )
-    end
-
-    # If the simple code injection module has already logged an element
-    # don't waste time re-auditing it.
-    def self.preferred
-        %w(code_injection)
     end
 
     def self.info

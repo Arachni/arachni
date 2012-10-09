@@ -664,6 +664,8 @@ class CLI
                                   (Be careful not to kill your server.)
                                   (*NOTE*: If your scan seems unresponsive try lowering the limit.)
 
+    --http-timeout=<integer>    HTTP request timeout in milliseconds.
+
     --cookie-jar=<filepath>     Netscape HTTP cookie file, use curl to create it.
 
     --cookie-string='<name>=<value>; <name2>=<value2>'
@@ -696,7 +698,7 @@ class CLI
     --load-profile=<filepath>   Load a run profile from <filepath>.
                                   (Can be used multiple times.)
                                   (You can complement it with more options, except for:
-                                      * --mods
+                                      * --modules
                                       * --redundant)
 
     --show-profile              Will output the running profile as CLI arguments.
@@ -796,7 +798,7 @@ class CLI
                                       etc.
 
                                    You can exclude modules by prefixing their name with a minus sign:
-                                      --mods=*,-backup_files,-xss
+                                      --modules=*,-backup_files,-xss
                                    The above will load all modules except for the 'backup_files' and 'xss' modules.
 
                                    Or mix and match:

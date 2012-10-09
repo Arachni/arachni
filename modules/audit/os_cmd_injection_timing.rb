@@ -26,6 +26,8 @@
 #
 class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
 
+    prefer :os_cmd_injection
+
     def self.payloads
         @payloads ||= []
         if @payloads.empty?
@@ -42,10 +44,6 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
                        format:          [Format::STRAIGHT],
                        timeout:         10000,
                        timeout_divider: 1000 )
-    end
-
-    def self.preferred
-        %w(os_cmd_injection)
     end
 
     def self.info

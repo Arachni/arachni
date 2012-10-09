@@ -21,7 +21,7 @@ require 'base64'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 class Arachni::Reports::XML < Arachni::Report::Base
     require Arachni::Options.dir['reports'] + '/xml/buffer.rb'
@@ -105,6 +105,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
 
             end_tag 'issue'
         end
+
         end_tag 'issues'
 
         start_tag 'plugins'
@@ -134,8 +135,8 @@ class Arachni::Reports::XML < Arachni::Report::Base
             name:        'XML report',
             description: %q{Exports a report as an XML file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2',
-            options:     [ Options.outfile( '.xml' ) ]
+            version:     '0.2.3',
+            options:     [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
 
@@ -152,31 +153,11 @@ class Arachni::Reports::XML < Arachni::Report::Base
             simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
 
             start_tag 'headers'
-
-            if var['headers']['request'].is_a?( Hash )
-                add_headers( 'request', var['headers']['request'] )
-            end
-
-            response = {}
-            if var['headers']['response'].is_a?( Hash )
-                response = var['headers']['response']
-            else
-                var['headers']['response'].split( "\n" ).each do |line|
-                    field, value = line.split( ':', 2 )
-                    next if !value
-                    response[field] = value
-                end
-            end
-
-            if response.is_a?( Hash )
-                add_headers( 'response', response )
-            end
-
+            add_headers( 'request', var['headers']['request']  )
+            add_headers( 'response', var['headers']['response'] )
             end_tag 'headers'
 
-            if var['response'] && !var['response'].empty?
-                simple_tag( 'html', Base64.encode64( var['response'] ) )
-            end
+            simple_tag( 'html', skip_responses? ? '' : Base64.encode64( var['response'].to_s ) )
 
             end_tag 'variation'
         end

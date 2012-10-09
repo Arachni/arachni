@@ -19,7 +19,7 @@ module Arachni
 #
 # It holds the framework's exceptions.
 #
-# @author Tasos "Zapotek" Laskos<tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Exceptions
 

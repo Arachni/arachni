@@ -1,6 +1,16 @@
 # ChangeLog
 
-## Version 0.4.1 _(Under development)_
+## _Under development_
+- ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]
+- ```Issue``` -- Response headers are now **always** Hash.
+- Reports
+  - HTML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+  - XML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+- HTTP debugging output now includes Response data. [Issue #297]
+- Executables
+  - ```arachni_rpcd_monitor``` -- Laxed standards enforced on the Dispatcher URL argument. [Issue #293]
+
+## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.
 - Major refactoring
     - ```Arachni::Parser::Element::Auditable``` and ```Arachni::Module::Auditor```.
@@ -12,11 +22,18 @@
     - Moved from Ruby's URI lib to ```Arachni::URI```. (**New**)
     - Project-wide code clean-up, documentation and style improvements.
     - Replaced ```Set``` with ```Arachni::BloomFilter```, where possible, to keep memory consumption to a minimum and speed up look-up comparisons.
+    - Namespace cleanup
+        - Moved ```Parser::Element``` classes directly under ```Arachni```;
+        - Moved ```Parser::Page``` class directly under ```Arachni```;
+        - Moved ```Auditable``` and ```Mutable``` under ```Element::Capabilities```;
+        - Added ```Element::Capabilities::Refreshable``` -- refreshes the input values of a link/form;
+        - Moved analysis techniques out of ```Analysis``` and directly under ```Element::Capabilities::Auditable```;
+        - Added constants for each element directly under the ```Arachni``` namespace to facilitate easy access ( like ```Arachni::Link```, ```Arachni::Form```, etc.)
 - Framework - Can be configured to detect logouts and re-login between page audits. (**New**)
 - Options
     - Removed
         - ```--http-harvest-last```
-    - Added (**New**)
+    - Added
         - ```--login-check-url``` --  A URL used to verify that the scanner is still logged in to the web application.
         - ```--login-check-pattern``` -- A pattern used against the body of the 'login-check-url' to verify that the scanner is still logged in to the web application.
         - ```--auto-redundant``` -- Ignores a specified amount of URLs with identical query parameter names.
@@ -25,6 +42,8 @@
         - ```--cookie-string``` -- Allows the specification of cookies as a string in the form of: ```name=value; name2=value2```
         - ```--exclude-vectors``` -- Excludes vectors (parameters), by name, from the audit.
         - ```--exclude-binaries``` -- Excludes pages with non text-based content-types from the audit.
+- Dispatcher
+    - Added modularity by way of support for handler components whose API can be exposed over RPC (under ```rpcd_handlers/```).
 - Modules - Every single one has been cleaned up and have had RSpec tests added.
     - Scheduling - Expensive modules are now scheduled to be run after cheaper ones
         of similar type and only audit elements missed by the cheaper ones.
@@ -49,8 +68,12 @@
     - AutoLogin
         - Added a mandatory verifier regexp to make sure that the login was successful. (**New**)
         - Now configures the ```Framework``` to be able to detect logouts and re-login during the audit. (**New**)
-    - Proxy -- Fixed typo in code which prevented headers from being properly.
-      forwarded which results in non-existent content-types which prevented proper parsing. [Issue #135]
+    - Proxy
+        - Fixed typo in code which prevented headers from being properly forwarded which
+            resulted in non-existent content-types which prevented proper parsing. [Issue #135]
+        - Updated to use the framework HTTP interface instead of Net::HTTP
+        - Now injects a handy little control panel into each responce which allows recording of
+            login sequences and inspection of discovered pages/elements.
     - VectorFeed -- Reads in vector data from which it creates elements to be audited.
       Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
       Useful for unit-testing or a gazillion other things. (**New**)
@@ -59,23 +82,29 @@
     - All modules under <tt>/extras</tt> had to be removed because they distributed GPLv3 licensed content.
 - HTTP
     - Improved detection of custom 404 pages.
+    - Now accepts a global timeout (```--http-timeout```) in milliseconds.
     - Updated ```#add_on_queue``` hook (called by ```#queue```) which allows HTTP requests to be intercepted and modified before being fired.
     - Fixed burst average requests/second calculation.
     - Implemented a Cookiejar. (**New**)
     - Removed tagging of requests with the system-wide seed.
     - Added a maximum queue size limit -- once the request limit has been reached the queued requests will be fired in order to unload the queue.
+    - Added ```#sandbox``` -- isolates the given block from the rest of the HTTP env and executes it.
 - Spider -- Re-written, much cleaner design and code. (**New**)
+    - Ignores path parameters to avoid infinite loops (like ```http://stuff.com/deep/path;jsessid=deadbeef```).
 - Parser
     - Removed clutter by moving parsing of elements into their respective classes (Form, Link, Cookie).
     - Replaced sanitization hacks with Nokogiri's sanitization -- cleaner code, better performance.
     - Form
       - Nonce tokens are being automatically detected and refreshed before submission.
+- WebUI
+    - Removed the AutoDeploy add-on -- no sense maintaining it since the WebUI is about to be scrapped (and no-one used it anyways).
 - Tests
     - Added full test suite using RSpec. (**New**)
 - Added
-    - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency. (**New**)
+    - ```Arachni::Session``` - Session manager, handling session maintenance, login sequences, log-out detection etc.
+    - ```Arachni::URI``` class to handle URI parsing and normalization -- Uses Random Replacement caches to maintain low-latency.
     - ```Arachni::BloomFilter``` class, a ```Hash```-based, lightweight Bloom-filter implementation requiring minimum storage space and providing fast look-ups.
-    - ```Arachni::Cache``` classes (**New**)
+    - ```Arachni::Cache``` classes
         - ```LeastCostReplacement``` -- Least Cost Replacement cache implementation.
         - ```LeastRecentlyUsed``` -- Least Recently Used cache implementation.
         - ```RandomReplacement``` -- Random Replacement cache implementation.

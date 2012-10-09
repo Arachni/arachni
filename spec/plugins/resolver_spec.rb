@@ -8,9 +8,9 @@ describe name_from_filename do
         framework.modules.register_results( issues )
     end
 
-    def results
-        { 'localhost' => '127.0.0.1' }
+    it 'should resolve vulnerable hostnames to IP addresses' do
+        run
+        [{ 'localhost' => '::1' }, { 'localhost' => '127.0.0.1' }].should include( results_for( name_from_filename ))
     end
 
-    easy_test
 end

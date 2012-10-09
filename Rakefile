@@ -53,24 +53,32 @@ desc "Generate docs"
 
 task :docs do
 
-    outdir = "../arachni-gh-pages"
-    sh "mkdir #{outdir}" if !File.directory?( outdir )
+    outdir = "../arachni-docs"
+    sh "rm -rf #{outdir}"
+    sh "mkdir -p #{outdir}"
 
-    sh "inkscape gfx/logo.svg --export-png=#{outdir}/logo.png"
-    sh "inkscape gfx/icon.svg --export-png=#{outdir}/icon.png"
-    sh "inkscape gfx/icon.svg --export-png=#{outdir}/favicon.ico"
-    sh "inkscape gfx/banner.svg --export-png=#{outdir}/banner.png"
+    sh "yardoc -o #{outdir}"
 
-    sh "yardoc --verbose --title \
-      \"Arachni - Web Application Security Scanner Framework\" \
-      external/* path_extractors/* plugins/* reports/* modules/* metamodules/* lib/* -o #{outdir} \
-      - EXPLOITATION.md HACKING.md CHANGELOG.md LICENSE.md AUTHORS.md \
-      CONTRIBUTORS.md ACKNOWLEDGMENTS.md"
-
-
-    sh "rm -rf .yard*"
+    sh "rm -rf .yardoc"
 end
 
+desc "Generate graphics"
+task :gfx do
+
+    outdir = 'gfx/compiled'
+    srcdir = 'gfx/source'
+
+    sh 'mkdir -p ~/.fonts'
+    sh 'cp gfx/font/Beneath_the_Surface.ttf ~/.fonts'
+
+    Dir.glob( "#{srcdir}/*.svg" ).each do |src|
+        sh "inkscape #{src} --export-png=#{outdir}/#{File.basename( src, '.svg' )}.png"
+    end
+
+    cp "#{outdir}/icon.png", "#{outdir}/favicon.ico"
+
+    sh 'rm -f ~/.fonts/Beneath_the_Surface.ttf'
+end
 
 #
 # Simple profiler using perftools[1].

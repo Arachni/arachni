@@ -48,30 +48,8 @@ class Base
     # @param  [Arachni::Framework]  framework
     #
     def initialize( page, framework = nil )
-        @page  = page
+        @page       = http.page = page
         @framework  = framework
-
-        http.trainer.page = page
-
-        # update the cookies
-        http.update_cookies( @page.cookiejar ) if !@page.cookiejar.empty?
-
-        #
-        # This is slightly tricky...
-        #
-        # Each loaded module is instantiated for each page,
-        # however modules share the elements of each page and access them
-        # via the ElementsDB.
-        #
-        # Since the ElementDB is dynamically updated by the Trainer
-        # during the audit, is should only be initialized *once*
-        # for each page and not overwritten every single time a module is instantiated.
-        #
-        @@__last_url ||= ''
-        if @@__last_url != page.url
-            http.trainer.init( page )
-            @@__last_url = page.url
-        end
     end
 
     #
@@ -121,23 +99,8 @@ class Base
         framework.plugins if framework
     end
 
-    #
-    # OPTIONAL
-    #
-    # Schedules self to be run *after* the specified modules and prevents
-    # auditing elements that have been previously logged by any of the modules
-    # returned by this method.
-    #
-    # @return   [Array]     module names
-    #
-    # @abstract
-    #
-    def self.preferred
-        # [ 'sqli', 'sqli_blind_rdiff' ]
-        []
-    end
-    def preferred
-        self.class.preferred
+    def session
+        framework.session if framework
     end
 
     #
@@ -168,13 +131,18 @@ class Base
             #     Element::HEADER
             # ],
             elements:    [],
-            author:      'zapotek',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1',
-            references:  {},
+            references:  {
+                'Title' => 'http://ref.url'
+            },
             targets:     %W(Generic),
             issue:       {
-                 description:    %q{},
-                 cwe:            '',
+                name:           %q{Serious issue},
+                description:    %q{This issue is a serious issue and you
+                    should consider it seriously},
+                # CWE ID number
+                cwe:            '',
                 #
                 # Severity can be:
                 #
@@ -183,13 +151,36 @@ class Base
                 # Severity::LOW
                 # Severity::INFORMATIONAL
                 #
-                severity:        '',
-                cvssv2:          '',
-                remedy_guidance: '',
-                remedy_code:     '',
+                severity:        Severity::HIGH,
+                cvssv2:          '', # CVSSV2 score
+                remedy_guidance: %q{Paint it blue and throw it in the sea.},
+                remedy_code:     %q{sudo rm -rf /}
             }
         }
     end
+
+    #
+    # Schedules self to be run *after* the specified modules and prevents
+    # auditing elements that have been previously logged by any of these modules.
+    #
+    # @return   [Array]     module names
+    #
+    def self.prefer( *args )
+        @preferred = args.flatten.compact
+    end
+
+    #
+    # @return   [Array]     names of modules which should be preferred over this one
+    #
+    # @see #prefer
+    #
+    def self.preferred
+        @preferred ||= []
+    end
+    def preferred
+        self.class.preferred
+    end
+
 
 end
 end

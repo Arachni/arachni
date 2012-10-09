@@ -150,15 +150,12 @@ class HTTP
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
-            timeout:                       50000
+            timeout:                       opts.http_timeout || 50000
         }.merge( proxy_opts )
 
         @request_count  = 0
         @response_count = 0
         @time_out_count = 0
-
-        # we'll use it to identify our requests
-        @rand_seed = seed( )
 
         @curr_res_time = 0
         @curr_res_cnt  = 0
@@ -171,11 +168,19 @@ class HTTP
     end
 
     #
-    # Runs Hydra (all the asynchronous queued HTTP requests)
+    # Sets the current working page, passes it to the {#trainer} and updates the
+    # {#cookie_jar} using the page's cookiejar.
     #
-    # Should only be called by the framework
-    # after all module threads have been joined!
+    # @param    [Arachni::Page]    page
     #
+    def page=( page )
+        trainer.page = page
+        # update the cookies
+        update_cookies( page.cookiejar ) if !page.cookiejar.empty?
+        page
+    end
+
+    # Runs all queued requests
     def run
         exception_jail {
             @burst_runtime = nil
@@ -188,7 +193,12 @@ class HTTP
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
+            true
         }
+    rescue SystemExit
+        raise
+    rescue
+        nil
     end
 
     # Aborts the running requests on a best effort basis
@@ -198,7 +208,8 @@ class HTTP
 
     # @return   [Integer]   amount of time (in seconds) that the current burst has been running
     def burst_runtime
-        @burst_runtime.to_i > 0 ? @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
+        @burst_runtime.to_i > 0 ?
+            @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
     end
 
     # @return   [Integer]   average response time for the running requests (i.e. the current burst)
@@ -229,7 +240,7 @@ class HTTP
         @hydra.max_concurrency
     end
 
-    # @return   [Array<Arachni::Parser::Element::Cookie>]   all cookies in the jar
+    # @return   [Array<Arachni::Element::Cookie>]   all cookies in the jar
     def cookies
         @cookie_jar.cookies
     end
@@ -283,7 +294,7 @@ class HTTP
         #
         # how cool is Ruby? Seriously....
         #
-        exception_jail {
+        exception_jail( false ) {
 
             if !opts[:no_cookiejar]
                 cookies = begin
@@ -302,7 +313,7 @@ class HTTP
             headers['Cookie'] ||= cookies.map { |k, v| "#{cookie_encode( k )}=#{cookie_encode( v )}" }.join( ';' )
 
             headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-            headers.each { |k, v| headers[k] = ::URI.encode( v, "\r\n" ) if v }
+            headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
             # There are cases where the url already has a query and we also have
             # some params to work with. Some webapp frameworks will break
@@ -441,6 +452,16 @@ class HTTP
         request( url, opts, &block )
     end
 
+    #
+    # Executes a +block+ under a sandbox.
+    #
+    # Cookies or new callbacks set as a result of the block won't affect the
+    # HTTP singleton.
+    #
+    # @param    [Block] block
+    #
+    # @return   [Object]    return value of the block
+    #
     def sandbox( &block )
         h = {}
         instance_variables.each do |iv|
@@ -462,7 +483,7 @@ class HTTP
     #
     # Updates the cookie-jar with the passed cookies
     #
-    # @param    [Array<Arachni::Parser::Element::Cookie>]   cookies
+    # @param    [Array<Arachni::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
@@ -584,21 +605,23 @@ class HTTP
     private
 
     def hydra_run
+        @running = true
         @burst_runtime ||= 0
         @burst_runtime_start = Time.now
         @hydra.run
-        @burst_runtime += Time.now - @burst_runtime_start
         @queue_size = 0
+        @running = false
+        @burst_runtime += Time.now - @burst_runtime_start
     end
 
     #
-    # Queues a Tyhpoeus::Request and calls the following callbacks:
+    # Queues a {Typhoeus::Request} and calls the following callbacks:
     # * on_queue() -- intersects a queued request and gets passed the original
     #   and the async method. If the block returns one or more request
     #   objects these will be queued instead of the original request.
     # * on_complete() -- calls the block with the each requests as it arrives.
     #
-    # @param  [Tyhpoeus::Request]  req  the request to queue
+    # @param  [Typhoeus::Request]  req  the request to queue
     # @param  [Bool]  async  run request async?
     # @param  [Block]  block  callback
     #
@@ -647,13 +670,12 @@ class HTTP
             parse_and_set_cookies( res ) if req.update_cookies?
 
             print_debug '------------'
-            print_debug 'Got response.'
-            print_debug "Request ID#: #{res.request.id}"
+            print_debug "Got response for request ID#: #{res.request.id}"
+            print_debug "Status: #{res.code}"
+            print_debug "Error msg: #{res.curl_error_message}"
             print_debug "URL: #{res.effective_url}"
-            print_debug "Method: #{res.request.method}"
-            print_debug "Params: #{res.request.params}"
-            print_debug "Headers: #{res.request.headers}"
-            print_debug "Train?: #{res.request.train?}"
+            print_debug "Headers:\n#{res.headers}"
+            print_debug "Parsed headers: #{res.headers_hash}"
             print_debug '------------'
 
             if res.timed_out?
@@ -675,13 +697,16 @@ class HTTP
 
         req.on_complete( &block ) if block_given?
 
-        hydra_run if emergency_run?
+        if emergency_run?
+            print_info 'Request queue reached its maximum size, performing an emergency run.'
+            hydra_run
+        end
 
         exception_jail { @hydra_sync.run } if !async
     end
 
     def emergency_run?
-        @queue_size >= MAX_QUEUE_SIZE
+        @queue_size >= MAX_QUEUE_SIZE && !@running
     end
 
     def is_404?( path, body )

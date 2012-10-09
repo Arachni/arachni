@@ -65,7 +65,7 @@ class Manager < Arachni::Component::Manager
 
         loaded.each do |name|
             ph = { name => self[name] }
-            if order = self[name].info[:order]
+            if order = self[name].info[:priority]
                 ordered[order] ||= []
                 ordered[order] << ph
             else

@@ -18,7 +18,7 @@ describe Arachni::Module::Trainer do
         @opts.audit_forms = true
         @opts.audit_cookies = true
 
-        @page = Arachni::Parser::Page.from_http_response( request( @opts.url ), @opts )
+        @page = Arachni::Page.from_http_response( request( @opts.url ), @opts )
 
         @trainer = Arachni::Module::Trainer.new( @opts )
         @trainer.init( @page )
