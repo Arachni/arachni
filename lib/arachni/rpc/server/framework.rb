@@ -86,6 +86,8 @@ class Framework < ::Arachni::Framework
         # so we generate a local token (which is not known to API clients)
         # to be used server side by self to facilitate access control
         @local_token = gen_token
+
+        @element_ids_per_page = Hash.new( [] )
     end
 
     #
@@ -148,6 +150,10 @@ class Framework < ::Arachni::Framework
         !!@master
     end
 
+    def solo?
+        !master? && !slave?
+    end
+
     def enslave( instance_info, opts = {}, &block )
         fail "Instance info does not contain a 'url' key."   if !instance_info['url']
         fail "Instance info does not contain a 'token' key." if !instance_info['token']
@@ -182,7 +188,7 @@ class Framework < ::Arachni::Framework
         #
         # otherwise just run the local instance, nothing special...
         #
-        if high_performance?
+        if master?
 
             ::Thread.new {
 
@@ -210,8 +216,6 @@ class Framework < ::Arachni::Framework
                 # and each instance will audit them at will.
                 #
 
-                element_ids_per_page = {}
-
                 # prepare the local instance (runs plugins and starts the timer)
                 prepare
 
@@ -237,13 +241,20 @@ class Framework < ::Arachni::Framework
 
                     spider.update_peers( @instances )
 
-                    #ap 'PRE RUN'
-                    # start the crawl and extract all paths
-                    spider.run do |page|
-                        element_ids_per_page[page.url] = build_elem_list( page )
+                    spider.on_each_page do |page|
+                        #ap build_elem_list( page )
+                        update_element_ids_per_page( page.url,
+                                                     build_elem_list( page ),
+                                                     @local_token )
                     end
 
+                    #ap 'PRE RUN'
+                    # start the crawl and extract all paths
                     spider.on_complete do
+                        #ap 'POST CRAWL'
+
+                        element_ids_per_page = @element_ids_per_page
+
                         @override_sitemap |= spider.sitemap
 
                         @status = :distributing
@@ -253,7 +264,7 @@ class Framework < ::Arachni::Framework
                         while !@page_queue.empty? && page = @page_queue.pop
                             page_a << page
                             @override_sitemap << page.url
-                            element_ids_per_page[page.url] = build_elem_list( page )
+                            element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
                         # split the URLs of the pages in equal chunks
@@ -303,6 +314,8 @@ class Framework < ::Arachni::Framework
                             #ap '+++++++++++++++'
                         }
                     end
+
+                    spider.run
                 end
 
                 # get the Dispatchers with unique Pipe IDs
@@ -317,7 +330,7 @@ class Framework < ::Arachni::Framework
             Thread.new {
                 #ap 'AUDITING'
                 super
-                # ap 'DONE'
+                #ap 'DONE'
                 @extended_running = false
             }
         end
@@ -607,8 +620,15 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  true on success, false on invalid token
     #
     def restrict_to_elements( elements, token = nil )
-        return false if high_performance? && !valid_token?( token )
+        return false if master? && !valid_token?( token )
         Element::Capabilities::Auditable.restrict_to_elements( elements )
+        true
+    end
+
+    def update_element_ids_per_page( page_url, ids, token = nil )
+        return false if master? && !valid_token?( token )
+        @element_ids_per_page[page_url] ||= []
+        @element_ids_per_page[page_url] |= ids
         true
     end
 
@@ -625,8 +645,8 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  true on success, false on invalid token
     #
     def update_page_queue( pages, token = nil )
-        return false if high_performance? && !valid_token?( token )
-        pages.each { |page| push_to_page_queue( page )}
+        return false if master? && !valid_token?( token )
+        [pages].flatten.each { |page| push_to_page_queue( page )}
         true
     end
 
@@ -645,7 +665,7 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
     #
     def register_issues( issues, token = nil )
-        return false if high_performance? && !valid_token?( token )
+        return false if master? && !valid_token?( token )
         @modules.class.register_results( issues )
         true
     end
@@ -660,7 +680,7 @@ class Framework < ::Arachni::Framework
     #                       (in which case this method is not applicable)
     #
     def set_master( url, token )
-        return false if high_performance?
+        return false if master?
 
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )

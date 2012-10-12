@@ -18,6 +18,19 @@ module Arachni
 
 module RPC
 class Server
+
+#
+# Wraps the framework of the local instance and the frameworks of all
+# its slaves (when in High Performance Grid mode) into a neat, little,
+# easy to handle package.
+#
+# Disregard all:
+# * 'block' parameters, they are there for internal processing
+#   reasons and cannot be accessed via the API
+# * inherited methods and attributes
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Spider < Arachni::Spider
 
     private :push, :done?, :sitemap
@@ -35,21 +48,33 @@ class Spider < Arachni::Spider
     end
 
     def run( *args, &block )
-        @start_time ||= Time.now
+        if master? && @peers_array.any? && !@already_updated_peers
+            @start_time ||= Time.now
 
-        each_peer do |peer|
-            peer.spider.update_peers( @peers_array | [self_instance_info] ){}
-        end if master? && @peers_array.any?
+            each_peer do |peer|
+                peer.spider.update_peers( @peers_array | [self_instance_info] ){}
+            end
+
+            @already_updated_peers = true
+        end
 
         #ap 'RUN'
         #ap master?
 
-        on_complete_blocks = @on_complete_blocks.dup
-        @on_complete_blocks.clear
+        if !solo?
+            on_complete_blocks = @on_complete_blocks.dup
+            @on_complete_blocks.clear
+        end
+
         super( *args, &block )
-        @on_complete_blocks = on_complete_blocks.dup
+
+        if !solo?
+            @on_complete_blocks = on_complete_blocks.dup
+        end
 
         call_poller
+
+        sitemap
     end
 
     def update_peers( peers )
@@ -64,6 +89,28 @@ class Spider < Arachni::Spider
         @peers[self_instance_info['url']] = framework
 
         @peers = Hash[@peers.sort]
+
+        return true if !slave?
+
+        # yes, this is awful I know but it'll do for now
+        framework.instance_eval do
+            # if we're a slave then send the element IDs for each page to the master...
+            spider.on_each_page do |page|
+                #ap build_elem_list( page )
+                @master.framework.update_element_ids_per_page(
+                    page.url, build_elem_list( page ), master_priv_token ){}
+            end
+
+            # ...and also send the pages in the queue in case it has been
+            # populated by a plugin.
+            spider.on_complete do
+                #ap 'CRAWL DONE'
+                while !@page_queue.empty? && page = @page_queue.pop
+                    @master.framework.update_page_queue( page, master_priv_token ){}
+                end
+            end
+        end
+
         true
     end
 
@@ -103,6 +150,14 @@ class Spider < Arachni::Spider
         framework.master?
     end
 
+    def solo?
+        framework.solo?
+    end
+
+    def slave?
+        framework.slave?
+    end
+
     def self_instance_info
         {
             'url'   => framework.self_url,
@@ -119,7 +174,8 @@ class Spider < Arachni::Spider
         end
 
         foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
-        after = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq ) }
+        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq ) }
+
         map_peers( foreach, after )
     end
 
@@ -132,7 +188,8 @@ class Spider < Arachni::Spider
         end
 
         foreach = proc { |peer, iter| peer.spider.done? { |s| iter.return( s ) } }
-        after = proc { |s| block.call( !(statuses | s).flatten.include?( false ) ) }
+        after   = proc { |s| block.call( !(statuses | s).flatten.include?( false ) ) }
+
         map_peers( foreach, after )
     end
 
@@ -145,18 +202,16 @@ class Spider < Arachni::Spider
         urls = dedup( urls )
         return false if urls.empty?
 
-        begin
-            routed = {}
-            urls.each do |c_url|
-                next if distributed? c_url
-                (routed[route( c_url )] ||= []) << c_url
-                distributed c_url
-            end
-            routed.each { |peer, r_urls| peer.spider.push( r_urls ){} }
-        rescue => e
-            ap e
-            ap e.backtrace
+        routed = {}
+
+        urls.each do |c_url|
+            next if distributed? c_url
+            (routed[route( c_url )] ||= []) << c_url
+            distributed c_url
         end
+
+        routed.each { |peer, r_urls| peer.spider.push( r_urls ){} }
+
         true
     end
 
@@ -183,14 +238,17 @@ class Spider < Arachni::Spider
     end
 
     def peer_iterator
-        ::EM::Iterator.new( @peers.reject{ |url, _| url == self_instance_info['url']}.values,
-                            Framework::Distributor::MAX_CONCURRENCY )
+        ::EM::Iterator.new(
+            @peers.reject{ |url, _| url == self_instance_info['url']}.values,
+            Framework::Distributor::MAX_CONCURRENCY
+        )
     end
 
     def route( url )
         return if !url || url.empty?
         return framework if @peers.empty?
         return @peers.values.first if @peers.size == 1
+
         @peers.values[url.bytes.inject( :+ ).modulo( @peers.size )]
     end
 
