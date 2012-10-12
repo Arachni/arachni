@@ -160,6 +160,8 @@ module Distributor
     # in HPG mode; pretty simple at this point.
     #
     def prefered_dispatchers( &block )
+        return [] if !dispatcher
+
         # keep track of the Pipe IDs we've used
         @used_pipe_ids ||= []
 
@@ -270,72 +272,48 @@ module Distributor
     #
     # Spawns, configures and runs a new remote Instance
     #
-    # @param    [String]    dispatcher_url
+    # @param    [Hash]      instance_hash   as returned by {Dispatcher#dispatch}
     # @param    [Hash]      auditables
     #                        * urls:     Array<String>    urls to audit -- will be passed to restrict_paths
     #                        * elements: Array<String>    scope IDs of elements to audit
     #                        * pages:    Array<Arachni::Page>    pages to audit
     #
-    # @param    [Proc]      block   to be passed a hash containing the url and token of the instance
-    #
-    def spawn( dispatcher_url, auditables = {}, &block )
+    def configure_and_run( instance_hash, auditables = {} )
+        opts = cleaned_up_opts
+        opts['restrict_paths'] = auditables[:urls] || []
+
+        instance = connect_to_instance( instance_hash )
+
+        %w(exclude include).each do |k|
+            opts[k].each.with_index { |v, i| opts[k][i] = v.source }
+        end
+
+        # don't let the slaves run plug-ins that are not meant
+        # to be distributed
+        opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
+
+        instance.opts.set( opts ) {
+        instance.framework.update_page_queue( auditables[:pages] || [] ) {
+        instance.framework.restrict_to_elements( auditables[:elements] || [] ){
+        instance.modules.load( opts['mods'] ) {
+        instance.plugins.load( opts['plugins'] ) {
+        instance.framework.run {}}}}}}
+    end
+
+    def cleaned_up_opts
         opts = @opts.to_h.deep_clone
 
-        urls     = auditables[:urls] || []
-        elements = auditables[:elements] || []
-        pages    = auditables[:pages] || []
+        opts.delete( 'grid_mode' )
+        opts.delete( 'dir' )
+        opts.delete( 'rpc_port' )
+        opts.delete( 'rpc_address' )
 
-        connect_to_dispatcher( dispatcher_url ).dispatch( self_url,
-            'rank'   => 'slave',
-            'target' => @opts.url.to_s,
-            'master' => self_url
-        ) do |instance_hash|
+        opts['datastore'].delete( :dispatcher_url )
+        opts['datastore'].delete( :token )
 
-            if instance_hash.rpc_exception?
-                block.call( false )
-                next
-            end
+        opts['datastore']['master_priv_token'] = @local_token
 
-            instance = connect_to_instance( instance_hash )
-
-            opts['url'] = opts['url'].to_s
-            opts['restrict_paths'] = urls
-
-            opts['grid_mode'] = ''
-
-            opts.delete( 'dir' )
-            opts.delete( 'rpc_port' )
-            opts.delete( 'rpc_address' )
-            opts['datastore'].delete( :dispatcher_url )
-            opts['datastore'].delete( :token )
-
-            opts['datastore']['master_priv_token'] = @local_token
-
-            opts['exclude'].each.with_index do |v, i|
-                opts['exclude'][i] = v.source
-            end
-
-            opts['include'].each.with_index do |v, i|
-                opts['include'][i] = v.source
-            end
-
-            # don't let the slaves run plug-ins that are not meant
-            # to be distributed
-            opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
-
-            instance.opts.set( opts ){
-            instance.framework.update_page_queue( pages ) {
-            instance.framework.restrict_to_elements( elements ){
-            instance.framework.set_master( self_url, @opts.datastore[:token] ){
-            instance.modules.load( opts['mods'] ) {
-            instance.plugins.load( opts['plugins'] ) {
-            instance.framework.run {
-                block.call(
-                    'url'   => instance_hash['url'],
-                    'token' => instance_hash['token']
-                )
-            }}}}}}}
-        end
+        opts
     end
 
     def merge_stats( stats )
@@ -381,7 +359,7 @@ module Distributor
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
             end
-        rescue Exception# => e
+        rescue # => e
             # ap e
             # ap e.backtrace
         end
@@ -421,6 +399,7 @@ module Distributor
     end
 
     def dispatcher
+        return if !@opts.datastore[:dispatcher_url]
         connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 

@@ -118,7 +118,7 @@ class Instance
     # Starts the HTTPS server and the RPC service.
     #
     def run
-        print_status( 'Starting the server...' )
+        print_status 'Starting the server...'
         # start the show!
         @server.run
     end
@@ -155,11 +155,12 @@ class Instance
             method.parameters.flatten.include?( :block )
         end
 
-        @server.add_handler( "service",   self )
-        @server.add_handler( "framework", @framework )
-        @server.add_handler( "opts",      @framework.opts )
-        @server.add_handler( "modules",   @framework.modules )
-        @server.add_handler( "plugins",   @framework.plugins )
+        @server.add_handler( 'service',   self )
+        @server.add_handler( 'framework', @framework )
+        @server.add_handler( 'opts',      @framework.opts )
+        @server.add_handler( 'spider',    @framework.spider )
+        @server.add_handler( 'modules',   @framework.modules )
+        @server.add_handler( 'plugins',   @framework.plugins )
     end
 
 end

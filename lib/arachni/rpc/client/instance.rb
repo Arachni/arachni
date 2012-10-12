@@ -29,6 +29,7 @@ class Client
 class Instance
 
     attr_reader :opts
+    attr_reader :spider
     attr_reader :framework
     attr_reader :modules
     attr_reader :plugins
@@ -59,6 +60,7 @@ class Instance
 
         @opts      = OptsMapper.new( @client, 'opts' )
         @framework = RemoteObjectMapper.new( @client, 'framework' )
+        @spider    = RemoteObjectMapper.new( @client, 'spider' )
         @modules   = RemoteObjectMapper.new( @client, 'modules' )
         @plugins   = RemoteObjectMapper.new( @client, 'plugins' )
         @service   = RemoteObjectMapper.new( @client, 'service' )

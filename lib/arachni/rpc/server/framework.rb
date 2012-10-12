@@ -20,6 +20,7 @@ module Arachni
 
 lib = Options.dir['lib']
 require lib + 'framework'
+require lib + 'rpc/server/spider'
 require lib + 'rpc/server/module/manager'
 require lib + 'rpc/server/plugin/manager'
 
@@ -63,6 +64,7 @@ class Framework < ::Arachni::Framework
 
         @modules = Module::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
+        @spider  = Spider.new( self )
 
         # holds all running instances
         @instances = []
@@ -128,6 +130,10 @@ class Framework < ::Arachni::Framework
         end
     end
 
+    def set_as_master
+        @opts.grid_mode = 'high_performance'
+    end
+
     #
     #
     # @return   [Bool]    true if running in HPG (High Performance Grid) mode
@@ -135,6 +141,27 @@ class Framework < ::Arachni::Framework
     #
     def high_performance?
         @opts.grid_mode == 'high_performance'
+    end
+    alias :master? :high_performance?
+
+    def slave?
+        !!@master
+    end
+
+    def enslave( instance_info, opts = {}, &block )
+        fail "Instance info does not contain a 'url' key."   if !instance_info['url']
+        fail "Instance info does not contain a 'token' key." if !instance_info['token']
+
+        # since we have slaves we must be a master...
+        set_as_master
+
+        instance = connect_to_instance( instance_info )
+        instance.opts.set( cleaned_up_opts ) do
+            instance.framework.set_master( self_url, @opts.datastore[:token] ) do
+                @instances << instance_info
+                block.call true if block_given?
+            end
+        end
     end
 
     #
@@ -193,78 +220,102 @@ class Framework < ::Arachni::Framework
                 # before moving on.
                 sleep( 0.2 ) while paused?
 
-                @status = :crawling
-                # start the crawl and extract all paths
-                spider.run do |page|
-                    @override_sitemap << page.url
-                    element_ids_per_page[page.url] = build_elem_list( page )
+                each = proc do |d_url, iterator|
+                    d_opts = {
+                        'rank'   => 'slave',
+                        'target' => @opts.url,
+                        'master' => self_url
+                    }
+                    connect_to_dispatcher( d_url ).dispatch( self_url, d_opts ) do |instance_hash|
+                        enslave( instance_hash )
+                        iterator.return
+                    end
                 end
 
-                @status = :distributing
-                # the plug-ins may have updated the page queue
-                # so we need to distribute these pages as well
-                page_a = []
-                while !@page_queue.empty? && page = @page_queue.pop
-                    page_a << page
-                    @override_sitemap << page.url
-                    element_ids_per_page[page.url] = build_elem_list( page )
+                after = proc do
+                    @status = :crawling
+
+                    spider.update_peers( @instances )
+
+                    #ap 'PRE RUN'
+                    # start the crawl and extract all paths
+                    spider.run do |page|
+                        element_ids_per_page[page.url] = build_elem_list( page )
+                    end
+
+                    spider.on_complete do
+                        @override_sitemap |= spider.sitemap
+
+                        @status = :distributing
+                        # the plug-ins may have updated the page queue
+                        # so we need to distribute these pages as well
+                        page_a = []
+                        while !@page_queue.empty? && page = @page_queue.pop
+                            page_a << page
+                            @override_sitemap << page.url
+                            element_ids_per_page[page.url] = build_elem_list( page )
+                        end
+
+                        # split the URLs of the pages in equal chunks
+                        chunks    = split_urls( element_ids_per_page.keys, @instances.size + 1 )
+                        chunk_cnt = chunks.size
+
+                        if chunk_cnt > 0
+                            # split the page array into chunks that will be distributed
+                            # across the instances
+                            page_chunks = page_a.chunk( chunk_cnt )
+
+                            # assign us our fair share of plug-in discovered pages
+                            update_page_queue( page_chunks.pop, @local_token )
+
+                            # remove duplicate elements across the (per instance) chunks
+                            # while spreading them out evenly
+                            elements = distribute_elements( chunks, element_ids_per_page )
+
+                            # restrict the local instance to its assigned elements
+                            restrict_to_elements( elements.pop, @local_token )
+
+                            # set the URLs to be audited by the local instance
+                            @opts.restrict_paths = chunks.pop
+
+                            chunks.each_with_index do |chunk, i|
+                                # spawn a remote instance, assign a chunk of URLs
+                                # and elements to it and run it
+                                configure_and_run( @instances[i],
+                                                   urls:     chunk,
+                                                   elements: elements.pop,
+                                                   pages:    page_chunks.pop
+                                )
+                            end
+                        end
+
+                        # start the local instance
+                        Thread.new {
+                            #ap 'AUDITING'
+                            audit
+
+                            #ap 'OLD CLEAN UP'
+                            old_clean_up
+
+                            #ap 'DONE'
+                            @extended_running = false
+                            @status = :done
+                            #ap '+++++++++++++++'
+                        }
+                    end
                 end
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
                 prefered_dispatchers do |pref_dispatchers|
-
-                    # split the URLs of the pages in equal chunks
-                    chunks    = split_urls( element_ids_per_page.keys, pref_dispatchers.size + 1 )
-                    chunk_cnt = chunks.size
-
-                    if chunk_cnt > 0
-                        # split the page array into chunks that will be distributed
-                        # across the instances
-                        page_chunks = page_a.chunk( chunk_cnt )
-
-                        # assign us our fair share of plug-in discovered pages
-                        update_page_queue( page_chunks.pop, @local_token )
-
-                        # remove duplicate elements across the (per instance) chunks
-                        # while spreading them out evenly
-                        elements = distribute_elements( chunks, element_ids_per_page )
-
-                        # restrict the local instance to its assigned elements
-                        restrict_to_elements( elements.pop, @local_token )
-
-                        # set the URLs to be audited by the local instance
-                        @opts.restrict_paths = chunks.pop
-
-                        chunks.each do |chunk|
-                            # spawn a remote instance, assign a chunk of URLs
-                            # and elements to it and run it
-                            spawn( pref_dispatchers.pop,
-                                   urls:     chunk,
-                                   elements: elements.pop,
-                                   pages:    page_chunks.pop
-                            ) { |inst| @instances << inst }
-                        end
-                    end
-
-                    # start the local instance
-                    Thread.new {
-                        # ap 'AUDITING'
-                        audit
-
-                        # ap 'OLD CLEAN UP'
-                        old_clean_up
-
-                        # ap 'DONE'
-                        @extended_running = false
-                        @status = :done
-                    }
+                    iterator_for( pref_dispatchers ).map( each, after )
                 end
+
             }
         else
             # start the local instance
             Thread.new {
-                # ap 'AUDITING'
+                #ap 'AUDITING'
                 super
                 # ap 'DONE'
                 @extended_running = false
@@ -486,8 +537,13 @@ class Framework < ::Arachni::Framework
     alias :auditstore_as_hash :report
 
     def report_as( name )
-        fail Exceptions::ComponentNotFound, "Report '#{name}' could not be found." if !reports.available.include?( name.to_s )
-        fail TypeError, "Report '#{name}' cannot format the audit results as a String." if !reports[name].has_outfile?
+        if !reports.available.include?( name.to_s )
+            fail Arachni::Exceptions::ComponentNotFound,
+                 "Report '#{name}' could not be found."
+        end
+        if !reports[name].has_outfile?
+            fail TypeError, "Report '#{name}' cannot format the audit results as a String."
+        end
 
         outfile = "/tmp/arachn_report_as.#{name}"
         reports.run_one( name, auditstore, 'outfile' => outfile )
@@ -614,6 +670,10 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    def self_url
+        @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
+    end
+
     private
 
     #
@@ -645,15 +705,6 @@ class Framework < ::Arachni::Framework
     def report_issues_to_master( issues )
         @master.framework.register_issues( issues, master_priv_token ){}
         true
-    end
-
-    def self_url
-        @self_url ||= nil
-        return @self_url if @self_url
-
-        port      = @opts.rpc_port
-        d_port    = @opts.datastore[:dispatcher_url].split( ':', 2 )[1]
-        @self_url = @opts.datastore[:dispatcher_url].gsub( d_port, port.to_s )
     end
 
     def master_priv_token
