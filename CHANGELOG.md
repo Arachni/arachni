@@ -10,7 +10,7 @@
 - Executables
   - ```arachni_rpcd_monitor``` -- Laxed standards enforced on the Dispatcher URL argument. [Issue #293]
 - Path extractors
-  - Added path extractor for the ```area``` HTML tag (```href``` attribute).
+  - Added path extractor for the ```area``` HTML tag (```href``` attribute). [Issue #300]
 
 ## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.
