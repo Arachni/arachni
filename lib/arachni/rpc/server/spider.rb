@@ -28,25 +28,24 @@ class Spider < Arachni::Spider
     private :push, :done?, :sitemap
     public  :push, :done?, :sitemap
 
-    attr_accessor :master
+    #attr_accessor :master
 
     def initialize( framework )
-        @opts = framework.opts
-        super( @opts )
+        super( framework.opts )
 
-        @framework = framework
-
+        @framework    = framework
         @peers        = {}
         @done_signals = {}
 
-        @distribution_filter = BloomFilter.new
+        @distribution_filter   = BloomFilter.new
+        @after_each_run_blocks = []
+    end
+
+    def after_each_run( &block )
+        @after_each_run_blocks << block
     end
 
     def run( *args, &block )
-        #if master? && !@start_time
-        #    @start_time ||= Time.now
-        #end
-
         if !solo?
             on_complete_blocks = @on_complete_blocks.dup
             @on_complete_blocks.clear
@@ -54,9 +53,12 @@ class Spider < Arachni::Spider
 
         super( *args, &block )
 
-
         master_done_handler if master?
-        @master.spider.peer_done( framework.self_url ){} if slave?
+
+        if slave?
+            call_after_each_run
+            #@master.spider.peer_done( framework.self_url ){}
+        end
 
         if !solo?
             @on_complete_blocks = on_complete_blocks.dup
@@ -108,9 +110,15 @@ class Spider < Arachni::Spider
 
     def peer_done( url )
         @done_signals[url] = true
+        master_done_handler
+        true
     end
 
     private
+
+    def call_after_each_run
+        @after_each_run_blocks.each( &:call )
+    end
 
     def peer_not_done( url )
         @done_signals[url] = false
@@ -121,12 +129,8 @@ class Spider < Arachni::Spider
     def master_done_handler
         return if !done? || @done_signals.values.include?( false )
 
-        #puts 'DONE!'
         collect_sitemaps do |aggregate_sitemap|
             @distributed_sitemap = aggregate_sitemap
-
-            #puts aggregate_sitemap.join( "\n" )
-            #puts "---- Found #{aggregate_sitemap.size} URLs in #{Time.now - @start_time} seconds."
             call_on_complete_blocks
         end
     end

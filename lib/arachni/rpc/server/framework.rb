@@ -241,16 +241,18 @@ class Framework < ::Arachni::Framework
 
                     spider.update_peers( @instances )
                     spider.on_each_page do |page|
-                        #ap build_elem_list( page )
-                        update_element_ids_per_page( page.url,
-                                                     build_elem_list( page ),
+                        update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
                     end
 
+                    #@start_time = Time.now
                     #ap 'PRE RUN'
                     # start the crawl and extract all paths
                     spider.on_complete do
                         #ap 'POST CRAWL'
+
+                        #puts aggregate_sitemap.join( "\n" )
+                        #puts "---- Found #{spider.sitemap.size} URLs in #{Time.now - @start_time} seconds."
 
                         element_ids_per_page = @element_ids_per_page
 
@@ -622,10 +624,14 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    def update_element_ids_per_page( page_url, ids, token = nil )
+    def update_element_ids_per_page( element_ids_per_page = {}, token = nil )
         return false if master? && !valid_token?( token )
-        @element_ids_per_page[page_url] ||= []
-        @element_ids_per_page[page_url] |= ids
+
+        element_ids_per_page.each do |url, ids|
+            @element_ids_per_page[url] ||= []
+            @element_ids_per_page[url] |= ids
+        end
+
         true
     end
 
@@ -682,12 +688,31 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
-        spider.master = @master
+        #spider.master = @master
 
-        # send the element IDs for each page the spider finds to the master...
+        @slave_element_ids_per_page ||= {}
+
+        @elem_ids_filter ||= Arachni::BloomFilter.new
+
         spider.on_each_page do |page|
-            @master.framework.update_element_ids_per_page(
-                page.url, build_elem_list( page ), master_priv_token ){}
+            ids = build_elem_list( page ).reject do |id|
+                if @elem_ids_filter.include? id
+                    true
+                else
+                    @elem_ids_filter << id
+                    false
+                end
+            end
+
+            @slave_element_ids_per_page[page.url] = ids.map { |i| i }
+        end
+
+        spider.after_each_run do
+            @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
+                                                           master_priv_token ){
+                @master.spider.peer_done( self_url ){}
+            }
+            @slave_element_ids_per_page.clear
         end
 
         # ...and also send the pages in the queue in case it has been
