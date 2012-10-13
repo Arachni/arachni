@@ -48,18 +48,9 @@ class Spider < Arachni::Spider
     end
 
     def run( *args, &block )
-        if master? && @peers_array.any? && !@already_updated_peers
-            @start_time ||= Time.now
-
-            each_peer do |peer|
-                peer.spider.update_peers( @peers_array | [self_instance_info] ){}
-            end
-
-            @already_updated_peers = true
-        end
-
-        #ap 'RUN'
-        #ap master?
+        #if master? && !@start_time
+        #    @start_time ||= Time.now
+        #end
 
         if !solo?
             on_complete_blocks = @on_complete_blocks.dup
@@ -72,7 +63,7 @@ class Spider < Arachni::Spider
             @on_complete_blocks = on_complete_blocks.dup
         end
 
-        call_poller
+        start_polling
 
         sitemap
     end
@@ -86,29 +77,14 @@ class Spider < Arachni::Spider
 
         @peers = Hash[sorted_peers]
 
-        @peers[self_instance_info['url']] = framework
+        @peers[framework.self_url] = framework
 
         @peers = Hash[@peers.sort]
 
-        return true if !slave?
+        return true if !master?
 
-        # yes, this is awful I know but it'll do for now
-        framework.instance_eval do
-            # if we're a slave then send the element IDs for each page to the master...
-            spider.on_each_page do |page|
-                #ap build_elem_list( page )
-                @master.framework.update_element_ids_per_page(
-                    page.url, build_elem_list( page ), master_priv_token ){}
-            end
-
-            # ...and also send the pages in the queue in case it has been
-            # populated by a plugin.
-            spider.on_complete do
-                #ap 'CRAWL DONE'
-                while !@page_queue.empty? && page = @page_queue.pop
-                    @master.framework.update_page_queue( page, master_priv_token ){}
-                end
-            end
+        each_peer do |peer|
+            peer.spider.update_peers( @peers_array | [self_instance_info] ){}
         end
 
         true
@@ -118,32 +94,41 @@ class Spider < Arachni::Spider
         @distributed_sitemap || super
     end
 
+    def collect_sitemaps( &block )
+        local_sitemap = sitemap
+
+        if @peers.empty?
+            block.call( local_sitemap )
+            return
+        end
+
+        foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
+        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq.sort ) }
+
+        map_peers( foreach, after )
+    end
+
     private
 
-    def call_poller
+    def start_polling
         return if !master?
 
         #puts 'DONE!'
 
-        @poller ||= ::EM.add_periodic_timer( 1 ) {
+        @poller ||= ::EM.add_periodic_timer( 1 ) do
             #puts 'Checking peer statuses.'
 
-            all_done? do |res|
-                if res
-                    #puts 'All done, collecting sitemaps...'
-                    collect_sitemaps do |aggregate_sitemap|
-                        @distributed_sitemap = aggregate_sitemap
+            when_all_done do
+                collect_sitemaps do |aggregate_sitemap|
+                    @distributed_sitemap = aggregate_sitemap
 
-                        #puts aggregate_sitemap.join( "\n" )
-                        #puts "---- Found #{aggregate_sitemap.size} URLs in #{Time.now - @start_time} seconds."
-                        call_on_complete_blocks
-                        @poller.cancel
-                    end
-                #else
-                #    puts 'Still working...'
+                    #puts aggregate_sitemap.join( "\n" )
+                    #puts "---- Found #{aggregate_sitemap.size} URLs in #{Time.now - @start_time} seconds."
+                    call_on_complete_blocks
+                    @poller.cancel
                 end
             end
-        }
+        end
     end
 
     def master?
@@ -165,18 +150,8 @@ class Spider < Arachni::Spider
         }
     end
 
-    def collect_sitemaps( &block )
-        local_sitemap = sitemap
-
-        if @peers.empty?
-            block.call( local_sitemap )
-            return
-        end
-
-        foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
-        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq.sort ) }
-
-        map_peers( foreach, after )
+    def when_all_done( &block )
+        all_done? { |bool| block.call if bool }
     end
 
     def all_done?( &block )

@@ -12,6 +12,13 @@ class Distributor
     attr_reader :instances
     attr_accessor :master_url
 
+    [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
+        :split_urls, :build_elem_list, :distribute_elements, :preferred_dispatchers,
+        :pick_dispatchers, :configure_and_run ].each do |sym|
+        private sym
+        public sym
+    end
+
     def initialize( token )
         @opts = Arachni::Options.instance
         @local_token = token
@@ -46,6 +53,15 @@ class FakeMaster
 
         @server.add_handler( "framework", self )
         @server.start
+    end
+
+    def enslave( instance_hash )
+        instance = Arachni::RPC::Client::Instance.new( @opts,
+                                                       instance_hash['url'],
+                                                       instance_hash['token'])
+
+        instance.framework.set_master( "#{@server.opts[:host]}:#{@server.opts[:port]}",
+                                       @token )
     end
 
     def register_issues( issues, token = nil )
@@ -372,7 +388,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#prefered_dispatchers' do
+    describe '#preferred_dispatchers' do
         it 'should return a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
             @opts.pool_size = 1
             opts = @opts
@@ -423,7 +439,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @distributor.dispatcher_url = "#{opts.rpc_address}:#{port}"
 
             q = Queue.new
-            @distributor.prefered_dispatchers { |d| q << d }
+            @distributor.preferred_dispatchers { |d| q << d }
 
             pref_dispatchers = []
 
@@ -459,7 +475,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#spawn' do
+    describe '#configure_and_run' do
         before( :all ) do
             @opts.rpc_port = random_port
             @opts.dir['modules'] = spec_path + 'fixtures/taint_module/'
@@ -478,6 +494,13 @@ describe Arachni::RPC::Server::Framework::Distributor do
             @opts.mods = %w(taint)
 
             @dispatcher_url = "#{@opts.rpc_address}:#{port}"
+
+            @get_instance_info = proc do
+                instance = @get_instance.call
+                info = { 'url' => instance.url, 'token' => @token }
+                @master.enslave( info )
+                info
+            end
         end
 
         after { @master.issues.clear }
@@ -485,7 +508,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
         context 'when called without auditable restrictions' do
             it 'should let the slave run loose, like a simple instance' do
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url ){ |i| q << i }
+
+                @distributor.configure_and_run( @get_instance_info.call ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -503,7 +527,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
 
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, urls: urls ){ |i| q << i }
+                @distributor.configure_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
                 slave = @distributor.connect_to_instance( slave_info )
@@ -530,7 +554,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 ).scope_audit_id
 
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, elements: ids ){ |i| q << i }
+                @distributor.configure_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -556,7 +580,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     ).scope_audit_id
 
                     q = Queue.new
-                    @distributor.spawn( @dispatcher_url, elements: [id] ){ |i| q << i }
+                    @distributor.configure_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }
                     slave_info = q.pop
                     slave_info.should be_true
 
@@ -609,7 +633,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 # send it somewhere that doesn't exist
                 @opts.url = @url + '/foo'
                 q = Queue.new
-                @distributor.spawn( @dispatcher_url, pages: pages ){ |i| q << i }
+                @distributor.configure_and_run( @get_instance_info.call, pages: pages ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 

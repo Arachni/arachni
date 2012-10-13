@@ -45,6 +45,20 @@ module Distributor
     MIN_PAGES_PER_INSTANCE = 30
 
     #
+    # Connects to a remote Instance.
+    #
+    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
+    #                                   In subsequent calls the 'token' can be omitted.
+    #
+    def connect_to_instance( instance )
+        @tokens  ||= {}
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+    end
+
+    private
+
+    #
     # @param    [Proc]  foreach     invoked once for each slave instance and
     #                                 creates an array from the returned values
     # @param    [Proc]  after       to handle the resulting array
@@ -159,7 +173,7 @@ module Distributor
     # Returns the dispatchers that have different Pipe IDs i.e. can be setup
     # in HPG mode; pretty simple at this point.
     #
-    def prefered_dispatchers( &block )
+    def preferred_dispatchers( &block )
         return [] if !dispatcher
 
         # keep track of the Pipe IDs we've used
@@ -278,11 +292,9 @@ module Distributor
     #                        * elements: Array<String>    scope IDs of elements to audit
     #                        * pages:    Array<Arachni::Page>    pages to audit
     #
-    def configure_and_run( instance_hash, auditables = {} )
+    def configure_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts
         opts['restrict_paths'] = auditables[:urls] || []
-
-        instance = connect_to_instance( instance_hash )
 
         %w(exclude include).each do |k|
             opts[k].each.with_index { |v, i| opts[k][i] = v.source }
@@ -292,12 +304,14 @@ module Distributor
         # to be distributed
         opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
 
+        instance = connect_to_instance( instance_hash )
+
         instance.opts.set( opts ) {
         instance.framework.update_page_queue( auditables[:pages] || [] ) {
         instance.framework.restrict_to_elements( auditables[:elements] || [] ){
         instance.modules.load( opts['mods'] ) {
         instance.plugins.load( opts['plugins'] ) {
-        instance.framework.run {}}}}}}
+        instance.framework.run { block.call( instance_hash ) if block_given? }}}}}}
     end
 
     def cleaned_up_opts
@@ -380,18 +394,6 @@ module Distributor
             return eta1 if eta1_splits[i].to_i > eta2_splits[i].to_i
             return eta2 if eta1_splits[i].to_i < eta2_splits[i].to_i
         end
-    end
-
-    #
-    # Connects to a remote Instance.
-    #
-    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
-    #                                   In subsequent calls the 'token' can be omitted.
-    #
-    def connect_to_instance( instance )
-        @tokens  ||= {}
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
     end
 
     def connect_to_dispatcher( url )

@@ -141,10 +141,10 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]    true if running in HPG (High Performance Grid) mode
     #                       and instance is the master, false otherwise.
     #
-    def high_performance?
+    def master?
         @opts.grid_mode == 'high_performance'
     end
-    alias :master? :high_performance?
+    alias :high_performance? :master?
 
     def slave?
         !!@master
@@ -240,7 +240,6 @@ class Framework < ::Arachni::Framework
                     @status = :crawling
 
                     spider.update_peers( @instances )
-
                     spider.on_each_page do |page|
                         #ap build_elem_list( page )
                         update_element_ids_per_page( page.url,
@@ -320,7 +319,7 @@ class Framework < ::Arachni::Framework
 
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
-                prefered_dispatchers do |pref_dispatchers|
+                preferred_dispatchers do |pref_dispatchers|
                     iterator_for( pref_dispatchers ).map( each, after )
                 end
 
@@ -538,6 +537,10 @@ class Framework < ::Arachni::Framework
     end
     alias :progress :progress_data
 
+    def sitemap( &block )
+        spider.collect_sitemaps( &block )
+    end
+
     #
     # Returns the results of the audit as a hash.
     #
@@ -566,23 +569,17 @@ class Framework < ::Arachni::Framework
         str
     end
 
-    #
     # @return   [String]    YAML representation of {#auditstore}
-    #
     def serialized_auditstore
         audit_store.to_yaml
     end
 
-    #
     # @return   [String]    YAML representation of {#report}
-    #
     def serialized_report
         audit_store.to_h.to_yaml
     end
 
-    #
     # @return  [Array<Arachni::Issue>]  all discovered issues albeit without any variations
-    #
     def issues
         auditstore.issues.deep_clone.map do |issue|
             issue.variations.clear
@@ -685,6 +682,20 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
+        # send the element IDs for each page the spider finds to the master...
+        spider.on_each_page do |page|
+            @master.framework.update_element_ids_per_page(
+                page.url, build_elem_list( page ), master_priv_token ){}
+        end
+
+        # ...and also send the pages in the queue in case it has been
+        # populated by a plugin.
+        #spider.on_complete do
+        #    while !@page_queue.empty? && page = @page_queue.pop
+        #        @master.framework.update_page_queue( page, master_priv_token ){}
+        #    end
+        #end
+
         @modules.do_not_store
         @modules.on_register_results { |r| report_issues_to_master( r ) }
         true
@@ -706,7 +717,7 @@ class Framework < ::Arachni::Framework
     # @see Arachni::Framework#auditstore_sitemap
     #
     def auditstore_sitemap
-        high_performance? ? @override_sitemap.to_a : super
+        master? ? @override_sitemap.to_a : super
     end
 
     def extended_running?
