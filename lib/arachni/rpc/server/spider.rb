@@ -174,7 +174,7 @@ class Spider < Arachni::Spider
         end
 
         foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
-        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq ) }
+        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq.sort ) }
 
         map_peers( foreach, after )
     end
