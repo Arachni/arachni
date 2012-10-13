@@ -20,14 +20,6 @@ module RPC
 class Server
 
 #
-# Wraps the framework of the local instance and the frameworks of all
-# its slaves (when in High Performance Grid mode) into a neat, little,
-# easy to handle package.
-#
-# Disregard all:
-# * 'block' parameters, they are there for internal processing
-#   reasons and cannot be accessed via the API
-# * inherited methods and attributes
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -36,13 +28,16 @@ class Spider < Arachni::Spider
     private :push, :done?, :sitemap
     public  :push, :done?, :sitemap
 
+    attr_accessor :master
+
     def initialize( framework )
         @opts = framework.opts
         super( @opts )
 
         @framework = framework
 
-        @peers = {}
+        @peers        = {}
+        @done_signals = {}
 
         @distribution_filter = BloomFilter.new
     end
@@ -59,11 +54,13 @@ class Spider < Arachni::Spider
 
         super( *args, &block )
 
+
+        master_done_handler if master?
+        @master.spider.peer_done( framework.self_url ){} if slave?
+
         if !solo?
             @on_complete_blocks = on_complete_blocks.dup
         end
-
-        start_polling
 
         sitemap
     end
@@ -84,6 +81,7 @@ class Spider < Arachni::Spider
         return true if !master?
 
         each_peer do |peer|
+            peer_not_done( peer.url )
             peer.spider.update_peers( @peers_array | [self_instance_info] ){}
         end
 
@@ -108,26 +106,28 @@ class Spider < Arachni::Spider
         map_peers( foreach, after )
     end
 
+    def peer_done( url )
+        @done_signals[url] = true
+    end
+
     private
 
-    def start_polling
-        return if !master?
+    def peer_not_done( url )
+        @done_signals[url] = false
+        master_done_handler
+        true
+    end
+
+    def master_done_handler
+        return if !done? || @done_signals.values.include?( false )
 
         #puts 'DONE!'
+        collect_sitemaps do |aggregate_sitemap|
+            @distributed_sitemap = aggregate_sitemap
 
-        @poller ||= ::EM.add_periodic_timer( 1 ) do
-            #puts 'Checking peer statuses.'
-
-            when_all_done do
-                collect_sitemaps do |aggregate_sitemap|
-                    @distributed_sitemap = aggregate_sitemap
-
-                    #puts aggregate_sitemap.join( "\n" )
-                    #puts "---- Found #{aggregate_sitemap.size} URLs in #{Time.now - @start_time} seconds."
-                    call_on_complete_blocks
-                    @poller.cancel
-                end
-            end
+            #puts aggregate_sitemap.join( "\n" )
+            #puts "---- Found #{aggregate_sitemap.size} URLs in #{Time.now - @start_time} seconds."
+            call_on_complete_blocks
         end
     end
 
@@ -135,12 +135,12 @@ class Spider < Arachni::Spider
         framework.master?
     end
 
-    def solo?
-        framework.solo?
-    end
-
     def slave?
         framework.slave?
+    end
+
+    def solo?
+        framework.solo?
     end
 
     def self_instance_info
@@ -148,24 +148,6 @@ class Spider < Arachni::Spider
             'url'   => framework.self_url,
             'token' => @opts.datastore[:token]
         }
-    end
-
-    def when_all_done( &block )
-        all_done? { |bool| block.call if bool }
-    end
-
-    def all_done?( &block )
-        statuses = [ done? ]
-
-        if @peers.empty?
-            block.call( statuses.first )
-            return
-        end
-
-        foreach = proc { |peer, iter| peer.spider.done? { |s| iter.return( s ) } }
-        after   = proc { |s| block.call( !(statuses | s).flatten.include?( false ) ) }
-
-        map_peers( foreach, after )
     end
 
     #
@@ -185,7 +167,10 @@ class Spider < Arachni::Spider
             distributed c_url
         end
 
-        routed.each { |peer, r_urls| peer.spider.push( r_urls ){} }
+        routed.each do |peer, r_urls|
+            peer_not_done( peer.url ) if !(peer === framework)
+            peer.spider.push( r_urls ){}
+        end
 
         true
     end

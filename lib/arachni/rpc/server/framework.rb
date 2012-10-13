@@ -682,6 +682,8 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
+        spider.master = @master
+
         # send the element IDs for each page the spider finds to the master...
         spider.on_each_page do |page|
             @master.framework.update_element_ids_per_page(
