@@ -239,14 +239,13 @@ class Framework < ::Arachni::Framework
                 after = proc do
                     @status = :crawling
 
-                    spider.update_peers( @instances )
                     spider.on_each_page do |page|
                         update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
                     end
 
                     #@start_time = Time.now
-                    #ap 'PRE RUN'
+                    #ap 'PRE CRAWL'
                     # start the crawl and extract all paths
                     spider.on_complete do
                         #ap 'POST CRAWL'
@@ -316,7 +315,7 @@ class Framework < ::Arachni::Framework
                         }
                     end
 
-                    spider.run
+                    spider.update_peers( @instances ){ spider.run }
                 end
 
                 # get the Dispatchers with unique Pipe IDs
@@ -695,6 +694,7 @@ class Framework < ::Arachni::Framework
         @elem_ids_filter ||= Arachni::BloomFilter.new
 
         spider.on_each_page do |page|
+            #ap 'SLAVE -- ON EACH PAGE'
             ids = build_elem_list( page ).reject do |id|
                 if @elem_ids_filter.include? id
                     true
@@ -708,9 +708,11 @@ class Framework < ::Arachni::Framework
         end
 
         spider.after_each_run do
+            #ap 'SLAVE -- AFTER EACH RUN'
             @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
                                                            master_priv_token ){
-                @master.spider.peer_done( self_url ){}
+                #ap 'SLAVE -- INSIDE EACH RUN'
+                spider.signal_if_done( @master )
             }
             @slave_element_ids_per_page.clear
         end

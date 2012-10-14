@@ -39,6 +39,12 @@ class Spider < Arachni::Spider
 
         @distribution_filter   = BloomFilter.new
         @after_each_run_blocks = []
+
+        # debugging stuff
+        #cnt = 0
+        #on_each_response do |res|
+        #    puts "[#{cnt += 1}] #{res.effective_url}"
+        #end
     end
 
     def after_each_run( &block )
@@ -51,13 +57,16 @@ class Spider < Arachni::Spider
             @on_complete_blocks.clear
         end
 
+        #ap 'PRE RUN'
         super( *args, &block )
+        #ap 'AFTER RUN'
 
-        master_done_handler if master?
+        master_done_handler
 
         if slave?
+            #ap 'PRE CALL AFTER EACH RUN'
             call_after_each_run
-            #@master.spider.peer_done( framework.self_url ){}
+            #ap 'POST CALL AFTER EACH RUN'
         end
 
         if !solo?
@@ -67,7 +76,7 @@ class Spider < Arachni::Spider
         sitemap
     end
 
-    def update_peers( peers )
+    def update_peers( peers, &block )
         @peers_array = peers
         sorted_peers = @peers_array.inject( {} ) do |h, p|
             h[p['url']] = framework.connect_to_instance( p )
@@ -80,12 +89,19 @@ class Spider < Arachni::Spider
 
         @peers = Hash[@peers.sort]
 
-        return true if !master?
-
-        each_peer do |peer|
-            peer_not_done( peer.url )
-            peer.spider.update_peers( @peers_array | [self_instance_info] ){}
+        if !master?
+            block.call if block_given?
+            return true
         end
+
+        each = proc do |peer, iter|
+            peer_not_done( peer.url )
+            peer.spider.update_peers( @peers_array | [self_instance_info] ){
+                iter.return
+            }
+        end
+
+        map_peers( each, proc { block.call if block_given? } )
 
         true
     end
@@ -103,15 +119,27 @@ class Spider < Arachni::Spider
         end
 
         foreach = proc { |peer, iter| peer.spider.sitemap { |s| iter.return( s ) } }
-        after   = proc { |sitemap| block.call( (sitemap | local_sitemap).flatten.uniq.sort ) }
+        after   = proc do |sitemap|
+            block.call( (sitemap | local_sitemap).flatten.uniq.sort )
+        end
 
         map_peers( foreach, after )
     end
 
     def peer_done( url )
+        #ap 'PEER DONE'
+        #ap url
+        #ap @done_signals
+
         @done_signals[url] = true
         master_done_handler
         true
+    end
+
+    def signal_if_done( master, &block )
+        #ap 'SIGNAL IF DONE'
+        #ap done?
+        master.spider.peer_done( framework.self_url, &block ) if done?
     end
 
     private
@@ -122,16 +150,22 @@ class Spider < Arachni::Spider
 
     def peer_not_done( url )
         @done_signals[url] = false
-        master_done_handler
         true
     end
 
     def master_done_handler
-        return if !done? || @done_signals.values.include?( false )
+        #ap 'MASTER DONE HANDLER -- PRE'
+        #ap master?
+        #ap done?
+        #ap @done_signals
+        return if !master? || !done? || @done_signals.values.include?( false )
+        #ap 'MASTER DONE HANDLER -- POST'
 
         collect_sitemaps do |aggregate_sitemap|
+            #ap 'MASTER DONE HANDLER -- PRE COLLECT SITEMAPS'
             @distributed_sitemap = aggregate_sitemap
             call_on_complete_blocks
+            #ap 'MASTER DONE HANDLER -- POST COLLECT SITEMAPS'
         end
     end
 
@@ -172,8 +206,11 @@ class Spider < Arachni::Spider
         end
 
         routed.each do |peer, r_urls|
-            peer_not_done( peer.url ) if !(peer === framework)
-            peer.spider.push( r_urls ){}
+            peer.spider.push( r_urls ) do |included_new_paths|
+                if included_new_paths && !(peer === framework)
+                    peer_not_done( peer.url )
+                end
+            end
         end
 
         true
