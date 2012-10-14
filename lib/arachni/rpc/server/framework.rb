@@ -480,7 +480,7 @@ class Framework < ::Arachni::Framework
         stat_hash = {}
         stats( true, true ).each { |k, v| stat_hash[k.to_s] = v }
 
-        if @opts.datastore[:dispatcher_url] && include_slaves
+        if master? && include_slaves
             data['instances'][self_url] = stat_hash.dup
             data['instances'][self_url]['url'] = self_url
             data['instances'][self_url]['status'] = status
@@ -704,16 +704,23 @@ class Framework < ::Arachni::Framework
                 end
             end
 
+            next if ids.empty?
+
             @slave_element_ids_per_page[page.url] = ids.map { |i| i }
         end
 
         spider.after_each_run do
-            #ap 'SLAVE -- AFTER EACH RUN'
-            @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
-                                                           master_priv_token ){
-                #ap 'SLAVE -- INSIDE EACH RUN'
+            if !@slave_element_ids_per_page.empty?
+                #ap 'SLAVE -- AFTER EACH RUN'
+                @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
+                                                               master_priv_token ){
+                    #ap 'SLAVE -- INSIDE EACH RUN'
+                    spider.signal_if_done( @master )
+                }
+            else
                 spider.signal_if_done( @master )
-            }
+            end
+
             @slave_element_ids_per_page.clear
         end
 
