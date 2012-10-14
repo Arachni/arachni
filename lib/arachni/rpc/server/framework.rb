@@ -321,7 +321,7 @@ class Framework < ::Arachni::Framework
                 # get the Dispatchers with unique Pipe IDs
                 # in order to take advantage of line aggregation
                 preferred_dispatchers do |pref_dispatchers|
-                    iterator_for( pref_dispatchers ).map( each, after )
+                    iterator_for( pref_dispatchers ).each( each, after )
                 end
 
             }
