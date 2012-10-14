@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 =begin
     Copyright 2010-2012 Tasos Laskos <tasos.laskos@gmail.com>
 
@@ -15,29 +14,24 @@
     limitations under the License.
 =end
 
-$LOAD_PATH.unshift( File.expand_path( File.dirname( __FILE__ ) + '/../lib' ) )
+#
+# Extracts paths from anchor elements.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+# @version 0.1.1
+#
+class Arachni::Parser::Extractors::Areas < Arachni::Parser::Extractors::Base
 
-require 'arachni/ui/cli/output'
-require 'arachni'
+    #
+    # Returns an array of paths as plain strings
+    #
+    # @param    [Nokogiri]  doc  Nokogiri document
+    #
+    # @return   [Array<String>]  paths
+    #
+    def run( doc )
+        doc.search( '//area[@href]' ).map { |a| a['href'] }
+    end
 
-include Arachni
-include Utilities
-include UI::Output
-
-Options.parse( false )
-
-if Options.help
-    puts <<EOHELP
-#{BANNER}
-
-
-Usage: #{__FILE__} file1 [file2] [..]
-
-Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts.
-
-(Call the 'mute' method to mute framework output.)
-EOHELP
-    exit
 end
-
-ARGV.each { |script| load script }

@@ -146,14 +146,14 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
         name = form.raw['attrs']['name'] || form.raw['attrs']['id']
 
         if audited?( "#{url}::#{name}" )
-            print_info "Skipping already audited form '#{name}' at '#{url}'"
+            print_info "Skipping already audited form '#{name}' at '#{page.url}'"
             return
         end
 
         audited( "#{url}::#{name}" )
 
-        log_issue( var: name, url: url, elem: Element::FORM, response: page.body )
-        print_ok "Found unprotected form with name '#{name}' at '#{url}'"
+        log( var: name, elem: Element::FORM )
+        print_ok "Found unprotected form with name '#{name}' at '#{page.url}'"
     end
 
     def self.info

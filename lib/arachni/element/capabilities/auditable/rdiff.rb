@@ -190,33 +190,20 @@ module Auditable::RDiff
                             # if this isn't a custom 404 page then it means that
                             # the element is vulnerable, so go ahead and log the issue
 
-                            url = res['res'].effective_url
-
                             # information for the Metareport report
                             opts = {
                                 injected_orig: res['str'],
                                 combo:         res['elem'].auditable
                             }
 
-                            @auditor.log_issue(
-                                var:          key,
-                                url:          url,
-                                method:       res['res'].request.method.to_s,
-                                opts:         opts,
-                                injected:     res['str'],
-                                id:           res['str'],
-                                regexp:       'n/a',
-                                regexp_match: 'n/a',
-                                elem:         res['elem'].type,
-                                response:     res['res'].body,
-                                # :verification => true,
-                                headers:      {
-                                    request:  res['res'].request.headers,
-                                    response: res['res'].headers,
-                                }
+                            @auditor.log({
+                                    var:      key,
+                                    opts:     opts,
+                                    injected: res['str'],
+                                    id:       res['str'],
+                                    elem:     res['elem'].type,
+                                }, res['res']
                             )
-
-                            print_ok "In #{res['elem'].type} var '#{key}' ( #{url} )"
                         end
                     end
 

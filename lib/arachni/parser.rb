@@ -167,6 +167,7 @@ class Parser
                 method:           req_method,
                 query_vars:       self_link.auditable,
                 body:             @html,
+                request_headers:  @response.request.headers,
                 response_headers: @response_headers,
                 text:             false
             )
@@ -214,8 +215,11 @@ class Parser
             query_vars:       self_link.auditable,
             method:           req_method,
             body:             @html,
-            document:         doc,
+
+            request_headers:  @response.request.headers,
             response_headers: @response_headers,
+
+            document:         doc,
 
             # all paths seen in the page
             paths:            paths,

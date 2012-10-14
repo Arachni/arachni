@@ -242,10 +242,14 @@ class Issue
         if opts[:headers] && opts[:headers][:request]
             @headers[:request] = {}.merge( opts[:headers][:request] )
         end
+        @headers[:request] ||= {}
 
-        if opts[:headers] && opts[:headers][:response].is_a?( Hash )
+        if opts[:headers] && opts[:headers][:response]
             @headers[:response] = {}.merge( opts[:headers][:response] )
         end
+        @headers[:response] ||= {}
+
+        @response ||= ''
 
         @method   = @method.to_s.upcase
         @mod_name = opts[:name]

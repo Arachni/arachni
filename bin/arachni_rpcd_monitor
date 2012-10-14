@@ -17,6 +17,7 @@
 
 require_relative '../lib/arachni'
 
+Arachni::Options.no_protocol_for_url
 Arachni::Options.parse
 
 require Arachni::Options.dir['lib'] + 'ui/rpc/dispatcher_monitor'

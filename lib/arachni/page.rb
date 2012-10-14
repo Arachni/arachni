@@ -59,6 +59,11 @@ class Page
     #
     # @return    [Hash]
     #
+    attr_reader :request_headers
+
+    #
+    # @return    [Hash]
+    #
     attr_reader :response_headers
 
     # @return    [Array<String>]
@@ -116,18 +121,19 @@ class Page
     class << self; alias :from_http_response :from_response end
 
     def initialize( opts = {} )
-        @forms = []
-        @links = []
-        @cookies = []
-        @headers = []
-
-        @cookiejar = {}
-        @paths = []
-
-        @response_headers = {}
-        @query_vars       = {}
-
         opts.each { |k, v| instance_variable_set( "@#{k}".to_sym, try_dup( v ) ) }
+
+        @forms ||= []
+        @links ||= []
+        @cookies ||= []
+        @headers ||= []
+
+        @cookiejar ||= {}
+        @paths ||= []
+
+        @response_headers ||= {}
+        @request_headers  ||= {}
+        @query_vars       ||= {}
 
         @url    = Utilities.normalize_url( @url )
         @body ||= ''

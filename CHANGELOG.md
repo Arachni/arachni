@@ -1,5 +1,17 @@
 # ChangeLog
 
+## Version 0.4.1.1 _(October 14, 2012)_
+- ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]
+- ```Issue``` -- Response headers are now **always** Hash.
+- Reports
+  - HTML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+  - XML -- Removed response headers handling code and added the option to not include HTTP response bodies. [Issue #296]
+- HTTP debugging output now includes Response data. [Issue #297]
+- Executables
+  - ```arachni_rpcd_monitor``` -- Laxed standards enforced on the Dispatcher URL argument. [Issue #293]
+- Path extractors
+  - Added path extractor for the ```area``` HTML tag (```href``` attribute). [Issue #300]
+
 ## Version 0.4.1 _(October 2, 2012)_
 - License -- Moved from GPLv2 to Apache License Version 2.
 - Major refactoring

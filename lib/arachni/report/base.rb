@@ -42,6 +42,17 @@ module Options
             Time.now.to_s.gsub( ':', '.' ) + ext ] )
     end
 
+    def skip_responses
+        Options::Bool.new( 'skip_responses',
+            [ false,
+             "Don't include the bodies of the HTTP " +
+                 "responses of the issues in the report" +
+                 " -- will lead to a greatly decreased report file-size.",
+             false
+            ]
+        )
+    end
+
     extend self
 end
 
@@ -95,10 +106,6 @@ class Base
     def run
     end
 
-    def outfile
-        options['outfile']
-    end
-
     #
     # Runs plugin formatters for the running report and returns a hash
     # with the prepared/formatted results.
@@ -128,7 +135,7 @@ class Base
         @@formatters[ancestor] ||= FormatterManager.new( lib, ancestor.const_get( 'PluginFormatters' ) )
 
         # load all the formatters
-        @@formatters[ancestor].load( ['*'] ) if @@formatters[ancestor].empty?
+        @@formatters[ancestor].load_all if @@formatters[ancestor].empty?
 
         # run the formatters and gather the formatted data they return
         @@formatters[ancestor].each do |name, formatter|
@@ -143,6 +150,14 @@ class Base
         end
 
         formatted
+    end
+
+    def outfile
+        options['outfile']
+    end
+
+    def skip_responses?
+        !!options['skip_responses']
     end
 
     def self.has_outfile?
