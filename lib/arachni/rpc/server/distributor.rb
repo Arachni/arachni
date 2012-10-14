@@ -174,7 +174,10 @@ module Distributor
     # in HPG mode; pretty simple at this point.
     #
     def preferred_dispatchers( &block )
-        return [] if !dispatcher
+        if !dispatcher
+            block.call []
+            return
+        end
 
         # keep track of the Pipe IDs we've used
         @used_pipe_ids ||= []
