@@ -80,6 +80,8 @@ class Framework < ::Arachni::Framework
         # to be used server side by self to facilitate access control
         @local_token = gen_token
 
+        @override_sitemap = []
+
         @element_ids_per_page = Hash.new( [] )
     end
 
@@ -235,7 +237,7 @@ class Framework < ::Arachni::Framework
                     spider.on_each_page do |page|
                         update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
-                        @sitemap |= [page.url]
+                        @override_sitemap |= [page.url]
                     end
 
                     #@start_time = Time.now
@@ -248,7 +250,7 @@ class Framework < ::Arachni::Framework
 
                         element_ids_per_page = @element_ids_per_page
 
-                        @sitemap |= spider.sitemap
+                        @override_sitemap |= spider.sitemap
 
                         @status = :distributing
                         # the plug-ins may have updated the page queue
@@ -256,7 +258,7 @@ class Framework < ::Arachni::Framework
                         page_a = []
                         while !@page_queue.empty? && page = @page_queue.pop
                             page_a << page
-                            @sitemap |= [page.url]
+                            @override_sitemap |= [page.url]
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
@@ -329,6 +331,10 @@ class Framework < ::Arachni::Framework
         end
 
         true
+    end
+
+    def auditstore_sitemap
+        @override_sitemap | @sitemap
     end
 
     #
@@ -693,7 +699,7 @@ class Framework < ::Arachni::Framework
         @elem_ids_filter ||= Arachni::BloomFilter.new
 
         spider.on_each_page do |page|
-            @sitemap |= [page.url]
+            @override_sitemap |= [page.url]
 
             #ap 'SLAVE -- ON EACH PAGE'
             ids = build_elem_list( page ).reject do |id|
