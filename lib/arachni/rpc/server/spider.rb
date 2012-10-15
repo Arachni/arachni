@@ -35,7 +35,7 @@ class Spider < Arachni::Spider
 
         @framework    = framework
         @peers        = {}
-        @done_signals = {}
+        @done_signals = Hash.new( true )
 
         @distribution_filter   = BloomFilter.new
         @after_each_run_blocks = []
@@ -57,6 +57,7 @@ class Spider < Arachni::Spider
             @on_complete_blocks.clear
         end
 
+        #ap master?
         #ap 'PRE RUN'
         super( *args, &block )
         #ap 'AFTER RUN'
@@ -158,7 +159,7 @@ class Spider < Arachni::Spider
         #ap master?
         #ap done?
         #ap @done_signals
-        return if !master? || !done? || @done_signals.values.include?( false )
+        return if !master? || !done? || !slaves_done?
         #ap 'MASTER DONE HANDLER -- POST'
 
         collect_sitemaps do |aggregate_sitemap|
@@ -167,6 +168,10 @@ class Spider < Arachni::Spider
             call_on_complete_blocks
             #ap 'MASTER DONE HANDLER -- POST COLLECT SITEMAPS'
         end
+    end
+
+    def slaves_done?
+        !@peers.keys.each { |peer_url| @done_signals[peer_url] }.include?( false )
     end
 
     def master?
@@ -207,9 +212,7 @@ class Spider < Arachni::Spider
 
         routed.each do |peer, r_urls|
             peer.spider.push( r_urls ) do |included_new_paths|
-                if included_new_paths && !(peer === framework)
-                    peer_not_done( peer.url )
-                end
+                peer_not_done( peer.url ) if included_new_paths
             end
         end
 
