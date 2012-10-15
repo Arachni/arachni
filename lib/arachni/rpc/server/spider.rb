@@ -96,7 +96,6 @@ class Spider < Arachni::Spider
         end
 
         each = proc do |peer, iter|
-            peer_not_done( peer.url )
             peer.spider.update_peers( @peers_array | [self_instance_info] ){
                 iter.return
             }
@@ -158,7 +157,9 @@ class Spider < Arachni::Spider
         #ap 'MASTER DONE HANDLER -- PRE'
         #ap master?
         #ap done?
+        #ap self_instance_info['url']
         #ap @done_signals
+        #ap slaves_done?
         return if !master? || !done? || !slaves_done?
         #ap 'MASTER DONE HANDLER -- POST'
 
@@ -171,7 +172,8 @@ class Spider < Arachni::Spider
     end
 
     def slaves_done?
-        !@peers.keys.each { |peer_url| @done_signals[peer_url] }.include?( false )
+        !@peers.reject{ |url, _| url == self_instance_info['url'] }.keys.
+            map { |peer_url| @done_signals[peer_url] }.include?( false )
     end
 
     def master?
