@@ -372,6 +372,8 @@ module Distributor
                 final_stats['eta']   = max_eta( final_stats['eta'], instats['eta'] )
             end
 
+            final_stats['sitemap_size'] = final_stats['sitemap_size'].to_i
+
             avg.each do |k|
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
@@ -381,7 +383,6 @@ module Distributor
             # ap e.backtrace
         end
 
-        final_stats['sitemap_size'] = @override_sitemap.size
         final_stats
     end
 

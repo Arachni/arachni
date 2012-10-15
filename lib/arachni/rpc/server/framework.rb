@@ -69,13 +69,6 @@ class Framework < ::Arachni::Framework
         # holds all running instances
         @instances = []
 
-        # when in HPG mode we need to create our own sitemap which will be a
-        # composite of all sitemaps of all instances
-        #
-        # this var will hold the combined URLs and will returned by our
-        # auditstore_sitemap() override.
-        @override_sitemap = Set.new
-
         # if we're a slave this var will hold the URL of our master
         @master_url = ''
 
@@ -242,6 +235,7 @@ class Framework < ::Arachni::Framework
                     spider.on_each_page do |page|
                         update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
+                        @sitemap |= [page.url]
                     end
 
                     #@start_time = Time.now
@@ -255,7 +249,7 @@ class Framework < ::Arachni::Framework
 
                         element_ids_per_page = @element_ids_per_page
 
-                        @override_sitemap |= spider.sitemap
+                        @sitemap |= spider.sitemap
 
                         @status = :distributing
                         # the plug-ins may have updated the page queue
@@ -263,7 +257,7 @@ class Framework < ::Arachni::Framework
                         page_a = []
                         while !@page_queue.empty? && page = @page_queue.pop
                             page_a << page
-                            @override_sitemap << page.url
+                            @sitemap |= [page.url]
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
@@ -531,6 +525,12 @@ class Framework < ::Arachni::Framework
             end
 
             data['stats'] = merge_stats( stats )
+
+            #sitemap_size do |sitemap_size|
+            #    data['sitemap_size'] = sitemap_size
+            #    block.call( data )
+            #end
+
             block.call( data )
         end
 
@@ -694,6 +694,8 @@ class Framework < ::Arachni::Framework
         @elem_ids_filter ||= Arachni::BloomFilter.new
 
         spider.on_each_page do |page|
+            @sitemap |= [page.url]
+
             #ap 'SLAVE -- ON EACH PAGE'
             ids = build_elem_list( page ).reject do |id|
                 if @elem_ids_filter.include? id
@@ -742,19 +744,6 @@ class Framework < ::Arachni::Framework
     end
 
     private
-
-    #
-    # Special sitemap for the {#auditstore}.
-    #
-    # Overridden here to provide our own map as compiled by multiple instances.
-    #
-    # @return   [Array]
-    #
-    # @see Arachni::Framework#auditstore_sitemap
-    #
-    def auditstore_sitemap
-        master? ? @override_sitemap.to_a : super
-    end
 
     def extended_running?
         @extended_running
