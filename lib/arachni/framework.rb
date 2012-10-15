@@ -380,7 +380,7 @@ class Framework
             version:  version,
             revision: revision,
             options:  opts,
-            sitemap:  auditstore_sitemap || [],
+            sitemap:  (auditstore_sitemap || []).sort,
             issues:   @modules.results.deep_clone,
             plugins:  @plugins.results
         )
