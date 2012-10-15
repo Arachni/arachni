@@ -113,7 +113,7 @@ class Spider < Arachni::Spider
     def collect_sitemaps( &block )
         local_sitemap = sitemap
 
-        if @peers.empty?
+        if !master?
             block.call( local_sitemap )
             return
         end
