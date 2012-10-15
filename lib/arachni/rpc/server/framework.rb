@@ -223,9 +223,9 @@ class Framework < ::Arachni::Framework
                         'target' => @opts.url,
                         'master' => self_url
                     }
+
                     connect_to_dispatcher( d_url ).dispatch( self_url, d_opts ) do |instance_hash|
-                        enslave( instance_hash )
-                        iterator.return
+                        enslave( instance_hash ){ |b| iterator.next }
                     end
                 end
 
@@ -244,7 +244,6 @@ class Framework < ::Arachni::Framework
                     spider.on_complete do
                         #ap 'POST CRAWL'
 
-                        #puts aggregate_sitemap.join( "\n" )
                         #puts "---- Found #{spider.sitemap.size} URLs in #{Time.now - @start_time} seconds."
 
                         element_ids_per_page = @element_ids_per_page
