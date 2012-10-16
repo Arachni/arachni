@@ -80,7 +80,7 @@ class Framework < ::Arachni::Framework
         # to be used server side by self to facilitate access control
         @local_token = gen_token
 
-        @override_sitemap = []
+        @override_sitemap = Set.new
 
         @element_ids_per_page = Hash.new( [] )
     end
@@ -237,7 +237,7 @@ class Framework < ::Arachni::Framework
                     spider.on_each_page do |page|
                         update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
-                        @override_sitemap |= [page.url]
+                        @override_sitemap << page.url
                     end
 
                     #@start_time = Time.now
@@ -258,7 +258,7 @@ class Framework < ::Arachni::Framework
                         page_a = []
                         while !@page_queue.empty? && page = @page_queue.pop
                             page_a << page
-                            @override_sitemap |= [page.url]
+                            @override_sitemap << page.url
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
@@ -331,10 +331,6 @@ class Framework < ::Arachni::Framework
         end
 
         true
-    end
-
-    def auditstore_sitemap
-        @override_sitemap | @sitemap
     end
 
     #
@@ -699,7 +695,7 @@ class Framework < ::Arachni::Framework
         @elem_ids_filter ||= Arachni::BloomFilter.new
 
         spider.on_each_page do |page|
-            @override_sitemap |= [page.url]
+            @override_sitemap << page.url
 
             #ap 'SLAVE -- ON EACH PAGE'
             ids = build_elem_list( page ).reject do |id|
@@ -749,6 +745,10 @@ class Framework < ::Arachni::Framework
     end
 
     private
+
+    def auditstore_sitemap
+        (@override_sitemap | @sitemap).to_a
+    end
 
     def extended_running?
         @extended_running
