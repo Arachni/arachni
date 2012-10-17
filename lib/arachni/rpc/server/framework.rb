@@ -635,7 +635,8 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    def update_element_ids_per_page( element_ids_per_page = {}, token = nil )
+    def update_element_ids_per_page( element_ids_per_page = {}, token = nil,
+                                     signal_done_peer_url = false )
         return false if master? && !valid_token?( token )
 
         #ap 'update_element_ids_per_page'
@@ -645,6 +646,10 @@ class Framework < ::Arachni::Framework
         element_ids_per_page.each do |url, ids|
             @element_ids_per_page[url] ||= []
             @element_ids_per_page[url] |= ids
+        end
+
+        if signal_done_peer_url
+            spider.peer_done signal_done_peer_url
         end
 
         true
@@ -732,18 +737,15 @@ class Framework < ::Arachni::Framework
                 #ap 'SLAVE -- AFTER EACH RUN'
                 #ap @slave_element_ids_per_page
 
-                @master.framework.update_element_ids_per_page( @slave_element_ids_per_page.dup,
-                                                               master_priv_token ){
-                    #ap 'SLAVE -- IN BLOCK'
-                    #@slave_element_ids_per_page.clear
-                    #spider.signal_if_done( @master )
-                }
-            #else
-            #    spider.signal_if_done( @master )
-            end
+                @master.framework.
+                    update_element_ids_per_page( @slave_element_ids_per_page.dup,
+                                               master_priv_token,
+                                               spider.done? ? self_url : false ){}
 
-            @slave_element_ids_per_page.clear
-            spider.signal_if_done( @master )
+                @slave_element_ids_per_page.clear
+            else
+                spider.signal_if_done( @master )
+            end
         end
 
         # ...and also send the pages in the queue in case it has been
