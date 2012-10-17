@@ -64,6 +64,9 @@ class FakeMaster
                                        @token )
     end
 
+    def update_element_ids_per_page( *args )
+    end
+
     def register_issues( issues, token = nil )
         return false if !valid_token?( token )
         @issues |= issues
