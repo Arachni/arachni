@@ -136,10 +136,10 @@ class Spider < Arachni::Spider
         true
     end
 
-    def signal_if_done( master, &block )
+    def signal_if_done( master )
         #ap 'SIGNAL IF DONE'
         #ap done?
-        master.spider.peer_done( framework.self_url, &block ) if done?
+        master.spider.peer_done( framework.self_url ){} if done?
     end
 
     private
@@ -204,6 +204,8 @@ class Spider < Arachni::Spider
         urls = dedup( urls )
         return false if urls.empty?
 
+        @first_run ||= Arachni::BloomFilter.new
+
         routed = {}
 
         urls.each do |c_url|
@@ -213,6 +215,13 @@ class Spider < Arachni::Spider
         end
 
         routed.each do |peer, r_urls|
+            #ap peer.class
+
+            if !(peer === framework) && !@first_run.include?( peer.url )
+                @first_run << peer.url
+                peer_not_done( peer.url )
+            end
+
             peer.spider.push( r_urls ) do |included_new_paths|
                 peer_not_done( peer.url ) if included_new_paths
             end
