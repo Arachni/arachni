@@ -82,7 +82,7 @@ class Framework < ::Arachni::Framework
 
         @override_sitemap = Set.new
 
-        @element_ids_per_page = Hash.new( [] )
+        @element_ids_per_page = {}
     end
 
     #
@@ -266,6 +266,7 @@ class Framework < ::Arachni::Framework
                         end
 
                         #ap 'INSTANCES'
+                        #ap self_url
                         #ap @instances
 
                         # split the URLs of the pages in equal chunks
@@ -711,9 +712,6 @@ class Framework < ::Arachni::Framework
         spider.on_each_page do |page|
             @override_sitemap << page.url
 
-            #ap 'SLAVE -- ON EACH PAGE'
-            #ap @slave_element_ids_per_page
-
             ids = build_elem_list( page ).reject do |id|
                 if @elem_ids_filter.include? id
                     true
@@ -734,14 +732,18 @@ class Framework < ::Arachni::Framework
                 #ap 'SLAVE -- AFTER EACH RUN'
                 #ap @slave_element_ids_per_page
 
-                @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
+                @master.framework.update_element_ids_per_page( @slave_element_ids_per_page.dup,
                                                                master_priv_token ){
-                    @slave_element_ids_per_page.clear
-                    spider.signal_if_done( @master )
+                    #ap 'SLAVE -- IN BLOCK'
+                    #@slave_element_ids_per_page.clear
+                    #spider.signal_if_done( @master )
                 }
-            else
-                spider.signal_if_done( @master )
+            #else
+            #    spider.signal_if_done( @master )
             end
+
+            @slave_element_ids_per_page.clear
+            spider.signal_if_done( @master )
         end
 
         # ...and also send the pages in the queue in case it has been
