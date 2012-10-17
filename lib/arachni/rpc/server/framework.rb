@@ -252,6 +252,9 @@ class Framework < ::Arachni::Framework
 
                         @override_sitemap |= spider.sitemap
 
+                        #ap 'SITEMAP'
+                        #ap @override_sitemap.to_a
+
                         @status = :distributing
                         # the plug-ins may have updated the page queue
                         # so we need to distribute these pages as well
@@ -262,10 +265,17 @@ class Framework < ::Arachni::Framework
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
+                        #ap 'INSTANCES'
+                        #ap @instances
+
                         # split the URLs of the pages in equal chunks
                         chunks    = split_urls( element_ids_per_page.keys, @instances.size + 1 )
                         chunk_cnt = chunks.size
 
+                        #ap 'ELEMENT IDS PER PAGE'
+                        #ap element_ids_per_page.keys
+
+                        #ap "CHUNK COUNT: #{chunk_cnt}"
                         if chunk_cnt > 0
                             # split the page array into chunks that will be distributed
                             # across the instances
@@ -627,6 +637,10 @@ class Framework < ::Arachni::Framework
     def update_element_ids_per_page( element_ids_per_page = {}, token = nil )
         return false if master? && !valid_token?( token )
 
+        #ap 'update_element_ids_per_page'
+        #ap Kernel.caller.first
+        #ap element_ids_per_page
+
         element_ids_per_page.each do |url, ids|
             @element_ids_per_page[url] ||= []
             @element_ids_per_page[url] |= ids
@@ -698,6 +712,8 @@ class Framework < ::Arachni::Framework
             @override_sitemap << page.url
 
             #ap 'SLAVE -- ON EACH PAGE'
+            #ap @slave_element_ids_per_page
+
             ids = build_elem_list( page ).reject do |id|
                 if @elem_ids_filter.include? id
                     true
@@ -714,17 +730,18 @@ class Framework < ::Arachni::Framework
 
         spider.after_each_run do
             if !@slave_element_ids_per_page.empty?
+
                 #ap 'SLAVE -- AFTER EACH RUN'
+                #ap @slave_element_ids_per_page
+
                 @master.framework.update_element_ids_per_page( @slave_element_ids_per_page,
                                                                master_priv_token ){
-                    #ap 'SLAVE -- INSIDE EACH RUN'
+                    @slave_element_ids_per_page.clear
                     spider.signal_if_done( @master )
                 }
             else
                 spider.signal_if_done( @master )
             end
-
-            @slave_element_ids_per_page.clear
         end
 
         # ...and also send the pages in the queue in case it has been
@@ -751,7 +768,7 @@ class Framework < ::Arachni::Framework
     end
 
     def extended_running?
-        @extended_running
+        !!@extended_running
     end
 
     def valid_token?( token )
