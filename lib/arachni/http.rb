@@ -554,16 +554,6 @@ class HTTP
 
         gathered = 0
         body = res.body
-        # (precision - 1).times {
-            # get( res.effective_url ).on_complete {
-                # |c_res|
-                # body = body.rdiff( c_res.body )
-                # gathered += 1
-                # if gathered == generators.size * precision + precision - 1
-                    # block.call is_404?( path, body )
-                # end
-            # }
-        # }
 
         if !@_404_gathered.include?( path )
             generators.each.with_index do |generator, i|
@@ -575,19 +565,15 @@ class HTTP
 
                         if gathered == generators.size * precision
                             @_404_gathered << path
+
+                            # save the hash of the refined responses, no sense
+                            # in wasting space
+                            @_404[path].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
+
                             block.call is_404?( path, body )
                         else
-                            @_404[path][i]['rdiff_now'] ||= false
-
-                            if !@_404[path][i]['body']
-                                @_404[path][i]['body'] = c_res.body
-                            else
-                                @_404[path][i]['rdiff_now'] = true
-                            end
-
-                            if @_404[path][i]['rdiff_now'] && !@_404[path][i]['rdiff']
-                                @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
-                            end
+                            @_404[path][i]['body'] ||= c_res.body
+                            @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
                         end
                     end
                 }
@@ -710,7 +696,9 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].each { |_404| return true if _404['body'].rdiff( body ) == _404['rdiff'] }
+        @_404[path].each do |_404|
+            return true if _404['body'].rdiff( body ).hash == _404['rdiff']
+        end
         false
     end
 
