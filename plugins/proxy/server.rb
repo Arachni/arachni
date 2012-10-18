@@ -130,17 +130,11 @@ class Server < WEBrick::HTTPProxyServer
             SSLPrivateKey:  pkey,
             ArachniProxy:   method( :proxy_service ),
             ProxyURITest:   @config[:ProxyURITest],
-            Logger:         WEBrick::Log::new( '/dev/null', 7 ),
+            Logger:         WEBrick::Log::new( '/dev/null', 7 )
         )
 
         def @interceptor.service( req, res )
-            exclude_reasons = @config[:ProxyURITest].call( req.request_uri )
-
-            if exclude_reasons.empty?
-                @config[:ArachniProxy].call( req, res )
-            else
-                notify( exclude_reasons, req, res )
-            end
+            @config[:ArachniProxy].call( req, res )
         end
 
         Thread.new { @interceptor.start }

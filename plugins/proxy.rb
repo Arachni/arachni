@@ -170,7 +170,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              ProxyContentHandler: method( :response_handler ),
              ProxyRequestHandler: method( :request_handler ),
              AccessLog:           [],
-             #Logger:              WEBrick::Log::new( '/dev/null', 7 ),
+             Logger:              WEBrick::Log::new( '/dev/null', 7 ),
              Timeout:             options['timeout']
         )
 
@@ -388,7 +388,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 body:          res.body,
                 headers_hash:  headers,
                 method:        res.request_method,
-                code:          res.status.to_i
+                code:          res.status.to_i,
+                request:       Typhoeus::Request.new( req.request_uri.to_s )
             )
         )
         page = update_forms( page, req, res ) if req.body
