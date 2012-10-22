@@ -269,7 +269,7 @@ describe Arachni::HTTP do
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
-                cookies.size.should == 3
+                cookies.size.should == 4
                 cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
             end
             context 'but the path is invalid' do
@@ -293,7 +293,7 @@ describe Arachni::HTTP do
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
-                cookies.size.should == 3
+                cookies.size.should == 4
                 cookies.should == @opts.cookies
             end
         end

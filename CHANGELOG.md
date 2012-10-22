@@ -5,6 +5,7 @@
   - Updated custom 404 detection algorithm to use less memory.
 - Plugins
   - Proxy -- Fixed regression caused by the Parser requiring the HTTP Response to include the original Request.
+- ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
 
 ## Version 0.4.1.1 _(October 14, 2012)_
 - ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]
