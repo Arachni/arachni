@@ -132,7 +132,7 @@ class HTTP
         if opts.cookie_string
             cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
                 k, v = *cookie_pair.split( '=', 2 )
-                Cookie.new( opts.url.to_s, k.strip => v.strip )
+                Cookie.new( opts.url.to_s, k.strip => Cookie.decode( v.strip ) )
             end.flatten.compact
             update_cookies( cookies )
         end

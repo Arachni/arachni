@@ -3,6 +3,7 @@
 ## _Under development_
 - HTTP
   - Updated custom 404 detection algorithm to use less memory.
+  - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
 - Plugins
   - Proxy -- Fixed regression caused by the Parser requiring the HTTP Response to include the original Request.
 - ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
