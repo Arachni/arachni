@@ -129,12 +129,12 @@ class Server < WEBrick::HTTPProxyServer
             SSLCertificate: cert,
             SSLPrivateKey:  pkey,
             ArachniProxy:   method( :proxy_service ),
-            ProxyURITest:   @config[:ProxyURITest],
+            ProxyRequestHandler: @config[:ProxyRequestHandler],
             Logger:         WEBrick::Log::new( '/dev/null', 7 )
         )
 
         def @interceptor.service( req, res )
-            @config[:ArachniProxy].call( req, res )
+            @config[:ArachniProxy].call( req, res ) if @config[:ProxyRequestHandler].call( req, res )
         end
 
         Thread.new { @interceptor.start }

@@ -213,7 +213,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def request_handler( req, res )
-        url    = req.unparsed_uri
+        url    = req.request_uri.to_s
         params = parse_request_body( req.body.to_s ).merge( parse_query( url ) ) || {}
 
         TemplateScope.get.clear
@@ -243,7 +243,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             # forbidden
             res.status = 403
             set_response_body( res, erb( '403_forbidden'.to_sym, { reasons: reasons } ) )
-            return
+            return false
         end
 
         @login_sequence << req if recording?
@@ -357,7 +357,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         return if (params = parse_request_body( request.body )).empty?
 
         f = session.find_login_form( pages:  @pages.to_a,
-                                     action: normalize_url( request.unparsed_uri ),
+                                     action: normalize_url( request.request_uri.to_s ),
                                      inputs: params.keys )
 
         return if !f
@@ -385,7 +385,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         page = page_from_response( Typhoeus::Response.new(
                 effective_url: res.request_uri.to_s,
-                body:          res.body,
+                body:          res.body.dup,
                 headers_hash:  headers,
                 method:        res.request_method,
                 code:          res.status.to_i,
@@ -399,6 +399,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info " *  #{page.cookies.size} cookies"
 
         @pages << page.dup
+
         inject_panel( res )
     end
 
