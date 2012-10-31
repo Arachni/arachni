@@ -128,8 +128,10 @@ class Framework < ::Arachni::Framework
         end
     end
 
+    # Set's this instance as the master.
     def set_as_master
         @opts.grid_mode = 'high_performance'
+        true
     end
 
     #
@@ -142,14 +144,21 @@ class Framework < ::Arachni::Framework
     end
     alias :high_performance? :master?
 
+    # @return   [Bool]  true if this instance is a slave, false otherwise.
     def slave?
         !!@master
     end
 
+    # @return   [Bool]  true if this instance is running solo (i.e. not a member of a grid operation)
     def solo?
         !master? && !slave?
     end
 
+    #
+    # Enslaves another instance and subsequently becomes the master.
+    #
+    # @param    [Hash]  instance_info   { 'url' => '<host>:<port>', 'token' => 's3cr3t' }
+    #
     def enslave( instance_info, opts = {}, &block )
         fail "Instance info does not contain a 'url' key."   if !instance_info['url']
         fail "Instance info does not contain a 'token' key." if !instance_info['token']
@@ -164,6 +173,8 @@ class Framework < ::Arachni::Framework
                 block.call true if block_given?
             end
         end
+
+        true
     end
 
     #
@@ -442,6 +453,7 @@ class Framework < ::Arachni::Framework
         map_slaves( foreach, after )
     end
 
+    # @see Arachni::Framework#stats
     def stats( *args )
         super( *args ).tap { |s| s[:sitemap_size] = @local_sitemap.size }
     end
@@ -555,6 +567,7 @@ class Framework < ::Arachni::Framework
     end
     alias :progress :progress_data
 
+    # @return   [Array] returns the sitemap
     def sitemap( &block )
         spider.collect_sitemaps( &block )
     end
@@ -570,6 +583,15 @@ class Framework < ::Arachni::Framework
     alias :audit_store_as_hash :report
     alias :auditstore_as_hash :report
 
+    #
+    # Runs a report and returns it as a string
+    #
+    # Only accepts reports which support an +outfile+ option.
+    #
+    # @param    [String]    name    report to run
+    #
+    # @return   [String]    report content
+    #
     def report_as( name )
         if !reports.available.include?( name.to_s )
             fail Arachni::Exceptions::ComponentNotFound,
@@ -768,6 +790,7 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    # @return   [String]    URL of this instance
     def self_url
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
     end
