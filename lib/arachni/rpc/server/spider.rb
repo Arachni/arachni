@@ -21,14 +21,14 @@ class Server
 
 #
 #
+# Extends the regular {Arachni::Spider} with high-performance distributed capabilities.
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Spider < Arachni::Spider
 
     private :push, :done?, :sitemap
     public  :push, :done?, :sitemap
-
-    #attr_accessor :master
 
     def initialize( framework )
         super( framework.opts )
@@ -47,10 +47,12 @@ class Spider < Arachni::Spider
         #end
     end
 
+    # @param    [Block] block   Block to be called after each URL batch has been exhausted.
     def after_each_run( &block )
         @after_each_run_blocks << block
     end
 
+    # @see Arachgni::Spider#run
     def run( *args, &block )
         if !solo?
             on_complete_blocks = @on_complete_blocks.dup
