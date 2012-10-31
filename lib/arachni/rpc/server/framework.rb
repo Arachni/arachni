@@ -81,6 +81,7 @@ class Framework < ::Arachni::Framework
         @local_token = gen_token
 
         @override_sitemap = Set.new
+        @local_sitemap    = Set.new
 
         @element_ids_per_page = {}
     end
@@ -237,7 +238,7 @@ class Framework < ::Arachni::Framework
                     spider.on_each_page do |page|
                         update_element_ids_per_page( { page.url => build_elem_list( page ) },
                                                      @local_token )
-                        @override_sitemap << page.url
+                        @local_sitemap << page.url
                     end
 
                     #@start_time = Time.now
@@ -439,6 +440,10 @@ class Framework < ::Arachni::Framework
         end
         after = proc { |out| block.call( (buffer | out).flatten ) }
         map_slaves( foreach, after )
+    end
+
+    def stats( *args )
+        super( *args ).tap { |s| s[:sitemap_size] = @local_sitemap.size }
     end
 
     #
@@ -717,7 +722,7 @@ class Framework < ::Arachni::Framework
         spider.on_each_page do |page|
             @status = :crawling
 
-            @override_sitemap << page.url
+            @local_sitemap << page.url
 
             ids = build_elem_list( page ).reject do |id|
                 if @elem_ids_filter.include? id
@@ -770,7 +775,7 @@ class Framework < ::Arachni::Framework
     private
 
     def auditstore_sitemap
-        (@override_sitemap | @sitemap).to_a
+        @override_sitemap | @sitemap
     end
 
     def extended_running?
