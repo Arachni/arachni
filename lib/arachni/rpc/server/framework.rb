@@ -715,6 +715,8 @@ class Framework < ::Arachni::Framework
         @elem_ids_filter ||= Arachni::BloomFilter.new
 
         spider.on_each_page do |page|
+            @status = :crawling
+
             @override_sitemap << page.url
 
             ids = build_elem_list( page ).reject do |id|
