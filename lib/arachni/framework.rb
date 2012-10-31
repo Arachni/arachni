@@ -327,7 +327,7 @@ class Framework
             time_out_count:   http.time_out_count,
             time:             audit_store.delta_time,
             avg:              avg,
-            sitemap_size:     @sitemap.size,
+            sitemap_size:     auditstore_sitemap.size,
             auditmap_size:    auditmap_sz,
             progress:         progress,
             curr_res_time:    http.curr_res_time,
