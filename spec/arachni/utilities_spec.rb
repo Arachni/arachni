@@ -216,10 +216,7 @@ describe Arachni::Utilities do
     describe '#normalize_url' do
         it 'should clean the URL' do
             ref = proc do |p|
-                n = Addressable::URI.parse( p ).normalize
-                n.path.gsub!( /\/+/, '/' )
-                n.fragment = nil
-                n.to_s
+                Arachni::URI.normalize( p )
             end
 
             [

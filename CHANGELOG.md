@@ -9,6 +9,7 @@
     - Fixed regression caused by the Parser requiring the HTTP Response to include the original Request.
     - Fixed SSL interceptor behavior on redirects -- now delegates everything to the user facing Proxy.
 - ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
+- ```Arachni::URI.cheap_parse``` -- Updated to sanitize the encoding of each parameter name and value individually. [Issue #303]
 
 ## Version 0.4.1.1 _(October 14, 2012)_
 - ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]

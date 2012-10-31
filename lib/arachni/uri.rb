@@ -273,9 +273,16 @@ class URI
                 end
 
                 if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
-                    components[:query] =
-                        encode( decode( query ),
-                                Addressable::URI::CharacterClasses::QUERY )
+                    components[:query] = query.to_s.split( '&' ).map do |pair|
+                        name, value = pair.split( '=', 2 )
+
+                        name   = encode( decode( name.to_s ),
+                                       Addressable::URI::CharacterClasses::UNRESERVED )
+                        value = encode( decode( value.to_s ),
+                                       Addressable::URI::CharacterClasses::UNRESERVED )
+
+                        "#{name}=#{value}"
+                    end.join( '&' )
                 end
             end
 
