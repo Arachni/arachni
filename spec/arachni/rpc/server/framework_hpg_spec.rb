@@ -81,6 +81,21 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.high_performance?.should be_true
         end
     end
+    describe '#master?' do
+        it 'should return false' do
+            @framework_clean.high_performance?.should be_true
+        end
+    end
+    describe '#slave?' do
+        it 'should return false' do
+            @framework_clean.slave?.should be_false
+        end
+    end
+    describe '#solo?' do
+        it 'should return true' do
+            @framework_clean.solo?.should be_false
+        end
+    end
     describe '#output' do
         it 'should return the instance\'s output messages' do
             output = @framework_clean.output.first
