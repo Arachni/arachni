@@ -580,6 +580,11 @@ class Framework < ::Arachni::Framework
     alias :audit_store_as_hash :report
     alias :auditstore_as_hash :report
 
+    # @return   [String]    YAML representation of {#report}
+    def serialized_report
+        report.to_yaml
+    end
+
     #
     # Runs a report and returns it as a string
     #
@@ -609,11 +614,6 @@ class Framework < ::Arachni::Framework
     # @return   [String]    YAML representation of {#auditstore}
     def serialized_auditstore
         audit_store.to_yaml
-    end
-
-    # @return   [String]    YAML representation of {#report}
-    def serialized_report
-        audit_store.to_h.to_yaml
     end
 
     # @return  [Array<Arachni::Issue>]  all discovered issues albeit without any variations
