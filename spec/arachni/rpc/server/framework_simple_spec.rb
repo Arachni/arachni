@@ -60,6 +60,21 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.high_performance?.should be_false
         end
     end
+    describe '#master?' do
+        it 'should return false' do
+            @framework_clean.high_performance?.should be_false
+        end
+    end
+    describe '#slave?' do
+        it 'should return false' do
+            @framework_clean.slave?.should be_false
+        end
+    end
+    describe '#solo?' do
+        it 'should return true' do
+            @framework_clean.solo?.should be_true
+        end
+    end
     describe '#lsplug' do
         it 'should list all available plugins' do
             plugins = @framework_clean.lsplug
