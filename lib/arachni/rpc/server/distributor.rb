@@ -320,10 +320,10 @@ module Distributor
     def cleaned_up_opts
         opts = @opts.to_h.deep_clone
 
-        opts.delete( 'grid_mode' )
-        opts.delete( 'dir' )
-        opts.delete( 'rpc_port' )
-        opts.delete( 'rpc_address' )
+        (%w(grid_mode dir rpc_port rpc_address pipe_id neighbour pool_size) |
+            %w(lsmod lsrep rpc_instance_port_range load_profile)).each do |k|
+            opts.delete k
+        end
 
         opts['datastore'].delete( :dispatcher_url )
         opts['datastore'].delete( :token )
