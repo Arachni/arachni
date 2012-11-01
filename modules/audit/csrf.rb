@@ -42,7 +42,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
@@ -79,6 +79,9 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
     # @return   [Bool]  +true+ if the form has no anti-CSRF token, +false+ otherwise
     #
     def unsafe?( form )
+        # if a form has a nonce then we're cool, bail out early
+        return false if form.has_nonce?
+
         #
         # Nobody says that tokens must be in a +value+ attribute, they can
         # just as well be in +name+ -- so we check them both...
@@ -164,7 +167,7 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 It requires a logged-in user's cookie-jar.},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.3',
+            version:     '0.3.1',
             references:  {
                 'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
                 'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
@@ -182,13 +185,10 @@ class Arachni::Modules::CSRF < Arachni::Module::Base
                 tags:            %w(csrf rdiff form token),
                 cwe:             '352',
                 severity:        Severity::HIGH,
-                cvssv2:          '',
                 remedy_guidance: %q{A unique token that guaranties freshness of submitted
     data must be added to all web application elements that can affect
-    business logic.},
-                remedy_code:     ''
+    business logic.}
             }
-
         }
     end
 

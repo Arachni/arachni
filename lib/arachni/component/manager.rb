@@ -214,6 +214,8 @@ class Manager < Hash
 
         return load if components[0] == EXCLUDE
 
+        components = components.deep_clone
+
         components.each do |component|
             if component[0] == EXCLUDE
                 component[0] = ''
