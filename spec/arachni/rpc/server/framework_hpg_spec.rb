@@ -34,6 +34,17 @@ describe Arachni::RPC::Server::Framework do
             inst
         end
 
+        @get_simple_instance = proc do |opts|
+            opts ||= @opts
+            port = random_port
+            opts.rpc_port = port
+            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
+            sleep 1
+            Arachni::RPC::Client::Instance.new( opts,
+                "#{opts.rpc_address}:#{port}", @token
+            )
+        end
+
         @instance = @get_instance.call
         @framework = @instance.framework
         @modules = @instance.modules
@@ -94,6 +105,14 @@ describe Arachni::RPC::Server::Framework do
     describe '#solo?' do
         it 'should return true' do
             @framework_clean.solo?.should be_false
+        end
+    end
+    describe '#set_as_master' do
+        it 'should set the instance as the master' do
+            instance = @get_simple_instance.call
+            instance.framework.master?.should be_false
+            instance.framework.set_as_master
+            instance.framework.master?.should be_true
         end
     end
     describe '#output' do
