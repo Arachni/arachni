@@ -168,7 +168,7 @@ class Framework < ::Arachni::Framework
 
         instance = connect_to_instance( instance_info )
         instance.opts.set( cleaned_up_opts ) do
-            instance.framework.set_master( self_url, @opts.datastore[:token] ) do
+            instance.framework.set_master( self_url, token ) do
                 @instances << instance_info
                 block.call true if block_given?
             end
