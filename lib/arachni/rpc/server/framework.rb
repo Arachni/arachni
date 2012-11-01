@@ -795,6 +795,11 @@ class Framework < ::Arachni::Framework
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
     end
 
+    # @return   [String]    this instance's RPC token
+    def token
+        @opts.datastore[:token]
+    end
+
     private
 
     def auditstore_sitemap
@@ -824,7 +829,7 @@ class Framework < ::Arachni::Framework
     end
 
     def gen_token
-        Digest::SHA2.hexdigest( 10.times.map{ rand( 9999 ) }.join( '' ) )
+        Digest::SHA2.hexdigest( 10.times.map{ rand( 9999 ) }.join )
     end
 
 end

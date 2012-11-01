@@ -193,7 +193,7 @@ class Spider < Arachni::Spider
     def self_instance_info
         {
             'url'   => framework.self_url,
-            'token' => @opts.datastore[:token]
+            'token' => framework.token
         }
     end
 
