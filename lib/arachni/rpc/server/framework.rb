@@ -567,11 +567,6 @@ class Framework < ::Arachni::Framework
     end
     alias :progress :progress_data
 
-    # @return   [Array] returns the sitemap
-    def sitemap( &block )
-        spider.collect_sitemaps( &block )
-    end
-
     #
     # Returns the results of the audit as a hash.
     #
