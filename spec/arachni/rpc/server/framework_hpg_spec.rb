@@ -34,6 +34,7 @@ describe Arachni::RPC::Server::Framework do
             inst
         end
 
+        @token = 'secret'
         @get_simple_instance = proc do |opts|
             opts ||= @opts
             port = random_port
@@ -113,6 +114,16 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.master?.should be_false
             instance.framework.set_as_master
             instance.framework.master?.should be_true
+        end
+    end
+    describe '#enslave' do
+        it 'should enslave another instance and set itself as its master' do
+            master = @get_simple_instance.call
+            slave  = @get_simple_instance.call
+
+            master.framework.master?.should be_false
+            master.framework.enslave( 'url' => slave.url, 'token' => @token )
+            master.framework.master?.should be_true
         end
     end
     describe '#output' do
@@ -312,8 +323,8 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#serialized_report' do
         it 'should return a YAML serialized report hash' do
-            yaml_str = @instance_clean.framework.serialized_report
-            YAML.load( yaml_str ).should == @instance_clean.framework.report
+            @instance_clean.framework.serialized_report.should ==
+                @instance_clean.framework.report.to_yaml
         end
     end
     describe '#issues' do
