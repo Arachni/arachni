@@ -1,6 +1,9 @@
 # ChangeLog
 
 ## _Under development_
+- RPC service -- Now supports both ```Marshal``` and ```YAML``` automatically (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+  - ```Marshal``` by default since it's many times faster than ```YAML```.
+  - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
 - HTTP
   - Updated custom 404 detection algorithm to use less memory.
   - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.

@@ -29,12 +29,14 @@ class Base < ::Arachni::RPC::EM::Server
 
     def initialize( opts, token = nil )
         super(
-            :host  => opts.rpc_address,
-            :port  => opts.rpc_port,
-            :token => token,
-            :ssl_ca     => opts.ssl_ca,
-            :ssl_pkey   => opts.ssl_pkey,
-            :ssl_cert   => opts.ssl_cert
+            serializer: Marshal,
+            fallback_serializer:  YAML,
+            host:       opts.rpc_address,
+            port:       opts.rpc_port,
+            token:      token,
+            ssl_ca:     opts.ssl_ca,
+            ssl_pkey:   opts.ssl_pkey,
+            ssl_cert:   opts.ssl_cert
         )
     end
 
