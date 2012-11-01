@@ -321,6 +321,18 @@ describe Arachni::RPC::Server::Framework do
         end
     end
 
+    describe '#self_url' do
+        it 'should return the RPC URL' do
+            @instance_clean.framework.self_url.should == @instance_clean.url
+        end
+    end
+
+    describe '#token' do
+        it 'should return the RPC token' do
+            @instance_clean.framework.token.should == @token
+        end
+    end
+
     describe '#report_as' do
         context 'when passed a valid report name' do
             it 'should return the report as a string' do
