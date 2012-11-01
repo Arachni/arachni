@@ -147,6 +147,15 @@ class Page
         @document ||= Nokogiri::HTML( @body )
     end
 
+    def _dump( depth )
+        @document = nil
+        YAML.dump self
+    end
+
+    def self._load( obj )
+        YAML.load obj
+    end
+
     def text?
         !!@text
     end
