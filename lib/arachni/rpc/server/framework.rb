@@ -735,8 +735,6 @@ class Framework < ::Arachni::Framework
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
-        #spider.master = @master
-
         @slave_element_ids_per_page ||= {}
 
         @elem_ids_filter ||= Arachni::BloomFilter.new
