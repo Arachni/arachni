@@ -38,7 +38,9 @@ class Spider < Arachni::Spider
         @done_signals = Hash.new( true )
 
         @distribution_filter   = BloomFilter.new
+
         @after_each_run_blocks = []
+        @on_first_run_blocks   = []
 
         # debugging stuff
         #cnt = 0
@@ -52,8 +54,14 @@ class Spider < Arachni::Spider
         @after_each_run_blocks << block
     end
 
+    def on_first_run( &block )
+        @on_first_run_blocks << block
+    end
+
     # @see Arachgni::Spider#run
     def run( *args, &block )
+        @first_run_blocks ||= call_on_first_run
+
         if !solo?
             on_complete_blocks = @on_complete_blocks.dup
             @on_complete_blocks.clear
@@ -145,6 +153,10 @@ class Spider < Arachni::Spider
     end
 
     private
+
+    def call_on_first_run
+        @on_first_run_blocks.each( &:call )
+    end
 
     def call_after_each_run
         @after_each_run_blocks.each( &:call )
