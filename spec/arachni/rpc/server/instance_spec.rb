@@ -105,7 +105,7 @@ describe Arachni::RPC::Server::Instance do
                 p['messages'].should be_nil
                 p['issues'].should be_nil
 
-                instance.service.progress( true )['issues'].should be_empty
+                instance.service.progress( :with_issues )['issues'].should be_empty
 
                 instance.service.scan(
                     url:         server_url_for( :framework_simple ),
@@ -123,12 +123,15 @@ describe Arachni::RPC::Server::Instance do
                 p['status'].should == instance.framework.status
                 p['stats'].should  == instance.framework.progress['stats']
 
+                p['instances'].should be_nil
+
+                p = instance.service.progress( :with_instances )
                 p['instances'].size.should == 2
                 p['instances'].should == instance.framework.progress_data['instances']
 
                 p['messages'].should be_nil
 
-                issues = instance.service.progress( true )['issues']
+                issues = instance.service.progress( :with_issues )['issues']
                 issues.should be_any
                 issues.should == instance.framework.progress_data( as_hash: true )['issues']
             end

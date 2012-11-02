@@ -111,14 +111,20 @@ class Instance
     # * +status+ -- {#status}
     # * +busy+ -- {#busy?}
     # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
-    # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid)
+    # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
     #
-    # @param    [Bool] with_issues if true, it will include {Framework#issues_as_hash}
+    # @param    [Array,String] options +:with_issues+, +:with_instances+
     #
-    def progress( with_issues = false, &block )
-        @framework.progress( as_hash: true, issues: with_issues ) do |data|
+    def progress( *options, &block )
+        options.flatten!
+
+        @framework.progress( as_hash: true, issues: options.include?( :with_issues ) ) do |data|
             data.delete( 'messages' )
-            data.delete( 'instances' ) if @framework.solo?
+
+            if @framework.solo? || !options.include?( :with_instances )
+                data.delete( 'instances' )
+            end
+
             block.call( data )
         end
     end
@@ -142,6 +148,9 @@ class Instance
         @framework.opts.set( opts )
         @framework.modules.load opts[:modules] if opts[:modules]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
+
+        @framework.update_page_queue( opts[:pages] || [] )
+        @framework.restrict_to_elements( opts[:elements] || [] )
 
         each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
         after = proc { block.call @framework.run }
