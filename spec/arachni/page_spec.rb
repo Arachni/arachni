@@ -72,7 +72,7 @@ describe Arachni::Page do
     describe '#==' do
         context 'when the pages are different' do
             it 'should return false' do
-                p = Arachni::Page.new( body: 'stuff here')
+                p = Arachni::Page.new( body: 'stuff here' )
                 p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
                 p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
                 p.cookies << Arachni::Element::Cookie.new( 'http://test.com', 'test' => 'stuff' )

@@ -101,8 +101,8 @@ end
 
 def fork_em( *args, &b )
     wrap = proc {
-        $stdout.reopen('/dev/null', 'w')
-        $stderr.reopen('/dev/null', 'w')
+        #$stdout.reopen('/dev/null', 'w')
+        #$stderr.reopen('/dev/null', 'w')
         b.call
     }
     pids << ::EM.fork_reactor( *args, &wrap )
