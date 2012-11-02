@@ -33,7 +33,8 @@ class Server
 # {Plugin::Manager} and {Spider} classes.
 #
 # It also provides very simple methods for:
-# * {#configure_and_scan Configuring and running a scan};
+# * {#scan Configuring and running a scan};
+# * {#progress Aggregate progress information};
 # * {#busy? Checking whether the scan is still in progress};
 # * {#status Checking the status of the scan};
 # * {#report Grabbing the report};
@@ -103,13 +104,39 @@ class Instance
     end
 
     #
-    # Configures and runs this Instance.
+    # Simplified version of {Framework#progress}.
     #
-    # @param    [Hash]  opts    options to be passed to {Options#set}
+    # Returns the following information:
+    # * +stats+ -- General runtime statistics (merged when part of Grid)
+    # * +status+ -- {#status}
+    # * +busy+ -- {#busy?}
+    # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
+    # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid)
+    #
+    # @param    [Bool] with_issues if true, it will include {Framework#issues_as_hash}
+    #
+    def progress( with_issues = false, &block )
+        @framework.progress( as_hash: true, issues: with_issues ) do |data|
+            data.delete( 'messages' )
+            data.delete( 'instances' ) if @framework.solo?
+            block.call( data )
+        end
+    end
+
+    #
+    # Configures and runs s scan.
+    #
+    # @param    [Hash]  opts    scan options to be passed to {Options#set}
     #   If the +Hash+ contains a +slaves+ key containing with an +Array+,
     #   each item will be passed to {Framework#enslave}.
     #
-    def configure_and_scan( opts = {}, &block )
+    def scan( opts = {}, &block )
+        # if the instance isn't clean bail out now
+        if @framework.status.to_s != 'ready'
+            block.call false
+            return
+        end
+
         opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
 
         @framework.opts.set( opts )

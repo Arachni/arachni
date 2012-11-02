@@ -8,7 +8,8 @@
 - RPC ```service``` handler has been updated with the following convenience
     methods in order to provide a simpler interface for users who don't wish to bother with
     the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
-  - ```#configure_and_scan``` -- Configures and runs the scan.
+  - ```#scan``` -- Configures and runs the scan.
+  - ```#progress``` -- Aggregates progress information.
   - ```#busy?``` -- Checks whether the scan is still in progress.
   - ```#status``` -- Returns the status of the scan.
   - ```#report``` -- Returns the scan report as a ```Hash```.
