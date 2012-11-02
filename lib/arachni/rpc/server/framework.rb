@@ -727,6 +727,9 @@ class Framework < ::Arachni::Framework
     def set_master( url, token )
         return false if master?
 
+        # call prepare here to let the plugins put their hooks in
+        spider.on_first_run { prepare }
+
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
 
@@ -794,6 +797,10 @@ class Framework < ::Arachni::Framework
     end
 
     private
+
+    def prepare
+        @prepare ||= super
+    end
 
     def auditstore_sitemap
         @override_sitemap | @sitemap
