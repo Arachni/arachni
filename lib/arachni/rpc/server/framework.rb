@@ -160,6 +160,9 @@ class Framework < ::Arachni::Framework
     # @param    [Hash]  instance_info   { 'url' => '<host>:<port>', 'token' => 's3cr3t' }
     #
     def enslave( instance_info, opts = {}, &block )
+        instance_info = instance_info.to_hash.
+            inject( {} ) { |h, (k, v)| h[k.to_s] = v; h }
+
         fail "Instance info does not contain a 'url' key."   if !instance_info['url']
         fail "Instance info does not contain a 'token' key." if !instance_info['token']
 
