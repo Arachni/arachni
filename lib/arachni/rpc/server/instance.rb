@@ -27,12 +27,19 @@ module RPC
 class Server
 
 #
-# RPC Server class
+# Provides an RPC Instance to assist with general integration and UI development.
 #
-# Provides an RPC server to assist with general integration and UI development.
+# It provides access to the {Options}, {Framework}, {Module::Manager},
+# {Plugin::Manager} and {Spider} classes.
 #
-# Only instantiated by the Dispatcher to provide support for multiple
-# and concurrent RPC clients/scans.
+# It also provides very simple methods for:
+# * {#configure_and_scan Configuring and running a scan};
+# * {#busy? Checking whether the scan is still in progress};
+# * {#status Checking the status of the scan};
+# * {#report Grabbing the report};
+# * {#shutdown Shutting down}.
+#
+# These methods are mapped to the 'service' RPC handler.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -46,8 +53,6 @@ class Instance
     # @param    [Options]    opts
     #
     def initialize( opts, token )
-
-        prep_framework
         banner
 
         @opts  = opts
@@ -77,30 +82,60 @@ class Instance
         run
     end
 
-    #
-    # Flushes the output buffer and returns all pending system messages.
-    #
-    # All messages are classified based on their type.
-    #
-    # @return   [Array<Hash>]
-    #
+    # @see Framework#busy?
+    def busy?( &block )
+        @framework.busy?( &block )
+    end
+
+    # @see Framework#report
+    def report
+        @framework.report
+    end
+
+    # @see Framework#status
+    def status
+        @framework.status
+    end
+
+    # @see Framework#output
     def output( &block )
         @framework.output( &block )
+    end
+
+    #
+    # Configures and runs this Instance.
+    #
+    # @param    [Hash]  opts    options to be passed to {Options#set}
+    #   If the +Hash+ contains a +slaves+ key containing with an +Array+,
+    #   each item will be passed to {Framework#enslave}.
+    #
+    def configure_and_scan( opts = {}, &block )
+        opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
+
+        @framework.opts.set( opts )
+        @framework.modules.load opts[:modules] if opts[:modules]
+        @framework.plugins.load opts[:plugins] if opts[:plugins]
+
+        each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+        after = proc { block.call @framework.run }
+
+        slaves = opts[:slaves] || []
+        ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).each( each, after )
     end
 
     #
     # Makes the server go bye-bye...Lights out!
     #
     def shutdown
-        print_status( 'Shutting down...' )
+        print_status 'Shutting down...'
 
         t = []
-        @framework.instance_eval {
+        @framework.instance_eval do
             @instances.each do |instance|
                 # Don't know why but this works better than EM's stuff
                 t << Thread.new { connect_to_instance( instance ).service.shutdown! }
             end
-        }
+        end
         t.join
 
         @server.shutdown
@@ -119,7 +154,6 @@ class Instance
     #
     def run
         print_status 'Starting the server...'
-        # start the show!
         @server.run
     end
 
@@ -129,14 +163,8 @@ class Instance
     end
 
     #
-    # Initialises the RPC framework.
+    # Outputs the Arachni banner.
     #
-    def prep_framework
-        @framework = Server::Framework.new( Options.instance )
-    end
-
-    #
-    # Outputs the Arachni banner.<br/>
     # Displays version number, revision number, author details etc.
     #
     def banner
@@ -145,15 +173,14 @@ class Instance
         puts
     end
 
-    #
-    # Starts the RPC service and attaches it to the HTTP(S) server.<br/>
-    # It also prepares all the RPC handlers.
-    #
+    # Prepares all the RPC handlers.
     def set_handlers
         @server.add_async_check do |method|
             # methods that expect a block are async
             method.parameters.flatten.include?( :block )
         end
+
+        @framework = Server::Framework.new( Options.instance )
 
         @server.add_handler( 'service',   self )
         @server.add_handler( 'framework', @framework )

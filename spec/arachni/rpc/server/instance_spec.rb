@@ -30,9 +30,59 @@ describe Arachni::RPC::Server::Instance do
             end
         end
 
+        describe '#busy?' do
+            it 'should delegate to Framework' do
+                @instance.service.busy?.should == @instance.framework.busy?
+            end
+        end
+
+        describe '#report' do
+            it 'should delegate to Framework' do
+                @instance.service.report.should == @instance.framework.report
+            end
+        end
+
+        describe '#status' do
+            it 'should delegate to Framework' do
+                @instance.service.status.should == @instance.framework.status
+            end
+        end
+
         describe '#output' do
-            it 'should return output messages' do
+            it 'should delegate to Framework' do
                 @instance.service.output.should be_any
+            end
+        end
+
+        describe '#configure_and_scan' do
+            it 'should configure and start a scan' do
+                instance = @get_instance.call
+
+                slave = @get_instance.call
+
+                instance.service.busy?.should  == instance.framework.busy?
+                instance.service.status.should == instance.framework.status
+
+                instance.service.configure_and_scan(
+                    url:         server_url_for( :framework_simple ),
+                    audit_links: true,
+                    audit_forms: true,
+                    modules:     :test,
+                    slaves:      [ { url: slave.url, token: @token } ]
+                )
+
+                sleep 1 while instance.service.busy?
+
+                instance.framework.progress_data['instances'].size.should == 2
+
+                instance.service.busy?.should  == instance.framework.busy?
+                instance.service.status.should == instance.framework.status
+
+                i_report = instance.service.report
+                f_report = instance.framework.report
+
+                i_report.should == f_report
+                i_report['issues'].should be_any
             end
         end
 

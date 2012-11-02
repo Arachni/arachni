@@ -1,11 +1,21 @@
 # ChangeLog
 
 ## _Under development_
-- RPC service -- Now supports both ```Marshal``` and ```YAML``` automatically (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+- RPC protocol -- Now supports both ```Marshal``` and ```YAML```
+    automatically (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
   - ```Marshal``` by default since it's many times faster than ```YAML```.
   - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
+- RPC ```service``` handler has been updated with the following convenience
+    methods in order to provide a simpler interface for users who don't wish to bother with
+    the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
+  - ```#configure_and_scan``` -- Configures and runs the scan.
+  - ```#busy?``` -- Checks whether the scan is still in progress.
+  - ```#status``` -- Returns the status of the scan.
+  - ```#report``` -- Returns the scan report as a ```Hash```.
+  - ```#shutdown``` -- Shuts down the instance/stops the scan.
 - HTTP
-  - Updated custom 404 detection algorithm to use less memory.
+  - Updated the custom 404 detection algorithm to use less memory by storing only
+    the hashes of the signatures instead of the signatures themselves.
   - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
 - ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
 - ```Arachni::URI.cheap_parse``` -- Updated to sanitize the encoding of each parameter name and value individually. [Issue #303]
