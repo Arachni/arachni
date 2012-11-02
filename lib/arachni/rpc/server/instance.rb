@@ -113,10 +113,10 @@ class Instance
     # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
     # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
     #
-    # @param    [Array,String] options +:with_issues+, +:with_instances+
+    # @param    [Array<String,Array>,String,Symbol] options +:with_issues+, +:with_instances+
     #
     def progress( *options, &block )
-        options.flatten!
+        options = options.flatten.compact.map( &:to_sym )
 
         @framework.progress( as_hash: true, issues: options.include?( :with_issues ) ) do |data|
             data.delete( 'messages' )
