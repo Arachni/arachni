@@ -147,13 +147,16 @@ class Page
         @document ||= Nokogiri::HTML( @body )
     end
 
-    def _dump( depth )
+    def marshal_dump
         @document = nil
-        YAML.dump self
+        instance_variables.inject( {} ) do |h, iv|
+            h[iv] = instance_variable_get( iv )
+            h
+        end
     end
 
-    def self._load( obj )
-        YAML.load obj
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     def text?
