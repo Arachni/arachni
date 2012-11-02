@@ -295,7 +295,7 @@ module Distributor
     #                        * elements: Array<String>    scope IDs of elements to audit
     #                        * pages:    Array<Arachni::Page>    pages to audit
     #
-    def configure_and_run( instance_hash, auditables = {}, &block )
+    def distribute_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts
         opts['restrict_paths'] = auditables[:urls] || []
 

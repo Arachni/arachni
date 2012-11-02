@@ -14,7 +14,7 @@ class Distributor
 
     [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
         :split_urls, :build_elem_list, :distribute_elements, :preferred_dispatchers,
-        :pick_dispatchers, :configure_and_run ].each do |sym|
+        :pick_dispatchers, :distribute_and_run ].each do |sym|
         private sym
         public sym
     end
@@ -478,7 +478,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
     end
 
-    describe '#configure_and_run' do
+    describe '#distribute_and_run' do
         before( :all ) do
             @opts.rpc_port = random_port
             @opts.dir['modules'] = spec_path + 'fixtures/taint_module/'
@@ -512,7 +512,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             it 'should let the slave run loose, like a simple instance' do
                 q = Queue.new
 
-                @distributor.configure_and_run( @get_instance_info.call ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -530,7 +530,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
 
                 q = Queue.new
-                @distributor.configure_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, urls: urls ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
                 slave = @distributor.connect_to_instance( slave_info )
@@ -557,7 +557,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 ).scope_audit_id
 
                 q = Queue.new
-                @distributor.configure_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, elements: ids ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 
@@ -583,7 +583,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     ).scope_audit_id
 
                     q = Queue.new
-                    @distributor.configure_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }
+                    @distributor.distribute_and_run( @get_instance_info.call, elements: [id] ){ |i| q << i }
                     slave_info = q.pop
                     slave_info.should be_true
 
@@ -636,7 +636,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 # send it somewhere that doesn't exist
                 @opts.url = @url + '/foo'
                 q = Queue.new
-                @distributor.configure_and_run( @get_instance_info.call, pages: pages ){ |i| q << i }
+                @distributor.distribute_and_run( @get_instance_info.call, pages: pages ){ |i| q << i }
                 slave_info = q.pop
                 slave_info.should be_true
 

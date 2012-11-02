@@ -310,7 +310,7 @@ class Framework < ::Arachni::Framework
                             chunks.each_with_index do |chunk, i|
                                 # spawn a remote instance, assign a chunk of URLs
                                 # and elements to it and run it
-                                configure_and_run( @instances[i],
+                                distribute_and_run( @instances[i],
                                                    urls:     chunk,
                                                    elements: elements.pop,
                                                    pages:    page_chunks.pop
