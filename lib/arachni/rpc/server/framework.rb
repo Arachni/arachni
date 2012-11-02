@@ -482,8 +482,7 @@ class Framework < ::Arachni::Framework
     #
     # @param    [Proc]  block  block to which to pass the result
     #
-    def progress_data( opts= {}, &block )
-
+    def progress( opts= {}, &block )
         include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
         include_issues   = opts[:issues].nil? ? true : opts[:issues]
@@ -493,7 +492,7 @@ class Framework < ::Arachni::Framework
         data = {
             'stats'  => {},
             'status' => status,
-            'busy'   => extended_running?
+            'busy'   => extended_running?,
         }
 
         data['messages']  = flush_buffer if include_messages
@@ -559,18 +558,14 @@ class Framework < ::Arachni::Framework
             end
 
             data['stats'] = merge_stats( stats )
-
-            #sitemap_size do |sitemap_size|
-            #    data['sitemap_size'] = sitemap_size
-            #    block.call( data )
-            #end
+            data['busy']  = slave_data.map { |d| d['busy'] }.include?( true )
 
             block.call( data )
         end
 
         map_slaves( foreach, after )
     end
-    alias :progress :progress_data
+    alias :progress_data :progress
 
     #
     # Returns the results of the audit as a hash.
