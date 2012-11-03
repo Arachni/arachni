@@ -45,6 +45,11 @@ describe Arachni::RPC::Server::Spider do
 
                 sleep 1 while instance.service.busy?
 
+                instances = instance.service.progress( :with_instances )['instances']
+
+                instances.size.should == 5
+                instances.each { |i| i['sitemap_size'].should > 0 }
+
                 instance.spider.sitemap.size.should == 10051
             end
         end
@@ -58,7 +63,12 @@ describe Arachni::RPC::Server::Spider do
 
                 sleep 1 while instance.service.busy?
 
-                instance.spider.sitemap.size.should == 10051
+                progress = instance.service.progress( :with_instances )
+
+                progress['instances'].size.should == 0
+                progress['stats']['sitemap_size'].should == 10051
+
+                instance.spider.sitemap.size.should == progress['stats']['sitemap_size']
             end
         end
     end
