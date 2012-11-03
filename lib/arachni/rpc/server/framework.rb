@@ -796,6 +796,10 @@ class Framework < ::Arachni::Framework
         @opts.datastore[:token]
     end
 
+    def extended_running?
+        !!@extended_running
+    end
+
     private
 
     def prepare
@@ -804,10 +808,6 @@ class Framework < ::Arachni::Framework
 
     def auditstore_sitemap
         @override_sitemap | @sitemap
-    end
-
-    def extended_running?
-        !!@extended_running
     end
 
     def valid_token?( token )
