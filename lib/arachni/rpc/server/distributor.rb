@@ -232,14 +232,14 @@ module Distributor
     #
     def split_urls( urls, max_chunks )
         # figure out the min amount of pages per chunk
-        begin
+        min_pages_per_instance = begin
             if @opts.min_pages_per_instance && @opts.min_pages_per_instance.to_i > 0
-                min_pages_per_instance = @opts.min_pages_per_instance.to_i
+                @opts.min_pages_per_instance.to_i
             else
-                min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+                MIN_PAGES_PER_INSTANCE
             end
         rescue
-            min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+            MIN_PAGES_PER_INSTANCE
         end
 
         # first try a simplistic approach, just split the the URLs in
@@ -279,10 +279,10 @@ module Distributor
 
         begin
             if @opts.max_slaves && @opts.max_slaves.to_i > 0
-                return d[0...@opts.max_slaves.to_i]
+                d[0...@opts.max_slaves.to_i]
             end
         rescue
-            return d
+            d
         end
     end
 
@@ -307,14 +307,11 @@ module Distributor
         # to be distributed
         opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
 
-        instance = connect_to_instance( instance_hash )
+        opts['pages']    = auditables[:pages] || []
+        opts['elements'] = auditables[:elements] || []
 
-        instance.opts.set( opts ) {
-        instance.framework.update_page_queue( auditables[:pages] || [] ) {
-        instance.framework.restrict_to_elements( auditables[:elements] || [] ){
-        instance.modules.load( opts['mods'] ) {
-        instance.plugins.load( opts['plugins'] ) {
-        instance.framework.run { block.call( instance_hash ) if block_given? }}}}}}
+        connect_to_instance( instance_hash ).
+            service.scan( opts ) { block.call( instance_hash ) if block_given? }
     end
 
     def cleaned_up_opts
