@@ -109,6 +109,21 @@ describe Arachni::Spider do
     end
 
     describe '#run' do
+
+        it 'should perform the crawl' do
+            @opts.url = @url + '/lots_of_paths'
+
+            spider = Arachni::Spider.new
+            spider.run.size.should == 10051
+        end
+
+        it 'should ignore path parameters' do
+            @opts.url = @url + '/path_params'
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
+        end
+
         context 'Options.do_not_crawl' do
             it 'should not crawl the site' do
                 @opts.do_not_crawl
@@ -210,13 +225,6 @@ describe Arachni::Spider do
                     end
                 end
             end
-        end
-
-        it 'should ignore path parameters' do
-            @opts.url = @url + '/path_params'
-
-            spider = Arachni::Spider.new
-            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
         end
     end
 
@@ -362,7 +370,6 @@ describe Arachni::Spider do
             end
         end
     end
-
 
     describe '#pause' do
         it 'should pause a running crawl' do
