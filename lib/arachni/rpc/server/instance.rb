@@ -131,6 +131,8 @@ class Instance
                 data.delete( 'instances' )
             end
 
+            data['instances'] ||= [] if options.include?( :with_instances )
+
             block.call( data )
         end
     end
@@ -169,7 +171,8 @@ class Instance
             slaves  = opts[:slaves] || []
             slaves |= spawn( opts[:spawns] ) if opts[:spawns].to_i > 0
 
-            ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).each( each, after )
+            ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
+                each( each, after )
         end
 
         true
