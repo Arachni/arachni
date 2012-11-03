@@ -15,6 +15,7 @@
 =end
 
 require 'em-synchrony'
+require 'tempfile'
 
 module Arachni
 
@@ -592,7 +593,7 @@ class Framework < ::Arachni::Framework
     #
     # @return   [String]    report content
     #
-    def report_as( name )
+    def report_as( name, &block )
         if !reports.available.include?( name.to_s )
             fail Arachni::Exceptions::ComponentNotFound,
                  "Report '#{name}' could not be found."
@@ -601,12 +602,12 @@ class Framework < ::Arachni::Framework
             fail TypeError, "Report '#{name}' cannot format the audit results as a String."
         end
 
-        outfile = "/tmp/arachn_report_as.#{name}"
+        outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
         reports.run_one( name, auditstore, 'outfile' => outfile )
 
-        str = IO.read( outfile )
+        block.call IO.read( outfile )
+    ensure
         File.delete( outfile )
-        str
     end
 
     # @return   [String]    YAML representation of {#auditstore}

@@ -37,7 +37,8 @@ class Server
 # * {#progress Aggregate progress information};
 # * {#busy? Checking whether the scan is still in progress};
 # * {#status Checking the status of the scan};
-# * {#report Grabbing the report};
+# * {#report Grabbing the report as a Hash};
+# * {#report_as Grabbing the report in one of the supported formats};
 # * {#shutdown Shutting down}.
 #
 # These methods are mapped to the 'service' RPC handler.
@@ -91,6 +92,11 @@ class Instance
     # @see Framework#report
     def report
         @framework.report
+    end
+
+    # @see Framework#report_as
+    def report_as( *args, &block )
+        @framework.report_as( *args, &block )
     end
 
     # @see Framework#status

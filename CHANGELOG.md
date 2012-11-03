@@ -13,6 +13,7 @@
   - ```#busy?``` -- Checks whether the scan is still in progress.
   - ```#status``` -- Returns the status of the scan.
   - ```#report``` -- Returns the scan report as a ```Hash```.
+  - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
   - ```#shutdown``` -- Shuts down the instance/stops the scan.
 - HTTP
   - Updated the custom 404 detection algorithm to use less memory by storing only

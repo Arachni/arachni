@@ -42,6 +42,13 @@ describe Arachni::RPC::Server::Instance do
             end
         end
 
+        describe '#report_as' do
+            it 'should delegate to Framework' do
+                @instance.service.report_as( :html ).should == @instance.framework.report_as( :html )
+                @instance.service.report_as( :xml ).should == @instance.framework.report_as( :xml )
+            end
+        end
+
         describe '#status' do
             it 'should delegate to Framework' do
                 @instance.service.status.should == @instance.framework.status
