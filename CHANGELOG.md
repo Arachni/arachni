@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
   - Updated custom 404 detection algorithm to use less memory.
   - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
