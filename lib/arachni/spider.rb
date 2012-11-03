@@ -95,6 +95,8 @@ class Spider
     def run( pass_pages_to_block = true, &block )
         return if !@opts.crawl?
 
+        @running = true
+
         # options could have changed so reseed
         seed_paths
 
@@ -130,10 +132,15 @@ class Spider
         end
 
         http.run
+        @running = false
 
         call_on_complete_blocks
 
         sitemap
+    end
+
+    def running?
+        !!@running
     end
 
     #
@@ -184,13 +191,11 @@ class Spider
         paths = dedup( paths )
         return false if paths.empty?
 
-        idle = idle?
-
         @paths |= paths
         @paths.uniq!
 
-        # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
-        Thread.new { run } if wakeup && idle # wake up the crawler
+         # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        Thread.new { run } if wakeup && !running? # wake up the crawler
         true
     end
 

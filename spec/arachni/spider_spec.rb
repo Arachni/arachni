@@ -338,6 +338,32 @@ describe Arachni::Spider do
         end
     end
 
+    describe '#running?' do
+        context 'when not running' do
+            it 'should return false' do
+                s = Arachni::Spider.new
+                s.running?.should be_false
+            end
+        end
+        context 'when running' do
+            it 'should return false' do
+                @opts.url = server_url_for( :auditor ) + '/sleep'
+                s = Arachni::Spider.new
+                Thread.new{ s.run }
+                sleep 1
+                s.running?.should be_true
+            end
+        end
+        context 'when it has finished' do
+            it 'should return true' do
+                s = Arachni::Spider.new
+                s.run
+                s.running?.should be_false
+            end
+        end
+    end
+
+
     describe '#pause' do
         it 'should pause a running crawl' do
             s = Arachni::Spider.new
