@@ -36,45 +36,12 @@ describe Arachni::URI do
             'http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E%28%24%21%40%24%29%28%28%29%29%29%2A%2A%2A%2A%2A%2A&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e'
         ]
 
-        #@normalized = {
-        #    "http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich" => "http://suche.test.net/search/pic/?mc=portale%40galerie%40suchtipp.suche%40bilder&su=z%C3%BCrich",
-        #    "http://suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment" => "http://suche.test.net/search/pic/?mc=portale%40galerie%40suchtipp.suche%40bilder&su=z%C3%BCrich",
-        #    "http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich" => "http://user:pass@suche.test.net/search/pic/?mc=portale%40galerie%40suchtipp.suche%40bilder&su=z%C3%BCrich",
-        #    "http://user:pass@suche.test.net/search/pic/?mc=portale@galerie@suchtipp.suche@bilder&su=zürich#fragment" => "http://user:pass@suche.test.net/search/pic/?mc=portale%40galerie%40suchtipp.suche%40bilder&su=z%C3%BCrich",
-        #    "another/path" => "another/path",
-        #    "/some/path" => "/some/path",
-        #    "http://test.com" => "http://test.com/",
-        #    "http://test.com/?stuff=test&ss=blah" => "http://test.com/?stuff=test&ss=blah",
-        #    "style.css" => "style.css",
-        #    "http://test.com/path/here" => "http://test.com/path/here",
-        #    "http://user@test.com/path/here" => "http://user@test.com/path/here",
-        #    "http://user:pass@test.com/path/here" => "http://user:pass@test.com/path/here",
-        #    "http://user:pass@test.com:80/path/here" => "http://user:pass@test.com/path/here",
-        #    "http://user:pass@test.com:81/path/here" => "http://user:pass@test.com:81/path/here",
-        #    "http://user:pass@test.com:81/path/here?query=here&with=more vars" => "http://user:pass@test.com:81/path/here?query=here&with=more%20vars",
-        #    "http://user:pass@test.com:81/path/here?query=here&with=more vars#and-fragment" => "http://user:pass@test.com:81/path/here?query=here&with=more%20vars",
-        #    "http://localhost:4567" => "http://localhost:4567/",
-        #    "http://localhost:4567/" => "http://localhost:4567/",
-        #    "http://testfire.net/default.aspx" => "http://testfire.net/default.aspx",
-        #    "http://testfire.net/Privacypolicy.aspx?sec=Careers&template=US" => "http://testfire.net/Privacypolicy.aspx?sec=Careers&template=US",
-        #    "http://testfire.net/disclaimer.htm?url=http://dd.d" => "http://testfire.net/disclaimer.htm?url=http%3A%2F%2Fdd.d",
-        #    "hTTp://user:password@tEsT.com:81///with/////path/another weird path %\"&*[$)?query=crap&other=$54$5466][('\"#fragment" => "http://user:password@test.com:81/with/path/another%20weird%20path%20%25%22&*%5B$)?query=crap&other=%2454%245466%5D%5B%28%27%22",
-        #    "http://test.com/login.php?goto?=domain.tld/index.php" => "http://test.com/login.php?goto%3F=domain.tld%2Findex.php",
-        #    "http://test.com:/stuff" => "http://test.com/stuff",
-        #    "http://test.com/stuff?name=val&amp;name2=val2" => "http://test.com/stuff?name=val&name2=val2",
-        #    "http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=%2FwEWAwLNx%2B2YBwKw59eKCgKcjoPABw%3D%3D&__VIEWSTATE=%2FwEPDwUKMTEzMDczNTAxOWRk&_ctl0%3A_ctl0%3AContent%3AMain%3AButton1=Query&_ctl0%3A_ctl0%3AContent%3AMain%3ATextBox1=Enter+title+%28e.g.+IBM%29%27%3Becho+287630581954%2B4196403186331128%3B%23" => "http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=%2FwEWAwLNx%2B2YBwKw59eKCgKcjoPABw%3D%3D&__VIEWSTATE=%2FwEPDwUKMTEzMDczNTAxOWRk&_ctl0%3A_ctl0%3AContent%3AMain%3AButton1=Query&_ctl0%3A_ctl0%3AContent%3AMain%3ATextBox1=Enter%2Btitle%2B%28e.g.%2BIBM%29%27%3Becho%2B287630581954%2B4196403186331128%3B%23",
-        #    "http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E%28%24%21%40%24%29%28%28%29%29%29%2A%2A%2A%2A%2A%2A&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e" => "http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E%28%24%21%40%24%29%28%28%29%29%29%2A%2A%2A%2A%2A%2A&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e"
-        #}
-
-        #@ref_normalizer = proc { |p| @normalized[p] }
-
         @ref_normalizer = proc do |p|
             n = Addressable::URI.parse( p ).normalize
             n.path.gsub!( /\/+/, '/' )
             n.fragment = nil
             Arachni::Utilities.html_decode( n.to_s )
         end
-
 
         @uri = Arachni::URI
     end
