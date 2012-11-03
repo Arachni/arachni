@@ -86,7 +86,7 @@ class Instance
 
     # @see Framework#busy?
     def busy?( &block )
-        @framework.busy?( &block )
+        @scan_initializing ? block.call( true ) : @framework.busy?( &block )
     end
 
     # @see Framework#report
@@ -139,32 +139,40 @@ class Instance
     # Configures and runs s scan.
     #
     # @param    [Hash]  opts    scan options to be passed to {Options#set}
-    #   If the +Hash+ contains a +slaves+ key containing with an +Array+,
-    #   each item will be passed to {Framework#enslave}.
+    #   Supports the following extra options:
+    #   * +slaves+ -- +Array<Hash>+, each item will be passed to {Framework#enslave}.
+    #   * +spawns+ -- +Integer+, the amount of slaves to spawn.
+    #   * +pages+ -- +Array<{Page}>+, extra pages to audit.
+    #   * +elements+ -- +Array<{String}>+, elements to which to restrict the audit
+    #       (using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}).
     #
-    def scan( opts = {}, &block )
+    def scan( opts = {} )
         # if the instance isn't clean bail out now
-        if @framework.extended_running?
-            block.call false
-            return
+        return false if @scan_initializing || @framework.extended_running?
+
+        @scan_initializing = true
+        Thread.new do
+            opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
+
+            @framework.opts.set( opts )
+
+            @framework.update_page_queue( opts[:pages] || [] )
+            @framework.restrict_to_elements( opts[:elements] || [] )
+
+            opts[:modules] ||= opts[:mods]
+            @framework.modules.load opts[:modules] if opts[:modules]
+            @framework.plugins.load opts[:plugins] if opts[:plugins]
+
+            each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+            after = proc { @framework.run; @scan_initializing = false }
+
+            slaves  = opts[:slaves] || []
+            slaves |= spawn( opts[:spawns] ) if opts[:spawns].to_i > 0
+
+            ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).each( each, after )
         end
 
-        opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
-
-        @framework.opts.set( opts )
-
-        @framework.update_page_queue( opts[:pages] || [] )
-        @framework.restrict_to_elements( opts[:elements] || [] )
-
-        opts[:modules] ||= opts[:mods]
-        @framework.modules.load opts[:modules] if opts[:modules]
-        @framework.plugins.load opts[:plugins] if opts[:plugins]
-
-        each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
-        after = proc { block.call @framework.run }
-
-        slaves = opts[:slaves] || []
-        ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).each( each, after )
+        true
     end
 
     #
@@ -193,6 +201,35 @@ class Instance
 
     private
 
+    def spawn( num )
+        q = Queue.new
+
+        if has_dispatcher?
+            num.times do
+                dispatcher.dispatch( @framework.self_url ) do |instance|
+                    q << instance
+                end
+            end
+        else
+            num.times do
+                port  = available_port
+                token = generate_token
+
+                Process.detach ::EM.fork_reactor {
+                    Options.rpc_port = port
+                    RPC::Server::Instance.new( Options.instance, token )
+                }
+
+                q << { 'url' => "#{Options.rpc_address}:#{port}", 'token' => token }
+            end
+            sleep 1
+        end
+
+        spawns = []
+        num.times { spawns << q.pop }
+        spawns
+    end
+
     #
     # Starts the HTTPS server and the RPC service.
     #
@@ -204,6 +241,10 @@ class Instance
     def dispatcher
         @dispatcher ||=
             Client::Dispatcher.new( @opts, @opts.datastore[:dispatcher_url] )
+    end
+
+    def has_dispatcher?
+        !!@opts.datastore[:dispatcher_url]
     end
 
     #

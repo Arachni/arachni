@@ -94,6 +94,36 @@ describe Arachni::RPC::Server::Instance do
                 i_report.should == f_report
                 i_report['issues'].should be_any
             end
+
+            describe :spawns do
+                it 'should instruct the Instance to spawn a number of slaves' do
+                    instance = @get_instance.call
+
+                    instance.service.scan(
+                        url:         server_url_for( :framework_simple ),
+                        audit_links: true,
+                        audit_forms: true,
+                        modules:     :test,
+                        spawns:      4
+                    ).should be_true
+
+                    # if a scan in already running it should just bail out early
+                    instance.service.scan.should be_false
+
+                    sleep 1 while instance.service.busy?
+
+                    instance.framework.progress_data['instances'].size.should == 5
+
+                    instance.service.busy?.should  == instance.framework.busy?
+                    instance.service.status.should == instance.framework.status
+
+                    i_report = instance.service.report
+                    f_report = instance.framework.report
+
+                    i_report.should == f_report
+                    i_report['issues'].should be_any
+                end
+            end
         end
 
         describe '#progress' do
@@ -128,7 +158,7 @@ describe Arachni::RPC::Server::Instance do
 
                 p['busy'].should   == instance.framework.busy?
                 p['status'].should == instance.framework.status
-                p['stats'].should  == instance.framework.progress['stats']
+                p['stats'].keys.should  == instance.framework.progress['stats'].keys
 
                 p['instances'].should be_nil
 
