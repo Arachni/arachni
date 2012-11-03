@@ -53,8 +53,7 @@ describe Arachni::RPC::Server::Instance do
 
         describe '#report_as' do
             it 'should delegate to Framework' do
-                @instance.service.report_as( :html ).should == @instance.framework.report_as( :html )
-                @instance.service.report_as( :xml ).should == @instance.framework.report_as( :xml )
+                Nokogiri::HTML( @instance.service.report_as( :html ) ).title.should be_true
             end
         end
 
