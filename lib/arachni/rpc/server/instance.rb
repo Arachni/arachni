@@ -146,11 +146,13 @@ class Instance
         opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
 
         @framework.opts.set( opts )
-        @framework.modules.load opts[:modules] if opts[:modules]
-        @framework.plugins.load opts[:plugins] if opts[:plugins]
 
         @framework.update_page_queue( opts[:pages] || [] )
         @framework.restrict_to_elements( opts[:elements] || [] )
+
+        opts[:modules] ||= opts[:mods]
+        @framework.modules.load opts[:modules] if opts[:modules]
+        @framework.plugins.load opts[:plugins] if opts[:plugins]
 
         each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
         after = proc { block.call @framework.run }
