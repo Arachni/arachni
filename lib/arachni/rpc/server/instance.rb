@@ -140,6 +140,8 @@ class Instance
     #
     # Configures and runs s scan.
     #
+    # If you use this method to start the scan use {#busy?} instead of {Framework#busy?}.
+    #
     # @param    [Hash]  opts    scan options to be passed to {Options#set}
     #   Supports the following extra options:
     #   * +slaves+ -- +Array<Hash>+, each item will be passed to {Framework#enslave}.
