@@ -229,7 +229,7 @@ class Spider
     private
 
     def distribute( urls )
-        push urls
+        push( urls, false )
     end
 
     def seed_paths
