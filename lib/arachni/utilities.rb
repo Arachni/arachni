@@ -251,6 +251,50 @@ module Utilities
     end
 
     #
+    # Returns a random available port
+    #
+    # @return   Fixnum  port number
+    #
+    def available_port
+        nil while !port_available?( port = rand_port )
+        port
+    end
+
+    #
+    # Returns a random port
+    #
+    def rand_port
+        first, last = Options.rpc_instance_port_range
+        range = (first..last).to_a
+
+        range[ rand( range.last - range.first ) ]
+    end
+
+    def generate_token
+        secret = ''
+        1000.times { secret << rand( 1000 ).to_s }
+        Digest::MD5.hexdigest( secret )
+    end
+
+    #
+    # Checks whether the port number is available
+    #
+    # @param    [Fixnum]  port
+    #
+    # @return   [Bool]
+    #
+    def port_available?( port )
+        begin
+            socket = Socket.new( :INET, :STREAM, 0 )
+            socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
+            socket.close
+            true
+        rescue
+            false
+        end
+    end
+
+    #
     # Recursively converts a Hash's keys to strings
     #
     # @param    [Hash]  hash
