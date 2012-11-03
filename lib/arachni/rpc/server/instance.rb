@@ -138,7 +138,7 @@ class Instance
     #
     def scan( opts = {}, &block )
         # if the instance isn't clean bail out now
-        if @framework.status.to_s != 'ready'
+        if @framework.extended_running?
             block.call false
             return
         end
