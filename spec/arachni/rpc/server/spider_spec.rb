@@ -8,20 +8,29 @@ describe Arachni::RPC::Server::Spider do
         @opts = Arachni::Options.instance
         @token = 'secret!'
 
+        @instances = []
+
         @get_instance = proc do |opts|
             opts ||= @opts
+
             port = random_port
             opts.rpc_port = port
+
             fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
             sleep 1
-            Arachni::RPC::Client::Instance.new( opts,
-                                                "#{opts.rpc_address}:#{port}", @token
+
+            @instances << Arachni::RPC::Client::Instance.new( opts,
+                "#{opts.rpc_address}:#{port}", @token
             )
+
+            @instances.last
         end
 
         @utils = Arachni::Module::Utilities
         @instance = @get_instance.call
     end
+
+    after( :all ){ @instances.each { |i| i.service.shutdown rescue nil } }
 
     context 'when using' do
         context 'multiple nodes' do
