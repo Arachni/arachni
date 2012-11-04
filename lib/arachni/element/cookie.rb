@@ -634,6 +634,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Time]
     #
     def self.expires_to_time( expires )
+        return nil if expires == '0'
         (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
     end
 

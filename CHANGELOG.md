@@ -1,5 +1,19 @@
 # ChangeLog
 
+## Version 0.4.1.2 _(November 3, 2012)_
+- HTTP
+  - Updated custom 404 detection algorithm to use less memory.
+  - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
+- ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
+- ```Arachni::URI.cheap_parse``` -- Updated to sanitize the encoding of each parameter name and value individually. [Issue #303]
+- Plugins
+  - Proxy
+      - Fixed regression caused by the Parser requiring the HTTP Response to include the original Request.
+      - Fixed SSL interceptor behavior on redirects -- now delegates everything to the user facing Proxy.
+- Modules
+  - Audit
+      - CSRF -- Updated to mark forms with a detected nonce as safe.
+
 ## Version 0.4.1.1 _(October 14, 2012)_
 - ```Auditor#log``` and ```Auditor#log_remote_file``` bugfixed to pass a Hash of the response headers instead of a String -- also solving another bug causing response bodies not to be logged in the Issues. [Issue #294]
 - ```Issue``` -- Response headers are now **always** Hash.

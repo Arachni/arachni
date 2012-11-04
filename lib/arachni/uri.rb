@@ -273,9 +273,9 @@ class URI
                 end
 
                 if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
-                    components[:query] =
-                        encode( decode( query ),
-                                Addressable::URI::CharacterClasses::QUERY )
+                    components[:query] = (query.split( '&', -1 ).map do |pair|
+                        encode( decode( pair ), Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
+                    end).join( '&' )
                 end
             end
 
