@@ -281,9 +281,9 @@ class URI
 
             components[:path] ||= components[:scheme] ? '/' : nil
 
-            cache[c_url] = components.inject({}) do |h, (k, val)|
-                h.merge!( Hash[{ k => val.freeze }] )
-            end.freeze
+            components.values.each( &:freeze )
+
+            cache[c_url] = components.freeze
         rescue => e
             begin
                 print_error "Failed to fast-parse '#{c_url}', falling back to slow-parse."

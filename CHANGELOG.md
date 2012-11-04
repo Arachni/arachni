@@ -15,6 +15,8 @@
   - ```#report``` -- Returns the scan report as a ```Hash```.
   - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
   - ```#shutdown``` -- Shuts down the instance/stops the scan.
+
+## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
   - Updated the custom 404 detection algorithm to use less memory by storing only
     the hashes of the signatures instead of the signatures themselves.
