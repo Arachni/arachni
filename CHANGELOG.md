@@ -11,10 +11,10 @@
   - ```#scan``` -- Configures and runs the scan.
   - ```#progress``` -- Aggregates progress information.
   - ```#busy?``` -- Checks whether the scan is still in progress.
-  - ```#status``` -- Returns the status of the scan.
+  - ```#status``` -- Returns the status of the Instance.
   - ```#report``` -- Returns the scan report as a ```Hash```.
   - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
-  - ```#shutdown``` -- Shuts down the instance/stops the scan.
+  - ```#shutdown``` -- Shuts down the Instance/stops the scan.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
