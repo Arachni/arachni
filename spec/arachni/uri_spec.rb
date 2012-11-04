@@ -138,6 +138,26 @@ describe Arachni::URI do
             parsed_uri[:path].should == path
             parsed_uri[:query].should == query
         end
+
+        it 'should return a frozen hash (with frozen values)' do
+            h = @uri.cheap_parse( 'http://test.com/stuff/' )
+
+            raised = false
+            begin
+                h[:stuff] = 0
+            rescue RuntimeError
+                raised = true
+            end
+            raised.should be_true
+
+            raised = false
+            begin
+                h[:path] << '/'
+            rescue RuntimeError
+                raised = true
+            end
+            raised.should be_true
+        end
     end
 
     describe '.to_absolute' do
