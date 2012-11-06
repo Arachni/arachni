@@ -161,6 +161,10 @@ class Instance
         @scan_initializing = true
         opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
 
+        if opts[:plugins] && opts[:plugins].is_a?( Array )
+            opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
+        end
+
         @framework.opts.set( opts )
 
         @framework.update_page_queue( opts[:pages] || [] )
@@ -230,6 +234,9 @@ class Instance
                 token = generate_token
 
                 Process.detach ::EM.fork_reactor {
+                    # make sure we start with a clean env (namepsace, opts, etc)
+                    Framework.reset
+
                     Options.rpc_port = port
                     Server::Instance.new( Options.instance, token )
                 }

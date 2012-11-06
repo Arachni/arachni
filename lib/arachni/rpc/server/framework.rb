@@ -728,6 +728,8 @@ class Framework < ::Arachni::Framework
     def set_master( url, token )
         return false if master?
 
+        plugins.load @opts.plugins if @opts.plugins
+
         # call prepare here to let the plugins put their hooks in
         spider.on_first_run { prepare }
 

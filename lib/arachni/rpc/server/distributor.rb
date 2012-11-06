@@ -303,10 +303,6 @@ module Distributor
             opts[k].each.with_index { |v, i| opts[k][i] = v.source }
         end
 
-        # don't let the slaves run plug-ins that are not meant
-        # to be distributed
-        opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
-
         opts['pages']    = auditables[:pages] || []
         opts['elements'] = auditables[:elements] || []
 
@@ -322,6 +318,10 @@ module Distributor
             %w(start_datetime finish_datetime)).each do |k|
             opts.delete k
         end
+
+        # don't let the slaves run plug-ins that are not meant
+        # to be distributed
+        (opts['plugins'] || {}).keys.reject! { |k| !@plugins[k].distributable? }
 
         opts['datastore'].delete( :dispatcher_url )
         opts['datastore'].delete( :token )
