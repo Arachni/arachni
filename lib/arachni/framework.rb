@@ -527,6 +527,8 @@ class Framework
     # @return   [True]
     #
     def clean_up( skip_audit_queue = false )
+        return if @cleaned_up
+
         @status = :cleanup
 
         @opts.finish_datetime  = Time.now
@@ -544,7 +546,8 @@ class Framework
 
         # a plug-in may have updated the page queue, rock it!
         audit_queue if !skip_audit_queue
-        true
+
+        @cleaned_up = true
     end
     alias :clean_up! :clean_up
 
