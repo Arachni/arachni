@@ -27,6 +27,12 @@ class Server
 #
 class Spider < Arachni::Spider
 
+    # Amount of URLs to buffer before distributing.
+    BUFFER_SIZE     = 200
+
+    # How many times to try and fill buffer before distributing what's in it.
+    FILLUP_ATTEMPTS = 30
+
     private :push, :done?, :sitemap
     public  :push, :done?, :sitemap
 
@@ -72,6 +78,8 @@ class Spider < Arachni::Spider
         super( *args, &block )
         #ap 'AFTER RUN'
 
+        #ap @routed
+        flush_url_distribution_buffer
         master_done_handler
 
         if slave?
@@ -106,7 +114,7 @@ class Spider < Arachni::Spider
         end
 
         each = proc do |peer, iter|
-            peer.spider.update_peers( @peers_array | [self_instance_info] ){
+            peer.spider.update_peers( @peers_array | [self_instance_info] ) {
                 iter.return
             }
         end
@@ -220,18 +228,42 @@ class Spider < Arachni::Spider
 
         @first_run ||= Arachni::BloomFilter.new
 
-        routed = {}
+        @routed          ||= {}
+        @buffer_size     ||= 0
+        @fillup_attempts ||= 0
 
         urls.each do |c_url|
             next if distributed? c_url
-            (routed[route( c_url )] ||= []) << c_url
+            @buffer_size += 1
+            (@routed[route( c_url )] ||= []) << c_url
             distributed c_url
         end
 
-        routed.each do |peer, r_urls|
+        return if @buffer_size == 0
+
+        # remove and push our URLs right way
+        push( @routed.delete( framework ) )
+
+        @fillup_attempts += 1
+
+        #ap "#{framework.self_url}: BUFFER_SIZE: #{@buffer_size} -- FILLUP_ATTEMPTS: #{@fillup_attempts}"
+
+        return if @buffer_size < BUFFER_SIZE && @fillup_attempts < FILLUP_ATTEMPTS
+
+        #ap "#{framework.self_url}: ----- DISTRIBUTING -----"
+
+        # distribute the buffered outgoing URLs
+        flush_url_distribution_buffer
+
+        true
+    end
+
+    def flush_url_distribution_buffer
+        @routed ||= {}
+        @routed.dup.each do |peer, r_urls|
             #ap peer.class
 
-            if !(peer === framework) && !@first_run.include?( peer.url )
+            if !@first_run.include?( peer.url )
                 @first_run << peer.url
                 peer_not_done( peer.url )
             end
@@ -241,7 +273,10 @@ class Spider < Arachni::Spider
             end
         end
 
-        true
+        # clear the counters and the buffer
+        @fillup_attempts = 0
+        @buffer_size     = 0
+        @routed.clear
     end
 
     def distributed?( url )
