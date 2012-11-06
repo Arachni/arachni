@@ -84,7 +84,8 @@ describe Arachni::Framework do
     describe '#plugins' do
         it 'should provide access to the plugin manager' do
             @f.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
-            @f.plugins.available.sort.should == %w(wait bad with_options distributable loop default).sort
+            @f.plugins.available.sort.should ==
+                %w(wait bad with_options distributable loop default spider_hook).sort
         end
     end
 
@@ -743,6 +744,12 @@ describe Arachni::Framework do
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: "0.1"
   :plug_name: wait
+- :name: SpiderHook
+  :description: ""
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: "0.1"
+  :plug_name: spider_hook
 - :name: ""
   :description: ""
   :author:
