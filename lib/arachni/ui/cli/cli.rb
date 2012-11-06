@@ -282,7 +282,7 @@ class CLI
         @audit.exit
 
         @exit_handler = Thread.new {
-            @arachni.clean_up( true )
+            @arachni.clean_up
             @arachni.reports.run( @arachni.audit_store )
             print_stats
         }

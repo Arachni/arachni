@@ -521,12 +521,7 @@ class Framework
     #
     # It also runs {#audit_queue} in case any new pages have been added by the plugins.
     #
-    # @param    [Bool]      skip_audit_queue    skips running {#audit_queue},
-    #                                               set to true if you don't want any delays.
-    #
-    # @return   [True]
-    #
-    def clean_up( skip_audit_queue = false )
+    def clean_up
         return if @cleaned_up
 
         @status = :cleanup
@@ -543,9 +538,6 @@ class Framework
 
         # wait for the plugins to finish
         @plugins.block
-
-        # a plug-in may have updated the page queue, rock it!
-        audit_queue if !skip_audit_queue
 
         @cleaned_up = true
     end

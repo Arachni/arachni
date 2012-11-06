@@ -134,11 +134,8 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    #
-    #
     # @return   [Bool]    true if running in HPG (High Performance Grid) mode
     #                       and instance is the master, false otherwise.
-    #
     def master?
         @opts.grid_mode == 'high_performance'
     end
@@ -241,36 +238,32 @@ class Framework < ::Arachni::Framework
                         'master' => self_url
                     }
 
-                    connect_to_dispatcher( d_url ).dispatch( self_url, d_opts ) do |instance_hash|
-                        enslave( instance_hash ){ |b| iterator.next }
-                    end
+                    connect_to_dispatcher( d_url ).
+                        dispatch( self_url, d_opts ) do |instance_hash|
+                            enslave( instance_hash ){ |b| iterator.next }
+                        end
                 end
 
                 after = proc do
                     @status = :crawling
 
                     spider.on_each_page do |page|
-                        update_element_ids_per_page( { page.url => build_elem_list( page ) },
-                                                     @local_token )
+                        update_element_ids_per_page(
+                            { page.url => build_elem_list( page ) },
+                            @local_token
+                        )
+
                         @local_sitemap << page.url
                     end
 
-                    #@start_time = Time.now
-                    #ap 'PRE CRAWL'
                     # start the crawl and extract all paths
                     spider.on_complete do
-                        #ap 'POST CRAWL'
-
-                        #puts "---- Found #{spider.sitemap.size} URLs in #{Time.now - @start_time} seconds."
-
                         element_ids_per_page = @element_ids_per_page
 
                         @override_sitemap |= spider.sitemap
 
-                        #ap 'SITEMAP'
-                        #ap @override_sitemap.to_a
-
                         @status = :distributing
+
                         # the plug-ins may have updated the page queue
                         # so we need to distribute these pages as well
                         page_a = []
@@ -280,29 +273,23 @@ class Framework < ::Arachni::Framework
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
-                        #ap 'INSTANCES'
-                        #ap self_url
-                        #ap @instances
-
                         # split the URLs of the pages in equal chunks
-                        chunks    = split_urls( element_ids_per_page.keys, @instances.size + 1 )
+                        chunks    = split_urls( element_ids_per_page.keys,
+                                                @instances.size + 1 )
                         chunk_cnt = chunks.size
 
-                        #ap 'ELEMENT IDS PER PAGE'
-                        #ap element_ids_per_page.keys
-
-                        #ap "CHUNK COUNT: #{chunk_cnt}"
                         if chunk_cnt > 0
-                            # split the page array into chunks that will be distributed
-                            # across the instances
+                            # split the page array into chunks that will be
+                            # distributed across the instances
                             page_chunks = page_a.chunk( chunk_cnt )
 
                             # assign us our fair share of plug-in discovered pages
                             update_page_queue( page_chunks.pop, @local_token )
 
-                            # remove duplicate elements across the (per instance) chunks
-                            # while spreading them out evenly
-                            elements = distribute_elements( chunks, element_ids_per_page )
+                            # remove duplicate elements across the (per instance)
+                            # chunks while spreading them out evenly
+                            elements = distribute_elements( chunks,
+                                                            element_ids_per_page )
 
                             # restrict the local instance to its assigned elements
                             restrict_to_elements( elements.pop, @local_token )
@@ -370,7 +357,7 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  block  block to be called once the cleanup has finished
     #
     def clean_up( &block )
-        r = super( true )
+        r = super
 
         return r if !block_given?
 
@@ -669,10 +656,6 @@ class Framework < ::Arachni::Framework
                                      signal_done_peer_url = false )
         return false if master? && !valid_token?( token )
 
-        #ap 'update_element_ids_per_page'
-        #ap Kernel.caller.first
-        #ap element_ids_per_page
-
         element_ids_per_page.each do |url, ids|
             @element_ids_per_page[url] ||= []
             @element_ids_per_page[url] |= ids
@@ -768,29 +751,27 @@ class Framework < ::Arachni::Framework
         end
 
         spider.after_each_run do
-            if !@slave_element_ids_per_page.empty?
+            # the plugins may have populated the page queue so send it back to
+            # the master
+            pages = []
+            while !@page_queue.empty? && page = @page_queue.pop
+                pages << page
+            end
 
-                #ap 'SLAVE -- AFTER EACH RUN'
-                #ap @slave_element_ids_per_page
+            @master.framework.update_page_queue( pages, master_priv_token ) do
+                if !@slave_element_ids_per_page.empty?
 
-                @master.framework.
-                    update_element_ids_per_page( @slave_element_ids_per_page.dup,
-                                               master_priv_token,
-                                               spider.done? ? self_url : false ){}
+                    @master.framework.
+                        update_element_ids_per_page( @slave_element_ids_per_page.dup,
+                                                   master_priv_token,
+                                                   spider.done? ? self_url : false ){}
 
-                @slave_element_ids_per_page.clear
-            else
-                spider.signal_if_done( @master )
+                    @slave_element_ids_per_page.clear
+                else
+                    spider.signal_if_done( @master )
+                end
             end
         end
-
-        # ...and also send the pages in the queue in case it has been
-        # populated by a plugin.
-        #spider.on_complete do
-        #    while !@page_queue.empty? && page = @page_queue.pop
-        #        @master.framework.update_page_queue( page, master_priv_token ){}
-        #    end
-        #end
 
         @modules.do_not_store
         @modules.on_register_results { |r| report_issues_to_master( r ) }
