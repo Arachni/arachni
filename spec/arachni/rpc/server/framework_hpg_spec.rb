@@ -200,15 +200,10 @@ describe Arachni::RPC::Server::Framework do
             instance.framework.auditstore.plugins.should be_empty
             instance.framework.busy?.should be_true
 
-            tries = 4
-            begin
-                sleep( 1 ) while instance.framework.busy?
-            rescue Exception
-                tries -= 1
-                retry if tries > 0
-            end
+            sleep 1 while instance.framework.busy?
 
-            instance.framework.clean_up.should be_true
+            instance.framework.clean_up
+
             results = instance.framework.auditstore.plugins
             results.should be_any
             results['wait'].should be_any

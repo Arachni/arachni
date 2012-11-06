@@ -82,38 +82,12 @@ class Framework < ::Arachni::Framework
         @local_sitemap    = Set.new
 
         @element_ids_per_page = {}
-    end
 
-    #
-    # Returns true if the system is scanning, false if {#run} hasn't been called yet or
-    # if the scan has finished.
-    #
-    # @param    [Bool]  include_slaves  take slave status into account too?
-    #                                     If so, it will only return false if slaves
-    #                                     are done too.
-    #
-    # @param    [Proc]  block          block to which to pass the result
-    #
-    def busy?( include_slaves = true, &block )
-        busyness = [ extended_running? ]
+        # running slaves
+        @running_slaves = Set.new
 
-        return busyness.first if !block_given?
-
-        if @instances.empty? || !include_slaves
-            block.call busyness.first
-            return
-        end
-
-        foreach = proc do |instance, iter|
-            instance.framework.busy? { |res| iter.return( res ) }
-        end
-        after = proc do |res|
-            busyness << res
-            busyness.flatten!
-            block.call( busyness.include?( true ) )
-        end
-
-        map_slaves( foreach, after )
+        # holds instances which have completed their scan
+        @done_slaves = Set.new
     end
 
     #
@@ -127,6 +101,13 @@ class Framework < ::Arachni::Framework
             plugin
         end
     end
+
+    # @return   [Bool] +true+   if the system is scanning, false if {#run}
+    #                               hasn't been called yet or if the scan has finished.
+    def busy?
+        !!@extended_running
+    end
+    alias :extended_running? :busy?
 
     # Set's this instance as the master.
     def set_as_master
@@ -188,6 +169,9 @@ class Framework < ::Arachni::Framework
 
         @extended_running = true
 
+        # prepare the local instance (runs plugins and starts the timer)
+        prepare
+
         #
         # if we're in HPG mode do fancy stuff like distributing and balancing workload
         # as well as starting slave instances and deal with some lower level
@@ -222,9 +206,6 @@ class Framework < ::Arachni::Framework
                 # appear during the audit they will override these restrictions
                 # and each instance will audit them at will.
                 #
-
-                # prepare the local instance (runs plugins and starts the timer)
-                prepare
 
                 # we need to take our cues from the local framework as some
                 # plug-ins may need the system to wait for them to finish
@@ -310,16 +291,11 @@ class Framework < ::Arachni::Framework
 
                         # start the local instance
                         Thread.new {
-                            #ap '++ AUDITING'
                             audit
 
-                            #ap '++ CLEAN UP'
-                            clean_up
+                            @finished_auditing = true
 
-                            #ap '++ DONE'
-                            @extended_running = false
-                            @status = :done
-                            #ap '+++++++++++++++'
+                            cleanup_if_all_done
                         }
                     end
 
@@ -336,10 +312,17 @@ class Framework < ::Arachni::Framework
         else
             # start the local instance
             Thread.new {
-                #ap '-- AUDITING'
-                super
-                #ap '-- DONE'
-                @extended_running = false
+                audit
+
+                if slave?
+                    @master.framework.slave_done( self_url, master_priv_token ){
+                        @extended_running = false
+                    }
+                else
+                    @extended_running = false
+                    clean_up
+                    @status = :done
+                end
             }
         end
 
@@ -357,6 +340,10 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  block  block to be called once the cleanup has finished
     #
     def clean_up( &block )
+        if @cleaned_up
+            block.call false
+            return false
+        end
         r = super
 
         return r if !block_given?
@@ -375,40 +362,36 @@ class Framework < ::Arachni::Framework
         end
         after = proc { |results| @plugins.merge_results( results.compact ); block.call( true ) }
         map_slaves( foreach, after )
+
+        @cleaned_up = true
     end
 
-    #
     # Pauses the running scan on a best effort basis.
-    #
     def pause( &block )
         r = super
         return r if !block_given?
 
-        each_slave { |instance, iter| instance.framework.pause{ iter.next } }
-
-        block.call true
+        each = proc { |instance, iter| instance.framework.pause { iter.next } }
+        each_slave( each, proc { block.call true } )
     end
     alias :pause! :pause
 
-    #
     # Resumes a paused scan right away.
-    #
     def resume( &block )
         r = super
         return r if !block_given?
 
-        each_slave { |instance, iter| instance.framework.resume{ iter.next } }
-
-        block.call true
+        each = proc { |instance, iter| instance.framework.resume { iter.next } }
+        each_slave( each, proc { block.call true } )
     end
     alias :resume! :resume
 
     #
     # Merged output of all running instances.
     #
-    # This is going probably to be wildly out of sync and lack A LOT of messages.
+    # This is going to be wildly out of sync and lack A LOT of messages.
     #
-    # It's here to give the notion of scan progress to the end-user rather than
+    # It's here to give the notion of progress to the end-user rather than
     # provide an accurate depiction of the actual progress.
     #
     # The returned object will be in the form of:
@@ -487,7 +470,7 @@ class Framework < ::Arachni::Framework
         data = {
             'stats'  => {},
             'status' => status,
-            'busy'   => extended_running?,
+            'busy'   => running?,
         }
 
         data['messages']  = flush_buffer if include_messages
@@ -686,6 +669,14 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    def slave_done( slave_url, token = nil )
+        return false if master? && !valid_token?( token )
+        @done_slaves << slave_url
+
+        cleanup_if_all_done
+        true
+    end
+
     #
     # Registers an array holding {Arachni::Issue} objects with the local instance.
     #
@@ -718,11 +709,10 @@ class Framework < ::Arachni::Framework
     def set_master( url, token )
         return false if !solo?
 
+        # make sure the desired plugins are loaded before #prepare runs them
         plugins.load @opts.plugins if @opts.plugins
 
         prepare
-        # call prepare here to let the plugins put their hooks in
-        #spider.on_first_run { prepare }
 
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
@@ -779,11 +769,18 @@ class Framework < ::Arachni::Framework
         @opts.datastore[:token]
     end
 
-    def extended_running?
-        !!@extended_running
-    end
-
     private
+
+    def cleanup_if_all_done
+        return if !@finished_auditing || @running_slaves != @done_slaves
+
+        # we pass a block because we want to perform a grid cleanup,
+        # not just a local one
+        clean_up do
+            @extended_running = false
+            @status = :done
+        end
+    end
 
     def auditstore_sitemap
         @override_sitemap | @sitemap

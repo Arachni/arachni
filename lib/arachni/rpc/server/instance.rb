@@ -85,9 +85,8 @@ class Instance
         run
     end
 
-    # @see Framework#busy?
-    def busy?( &block )
-        @scan_initializing ? block.call( true ) : @framework.busy?( &block )
+    def busy?
+        @scan_initializing ? true : @framework.busy?
     end
 
     # @see Framework#report
@@ -141,7 +140,8 @@ class Instance
     #
     # Configures and runs s scan.
     #
-    # If you use this method to start the scan use {#busy?} instead of {Framework#busy?}.
+    # If you use this method to start the scan use {#busy?} instead of
+    # {Framework#busy?} to check if the scan is still running.
     #
     # @param    [Hash]  opts    scan options to be passed to {Options#set}
     #   Supports the following extra options:
@@ -153,7 +153,7 @@ class Instance
     #
     def scan( opts = {}, &block )
         # if the instance isn't clean bail out now
-        if @scan_initializing || @framework.extended_running?
+        if @scan_initializing || @framework.busy?
             block.call false
             return false
         end

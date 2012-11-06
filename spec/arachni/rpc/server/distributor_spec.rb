@@ -1,15 +1,15 @@
 require_relative '../../../spec_helper'
 
 require 'timeout'
-require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
+require Arachni::Options.dir['lib'] + 'rpc/client/instance'
+require Arachni::Options.dir['lib'] + 'rpc/server/instance'
 
-require Arachni::Options.instance.dir['lib'] + 'rpc/server/distributor'
+require Arachni::Options.dir['lib'] + 'rpc/server/distributor'
 
 class Distributor
     include Arachni::RPC::Server::Framework::Distributor
 
-    attr_reader :instances
+    attr_reader   :instances
     attr_accessor :master_url
 
     [ :map_slaves, :each_slave, :slave_iterator, :iterator_for,
@@ -23,6 +23,7 @@ class Distributor
         @opts = Arachni::Options.instance
         @local_token = token
         @instances = []
+        @running_slaves = Set.new
     end
 
     def self_url
@@ -65,6 +66,9 @@ class FakeMaster
     end
 
     def update_element_ids_per_page( *args )
+    end
+
+    def slave_done( *args )
     end
 
     def register_issues( issues, token = nil )
@@ -170,6 +174,30 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 raised = true
             end
             raised.should be_false
+        end
+        context 'when passed an "after" block' do
+            it 'should call it after the iteration has completed' do
+                q = Queue.new
+
+                foreach = proc do |instance, iter|
+                    instance.service.alive? do |res|
+                        q << res
+                        iter.next
+                    end
+                end
+                after = proc { q << :after }
+
+                @distributor.each_slave( foreach, after )
+
+                raised = false
+                begin
+                    Timeout::timeout( 5 ) { [q.pop, q.pop, q.pop].should == [true, true, :after] }
+                rescue Timeout::Error
+                    raised = true
+                end
+                raised.should be_false
+            end
+
         end
     end
 

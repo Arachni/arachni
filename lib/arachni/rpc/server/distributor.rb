@@ -70,12 +70,17 @@ module Distributor
         slave_iterator.map( wrap, after )
     end
 
-    # @param    [Proc]  block     invoked once for each slave instance
-    def each_slave( &block )
-        wrap = proc do |instance, iterator|
-            block.call( connect_to_instance( instance ), iterator )
+    #
+    # @param    [Proc]  foreach     invoked once for each slave instance
+    # @param    [Proc]  after       invoked after the iteration has completed
+    # @param    [Proc]  block       invoked once for each slave instance
+    #
+    def each_slave( foreach = nil, after = nil, &block )
+        foreach ||= block
+        wrapped_foreach = proc do |instance, iterator|
+            foreach.call( connect_to_instance( instance ), iterator )
         end
-        slave_iterator.each( &wrap )
+        slave_iterator.each( *[wrapped_foreach, after] )
     end
 
     # @return   <::EM::Iterator>  iterator for all slave instances
@@ -307,7 +312,10 @@ module Distributor
         opts['elements'] = auditables[:elements] || []
 
         connect_to_instance( instance_hash ).
-            service.scan( opts ) { block.call( instance_hash ) if block_given? }
+            service.scan( opts ) do |r|
+                @running_slaves << instance_hash['url']
+                block.call( instance_hash ) if block_given?
+            end
     end
 
     def cleaned_up_opts

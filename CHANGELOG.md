@@ -1,20 +1,26 @@
 # ChangeLog
 
 ## _Under development_
-- RPC protocol -- Now supports both ```Marshal``` and ```YAML```
-    automatically (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
-  - ```Marshal``` by default since it's many times faster than ```YAML```.
-  - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
-- RPC ```service``` handler has been updated with the following convenience
-    methods in order to provide a simpler interface for users who don't wish to bother with
-    the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
-  - ```#scan``` -- Configures and runs the scan.
-  - ```#progress``` -- Aggregates progress information.
-  - ```#busy?``` -- Checks whether the scan is still in progress.
-  - ```#status``` -- Returns the status of the Instance.
-  - ```#report``` -- Returns the scan report as a ```Hash```.
-  - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
-  - ```#shutdown``` -- Shuts down the Instance/stops the scan.
+- RPC
+  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically
+        (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+      - ```Marshal``` by default since it's many times faster than ```YAML```.
+      - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
+  - Handlers
+      - ```service``` -- Updated with the following convenience methods in order
+            to provide a simpler interface for users who don't wish to bother with
+            the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
+          - ```#scan``` -- Configures and runs the scan.
+          - ```#progress``` -- Aggregates progress information.
+          - ```#busy?``` -- Checks whether the scan is still in progress.
+          - ```#status``` -- Returns the status of the Instance.
+          - ```#report``` -- Returns the scan report as a ```Hash```.
+          - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
+          - ```#shutdown``` -- Shuts down the Instance/stops the scan.
+      - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless you're cancelling a running scan.
+  - ```Framework```
+      - Updated gathering of slave status -- once a slave is done it reports back to the master.
+      - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
