@@ -84,7 +84,7 @@ describe Arachni::RPC::Server::Instance do
                     audit_forms: true,
                     modules:     :test,
                     slaves:      [ { url: slave.url, token: @token } ]
-                ).should be_true
+                )
 
                 # if a scan in already running it should just bail out early
                 instance.service.scan.should be_false
@@ -113,7 +113,7 @@ describe Arachni::RPC::Server::Instance do
                         audit_forms: true,
                         modules:     :test,
                         spawns:      4
-                    ).should be_true
+                    )
 
                     # if a scan in already running it should just bail out early
                     instance.service.scan.should be_false
@@ -158,7 +158,7 @@ describe Arachni::RPC::Server::Instance do
                     audit_forms: true,
                     modules:     :test,
                     slaves:      [ { url: slave.url, token: @token } ]
-                ).should be_true
+                )
 
                 sleep 1 while instance.service.busy?
 

@@ -41,7 +41,7 @@ describe Arachni::RPC::Server::Spider do
                     url:            server_url_for( :spider ) + '/lots_of_paths',
                     spawns:         4,
                     http_req_limit: 5
-                ).should be_true
+                )
 
                 sleep 1 while instance.service.busy?
 
@@ -57,9 +57,7 @@ describe Arachni::RPC::Server::Spider do
             it 'should perform a crawl' do
                 instance = @get_instance.call
 
-                instance.service.scan(
-                    url: server_url_for( :spider ) + '/lots_of_paths',
-                ).should be_true
+                instance.service.scan( url: server_url_for( :spider ) + '/lots_of_paths' )
 
                 sleep 1 while instance.service.busy?
 
