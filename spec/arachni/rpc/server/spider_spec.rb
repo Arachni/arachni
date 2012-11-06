@@ -40,26 +40,38 @@ describe Arachni::RPC::Server::Spider do
                 instance.service.scan(
                     url:            server_url_for( :spider ) + '/lots_of_paths',
                     spawns:         4,
-                    http_req_limit: 5
+                    http_req_limit: 5,
+                    plugins:        %w(spider_hook)
                 )
 
                 sleep 1 while instance.service.busy?
+                instance.framework.clean_up
 
                 instances = instance.service.progress( :with_instances )['instances']
 
                 instances.size.should == 5
                 instances.each { |i| i['sitemap_size'].should > 0 }
 
-                instance.spider.sitemap.size.should == 10051
+                sitemap = instance.spider.sitemap
+                sitemap.size.should == 10051
+
+                plugin_urls = instance.service.
+                    report['plugins']['spider_hook'][:results].values.flatten
+                sitemap.sort.should == plugin_urls.uniq.sort
             end
         end
         context 'a single node' do
             it 'should perform a crawl' do
                 instance = @get_instance.call
 
-                instance.service.scan( url: server_url_for( :spider ) + '/lots_of_paths' )
+                instance.service.scan(
+                    url:     server_url_for( :spider ) + '/lots_of_paths',
+                    plugins: %w(spider_hook)
+                )
 
                 sleep 1 while instance.service.busy?
+
+                instance.framework.clean_up
 
                 progress = instance.service.progress( :with_instances )
 
@@ -67,6 +79,13 @@ describe Arachni::RPC::Server::Spider do
                 progress['stats']['sitemap_size'].should == 10051
 
                 instance.spider.sitemap.size.should == progress['stats']['sitemap_size']
+
+                sitemap = instance.spider.sitemap
+                sitemap.size.should == progress['stats']['sitemap_size']
+
+                plugin_urls = instance.service.
+                    report['plugins']['spider_hook'][:results].values.flatten
+                sitemap.sort.should == plugin_urls.uniq.sort
             end
         end
     end
