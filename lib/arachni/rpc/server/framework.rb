@@ -751,25 +751,16 @@ class Framework < ::Arachni::Framework
         end
 
         spider.after_each_run do
-            # the plugins may have populated the page queue so send it back to
-            # the master
-            pages = []
-            while !@page_queue.empty? && page = @page_queue.pop
-                pages << page
-            end
+            if !@slave_element_ids_per_page.empty?
 
-            @master.framework.update_page_queue( pages, master_priv_token ) do
-                if !@slave_element_ids_per_page.empty?
+                @master.framework.
+                    update_element_ids_per_page( @slave_element_ids_per_page.dup,
+                                               master_priv_token,
+                                               spider.done? ? self_url : false ){}
 
-                    @master.framework.
-                        update_element_ids_per_page( @slave_element_ids_per_page.dup,
-                                                   master_priv_token,
-                                                   spider.done? ? self_url : false ){}
-
-                    @slave_element_ids_per_page.clear
-                else
-                    spider.signal_if_done( @master )
-                end
+                @slave_element_ids_per_page.clear
+            else
+                spider.signal_if_done( @master )
             end
         end
 
