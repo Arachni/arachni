@@ -14,6 +14,8 @@
     limitations under the License.
 =end
 
+require 'ostruct'
+
 module Arachni
 
 require Options.dir['lib'] + 'rpc/client/instance'
@@ -68,10 +70,9 @@ class Instance
         debug if @opts.debug
 
         if @opts.reroute_to_logfile
-            reroute_to_file( @opts.dir['logs'] +
-                "/Instance - #{Process.pid}-#{@opts.rpc_port}.log" )
+            reroute_to_file "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.log"
         else
-            reroute_to_file( false )
+            reroute_to_file false
         end
 
         set_handlers
@@ -150,29 +151,32 @@ class Instance
     #   * +elements+ -- +Array<{String}>+, elements to which to restrict the audit
     #       (using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}).
     #
-    def scan( opts = {} )
+    def scan( opts = {}, &block )
         # if the instance isn't clean bail out now
-        return false if @scan_initializing || @framework.extended_running?
+        if @scan_initializing || @framework.extended_running?
+            block.call false
+            return false
+        end
 
         @scan_initializing = true
-        Thread.new do
-            opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
+        opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
 
-            @framework.opts.set( opts )
+        @framework.opts.set( opts )
 
-            @framework.update_page_queue( opts[:pages] || [] )
-            @framework.restrict_to_elements( opts[:elements] || [] )
+        @framework.update_page_queue( opts[:pages] || [] )
+        @framework.restrict_to_elements( opts[:elements] || [] )
 
-            opts[:modules] ||= opts[:mods]
-            @framework.modules.load opts[:modules] if opts[:modules]
-            @framework.plugins.load opts[:plugins] if opts[:plugins]
+        opts[:modules] ||= opts[:mods]
+        @framework.modules.load opts[:modules] if opts[:modules]
+        @framework.plugins.load opts[:plugins] if opts[:plugins]
 
-            each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
-            after = proc { @framework.run; @scan_initializing = false }
+        each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+        after = proc { block.call @framework.run; @scan_initializing = false }
 
-            slaves  = opts[:slaves] || []
-            slaves |= spawn( opts[:spawns] ) if opts[:spawns].to_i > 0
+        slaves  = opts[:slaves] || []
 
+        spawn( opts[:spawns].to_i ) do |spawns|
+            slaves |= spawns
             ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
                 each( each, after )
         end
@@ -206,8 +210,13 @@ class Instance
 
     private
 
-    def spawn( num )
-        q = Queue.new
+    def spawn( num, &block )
+        if num == 0
+            block.call []
+            return
+        end
+
+        q = ::EM::Queue.new
 
         if has_dispatcher?
             num.times do
@@ -222,17 +231,43 @@ class Instance
 
                 Process.detach ::EM.fork_reactor {
                     Options.rpc_port = port
-                    RPC::Server::Instance.new( Options.instance, token )
+                    Server::Instance.new( Options.instance, token )
                 }
 
-                q << { 'url' => "#{Options.rpc_address}:#{port}", 'token' => token }
+                instance_info = { 'url' => "#{Options.rpc_address}:#{port}",
+                                  'token' => token }
+
+                wait_till_alive( instance_info ) { q << instance_info }
             end
-            sleep 1
         end
 
         spawns = []
-        num.times { spawns << q.pop }
-        spawns
+        num.times do
+            q.pop do |r|
+                spawns << r
+                block.call( spawns ) if spawns.size == num
+            end
+        end
+    end
+
+    def wait_till_alive( instance_info, &block )
+        opts = ::OpenStruct.new
+
+        # if after 100 retries we still haven't managed to get through give up
+        opts.max_retries = 100
+        opts.ssl_ca      = @opts.ssl_ca,
+        opts.ssl_pkey    = @opts.node_ssl_pkey || @opts.ssl_pkey,
+        opts.ssl_cert    = @opts.node_ssl_cert || @opts.ssl_cert
+
+        Client::Instance.new(
+            opts, instance_info['url'], instance_info['token']
+        ).service.alive? do |alive|
+            if alive.rpc_exception?
+                raise alive
+            else
+                block.call alive
+            end
+        end
     end
 
     #
