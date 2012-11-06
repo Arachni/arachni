@@ -52,10 +52,7 @@ class Framework < ::Arachni::Framework
     public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
             :status, :clean_up!
 
-    alias :old_clean_up :clean_up
     alias :auditstore   :audit_store
-
-    private :old_clean_up
 
     def initialize( opts )
         super( opts )
@@ -100,8 +97,10 @@ class Framework < ::Arachni::Framework
     def busy?( include_slaves = true, &block )
         busyness = [ extended_running? ]
 
+        return busyness.first if !block_given?
+
         if @instances.empty? || !include_slaves
-            block.call( busyness[0] )
+            block.call busyness.first
             return
         end
 
@@ -324,13 +323,13 @@ class Framework < ::Arachni::Framework
 
                         # start the local instance
                         Thread.new {
-                            #ap 'AUDITING'
+                            #ap '++ AUDITING'
                             audit
 
-                            #ap 'OLD CLEAN UP'
-                            old_clean_up
+                            #ap '++ CLEAN UP'
+                            clean_up
 
-                            #ap 'DONE'
+                            #ap '++ DONE'
                             @extended_running = false
                             @status = :done
                             #ap '+++++++++++++++'
@@ -350,9 +349,9 @@ class Framework < ::Arachni::Framework
         else
             # start the local instance
             Thread.new {
-                #ap 'AUDITING'
+                #ap '-- AUDITING'
                 super
-                #ap 'DONE'
+                #ap '-- DONE'
                 @extended_running = false
             }
         end
@@ -371,7 +370,9 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  block  block to be called once the cleanup has finished
     #
     def clean_up( &block )
-        super( true )
+        r = super( true )
+
+        return r if !block_given?
 
         if @instances.empty?
             block.call( true ) if block_given?
@@ -392,20 +393,26 @@ class Framework < ::Arachni::Framework
     #
     # Pauses the running scan on a best effort basis.
     #
-    def pause
-        super
-        each_slave{ |instance, iter| instance.framework.pause{ iter.next } }
-        true
+    def pause( &block )
+        r = super
+        return r if !block_given?
+
+        each_slave { |instance, iter| instance.framework.pause{ iter.next } }
+
+        block.call true
     end
     alias :pause! :pause
 
     #
     # Resumes a paused scan right away.
     #
-    def resume
-        super
+    def resume( &block )
+        r = super
+        return r if !block_given?
+
         each_slave { |instance, iter| instance.framework.resume{ iter.next } }
-        true
+
+        block.call true
     end
     alias :resume! :resume
 
@@ -726,12 +733,13 @@ class Framework < ::Arachni::Framework
     #                       (in which case this method is not applicable)
     #
     def set_master( url, token )
-        return false if master?
+        return false if !solo?
 
         plugins.load @opts.plugins if @opts.plugins
 
+        prepare
         # call prepare here to let the plugins put their hooks in
-        spider.on_first_run { prepare }
+        #spider.on_first_run { prepare }
 
         @master_url = url
         @master = connect_to_instance( 'url' => url, 'token' => token )
@@ -804,10 +812,6 @@ class Framework < ::Arachni::Framework
     end
 
     private
-
-    def prepare
-        @prepare ||= super
-    end
 
     def auditstore_sitemap
         @override_sitemap | @sitemap
