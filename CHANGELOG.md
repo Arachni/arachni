@@ -21,6 +21,8 @@
   - ```Framework```
       - Updated gathering of slave status -- once a slave is done it reports back to the master.
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
+- HTTP
+  - Fixed corruption of binary response bodies due to aggressive sanitization.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
