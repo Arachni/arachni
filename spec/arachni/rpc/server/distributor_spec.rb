@@ -599,7 +599,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
         end
 
-        context 'when called with extra page' do
+        context 'when called with extra pages' do
             it 'should include them in the audit' do
 
                 exp_urls = []
