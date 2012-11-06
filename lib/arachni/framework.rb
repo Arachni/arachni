@@ -596,12 +596,16 @@ class Framework
     # Must be called just before calling {#audit}.
     #
     def prepare
+        return if @prepared
+
         @status = :preparing
         @running = true
         @opts.start_datetime = Time.now
 
         # run all plugins
         @plugins.run
+
+        @prepared = true
     end
 
     #
