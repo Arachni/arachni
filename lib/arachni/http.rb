@@ -130,11 +130,7 @@ class HTTP
         update_cookies( opts.cookies ) if opts.cookies
 
         if opts.cookie_string
-            cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
-                k, v = *cookie_pair.split( '=', 2 )
-                Cookie.new( opts.url.to_s, k.strip => Cookie.decode( v.strip ) )
-            end.flatten.compact
-            update_cookies( cookies )
+            update_cookies( Cookie.from_string( @url, opts.cookie_string ) )
         end
 
         proxy_opts = {}
@@ -483,7 +479,7 @@ class HTTP
     #
     # Updates the cookie-jar with the passed cookies
     #
-    # @param    [Array<Arachni::Element::Cookie>]   cookies
+    # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
