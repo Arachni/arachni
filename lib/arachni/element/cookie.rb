@@ -462,7 +462,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Bool]
     #
     def respond_to?( sym )
-        @raw.include?( sym.to_s ) || super( sym )
+        (@raw && @raw.include?( sym.to_s )) || super( sym )
     end
 
     #
