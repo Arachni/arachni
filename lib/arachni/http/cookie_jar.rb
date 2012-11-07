@@ -61,24 +61,35 @@ class CookieJar
     #
     # Updates the jar with +cookie+.
     #
-    # @param    [Cookie]  cookie
+    # @param    [Cookie, Array<Cookie>]  cookies
     #
     # @return   [CookieJar]  self
     #
-    def <<( cookie )
-        ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
+    def <<( cookies )
+        [cookies].flatten.compact.each do |cookie|
+            ((@domains[cookie.domain] ||= {})[cookie.path] ||= {})[cookie.name] = cookie.dup
+        end
         self
     end
 
     #
     # Updates the jar with +cookies+.
     #
-    # @param    [Array<Cookie>]  cookies
+    # @param    [Array<String, Hash, Cookie>]  cookies
     #
     # @return   [CookieJar]  self
     #
     def update( cookies )
-        [cookies].flatten.compact.each { |c| self << c }
+        [cookies].flatten.compact.each do |c|
+            self << case c
+                        when String
+                            Cookie.from_string( ::Arachni::Options.url.to_s, c )
+                        when Hash
+                            Cookie.new( ::Arachni::Options.url.to_s, c )
+                        when Cookie
+                            c
+                    end
+        end
         self
     end
 

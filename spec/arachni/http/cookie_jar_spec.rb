@@ -113,6 +113,72 @@ describe Arachni::HTTP::CookieJar do
                 @jar.empty?.should be_false
             end
         end
+
+        context 'when passed a' do
+            context Arachni::Cookie do
+                it 'should update the cookie jar with it' do
+                    c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
+
+                    @jar.should be_empty
+
+                    @jar.update( c )
+                    @jar.cookies.first.name.should == 'name'
+                    @jar.cookies.first.value.should == 'value'
+                end
+            end
+
+            context Hash do
+                it 'should convert it to Cookie and update the cookie jar with it' do
+                    @jar.should be_empty
+
+                    Arachni::Options.url = 'http://test.com'
+                    @jar.update( name: 'value' )
+                    @jar.cookies.first.name.should == 'name'
+                    @jar.cookies.first.value.should == 'value'
+                end
+            end
+
+            context String do
+                it 'should parse it into a Cookie and update the cookie jar with it' do
+                    @jar.should be_empty
+
+                    Arachni::Options.url = 'http://test.com'
+                    @jar.update( 'name=value' )
+                    @jar.cookies.first.name.should == 'name'
+                    @jar.cookies.first.value.should == 'value'
+                end
+            end
+
+            context Array do
+                it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
+                    @jar.should be_empty
+
+                    Arachni::Options.url = 'http://test.com'
+                    @jar.update([
+                        Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
+                        { hash_name: 'hash_value' },
+                        'string_name=string_value'
+                    ] )
+
+                    cookies = @jar.cookies
+
+                    cookies.size.should == 3
+
+                    c = cookies.shift
+                    c.name.should == 'cookie_name'
+                    c.value.should == 'cookie_value'
+
+                    c = cookies.shift
+                    c.name.should == 'hash_name'
+                    c.value.should == 'hash_value'
+
+                    c = cookies.shift
+                    c.name.should == 'string_name'
+                    c.value.should == 'string_value'
+                end
+            end
+
+        end
     end
 
     describe '#for_url' do
