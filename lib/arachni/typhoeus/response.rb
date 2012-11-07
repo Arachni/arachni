@@ -20,7 +20,7 @@ class Response
     alias :old_initialize :initialize
     def initialize( *args )
         old_initialize( *args )
-        @body = @body.repack if @body && content_type.to_s.start_with?( 'text/' )
+        @body = @body.recode if @body && content_type.to_s.start_with?( 'text/' )
     end
 
     def []( k )
