@@ -371,5 +371,25 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '.from_string' do
+        it 'should parse cookies formatted as a string' do
+             cookies = Arachni::Element::Cookie.from_string( 'http://owner-url.com',
+                "coo%40ki+e2=blah+val2%40;name=value;name2=value2")
+             cookies.size.should == 3
+
+             c = cookies.shift
+             c.name.should == 'coo@ki e2'
+             c.value.should == 'blah val2@'
+
+             c = cookies.shift
+             c.name.should == 'name'
+             c.value.should == 'value'
+
+             c = cookies.shift
+             c.name.should == 'name2'
+             c.value.should == 'value2'
+        end
+    end
+
 end
 
