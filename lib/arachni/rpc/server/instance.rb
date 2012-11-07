@@ -15,13 +15,15 @@
 =end
 
 module Arachni
+lib = Options.dir['lib']
 
-require Options.dir['lib'] + 'rpc/client/instance'
-require Options.dir['lib'] + 'rpc/client/dispatcher'
+require lib + 'rpc/client/instance'
+require lib + 'rpc/client/dispatcher'
 
-require Options.dir['lib'] + 'rpc/server/base'
-require Options.dir['lib'] + 'rpc/server/output'
-require Options.dir['lib'] + 'rpc/server/framework'
+require lib + 'rpc/server/base'
+require lib + 'rpc/server/active_options'
+require lib + 'rpc/server/output'
+require lib + 'rpc/server/framework'
 
 module RPC
 class Server
@@ -157,7 +159,7 @@ class Instance
 
         @server.add_handler( "service",   self )
         @server.add_handler( "framework", @framework )
-        @server.add_handler( "opts",      @framework.opts )
+        @server.add_handler( "opts",      Server::ActiveOptions.new( @framework ) )
         @server.add_handler( "modules",   @framework.modules )
         @server.add_handler( "plugins",   @framework.plugins )
     end

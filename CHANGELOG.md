@@ -1,6 +1,11 @@
 # ChangeLog
 
 ## _Under development_
+ - RPC
+   - Handlers
+       - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
+       interface which actively configures certain options across multiple system
+       components.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
