@@ -461,7 +461,7 @@ class Framework < ::Arachni::Framework
     #
     # @param    [Proc]  block  block to which to pass the result
     #
-    def progress( opts= {}, &block )
+    def progress( opts = {}, &block )
         include_stats    = opts[:stats].nil? ? true : opts[:stats]
         include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
@@ -472,7 +472,7 @@ class Framework < ::Arachni::Framework
         data = {
             'stats'  => {},
             'status' => status,
-            'busy'   => running?,
+            'busy'   => running?
         }
 
         data['messages']  = flush_buffer if include_messages
@@ -496,7 +496,11 @@ class Framework < ::Arachni::Framework
         stats << stat_hash
 
         if @instances.empty? || !include_slaves
-            data['stats'] = merge_stats( stats ) if include_stats
+            if include_stats
+                data['stats'] = merge_stats( stats )
+            else
+                data.delete( 'stats' )
+            end
             data['instances'] = data['instances'].values if include_slaves
             block.call( data )
             return
@@ -521,7 +525,7 @@ class Framework < ::Arachni::Framework
 
                 if include_slaves
                     url = slave['url']
-                    data['instances'][url]           = slave['stats']
+                    data['instances'][url]           = slave['stats'] || {}
                     data['instances'][url]['url']    = url
                     data['instances'][url]['status'] = slave['status']
                 end

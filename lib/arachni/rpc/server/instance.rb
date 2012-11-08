@@ -113,26 +113,28 @@ class Instance
     # Simplified version of {Framework#progress}.
     #
     # Returns the following information:
-    # * +stats+ -- General runtime statistics (merged when part of Grid)
+    # * +stats+ -- General runtime statistics (merged when part of Grid) (enabled by default)
     # * +status+ -- {#status}
     # * +busy+ -- {#busy?}
     # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
     # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
     #
-    # @param    [Array<String,Array>,String,Symbol] options +:with_issues+, +:with_instances+
+    # @param    [Hash] options { with: [ :issues, :instances ], without: :stats }
     #
-    def progress( *options, &block )
-        options = options.flatten.compact.map( &:to_sym )
+    def progress( options = {}, &block )
+        with = [options.delete( :with ) || options.delete( 'with' )].
+            flatten.compact.map( &:to_sym )
 
-        @framework.progress( as_hash: true, issues: options.include?( :with_issues ) ) do |data|
-            data.delete( 'messages' )
+        without = [options.delete( :without ) || options.delete( 'without' )].
+            flatten.compact.map( &:to_sym )
 
-            if @framework.solo? || !options.include?( :with_instances )
-                data.delete( 'instances' )
-            end
-
-            data['instances'] ||= [] if options.include?( :with_instances )
-
+        @framework.progress( as_hash: true,
+                             issues:    with.include?( :issues ),
+                             stats:     !without.include?( :stats ),
+                             slaves:    with.include?( :instances ),
+                             messages:  false
+        ) do |data|
+            data['instances'] ||= [] if with.include?( :instances )
             block.call( data )
         end
     end

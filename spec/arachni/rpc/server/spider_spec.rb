@@ -47,7 +47,7 @@ describe Arachni::RPC::Server::Spider do
                 sleep 1 while instance.service.busy?
                 instance.framework.clean_up
 
-                instances = instance.service.progress( :with_instances )['instances']
+                instances = instance.service.progress( with: :instances )['instances']
 
                 instances.size.should == 5
                 instances.each { |i| i['sitemap_size'].should > 0 }
@@ -73,7 +73,7 @@ describe Arachni::RPC::Server::Spider do
 
                 instance.framework.clean_up
 
-                progress = instance.service.progress( :with_instances )
+                progress = instance.service.progress( with: :instances )
 
                 progress['instances'].size.should == 0
                 progress['stats']['sitemap_size'].should == 10051
