@@ -205,7 +205,11 @@ describe Arachni::RPC::Server::Framework do
 
             instance.framework.clean_up
 
-            results = instance.framework.auditstore.plugins
+            auditstore = instance.framework.auditstore
+
+            auditstore.issues.size.should == 500
+
+            results = auditstore.plugins
             results.should be_any
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
