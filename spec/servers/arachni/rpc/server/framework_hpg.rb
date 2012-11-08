@@ -1,21 +1,43 @@
 require 'sinatra'
 set :logging, false
 
-configure do
-    @@paths ||= (0..50).to_a.map do |i|
-        "/vulnerable?vulnerable_#{i.to_s}=stuff#{i.to_s}"
-    end
-end
-
-@@paths.each.with_index do
-    |path, i|
-    get( "/#{i}"){ "<a href='#{path}'>Vulnerable</a>" }
+get '/vulnerable' do
+    params.values.to_s
 end
 
 get '/' do
-    @@paths.map { |path| "<a href='#{path}'>Vulnerable</a>" }.join( '<br/>' )
+    html = ''
+
+    50.times do |i|
+        html << <<-EOHTML
+        <a href='/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
 end
 
-get '/vulnerable' do
-    params.values.to_s
+get '/:id' do |id|
+    html = ''
+
+    10.times do |i|
+        html << <<-EOHTML
+        <a href='/#{id}/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/:id/:id2' do |id, id2|
+    html = ''
+
+    50.times do |i|
+        html << <<-EOHTML
+        <a href='/#{id}/#{id2}/#{id}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/:id/:id2/:id3' do |id, id2, id3|
+    "<a href='/vulnerable?#{id2}vuln#{id3}=stuff'>Vulnerable</a>"
 end

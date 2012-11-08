@@ -654,6 +654,20 @@ describe Arachni::Framework do
             File.delete( 'foo' )
             File.delete( 'afr' )
         end
+
+        it 'should handle heavy load' do
+            @opts.dir['modules']  = fixtures_path + '/taint_module/'
+            f = Arachni::Framework.new
+
+            f.opts.url = server_url_for :framework_hpg
+            f.opts.audit :links
+
+            f.modules.load :taint
+
+            f.run
+            f.auditstore.issues.size.should == 500
+            f.modules.clear
+        end
     end
 
     describe '#push_to_page_queue' do

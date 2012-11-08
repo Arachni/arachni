@@ -6,6 +6,7 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 describe Arachni::RPC::Server::Framework do
     before( :all ) do
         @opts = Arachni::Options.instance
+        @opts.dir['modules'] = fixtures_path + '/taint_module/'
         @opts.audit_links = true
 
         @dispatchers = []
@@ -72,7 +73,7 @@ describe Arachni::RPC::Server::Framework do
         context 'when the scan is running' do
             it 'should return true' do
                 @instance.opts.url = server_url_for( :auditor )
-                @modules.load( 'test' )
+                @modules.load( 'taint' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
             end
@@ -137,10 +138,10 @@ describe Arachni::RPC::Server::Framework do
         it 'should perform a scan' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
-            instance.framework.issues.should be_any
+            instance.framework.issues.size.should == 500
         end
     end
     describe '#auditstore' do
@@ -158,7 +159,7 @@ describe Arachni::RPC::Server::Framework do
         it 'should return a hash containing general runtime statistics' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.framework.run.should be_true
 
             stats = instance.framework.stats
@@ -194,7 +195,7 @@ describe Arachni::RPC::Server::Framework do
         it 'should set the framework state to finished, wait for plugins to finish and merge their results' do
             instance = @get_instance.call
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty
