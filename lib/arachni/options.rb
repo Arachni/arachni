@@ -634,6 +634,7 @@ class Options
         end
         true
     end
+    alias :audit= :audit
 
     #
     # Disables auditing of element types.
