@@ -161,8 +161,6 @@ end
 get '/lots_of_paths/:id' do |id|
     html = ''
 
-    sleep 0.2
-
     100.times do |i|
         html << <<-EOHTML
         <a href='/lots_of_paths/#{id}/#{i}'>Stuff</a>
@@ -174,8 +172,6 @@ end
 get '/lots_of_paths/:id/:id2' do |id, id2|
     html = ''
 
-    sleep 0.2
-
     500.times do |i|
         html << <<-EOHTML
         <a href='/lots_of_paths/#{id}/#{id2}/#{id}'>Stuff</a>
@@ -185,6 +181,5 @@ get '/lots_of_paths/:id/:id2' do |id, id2|
 end
 
 get '/lots_of_paths/:id/:id2/:id3' do
-    sleep 0.2
     'End of the line...'
 end
