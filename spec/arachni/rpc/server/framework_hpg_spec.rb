@@ -245,10 +245,21 @@ describe Arachni::RPC::Server::Framework do
         end
 
         context 'when called with option' do
+            describe :stats do
+                context 'when set to false' do
+                    it 'should exclude statistics' do
+                        keys = @instance_clean.framework.progress( stats: false ).
+                            keys.sort
+                        pk = @progress_keys.dup
+                        pk.delete( "stats" )
+                        keys.should == pk
+                    end
+                end
+            end
             describe :messages do
                 context 'when set to false' do
                     it 'should exclude messages' do
-                        keys = @instance_clean.framework. progress( messages: false ).
+                        keys = @instance_clean.framework.progress( messages: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "messages" )
@@ -259,7 +270,7 @@ describe Arachni::RPC::Server::Framework do
             describe :issues do
                 context 'when set to false' do
                     it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( issues: false ).
+                        keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "issues" )
@@ -270,7 +281,7 @@ describe Arachni::RPC::Server::Framework do
             describe :slaves do
                 context 'when set to false' do
                     it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( slaves: false ).
+                        keys = @instance_clean.framework.progress( slaves: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "instances" )

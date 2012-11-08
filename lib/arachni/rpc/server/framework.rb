@@ -454,6 +454,7 @@ class Framework < ::Arachni::Framework
     #                             * :messages -- include output messages
     #                             * :slaves   -- include slave data
     #                             * :issues   -- include issue summaries
+    #                             * :stats   -- include statistics
     #                             Uses an implicit include for the above (i.e. nil will be considered true).
     #
     #                             * :as_hash  -- if set to true will convert issues to hashes before returning
@@ -461,6 +462,7 @@ class Framework < ::Arachni::Framework
     # @param    [Proc]  block  block to which to pass the result
     #
     def progress( opts= {}, &block )
+        include_stats    = opts[:stats].nil? ? true : opts[:stats]
         include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
         include_issues   = opts[:issues].nil? ? true : opts[:issues]
@@ -483,7 +485,7 @@ class Framework < ::Arachni::Framework
 
         stats = []
         stat_hash = {}
-        stats( true, true ).each { |k, v| stat_hash[k.to_s] = v }
+        stats( true, true ).each { |k, v| stat_hash[k.to_s] = v } if include_stats
 
         if master? && include_slaves
             data['instances'][self_url] = stat_hash.dup
@@ -494,7 +496,7 @@ class Framework < ::Arachni::Framework
         stats << stat_hash
 
         if @instances.empty? || !include_slaves
-            data['stats'] = merge_stats( stats )
+            data['stats'] = merge_stats( stats ) if include_stats
             data['instances'] = data['instances'].values if include_slaves
             block.call( data )
             return
@@ -535,7 +537,12 @@ class Framework < ::Arachni::Framework
                 data['instances'] = sorted_data_instances.values
             end
 
-            data['stats'] = merge_stats( stats )
+            if include_stats
+                data['stats'] = merge_stats( stats )
+            else
+                data.delete( 'stats' )
+            end
+
             data['busy']  = slave_data.map { |d| d['busy'] }.include?( true )
 
             block.call( data )
