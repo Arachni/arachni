@@ -30,7 +30,7 @@ class Spider < Arachni::Spider
     # Amount of URLs to buffer before distributing.
     BUFFER_SIZE     = 200
 
-    # How many times to try and fill buffer before distributing what's in it.
+    # How many times to try and fill the buffer before distributing what's in it.
     FILLUP_ATTEMPTS = 30
 
     private :push, :done?, :sitemap
