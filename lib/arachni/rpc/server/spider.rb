@@ -185,12 +185,21 @@ class Spider < Arachni::Spider
         return if !master? || !done? || !slaves_done?
         #ap 'MASTER DONE HANDLER -- POST'
 
-        collect_sitemaps do |aggregate_sitemap|
-            #ap 'MASTER DONE HANDLER -- PRE COLLECT SITEMAPS'
-            @distributed_sitemap = aggregate_sitemap
-            call_on_complete_blocks
-            #ap 'MASTER DONE HANDLER -- POST COLLECT SITEMAPS'
+        # really make sure all slaves are done
+        if_slaves_done do
+            collect_sitemaps do |aggregate_sitemap|
+                #ap 'MASTER DONE HANDLER -- PRE COLLECT SITEMAPS'
+                @distributed_sitemap = aggregate_sitemap
+                call_on_complete_blocks
+                #ap 'MASTER DONE HANDLER -- POST COLLECT SITEMAPS'
+            end
         end
+    end
+
+    def if_slaves_done( &block )
+        each  = proc { |peer, iter| peer.spider.done? { |b| iter.return !!b } }
+        after = proc { |results| block.call if !results.include?( false )}
+        map_peers( each, after )
     end
 
     def slaves_done?
