@@ -20,6 +20,7 @@ require 'tempfile'
 module Arachni
 
 lib = Options.dir['lib']
+require lib + 'buffer'
 require lib + 'framework'
 require lib + 'rpc/server/spider'
 require lib + 'rpc/server/module/manager'
@@ -53,6 +54,13 @@ class Framework < ::Arachni::Framework
             :status, :clean_up!
 
     alias :auditstore   :audit_store
+
+    # Buffer issues and only report them to the master instance when the buffer
+    # reaches (or exceeds) this size.
+    ISSUE_BUFFER_SIZE = 100
+
+    # How many times to try and fill the buffer before flushing it.
+    ISSUE_BUFFER_FILLUP_ATTEMPTS = 10
 
     def initialize( opts )
         super( opts )
@@ -315,9 +323,12 @@ class Framework < ::Arachni::Framework
                 audit
 
                 if slave?
-                    @master.framework.slave_done( self_url, master_priv_token ){
-                        @extended_running = false
-                    }
+                    # make sure we've reported all issues
+                    flush_issue_buffer do
+                        @master.framework.slave_done( self_url, master_priv_token ) do
+                            @extended_running = false
+                        end
+                    end
                 else
                     @extended_running = false
                     clean_up
@@ -765,8 +776,15 @@ class Framework < ::Arachni::Framework
             end
         end
 
+        # buffers logged issues that are to be sent to the master
+        @issue_buffer = Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
+                                               ISSUE_BUFFER_FILLUP_ATTEMPTS )
+        @issue_buffer.on_flush do |buffer|
+            @master.framework.register_issues( buffer, master_priv_token ){}
+        end
+
         @modules.do_not_store
-        @modules.on_register_results { |r| report_issues_to_master( r ) }
+        @modules.on_register_results { |issues| @issue_buffer.batch_push issues }
         true
     end
 
@@ -807,8 +825,14 @@ class Framework < ::Arachni::Framework
     # @param    [Array<Arachni::Issue>]     issues
     #
     def report_issues_to_master( issues )
-        @master.framework.register_issues( issues, master_priv_token ){}
+        @issue_buffer.batch_push issues
         true
+    end
+
+    def flush_issue_buffer( &block )
+        @master.framework.register_issues( @issue_buffer.flush,
+                                           master_priv_token
+        ){ block.call if block_given? }
     end
 
     def master_priv_token

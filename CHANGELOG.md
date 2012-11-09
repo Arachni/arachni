@@ -21,8 +21,13 @@
   - ```Framework```
       - Updated gathering of slave status -- once a slave is done it reports back to the master.
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
+      - Slave instances now buffer their logged issues and report them to the Master in batches.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
+- Added
+  - ```Arachni::Buffer::Base``` -- Buffer base class.
+  - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
+    itself when it gets full or a number of fill-up attempts is reached between flushes.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
