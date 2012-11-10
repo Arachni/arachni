@@ -33,8 +33,8 @@ class Spider < Arachni::Spider
     # How many times to try and fill the buffer before distributing what's in it.
     FILLUP_ATTEMPTS = 30
 
-    private :push, :done?, :sitemap
-    public  :push, :done?, :sitemap
+    private :push, :done?, :sitemap, :running?
+    public  :push, :done?, :sitemap, :running?
 
     def initialize( framework )
         super( framework.opts )
@@ -197,8 +197,8 @@ class Spider < Arachni::Spider
     end
 
     def if_slaves_done( &block )
-        each  = proc { |peer, iter| peer.spider.done? { |b| iter.return !!b } }
-        after = proc { |results| block.call if !results.include?( false )}
+        each  = proc { |peer, iter| peer.spider.running? { |b| iter.return !!b } }
+        after = proc { |results| block.call if !results.include?( true )}
         map_peers( each, after )
     end
 
