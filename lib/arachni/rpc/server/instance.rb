@@ -29,10 +29,13 @@ module RPC
 class Server
 
 #
-# Provides an RPC Instance to assist with general integration and UI development.
-#
-# It provides access to the {Options}, {Framework}, {Module::Manager},
-# {Plugin::Manager} and {Spider} classes.
+# Represents a single Arachni instance and serves as a central point of access
+# to a scanner's components:
+# * {Options} -- mapped to +opts+
+# * {Framework} -- mapped to +framework+
+# * {Module::Manager} -- mapped to +modules+
+# * {Plugin::Manager} -- mapped to +plugins+
+# * {Spider} -- mapped to +spider+
 #
 # It also provides very simple methods for:
 # * {#scan Configuring and running a scan};
@@ -43,7 +46,7 @@ class Server
 # * {#report_as Grabbing the report in one of the supported formats};
 # * {#shutdown Shutting down}.
 #
-# These methods are mapped to the 'service' RPC handler.
+# These methods are mapped to the +service+ RPC handler.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -52,15 +55,17 @@ class Instance
     include Utilities
 
     #
-    # Initializes the RPC interface, the HTTP(S) server and the framework.
+    # Initializes the RPC interface and the framework.
     #
     # @param    [Options]    opts
+    # @param    [String]    token   Authentication token.
     #
     def initialize( opts, token )
         banner
 
-        @opts  = opts
-        @token = token
+        @opts   = opts
+        @token  = token
+
         @server = Base.new( @opts, token )
 
         @server.logger.level = @opts.datastore[:log_level] if @opts.datastore[:log_level]
@@ -85,6 +90,10 @@ class Instance
         run
     end
 
+    # @return   [Bool]
+    #   +true+ if the scan is initializing or running, +false+ otherwise.
+    #   If a scan is started by {#scan} then this method should be used
+    #   instead of {Framework#busy?}.
     def busy?
         @scan_initializing ? true : @framework.busy?
     end
@@ -119,7 +128,7 @@ class Instance
     # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
     # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
     #
-    # @param    [Hash] options { with: [ :issues, :instances ], without: :stats }
+    # @param    [Hash] options +{ with: [ :issues, :instances ], without: :stats }+
     #
     def progress( options = {}, &block )
         with = [options.delete( :with ) || options.delete( 'with' )].
@@ -135,6 +144,7 @@ class Instance
                              messages:  false
         ) do |data|
             data['instances'] ||= [] if with.include?( :instances )
+            data['busy'] = busy?
             block.call( data )
         end
     end
@@ -145,13 +155,15 @@ class Instance
     # If you use this method to start the scan use {#busy?} instead of
     # {Framework#busy?} to check if the scan is still running.
     #
-    # @param    [Hash]  opts    scan options to be passed to {Options#set}
-    #   Supports the following extra options:
-    #   * +slaves+ -- +Array<Hash>+, each item will be passed to {Framework#enslave}.
-    #   * +spawns+ -- +Integer+, the amount of slaves to spawn.
-    #   * +pages+ -- +Array<{Page}>+, extra pages to audit.
-    #   * +elements+ -- +Array<{String}>+, elements to which to restrict the audit
-    #       (using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}).
+    # @param    [Hash]  opts
+    #   Scan options to be passed to {Options#set}. Supports the following
+    #   extra options:
+    # @option opts [Array<Hash>]  :slaves  Each item will be passed to {Framework#enslave}.
+    # @option opts [Integer]  :spawns The amount of slaves to spawn.
+    # @option opts [Array<Page>]  :pages Extra pages to audit.
+    # @option opts [Array<String>]  :elements
+    #   Elements to which to restrict the audit (using elements IDs as returned
+    #   by {Element::Capabilities::Auditable#scope_audit_id}).
     #
     def scan( opts = {}, &block )
         # if the instance isn't clean bail out now
@@ -210,6 +222,7 @@ class Instance
     end
     alias :shutdown! :shutdown
 
+    # @return   [true]
     def alive?
         @server.alive?
     end
