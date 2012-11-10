@@ -41,7 +41,7 @@ class Base
     end
 
     #
-    # Calls #{on_push} blocks with the given object and pushes an object to the buffer.
+    # Calls {#on_push} blocks with the given object and pushes an object to the buffer.
     #
     # @param    [Object]    obj object to push
     #
@@ -80,7 +80,7 @@ class Base
     end
 
     #
-    # Calls #{on_flush} blocks with the buffer and then empties it.
+    # Calls {#on_flush} blocks with the buffer and then empties it.
     #
     # @return   current buffer
     #

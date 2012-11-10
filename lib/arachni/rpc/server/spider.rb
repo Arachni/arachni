@@ -229,7 +229,7 @@ class Spider < Arachni::Spider
     #
     # Distributes the paths to the peers
     #
-    # @param    [Array<String]  urls    to distribute
+    # @param    [Array<String>]  urls    to distribute
     #
     def distribute( urls )
         urls = dedup( urls )
