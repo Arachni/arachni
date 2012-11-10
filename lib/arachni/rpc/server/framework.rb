@@ -35,9 +35,10 @@ class Server
 # easy to handle package.
 #
 # Disregard all:
-# * 'block' parameters, they are there for internal processing
-#   reasons and cannot be accessed via the API
-# * inherited methods and attributes
+# * 'block' parameters, they are there for internal processing reasons and
+#       cannot be accessed via the API.
+# * Inherited methods and attributes -- only public methods of this class
+#       are accessible over RPC.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -47,7 +48,7 @@ class Framework < ::Arachni::Framework
     include Utilities
     include Distributor
 
-    # make this inherited methods visible again
+    # Make these inherited methods visible again.
     private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
             :status, :clean_up!
     public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
@@ -59,7 +60,7 @@ class Framework < ::Arachni::Framework
     # reaches (or exceeds) this size.
     ISSUE_BUFFER_SIZE = 100
 
-    # How many times to try and fill the buffer before flushing it.
+    # How many times to try and fill the issue buffer before flushing it.
     ISSUE_BUFFER_FILLUP_ATTEMPTS = 10
 
     def initialize( opts )
@@ -68,6 +69,8 @@ class Framework < ::Arachni::Framework
         # already inherited but lets make it explicit
         @opts = opts
 
+        # Override standard framework components with their RPC-server
+        # counterparts.
         @modules = Module::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
         @spider  = Spider.new( self )
@@ -96,6 +99,8 @@ class Framework < ::Arachni::Framework
 
         # holds instances which have completed their scan
         @done_slaves = Set.new
+
+        @issue_summaries = []
     end
 
     #
@@ -616,10 +621,10 @@ class Framework < ::Arachni::Framework
 
     # @return  [Array<Arachni::Issue>]  all discovered issues albeit without any variations
     def issues
-        auditstore.issues.deep_clone.map do |issue|
+        (auditstore.issues.deep_clone.map do |issue|
             issue.variations.clear
             issue
-        end
+        end) | @issue_summaries
     end
 
     #
@@ -628,7 +633,7 @@ class Framework < ::Arachni::Framework
     # @see #issues
     #
     def issues_as_hash
-        issues.map { |i| i.to_h }
+        issues.map( &:to_h )
     end
 
     #
@@ -636,13 +641,13 @@ class Framework < ::Arachni::Framework
     #
     # They're used for intra-Grid communication between masters and their slaves
     #
-    #
 
     #
     # Restricts the scope of the audit to individual elements.
     #
-    # @param    [Array<String>]     elements    list of element IDs (as created
-    #                                               by {Arachni::Element::Capabilities::Auditable#scope_audit_id})
+    # @param    [Array<String>]     elements    list of element IDs
+    #   (as created by {Arachni::Element::Capabilities::Auditable#scope_audit_id})
+    #
     # @param    [String]    token       privileged token, prevents this method
     #                                       from being called by 3rd parties when
     #                                       this instance is a master.
@@ -657,8 +662,27 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    #
+    # Used by slave crawlers to update the master's list of element IDs per URL.
+    #
+    # @param    [Hash]     element_ids_per_page    list of element IDs
+    #   (as created by {Arachni::Element::Capabilities::Auditable#scope_audit_id})
+    #   for each page (by URL)
+    #
+    # @param    [String]    token       privileged token, prevents this method
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
+    #
+    # @param    [String]      signal_done_peer_url  If a peer's URL has been
+    #   provided, it will signal to the master's spider that the caller has
+    #   finished crawling.
+    #
+    # @return   [Bool]  true on success, false on invalid token
+    #
     def update_element_ids_per_page( element_ids_per_page = {}, token = nil,
-                                     signal_done_peer_url = false )
+                                     signal_done_peer_url = nil )
         return false if master? && !valid_token?( token )
 
         element_ids_per_page.each do |url, ids|
@@ -691,6 +715,19 @@ class Framework < ::Arachni::Framework
         true
     end
 
+    #
+    # Signals that a slave has finished auditing -- each slave must call this
+    # when it finishes its job.
+    #
+    # @param    [String]    slave_url   URL of the calling slave
+    # @param    [String]    token       privileged token, prevents this method
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
+    #
+    # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
+    #
     def slave_done( slave_url, token = nil )
         return false if master? && !valid_token?( token )
         @done_slaves << slave_url
@@ -702,7 +739,7 @@ class Framework < ::Arachni::Framework
     #
     # Registers an array holding {Arachni::Issue} objects with the local instance.
     #
-    # Primarily used by slaves to register issues they find on the spot.
+    # Primarily used by slaves to register issues they find.
     #
     # @param    [Array<Arachni::Issue>]    issues
     # @param    [String]    token       privileged token, prevents this method
@@ -720,13 +757,37 @@ class Framework < ::Arachni::Framework
     end
 
     #
+    # Registers an array holding stripped-out {Arachni::Issue} objects
+    # with the local instance.
+    #
+    # Primarily used by slaves to register issue summaries (lacking response
+    # bodies and other largish data sets) they find on the spot to be included
+    # in {#issues} in order to have accurate live data to present to the client
+    # but keep bandwidth usage low.
+    #
+    # @param    [Array<Arachni::Issue>]    issues
+    # @param    [String]    token       privileged token, prevents this method
+    #                                       from being called by 3rd parties when
+    #                                       this instance is a master.
+    #                                       If this instance is not a master one
+    #                                       the token needn't be provided.
+    #
+    # @return   [Bool]  true on success, false on invalid token or if not in HPG mode
+    #
+    def register_issue_summaries( issues, token = nil )
+        return false if master? && !valid_token?( token )
+        @issue_summaries |= issues
+        true
+    end
+
+    #
     # Sets the URL and authentication token required to connect to the instance's master.
     #
     # @param    [String]    url     master's URL in 'hostname:port' form
     # @param    [String]    token   master's authentication token
     #
-    # @return   [Bool]  true on success, false if the current instance is the master of the HPG
-    #                       (in which case this method is not applicable)
+    # @return   [Bool]  +true+ on success, +false+ if the current instance is
+    #   already part of the grid.
     #
     def set_master( url, token )
         return false if !solo?
@@ -764,7 +825,6 @@ class Framework < ::Arachni::Framework
 
         spider.after_each_run do
             if !@slave_element_ids_per_page.empty?
-
                 @master.framework.
                     update_element_ids_per_page( @slave_element_ids_per_page.dup,
                                                master_priv_token,
@@ -779,12 +839,21 @@ class Framework < ::Arachni::Framework
         # buffers logged issues that are to be sent to the master
         @issue_buffer = Buffer::AutoFlush.new( ISSUE_BUFFER_SIZE,
                                                ISSUE_BUFFER_FILLUP_ATTEMPTS )
-        @issue_buffer.on_flush do |buffer|
-            @master.framework.register_issues( buffer, master_priv_token ){}
-        end
 
+        @issue_buffer.on_flush { |buffer| send_issues_to_master( buffer ) }
+
+        # don't store issues locally
         @modules.do_not_store
-        @modules.on_register_results { |issues| @issue_buffer.batch_push issues }
+
+        @modules.on_register_results do |issues|
+            # Only send summaries of the issues to the master right away so that
+            # the the master will have live data to show the user...
+            send_issue_summaries_to_master issues
+
+            # ...but buffer the complete issues to be sent in batches for better
+            # bandwidth utilization.
+            @issue_buffer.batch_push issues
+        end
         true
     end
 
@@ -830,7 +899,31 @@ class Framework < ::Arachni::Framework
     end
 
     def flush_issue_buffer( &block )
-        @master.framework.register_issues( @issue_buffer.flush,
+        send_issues_to_master( @issue_buffer.flush ){ block.call if block_given? }
+    end
+
+    def send_issues_to_master( issues, &block )
+        @master.framework.register_issues( issues,
+                                           master_priv_token
+        ){ block.call if block_given? }
+    end
+
+    def send_issue_summaries_to_master( issues, &block )
+        @unique_issue_summaries ||= Set.new
+
+        # Multiple variations for grep modules are not being filtered when
+        # an issue is registered, and for good reason; however, we do need to filter
+        # them in this case since we're summarizing.
+        summaries = AuditStore.new( issues: issues ).issues.map do |i|
+            next if @unique_issue_summaries.include?( i.unique_id )
+            di = i.deep_clone
+            di.variations.clear
+            di
+        end.compact
+
+        @unique_issue_summaries |= summaries.each { |issue| issue.unique_id }
+
+        @master.framework.register_issue_summaries( summaries,
                                            master_priv_token
         ){ block.call if block_given? }
     end

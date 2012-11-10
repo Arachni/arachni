@@ -42,6 +42,7 @@ end
 class FakeMaster
 
     attr_reader :issues
+    attr_reader :issue_summaries
 
     def initialize( opts, token )
         @opts  = opts
@@ -50,7 +51,8 @@ class FakeMaster
 
         @pages  = []
         @issues = []
-        @element_ids = []
+        @issue_summaries = []
+        @element_ids     = []
 
         @server.add_handler( "framework", self )
         @server.start
@@ -66,6 +68,12 @@ class FakeMaster
     end
 
     def update_element_ids_per_page( *args )
+    end
+
+    def register_issue_summaries( issues, token = nil )
+        return false if !valid_token?( token )
+        @issue_summaries |= issues
+        true
     end
 
     def slave_done( *args )
@@ -534,7 +542,10 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
         end
 
-        after { @master.issues.clear }
+        after do
+            @master.issues.clear
+            @master.issue_summaries.clear
+        end
 
         context 'when called without auditable restrictions' do
             it 'should let the slave run loose, like a simple instance' do
@@ -549,6 +560,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 500
+                @master.issue_summaries.size.should == 500
             end
         end
         context 'when called with auditable URL restrictions' do
@@ -568,6 +580,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 2
+                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == absolute_urls.sort.uniq
@@ -594,6 +607,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 2
+                @master.issue_summaries.size.should == 2
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 exp_urls = %w(/vulnerable?0_vulnerable_20=stuff20 /vulnerable?9_vulnerable_30=stuff30)
@@ -620,6 +634,8 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sleep 1
 
                     @master.issues.size.should == 8
+                    @master.issue_summaries.size.should == 8
+
                     #@master.issues.size.should == 1
                     #@master.issues.first.url.should ==
                     #    url + "?you_made_it=to+the+end+of+the+training"
@@ -673,6 +689,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 sleep 1
 
                 @master.issues.size.should == 4
+                @master.issue_summaries.size.should == 4
 
                 vuln_urls = @master.issues.map { |i| i.url }.sort.uniq
                 vuln_urls.should == exp_urls.sort
