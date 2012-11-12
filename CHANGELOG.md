@@ -6,6 +6,8 @@
        - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
        interface which actively configures certain options across multiple system
        components.
+- Spider
+   - Fixed enforcement of redirect limit. [Issue #306]
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
