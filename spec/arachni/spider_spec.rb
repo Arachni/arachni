@@ -196,6 +196,13 @@ describe Arachni::Spider do
             spider = Arachni::Spider.new
             spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
         end
+        it 'should not follow stacked redirects that exceed the limit' do
+            @opts.url = @url + '/stacked_redirect'
+            @opts.redirect_limit = 3
+
+            spider = Arachni::Spider.new
+            spider.run.size.should == 3
+        end
         context 'when called with options and a block' do
             describe :pass_pages_to_block do
                 describe true do

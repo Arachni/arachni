@@ -324,7 +324,7 @@ class Spider
     end
 
     def hit_redirect_limit?
-        @opts.redirect_limit > 0 && @opts.redirect_limit >= @followed_redirects
+        @opts.redirect_limit > 0 && @opts.redirect_limit <= @followed_redirects
     end
 
     def visit( url, opts = {}, &block )
