@@ -21,7 +21,6 @@ Sybase message:
 Syntax error .* in query expression
 Data type mismatch in criteria expression\.
 \[Microsoft\]\[ODBC Microsoft Access Driver\]
-(PLS|ORA)-[0-9][0-9][0-9][0-9]
 PostgreSQL query failed:
 supplied argument is not a valid PostgreSQL result
 pg_query\(\) \[:
