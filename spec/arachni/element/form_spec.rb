@@ -359,6 +359,31 @@ describe Arachni::Element::Form do
                 end
             end
 
+            context 'with checkbox inputs' do
+                it 'should return an array of forms' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type="checkbox" name="vehicle" value="Bike">
+                                <input type="checkbox" name="stuff" value="Car">
+                            </form>
+
+                        </body>
+                    </html>'
+
+                    form = Arachni::Element::Form.from_document( @url, html ).first
+                    form.action.should == @utils.normalize_url( @url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == @url
+                    form.method.should == 'get'
+                    form.auditable.should == {
+                        'vehicle'  => 'Bike',
+                        'stuff' => 'Car'
+                    }
+                end
+            end
+
             context 'with radio inputs' do
                 it 'should return an array of forms' do
                     html = '
