@@ -258,7 +258,7 @@ class Spider
     end
 
     def remove_path_params( url )
-        uri = URI( url ).dup
+        uri = ::Arachni::URI( url ).dup
         uri.path = uri.path.split( ';' ).first.to_s
         uri.to_s
     end
