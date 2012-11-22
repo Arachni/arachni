@@ -876,6 +876,12 @@ class Framework < ::Arachni::Framework
 
     private
 
+    def prepare
+        return if @prepared
+        super
+        @prepared = true
+    end
+
     def cleanup_if_all_done
         return if !@finished_auditing || @running_slaves != @done_slaves
 

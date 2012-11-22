@@ -522,8 +522,6 @@ class Framework
     # It also runs {#audit_queue} in case any new pages have been added by the plugins.
     #
     def clean_up
-        return if @cleaned_up
-
         @status = :cleanup
 
         @opts.finish_datetime  = Time.now
@@ -538,8 +536,6 @@ class Framework
 
         # wait for the plugins to finish
         @plugins.block
-
-        @cleaned_up = true
     end
     alias :clean_up! :clean_up
 
@@ -591,16 +587,12 @@ class Framework
     # Must be called just before calling {#audit}.
     #
     def prepare
-        return if @prepared
-
         @status = :preparing
         @running = true
         @opts.start_datetime = Time.now
 
         # run all plugins
         @plugins.run
-
-        @prepared = true
     end
 
     #
