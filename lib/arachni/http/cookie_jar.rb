@@ -51,8 +51,7 @@ class CookieJar
     def load( cookie_jar_file, url = '' )
         # make sure that the provided cookie-jar file exists
         if !File.exist?( cookie_jar_file )
-            fail( Exceptions::NoCookieJar,
-                   'Cookie-jar \'' + cookie_jar_file + '\' doesn\'t exist.' )
+            fail( Exceptions::NoCookieJar, "Cookie-jar '#{cookie_jar_file}' doesn't exist." )
         end
         update( cookies_from_file( url, cookie_jar_file ) )
         self
