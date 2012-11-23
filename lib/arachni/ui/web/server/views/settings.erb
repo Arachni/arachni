@@ -99,11 +99,18 @@
                     <p>
                         Proxy type:
                         <select style="float: right" name="proxy_type">
-                            <option value="http">HTTP 1.1</option>
-                            <option value="http_1_0">HTTP 1.0</option>
-                            <option value="socks4">SOCKS v4</option>
-                            <option value="socks5">SOCKS v5</option>
-                            <option value="socks4a">SOCKS v4a</option>
+                            <% {
+                                    'http'      => 'HTTP 1.1',
+                                    'http_1_0'  => 'HTTP 1.0',
+                                    'socks4'    => 'SOCKS v4',
+                                    'socks4a'   => 'SOCKS v4a',
+                                    'socks5'    => 'SOCKS v5'
+
+                               }.each do |k, v| %>
+                            <option
+                            <%= 'selected' if session['opts']['settings']['proxy_type'] == k %>
+                            value="<%=k%>"><%=v%></option>
+                            <%end%>
                         </select>
 
                     </p>
