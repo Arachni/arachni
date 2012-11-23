@@ -36,6 +36,19 @@ class ActiveOptions
                 end
             end
         end
+
+        %w( url http_req_limit http_timeout user_agent redirect_limit proxy_username
+            proxy_password proxy_type proxy_host proxy_port authed_by cookies
+            cookie_string ).each do |m|
+            m = "#{m}=".to_sym
+            self.class.class_eval do
+                define_method m do |v|
+                    @opts.send( m, v )
+                    HTTP.reset
+                    v
+                end
+            end
+        end
     end
 
     # @see Arachni::Options#set
@@ -48,22 +61,11 @@ class ActiveOptions
                 #ap e.backtrace
             end
         end
+
+        HTTP.reset
         true
     end
 
-    # @see Arachni::Options#cookies=
-    def cookies=( cookies )
-        HTTP.update_cookies( cookies )
-        @opts.cookies = cookies
-    end
-
-    # @see Arachni::Options#cookie_string=
-    def cookie_string=( cookie_string )
-        HTTP.update_cookies( cookie_string )
-        @opts.cookie_string = cookie_string
-    end
-
-    # @see Arachni::Options#cookie_jar=
     def cookie_jar=( cookie_jar )
         HTTP.update_cookies( cookie_jar )
         @cookie_jar = cookie_jar

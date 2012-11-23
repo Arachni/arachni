@@ -8,6 +8,7 @@ class Arachni::RPC::Server::Instance
         Arachni::HTTP.cookies
     end
     def clear_cookies
+        Arachni::Options.reset
         Arachni::HTTP.cookie_jar.clear
         true
     end
@@ -48,7 +49,6 @@ describe Arachni::RPC::Server::ActiveOptions do
                     'redundant'     => { 'regexp' => 'redundant', 'count' => 3 },
                     'datastore'     => { key: 'val' },
                     'cookies'       => { name: 'value' },
-                    'cookie_jar'    => { name2: 'value2' },
                     'cookie_string' => 'name3=value3'
                 }
                 @instance.opts.set( opts )
@@ -61,7 +61,6 @@ describe Arachni::RPC::Server::ActiveOptions do
 
                 @instance.service.cookies.should ==
                     [ Arachni::Cookie.new( opts['url'], opts['cookies'] ),
-                      Arachni::Cookie.new( opts['url'], opts['cookie_jar'] ),
                       Arachni::Cookie.new( opts['url'], { name3: 'value3' } )]
             end
         end
@@ -77,7 +76,6 @@ describe Arachni::RPC::Server::ActiveOptions do
                     redundant:      { 'regexp' => 'redundant2', 'count' => 4 },
                     datastore:      { key2: 'val2' },
                     cookies:        { name: 'value' },
-                    cookie_jar:     { name2: 'value2' },
                     cookie_string: 'name3=value3'
                 }
                 @instance.opts.set( opts )
@@ -90,7 +88,6 @@ describe Arachni::RPC::Server::ActiveOptions do
 
                 @instance.service.cookies.should ==
                     [ Arachni::Cookie.new( opts[:url], opts[:cookies] ),
-                      Arachni::Cookie.new( opts[:url], opts[:cookie_jar] ),
                       Arachni::Cookie.new( opts[:url], { name3: 'value3' } )]
             end
         end
@@ -176,6 +173,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should convert it to Cookie and update the cookie jar with it' do
                     @instance.service.cookies.should be_empty
 
+                    @instance.opts.url = 'http://test.com'
                     @instance.opts.cookies = { name: 'value' }
 
                     cookies = @instance.service.cookies
@@ -188,6 +186,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should parse it into a Cookie and update the cookie jar with it' do
                     @instance.service.cookies.should be_empty
 
+                    @instance.opts.url = 'http://test.com'
                     @instance.opts.cookies = 'name=value'
 
                     cookies = @instance.service.cookies
@@ -200,7 +199,8 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
                     @instance.service.cookies.should be_empty
 
-                    Arachni::Options.url = 'http://test.com'
+                    @instance.opts.url = 'http://test.com'
+
                     @instance.opts.cookies = [
                         Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
                         { hash_name: 'hash_value' },
@@ -248,6 +248,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should convert it to Cookie and update the cookie jar with it' do
                     @instance.service.cookies.should be_empty
 
+                    @instance.opts.url = 'http://test.com'
                     @instance.opts.cookie_jar = { name: 'value' }
 
                     cookies = @instance.service.cookies
@@ -260,6 +261,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should parse it into a Cookie and update the cookie jar with it' do
                     @instance.service.cookies.should be_empty
 
+                    @instance.opts.url = 'http://test.com'
                     @instance.opts.cookie_jar = 'name=value'
 
                     cookies = @instance.service.cookies
@@ -272,7 +274,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                 it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
                     @instance.service.cookies.should be_empty
 
-                    Arachni::Options.url = 'http://test.com'
+                    @instance.opts.url = 'http://test.com'
                     @instance.opts.cookie_jar = [
                         Arachni::Cookie.new( 'http://test.com', cookie_name: 'cookie_value' ),
                         { hash_name: 'hash_value' },
@@ -304,6 +306,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         it 'should parse it into a Cookie and update the cookie jar with it' do
             @instance.service.cookies.should be_empty
 
+            @instance.opts.url = 'http://test.com'
             @instance.opts.cookie_string = 'name=value'
 
             cookies = @instance.service.cookies
