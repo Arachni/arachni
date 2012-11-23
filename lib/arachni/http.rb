@@ -119,8 +119,8 @@ class HTTP
 
         opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'    => opts.user_agent
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent' => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
 
@@ -128,10 +128,7 @@ class HTTP
 
         @cookie_jar = CookieJar.new( opts.cookie_jar )
         update_cookies( opts.cookies ) if opts.cookies
-
-        if opts.cookie_string
-            update_cookies( Cookie.from_string( @url, opts.cookie_string ) )
-        end
+        update_cookies( opts.cookie_string ) if opts.cookie_string
 
         proxy_opts = {}
         proxy_opts = {
