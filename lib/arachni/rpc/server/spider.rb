@@ -47,12 +47,6 @@ class Spider < Arachni::Spider
 
         @after_each_run_blocks = []
         @on_first_run_blocks   = []
-
-        # debugging stuff
-        #cnt = 0
-        #on_each_response do |res|
-        #    puts "[#{cnt += 1}] #{res.effective_url}"
-        #end
     end
 
     # @param    [Block] block   Block to be called after each URL batch has been exhausted.
@@ -73,19 +67,13 @@ class Spider < Arachni::Spider
             @on_complete_blocks.clear
         end
 
-        #ap master?
-        #ap 'PRE RUN'
         super( *args, &block )
-        #ap 'AFTER RUN'
 
-        #ap @routed
         flush_url_distribution_buffer
         master_done_handler
 
         if slave?
-            #ap 'PRE CALL AFTER EACH RUN'
             call_after_each_run
-            #ap 'POST CALL AFTER EACH RUN'
         end
 
         if !solo?
@@ -145,18 +133,12 @@ class Spider < Arachni::Spider
     end
 
     def peer_done( url )
-        #ap 'PEER DONE'
-        #ap url
-        #ap @done_signals
-
         @done_signals[url] = true
         master_done_handler
         true
     end
 
     def signal_if_done( master )
-        #ap 'SIGNAL IF DONE'
-        #ap done?
         master.spider.peer_done( framework.self_url ){} if done?
     end
 
@@ -176,22 +158,13 @@ class Spider < Arachni::Spider
     end
 
     def master_done_handler
-        #ap 'MASTER DONE HANDLER -- PRE'
-        #ap master?
-        #ap done?
-        #ap self_instance_info['url']
-        #ap @done_signals
-        #ap slaves_done?
         return if !master? || !done? || !slaves_done?
-        #ap 'MASTER DONE HANDLER -- POST'
 
         # really make sure all slaves are done
         if_slaves_done do
             collect_sitemaps do |aggregate_sitemap|
-                #ap 'MASTER DONE HANDLER -- PRE COLLECT SITEMAPS'
                 @distributed_sitemap = aggregate_sitemap
                 call_on_complete_blocks
-                #ap 'MASTER DONE HANDLER -- POST COLLECT SITEMAPS'
             end
         end
     end
@@ -255,11 +228,7 @@ class Spider < Arachni::Spider
 
         @fillup_attempts += 1
 
-        #ap "#{framework.self_url}: BUFFER_SIZE: #{@buffer_size} -- FILLUP_ATTEMPTS: #{@fillup_attempts}"
-
         return if @buffer_size < BUFFER_SIZE && @fillup_attempts < FILLUP_ATTEMPTS
-
-        #ap "#{framework.self_url}: ----- DISTRIBUTING -----"
 
         # distribute the buffered outgoing URLs
         flush_url_distribution_buffer
@@ -270,7 +239,6 @@ class Spider < Arachni::Spider
     def flush_url_distribution_buffer
         @routed ||= {}
         @routed.dup.each do |peer, r_urls|
-            #ap peer.class
 
             if !@first_run.include?( peer.url )
                 @first_run << peer.url
