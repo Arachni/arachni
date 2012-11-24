@@ -361,7 +361,7 @@ class Manager < Hash
             val = error[:value].nil? ? '<empty>' : error[:value]
             msg = (error[:type] == :invalid) ? "Invalid type" : "Empty required value"
 
-            " *  #{msg}: #{optname} => #{val}\n" +
+            " *  #{msg}: #{optname} => '#{val}'\n" +
             " *  Expected type: #{error[:opt].type}"
         end.join( "\n\n" )
     end
