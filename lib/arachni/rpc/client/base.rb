@@ -18,7 +18,6 @@ require 'arachni/rpc/em'
 
 module Arachni
 module RPC
-
 class Client
 
 #
@@ -39,6 +38,7 @@ class Base < ::Arachni::RPC::EM::Client
         @url = url
         host, port = url.split( ':' )
         super(
+            serializer:  Marshal,
             host:        host,
             port:        port,
             token:       token,

@@ -17,6 +17,10 @@
 require 'rubygems'
 require 'bundler/setup'
 
+def ap( obj )
+    super obj, raw: true
+end
+
 module Arachni
 end
 

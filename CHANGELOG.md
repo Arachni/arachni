@@ -1,17 +1,43 @@
 # ChangeLog
 
 ## _Under development_
- - RPC
-   - Handlers
-       - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
-       interface which actively configures certain options across multiple system
-       components.
+- RPC
+  - Handlers
+      - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
+           interface which actively configures certain options across multiple system
+           components.
+      - ```service``` -- Updated with the following convenience methods in order
+            to provide a simpler interface for users who don't wish to bother with
+            the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
+          - ```#scan``` -- Configures and runs the scan.
+          - ```#progress``` -- Aggregates progress information.
+          - ```#busy?``` -- Checks whether the scan is still in progress.
+          - ```#status``` -- Returns the status of the Instance.
+          - ```#report``` -- Returns the scan report as a ```Hash```.
+          - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
+          - ```#shutdown``` -- Shuts down the Instance/stops the scan.
+      - ```framework``` -- Clients no longer need to call ```framework.clean_up``` unless you're cancelling a running scan.
+  - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically
+        (thanks to the updated [v0.1.3dev Arachni-RPC EM implementation](https://github.com/Arachni/arachni-rpc-em)).
+      - ```Marshal``` by default since it's many times faster than ```YAML```.
+      - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
+  - ```Framework```
+      - Updated gathering of slave status -- once a slave is done it reports back to the master.
+      - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
+      - Slave instances now buffer their logged issues and report them to the Master in batches.
+- HTTP
+  - Fixed corruption of binary response bodies due to aggressive sanitization.
 - Spider
-   - Fixed enforcement of redirect limit. [Issue #306]
+  - Fixed enforcement of redirect limit. [Issue #306]
+- Added
+  - ```Arachni::Buffer::Base``` -- Buffer base class.
+  - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
+    itself when it gets full or a number of fill-up attempts is reached between flushes.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
-  - Updated custom 404 detection algorithm to use less memory.
+  - Updated the custom 404 detection algorithm to use less memory by storing only
+    the hashes of the signatures instead of the signatures themselves.
   - ```cookie_string``` option is now decoded before being parsed into a ```Cookie``` object.
 - ```Cookie#expires_to_time``` bugfixed to return ```nil``` if expiry time is "0".
 - ```Arachni::URI.cheap_parse``` -- Updated to sanitize the encoding of each parameter name and value individually. [Issue #303]

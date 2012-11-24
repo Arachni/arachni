@@ -147,6 +147,18 @@ class Page
         @document ||= Nokogiri::HTML( @body )
     end
 
+    def marshal_dump
+        @document = nil
+        instance_variables.inject( {} ) do |h, iv|
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
+
     def text?
         !!@text
     end

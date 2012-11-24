@@ -14,43 +14,36 @@
     limitations under the License.
 =end
 
-require 'arachni/rpc/em'
+class Arachni::Plugins::SpiderHook < Arachni::Plugin::Base
 
-module Arachni
-module RPC
-class Server
+    is_distributable
 
-#
-# RPC server class
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-class Base < ::Arachni::RPC::EM::Server
-
-    def initialize( opts, token = nil )
-        super(
-            serializer: Marshal,
-            fallback_serializer:  YAML,
-            host:       opts.rpc_address,
-            port:       opts.rpc_port,
-            token:      token,
-            ssl_ca:     opts.ssl_ca,
-            ssl_pkey:   opts.ssl_pkey,
-            ssl_cert:   opts.ssl_cert
-        )
+    def prepare
+        framework.pause
+        @urls = []
     end
 
-    def start
-        super
-        @ready = true
+    def run
+        spider.on_each_page { |page| @urls << page.url }
     end
 
-    def ready?
-        @ready ||= false
+    def clean_up
+        framework.resume
+        wait_while_framework_running
+        register_results( framework.self_url => @urls )
     end
 
-end
+    def self.merge( results )
+        results.inject( {} ) { |h, r| h.merge!( r ); h }
+    end
 
-end
-end
+    def self.info
+        {
+            name:        'SpiderHook',
+            description: %q{},
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            version:     '0.1'
+        }
+    end
+
 end

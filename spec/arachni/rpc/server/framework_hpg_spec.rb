@@ -6,6 +6,7 @@ require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 describe Arachni::RPC::Server::Framework do
     before( :all ) do
         @opts = Arachni::Options.instance
+        @opts.dir['modules'] = fixtures_path + '/taint_module/'
         @opts.audit_links = true
 
         @dispatchers = []
@@ -34,6 +35,18 @@ describe Arachni::RPC::Server::Framework do
             inst
         end
 
+        @token = 'secret'
+        @get_simple_instance = proc do |opts|
+            opts ||= @opts
+            port = random_port
+            opts.rpc_port = port
+            fork_em { Arachni::RPC::Server::Instance.new( opts, @token ) }
+            sleep 1
+            Arachni::RPC::Client::Instance.new( opts,
+                "#{opts.rpc_address}:#{port}", @token
+            )
+        end
+
         @instance = @get_instance.call
         @framework = @instance.framework
         @modules = @instance.modules
@@ -60,7 +73,7 @@ describe Arachni::RPC::Server::Framework do
         context 'when the scan is running' do
             it 'should return true' do
                 @instance.opts.url = server_url_for( :auditor )
-                @modules.load( 'test' )
+                @modules.load( 'taint' )
                 @framework.run.should be_true
                 @framework.busy?.should be_true
             end
@@ -81,6 +94,39 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.high_performance?.should be_true
         end
     end
+    describe '#master?' do
+        it 'should return false' do
+            @framework_clean.high_performance?.should be_true
+        end
+    end
+    describe '#slave?' do
+        it 'should return false' do
+            @framework_clean.slave?.should be_false
+        end
+    end
+    describe '#solo?' do
+        it 'should return true' do
+            @framework_clean.solo?.should be_false
+        end
+    end
+    describe '#set_as_master' do
+        it 'should set the instance as the master' do
+            instance = @get_simple_instance.call
+            instance.framework.master?.should be_false
+            instance.framework.set_as_master
+            instance.framework.master?.should be_true
+        end
+    end
+    describe '#enslave' do
+        it 'should enslave another instance and set itself as its master' do
+            master = @get_simple_instance.call
+            slave  = @get_simple_instance.call
+
+            master.framework.master?.should be_false
+            master.framework.enslave( 'url' => slave.url, 'token' => @token )
+            master.framework.master?.should be_true
+        end
+    end
     describe '#output' do
         it 'should return the instance\'s output messages' do
             output = @framework_clean.output.first
@@ -92,10 +138,10 @@ describe Arachni::RPC::Server::Framework do
         it 'should perform a scan' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.framework.run.should be_true
             sleep( 1 ) while instance.framework.busy?
-            instance.framework.issues.should be_any
+            instance.framework.issues.size.should == 500
         end
     end
     describe '#auditstore' do
@@ -113,7 +159,7 @@ describe Arachni::RPC::Server::Framework do
         it 'should return a hash containing general runtime statistics' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.framework.run.should be_true
 
             stats = instance.framework.stats
@@ -149,22 +195,21 @@ describe Arachni::RPC::Server::Framework do
         it 'should set the framework state to finished, wait for plugins to finish and merge their results' do
             instance = @get_instance.call
             instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'test' )
+            instance.modules.load( 'taint' )
             instance.plugins.load( { 'wait' => {}, 'distributable' => {} } )
             instance.framework.run.should be_true
             instance.framework.auditstore.plugins.should be_empty
             instance.framework.busy?.should be_true
 
-            tries = 4
-            begin
-                sleep( 1 ) while instance.framework.busy?
-            rescue Exception
-                tries -= 1
-                retry if tries > 0
-            end
+            sleep 1 while instance.framework.busy?
 
-            instance.framework.clean_up.should be_true
-            results = instance.framework.auditstore.plugins
+            instance.framework.clean_up
+
+            auditstore = instance.framework.auditstore
+
+            auditstore.issues.size.should == 500
+
+            results = auditstore.plugins
             results.should be_any
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
@@ -205,10 +250,21 @@ describe Arachni::RPC::Server::Framework do
         end
 
         context 'when called with option' do
+            describe :stats do
+                context 'when set to false' do
+                    it 'should exclude statistics' do
+                        keys = @instance_clean.framework.progress( stats: false ).
+                            keys.sort
+                        pk = @progress_keys.dup
+                        pk.delete( "stats" )
+                        keys.should == pk
+                    end
+                end
+            end
             describe :messages do
                 context 'when set to false' do
                     it 'should exclude messages' do
-                        keys = @instance_clean.framework. progress( messages: false ).
+                        keys = @instance_clean.framework.progress( messages: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "messages" )
@@ -219,7 +275,7 @@ describe Arachni::RPC::Server::Framework do
             describe :issues do
                 context 'when set to false' do
                     it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( issues: false ).
+                        keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "issues" )
@@ -230,7 +286,7 @@ describe Arachni::RPC::Server::Framework do
             describe :slaves do
                 context 'when set to false' do
                     it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( slaves: false ).
+                        keys = @instance_clean.framework.progress( slaves: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "instances" )
@@ -278,8 +334,8 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#serialized_report' do
         it 'should return a YAML serialized report hash' do
-            yaml_str = @instance_clean.framework.serialized_report
-            YAML.load( yaml_str ).should == @instance_clean.framework.report
+            @instance_clean.framework.serialized_report.should ==
+                @instance_clean.framework.report.to_yaml
         end
     end
     describe '#issues' do

@@ -146,3 +146,40 @@ get '/auto-redundant' do
 
     str
 end
+
+get '/lots_of_paths' do
+    html = ''
+
+    50.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id' do |id|
+    html = ''
+
+    100.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{id}/#{i}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id/:id2' do |id, id2|
+    html = ''
+
+    500.times do |i|
+        html << <<-EOHTML
+        <a href='/lots_of_paths/#{id}/#{id2}/#{id}'>Stuff</a>
+        EOHTML
+    end
+    html
+end
+
+get '/lots_of_paths/:id/:id2/:id3' do
+    'End of the line...'
+end

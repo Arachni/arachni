@@ -30,15 +30,15 @@ module Arachni
 
 #
 # The URI class automatically normalizes the URLs it is passed to parse
-# while maintaining compatibility with Ruby's URI core classes by delegating
+# while maintaining compatibility with Ruby's URI core class by delegating
 # missing method to it -- thus, you can treat it like a Ruby URI and enjoy some
 # extra perks along the line.
 #
-# It also provides *cached* (to maintain low-latency) helper class methods to
+# It also provides *cached* (to maintain a low latency) helper class methods to
 # ease common operations such as:
-# * {.normalize normalization}
-# * parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or {.cheap_parse Hash} objects.
-# * conversion to {.to_absolute absolute URLs}
+# * {.normalize Normalization}.
+# * Parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or {.cheap_parse Hash} objects.
+# * Conversion to {.to_absolute absolute URLs}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

@@ -95,6 +95,8 @@ class Spider
     def run( pass_pages_to_block = true, &block )
         return if !@opts.crawl?
 
+        @running = true
+
         # options could have changed so reseed
         seed_paths
 
@@ -122,7 +124,7 @@ class Spider
                         call_on_each_page_blocks( pass_pages_to_block ? obj : Page.from_response( res, @opts ) )
                     end
 
-                    push( obj.paths )
+                    distribute( obj.paths )
                 end
             end
 
@@ -130,10 +132,15 @@ class Spider
         end
 
         http.run
+        @running = false
 
         call_on_complete_blocks
 
         sitemap
+    end
+
+    def running?
+        !!@running
     end
 
     #
@@ -180,15 +187,15 @@ class Spider
     # @return   [Bool]  true if push was successful,
     #                       false otherwise (provided empty or paths that must be skipped)
     #
-    def push( paths )
+    def push( paths, wakeup = true )
         paths = dedup( paths )
         return false if paths.empty?
 
         @paths |= paths
         @paths.uniq!
 
-        # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
-        #Thread.new { run } if idle? # wake up the crawler
+         # REVIEW: This may cause segfaults, Typhoeus::Hydra doesn't like threads.
+        Thread.new { run } if wakeup && !running? # wake up the crawler
         true
     end
 
@@ -221,9 +228,13 @@ class Spider
 
     private
 
+    def distribute( urls )
+        push( urls, false )
+    end
+
     def seed_paths
-        push url
-        push @opts.extend_paths
+        @paths |= dedup( url )
+        @paths |= dedup( @opts.extend_paths )
     end
 
     def call_on_each_page_blocks( obj )
@@ -261,6 +272,8 @@ class Spider
         uri = ::Arachni::URI( url ).dup
         uri.path = uri.path.split( ';' ).first.to_s
         uri.to_s
+    rescue
+        nil
     end
 
     #

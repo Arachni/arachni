@@ -335,7 +335,7 @@ USAGE
         exception_jail {
 
             # get an available port for the child
-            port  = avail_port
+            port  = available_port
             token = generate_token
 
             pid = ::EM.fork_reactor {
@@ -382,50 +382,6 @@ USAGE
         end
 
         hash
-    end
-
-    #
-    # Returns a random available port
-    #
-    # @return   Fixnum  port number
-    #
-    def avail_port
-        nil while !avail_port?( port = rand_port )
-        port
-    end
-
-    #
-    # Returns a random port
-    #
-    def rand_port
-        first, last = @opts.rpc_instance_port_range
-        range = (first..last).to_a
-
-        range[ rand( range.last - range.first ) ]
-    end
-
-    def generate_token
-        secret = ''
-        1000.times { secret << rand( 1000 ).to_s }
-        Digest::MD5.hexdigest( secret )
-    end
-
-    #
-    # Checks whether the port number is available
-    #
-    # @param    [Fixnum]  port
-    #
-    # @return   [Bool]
-    #
-    def avail_port?( port )
-        begin
-            socket = Socket.new( :INET, :STREAM, 0 )
-            socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
-            socket.close
-            true
-        rescue
-            false
-        end
     end
 
 end

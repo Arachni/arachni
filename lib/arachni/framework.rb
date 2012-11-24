@@ -327,7 +327,7 @@ class Framework
             time_out_count:   http.time_out_count,
             time:             audit_store.delta_time,
             avg:              avg,
-            sitemap_size:     @sitemap.size,
+            sitemap_size:     auditstore_sitemap.size,
             auditmap_size:    auditmap_sz,
             progress:         progress,
             curr_res_time:    http.curr_res_time,
@@ -380,7 +380,7 @@ class Framework
             version:  version,
             revision: revision,
             options:  opts,
-            sitemap:  auditstore_sitemap || [],
+            sitemap:  (auditstore_sitemap || []).sort,
             issues:   @modules.results.deep_clone,
             plugins:  @plugins.results
         )
@@ -521,12 +521,7 @@ class Framework
     #
     # It also runs {#audit_queue} in case any new pages have been added by the plugins.
     #
-    # @param    [Bool]      skip_audit_queue    skips running {#audit_queue},
-    #                                               set to true if you don't want any delays.
-    #
-    # @return   [True]
-    #
-    def clean_up( skip_audit_queue = false )
+    def clean_up
         @status = :cleanup
 
         @opts.finish_datetime  = Time.now
@@ -541,10 +536,6 @@ class Framework
 
         # wait for the plugins to finish
         @plugins.block
-
-        # a plug-in may have updated the page queue, rock it!
-        audit_queue if !skip_audit_queue
-        true
     end
     alias :clean_up! :clean_up
 

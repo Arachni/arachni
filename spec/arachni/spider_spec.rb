@@ -109,6 +109,21 @@ describe Arachni::Spider do
     end
 
     describe '#run' do
+
+        it 'should perform the crawl' do
+            @opts.url = @url + '/lots_of_paths'
+
+            spider = Arachni::Spider.new
+            spider.run.size.should == 10051
+        end
+
+        it 'should ignore path parameters' do
+            @opts.url = @url + '/path_params'
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
+        end
+
         context 'Options.do_not_crawl' do
             it 'should not crawl the site' do
                 @opts.do_not_crawl
@@ -217,13 +232,6 @@ describe Arachni::Spider do
                     end
                 end
             end
-        end
-
-        it 'should ignore path parameters' do
-            @opts.url = @url + '/path_params'
-
-            spider = Arachni::Spider.new
-            spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
         end
     end
 
@@ -341,6 +349,31 @@ describe Arachni::Spider do
                 s = Arachni::Spider.new
                 s.run
                 s.done?.should be_true
+            end
+        end
+    end
+
+    describe '#running?' do
+        context 'when not running' do
+            it 'should return false' do
+                s = Arachni::Spider.new
+                s.running?.should be_false
+            end
+        end
+        context 'when running' do
+            it 'should return false' do
+                @opts.url = server_url_for( :auditor ) + '/sleep'
+                s = Arachni::Spider.new
+                Thread.new{ s.run }
+                sleep 1
+                s.running?.should be_true
+            end
+        end
+        context 'when it has finished' do
+            it 'should return true' do
+                s = Arachni::Spider.new
+                s.run
+                s.running?.should be_false
             end
         end
     end
