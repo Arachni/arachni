@@ -215,13 +215,6 @@ describe Arachni::Utilities do
 
     describe '#normalize_url' do
         it 'should clean the URL' do
-            ref = proc do |p|
-                n = Addressable::URI.parse( p ).normalize
-                n.path.gsub!( /\/+/, '/' )
-                n.fragment = nil
-                n.to_s
-            end
-
             [
                 'another/path',
                 '/some/path',
@@ -242,7 +235,7 @@ describe Arachni::Utilities do
                 'hTTp://user:password@tEsT.com:81///with/////path/another weird '+
                     'path %"&*[$)?query=crap&other=$54$5466][(\'"#fragment',
                 'http://test.com/login.php?goto?=domain.tld/index.php'
-            ].each { |p| @utils.normalize_url( p ).should == ref.call( p ) }
+            ].each { |p| @utils.normalize_url( p ).should == Arachni::URI.normalize( p ) }
         end
     end
 

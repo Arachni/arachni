@@ -76,10 +76,11 @@ class Server::Dispatcher::Node
 
         log_updated_neighbours
 
-        ::EM.add_periodic_timer( @opts.node_ping_interval || DEFAULT_PING_INTERVAL ) {
+        interval = @opts.node_ping_interval || DEFAULT_PING_INTERVAL
+        ::EM.add_periodic_timer( interval ) do
             ping
             check_for_comebacks
-        }
+        end
     end
 
     #
@@ -121,16 +122,12 @@ class Server::Dispatcher::Node
         fail "This method requires a block!" if !block_given?
 
         @neighbours_cmp = ''
-        if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
 
+        if @nodes_info_cache.empty? || @neighbours_cmp != neighbours.to_s
             @neighbours_cmp = neighbours.to_s
 
-            ::EM::Iterator.new( neighbours ).map( proc {
-                |neighbour, iter|
-
-                connect_to_peer( neighbour ).info {
-                    |info|
-
+            each = proc do |neighbour, iter|
+                connect_to_peer( neighbour ).info do |info|
                     if info.rpc_exception?
                         print_info "Neighbour seems dead: #{neighbour}"
                         add_dead_neighbour( neighbour )
@@ -140,12 +137,15 @@ class Server::Dispatcher::Node
                     else
                         iter.return( info )
                     end
-                }
-            }, proc {
-                |nodes|
+                end
+            end
+
+            after = proc do |nodes|
                 @nodes_info_cache = nodes.compact
                 block.call( @nodes_info_cache )
-            })
+            end
+
+            ::EM::Iterator.new( neighbours ).map( each, after )
         else
             block.call( @nodes_info_cache )
         end
@@ -162,11 +162,11 @@ class Server::Dispatcher::Node
     #
     def info
         {
-            'url'        => @url,
-            'pipe_id'    => @opts.pipe_id,
-            'weight'     => @opts.weight,
-            'nickname'   => @opts.nickname,
-            'cost'       => @opts.cost
+            'url'      => @url,
+            'pipe_id'  => @opts.pipe_id,
+            'weight'   => @opts.weight,
+            'nickname' => @opts.nickname,
+            'cost'     => @opts.cost
         }
     end
 

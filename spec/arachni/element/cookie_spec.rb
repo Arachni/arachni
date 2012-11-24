@@ -216,47 +216,60 @@ describe Arachni::Element::Cookie do
 
     describe '.from_file' do
         it 'should parse a Netscape cookiejar file and return an array of cookies' do
-            forms =  Arachni::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
-            forms.size.should == 3
+            cookies =  Arachni::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
+            cookies.size.should == 4
 
-            form = forms.shift
-            form.action.should == @url
-            form.url.should == @url
-            form.auditable.should == { 'first_name' => 'first_value' }
-            form.simple.should == { 'first_name' => 'first_value' }
-            form.domain.should == '.domain.com'
-            form.path.should == '/path/to/somewhere'
-            form.secure.should == true
-            form.session?.should == false
-            form.expires.is_a?( Time ).should == true
-            form.name.should == 'first_name'
-            form.value.should == 'first_value'
+            cookie = cookies.shift
+            cookie.action.should == @url
+            cookie.url.should == @url
+            cookie.auditable.should == { 'first_name' => 'first_value' }
+            cookie.simple.should == { 'first_name' => 'first_value' }
+            cookie.domain.should == '.domain.com'
+            cookie.path.should == '/path/to/somewhere'
+            cookie.secure.should == true
+            cookie.session?.should == false
+            cookie.expires.is_a?( Time ).should == true
+            cookie.name.should == 'first_name'
+            cookie.value.should == 'first_value'
 
-            form = forms.shift
-            form.action.should == @url
-            form.url.should == @url
-            form.auditable.should == { 'second_name' => 'second_value' }
-            form.simple.should == { 'second_name' => 'second_value' }
-            form.domain.should == 'another-domain.com'
-            form.path.should == '/'
-            form.secure.should == false
-            form.session?.should == true
-            form.expires.should be_nil
-            form.name.should == 'second_name'
-            form.value.should == 'second_value'
+            cookie = cookies.shift
+            cookie.action.should == @url
+            cookie.url.should == @url
+            cookie.auditable.should == { 'second_name' => 'second_value' }
+            cookie.simple.should == { 'second_name' => 'second_value' }
+            cookie.domain.should == 'another-domain.com'
+            cookie.path.should == '/'
+            cookie.secure.should == false
+            cookie.session?.should == true
+            cookie.expires.should be_nil
+            cookie.name.should == 'second_name'
+            cookie.value.should == 'second_value'
 
-            form = forms.shift
-            form.action.should == @url
-            form.url.should == @url
-            form.auditable.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
-            form.simple.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
-            form.domain.should == '.blah-domain'
-            form.path.should == '/'
-            form.secure.should == false
-            form.session?.should == false
-            form.expires.should == Time.parse( '2020-08-09 16:59:20 +0300' )
-            form.name.should == 'NAME'
-            form.value.should == 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210'
+            cookie = cookies.shift
+            cookie.action.should == @url
+            cookie.url.should == @url
+            cookie.auditable.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
+            cookie.simple.should == { 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' }
+            cookie.domain.should == '.blah-domain'
+            cookie.path.should == '/'
+            cookie.secure.should == false
+            cookie.session?.should == false
+            cookie.expires.should == Time.parse( '2020-08-09 16:59:20 +0300' )
+            cookie.name.should == 'NAME'
+            cookie.value.should == 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210'
+
+            cookie = cookies.shift
+            cookie.action.should == @url
+            cookie.url.should == @url
+            cookie.auditable.should == { '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' }
+            cookie.simple.should == { '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' }
+            cookie.domain.should == '192.168.1.1'
+            cookie.path.should == '/'
+            cookie.secure.should == false
+            cookie.session?.should == true
+            cookie.expires.should be_nil
+            cookie.name.should == '_superapp_session'
+            cookie.value.should == 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg==--810acaa3759101ed79740e25de31e0c5bad76cdc'
         end
     end
 
@@ -355,6 +368,26 @@ describe Arachni::Element::Cookie do
             cookies.size.should == 1
             cookies.first.name.should == 'coo@ki e2'
             cookies.first.value.should == 'blah val2@'
+        end
+    end
+
+    describe '.from_string' do
+        it 'should parse cookies formatted as a string' do
+             cookies = Arachni::Element::Cookie.from_string( 'http://owner-url.com',
+                "coo%40ki+e2=blah+val2%40;name=value;name2=value2")
+             cookies.size.should == 3
+
+             c = cookies.shift
+             c.name.should == 'coo@ki e2'
+             c.value.should == 'blah val2@'
+
+             c = cookies.shift
+             c.name.should == 'name'
+             c.value.should == 'value'
+
+             c = cookies.shift
+             c.name.should == 'name2'
+             c.value.should == 'value2'
         end
     end
 

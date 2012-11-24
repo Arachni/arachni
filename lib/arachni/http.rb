@@ -119,8 +119,8 @@ class HTTP
 
         opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'    => opts.user_agent
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent' => opts.user_agent
         }
         @headers['From'] = opts.authed_by if opts.authed_by
 
@@ -128,14 +128,7 @@ class HTTP
 
         @cookie_jar = CookieJar.new( opts.cookie_jar )
         update_cookies( opts.cookies ) if opts.cookies
-
-        if opts.cookie_string
-            cookies = opts.cookie_string.split( ';' ).map do |cookie_pair|
-                k, v = *cookie_pair.split( '=', 2 )
-                Cookie.new( opts.url.to_s, k.strip => v.strip )
-            end.flatten.compact
-            update_cookies( cookies )
-        end
+        update_cookies( opts.cookie_string ) if opts.cookie_string
 
         proxy_opts = {}
         proxy_opts = {
@@ -483,7 +476,7 @@ class HTTP
     #
     # Updates the cookie-jar with the passed cookies
     #
-    # @param    [Array<Arachni::Element::Cookie>]   cookies
+    # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
@@ -554,16 +547,6 @@ class HTTP
 
         gathered = 0
         body = res.body
-        # (precision - 1).times {
-            # get( res.effective_url ).on_complete {
-                # |c_res|
-                # body = body.rdiff( c_res.body )
-                # gathered += 1
-                # if gathered == generators.size * precision + precision - 1
-                    # block.call is_404?( path, body )
-                # end
-            # }
-        # }
 
         if !@_404_gathered.include?( path )
             generators.each.with_index do |generator, i|
@@ -575,19 +558,15 @@ class HTTP
 
                         if gathered == generators.size * precision
                             @_404_gathered << path
+
+                            # save the hash of the refined responses, no sense
+                            # in wasting space
+                            @_404[path].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
+
                             block.call is_404?( path, body )
                         else
-                            @_404[path][i]['rdiff_now'] ||= false
-
-                            if !@_404[path][i]['body']
-                                @_404[path][i]['body'] = c_res.body
-                            else
-                                @_404[path][i]['rdiff_now'] = true
-                            end
-
-                            if @_404[path][i]['rdiff_now'] && !@_404[path][i]['rdiff']
-                                @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
-                            end
+                            @_404[path][i]['body'] ||= c_res.body
+                            @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
                         end
                     end
                 }
@@ -710,7 +689,9 @@ class HTTP
     end
 
     def is_404?( path, body )
-        @_404[path].each { |_404| return true if _404['body'].rdiff( body ) == _404['rdiff'] }
+        @_404[path].each do |_404|
+            return true if _404['body'].rdiff( body ).hash == _404['rdiff']
+        end
         false
     end
 

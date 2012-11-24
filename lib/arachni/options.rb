@@ -634,6 +634,7 @@ class Options
         end
         true
     end
+    alias :audit= :audit
 
     #
     # Disables auditing of element types.
@@ -683,7 +684,7 @@ class Options
     # @return   [TrueClass]
     #
     def set( options )
-        options.each_pair do |k, v|
+        options.each do |k, v|
             begin
                 send( "#{k.to_s}=", v )
             rescue => e

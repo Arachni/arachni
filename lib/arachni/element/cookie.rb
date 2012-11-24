@@ -462,7 +462,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Bool]
     #
     def respond_to?( sym )
-        @raw.include?( sym.to_s ) || super( sym )
+        (@raw && @raw.include?( sym.to_s )) || super( sym )
     end
 
     #
@@ -634,6 +634,7 @@ class Cookie < Arachni::Element::Base
     # @return   [Time]
     #
     def self.expires_to_time( expires )
+        return nil if expires == '0'
         (expires_to_i = expires.to_i) > 0 ? Time.at( expires_to_i ) : Time.parse( expires )
     end
 
@@ -987,6 +988,117 @@ class Cookie < Arachni::Element::Base
     end
     def self.parse_set_cookie( *args )
         from_set_cookie( *args )
+    end
+
+    #
+    # Parses a string formatted for the +Cookie+ HTTP request header field
+    # into cookie elements.
+    #
+    # @example
+    #    p Cookie.from_string 'http://owner-url.com', "coo%40ki+e2=blah+val2%40;name=value;name2=value2"
+    #    #=> [coo@ki+e2=blah+val2@, name=value, name2=value2]
+    #
+    #     # Fancy dump:
+    #     #     [
+    #     #         [0] #<Arachni::Element::Cookie:0x01c31558
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "coo@ki e2" => "blah val2@"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = 3934200888666098208,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "coo@ki e2" => "blah val2@"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                 "coo@ki e2" => "blah val2@",
+    #     #                     "name" => "coo@ki e2",
+    #     #                     "value" => "blah val2@",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >,
+    #     #         [1] #<Arachni::Element::Cookie:0x01b17fc8
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "name" => "value"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = -2610555034726366868,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "name" => "value"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                     "name" => "name",
+    #     #                     "value" => "value",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >,
+    #     #         [2] #<Arachni::Element::Cookie:0x01767b08
+    #     #             attr_accessor :action = "http://owner-url.com/",
+    #     #             attr_accessor :auditable = {
+    #     #                 "name2" => "value2"
+    #     #             },
+    #     #             attr_accessor :method = "get",
+    #     #             attr_accessor :url = "http://owner-url.com/",
+    #     #             attr_reader :hash = 3819162339364446155,
+    #     #             attr_reader :opts = {},
+    #     #             attr_reader :orig = {
+    #     #                 "name2" => "value2"
+    #     #             },
+    #     #             attr_reader :raw = {
+    #     #                     "name2" => "value2",
+    #     #                     "name" => "name2",
+    #     #                     "value" => "value2",
+    #     #                     "version" => 0,
+    #     #                     "port" => nil,
+    #     #                     "discard" => nil,
+    #     #                 "comment_url" => nil,
+    #     #                     "expires" => nil,
+    #     #                     "max_age" => nil,
+    #     #                     "comment" => nil,
+    #     #                     "secure" => nil,
+    #     #                     "path" => "/",
+    #     #                     "domain" => "owner-url.com",
+    #     #                 "httponly" => false
+    #     #             }
+    #     #         >
+    #     #     ]
+    #
+    #
+    # @param    [String]    url     request URL
+    # @param    [Hash]      str     +Set-Cookie+ string
+    #
+    # @return   [Array<Cookie>]
+    #
+    def self.from_string( url, string )
+        string.split( ';' ).map do |cookie_pair|
+            k, v = *cookie_pair.split( '=', 2 )
+            new( url, decode( k.strip ) => decode( v.strip ) )
+        end.flatten.compact
     end
 
     #

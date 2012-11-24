@@ -60,10 +60,25 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.high_performance?.should be_false
         end
     end
+    describe '#master?' do
+        it 'should return false' do
+            @framework_clean.high_performance?.should be_false
+        end
+    end
+    describe '#slave?' do
+        it 'should return false' do
+            @framework_clean.slave?.should be_false
+        end
+    end
+    describe '#solo?' do
+        it 'should return true' do
+            @framework_clean.solo?.should be_true
+        end
+    end
     describe '#lsplug' do
         it 'should list all available plugins' do
             plugins = @framework_clean.lsplug
-            plugins.size.should == 6
+            plugins.size.should == 7
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
             plugin[:description].should == 'Some description'
@@ -321,6 +336,18 @@ describe Arachni::RPC::Server::Framework do
         end
     end
 
+    describe '#self_url' do
+        it 'should return the RPC URL' do
+            @instance_clean.framework.self_url.should == @instance_clean.url
+        end
+    end
+
+    describe '#token' do
+        it 'should return the RPC token' do
+            @instance_clean.framework.token.should == @token
+        end
+    end
+
     describe '#report_as' do
         context 'when passed a valid report name' do
             it 'should return the report as a string' do
@@ -362,8 +389,8 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#serialized_report' do
         it 'should return a YAML serialized report hash' do
-            yaml_str = @instance_clean.framework.serialized_report
-            YAML.load( yaml_str ).should == @instance_clean.framework.report
+            @instance_clean.framework.serialized_report.should ==
+                @instance_clean.framework.report.to_yaml
         end
     end
     describe '#issues' do

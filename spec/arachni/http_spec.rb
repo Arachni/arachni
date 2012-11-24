@@ -269,7 +269,7 @@ describe Arachni::HTTP do
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
-                cookies.size.should == 3
+                cookies.size.should == 4
                 cookies.should == Arachni::Module::Utilities.cookies_from_file( '', @opts.cookie_jar )
             end
             context 'but the path is invalid' do
@@ -293,22 +293,24 @@ describe Arachni::HTTP do
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
-                cookies.size.should == 3
+                cookies.size.should == 4
                 cookies.should == @opts.cookies
             end
         end
 
         context 'when the cookie_string option is set' do
             it 'should parse the string and add those cookies to the CookieJar' do
-                @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
+                @opts.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
                 @http.cookie_jar.cookies.should be_empty
                 @http.reset
                 cookies = @http.cookie_jar.cookies
-                cookies.size.should == 3
+                cookies.size.should == 4
                 cookies.first.name.should == 'my_cookie_name'
                 cookies.first.value.should == 'val1'
                 cookies[1].name.should == 'blah_name'
                 cookies[1].value.should == 'val2'
+                cookies[2].name.should == 'stuff'
+                cookies[2].value.should == '%blah'
                 cookies.last.name.should == 'another_name'
                 cookies.last.value.should == 'another_val'
             end

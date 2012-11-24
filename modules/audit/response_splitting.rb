@@ -31,17 +31,19 @@
 class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def run
+        header_name = "X-CRLF-Safe-#{seed}"
+
         # the header to inject...
         # what we will check for in the response header
         # is the existence of the "x-crlf-safe" field.
-        # if we find it it means that the attack was succesfull
+        # if we find it it means that the attack was successful
         # thus site is vulnerable.
-        header = "\r\nX-CRLF-Safe: no"
+        header = "\r\n#{header_name}: no"
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
         audit( header, param_flip: true, follow_location: false ) do |res, opts|
-            next if !res.headers_hash['X-CRLF-Safe'] || res.headers_hash['X-CRLF-Safe'].empty?
+            next if res.headers_hash[header_name].to_s.downcase != 'no'
             opts[:injected] = uri_encode( opts[:injected] )
             log( opts, res )
         end

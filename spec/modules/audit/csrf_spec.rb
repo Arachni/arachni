@@ -35,4 +35,11 @@ describe name_from_filename do
         issues.first.var.should == 'insecure_important_form'
     end
 
+    it 'should not log forms that have a nonce' do
+        options.url = url + 'with_nonce'
+        audit :forms
+        issues.size.should == 1
+        issues.first.var.should == 'insecure_important_form'
+    end
+
 end

@@ -50,17 +50,8 @@ class String
         # get the words of the first text in an array
         s_words = words
 
-        # get the words of the second text in an array
-        o_words = other.words
-
-        # get all the words that are different between the 2 arrays
-        # math style!
-        changes  = s_words - o_words
-        changes << s_words - o_words
-        changes.flatten!
-
         # get what hasn't changed (the rdiff, so to speak) as a string
-        (s_words - changes).join
+        (s_words - (s_words - other.words)).join
     end
 
     #
@@ -109,6 +100,7 @@ class String
     end
 
     def recode!
+        force_encoding( 'UTF-8' )
         encode!( 'utf-16be', invalid: :replace, undef: :replace ).encode("utf-8")
     end
 

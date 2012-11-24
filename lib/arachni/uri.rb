@@ -30,15 +30,15 @@ module Arachni
 
 #
 # The URI class automatically normalizes the URLs it is passed to parse
-# while maintaining compatibility with Ruby's URI core classes by delegating
+# while maintaining compatibility with Ruby's URI core class by delegating
 # missing method to it -- thus, you can treat it like a Ruby URI and enjoy some
 # extra perks along the line.
 #
-# It also provides *cached* (to maintain low-latency) helper class methods to
+# It also provides *cached* (to maintain a low latency) helper class methods to
 # ease common operations such as:
-# * {.normalize normalization}
-# * parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or {.cheap_parse Hash} objects.
-# * conversion to {.to_absolute absolute URLs}
+# * {.normalize Normalization}.
+# * Parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or {.cheap_parse Hash} objects.
+# * Conversion to {.to_absolute absolute URLs}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -123,9 +123,9 @@ class URI
         CACHE[__method__][url] ||= begin
             new( url )
         rescue => e
-            print_error "Failed to parse '#{url}', please report this."
-            print_error "Error: #{e}"
-            print_error_backtrace( e )
+            print_error "Failed to parse '#{url}'."
+            #print_error "Error: #{e}"
+            #print_error_backtrace( e )
             nil
         end
     end
@@ -149,9 +149,9 @@ class URI
             begin
                 parser.parse( normalize( url ).dup )
             rescue => e
-                print_error "Failed to parse '#{url}', please report this."
-                print_error "Error: #{e}"
-                print_error_backtrace( e )
+                print_error "Failed to parse '#{url}'."
+                #print_error "Error: #{e}"
+                #print_error_backtrace( e )
                 nil
             end
         end
@@ -273,29 +273,28 @@ class URI
                 end
 
                 if c_url.include?( '?' ) && !(query = dupped_url.split( '?', 2 ).last).empty?
-                    components[:query] =
-                        encode( decode( query ),
-                                Addressable::URI::CharacterClasses::QUERY )
+                    components[:query] = (query.split( '&', -1 ).map do |pair|
+                        encode( decode( pair ), Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
+                    end).join( '&' )
                 end
             end
 
             components[:path] ||= components[:scheme] ? '/' : nil
 
-            cache[c_url] = components.inject({}) do |h, (k, val)|
-                h.merge!( Hash[{ k => val.freeze }] )
-            end.freeze
+            components.values.each( &:freeze )
+
+            cache[c_url] = components.freeze
         rescue => e
             begin
-                print_error "Failed to fast-parse '#{c_url}', please report this."
-                print_error "Error: #{e}"
-                print_error "Falling back to slow-parse."
-                print_error_backtrace( e )
+                print_error "Failed to fast-parse '#{c_url}', falling back to slow-parse."
+                #print_error "Error: #{e}"
+                #print_error_backtrace( e )
 
                 cache[c_url] = addressable_parse( c_url ).freeze
             rescue => ex
-                print_error "Failed to parse '#{c_url}', please report this."
-                print_error "Error: #{ex}"
-                print_error_backtrace( ex )
+                print_error "Failed to parse '#{c_url}'."
+                #print_error "Error: #{ex}"
+                #print_error_backtrace( ex )
 
                 cache[c_url] = :err
                 nil
@@ -427,9 +426,9 @@ class URI
 
             cache[c_url] = normalized.freeze
         rescue => e
-            print_error "Failed to normalize '#{c_url}', please report this."
-            print_error "Error: #{e}"
-            print_error_backtrace( e )
+            print_error "Failed to normalize '#{c_url}'."
+            #print_error "Error: #{e}"
+            #print_error_backtrace( e )
 
             cache[c_url] = :err
             nil

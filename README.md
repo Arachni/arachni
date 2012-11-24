@@ -6,7 +6,7 @@ is considered stable, it is then merged into the ```master``` branch and release
 Do not be confused by the version of this branch, ```1.0dev``` is a placeholder
 which simply means _next release_.
 
-## Nightlies (Linux only)
+## Nightlies
 
 For self-contained, nightly snapshot packages take a look at:
 http://downloads.arachni-scanner.com/nightlies/

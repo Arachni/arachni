@@ -45,6 +45,20 @@ module Distributor
     MIN_PAGES_PER_INSTANCE = 30
 
     #
+    # Connects to a remote Instance.
+    #
+    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
+    #                                   In subsequent calls the 'token' can be omitted.
+    #
+    def connect_to_instance( instance )
+        @tokens  ||= {}
+        @tokens[instance['url']] = instance['token'] if instance['token']
+        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+    end
+
+    private
+
+    #
     # @param    [Proc]  foreach     invoked once for each slave instance and
     #                                 creates an array from the returned values
     # @param    [Proc]  after       to handle the resulting array
@@ -56,12 +70,17 @@ module Distributor
         slave_iterator.map( wrap, after )
     end
 
-    # @param    [Proc]  block     invoked once for each slave instance
-    def each_slave( &block )
-        wrap = proc do |instance, iterator|
-            block.call( connect_to_instance( instance ), iterator )
+    #
+    # @param    [Proc]  foreach     invoked once for each slave instance
+    # @param    [Proc]  after       invoked after the iteration has completed
+    # @param    [Proc]  block       invoked once for each slave instance
+    #
+    def each_slave( foreach = nil, after = nil, &block )
+        foreach ||= block
+        wrapped_foreach = proc do |instance, iterator|
+            foreach.call( connect_to_instance( instance ), iterator )
         end
-        slave_iterator.each( &wrap )
+        slave_iterator.each( *[wrapped_foreach, after] )
     end
 
     # @return   <::EM::Iterator>  iterator for all slave instances
@@ -159,7 +178,12 @@ module Distributor
     # Returns the dispatchers that have different Pipe IDs i.e. can be setup
     # in HPG mode; pretty simple at this point.
     #
-    def prefered_dispatchers( &block )
+    def preferred_dispatchers( &block )
+        if !dispatcher
+            block.call []
+            return
+        end
+
         # keep track of the Pipe IDs we've used
         @used_pipe_ids ||= []
 
@@ -213,14 +237,14 @@ module Distributor
     #
     def split_urls( urls, max_chunks )
         # figure out the min amount of pages per chunk
-        begin
+        min_pages_per_instance = begin
             if @opts.min_pages_per_instance && @opts.min_pages_per_instance.to_i > 0
-                min_pages_per_instance = @opts.min_pages_per_instance.to_i
+                @opts.min_pages_per_instance.to_i
             else
-                min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+                MIN_PAGES_PER_INSTANCE
             end
         rescue
-            min_pages_per_instance = MIN_PAGES_PER_INSTANCE
+            MIN_PAGES_PER_INSTANCE
         end
 
         # first try a simplistic approach, just split the the URLs in
@@ -260,82 +284,59 @@ module Distributor
 
         begin
             if @opts.max_slaves && @opts.max_slaves.to_i > 0
-                return d[0...@opts.max_slaves.to_i]
+                d[0...@opts.max_slaves.to_i]
             end
         rescue
-            return d
+            d
         end
     end
 
     #
     # Spawns, configures and runs a new remote Instance
     #
-    # @param    [String]    dispatcher_url
+    # @param    [Hash]      instance_hash   as returned by {Dispatcher#dispatch}
     # @param    [Hash]      auditables
     #                        * urls:     Array<String>    urls to audit -- will be passed to restrict_paths
     #                        * elements: Array<String>    scope IDs of elements to audit
     #                        * pages:    Array<Arachni::Page>    pages to audit
     #
-    # @param    [Proc]      block   to be passed a hash containing the url and token of the instance
-    #
-    def spawn( dispatcher_url, auditables = {}, &block )
+    def distribute_and_run( instance_hash, auditables = {}, &block )
+        opts = cleaned_up_opts
+        opts['restrict_paths'] = auditables[:urls] || []
+
+        %w(exclude include).each do |k|
+            opts[k].each.with_index { |v, i| opts[k][i] = v.source }
+        end
+
+        opts['pages']    = auditables[:pages] || []
+        opts['elements'] = auditables[:elements] || []
+
+        connect_to_instance( instance_hash ).
+            service.scan( opts ) do |r|
+                @running_slaves << instance_hash['url']
+                block.call( instance_hash ) if block_given?
+            end
+    end
+
+    def cleaned_up_opts
         opts = @opts.to_h.deep_clone
 
-        urls     = auditables[:urls] || []
-        elements = auditables[:elements] || []
-        pages    = auditables[:pages] || []
-
-        connect_to_dispatcher( dispatcher_url ).dispatch( self_url,
-            'rank'   => 'slave',
-            'target' => @opts.url.to_s,
-            'master' => self_url
-        ) do |instance_hash|
-
-            if instance_hash.rpc_exception?
-                block.call( false )
-                next
-            end
-
-            instance = connect_to_instance( instance_hash )
-
-            opts['url'] = opts['url'].to_s
-            opts['restrict_paths'] = urls
-
-            opts['grid_mode'] = ''
-
-            opts.delete( 'dir' )
-            opts.delete( 'rpc_port' )
-            opts.delete( 'rpc_address' )
-            opts['datastore'].delete( :dispatcher_url )
-            opts['datastore'].delete( :token )
-
-            opts['datastore']['master_priv_token'] = @local_token
-
-            opts['exclude'].each.with_index do |v, i|
-                opts['exclude'][i] = v.source
-            end
-
-            opts['include'].each.with_index do |v, i|
-                opts['include'][i] = v.source
-            end
-
-            # don't let the slaves run plug-ins that are not meant
-            # to be distributed
-            opts['plugins'].keys.reject! { |k| !@plugins[k].distributable? }
-
-            instance.opts.set( opts ){
-            instance.framework.update_page_queue( pages ) {
-            instance.framework.restrict_to_elements( elements ){
-            instance.framework.set_master( self_url, @opts.datastore[:token] ){
-            instance.modules.load( opts['mods'] ) {
-            instance.plugins.load( opts['plugins'] ) {
-            instance.framework.run {
-                block.call(
-                    'url'   => instance_hash['url'],
-                    'token' => instance_hash['token']
-                )
-            }}}}}}}
+        (%w(grid_mode dir rpc_port rpc_address pipe_id neighbour pool_size) |
+            %w(lsmod lsrep rpc_instance_port_range load_profile delta_time) |
+            %w(start_datetime finish_datetime)).each do |k|
+            opts.delete k
         end
+
+        # don't let the slaves run plug-ins that are not meant
+        # to be distributed
+        (opts['plugins'] || {}).keys.reject! { |k| !@plugins[k].distributable? }
+
+        opts['datastore'].delete( :dispatcher_url )
+        opts['datastore'].delete( :token )
+
+        opts['datastore']['master_priv_token'] = @local_token
+
+        opts
     end
 
     def merge_stats( stats )
@@ -377,16 +378,17 @@ module Distributor
                 final_stats['eta']   = max_eta( final_stats['eta'], instats['eta'] )
             end
 
+            final_stats['sitemap_size'] = final_stats['sitemap_size'].to_i
+
             avg.each do |k|
                 final_stats[k.to_s] /= Float( stats.size + 1 )
                 final_stats[k.to_s] = Float( sprintf( "%.2f", final_stats[k.to_s] ) )
             end
-        rescue Exception# => e
+        rescue # => e
             # ap e
             # ap e.backtrace
         end
 
-        final_stats['sitemap_size'] = @override_sitemap.size
         final_stats
     end
 
@@ -404,23 +406,12 @@ module Distributor
         end
     end
 
-    #
-    # Connects to a remote Instance.
-    #
-    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
-    #                                   In subsequent calls the 'token' can be omitted.
-    #
-    def connect_to_instance( instance )
-        @tokens  ||= {}
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
-    end
-
     def connect_to_dispatcher( url )
         Client::Dispatcher.new( @opts, url )
     end
 
     def dispatcher
+        return if !@opts.datastore[:dispatcher_url]
         connect_to_dispatcher( @opts.datastore[:dispatcher_url] )
     end
 
