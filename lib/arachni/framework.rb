@@ -68,8 +68,8 @@ class Framework
     include Utilities
     include Mixins::Observable
 
-    # the version of *this* class
-    REVISION = '0.2.7'
+    # The version of this class.
+    REVISION = '0.2.8'
 
     # @return [Options] Instance options
     attr_reader :opts
