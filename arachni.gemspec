@@ -71,7 +71,7 @@ Gem::Specification.new do |s|
       s.add_dependency "net-ssh",         ">= 2.2.1"
       s.add_dependency "net-scp",         ">= 1.0.4"
       s.add_dependency "em-synchrony",    ">= 1.0.0"
-      s.add_dependency "arachni-rpc-em",  "0.1.3dev"
+      s.add_dependency "arachni-rpc-em",  "0.1.3.pre1"
 
       s.add_development_dependency 'rake',  "~> 0.9.2.2"
       s.add_development_dependency 'rspec', "~> 2.8"
