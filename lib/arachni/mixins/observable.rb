@@ -38,6 +38,10 @@ module Mixins
 module Observable
     include Arachni::Utilities
 
+    def clear_observers
+        @__hooks.clear if @__hooks
+    end
+
     def method_missing( sym, *args, &block )
         # grab the action (add/call) and the hook name
         action, hook = sym.to_s.split( '_', 2 )

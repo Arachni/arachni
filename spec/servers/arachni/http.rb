@@ -64,12 +64,6 @@ get '/redirect/3' do
     'This is the end.'
 end
 
-get '/elems' do
-    <<-EOHTML
-    <a href='/stuff'></a>
-    EOHTML
-end
-
 get '/sleep' do
     sleep 5
 end
@@ -108,13 +102,6 @@ end
 
 get '/redir_2' do
     'Welcome to redir_2!'
-end
-
-get '/train/redirect' do
-    redirect '/train/redirected?msg=some crap'
-end
-
-get '/train/redirected' do
 end
 
 get '/custom_404/not' do

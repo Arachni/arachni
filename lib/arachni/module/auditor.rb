@@ -208,7 +208,7 @@ module Auditor
 
                 # if the file exists let the trainer parse it since it may
                 # contain brand new data to audit
-                http.trainer.push( res )
+                framework.trainer.push( res ) if framework
             end
         end
          true

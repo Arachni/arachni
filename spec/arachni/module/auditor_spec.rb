@@ -5,13 +5,17 @@ class AuditorTest
 
     def initialize( framework )
         @framework = framework
-        http.trainer.page = page
+        framework.trainer.page = page
         mute
+    end
+
+    def reset
+        @framework.reset
     end
 
     def page
         @page ||= Arachni::Page.new(
-            url:  @framework.opts.url.to_s,
+            url:  @framework.opts.url,
             body: 'Match this!',
             method: 'get'
         )
@@ -26,10 +30,7 @@ class AuditorTest
     end
 
     def load_page_from( url )
-        http.get( url ).on_complete do |res|
-            @page = Arachni::Page.from_http_response( res, framework.opts )
-        end
-        http.run
+        @page = Arachni::Page.from_url( url )
     end
 
     def self.info
@@ -44,20 +45,17 @@ describe Arachni::Module::Auditor do
 
     before :all do
         @opts = Arachni::Options.instance
-        @opts.audit_links = true
-        @opts.audit_forms = true
-        @opts.audit_cookies = true
-        @opts.audit_headers = true
+        @opts.audit :links, :forms, :cookies, :headers
 
         @opts.url = server_url_for( :auditor )
-        @url = @opts.url.dup
+        @url      = @opts.url.dup
 
         @framework = Arachni::Framework.new( @opts )
-        @auditor = AuditorTest.new( @framework )
+        @auditor   = AuditorTest.new( @framework )
     end
 
     after :each do
-        @framework.reset
+        @auditor.reset
     end
 
     describe '#register_results' do
@@ -424,25 +422,21 @@ describe Arachni::Module::Auditor do
             describe :train do
                 context 'default' do
                     it 'should parse the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
-                        # flush any existing pages from the buffer
-                        @framework.http.trainer.flush
-
-                        page = nil
-                        @framework.http.get( @url + '/train/default' ) do |res|
-                            page = Arachni::Page.from_http_response( res, @opts )
-                        end
-                        @framework.http.run
-
                         # page feedback queue
-                        pages = [ page ]
+                        pages = [ Arachni::Page.from_url( @url + '/train/default' ) ]
+
+                        # initial page
+                        @framework.trainer.page = pages.first
+
+                        # feed the new pages/elements back to the queue
+                        @framework.trainer.on_new_page { |p| pages << p }
+
                         # audit until no more new elements appear
                         while page = pages.pop
                             auditor = Arachni::Module::Base.new( page )
                             auditor.audit( @seed )
                             # run audit requests
                             @framework.http.run
-                            # feed the new pages/elements back to the queue
-                            pages |= @framework.http.trainer.flush
                         end
 
                         issue = @framework.modules.results.first
@@ -454,25 +448,21 @@ describe Arachni::Module::Auditor do
 
                 context true do
                     it 'should parse all responses and feed any new elements back to the framework to be audited' do
-                        # flush any existing pages from the buffer
-                        @framework.http.trainer.flush
-
-                        page = nil
-                        @framework.http.get( @url + '/train/true' ) do |res|
-                            page = Arachni::Page.from_http_response( res, @opts )
-                        end
-                        @framework.http.run
-
                         # page feedback queue
-                        pages = [ page ]
+                        pages = [ Arachni::Page.from_url( @url + '/train/true' ) ]
+
+                        # initial page
+                        @framework.trainer.page = pages.first
+
+                        # feed the new pages/elements back to the queue
+                        @framework.trainer.on_new_page { |p| pages << p }
+
                         # audit until no more new elements appear
                         while page = pages.pop
                             auditor = Arachni::Module::Base.new( page )
                             auditor.audit( @seed, train: true )
                             # run audit requests
                             @framework.http.run
-                            # feed the new pages/elements back to the queue
-                            pages |= @framework.http.trainer.flush
                         end
 
                         issue = issues.first
@@ -484,19 +474,20 @@ describe Arachni::Module::Auditor do
 
                 context false do
                     it 'should skip analysis' do
-                        # flush any existing pages from the buffer
-                        @framework.http.trainer.flush
+                        # page feedback queue
+                        page = Arachni::Page.from_url( @url + '/train/true' )
 
-                        page = nil
-                        @framework.http.get( @url + '/train/true' ) do |res|
-                            page = Arachni::Page.from_http_response( res, @opts )
-                        end
-                        @framework.http.run
+                        # initial page
+                        @framework.trainer.page = page
+
+                        updated_pages = []
+                        # feed the new pages/elements back to the queue
+                        @framework.trainer.on_new_page { |p| updated_pages << p }
 
                         auditor = Arachni::Module::Base.new( page )
                         auditor.audit( @seed, train: false )
                         @framework.http.run
-                        @framework.http.trainer.flush.should be_empty
+                        updated_pages.should be_empty
                     end
                 end
             end

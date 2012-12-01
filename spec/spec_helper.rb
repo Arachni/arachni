@@ -4,7 +4,7 @@
 # loaded once.
 #
 require_relative '../lib/arachni'
-#require_relative '../lib/arachni/ui/cli/output'
+require_relative '../lib/arachni/ui/cli/output'
 require 'eventmachine'
 
 @@root = File.dirname( File.absolute_path( __FILE__ ) ) + '/'
