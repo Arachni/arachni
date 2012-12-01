@@ -43,7 +43,7 @@ class Arachni::Reports::Metareport < Arachni::Report::Base
                 method = issue.elem if issue.elem == 'cookie' || issue.elem == 'header'
 
                 params = variation.opts[:combo]
-                next if !params[issue.var]
+                next if !params || !params[issue.var]
                 params[issue.var] = params[issue.var].gsub( variation.opts[:injected_orig], 'XXinjectionXX' )
 
                 if method == 'cookie' && variation.headers['request']['cookie']
