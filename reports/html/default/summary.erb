@@ -1,12 +1,15 @@
             <h2>Summary</h2>
 
             <div id="summary-tabs">
+                <% if auditstore.issues.any? %>
                 <ul>
                     <li><a href="#graphs">Graphs</a></li>
                     <li><a href="#issue-list">Issues [<%=auditstore.issues.size%>]</a></li>
                 </ul>
 
                 <div id="graphs">
+
+
                     <div id='chart-issues-container' class="clear">
                         <div id='chart-issues' class="clear">
                         </div>
@@ -26,7 +29,6 @@
                         <div class='clear'>
                         </div>
                     </div>
-
                 </div>
 
                 <div id="issue-list">
@@ -65,4 +67,9 @@
                     </div>
 
                 </div>
+                <% else %>
+                    <p>
+                        <em>No issues have been identified.</em>
+                    </p>
+                <% end %>
             </div>

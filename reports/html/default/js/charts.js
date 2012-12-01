@@ -137,10 +137,11 @@ function drawPies(){
 
 }
 
-
+<% if auditstore.issues.any? %>
 drawBars();
 drawPies();
 $(window).resize(function() {
     drawBars( );
     drawPies();
 });
+<% end %>
