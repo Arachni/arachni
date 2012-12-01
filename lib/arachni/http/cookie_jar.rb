@@ -84,7 +84,7 @@ class CookieJar
                         when String
                             Cookie.from_string( ::Arachni::Options.url.to_s, c )
                         when Hash
-                            Cookie.new( ::Arachni::Options.url.to_s, c )
+                            Cookie.new( ::Arachni::Options.url.to_s, c ) if c.any?
                         when Cookie
                             c
                     end

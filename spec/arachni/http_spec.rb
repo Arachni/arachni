@@ -212,21 +212,6 @@ describe Arachni::HTTP do
         end
     end
 
-    describe '#page=' do
-        it 'should update the trainer and the cookiejar using the given page' do
-            cookies = []
-            cookies << Arachni::Element::Cookie.new( 'http://test.com',
-                                                     'key1' => 'val1' )
-            cookies << Arachni::Element::Cookie.new( @url,
-                                                     'key2' => 'val2' )
-
-            page = Arachni::Page.new( cookiejar: cookies )
-            @http.page = page
-            @http.cookies.should == cookies
-            @http.trainer.page.should == page
-        end
-    end
-
     describe '#headers' do
         it 'should provide access to default headers' do
             headers = @http.headers
@@ -592,73 +577,6 @@ describe Arachni::HTTP do
                 end
             end
 
-        end
-        #describe :remove_id do
-        #    describe 'nil' do
-        #        it 'should include the framework-wide hash ID in the params' do
-        #            body = nil
-        #            @http.request( @url + '/echo' ) { |res| body = res.body }
-        #            @http.run
-        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-        #        end
-        #    end
-        #    describe false do
-        #        it 'should include the framework-wide hash ID in the params' do
-        #            body = nil
-        #            @http.request( @url + '/echo', remove_id: false ) { |res| body = res.body }
-        #            @http.run
-        #            body.should == { Arachni::Module::Utilities.seed => '' }.to_s
-        #        end
-        #    end
-        #    describe true do
-        #        it 'should remove the framework-wide hash ID from the params' do
-        #            body = nil
-        #            @http.request( @url + '/echo', remove_id: true ) { |res| body = res.body }
-        #            @http.run
-        #            body.should == {}.to_s
-        #        end
-        #    end
-        #end
-
-        describe :train do
-            before( :all ) do
-                res = @http.get( @url, async: false, remove_id: true ).response
-                @page = Arachni::Page.from_response( res, @opts )
-            end
-            describe 'nil' do
-                it 'should not pass the response to the Trainer' do
-                    @http.trainer.init( @page )
-                    @http.request( @url + '/elems' )
-                    @http.run
-                    @http.trainer.flush.should be_empty
-                end
-            end
-            describe false do
-                it 'should not pass the response to the Trainer' do
-                    @http.trainer.init( @page )
-                    @http.request( @url + '/elems', train: false )
-                    @http.run
-                    @http.trainer.flush.should be_empty
-                end
-            end
-            describe true do
-                it 'should pass the response to the Trainer' do
-                    @http.trainer.init( @page )
-                    @http.request( @url + '/elems', train: true )
-                    @http.run
-                    @http.trainer.flush.should be_any
-                end
-
-                context 'when a redirection leads to new elements' do
-                    it 'should pass the response to the Trainer' do
-                        @http.trainer.init( @page )
-                        @http.request( @url + '/train/redirect', train: true )
-                        @http.run
-                        page = @http.trainer.flush.first
-                        page.links.first.auditable.include?( 'msg' ).should be_true
-                    end
-                end
-            end
         end
 
         describe :timeout do

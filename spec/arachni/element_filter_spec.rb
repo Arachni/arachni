@@ -1,10 +1,10 @@
-require_relative '../../spec_helper'
+require_relative '../spec_helper'
 
-describe Arachni::Module::ElementDB do
+describe Arachni::ElementFilter do
 
     before( :all ) do
         @edb = Class.new
-        @edb.extend Arachni::Module::ElementDB
+        @edb.extend Arachni::ElementFilter
 
         @page = Arachni::Page.new(
             :url => 'http://blah.com',

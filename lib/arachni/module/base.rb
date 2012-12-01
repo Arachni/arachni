@@ -19,7 +19,6 @@ module Arachni
 lib = Arachni::Options.dir['lib']
 require lib + 'module/output'
 require lib + 'module/utilities'
-require lib + 'module/trainer'
 require lib + 'module/auditor'
 
 module Module
@@ -42,13 +41,15 @@ class Base
     include Auditor
 
     #
-    # Initializes the module attributes, {Arachni::HTTP} client and {Trainer}.
+    # Initializes the module attributes and {Arachni::HTTP}.
     #
     # @param  [Page]  page
     # @param  [Arachni::Framework]  framework
     #
     def initialize( page, framework = nil )
-        @page       = http.page = page
+        http.update_cookies( page.cookiejar )
+
+        @page       = page
         @framework  = framework
     end
 

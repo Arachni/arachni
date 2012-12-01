@@ -24,7 +24,6 @@ require lib + 'typhoeus/hydra'
 require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
 require lib + 'utilities'
-require lib + 'module/trainer'
 require lib + 'mixins/observable'
 require lib + 'http/cookie_jar'
 
@@ -76,9 +75,6 @@ class HTTP
     # @return   [Integer]   amount of responses received for the running requests (of the current burst)
     attr_reader :curr_res_cnt
 
-    # @return   [Arachni::Module::Trainer]
-    attr_reader :trainer
-
     def initialize
         reset
     end
@@ -89,6 +85,8 @@ class HTTP
     # @return   [Arachni::HTTP] self
     #
     def reset
+        clear_observers
+
         opts = Options
 
         req_limit = opts.http_req_limit || 20
@@ -114,8 +112,6 @@ class HTTP
 
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
-
-        @trainer = Module::Trainer.new( opts )
 
         opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
@@ -158,19 +154,6 @@ class HTTP
 
         @after_run = []
         self
-    end
-
-    #
-    # Sets the current working page, passes it to the {#trainer} and updates the
-    # {#cookie_jar} using the page's cookiejar.
-    #
-    # @param    [Arachni::Page]    page
-    #
-    def page=( page )
-        trainer.page = page
-        # update the cookies
-        update_cookies( page.cookiejar ) if !page.cookiejar.empty?
-        page
     end
 
     # Runs all queued requests
@@ -660,17 +643,6 @@ class HTTP
             if res.timed_out?
                 print_bad 'Request timed-out! -- ID# ' + res.request.id.to_s
                 @time_out_count += 1
-            end
-
-            if req.train?
-                # handle redirections
-                if res.redirection? && res.location.is_a?( String )
-                    get( to_absolute( res.location, trainer.page.url ) ) do |res2|
-                        @trainer.push( res2 )
-                    end
-                else
-                    @trainer.push( res )
-                end
             end
         end
 

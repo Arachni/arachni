@@ -17,6 +17,20 @@ describe Arachni::Framework do
     end
     after( :each ) { @f.reset }
 
+    context 'when passed a block' do
+        it 'should execute it and then reset the framework' do
+            Arachni::Modules.constants.include?( :Taint ).should be_false
+
+            Arachni::Framework.new do |f|
+                f.modules.load_all.should == %w(taint)
+
+                Arachni::Modules.constants.include?( :Taint ).should be_true
+            end
+
+            Arachni::Modules.constants.include?( :Taint ).should be_false
+        end
+    end
+
     describe '#opts' do
         it 'should provide access to the framework options' do
             @f.opts.is_a?( Arachni::Options ).should be_true
@@ -102,6 +116,72 @@ describe Arachni::Framework do
     end
 
     describe '#run' do
+
+        it 'should perform the audit' do
+            @f.opts.url = @url + '/elem_combo'
+            @f.opts.audit_links = true
+            @f.opts.audit_forms = true
+            @f.opts.audit_cookies = true
+            @f.modules.load( 'taint' )
+            @f.plugins.load( 'wait' )
+            @f.reports.load( 'foo' )
+
+            @f.status.should == 'ready'
+
+            @f.pause
+            @f.status.should == 'paused'
+
+            @f.resume
+            @f.status.should == 'ready'
+
+            called = false
+            t = Thread.new{
+                @f.run {
+                    called = true
+                    @f.status.should == 'cleanup'
+                }
+            }
+
+            raised = false
+            begin
+                Timeout.timeout( 10 ) {
+                    sleep( 0.01 ) while @f.status == 'preparing'
+                    sleep( 0.01 ) while @f.status == 'crawling'
+                    sleep( 0.01 ) while @f.status == 'auditing'
+                }
+            rescue TimeoutError
+                raised = true
+            end
+
+            raised.should be_false
+
+            t.join
+            called.should be_true
+
+            @f.status.should == 'done'
+            @f.auditstore.issues.size.should == 5
+
+            @f.auditstore.plugins['wait'][:results].should == { stuff: true }
+
+            File.exists?( 'afr' ).should be_true
+            File.exists?( 'foo' ).should be_true
+            File.delete( 'foo' )
+            File.delete( 'afr' )
+        end
+
+        it 'should handle heavy load' do
+            @opts.dir['modules']  = fixtures_path + '/taint_module/'
+            f = Arachni::Framework.new
+
+            f.opts.url = server_url_for :framework_hpg
+            f.opts.audit :links
+
+            f.modules.load :taint
+
+            f.run
+            f.auditstore.issues.size.should == 500
+            f.modules.clear
+        end
 
         context 'when the page has a body which is' do
             context 'not empty' do
@@ -601,72 +681,6 @@ describe Arachni::Framework do
                 f.auditstore.issues.size.should == 1
                 f.reset
             end
-        end
-
-        it 'should perform the audit' do
-            @f.opts.url = @url + '/elem_combo'
-            @f.opts.audit_links = true
-            @f.opts.audit_forms = true
-            @f.opts.audit_cookies = true
-            @f.modules.load( 'taint' )
-            @f.plugins.load( 'wait' )
-            @f.reports.load( 'foo' )
-
-            @f.status.should == 'ready'
-
-            @f.pause
-            @f.status.should == 'paused'
-
-            @f.resume
-            @f.status.should == 'ready'
-
-            called = false
-            t = Thread.new{
-                @f.run {
-                    called = true
-                    @f.status.should == 'cleanup'
-                }
-            }
-
-            raised = false
-            begin
-                Timeout.timeout( 10 ) {
-                    sleep( 0.01 ) while @f.status == 'preparing'
-                    sleep( 0.01 ) while @f.status == 'crawling'
-                    sleep( 0.01 ) while @f.status == 'auditing'
-                }
-            rescue TimeoutError
-                raised = true
-            end
-
-            raised.should be_false
-
-            t.join
-            called.should be_true
-
-            @f.status.should == 'done'
-            @f.auditstore.issues.size.should == 5
-
-            @f.auditstore.plugins['wait'][:results].should == { stuff: true }
-
-            File.exists?( 'afr' ).should be_true
-            File.exists?( 'foo' ).should be_true
-            File.delete( 'foo' )
-            File.delete( 'afr' )
-        end
-
-        it 'should handle heavy load' do
-            @opts.dir['modules']  = fixtures_path + '/taint_module/'
-            f = Arachni::Framework.new
-
-            f.opts.url = server_url_for :framework_hpg
-            f.opts.audit :links
-
-            f.modules.load :taint
-
-            f.run
-            f.auditstore.issues.size.should == 500
-            f.modules.clear
         end
     end
 

@@ -3,6 +3,10 @@ require_relative '../../spec_helper'
 class ObservableTest
     include Arachni::Mixins::Observable
 
+    def hooks
+        @__hooks
+    end
+
     def a_method( *args )
         call_a_method( *args )
     end
@@ -13,6 +17,8 @@ describe Arachni::Mixins::Observable do
     before :all do
         @obs = ObservableTest.new
     end
+
+    before( :each ) { @obs.clear_observers }
 
     it 'should call single hook without args' do
         res = false
@@ -53,6 +59,18 @@ describe Arachni::Mixins::Observable do
             @obs.blah
         rescue Exception => e
             e.class.should == NoMethodError
+        end
+    end
+
+    describe 'clear_observers' do
+        it 'should clear all callbacks' do
+            @obs.hooks.should be_empty
+
+            @obs.on_a_method {}
+            @obs.hooks.should be_any
+
+            @obs.clear_observers
+            @obs.hooks.should be_empty
         end
     end
 

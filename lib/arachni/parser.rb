@@ -119,7 +119,7 @@ class Parser
     end
 
     def url=( str )
-        @url = normalize_url( str )
+        @url = normalize_url( uri_decode( str ) )
     end
 
     #
@@ -167,7 +167,7 @@ class Parser
                 method:           req_method,
                 query_vars:       self_link.auditable,
                 body:             @html,
-                request_headers:  @response.request.headers,
+                request_headers:  @response.request ? @response.request.headers : {},
                 response_headers: @response_headers,
                 text:             false
             )
@@ -216,7 +216,7 @@ class Parser
             method:           req_method,
             body:             @html,
 
-            request_headers:  @response.request.headers,
+            request_headers:  @response.request ? @response.request.headers : {},
             response_headers: @response_headers,
 
             document:         doc,

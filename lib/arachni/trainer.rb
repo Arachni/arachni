@@ -16,10 +16,8 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'module/element_db'
+require Options.dir['lib'] + 'element_filter'
 require Options.dir['lib'] + 'module/output'
-
-module Module
 
 #
 # Trainer class
@@ -29,40 +27,37 @@ module Module
 # @author Tasos Laskos <tasos.laskos@gmail.com>
 #
 class Trainer
-    include Output
-    include ElementDB
+    include Module::Output
+    include ElementFilter
     include Utilities
 
-    attr_reader :page
+    MAX_TRAININGS_PER_URL = 25
 
-    # @param    [Arachni::Options]  opts
-    def initialize( opts )
-        @opts    = opts
-        @updated = false
+    # @param    [Arachni::Framework]  framework
+    def initialize( framework )
+        @framework  = framework
+        @updated    = false
 
-        @pages = []
-    end
+        @on_new_page_blocks = []
+        @trainings_per_url  = Hash.new( 0 )
 
-    #
-    # Sets the current working page and inits the element DB.
-    #
-    # @param    [Arachni::Page]    page
-    #
-    def page=( page )
-        init_db_from_page( page )
-        @page = page.deep_clone
-    end
-    alias :init :page=
+        framework.on_run_mods { |page| self.page = page }
 
-    #
-    # Flushes the page buffer
-    #
-    # @return   [Array<Arachni::Page>]
-    #
-    def flush
-        pages = @pages.dup
-        @pages.clear
-        pages
+        HTTP.add_on_queue do |req, _|
+            next if !req.train?
+
+            req.on_complete( true ) do |res|
+                # handle redirections
+                if res.redirection? && res.location.is_a?( String )
+                    reference_url = @page ? @page.url : framework.opts.url
+                    HTTP.get( to_absolute( res.location, reference_url ) ) do |res2|
+                        push( res2 )
+                    end
+                else
+                    push( res )
+                end
+            end
+        end
     end
 
     #
@@ -82,7 +77,9 @@ class Trainer
         end
 
         @parser = Parser.new( res )
-        return false if !@parser.text? || @parser.skip?( @parser.url )
+
+        return false if !@parser.text? || @parser.skip?( @parser.url ) ||
+            @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
 
         analyze( res )
         true
@@ -90,7 +87,21 @@ class Trainer
         print_error( e.to_s )
         print_error_backtrace( e )
     end
-    alias :<< :push
+
+    #
+    # Sets the current working page and inits the element DB.
+    #
+    # @param    [Arachni::Page]    page
+    #
+    def page=( page )
+        init_db_from_page( page )
+        @page = page.deep_clone
+    end
+    alias :init :page=
+
+    def on_new_page( &block )
+        @on_new_page_blocks << block
+    end
 
     private
 
@@ -123,7 +134,14 @@ class Trainer
             page_data[:doc]              = @parser.doc
             page_data[:response_headers] = res.headers_hash
 
-            @pages << Page.new( page_data )
+            @trainings_per_url[@parser.url] += 1
+
+            page = Page.new( page_data )
+
+            @on_new_page_blocks.each { |block| block.call page }
+
+            # feed the page back to the framework
+            @framework.push_to_page_queue( page )
 
             @updated = false
         end
@@ -149,6 +167,5 @@ class Trainer
         { name: 'Trainer' }
     end
 
-end
 end
 end

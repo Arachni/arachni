@@ -38,3 +38,16 @@ end
 get '/redirect' do
     ''
 end
+
+get '/elems' do
+    <<-EOHTML
+    <a href='/stuff'></a>
+    EOHTML
+end
+
+get '/train/redirect' do
+    redirect '/train/redirected?msg=some crap'
+end
+
+get '/train/redirected' do
+end

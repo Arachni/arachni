@@ -15,34 +15,20 @@
 =end
 
 module Arachni
-module Module
 
 #
-# Holds a database of all auditable elements of the current page,<br/>
-# including elements that have appeared dynamically during the audit.
+# Filter for Page elements used to keep track of what elements have already
+# been seen and separate them from new ones.
 #
-# The database is updated by the {Trainer}.
-#
-# For each page that is audited the database is reset.
+# Mostly used by the {Trainer}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-module ElementDB
+module ElementFilter
     include Utilities
 
-    #
-    # page forms
-    #
     @@forms    ||= BloomFilter.new
-
-    #
-    # page links
-    #
     @@links    ||= BloomFilter.new
-
-    #
-    # page cookies
-    #
     @@cookies  ||= Set.new
 
     def self.reset
@@ -52,9 +38,9 @@ module ElementDB
     end
 
     def init_db_from_page( page )
-        init_links( page.links )
-        init_forms( page.forms )
-        init_cookies( page.cookies )
+        init_links page.links
+        init_forms page.forms
+        init_cookies page.cookies
     end
 
     #
@@ -157,5 +143,4 @@ module ElementDB
 
 end
 
-end
 end
