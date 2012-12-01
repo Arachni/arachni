@@ -51,10 +51,7 @@ require Options.dir['mixins'] + 'progress_bar'
 #
 # The Framework class ties together all the components.
 #
-# It should be wrapped by a UI class.
-#
 # It's the brains of the operation, it bosses the rest of the classes around.
-#
 # It runs the audit, loads modules and reports and runs them according to
 # user options.
 #
@@ -74,67 +71,39 @@ class Framework
     # the version of *this* class
     REVISION = '0.2.7'
 
-    #
-    # Instance options
-    #
-    # @return [Options]
-    #
+    # @return [Options] Instance options
     attr_reader :opts
 
-    #
-    # @return   [Arachni::Report::Manager]   report manager
-    #
+    # @return   [Arachni::Report::Manager]
     attr_reader :reports
 
-    #
-    # @return   [Arachni::Module::Manager]   module manager
-    #
+    # @return   [Arachni::Module::Manager]
     attr_reader :modules
 
-    #
-    # @return   [Arachni::Plugin::Manager]   plugin manager
-    #
+    # @return   [Arachni::Plugin::Manager]
     attr_reader :plugins
 
-    # @return   [Session]   webapp session helper
+    # @return   [Session]   Web application session manager.
     attr_reader :session
 
-    # @return   [Spider]   webapp spider
+    # @return   [Spider]   Web application spider.
     attr_reader :spider
 
-    #
-    # @return   [Arachni::HTTP]     HTTP instance
-    #
+    # @return   [Arachni::HTTP]
     attr_reader :http
 
-    #
-    # URLs of all discovered pages
-    #
-    # @return   [Array]
-    #
+    # @return   [Array] URLs of all discovered pages.
     attr_reader :sitemap
 
-    #
-    # @return   [Array]
-    #
+    # @return   [Trainer]
     attr_reader :trainer
 
-    #
-    # Total number of pages added to their audit queue
-    #
-    # @return   [Integer]
-    #
+    # @return   [Integer]   Total number of pages added to their audit queue.
     attr_reader :page_queue_total_size
 
-    #
-    # Total number of urls added to their audit queue
-    #
-    # @return   [Integer]
-    #
+    # @return   [Integer]   Total number of urls added to their audit queue.
     attr_reader :url_queue_total_size
 
-    #
-    # Initializes system components.
     #
     # @param    [Options]    opts
     # @param    [Block]      block
