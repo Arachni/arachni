@@ -41,7 +41,8 @@ class Trainer
         @on_new_page_blocks = []
         @trainings_per_url  = Hash.new( 0 )
 
-        framework.on_run_mods { |page| self.page = page }
+        # get us setup using the page that is being audited as a seed page
+        framework.on_audit_page { |page| self.page = page }
 
         HTTP.add_on_queue do |req, _|
             next if !req.train?

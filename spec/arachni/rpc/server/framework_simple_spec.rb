@@ -75,9 +75,9 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.solo?.should be_true
         end
     end
-    describe '#lsplug' do
+    describe '#list_plugins' do
         it 'should list all available plugins' do
-            plugins = @framework_clean.lsplug
+            plugins = @framework_clean.list_plugins
             plugins.size.should == 7
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
             plugin[:name].should == 'Default'
@@ -95,10 +95,16 @@ describe Arachni::RPC::Server::Framework do
             opt['enums'].should be_empty
             opt['type'].should == 'integer'
         end
+        it 'should be aliased to #lsplug' do
+            @framework_clean.list_plugins.should == @framework_clean.lsplug
+        end
     end
-    describe '#lsmod' do
+    describe '#list_modules' do
         it 'should list all available plugins' do
             @framework_clean.lsmod.should be_any
+        end
+        it 'should be aliased to #lsmod' do
+            @framework_clean.list_modules.should == @framework_clean.lsmod
         end
     end
     describe '#output' do

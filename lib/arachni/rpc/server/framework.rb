@@ -49,10 +49,11 @@ class Framework < ::Arachni::Framework
     include Distributor
 
     # Make these inherited methods visible again.
-    private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status, :clean_up!
-    public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status, :clean_up!
+    private :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+            :list_plugins, :version, :revision, :status, :clean_up!
+
+    public  :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+            :list_plugins, :lsplug, :version, :revision, :status, :clean_up!
 
     alias :auditstore   :audit_store
 
@@ -104,7 +105,7 @@ class Framework < ::Arachni::Framework
     end
 
     # @return  [Array<Hash>]  Information about all available plug-ins.
-    def lsplug
+    def list_plugins
         super.map do |plugin|
             plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
                 opt.to_h.merge( 'type' => opt.type )
@@ -112,6 +113,7 @@ class Framework < ::Arachni::Framework
             plugin
         end
     end
+    alias :lsplug :list_plugins
 
     # @return   [Bool] +true+ If the system is scanning, +false+ if {#run}
     #   hasn't been called yet or if the scan has finished.
