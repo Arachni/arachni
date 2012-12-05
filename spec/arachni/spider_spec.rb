@@ -197,6 +197,13 @@ describe Arachni::Spider do
                 spider.redirects.size.should == 1
             end
         end
+        it 'should follow relative redirect locations' do
+            @opts.url = @url + '/relative_redirect'
+            @opts.redirect_limit = -1
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
+        end
         it 'should follow stacked redirects' do
             @opts.url = @url + '/stacked_redirect'
             @opts.redirect_limit = -1

@@ -38,6 +38,11 @@ get '/goto_foreign_domain' do
     redirect 'http://google.com/'
 end
 
+get '/relative_redirect' do
+    headers 'Location' => '/stacked_redirect'
+    301
+end
+
 get '/redirect' do
     redirect '/'
 end

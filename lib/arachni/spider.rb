@@ -358,12 +358,13 @@ class Spider
 
             if res.redirection?
                 @redirects << res.request.url
-                if hit_redirect_limit? || skip?( res.location )
+                location = to_absolute( res.location )
+                if hit_redirect_limit? || skip?( location )
                     decrease_pending
                     next
                 end
                 @followed_redirects += 1
-                push res.location
+                push location
             end
 
             print_status( "[HTTP: #{res.code}] " + effective_url )
