@@ -29,6 +29,7 @@
   - Fixed corruption of binary response bodies due to aggressive sanitization.
 - Spider
   - Fixed enforcement of redirect limit. [Issue #306]
+  - Updated to handle relative Location URLs in redirections.
 - Added
   - ```Arachni::Buffer::Base``` -- Buffer base class.
   - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
