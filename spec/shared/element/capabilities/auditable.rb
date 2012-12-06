@@ -524,7 +524,7 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when called with option' do
 
             describe :each_mutation do
-                it 'should be able to modify the element on the fly' do
+                it 'should be passed each generated mutation and be able to modify it on the fly' do
                     submitted = nil
                     cnt = 0
 
