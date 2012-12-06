@@ -265,7 +265,17 @@ class Spider
     # @return   [Bool]  true if any of the 3 filters returns true, false otherwise
     #
     def skip?( url )
-        visited?( url ) || skip_path?( url )
+        if visited?( url )
+            print_debug "Skipping already visited URL: #{url}"
+            return true
+        end
+
+         if skip_path?( url )
+             print_verbose "Skipping out of scope URL: #{url}"
+             return true
+         end
+
+        false
     end
 
     def remove_path_params( url )
