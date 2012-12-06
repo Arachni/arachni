@@ -744,6 +744,8 @@ class CLI
     --restrict-paths=<filepath> Use the paths in <file> instead of crawling.
                                   (Can be used multiple times.)
 
+    --https-only                Forces the system to only follow HTTPS URLs.
+
 
     Auditor ------------------------
 

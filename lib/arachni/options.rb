@@ -472,6 +472,9 @@ class Options
     # @return   [Integer]   HTTP request timeout in milliseconds
     attr_accessor :http_timeout
 
+    # @return   [Bool]   Only follow HTTPS links.
+    attr_accessor :https_only
+
     def initialize
         reset
     end
@@ -503,6 +506,7 @@ class Options
         @datastore  = {}
         @redundant  = {}
 
+        @https_only        = false
         @obey_robots_txt   = false
         @fuzz_methods      = false
         @audit_cookies_extensively = false
@@ -541,6 +545,10 @@ class Options
         @min_pages_per_instance = 30
         @max_slaves = 10
         self
+    end
+
+    def https_only?
+        !!@https_only
     end
 
     #
@@ -607,10 +615,20 @@ class Options
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
-        if !parsed || !parsed.absolute? ||
-            (!no_protocol_for_url? && !%w(http https).include?( parsed.scheme ))
+        if !parsed || !parsed.absolute?
             fail Exceptions::InvalidURL,
                  "Invalid URL argument, please provide a full absolute URL and try again."
+        else
+            if !no_protocol_for_url?
+                if https_only? && parsed.scheme != 'https'
+                    fail Exceptions::InvalidURL,
+                         "Invalid URL argument, the 'https-only' option requires"+
+                             " an HTTPS URL."
+                elsif !%w(http https).include?( parsed.scheme )
+                    fail Exceptions::InvalidURL,
+                         "Invalid URL scheme, please provide an HTTP or HTTPS URL and try again."
+                end
+            end
         end
 
         @url = parsed.to_s
@@ -823,7 +841,8 @@ class Options
             [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
             [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--https-only',             GetoptLong::NO_ARGUMENT ],
         )
 
         opts.quiet = true
@@ -1066,6 +1085,9 @@ class Options
 
                     when '--login-check-pattern'
                         @login_check_pattern = arg
+
+                    when '--https-only'
+                        @https_only = true
                 end
             end
 

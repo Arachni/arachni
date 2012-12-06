@@ -1,6 +1,8 @@
 # ChangeLog
 
 ## _Under development_
+- Options
+  - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
 - RPC
   - Handlers
       - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```

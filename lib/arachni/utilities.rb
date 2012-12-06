@@ -225,6 +225,29 @@ module Utilities
     end
 
     #
+    # Decides whether the given +url+ has an acceptable protocol.
+    #
+    # @param    [String]    url
+    # @param    [String]    reference   Reference URL.
+    #
+    # @return   [Bool]
+    #
+    # @see Options#https_only
+    # @see Options#https_only?
+    #
+    def follow_protocol?( url, reference = Options.url )
+        return true if !reference
+        ref_scheme   = uri_parse( reference ).scheme
+
+        return true if ref_scheme && ref_scheme != 'https'
+
+        check_scheme = uri_parse( url ).scheme
+        return true if ref_scheme == check_scheme
+
+        !Options.https_only?
+    end
+
+    #
     # Decides whether or not the provided +path+ should be skipped based on:
     # * {#include_path?}
     # * {#exclude_path?}
@@ -244,8 +267,11 @@ module Utilities
             return true if exclude_path?( parsed )
             return true if path_too_deep?( parsed )
             return true if !path_in_domain?( parsed )
+            return true if !follow_protocol?( parsed )
             false
-        rescue
+        rescue => e
+            ap e
+            ap e.backtrace
             true
         end
     end
