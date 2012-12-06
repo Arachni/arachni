@@ -13,6 +13,14 @@ describe Arachni::Spider do
         Arachni::HTTP.instance.reset
     end
 
+    it 'should support HTTPS' do
+        @opts.url = (server_url_for :spider_https).gsub( 'http', 'https' )
+        spider = Arachni::Spider.new
+
+        spider.run.size.should == 3
+        spider.redirects.size.should == 2
+    end
+
     it 'should avoid infinite loops' do
         @opts.url = @url + 'loop'
         sitemap = Arachni::Spider.new.run
