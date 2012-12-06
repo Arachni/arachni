@@ -30,6 +30,11 @@
 - Spider
   - Fixed enforcement of redirect limit. [Issue #306]
   - Updated to handle relative Location URLs in redirections.
+- ```Arachni::Element::Capabilities::Auditable```
+  - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
+    a custom auditor when scripting.
+  - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
+    when no auditor has been provided.
 - Added
   - ```Arachni::Buffer::Base``` -- Buffer base class.
   - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
