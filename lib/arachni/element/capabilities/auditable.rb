@@ -75,13 +75,6 @@ module Auditable
     attr_reader   :opts
 
     #
-    # Holds constants that describe the HTML elements to be audited.
-    #
-    #module Element
-    #    include Arachni::Issue::Element
-    #end
-
-    #
     # Default audit options.
     #
     OPTIONS = {
@@ -102,6 +95,47 @@ module Auditable
         #
         each_mutation:  nil
     }
+
+    #
+    # Assigns an anonymous auditor as an {#auditor}.
+    #
+    # Alleviates the need to assign a custom auditor for simple stuff when
+    # scripting.
+    #
+    def use_anonymous_auditor
+        self.auditor = Class.new do
+            include Arachni::Module::Auditor
+
+            #
+            # @return   [Array<Issue>]  Unfiltered logged issues.
+            #
+            # @see Arachni::Module::Manager.results
+            #
+            def raw_issues
+                Arachni::Module::Manager.results
+            end
+
+            #
+            # @return   [Array<Issue>]  Deduplicated issues.
+            #
+            # @see AuditStore#issues
+            #
+            def issues
+                auditstore.issues
+            end
+
+            # @return   [AuditStore]
+            def auditstore
+                AuditStore.new( options: Options.instance.to_h,
+                                issues:  raw_issues )
+            end
+            alias :audit_store :auditstore
+
+            def self.info
+                { name: 'Anonymous auditor' }
+            end
+        end.new
+    end
 
     #
     # Frozen Key=>value pairs of inputs.
@@ -330,6 +364,7 @@ module Auditable
         @opts = opts
 
         @auditor ||= opts[:auditor] if opts[:auditor]
+        use_anonymous_auditor if !@auditor
 
         opts.delete( :auditor )
 
@@ -374,6 +409,7 @@ module Auditable
 
         @auditor ||= opts[:auditor]
         opts[:auditor] ||= @auditor
+        use_anonymous_auditor if !@auditor
 
         audit_id = audit_id( injection_str, opts )
         return false if !opts[:redundant] && audited?( audit_id )

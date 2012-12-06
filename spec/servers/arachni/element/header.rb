@@ -7,7 +7,7 @@ def submitted
 end
 
 get '/' do
-    env['HTTP_MY_HEADER'].to_s
+    submitted.to_s
 end
 
 get '/submit' do
