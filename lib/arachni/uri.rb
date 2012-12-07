@@ -49,6 +49,16 @@ class URI
     include Utilities
     extend  Utilities
 
+    #
+    # {URI} error namespace.
+    #
+    # All {URI} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+    end
+
     CACHE_SIZES = {
         parse:       600,
         ruby_parse:  600,
@@ -466,7 +476,8 @@ class URI
                               msg << " -- #{url.class.name} '#{to_string}' passed."
                               fail TypeError.new( msg )
                       end
-        fail 'Failed to parse URL.' if !@parsed_url
+
+        fail Error, 'Failed to parse URL.' if !@parsed_url
     end
 
     def ==( other )

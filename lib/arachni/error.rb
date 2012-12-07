@@ -17,38 +17,11 @@
 module Arachni
 
 #
-# It holds the framework's exceptions.
+# It provides a namespace for all system errors.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-module Exceptions
-
-    class NoAuditOpts < StandardError
-    end
-
-    class NoMods < StandardError
-    end
-
-    class ComponentNotFound < StandardError
-    end
-
-    class ModNotFound < StandardError
-    end
-
-    class DepModNotFound < StandardError
-    end
-
-    class ReportNotFound < StandardError
-    end
-
-    class NoURL < StandardError
-    end
-
-    class InvalidURL < StandardError
-    end
-
-    class NoCookieJar < StandardError
-    end
-
+class Error < StandardError
 end
+
 end

@@ -263,7 +263,7 @@ describe Arachni::HTTP do
                     raised = false
                     begin
                         @http.reset
-                    rescue Arachni::Exceptions::NoCookieJar
+                    rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                         raised = true
                     end
                     raised.should be_true

@@ -21,8 +21,25 @@ module Arachni::Element
 FORM = 'form'
 
 class Form < Arachni::Element::Base
-
     include Capabilities::Refreshable
+
+    #
+    # {Form} error namespace.
+    #
+    # All {Form} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a specified form field could not be found/does not exist.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class FieldNotFound < Error
+        end
+    end
 
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
@@ -953,8 +970,12 @@ class Form < Arachni::Element::Base
     #
     # @param    [String]    field_name name of the field holding the nonce
     #
+    # @raise    [Error::FieldNotFound]  If +field_name+ is not a form input.
+    #
     def nonce_name=( field_name )
-        fail "Could not find field named '#{field_name}'." if !has_inputs?( field_name )
+        if !has_inputs?( field_name )
+            fail Error::FieldNotFound, "Could not find field named '#{field_name}'."
+        end
         @nonce_name = field_name
     end
 

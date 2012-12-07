@@ -17,10 +17,36 @@ describe Arachni::HTTP::CookieJar do
 
         context 'when the provided file does not exist' do
             it 'should raise an exception' do
+                trigger = proc { @jar.class.from_file( 'file' ) }
+
                 raised = false
                 begin
-                    j = @jar.class.from_file( 'file' )
-                rescue Arachni::Exceptions::NoCookieJar
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::HTTP::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::HTTP::CookieJar::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                     raised = true
                 end
                 raised.should be_true
@@ -47,7 +73,7 @@ describe Arachni::HTTP::CookieJar do
                 raised = false
                 begin
                     j = @jar.class.from_file( 'file' )
-                rescue Arachni::Exceptions::NoCookieJar
+                rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                     raised = true
                 end
                 raised.should be_true

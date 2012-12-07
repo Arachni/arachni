@@ -25,7 +25,6 @@ require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
 require lib + 'utilities'
 require lib + 'mixins/observable'
-require lib + 'http/cookie_jar'
 
 #
 # Provides a system-wide, simple and high-performance HTTP interface.
@@ -37,6 +36,18 @@ class HTTP
     include Module::Output
     include Utilities
     include Mixins::Observable
+
+    #
+    # {HTTP} error namespace.
+    #
+    # All {HTTP} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+    end
+
+    require Options.dir['lib'] + 'http/cookie_jar'
 
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
@@ -251,7 +262,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def request( url = @url, opts = {}, &block )
-        fail 'URL cannot be empty.' if !url
+        fail ArgumentError, 'URL cannot be empty.' if !url
 
         params    = opts[:params] || {}
         train     = opts[:train]

@@ -143,35 +143,26 @@ class Spider
         !!@running
     end
 
-    #
-    # Sets blocks to be called every time a page is visited.
-    #
-    # @param    [Block]     block
-    #
+    # @param    [Block] block
+    #   Sets blocks to be called every time a page is visited.
     def on_each_page( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called every time a response is received.
-    #
     # @param    [Block]     block
-    #
+    #   Sets blocks to be called every time a response is received.
     def on_each_response( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_response_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called once the crawler is done.
-    #
     # @param    [Block]    block
-    #
+    #   Sets blocks to be called once the crawler is done.
     def on_complete( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_complete_blocks << block
         self
     end

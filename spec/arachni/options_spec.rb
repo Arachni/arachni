@@ -15,10 +15,28 @@ describe Arachni::Options do
 
     describe '#no_protocol_for_url' do
         it 'should not require the URL to include a protocol' do
+            trigger = proc { Arachni::Options.url = 'stuff:80' }
+
             raised = false
             begin
-                Arachni::Options.url = 'stuff:80'
-            rescue
+                trigger.call
+            rescue Arachni::Error
+                raised = true
+            end
+            raised.should be_true
+
+            raised = false
+            begin
+                trigger.call
+            rescue Arachni::Options::Error
+                raised = true
+            end
+            raised.should be_true
+
+            raised = false
+            begin
+                trigger.call
+            rescue Arachni::Options::Error::InvalidURL
                 raised = true
             end
             raised.should be_true
