@@ -3,6 +3,9 @@
 ## _Under development_
 - Options
   - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
+- Updated exceptions thrown by the framework, removed ```Arachni::Exceptions```
+    namespace and replaced it with the ```Arachni::Error``` base exception from
+    which all component specific exceptions inherit.
 - RPC
   - Handlers
       - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
@@ -38,9 +41,10 @@
   - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
     when no auditor has been provided.
 - Added
-  - ```Arachni::Buffer::Base``` -- Buffer base class.
-  - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
-    itself when it gets full or a number of fill-up attempts is reached between flushes.
+  - Buffer classes
+      - ```Arachni::Buffer::Base``` -- Buffer base class.
+      - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
+        itself when it gets full or a number of fill-up attempts is reached between flushes.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
