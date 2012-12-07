@@ -18,7 +18,20 @@ module Arachni
 
 module Component
 
+#
+# {Component} error namespace.
+#
+# All {Component} errors inherit from and live under it.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
 class Error < Arachni::Error
+
+    #
+    # Raised when a specified component could not be found/does not exist.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
     class NotFound < Error
     end
 end
@@ -164,6 +177,9 @@ class Manager < Hash
     # @param    [Hash]      user_opts         the user options
     #
     # @return   [Hash]   the prepared options to be passed to the component
+    #
+    # @raise    [Component::Options::Error::Invalid]
+    #   If given options are invalid.
     #
     def prep_opts( component_name, component, user_opts = {} )
         info = component.info

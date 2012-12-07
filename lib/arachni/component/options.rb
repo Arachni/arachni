@@ -31,6 +31,12 @@ module Options
     # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
     #
     class Error < Arachni::Component::Error
+
+        #
+        # Raised when a provided option is not valid.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
         class Invalid < Error
         end
     end
