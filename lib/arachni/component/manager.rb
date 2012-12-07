@@ -16,9 +16,27 @@
 
 module Arachni
 
-require Options.dir['lib'] + 'component/options'
-
 module Component
+
+#
+# {Component} error namespace.
+#
+# All {Component} errors inherit from and live under it.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+#
+class Error < Arachni::Error
+
+    #
+    # Raised when a specified component could not be found/does not exist.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class NotFound < Error
+    end
+end
+
+require Options.dir['lib'] + 'component/options'
 
 #
 # Handles modules, reports, path extractor modules, plug-ins, pretty much
@@ -79,9 +97,6 @@ module Component
 #
 class Manager < Hash
     include UI::Output
-
-    class InvalidOptions < RuntimeError
-    end
 
     #
     # The following are used by {#parse}:
@@ -163,6 +178,9 @@ class Manager < Hash
     #
     # @return   [Hash]   the prepared options to be passed to the component
     #
+    # @raise    [Component::Options::Error::Invalid]
+    #   If given options are invalid.
+    #
     def prep_opts( component_name, component, user_opts = {} )
         info = component.info
         return {} if !info.include?( :options ) || info[:options].empty?
@@ -192,7 +210,8 @@ class Manager < Hash
         end
 
         if !errors.empty?
-            fail InvalidOptions.new( format_error_string( component_name, errors ) )
+            fail Component::Options::Error::Invalid,
+                 format_error_string( component_name, errors )
         end
 
         options
@@ -242,8 +261,8 @@ class Manager < Hash
                     if avail_components.include?( component )
                         load << component
                     else
-                        fail( Exceptions::ComponentNotFound,
-                            "Component '#{component}' could not be found." )
+                        fail Error::NotFound,
+                             "Component '#{component}' could not be found."
                     end
                 end
             end

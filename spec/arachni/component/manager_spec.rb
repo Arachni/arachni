@@ -126,6 +126,36 @@ describe Arachni::Component::Manager do
                 end
             end
         end
+
+        context 'when a component is not found' do
+            it 'should raise an exception' do
+                trigger = proc { @components.load :houa }
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Component::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Component::Error::NotFound
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
     end
 
     describe '#load_by_tags' do
@@ -298,15 +328,46 @@ describe Arachni::Component::Manager do
 
         context 'when invalid options' do
             it 'should raise an exception' do
-                raised = false
-                begin
-                    c = 'with_options'
-                    @components.load( c )
-                    @components.prep_opts( c, @components[c], {} )
-                rescue Arachni::Component::Manager::InvalidOptions
-                    raised = true
+                trigger = proc do
+                    begin
+                        c = 'with_options'
+                        @components.load( c )
+                        @components.prep_opts( c, @components[c], {} )
+                    ensure
+                        @components.clear
+                    end
                 end
 
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Component::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Component::Options::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Component::Options::Error::Invalid
+                    raised = true
+                end
                 raised.should be_true
             end
         end

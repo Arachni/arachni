@@ -29,7 +29,7 @@ module Arachni
 lib = Options.dir['lib']
 require lib + 'version'
 require lib + 'ruby'
-require lib + 'exceptions'
+require lib + 'error'
 require lib + 'cache'
 require lib + 'utilities'
 require lib + 'uri'
@@ -404,7 +404,8 @@ class Framework
 
                 @modules[name].info.merge(
                     mod_name: name,
-                    author:   [@modules[name].info[:author]].flatten.map { |a| a.strip },
+                    author:   [@modules[name].info[:author]].
+                                  flatten.map { |a| a.strip },
                     path:     path.strip
                 )
             end.compact
@@ -428,7 +429,8 @@ class Framework
                 @reports[report].info.merge(
                     rep_name: report,
                     path:     path,
-                    author:   [@reports[report].info[:author]].flatten.map { |a| a.strip }
+                    author:   [@reports[report].info[:author]].
+                                  flatten.map { |a| a.strip }
                 )
             end.compact
         ensure
@@ -451,7 +453,8 @@ class Framework
                 @plugins[plugin].info.merge(
                     plug_name: plugin,
                     path:      path,
-                    author:    [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
+                    author:    [@plugins[plugin].info[:author]].
+                                   flatten.map { |a| a.strip }
                 )
             end.compact
         ensure

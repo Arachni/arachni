@@ -611,13 +611,20 @@ class Framework < ::Arachni::Framework
     #
     # @return   [String]    Report content.
     #
+    # @raise    [Component::Error::NotFound]
+    #   If the given report name doesn't correspond to a valid report component.
+    #
+    # @raise    [Component::Error::InvalidOptions]
+    #   If the requested report doesn't format the scan results as a String.
+    #
     def report_as( name, &block )
         if !reports.available.include?( name.to_s )
-            fail Arachni::Exceptions::ComponentNotFound,
+            fail Component::Error::NotFound,
                  "Report '#{name}' could not be found."
         end
         if !reports[name].has_outfile?
-            fail TypeError, "Report '#{name}' cannot format the audit results as a String."
+            fail Component::Error::InvalidOptions,
+                 "Report '#{name}' cannot format the audit results as a String."
         end
 
         outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"

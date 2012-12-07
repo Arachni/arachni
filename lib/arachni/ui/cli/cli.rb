@@ -113,18 +113,11 @@ class CLI
             # if the user requested to exit the scan wait for the
             # Thread that takes care of the clean-up to finish
             @exit_handler.join if @exit_handler
-        rescue Component::Manager::InvalidOptions => e
+        rescue Component::Options::Error::Invalid => e
             print_error e
-            print_error_backtrace e
             print_line
             exit 1
-        rescue Exceptions::NoMods => e
-            print_error e
-            print_info "Run arachni with the '-h' parameter for help or "
-            print_info "with the '--lsmod' parameter to see all available modules."
-            print_line
-            exit 1
-        rescue Exceptions => e
+        rescue Arachni::Error => e
             print_error e
             print_info "Run arachni with the '-h' parameter for help."
             print_line
@@ -383,7 +376,7 @@ class CLI
                 when 'mods'
                     begin
                         @opts.mods = @arachni.modules.load( arg )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available modules are:'
                         print_info @arachni.modules.available.join( ', ' )
@@ -395,7 +388,7 @@ class CLI
                 when 'reports'
                     begin
                         @arachni.reports.load( arg.keys )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available reports are:'
                         print_info @arachni.reports.available.join( ', ' )
@@ -407,7 +400,7 @@ class CLI
                 when 'plugins'
                     begin
                         @arachni.plugins.load( arg.keys )
-                    rescue Exceptions::ComponentNotFound => e
+                    rescue Component::Error::NotFound => e
                         print_error e
                         print_info 'Available plugins are:'
                         print_info @arachni.plugins.available.join( ', ' )

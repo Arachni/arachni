@@ -25,6 +25,8 @@ YAML::ENGINE.yamler = 'syck'
 require 'singleton'
 require 'getoptlong'
 
+require_relative 'error'
+
 module Arachni
 
 #
@@ -36,6 +38,24 @@ module Arachni
 #
 class Options
     include Singleton
+
+    #
+    # {Options} error namespace.
+    #
+    # All {Options} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a provided {Options#url= URL} is invalid.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class InvalidURL < Error
+        end
+    end
 
     #
     # The extension of the profile files.
@@ -107,7 +127,7 @@ class Options
     #
     # The URL to audit
     #
-    # @return    [String,URI]
+    # @return    [String]
     #
     attr_reader   :url
 
@@ -606,26 +626,27 @@ class Options
     #
     # @return   [String]    normalized +url+
     #
+    # @raise    [Error::InvalidURL]     If the given +url+ is not valid.
+    #
     def url=( url )
         return if !url
 
-        require @dir['lib'] + 'exceptions'
         require @dir['lib'] + 'ruby'
         require @dir['lib'] + 'cache'
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
         if !parsed || !parsed.absolute?
-            fail Exceptions::InvalidURL,
+            fail Error::InvalidURL,
                  "Invalid URL argument, please provide a full absolute URL and try again."
         else
             if !no_protocol_for_url?
                 if https_only? && parsed.scheme != 'https'
-                    fail Exceptions::InvalidURL,
+                    fail Error::InvalidURL,
                          "Invalid URL argument, the 'https-only' option requires"+
                              " an HTTPS URL."
                 elsif !%w(http https).include?( parsed.scheme )
-                    fail Exceptions::InvalidURL,
+                    fail Error::InvalidURL,
                          "Invalid URL scheme, please provide an HTTP or HTTPS URL and try again."
                 end
             end
@@ -1093,7 +1114,8 @@ class Options
 
             if (!@login_check_url && @login_check_pattern) ||
                 (@login_check_url && !@login_check_pattern)
-                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+                fail Error, "Both '--login-check-url' and " +
+                    "'--login-check-pattern' options are required."
             end
 
         rescue => e

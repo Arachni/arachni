@@ -457,7 +457,7 @@ module Auditor
 
                 when Element::BODY
                 else
-                    failt "Unknown element to audit: #{elem}"
+                    fail ArgumentError, "Unknown element: #{elem}"
             end
         end
 

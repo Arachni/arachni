@@ -366,7 +366,6 @@ shared_examples_for 'auditable' do |options = {}|
                 issue = elem.auditor.raw_issues.first
                 issue.elem.should == elem.type
                 issue.id.should == 'test'
-                issue.injected.should == 'test'
                 issue.method.to_s.downcase.should == 'get'
                 issue.name.should == 'Anonymous auditor'
                 issue.var.should == 'param'
