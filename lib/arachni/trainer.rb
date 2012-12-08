@@ -79,8 +79,9 @@ class Trainer
 
         @parser = Parser.new( res )
 
-        return false if !@parser.text? || @parser.skip?( @parser.url ) ||
-            @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
+        return false if !@parser.text? ||
+            @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL ||
+            redundant?( @parser.url ) || skip_path?( @parser.url )
 
         analyze( res )
         true

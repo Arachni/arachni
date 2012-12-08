@@ -130,6 +130,31 @@ describe Arachni::Trainer do
         end
     end
 
+    context 'when a page\'s URL matches a redundancy filter' do
+        it 'should ne ignored' do
+            get_response = proc do
+                Typhoeus::Response.new(
+                    effective_url: 'http://stuff.com/match_this',
+                    body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                    headers_hash: { 'Content-type' => 'text/html' },
+                    request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                )
+            end
+
+            @trainer.page = Arachni::Page.from_response( get_response.call )
+
+            pages = []
+            @trainer.on_new_page { |p| pages << p }
+
+            Arachni::Options.redundant = { /match_this/ => 10 }
+
+            100.times { @trainer.push( get_response.call ) }
+
+            pages.size.should == 10
+        end
+    end
+
+
     context 'when the content-type is' do
         context 'text-based' do
             it 'should return true' do

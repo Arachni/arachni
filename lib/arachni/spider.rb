@@ -292,7 +292,7 @@ class Spider
     end
 
     #
-    # Checks is the provided URL matches a redundant filter
+    # Checks if the provided URL matches a redundant filter
     # and decreases its counter if so.
     #
     # If a filter's counter has reached 0 the method returns true.
@@ -302,7 +302,7 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        redundant = @opts.redundant?( url ) do |count, regexp, path|
+        redundant = super( url ) do |count, regexp, path|
             print_info "Matched redundancy rule: #{regexp} for #{path}"
             print_info "Count-down: #{count}"
         end
