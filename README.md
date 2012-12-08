@@ -127,7 +127,7 @@ and straight-forward all the while providing power, performance and flexibility.
     - SSL encryption (with peer authentication)
     - Remote monitoring
     - Support for [High Performance Grid](https://github.com/Arachni/arachni/wiki/HPG)
-        configuration, combining the resources of multiple nodes to perform fast scans.
+        configuration, combining the resources of multiple nodes to perform faster scans.
 
 ### Crawler
 
