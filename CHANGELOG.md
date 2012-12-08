@@ -32,6 +32,8 @@
       - Slave instances now buffer their logged issues and report them to the Master in batches.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
+  - Updated custom-404 page detection to fallback to a word-difference ratio of
+    the refined responses if straight comparison fails.
 - Spider
   - Fixed enforcement of redirect limit. [Issue #306]
   - Updated to handle relative Location URLs in redirections.
