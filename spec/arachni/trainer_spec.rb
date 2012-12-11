@@ -8,7 +8,7 @@ class TrainerMockFramework
     def initialize( page )
         @page        = page
         @pages       = []
-        @on_run_mods = []
+        @on_audit_page = []
 
         Arachni::HTTP.reset
         @trainer = Arachni::Trainer.new( self )
@@ -17,15 +17,15 @@ class TrainerMockFramework
     end
 
     def run
-        @on_run_mods.each do |b|
+        @on_audit_page.each do |b|
             b.call @page
         end
 
         Arachni::HTTP.run
     end
 
-    def on_run_mods( &block )
-        @on_run_mods << block
+    def on_audit_page( &block )
+        @on_audit_page << block
     end
 
     def push_to_page_queue( page )
@@ -129,6 +129,31 @@ describe Arachni::Trainer do
             pages.size.should == Arachni::Trainer::MAX_TRAININGS_PER_URL
         end
     end
+
+    context 'when a page\'s URL matches a redundancy filter' do
+        it 'should ne ignored' do
+            get_response = proc do
+                Typhoeus::Response.new(
+                    effective_url: 'http://stuff.com/match_this',
+                    body:          "<a href='?#{rand( 9999 )}=1'>Test</a>",
+                    headers_hash: { 'Content-type' => 'text/html' },
+                    request:      Typhoeus::Request.new( 'http://stuff.com/match_this' )
+                )
+            end
+
+            @trainer.page = Arachni::Page.from_response( get_response.call )
+
+            pages = []
+            @trainer.on_new_page { |p| pages << p }
+
+            Arachni::Options.redundant = { /match_this/ => 10 }
+
+            100.times { @trainer.push( get_response.call ) }
+
+            pages.size.should == 10
+        end
+    end
+
 
     context 'when the content-type is' do
         context 'text-based' do

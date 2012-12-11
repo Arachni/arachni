@@ -29,7 +29,7 @@ module Arachni
 lib = Options.dir['lib']
 require lib + 'version'
 require lib + 'ruby'
-require lib + 'exceptions'
+require lib + 'error'
 require lib + 'cache'
 require lib + 'utilities'
 require lib + 'uri'
@@ -181,24 +181,46 @@ class Framework
     end
 
     #
-    # Returns the status of the instance as a string.
+    # Runs loaded modules against a given +page+.
     #
-    # Possible values are (in order):
-    # * ready -- Just initialised and waiting for instructions
-    # * preparing -- Getting ready to start (i.e. initing plugins etc.)
-    # * crawling -- The instance is crawling the target webapp
-    # * auditing-- The instance is currently auditing the webapp
-    # * paused -- The instance has posed (if applicable)
-    # * cleanup -- The scan has completed and the instance is cleaning up
-    #   after itself (i.e. waiting for plugins to finish etc.).
-    # * done -- The scan has completed
+    # It will audit just the given page and not use the [Trainer] -- i.e. ignore
+    # any new elements that might appear as a result.
     #
-    # @return   [String]
+    # @param    [Page]    page
     #
-    def status
-        return 'paused' if paused?
-        @status.to_s
+    def audit_page( page )
+        return if !page
+
+        # we may end up ignoring it but being included in the auditmap means that
+        # it has been considered but didn't fit the criteria
+        @auditmap << page.url
+        @sitemap |= @auditmap
+        @sitemap.uniq!
+
+        if Options.exclude_binaries? && !page.text?
+            print_info "Ignoring page due to non text-based content-type: #{page.url}"
+            return
+        end
+
+        print_line
+        print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
+
+        call_on_audit_page( page )
+
+        @current_url = page.url.to_s
+
+        @modules.schedule.each do |mod|
+            wait_if_paused
+            run_module_against_page( mod, page )
+        end
+
+        harvest_http_responses
     end
+
+    def on_audit_page( &block )
+        add_on_audit_page( &block )
+    end
+    alias :on_run_mods :on_audit_page
 
     #
     # Returns the following framework stats:
@@ -370,96 +392,110 @@ class Framework
     end
     alias :auditstore :audit_store
 
-    #
-    # Returns an array of hashes with information
-    # about all available modules
-    #
-    # @return    [Array<Hash>]
-    #
-    def lsmod
+    # @return    [Array<Hash>]  Information about all available modules.
+    def list_modules
         loaded = @modules.loaded
-        @modules.clear
-        @modules.available.map do |name|
-            path = @modules.name_to_path( name )
-            next if !lsmod_match?( path )
 
-            @modules[name].info.merge(
-                mod_name: name,
-                author:   [@modules[name].info[:author]].flatten.map { |a| a.strip },
-                path:     path.strip
-            )
-        end.compact
-    ensure
-        @modules.clear
-        @modules.load( loaded )
+        begin
+            @modules.clear
+            @modules.available.map do |name|
+                path = @modules.name_to_path( name )
+                next if !lsmod_match?( path )
+
+                @modules[name].info.merge(
+                    mod_name: name,
+                    author:   [@modules[name].info[:author]].
+                                  flatten.map { |a| a.strip },
+                    path:     path.strip
+                )
+            end.compact
+        ensure
+            @modules.clear
+            @modules.load loaded
+        end
     end
+    alias :lsmod :list_modules
 
-    #
-    # Returns an array of hashes with information
-    # about all available reports
-    #
-    # @return    [Array<Hash>]
-    #
-    def lsrep
+    # @return    [Array<Hash>]  Information about all available reports.
+    def list_reports
         loaded = @reports.loaded
-        @reports.clear
-        @reports.available.map do |report|
-            path = @reports.name_to_path( report )
-            next if !lsrep_match?( path )
 
-            @reports[report].info.merge(
-                rep_name: report,
-                path:     path,
-                author:   [@reports[report].info[:author]].flatten.map { |a| a.strip }
-            )
-        end.compact
-    ensure
-        @reports.clear
-        @reports.load( loaded )
+        begin
+            @reports.clear
+            @reports.available.map do |report|
+                path = @reports.name_to_path( report )
+                next if !lsrep_match?( path )
+
+                @reports[report].info.merge(
+                    rep_name: report,
+                    path:     path,
+                    author:   [@reports[report].info[:author]].
+                                  flatten.map { |a| a.strip }
+                )
+            end.compact
+        ensure
+            @reports.clear
+            @reports.load loaded
+        end
     end
+    alias :lsrep :list_reports
 
-    #
-    # Returns an array of hashes with information
-    # about all available reports
-    #
-    # @return    [Array<Hash>]
-    #
-    def lsplug
+    # @return    [Array<Hash>]  Information about all available plugins.
+    def list_plugins
         loaded = @plugins.loaded
-        @plugins.clear
-        @plugins.available.map do |plugin|
-            path = @plugins.name_to_path( plugin )
-            next if !lsplug_match?( path )
 
-            @plugins[plugin].info.merge(
-                plug_name: plugin,
-                path:      path,
-                author:    [@plugins[plugin].info[:author]].flatten.map { |a| a.strip }
-            )
-        end.compact
-    ensure
-        @plugins.clear
-        @plugins.load( loaded )
+        begin
+            @plugins.clear
+            @plugins.available.map do |plugin|
+                path = @plugins.name_to_path( plugin )
+                next if !lsplug_match?( path )
+
+                @plugins[plugin].info.merge(
+                    plug_name: plugin,
+                    path:      path,
+                    author:    [@plugins[plugin].info[:author]].
+                                   flatten.map { |a| a.strip }
+                )
+            end.compact
+        ensure
+            @plugins.clear
+            @plugins.load loaded
+        end
+    end
+    alias :lsplug :list_plugins
+
+    #
+    # Returns the status of the instance as a string.
+    #
+    # Possible values are (in order):
+    # * ready -- Just initialised and waiting for instructions
+    # * preparing -- Getting ready to start (i.e. initing plugins etc.)
+    # * crawling -- The instance is crawling the target webapp
+    # * auditing-- The instance is currently auditing the webapp
+    # * paused -- The instance has posed (if applicable)
+    # * cleanup -- The scan has completed and the instance is cleaning up
+    #   after itself (i.e. waiting for plugins to finish etc.).
+    # * done -- The scan has completed
+    #
+    # @return   [String]
+    #
+    def status
+        return 'paused' if paused?
+        @status.to_s
     end
 
-    #
-    # @return   [Bool]  true if the framework is running
-    #
+    # @return   [Bool]  +true+ if the framework is running.
     def running?
         @running
     end
 
-    #
-    # @return   [Bool]  true if the framework is paused or in the process of
-    #
+    # @return   [Bool]  +true+ if the framework is paused or in the process of.
     def paused?
         !@paused.empty?
     end
 
-    #
-    # @return   [TrueClass]  pauses the framework on a best effort basis,
-    #                       might take a while to take effect
-    #
+    # @return   [TrueClass]
+    #   Pauses the framework on a best effort basis, might take a while to take effect.
     def pause
         spider.pause
         @paused << caller
@@ -467,9 +503,7 @@ class Framework
     end
     alias :pause! :pause
 
-    #
-    # @return   [TrueClass]  resumes the scan/audit
-    #
+    # @return   [TrueClass]  Resumes the scan/audit.
     def resume
         @paused.delete( caller )
         spider.resume
@@ -477,20 +511,12 @@ class Framework
     end
     alias :resume! :resume
 
-    #
-    # Returns the version of the framework
-    #
-    # @return    [String]
-    #
+    # @return    [String]   Returns the version of the framework.
     def version
         Arachni::VERSION
     end
 
-    #
-    # Returns the revision of the {Framework} (this) class
-    #
-    # @return    [String]
-    #
+    # @return    [String]   Returns the revision of the {Framework} (this) class.
     def revision
         REVISION
     end
@@ -502,7 +528,7 @@ class Framework
     # It stops the clock, waits for the plugins to finish up, registers
     # their results and also refreshes the auditstore.
     #
-    # It also runs {#audit_queue} in case any new pages have been added by the plugins.
+    # It also runs {#audit_queues} in case any new pages have been added by the plugins.
     #
     def clean_up
         @status = :cleanup
@@ -521,10 +547,6 @@ class Framework
         @plugins.block
     end
     alias :clean_up! :clean_up
-
-    def on_run_mods( &block )
-        add_on_run_mods( &block )
-    end
 
     def reset_spider
         @spider = Spider.new( @opts )
@@ -594,8 +616,8 @@ class Framework
     # Performs the audit
     #
     # Runs the spider, pushes each page or url to their respective audit queue,
-    # calls {#audit_queue}, runs the timeout attacks ({Arachni::Module::Auditor.timeout_audit_run}) and finally re-runs
-    # {#audit_queue} in case the timing attacks uncovered a new page.
+    # calls {#audit_queues}, runs the timeout attacks ({Arachni::Module::Auditor.timeout_audit_run}) and finally re-runs
+    # {#audit_queues} in case the timing attacks uncovered a new page.
     #
     def audit
         wait_if_paused
@@ -616,7 +638,7 @@ class Framework
         end
 
         @status = :auditing
-        audit_queue
+        audit_queues
 
         exception_jail {
             if !Module::Auditor.timeout_audit_blocks.empty?
@@ -629,14 +651,14 @@ class Framework
                 Module::Auditor.timeout_audit_run
             end
 
-            audit_queue
+            audit_queues
         }
     end
 
     #
     # Audits the URL and Page queues
     #
-    def audit_queue
+    def audit_queues
         return if modules.empty?
 
         # goes through the URLs discovered by the spider, repeats the request
@@ -666,7 +688,7 @@ class Framework
     def audit_page_queue
         # this will run until no new elements appear for the given page
         while !@page_queue.empty?
-            run_mods( @page_queue.pop )
+            audit_page( @page_queue.pop )
             harvest_http_responses
         end
     end
@@ -693,49 +715,6 @@ class Framework
         ::IO::select( nil, nil, nil, 1 ) while paused?
     end
 
-    #
-    # Takes care of page audit and module execution
-    #
-    # It will audit one page at a time as discovered by the spider <br/>
-    # and recursively check for new elements that may have <br/>
-    # appeared during the audit.
-    #
-    # When no new elements appear the recursion will stop and a new page<br/>
-    # will be accepted.
-    #
-    # @see Page
-    #
-    # @param    [Page]    page
-    #
-    def run_mods( page )
-        return if !page
-
-        # we may end up ignoring it but being included in the auditmap means that
-        # it has been considered but didn't fit the criteria
-        @auditmap << page.url
-        @sitemap |= @auditmap
-        @sitemap.uniq!
-
-        if Options.exclude_binaries? && !page.text?
-            print_info "Ignoring page due to non text-based content-type: #{page.url}"
-            return
-        end
-
-        print_line
-        print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
-
-        call_on_run_mods( page )
-
-        @current_url = page.url.to_s
-
-        @modules.schedule.each do |mod|
-            wait_if_paused
-            run_mod( mod, page )
-        end
-
-        harvest_http_responses
-    end
-
     def harvest_http_responses
         print_status 'Harvesting HTTP responses...'
         print_info 'Depending on server responsiveness and network' <<
@@ -753,10 +732,10 @@ class Framework
     #
     # @see Page
     #
-    # @param    [Class]   mod      the module to run
+    # @param    [Arachni::Module::Base]   mod      the module to run
     # @param    [Page]    page
     #
-    def run_mod( mod, page )
+    def run_module_against_page( mod, page )
         begin
             @modules.run_one( mod, page )
         rescue SystemExit

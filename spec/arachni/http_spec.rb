@@ -263,7 +263,7 @@ describe Arachni::HTTP do
                     raised = false
                     begin
                         @http.reset
-                    rescue Arachni::Exceptions::NoCookieJar
+                    rescue Arachni::HTTP::CookieJar::Error::CookieJarFileNotFound
                         raised = true
                     end
                     raised.should be_true
@@ -872,7 +872,7 @@ describe Arachni::HTTP do
         end
 
         context 'when dealing with a dynamic handler' do
-            context 'which includes the required resource in the response' do
+            context 'which includes the requested resource in the response' do
                 it 'should identify custom 404 (Not Found) responses' do
                     res = nil
                     @http.get( @custom_404 + 'dynamic/crap' ) { |c_res| res = c_res }

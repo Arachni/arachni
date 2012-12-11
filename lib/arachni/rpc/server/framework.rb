@@ -49,10 +49,11 @@ class Framework < ::Arachni::Framework
     include Distributor
 
     # Make these inherited methods visible again.
-    private :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status, :clean_up!
-    public  :audit_store, :stats, :paused?, :lsmod, :lsplug, :version, :revision,
-            :status, :clean_up!
+    private :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+            :list_plugins, :version, :revision, :status, :clean_up!
+
+    public  :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+            :list_plugins, :lsplug, :version, :revision, :status, :clean_up!
 
     alias :auditstore   :audit_store
 
@@ -104,7 +105,7 @@ class Framework < ::Arachni::Framework
     end
 
     # @return  [Array<Hash>]  Information about all available plug-ins.
-    def lsplug
+    def list_plugins
         super.map do |plugin|
             plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
                 opt.to_h.merge( 'type' => opt.type )
@@ -112,6 +113,7 @@ class Framework < ::Arachni::Framework
             plugin
         end
     end
+    alias :lsplug :list_plugins
 
     # @return   [Bool] +true+ If the system is scanning, +false+ if {#run}
     #   hasn't been called yet or if the scan has finished.
@@ -609,13 +611,20 @@ class Framework < ::Arachni::Framework
     #
     # @return   [String]    Report content.
     #
+    # @raise    [Component::Error::NotFound]
+    #   If the given report name doesn't correspond to a valid report component.
+    #
+    # @raise    [Component::Error::InvalidOptions]
+    #   If the requested report doesn't format the scan results as a String.
+    #
     def report_as( name, &block )
         if !reports.available.include?( name.to_s )
-            fail Arachni::Exceptions::ComponentNotFound,
+            fail Component::Error::NotFound,
                  "Report '#{name}' could not be found."
         end
         if !reports[name].has_outfile?
-            fail TypeError, "Report '#{name}' cannot format the audit results as a String."
+            fail Component::Error::InvalidOptions,
+                 "Report '#{name}' cannot format the audit results as a String."
         end
 
         outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"

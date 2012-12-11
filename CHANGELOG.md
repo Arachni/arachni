@@ -1,6 +1,11 @@
 # ChangeLog
 
 ## _Under development_
+- Options
+  - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
+- Updated exceptions thrown by the framework, removed ```Arachni::Exceptions```
+    namespace and replaced it with the ```Arachni::Error``` base exception from
+    which all component specific exceptions inherit.
 - RPC
   - Handlers
       - ```opts``` -- Now presents the ```RPC::Server::ActiveOptions```
@@ -27,12 +32,21 @@
       - Slave instances now buffer their logged issues and report them to the Master in batches.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
+  - Updated custom-404 page detection to fallback to a word-difference ratio of
+    the refined responses if straight comparison fails.
 - Spider
   - Fixed enforcement of redirect limit. [Issue #306]
+  - Updated to handle relative Location URLs in redirections.
+- ```Arachni::Element::Capabilities::Auditable```
+  - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
+    a custom auditor when scripting.
+  - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
+    when no auditor has been provided.
 - Added
-  - ```Arachni::Buffer::Base``` -- Buffer base class.
-  - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
-    itself when it gets full or a number of fill-up attempts is reached between flushes.
+  - Buffer classes
+      - ```Arachni::Buffer::Base``` -- Buffer base class.
+      - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
+        itself when it gets full or a number of fill-up attempts is reached between flushes.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP

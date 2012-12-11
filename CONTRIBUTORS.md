@@ -11,5 +11,6 @@ These are the people that helped improve Arachni either by submitting code, sugg
 - [Edwin van Andel](mailto:evanandel@yafsec.com) for contributing *BSD patches and testing the build script.
 - [Dan Woodruff](mailto:daniel.woodruff@gmail.com) for contributing OSX patches and testing the build script.
 - [Robert Gouin](mailto:rgouin@webmaxdb.com) for relentless testing.
+- [Evan Beard](mailto:beard.evan@gmail.com) for feedback and patches.
 
 A big thanks to my buddy [Andreas](mailto:rainmakergr@gmail.com) for the original spider drawing used in the project graphics.

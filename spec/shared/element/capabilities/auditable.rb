@@ -31,6 +31,16 @@ shared_examples_for 'auditable' do |options = {}|
         @default_input_value = @auditable.auditable['param']
     end
 
+    describe '#use_anonymous_auditor' do
+        it 'should use an anonymous auditor' do
+            elem = auditable.new( @url, 'param' => 'val' )
+            elem.auditor.should be_nil
+            elem.use_anonymous_auditor
+            elem.auditor.should be_true
+            elem.auditor.fancy_name.should be_true
+        end
+    end
+
     describe '#has_inputs?' do
         before do
             @has_inputs = auditable.new( @url, { 'param' => 'val', 'param2' => 'val2' } )
@@ -297,15 +307,20 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when it has no auditor' do
-            it 'should revert to the HTTP interface singleton' do
-                submitted    = nil
+            it 'should revert to using the anonymous auditor' do
+                submitted = nil
 
-                @orphan.submit do |res|
+                elem = auditable.new( @url + '/submit', 'param' => 'val' )
+                elem.auditor.should be_nil
+
+                elem.submit do |res|
                     submitted = load( res.body )
                 end
+                elem.auditor.should be_true
 
-                @orphan.http.run
-                @orphan.auditable.should == submitted
+                elem.http.run
+
+                elem.auditable.should == submitted
             end
         end
     end
@@ -338,11 +353,28 @@ shared_examples_for 'auditable' do |options = {}|
         end
 
         context 'when it has no auditor' do
-            it 'should revert to the HTTP interface singleton' do
-                cnt = 0
-                @orphan.audit( @seed ) { cnt += 1 }
-                @orphan.http.run
-                cnt.should == 4
+            it 'should revert to using the anonymous auditor' do
+                elem = auditable.new( @url, 'param' => 'val' )
+                elem.auditor.should be_nil
+
+                elem.taint_analysis( 'test' )
+                elem.auditor.should be_true
+                elem.http.run
+
+                elem.auditor.issues.size.should == 1
+                elem.auditor.raw_issues.size.should == 1
+                issue = elem.auditor.raw_issues.first
+                issue.elem.should == elem.type
+                issue.id.should == 'test'
+                issue.method.to_s.downcase.should == 'get'
+                issue.name.should == 'Anonymous auditor'
+                issue.var.should == 'param'
+
+                elem.auditor.raw_issues.should == Arachni::Module::Manager.results
+                elem.auditor.issues.should == elem.auditor.auditstore.issues
+                elem.auditor.auditstore.should == Arachni::AuditStore.new(
+                    options: Arachni::Options.instance.to_h,
+                    issues: issues )
             end
         end
 
@@ -524,7 +556,7 @@ shared_examples_for 'auditable' do |options = {}|
         context 'when called with option' do
 
             describe :each_mutation do
-                it 'should be able to modify the element on the fly' do
+                it 'should be passed each generated mutation and be able to modify it on the fly' do
                     submitted = nil
                     cnt = 0
 

@@ -15,10 +15,28 @@ describe Arachni::Options do
 
     describe '#no_protocol_for_url' do
         it 'should not require the URL to include a protocol' do
+            trigger = proc { Arachni::Options.url = 'stuff:80' }
+
             raised = false
             begin
-                Arachni::Options.url = 'stuff:80'
-            rescue
+                trigger.call
+            rescue Arachni::Error
+                raised = true
+            end
+            raised.should be_true
+
+            raised = false
+            begin
+                trigger.call
+            rescue Arachni::Options::Error
+                raised = true
+            end
+            raised.should be_true
+
+            raised = false
+            begin
+                trigger.call
+            rescue Arachni::Options::Error::InvalidURL
                 raised = true
             end
             raised.should be_true
@@ -26,6 +44,26 @@ describe Arachni::Options do
             Arachni::Options.no_protocol_for_url
             Arachni::Options.url = 'stuff:80'
             Arachni::Options.url.should == 'stuff:80'
+        end
+    end
+
+    describe '#https_only?' do
+        describe 'when the option has been enabled' do
+            it 'should return true' do
+                Arachni::Options.https_only = true
+                Arachni::Options.https_only?.should be_true
+            end
+        end
+        describe 'when the option has been disabled' do
+            it 'should return false' do
+                Arachni::Options.https_only = false
+                Arachni::Options.https_only?.should be_false
+            end
+        end
+        describe 'by default' do
+            it 'should return false' do
+                Arachni::Options.https_only?.should be_false
+            end
         end
     end
 

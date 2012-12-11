@@ -43,12 +43,36 @@ describe Arachni::Plugin::Manager do
         end
         context 'when gem dependencies are not met' do
             it 'should raise exception' do
+                trigger = proc do
+                    begin
+                        @plugins.load :bad
+                        @plugins.run
+                        @plugins.block
+                    ensure
+                        @plugins.clear
+                    end
+                end
+
                 raised = false
                 begin
-                    @plugins.load( 'bad' )
-                    @plugins.run
-                    @plugins.block
-                rescue
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Plugin::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Plugin::Error::UnsatisfiedDependency
                     raised = true
                 end
                 raised.should be_true

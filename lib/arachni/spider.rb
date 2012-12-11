@@ -143,35 +143,26 @@ class Spider
         !!@running
     end
 
-    #
-    # Sets blocks to be called every time a page is visited.
-    #
-    # @param    [Block]     block
-    #
+    # @param    [Block] block
+    #   Sets blocks to be called every time a page is visited.
     def on_each_page( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_page_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called every time a response is received.
-    #
     # @param    [Block]     block
-    #
+    #   Sets blocks to be called every time a response is received.
     def on_each_response( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_each_response_blocks << block
         self
     end
 
-    #
-    # Sets blocks to be called once the crawler is done.
-    #
     # @param    [Block]    block
-    #
+    #   Sets blocks to be called once the crawler is done.
     def on_complete( &block )
-        fail 'Block is mandatory!' if !block_given?
+        fail ArgumentError, 'Block is mandatory!' if !block_given?
         @on_complete_blocks << block
         self
     end
@@ -265,7 +256,17 @@ class Spider
     # @return   [Bool]  true if any of the 3 filters returns true, false otherwise
     #
     def skip?( url )
-        visited?( url ) || skip_path?( url )
+        if visited?( url )
+            print_debug "Skipping already visited URL: #{url}"
+            return true
+        end
+
+         if skip_path?( url )
+             print_verbose "Skipping out of scope URL: #{url}"
+             return true
+         end
+
+        false
     end
 
     def remove_path_params( url )
@@ -291,7 +292,7 @@ class Spider
     end
 
     #
-    # Checks is the provided URL matches a redundant filter
+    # Checks if the provided URL matches a redundant filter
     # and decreases its counter if so.
     #
     # If a filter's counter has reached 0 the method returns true.
@@ -301,7 +302,7 @@ class Spider
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
     def redundant?( url )
-        redundant = @opts.redundant?( url ) do |count, regexp, path|
+        redundant = super( url ) do |count, regexp, path|
             print_info "Matched redundancy rule: #{regexp} for #{path}"
             print_info "Count-down: #{count}"
         end
@@ -358,12 +359,13 @@ class Spider
 
             if res.redirection?
                 @redirects << res.request.url
-                if hit_redirect_limit? || skip?( res.location )
+                location = to_absolute( res.location )
+                if hit_redirect_limit? || skip?( location )
                     decrease_pending
                     next
                 end
                 @followed_redirects += 1
-                push res.location
+                push location
             end
 
             print_status( "[HTTP: #{res.code}] " + effective_url )

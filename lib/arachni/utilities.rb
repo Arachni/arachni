@@ -105,6 +105,7 @@ module Utilities
         Page.from_response( *args )
     end
 
+    # @see Arachni::Page.from_url
     def page_from_url( *args, &block )
         Page.from_url( *args, &block )
     end
@@ -182,6 +183,7 @@ module Utilities
     # @return   [Bool]  +true+ is the path exceeds the framework limit, +false+ otherwise
     #
     # @see URI.too_deep?
+    # @see Options#depth_limit
     #
     def path_too_deep?( url )
         uri_parse( url ).too_deep?( Options.depth_limit )
@@ -197,6 +199,7 @@ module Utilities
     #                       false otherwise
     #
     # @see URI.in_domain?
+    # @see Options#follow_subdomains
     #
     def path_in_domain?( url, reference = Options.url )
         uri_parse( url ).in_domain?( !Options.follow_subdomains, reference )
@@ -209,6 +212,9 @@ module Utilities
     #
     # @return   [Bool]
     #
+    # @see URI.exclude?
+    # @see Options#exclude
+    #
     def exclude_path?( url )
         uri_parse( url ).exclude?( Options.exclude )
     end
@@ -220,8 +226,50 @@ module Utilities
     #
     # @return   [Bool]
     #
+    # @see URI.include?
+    # @see Options#include
+    #
     def include_path?( url )
         uri_parse( url ).include?( Options.include )
+    end
+
+    #
+    # Checks if the provided URL matches a redundant filter
+    # and decreases its counter if so.
+    #
+    # If a filter's counter has reached 0 the method returns true.
+    #
+    # @param    [String]  url
+    #
+    # @return   [Bool]    +true+ if the +url+ is redundant, +false+ otherwise.
+    #
+    # @see Options#redundant?
+    #
+    def redundant?( url, &block )
+        Options.redundant?( url, &block )
+    end
+
+    #
+    # Decides whether the given +url+ has an acceptable protocol.
+    #
+    # @param    [String]    url
+    # @param    [String]    reference   Reference URL.
+    #
+    # @return   [Bool]
+    #
+    # @see Options#https_only
+    # @see Options#https_only?
+    #
+    def follow_protocol?( url, reference = Options.url )
+        return true if !reference
+        ref_scheme   = uri_parse( reference ).scheme
+
+        return true if ref_scheme && ref_scheme != 'https'
+
+        check_scheme = uri_parse( url ).scheme
+        return true if ref_scheme == check_scheme
+
+        !Options.https_only?
     end
 
     #
@@ -230,6 +278,8 @@ module Utilities
     # * {#exclude_path?}
     # * {#path_too_deep?}
     # * {#path_in_domain?}
+    #
+    # Does **not** call {#redundant?}.
     #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #
@@ -244,8 +294,11 @@ module Utilities
             return true if exclude_path?( parsed )
             return true if path_too_deep?( parsed )
             return true if !path_in_domain?( parsed )
+            return true if !follow_protocol?( parsed )
             false
-        rescue
+        rescue => e
+            ap e
+            ap e.backtrace
             true
         end
     end
@@ -261,7 +314,11 @@ module Utilities
     end
 
     #
-    # Returns a random port
+    # Returns a random port within the user specified range.
+    #
+    # @return   [Integer]   Port number.
+    #
+    # @see Options#rpc_instance_port_range
     #
     def rand_port
         first, last = Options.rpc_instance_port_range

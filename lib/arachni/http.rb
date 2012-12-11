@@ -25,7 +25,6 @@ require lib + 'typhoeus/request'
 require lib + 'typhoeus/response'
 require lib + 'utilities'
 require lib + 'mixins/observable'
-require lib + 'http/cookie_jar'
 
 #
 # Provides a system-wide, simple and high-performance HTTP interface.
@@ -37,6 +36,18 @@ class HTTP
     include Module::Output
     include Utilities
     include Mixins::Observable
+
+    #
+    # {HTTP} error namespace.
+    #
+    # All {HTTP} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+    end
+
+    require Options.dir['lib'] + 'http/cookie_jar'
 
     # Default maximum concurrency for HTTP requests.
     MAX_CONCURRENCY = 20
@@ -251,7 +262,7 @@ class HTTP
     # @return [Typhoeus::Request]
     #
     def request( url = @url, opts = {}, &block )
-        fail 'URL cannot be empty.' if !url
+        fail ArgumentError, 'URL cannot be empty.' if !url
 
         params    = opts[:params] || {}
         train     = opts[:train]
@@ -550,6 +561,7 @@ class HTTP
                         else
                             @_404[path][i]['body'] ||= c_res.body
                             @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
+                            @_404[path][i]['rdiff_words'] = @_404[path][i]['rdiff'].words.map( &:hash )
                         end
                     end
                 }
@@ -661,9 +673,22 @@ class HTTP
     end
 
     def is_404?( path, body )
+        # give the rDiff algo a shot first hoping that a comparison of
+        # refined responses will be enough to give us a clear-cut positive
         @_404[path].each do |_404|
             return true if _404['body'].rdiff( body ).hash == _404['rdiff']
         end
+
+        # if the comparison of the refinements fails, compare them based on how
+        # many words are different between them
+        @_404[path].each do |_404|
+            rdiff_body_words = _404['body'].rdiff( body ).words.map( &:hash )
+            return true if (
+                (_404['rdiff_words'] - rdiff_body_words) -
+                (rdiff_body_words - _404['rdiff_words'])
+            ).size < 25
+        end
+
         false
     end
 

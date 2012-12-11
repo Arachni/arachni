@@ -3,8 +3,8 @@ require_relative '../spec_helper'
 
 describe Arachni::Utilities do
 
-    before( :all ) do
-        @opts = Arachni::Options.instance
+    before( :each ) do
+        @opts = Arachni::Options.reset
         @utils = Arachni::Module::Utilities
     end
 
@@ -63,6 +63,33 @@ describe Arachni::Utilities do
                 @utils.to_absolute( rel, abs ).should == "http://test.com" + rel
                 @utils.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
                 @utils.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            end
+        end
+    end
+
+    describe '#redundant?' do
+        context "when a URL's counter reaches 0" do
+            it 'should return true' do
+                Arachni::Options.redundant = { /match_this/ => 10 }
+
+                url = 'http://stuff.com/match_this'
+                10.times do
+                    @utils.redundant?( url ).should be_false
+                end
+
+                @utils.redundant?( url ).should be_true
+            end
+        end
+        context "when a URL's counter has not reached 0" do
+            it 'should return false' do
+                Arachni::Options.redundant = { /match_this/ => 11 }
+
+                url = 'http://stuff.com/match_this'
+                10.times do
+                    @utils.redundant?( url ).should be_false
+                end
+
+                @utils.redundant?( url ).should be_false
             end
         end
     end
@@ -172,6 +199,128 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#follow_protocol?' do
+
+        context 'when the reference URL uses' do
+            context 'HTTPS' do
+                context 'and the checked URL uses' do
+                    context 'HTTPS' do
+                        context 'and Options#https_only is' do
+                            context true do
+                                it 'should return true' do
+                                    @opts.url = 'https://test2.com/blah/ha'
+                                    @opts.https_only = true
+
+                                    url = 'https://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+
+                            context false do
+                                it 'should return true' do
+                                    @opts.url = 'https://test2.com/blah/ha'
+                                    @opts.https_only = false
+
+                                    url = 'https://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+                        end
+                    end
+                    context 'HTTP' do
+                        context 'and Options#https_only is' do
+                            context true do
+                                it 'should return false' do
+                                    @opts.url = 'https://test2.com/blah/ha'
+                                    @opts.https_only = true
+
+                                    url = 'http://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_false
+                                    @utils.skip_path?( url ).should be_true
+                                end
+                            end
+
+                            context false do
+                                it 'should return true' do
+                                    @opts.url = 'https://test2.com/blah/ha'
+                                    @opts.https_only = false
+
+                                    url = 'http://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            context 'HTTP' do
+                context 'and the checked URL uses' do
+                    context 'HTTPS' do
+                        context 'and Options#https_only is' do
+                            context true do
+                                it 'should return true' do
+                                    @opts.url = 'http://test2.com/blah/ha'
+                                    @opts.https_only = true
+
+                                    url = 'https://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+
+                            context false do
+                                it 'should return true' do
+                                    @opts.url = 'http://test2.com/blah/ha'
+                                    @opts.https_only = false
+
+                                    url = 'https://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+                        end
+                    end
+                    context 'HTTP' do
+                        context 'and Options#https_only is' do
+                            context true do
+                                it 'should return true' do
+                                    @opts.url = 'http://test2.com/blah/ha'
+                                    @opts.https_only = true
+
+                                    url = 'http://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+
+                            context false do
+                                it 'should return true' do
+                                    @opts.url = 'http://test2.com/blah/ha'
+                                    @opts.https_only = false
+
+                                    url = 'http://test2.com/blah/ha'
+
+                                    @utils.follow_protocol?( url ).should be_true
+                                    @utils.skip_path?( url ).should be_false
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     describe '#get_path' do
         context 'when the url only has a path' do

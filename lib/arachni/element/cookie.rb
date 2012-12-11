@@ -1090,7 +1090,7 @@ class Cookie < Arachni::Element::Base
     #
     #
     # @param    [String]    url     request URL
-    # @param    [Hash]      str     +Set-Cookie+ string
+    # @param    [Hash]      string  +Set-Cookie+ string
     #
     # @return   [Array<Cookie>]
     #

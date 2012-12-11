@@ -196,10 +196,31 @@ describe Arachni::Element::Form do
 
         context 'when there is no input called nonce_name' do
             it 'should raise an exception' do
+                trigger = proc do
+                    Arachni::Element::Form.new( @url, name: 'value' ).
+                        nonce_name = 'stuff'
+                end
+
                 raised = false
                 begin
-                    Arachni::Element::Form.new( @url, name: 'value' ).nonce_name = 'stuff'
-                rescue
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Element::Form::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Element::Form::Error::FieldNotFound
                     raised = true
                 end
                 raised.should be_true

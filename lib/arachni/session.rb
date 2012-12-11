@@ -28,6 +28,25 @@ class Session
     include UI::Output
     include Utilities
 
+    #
+    # {Session} error namespace.
+    #
+    # All {Session} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a login check is required to perform an action but none
+        # has been configured.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class NoLoginCheck < Error
+        end
+    end
+
     # @return   [Options]  options
     attr_reader :opts
 
@@ -89,9 +108,11 @@ class Session
     #
     # @param    [Block] block   block to be passed the cookie
     #
+    # @raise    [Error::NoLoginCheck]   If no login-check has been configured.
+    #
     def cookie( &block )
         return block.call( @session_cookie ) if @session_cookie
-        fail 'No login-check has been configured.' if !has_login_check?
+        fail Error::NoLoginCheck, 'No login-check has been configured.' if !has_login_check?
 
         cookies.each do |cookie|
             logged_in?( cookies: { cookie.name => '' } ) do |bool|

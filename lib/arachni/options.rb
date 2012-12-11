@@ -25,6 +25,8 @@ YAML::ENGINE.yamler = 'syck'
 require 'singleton'
 require 'getoptlong'
 
+require_relative 'error'
+
 module Arachni
 
 #
@@ -36,6 +38,24 @@ module Arachni
 #
 class Options
     include Singleton
+
+    #
+    # {Options} error namespace.
+    #
+    # All {Options} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+
+        #
+        # Raised when a provided {Options#url= URL} is invalid.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class InvalidURL < Error
+        end
+    end
 
     #
     # The extension of the profile files.
@@ -107,7 +127,7 @@ class Options
     #
     # The URL to audit
     #
-    # @return    [String,URI]
+    # @return    [String]
     #
     attr_reader   :url
 
@@ -472,6 +492,9 @@ class Options
     # @return   [Integer]   HTTP request timeout in milliseconds
     attr_accessor :http_timeout
 
+    # @return   [Bool]   Only follow HTTPS links.
+    attr_accessor :https_only
+
     def initialize
         reset
     end
@@ -503,6 +526,7 @@ class Options
         @datastore  = {}
         @redundant  = {}
 
+        @https_only        = false
         @obey_robots_txt   = false
         @fuzz_methods      = false
         @audit_cookies_extensively = false
@@ -541,6 +565,10 @@ class Options
         @min_pages_per_instance = 30
         @max_slaves = 10
         self
+    end
+
+    def https_only?
+        !!@https_only
     end
 
     #
@@ -598,19 +626,30 @@ class Options
     #
     # @return   [String]    normalized +url+
     #
+    # @raise    [Error::InvalidURL]     If the given +url+ is not valid.
+    #
     def url=( url )
         return if !url
 
-        require @dir['lib'] + 'exceptions'
         require @dir['lib'] + 'ruby'
         require @dir['lib'] + 'cache'
         require @dir['lib'] + 'utilities'
 
         parsed = Utilities.uri_parse( url.to_s )
-        if !parsed || !parsed.absolute? ||
-            (!no_protocol_for_url? && !%w(http https).include?( parsed.scheme ))
-            fail Exceptions::InvalidURL,
+        if !parsed || !parsed.absolute?
+            fail Error::InvalidURL,
                  "Invalid URL argument, please provide a full absolute URL and try again."
+        else
+            if !no_protocol_for_url?
+                if https_only? && parsed.scheme != 'https'
+                    fail Error::InvalidURL,
+                         "Invalid URL argument, the 'https-only' option requires"+
+                             " an HTTPS URL."
+                elsif !%w(http https).include?( parsed.scheme )
+                    fail Error::InvalidURL,
+                         "Invalid URL scheme, please provide an HTTP or HTTPS URL and try again."
+                end
+            end
         end
 
         @url = parsed.to_s
@@ -823,7 +862,8 @@ class Options
             [ '--exclude-binaries',       GetoptLong::NO_ARGUMENT ],
             [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ]
+            [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--https-only',             GetoptLong::NO_ARGUMENT ],
         )
 
         opts.quiet = true
@@ -1066,12 +1106,16 @@ class Options
 
                     when '--login-check-pattern'
                         @login_check_pattern = arg
+
+                    when '--https-only'
+                        @https_only = true
                 end
             end
 
             if (!@login_check_url && @login_check_pattern) ||
                 (@login_check_url && !@login_check_pattern)
-                fail "Both '--login-check-url' and '--login-check-pattern' options are required."
+                fail Error, "Both '--login-check-url' and " +
+                    "'--login-check-pattern' options are required."
             end
 
         rescue => e

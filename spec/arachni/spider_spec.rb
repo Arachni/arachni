@@ -13,6 +13,14 @@ describe Arachni::Spider do
         Arachni::HTTP.instance.reset
     end
 
+    it 'should support HTTPS' do
+        @opts.url = (server_url_for :spider_https).gsub( 'http', 'https' )
+        spider = Arachni::Spider.new
+
+        spider.run.size.should == 3
+        spider.redirects.size.should == 2
+    end
+
     it 'should avoid infinite loops' do
         @opts.url = @url + 'loop'
         sitemap = Arachni::Spider.new.run
@@ -196,6 +204,13 @@ describe Arachni::Spider do
                 spider.run.should be_empty
                 spider.redirects.size.should == 1
             end
+        end
+        it 'should follow relative redirect locations' do
+            @opts.url = @url + '/relative_redirect'
+            @opts.redirect_limit = -1
+
+            spider = Arachni::Spider.new
+            spider.run.select { |url| url.include?( 'stacked_redirect4' ) }.should be_any
         end
         it 'should follow stacked redirects' do
             @opts.url = @url + '/stacked_redirect'

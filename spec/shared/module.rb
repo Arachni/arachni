@@ -30,7 +30,7 @@ shared_examples_for "module" do
     end
 
     after( :each ) do
-        Arachni::Module::ElementDB.reset
+        Arachni::ElementFilter.reset
         Arachni::Element::Capabilities::Auditable.reset
         Arachni::Module::Manager.results.clear
         Arachni::Module::Manager.do_not_store

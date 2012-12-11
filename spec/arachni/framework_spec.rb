@@ -45,7 +45,7 @@ describe Arachni::Framework do
                 f.modules.load :taint
 
                 ok = false
-                f.on_run_mods { ok = true }
+                f.on_audit_page { ok = true }
                 f.run
                 ok.should be_true
                 f.reset
@@ -55,7 +55,7 @@ describe Arachni::Framework do
                 f.modules.load :taint
 
                 ok = true
-                f.on_run_mods { ok = false }
+                f.on_audit_page { ok = false }
 
                 f.run
                 f.reset
@@ -67,10 +67,8 @@ describe Arachni::Framework do
                 f = Arachni::Framework.new
                 f.opts.url = @url
                 f.opts.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
-                f.opts.audit_links = true
-                f.opts.audit_forms = true
-                f.opts.audit_cookies = true
-                f.modules.load( 'taint' )
+                f.opts.audit :links, :forms, :cookies
+                f.modules.load :taint
 
                 f.run
 
@@ -119,12 +117,10 @@ describe Arachni::Framework do
 
         it 'should perform the audit' do
             @f.opts.url = @url + '/elem_combo'
-            @f.opts.audit_links = true
-            @f.opts.audit_forms = true
-            @f.opts.audit_cookies = true
-            @f.modules.load( 'taint' )
-            @f.plugins.load( 'wait' )
-            @f.reports.load( 'foo' )
+            @f.opts.audit :links, :forms, :cookies
+            @f.modules.load :taint
+            @f.plugins.load :wait
+            @f.reports.load :foo
 
             @f.status.should == 'ready'
 
@@ -189,7 +185,7 @@ describe Arachni::Framework do
                     @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                     f = Arachni::Framework.new
 
-                    f.opts.audit_links = true
+                    f.opts.audit :links
                     f.modules.load %w(body)
 
                     link = Arachni::Element::Link.new( 'http://test' )
@@ -206,7 +202,7 @@ describe Arachni::Framework do
                     @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                     f = Arachni::Framework.new
 
-                    f.opts.audit_links = true
+                    f.opts.audit :links
                     f.modules.load %w(body)
 
                     link = Arachni::Element::Link.new( 'http://test' )
@@ -220,14 +216,14 @@ describe Arachni::Framework do
             end
         end
 
-        context 'when audit_links is' do
-            context true do
+        context 'when auditing links is' do
+            context 'enabled' do
                 context 'and the page contains links' do
                     it 'should run modules that audit links' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = true
+                        f.opts.audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -243,7 +239,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = true
+                        f.opts.audit :links
                         f.modules.load %w(path server)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -259,7 +255,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = true
+                        f.opts.audit :links
                         f.modules.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -273,13 +269,13 @@ describe Arachni::Framework do
                 end
             end
 
-            context false do
+            context 'disabled' do
                 context 'and the page contains links' do
                     it 'should not run modules that audit links' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = false
+                        f.opts.dont_audit :links
                         f.modules.load %w(links forms cookies headers flch)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -295,7 +291,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = true
+                        f.opts.dont_audit :links
                         f.modules.load %w(path server)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -311,7 +307,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_links = true
+                        f.opts.dont_audit :links
                         f.modules.load %w(nil empty)
 
                         link = Arachni::Element::Link.new( 'http://test' )
@@ -327,14 +323,14 @@ describe Arachni::Framework do
 
         end
 
-        context 'when audit_forms is' do
-            context true do
+        context 'when auditing forms is' do
+            context 'enabled' do
                 context 'and the page contains forms' do
                     it 'should run modules that audit forms' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = true
+                        f.opts.audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -350,7 +346,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = true
+                        f.opts.audit :forms
                         f.modules.load %w(path server)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -366,7 +362,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = true
+                        f.opts.audit :forms
                         f.modules.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -380,13 +376,13 @@ describe Arachni::Framework do
                 end
             end
 
-            context false do
+            context 'disabled' do
                 context 'and the page contains forms' do
                     it 'should not run modules that audit forms' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = false
+                        f.opts.dont_audit :forms
                         f.modules.load %w(links forms cookies headers flch)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -402,7 +398,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = false
+                        f.opts.dont_audit :forms
                         f.modules.load %w(path server)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -418,7 +414,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_forms = false
+                        f.opts.dont_audit :forms
                         f.modules.load %w(nil empty)
 
                         form = Arachni::Element::Form.new( 'http://test' )
@@ -434,14 +430,14 @@ describe Arachni::Framework do
 
         end
 
-        context 'when audit_cookies is' do
-            context true do
+        context 'when auditing cookies is' do
+            context 'enabled' do
                 context 'and the page contains cookies' do
                     it 'should run modules that audit cookies' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = true
+                        f.opts.audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Cookie.new( 'http://test' )
@@ -457,7 +453,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = true
+                        f.opts.audit :cookies
                         f.modules.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( 'http://test' )
@@ -473,7 +469,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = true
+                        f.opts.audit :cookies
                         f.modules.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( 'http://test' )
@@ -487,13 +483,13 @@ describe Arachni::Framework do
                 end
             end
 
-            context false do
+            context 'disabled' do
                 context 'and the page contains cookies' do
                     it 'should not run modules that audit cookies' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = false
+                        f.opts.dont_audit :cookies
                         f.modules.load %w(links forms cookies headers flch)
 
                         cookie = Arachni::Element::Form.new( 'http://test' )
@@ -509,7 +505,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = false
+                        f.opts.dont_audit :cookies
                         f.modules.load %w(path server)
 
                         cookie = Arachni::Element::Form.new( 'http://test' )
@@ -525,7 +521,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_cookies = false
+                        f.opts.dont_audit :cookies
                         f.modules.load %w(nil empty)
 
                         cookie = Arachni::Element::Form.new( 'http://test' )
@@ -541,14 +537,14 @@ describe Arachni::Framework do
 
         end
 
-        context 'when audit_headers is' do
-            context true do
+        context 'when auditing headers is' do
+            context 'enabled' do
                 context 'and the page contains headers' do
                     it 'should run modules that audit headers' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = true
+                        f.opts.audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Cookie.new( 'http://test' )
@@ -564,7 +560,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = true
+                        f.opts.audit :headers
                         f.modules.load %w(path server)
 
                         header = Arachni::Element::Form.new( 'http://test' )
@@ -580,7 +576,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = true
+                        f.opts.audit :headers
                         f.modules.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( 'http://test' )
@@ -594,13 +590,13 @@ describe Arachni::Framework do
                 end
             end
 
-            context false do
+            context 'disabled' do
                 context 'and the page contains headers' do
                     it 'should not run modules that audit headers' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = false
+                        f.opts.dont_audit :headers
                         f.modules.load %w(links forms cookies headers flch)
 
                         header = Arachni::Element::Form.new( 'http://test' )
@@ -616,7 +612,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = false
+                        f.opts.dont_audit :headers
                         f.modules.load %w(path server)
 
                         header = Arachni::Element::Form.new( 'http://test' )
@@ -632,7 +628,7 @@ describe Arachni::Framework do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
-                        f.opts.audit_headers = false
+                        f.opts.dont_audit :headers
                         f.modules.load %w(nil empty)
 
                         header = Arachni::Element::Form.new( 'http://test' )
@@ -684,16 +680,23 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#audit_page' do
+        it 'should audit an individual page' do
+            @f.opts.audit :links, :forms, :cookies
+
+            @f.modules.load :taint
+
+            @f.audit_page Arachni::Page.from_url( @url + '/link' )
+            @f.auditstore.issues.size.should == 1
+        end
+    end
+
     describe '#push_to_page_queue' do
         it 'should push a page to the page audit queue' do
-            res = @f.http.get( @url + '/train/true', async: false ).response
-            page = Arachni::Page.from_response( res, @f.opts )
+            page = Arachni::Page.from_url( @url + '/train/true' )
 
-            @f.opts.audit_links = true
-            @f.opts.audit_forms = true
-            @f.opts.audit_cookies = true
-
-            @f.modules.load( 'taint' )
+            @f.opts.audit :links, :forms, :cookies
+            @f.modules.load :taint
 
             @f.page_queue_total_size.should == 0
             @f.push_to_page_queue( page )
@@ -706,11 +709,8 @@ describe Arachni::Framework do
 
     describe '#push_to_url_queue' do
         it 'should push a URL to the URL audit queue' do
-            @f.opts.audit_links = true
-            @f.opts.audit_forms = true
-            @f.opts.audit_cookies = true
-
-            @f.modules.load( 'taint' )
+            @f.opts.audit :links, :forms, :cookies
+            @f.modules.load :taint
 
             @f.url_queue_total_size.should == 0
             @f.push_to_url_queue(  @url + '/link' )
@@ -728,12 +728,15 @@ describe Arachni::Framework do
         end
     end
 
-    describe '#lsmod' do
-        it 'should return info on all modules' do
-            @f.modules.load( 'taint' )
+    describe '#list_modules' do
+        it 'should be aliased to #lsmod return info on all modules' do
+            @f.modules.load :taint
             info = @f.modules.values.first.info
             loaded = @f.modules.loaded
-            mods = @f.lsmod
+
+            mods = @f.list_modules
+            mods.should == @f.lsmod
+
             @f.modules.loaded.should == loaded
 
             mods.size.should == 1
@@ -751,18 +754,22 @@ describe Arachni::Framework do
         context 'when the #lsmod option is set' do
             it 'should use it to filter out modules that do not match it' do
                 @f.opts.lsmod = 'boo'
+                @f.list_modules.should == @f.lsmod
                 @f.lsmod.size == 0
 
                 @f.opts.lsmod = 'taint'
+                @f.list_modules.should == @f.lsmod
                 @f.lsmod.size == 1
             end
         end
     end
 
-    describe '#lsplug' do
-        it 'should return info on all plugins' do
+    describe '#list_plugins' do
+        it 'should be aliased to #lsplug return info on all plugins' do
             loaded = @f.plugins.loaded
-            @f.lsplug.map { |r| r.delete( :path ); r }
+
+            @f.list_plugins.should == @f.lsplug
+            @f.list_plugins.map { |r| r.delete( :path ); r }
                 .sort_by { |e| e[:plug_name] }.should == YAML.load( '
 ---
 - :name: Wait
@@ -846,18 +853,21 @@ describe Arachni::Framework do
         context 'when the #lsplug option is set' do
             it 'should use it to filter out plugins that do not match it' do
                 @f.opts.lsplug = 'bad|foo'
+                @f.list_plugins.should == @f.lsplug
                 @f.lsplug.size == 2
 
                 @f.opts.lsplug = 'boo'
+                @f.list_plugins.should == @f.lsplug
                 @f.lsplug.size == 0
             end
         end
     end
 
-    describe '#lsrep' do
+    describe '#list_reports' do
         it 'should return info on all reports' do
             loaded = @f.reports.loaded
-            @f.lsrep.map { |r| r[:options] = []; r.delete( :path ); r }
+            @f.list_reports.should == @f.lsrep
+            @f.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
                 .sort_by { |e| e[:rep_name] }.should == YAML.load( '
 ---
 - :name: Report abstract class.
@@ -883,11 +893,12 @@ describe Arachni::Framework do
         context 'when the #lsrep option is set' do
             it 'should use it to filter out reports that do not match it' do
                 @f.opts.lsrep = 'foo'
+                @f.list_reports.should == @f.lsrep
                 @f.lsrep.size == 1
 
                 @f.opts.lsrep = 'boo'
+                @f.list_reports.should == @f.lsrep
                 @f.lsrep.size == 0
-
             end
         end
     end

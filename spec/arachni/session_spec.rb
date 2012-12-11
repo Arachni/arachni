@@ -94,10 +94,28 @@ describe Arachni::Session do
         end
         context 'when called without having configured a login check' do
             it 'should raise an exception' do
+                trigger = proc { new_session.cookie }
+
                 raised = false
                 begin
-                    new_session.cookie
-                rescue
+                    trigger.call
+                rescue Arachni::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Session::Error
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    trigger.call
+                rescue Arachni::Session::Error::NoLoginCheck
                     raised = true
                 end
                 raised.should be_true

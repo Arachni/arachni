@@ -121,7 +121,7 @@ describe name_from_filename do
 
     def run_test
         pages = []
-        framework.add_on_run_mods { |page| pages << page }
+        framework.on_audit_page { |page| pages << page }
         run
 
         check( pages )
