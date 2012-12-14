@@ -139,8 +139,8 @@ class Instance
         without = [options.delete( :without ) || options.delete( 'without' )].
             flatten.compact.map( &:to_sym )
 
-        @framework.progress( as_hash: true,
-                             issues:    with.include?( :issues ),
+        @framework.progress( as_hash:   !with.include?( :native_issues ),
+                             issues:    with.include?( :native_issues ) || with.include?( :issues ),
                              stats:     !without.include?( :stats ),
                              slaves:    with.include?( :instances ),
                              messages:  false

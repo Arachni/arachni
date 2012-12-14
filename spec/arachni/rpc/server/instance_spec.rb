@@ -188,7 +188,14 @@ describe Arachni::RPC::Server::Instance do
 
                 issues = instance.service.progress( with: :issues )['issues']
                 issues.should be_any
+                issues.first.class.should == Hash
                 issues.should == instance.framework.progress_data( as_hash: true )['issues']
+
+                issues = instance.service.progress( with: :native_issues )['issues']
+                issues.should be_any
+                issues.first.class.should == Arachni::Issue
+                issues.should == instance.framework.progress_data( as_hash: false )['issues']
+
             end
         end
 
