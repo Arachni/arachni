@@ -232,7 +232,7 @@ class Instance
     private
 
     def spawn( num, &block )
-        if num == 0
+        if num <= 0
             block.call []
             return
         end
