@@ -36,7 +36,7 @@ class Arachni::Reports::YAML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'YAML Report',
+            name:        'YAML',
             description: %q{Exports the audit results as a YAML file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',

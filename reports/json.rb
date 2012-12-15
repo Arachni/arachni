@@ -38,7 +38,7 @@ class Arachni::Reports::JSON < Arachni::Report::Base
 
     def self.info
         {
-            name:        'JSON Report',
+            name:        'JSON',
             description: %q{Exports the audit results as a JSON file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
