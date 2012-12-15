@@ -392,6 +392,46 @@ class Framework
     end
     alias :auditstore :audit_store
 
+    #
+    # Runs a report component and returns the contents of the generated report.
+    #
+    # Only accepts reports which support an +outfile+ option.
+    #
+    # @param    [String]    name    Name of the report component to run.
+    #
+    # @return   [String]    Report content.
+    #
+    # @raise    [Component::Error::NotFound]
+    #   If the given report name doesn't correspond to a valid report component.
+    #
+    # @raise    [Component::Error::InvalidOptions]
+    #   If the requested report doesn't format the scan results as a String.
+    #
+    def report_as( name )
+        if !@reports.available.include?( name.to_s )
+            fail Component::Error::NotFound, "Report '#{name}' could not be found."
+        end
+
+        loaded = @reports.loaded
+        begin
+            @reports.clear
+
+            if !@reports[name].has_outfile?
+                fail Component::Error::InvalidOptions,
+                     "Report '#{name}' cannot format the audit results as a String."
+            end
+
+            outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
+            @reports.run_one( name, auditstore, 'outfile' => outfile )
+
+            IO.read( outfile )
+        ensure
+            File.delete( outfile )
+            @reports.clear
+            @reports.load loaded
+        end
+    end
+
     # @return    [Array<Hash>]  Information about all available modules.
     def list_modules
         loaded = @modules.loaded
