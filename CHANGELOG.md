@@ -1,5 +1,15 @@
 # ChangeLog
 
+## Version 0.4.1.3 _(December 15, 2012)_
+- WebUI
+  - Updated Settings page to reflect the selected proxy type.
+- Spider
+  - Updated to handle relative Location URLs in redirections
+  - Fixed erroneous conditional causing redirects not to be followed under certain circumstances.
+- Reports
+  - Metareport - Fixed nil error on no request params.
+  - HTML - Updated to show a notice in the Summary tab when there are no issues.
+
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
   - Updated custom 404 detection algorithm to use less memory.
