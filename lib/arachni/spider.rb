@@ -261,6 +261,8 @@ class Spider
         uri = ::Arachni::URI( url ).dup
         uri.path = uri.path.split( ';' ).first.to_s
         uri.to_s
+    rescue
+        nil
     end
 
     #
