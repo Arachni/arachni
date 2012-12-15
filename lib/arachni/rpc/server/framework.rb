@@ -50,10 +50,11 @@ class Framework < ::Arachni::Framework
 
     # Make these inherited methods visible again.
     private :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
-            :list_plugins, :version, :revision, :status, :clean_up!
+            :list_plugins, :version, :revision, :status, :clean_up!, :report_as
 
     public  :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
-            :list_plugins, :lsplug, :version, :revision, :status, :clean_up!
+            :list_plugins, :lsplug, :version, :revision, :status, :clean_up!,
+            :report_as
 
     alias :auditstore   :audit_store
 
@@ -600,39 +601,6 @@ class Framework < ::Arachni::Framework
     # @return   [String]    YAML representation of {#report}.
     def serialized_report
         report.to_yaml
-    end
-
-    #
-    # Runs a report component and returns the contents of the generated report.
-    #
-    # Only accepts reports which support an +outfile+ option.
-    #
-    # @param    [String]    name    Name of the report component to run.
-    #
-    # @return   [String]    Report content.
-    #
-    # @raise    [Component::Error::NotFound]
-    #   If the given report name doesn't correspond to a valid report component.
-    #
-    # @raise    [Component::Error::InvalidOptions]
-    #   If the requested report doesn't format the scan results as a String.
-    #
-    def report_as( name, &block )
-        if !reports.available.include?( name.to_s )
-            fail Component::Error::NotFound,
-                 "Report '#{name}' could not be found."
-        end
-        if !reports[name].has_outfile?
-            fail Component::Error::InvalidOptions,
-                 "Report '#{name}' cannot format the audit results as a String."
-        end
-
-        outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
-        reports.run_one( name, auditstore, 'outfile' => outfile )
-
-        block.call IO.read( outfile )
-    ensure
-        File.delete( outfile )
     end
 
     # @return   [String]    YAML representation of {#auditstore}.

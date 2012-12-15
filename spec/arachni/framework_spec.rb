@@ -680,6 +680,44 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#report_as' do
+        before( :each ) do
+            reset_options
+            @new_framework = Arachni::Framework.new
+        end
+
+        context 'when passed a valid report name' do
+            it 'should return the report as a string' do
+                json = @new_framework.report_as( :json )
+                JSON.load( json )['issues'].size.should == @new_framework.auditstore.issues.size
+            end
+        end
+
+        context 'when passed an valid report name which does not support the \'outfile\' option' do
+            it 'should raise an exception' do
+                raised = false
+                begin
+                    @new_framework.report_as( :stdout )
+                rescue Exception
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+
+        context 'when passed an invalid report name' do
+            it 'should raise an exception' do
+                raised = false
+                begin
+                    @new_framework.report_as( :blah )
+                rescue Exception
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+    end
+
     describe '#audit_page' do
         it 'should audit an individual page' do
             @f.opts.audit :links, :forms, :cookies
