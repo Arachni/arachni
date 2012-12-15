@@ -24,7 +24,8 @@ require 'base64'
 # @version 0.2.3
 #
 class Arachni::Reports::XML < Arachni::Report::Base
-    require Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+    load Arachni::Options.dir['reports'] + '/xml/buffer.rb'
+
     include Buffer
 
     def run
