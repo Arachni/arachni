@@ -26,7 +26,7 @@
 class Arachni::Reports::Text < Arachni::Report::Base
 
     def run
-        require Arachni::Options.dir['reports'] + 'stdout'
+        load Arachni::Options.dir['reports'] + 'stdout.rb'
 
         print_line
         print_status "Dumping audit results in #{outfile}."
