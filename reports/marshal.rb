@@ -36,7 +36,7 @@ class Arachni::Reports::Marshal < Arachni::Report::Base
 
     def self.info
         {
-            :name           => 'Marshal Report',
+            :name           => 'Marshal',
             :description    => %q{Exports the audit results as a Marshal file.},
             :author         => 'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             :version        => '0.1.1',

@@ -133,7 +133,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
 
     def self.info
         {
-            name:        'XML report',
+            name:        'XML',
             description: %q{Exports a report as an XML file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.3',

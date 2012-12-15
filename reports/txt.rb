@@ -47,7 +47,7 @@ class Arachni::Reports::Text < Arachni::Report::Base
 
     def self.info
         {
-            name:        'Text report',
+            name:        'Text',
             description: %q{Exports a report as a plain text file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
