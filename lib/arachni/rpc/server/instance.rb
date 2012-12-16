@@ -100,6 +100,44 @@ class Instance
         @scan_initializing ? true : @framework.busy?
     end
 
+    # @see Framework#pause
+    def pause( &block )
+        @framework.pause( &block )
+    end
+
+    # @see Framework#resume
+    def resume( &block )
+        @framework.resume( &block )
+    end
+
+    #
+    # Cleans up and returns the report.
+    #
+    # @param   [Symbol] report_type
+    #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore.}
+    #
+    def abort_and_report( report_type = :hash, &block )
+        @framework.clean_up do
+            block.call report_type == :auditstore ? auditstore : report
+        end
+    end
+
+    #
+    # Cleans up and delegates to {#report_as}.
+    #
+    # @see #report_as
+    #
+    def abort_and_report_as( *args, &block )
+        @framework.clean_up do
+            block.call report_as( *args )
+        end
+    end
+
+    # @see Framework#auditstore
+    def auditstore
+        @framework.auditstore
+    end
+
     # @see Framework#report
     def report
         @framework.report
