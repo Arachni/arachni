@@ -106,8 +106,8 @@ class Instance
     end
 
     # @see Framework#report_as
-    def report_as( *args, &block )
-        @framework.report_as( *args, &block )
+    def report_as( *args )
+        @framework.report_as( *args )
     end
 
     # @see Framework#status
