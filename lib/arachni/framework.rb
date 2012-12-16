@@ -398,6 +398,7 @@ class Framework
     # Only accepts reports which support an +outfile+ option.
     #
     # @param    [String]    name    Name of the report component to run.
+    # @param    [AuditStore]    external_report    Report to use.
     #
     # @return   [String]    Report content.
     #
@@ -407,7 +408,7 @@ class Framework
     # @raise    [Component::Error::InvalidOptions]
     #   If the requested report doesn't format the scan results as a String.
     #
-    def report_as( name )
+    def report_as( name, external_report = auditstore )
         if !@reports.available.include?( name.to_s )
             fail Component::Error::NotFound, "Report '#{name}' could not be found."
         end
@@ -422,7 +423,7 @@ class Framework
             end
 
             outfile = "/#{Dir.tmpdir}/arachn_report_as.#{name}"
-            @reports.run_one( name, auditstore, 'outfile' => outfile )
+            @reports.run_one( name, external_report, 'outfile' => outfile )
 
             IO.read( outfile )
         ensure
