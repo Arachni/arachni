@@ -3,6 +3,7 @@
 ## Version 0.4.1.3 _(December 15, 2012)_
 - WebUI
   - Updated Settings page to reflect the selected proxy type.
+  - Fixed bug when deleting reports which caused the last report to be removed.
 - HTTP
   - Response bodies only get repacked if the content-type is text-based to avoid corrupting binary bodies.
 - Spider
