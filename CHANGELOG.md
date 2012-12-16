@@ -17,6 +17,11 @@
           - ```#scan``` -- Configures and runs the scan.
           - ```#progress``` -- Aggregates progress information.
           - ```#busy?``` -- Checks whether the scan is still in progress.
+          - ```#pause``` -- Pauses the scan (delegated to ```RPC::Server::Framework#pause```).
+          - ```#resume``` -- Resumes the scan (delegated to ```RPC::Server::Framework#resume```).
+          - ```#abort_and_report``` -- Cleans up the framework and returns the report.
+          - ```#abort_and_report_as``` -- Cleans up the framework and returns the
+            result of the specified report component.
           - ```#status``` -- Returns the status of the Instance.
           - ```#report``` -- Returns the scan report as a ```Hash```.
           - ```#report_as``` --  Returns the scan report in one of the available formats (as a ```String```).
@@ -34,9 +39,6 @@
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Updated custom-404 page detection to fallback to a word-difference ratio of
     the refined responses if straight comparison fails.
-- Spider
-  - Fixed enforcement of redirect limit. [Issue #306]
-  - Updated to handle relative Location URLs in redirections.
 - ```Arachni::Element::Capabilities::Auditable```
   - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
     a custom auditor when scripting.

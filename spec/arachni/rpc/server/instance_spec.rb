@@ -39,6 +39,28 @@ describe Arachni::RPC::Server::Instance do
             end
         end
 
+        describe '#paused?' do
+            context 'when not paused' do
+                it 'should return false' do
+                    @instance.framework.paused?.should be_false
+                end
+            end
+            context 'when paused' do
+                it 'should return true' do
+                    @instance.framework.pause
+                    @instance.framework.paused?.should be_true
+                end
+            end
+        end
+        describe '#resume' do
+            it 'should resume the scan' do
+                @instance.framework.pause
+                @instance.framework.paused?.should be_true
+                @instance.framework.resume.should be_true
+                @instance.framework.paused?.should be_false
+            end
+        end
+
         describe '#busy?' do
             it 'should delegate to Framework' do
                 @instance.service.busy?.should == @instance.framework.busy?
@@ -48,6 +70,26 @@ describe Arachni::RPC::Server::Instance do
         describe '#report' do
             it 'should delegate to Framework' do
                 @instance.service.report.should == @instance.framework.report
+            end
+        end
+
+        describe '#abort_and_report' do
+            describe 'nil' do
+                it 'should cleanup and return the report as a Hash' do
+                    @instance.service.abort_and_report.should == @instance.framework.report
+                end
+            end
+
+            describe :auditstore do
+                it 'should delegate to Framework' do
+                    @instance.service.abort_and_report( :auditstore ).should == @instance.framework.auditstore
+                end
+            end
+        end
+
+        describe '#abort_and_report_as' do
+            it 'should cleanup and delegate to #report_as' do
+                Nokogiri::HTML( @instance.service.abort_and_report_as( :html ) ).title.should be_true
             end
         end
 
