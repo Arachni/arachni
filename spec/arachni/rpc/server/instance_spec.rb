@@ -177,67 +177,121 @@ describe Arachni::RPC::Server::Instance do
         end
 
         describe '#progress' do
-            it 'should return progress information' do
-                instance = @get_instance.call
-
-                slave = @get_instance.call
-
-                p = instance.service.progress
-                p['busy'].should   == instance.framework.busy?
-                p['status'].should == instance.framework.status
-                p['stats'].should  == instance.framework.progress['stats']
-
-                p['instances'].should be_nil
-                p['messages'].should be_nil
-                p['issues'].should be_nil
-
-                instance.service.progress( with: :issues )['issues'].should be_empty
-
-                instance.service.progress( without: :stats )['stats'].should be_nil
-
-                p = instance.service.progress( with: [ :issues, :instances ], without: :stats )
-                p['busy'].should   == instance.framework.busy?
-                p['status'].should == instance.framework.status
-                p['stats'].should  be_nil
-
-                p['instances'].should be_empty
-                p['issues'].should be_empty
-                p['messages'].should be_nil
-
-                instance.service.scan(
+            before( :all ) do
+                @progress_instance = @get_instance.call
+                @progress_instance.service.scan(
                     url:         server_url_for( :framework_simple ),
                     audit_links: true,
                     audit_forms: true,
                     modules:     :test,
-                    slaves:      [ { url: slave.url, token: @token } ]
+                    spawns:      1
                 )
+                sleep 1 while @progress_instance.service.busy?
+            end
 
-                sleep 1 while instance.service.busy?
+            it 'should return progress information' do
+                instance = @progress_instance
 
                 p = instance.service.progress
-
                 p['busy'].should   == instance.framework.busy?
                 p['status'].should == instance.framework.status
-                p['stats'].keys.should  == instance.framework.progress( slaves: false )['stats'].keys
+                p['stats'].should  be_any
 
                 p['instances'].should be_nil
-
-                p = instance.service.progress( with: :instances )
-                p['instances'].size.should == 2
-                p['instances'].should == instance.framework.progress_data['instances']
-
                 p['messages'].should be_nil
+                p['issues'].should be_nil
+            end
 
-                issues = instance.service.progress( with: :issues )['issues']
-                issues.should be_any
-                issues.first.class.should == Hash
-                issues.should == instance.framework.progress_data( as_hash: true )['issues']
+            describe :without do
+                describe :stats do
+                    it 'should not include stats' do
+                        @progress_instance.service.progress( without: :stats )['stats'].should be_nil
+                    end
+                end
+                describe :issues do
+                    it 'should not include issues with the given Issue#digest hashes' do
+                        p = @progress_instance.service.progress( with: :native_issues )
+                        issue = p['issues'].first
+                        digest = issue.digest
 
-                issues = instance.service.progress( with: :native_issues )['issues']
-                issues.should be_any
-                issues.first.class.should == Arachni::Issue
-                issues.should == instance.framework.progress_data( as_hash: false )['issues']
+                        p = @progress_instance.service.
+                                progress( with: :native_issues,
+                                      without: { issues: [digest] }
+                        )
 
+                        p['issues'].include?( issue ).should be_false
+
+                        p = @progress_instance.service.progress( with: :issues )
+                        issue = p['issues'].first
+                        digest = issue['digest']
+
+                        p = @progress_instance.service.
+                                progress( with: :issues,
+                                      without: { issues: [digest] }
+                        )
+
+                        p['issues'].include?( issue ).should be_false
+                    end
+                end
+                context 'with an array of things to be excluded'  do
+                    it 'should include those things' do
+                        instance = @progress_instance
+
+                        p = @progress_instance.service.progress( with: :native_issues )
+                        issue = p['issues'].first
+                        digest = issue.digest
+
+                        p = instance.service.progress( with: [ :issues, :instances ], without: [ :stats,  issues: [digest] ] )
+                        p['stats'].should  be_nil
+                        p['issues'].include?( issue ).should be_false
+                    end
+                end
+            end
+
+            describe :with do
+                describe :issues do
+                    it 'should include issues' do
+                        instance = @progress_instance
+
+                        issues = instance.service.progress( with: :issues )['issues']
+                        issues.should be_any
+                        issues.first.class.should == Hash
+                        issues.should == instance.framework.progress_data( as_hash: true )['issues']
+                    end
+                end
+
+                describe :native_issues do
+                    it 'should include issues as Arachni::Issue objects' do
+                        instance = @progress_instance
+
+                        issues = instance.service.progress( with: :native_issues )['issues']
+                        issues.should be_any
+                        issues.first.class.should == Arachni::Issue
+                    end
+                end
+
+                describe :instances do
+                    it 'should include instances' do
+                        instance = @progress_instance
+                        p = instance.service.progress( with: :instances )
+                        p['instances'].size.should == 2
+                        p['instances'].should == instance.framework.progress_data['instances']
+                    end
+                end
+
+                context 'with an array of things to be included'  do
+                    it 'should include those things' do
+                        instance = @progress_instance
+
+                        p = instance.service.progress( with: [ :issues, :instances ], without: :stats )
+                        p['busy'].should   == instance.framework.busy?
+                        p['status'].should == instance.framework.status
+                        p['stats'].should  be_nil
+
+                        p['instances'].size.should == 2
+                        p['issues'].should be_any
+                    end
+                end
             end
         end
 
