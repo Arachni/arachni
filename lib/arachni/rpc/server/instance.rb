@@ -183,11 +183,13 @@ class Instance
             data['instances'] ||= [] if with.include?( :instances )
             data['busy'] = busy?
 
-            data['issues'] = data['issues'].dup
+            if data['issues']
+                data['issues'] = data['issues'].dup
 
-            if without[:issues].is_a? Array
-                data['issues'].reject! do |i|
-                    without[:issues].include?( i.is_a?( Hash ) ? i['digest'] : i.digest )
+                if without[:issues].is_a? Array
+                    data['issues'].reject! do |i|
+                        without[:issues].include?( i.is_a?( Hash ) ? i['digest'] : i.digest )
+                    end
                 end
             end
 
