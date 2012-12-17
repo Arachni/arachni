@@ -171,11 +171,8 @@ class Instance
     # @param    [Hash] options +{ with: [ :issues, :instances ], without: :stats }+
     #
     def progress( options = {}, &block )
-        with = [options.delete( :with ) || options.delete( 'with' )].
-            flatten.compact.map( &:to_sym )
-
-        without = [options.delete( :without ) || options.delete( 'without' )].
-            flatten.compact.map( &:to_sym )
+        with    = parse_progress_opts( options, :with )
+        without = parse_progress_opts( options, :without )
 
         @framework.progress( as_hash:   !with.include?( :native_issues ),
                              issues:    with.include?( :native_issues ) || with.include?( :issues ),
@@ -185,6 +182,13 @@ class Instance
         ) do |data|
             data['instances'] ||= [] if with.include?( :instances )
             data['busy'] = busy?
+
+            if without[:issues].is_a? Array
+                data['issues'].reject! do |i|
+                    without[:issues].include?( i.is_a?( Hash ) ? i['digest'] : i.digest )
+                end
+            end
+
             block.call( data )
         end
     end
@@ -268,6 +272,33 @@ class Instance
     end
 
     private
+
+    def parse_progress_opts( options, key )
+        parsed = {}
+        [options.delete( key ) || options.delete( key.to_s )].each do |w|
+            next if !w
+
+            case w
+                when Array
+                    w.compact.flatten.each do |q|
+                        case q
+                            when String, Symbol
+                                parsed[q.to_sym] = nil
+                            when Hash
+                                parsed.merge!( q )
+                        end
+                    end
+
+                when String, Symbol
+                    parsed[w.to_sym] = nil
+
+                when Hash
+                    parsed.merge!( w )
+            end
+        end
+
+        parsed
+    end
 
     def spawn( num, &block )
         if num <= 0
