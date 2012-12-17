@@ -46,8 +46,7 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
         'onmousemove',
         'onmouseout',
         'onmouseover',
-        'onmouseup',
-        'src' # not an event but it'll work
+        'onmouseup'
     ]
 
     def self.strings
