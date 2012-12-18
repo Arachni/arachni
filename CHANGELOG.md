@@ -44,6 +44,8 @@
     a custom auditor when scripting.
   - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
     when no auditor has been provided.
+- Plugins
+  -- AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
 - Added
   - Buffer classes
       - ```Arachni::Buffer::Base``` -- Buffer base class.
