@@ -244,9 +244,13 @@ class Instance
         spawn_count = opts[:spawns].to_i
         spawn_count -= 1 if has_dispatcher? && !opts[:grid]
 
+        if opts[:grid] && spawn_count <= 0
+            raise ArgumentError, 'Spawn count (:spawns) must be more than 1 for Grid scans.'
+        end
+
         # If a Grid scan has been selected then just set us as the master
         # and set the spawn count as max slaves.
-        if opts[:grid] && spawn_count > 0
+        if opts[:grid]
             @framework.set_as_master
             @framework.opts.max_slaves = spawn_count
             after.call
