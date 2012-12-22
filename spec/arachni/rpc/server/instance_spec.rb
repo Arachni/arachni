@@ -1,5 +1,6 @@
 require_relative '../../../spec_helper'
 
+require Arachni::Options.instance.dir['lib'] + 'rpc/server/dispatcher'
 require Arachni::Options.instance.dir['lib'] + 'rpc/client/instance'
 require Arachni::Options.instance.dir['lib'] + 'rpc/server/instance'
 
@@ -28,9 +29,36 @@ describe Arachni::RPC::Server::Instance do
 
         @utils = Arachni::Module::Utilities
         @instance = @get_instance.call
+
+        @dispatchers = []
+
+        @opts.pool_size = 1
+        @get_grid_instance = proc do |opts|
+            opts ||= @opts
+            port = random_port
+            opts.rpc_port = port
+            exec_dispatcher( opts )
+
+            port2 =  random_port
+            opts.rpc_port = port2
+            opts.neighbour = "#{opts.rpc_address}:#{port}"
+            opts.pipe_id = 'blah'
+            exec_dispatcher( opts )
+
+            dispatcher = Arachni::RPC::Client::Dispatcher.new( opts,
+                                                               "#{opts.rpc_address}:#{port}" )
+            @dispatchers << dispatcher
+
+            inst_info = dispatcher.dispatch
+            @instances << Arachni::RPC::Client::Instance.new( opts,inst_info['url'], inst_info['token'] )
+            @instances.last
+        end
     end
 
-    after( :all ){ @instances.each { |i| i.service.shutdown rescue nil } }
+    after( :all ) do
+        @instances.each { |i| i.service.shutdown rescue nil }
+        @dispatchers.each { |d| d.stats['consumed_pids'].each { |p| pids << p } }
+    end
 
     describe '#service' do
         describe '#alive?' do
@@ -146,32 +174,94 @@ describe Arachni::RPC::Server::Instance do
             end
 
             describe :spawns do
-                it 'should instruct the Instance to spawn a number of slaves' do
-                    instance = @get_instance.call
+                context 'when it has a Dispatcher who is a Grid member' do
+                    it 'should request its slaves from it' do
+                        instance = @get_grid_instance.call
 
-                    instance.service.scan(
-                        url:         server_url_for( :framework_simple ),
-                        audit_links: true,
-                        audit_forms: true,
-                        modules:     :test,
-                        spawns:      4
-                    )
+                        instance.service.scan(
+                            url:         server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      4,
+                            grid:        true
+                        )
 
-                    # if a scan in already running it should just bail out early
-                    instance.service.scan.should be_false
+                        # if a scan in already running it should just bail out early
+                        instance.service.scan.should be_false
 
-                    sleep 1 while instance.service.busy?
+                        sleep 1 while instance.service.busy?
 
-                    instance.framework.progress_data['instances'].size.should == 5
+                        # Since we've only got 2 Dispatchers in the Grid.
+                        instance.framework.progress_data['instances'].size.should == 2
 
-                    instance.service.busy?.should  == instance.framework.busy?
-                    instance.service.status.should == instance.framework.status
+                        instance.service.busy?.should  == instance.framework.busy?
+                        instance.service.status.should == instance.framework.status
 
-                    i_report = instance.service.report
-                    f_report = instance.framework.report
+                        i_report = instance.service.report
+                        f_report = instance.framework.report
 
-                    i_report.should == f_report
-                    i_report['issues'].should be_any
+                        i_report.should == f_report
+                        i_report['issues'].should be_any
+                    end
+                end
+                context 'when it has a Dispatcher' do
+                    it 'should request its slaves from it' do
+                        instance = @get_grid_instance.call
+
+                        instance.service.scan(
+                            url:         server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      4
+                        )
+
+                        # if a scan in already running it should just bail out early
+                        instance.service.scan.should be_false
+
+                        sleep 1 while instance.service.busy?
+
+                        instance.framework.progress_data['instances'].size.should == 5
+
+                        instance.service.busy?.should  == instance.framework.busy?
+                        instance.service.status.should == instance.framework.status
+
+                        i_report = instance.service.report
+                        f_report = instance.framework.report
+
+                        i_report.should == f_report
+                        i_report['issues'].should be_any
+                    end
+                end
+                context 'when it does not have a Dispatcher' do
+                    it 'should spawn a number of slaves' do
+                        instance = @get_instance.call
+
+                        instance.service.scan(
+                            url:         server_url_for( :framework_simple ),
+                            audit_links: true,
+                            audit_forms: true,
+                            modules:     :test,
+                            spawns:      4
+                        )
+
+                        # if a scan in already running it should just bail out early
+                        instance.service.scan.should be_false
+
+                        sleep 1 while instance.service.busy?
+
+                        instance.framework.progress_data['instances'].size.should == 5
+
+                        instance.service.busy?.should  == instance.framework.busy?
+                        instance.service.status.should == instance.framework.status
+
+                        i_report = instance.service.report
+                        f_report = instance.framework.report
+
+                        i_report.should == f_report
+                        i_report['issues'].should be_any
+                    end
                 end
             end
         end
