@@ -242,7 +242,7 @@ class Instance
         slaves  = opts[:slaves] || []
 
         spawn_count = opts[:spawns].to_i
-        spawn_count -= 1 if has_dispatcher?
+        spawn_count -= 1 if has_dispatcher? && !opts[:grid]
 
         # If a Grid scan has been selected then just set us as the master
         # and set the spawn count as max slaves.
