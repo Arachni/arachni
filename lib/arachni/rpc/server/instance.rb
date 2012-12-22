@@ -246,7 +246,7 @@ class Instance
 
         # If a Grid scan has been selected then just set us as the master
         # and set the spawn count as max slaves.
-        if opts[:grid]
+        if opts[:grid] && spawn_count > 0
             @framework.set_as_master
             @framework.opts.max_slaves = spawn_count
             after.call
