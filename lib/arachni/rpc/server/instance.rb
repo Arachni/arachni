@@ -241,10 +241,21 @@ class Instance
 
         slaves  = opts[:slaves] || []
 
-        spawn( opts[:spawns].to_i ) do |spawns|
-            slaves |= spawns
-            ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
-                each( each, after )
+        spawn_count = opts[:spawns].to_i
+        spawn_count -= 1 if has_dispatcher?
+
+        # If a Grid scan has been selected then just set us as the master
+        # and set the spawn count as max slaves.
+        if opts[:grid]
+            @framework.set_as_master
+            @framework.opts.max_slaves = spawn_count
+            after.call
+        else
+            spawn( spawn_count ) do |spawns|
+                slaves |= spawns
+                ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
+                    each( each, after )
+            end
         end
 
         true

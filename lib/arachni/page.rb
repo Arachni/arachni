@@ -35,11 +35,6 @@ class Page
     attr_reader :code
 
     #
-    # @return    [String]    the request method that returned the page
-    #
-    attr_reader :method
-
-    #
     # @return    [Hash]    url variables
     #
     attr_reader :query_vars
@@ -137,6 +132,15 @@ class Page
 
         @url    = Utilities.normalize_url( @url )
         @body ||= ''
+    end
+
+    #
+    # @return    [String]    the request method that returned the page
+    #
+    def method( *args )
+        return super( *args ) if args.any?
+
+        @method
     end
 
     def html

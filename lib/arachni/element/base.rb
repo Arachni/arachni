@@ -81,7 +81,9 @@ class Base
     #
     # @return [String]
     #
-    def method
+    def method( *args )
+        return super( *args ) if args.any?
+
         @method.freeze
     end
 
