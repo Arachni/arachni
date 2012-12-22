@@ -204,6 +204,21 @@ describe Arachni::RPC::Server::Instance do
                         i_report.should == f_report
                         i_report['issues'].should be_any
                     end
+                    it 'should raise an exception when it is less than 1' do
+                        instance = @get_grid_instance.call
+
+                        raised = false
+                        begin
+                            instance.service.scan(
+                                url:         server_url_for( :framework_simple ),
+                                grid:        true
+                            )
+                        rescue => e
+                            raised = e.rpc_exception?
+                        end
+
+                        raised.should be_true
+                    end
                 end
                 context 'when it has a Dispatcher' do
                     it 'should request its slaves from it' do
