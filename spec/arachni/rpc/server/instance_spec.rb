@@ -61,6 +61,30 @@ describe Arachni::RPC::Server::Instance do
     end
 
     describe '#service' do
+        describe '#errors' do
+            context 'when no argument has been provided' do
+                it 'should return all logged errors' do
+                    test = 'Test'
+                    @instance.service.error_test test
+                    @instance.service.errors.last.should end_with test
+                end
+            end
+            context 'when a start line-range has been provided' do
+                it 'should return all logged errors after that line' do
+                    initial_errors = @instance.service.errors
+                    errors = @instance.service.errors( 10 )
+
+                    initial_errors[10..-1].should == errors
+                end
+            end
+        end
+
+        describe '#error_logfile' do
+            it 'should return the path to the error logfile' do
+                errors = IO.read( @instance.service.error_logfile ).split( "\n" )
+                errors.should == @instance.service.errors
+            end
+        end
         describe '#alive?' do
             it 'should return true' do
                 @instance.service.alive?.should == true

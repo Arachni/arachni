@@ -49,9 +49,19 @@ module Output
         @@reroute_to_file = false
 
         @@opened = false
+
+        @@error_logfile = 'error.log'
     end
 
     reset_output_options
+
+    def set_error_logfile( logfile )
+        @@error_logfile = logfile
+    end
+
+    def error_logfile
+        @@error_logfile
+    end
 
     # Prints an error message
     #
@@ -62,7 +72,11 @@ module Output
     #
     def print_error( str = '' )
         print_color( '[-]', 31, str, $stderr, true )
-        File.open( 'error.log', 'a' ) do |f|
+        log_error( str )
+    end
+
+    def log_error( str = '' )
+        File.open( @@error_logfile, 'a' ) do |f|
             if !@@opened
                 f.puts
                 f.puts "#{Time.now} " + ( "-" * 80 )

@@ -472,6 +472,36 @@ class Framework < ::Arachni::Framework
     end
 
     #
+    # @param    [Integer]   starting_line
+    #   Sets the starting line for the range of errors to return.
+    #
+    # @return   [Array<String>]
+    #
+    def errors( starting_line = 0, &block )
+        return [] if !File.exists? error_logfile
+
+        error_strings = IO.read( error_logfile ).split( "\n" )
+
+        if starting_line != 0
+            error_strings = error_strings[starting_line..-1]
+        end
+
+        return error_strings if !block_given?
+
+        if @instances.empty?
+            block.call( error_strings )
+            return
+        end
+
+        foreach = proc do |instance, iter|
+            instance.framework.errors( starting_line ) { |errs| iter.return( errs ) }
+        end
+        after = proc { |out| block.call( (error_strings | errs).flatten ) }
+        map_slaves( foreach, after )
+    end
+
+
+    #
     # Returns aggregated progress data and helps to limit the amount of calls
     # required in order to get an accurate depiction of a scan's progress and includes:
     # * output messages
@@ -485,6 +515,7 @@ class Framework < ::Arachni::Framework
     # @option opts [Bool] :slaves   (true) Slave statistics.
     # @option opts [Bool] :issues   (true) Issue summaries.
     # @option opts [Bool] :stats   (true) Master/merged statistics.
+    # @option opts [Integer] :errors   (false) Logged errors.
     # @option opts [Bool] :as_hash  (false) If set to +true+, will convert
     #   issues to hashes before returning them.
     #
@@ -495,6 +526,7 @@ class Framework < ::Arachni::Framework
         include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
         include_issues   = opts[:issues].nil? ? true : opts[:issues]
+        include_errors   = opts.include?( :errors ) ? (opts[:errors] || 0) : false
 
         as_hash = opts[:as_hash] ? true : opts[:as_hash]
 
@@ -505,6 +537,10 @@ class Framework < ::Arachni::Framework
         }
 
         data['messages']  = flush_buffer if include_messages
+
+        if include_errors
+            data['errors'] = errors( include_errors.is_a?( Integer ) ? include_errors : 0 )
+        end
 
         if include_issues
             data['issues'] = as_hash ? issues_as_hash : issues
@@ -549,8 +585,9 @@ class Framework < ::Arachni::Framework
         after = proc do |slave_data|
             slave_data.compact!
             slave_data.each do |slave|
-                data['messages']  |= slave['messages'] if include_messages
-                data['issues']    |= slave['issues'] if include_issues
+                data['messages'] |= slave['messages'] if include_messages
+                data['issues']   |= slave['issues'] if include_issues
+                data['errors']   |= slave['errors'] if include_errors
 
                 if include_slaves
                     url = slave['url']
@@ -849,6 +886,10 @@ class Framework < ::Arachni::Framework
     # @return   [String]    This instance's RPC token.
     def token
         @opts.datastore[:token]
+    end
+
+    def error_test( str )
+        print_error str.to_s
     end
 
     private

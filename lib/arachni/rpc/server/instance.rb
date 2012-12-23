@@ -56,6 +56,9 @@ class Instance
     include UI::Output
     include Utilities
 
+    private :error_logfile
+    public  :error_logfile
+
     #
     # Initializes the RPC interface and the framework.
     #
@@ -82,6 +85,8 @@ class Instance
             reroute_to_file false
         end
 
+        set_error_logfile "#{@opts.dir['logs']}/Instance - #{Process.pid}-#{@opts.rpc_port}.error.log"
+
         set_handlers
 
         # trap interrupts and exit cleanly when required
@@ -92,12 +97,22 @@ class Instance
         run
     end
 
+    # @return   [true]
+    def alive?
+        @server.alive?
+    end
+
     # @return   [Bool]
     #   +true+ if the scan is initializing or running, +false+ otherwise.
     #   If a scan is started by {#scan} then this method should be used
     #   instead of {Framework#busy?}.
     def busy?
         @scan_initializing ? true : @framework.busy?
+    end
+
+    # @see Framework#errors
+    def errors( starting_line = 0, &block )
+        @framework.errors( starting_line, &block )
     end
 
     # @see Framework#pause
@@ -167,6 +182,7 @@ class Instance
     # * +busy+ -- {#busy?}
     # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
     # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
+    # * +errors+ -- {#errors} (disabled by default)
     #
     # @param    [Hash] options +{ with: [ :issues, :instances ], without: :stats }+
     #
@@ -178,7 +194,8 @@ class Instance
                              issues:    with.include?( :native_issues ) || with.include?( :issues ),
                              stats:     !without.include?( :stats ),
                              slaves:    with.include?( :instances ),
-                             messages:  false
+                             messages:  false,
+                             errors:    with[:errors]
         ) do |data|
             data['instances'] ||= [] if with.include?( :instances )
             data['busy'] = busy?
@@ -285,9 +302,8 @@ class Instance
     end
     alias :shutdown! :shutdown
 
-    # @return   [true]
-    def alive?
-        @server.alive?
+    def error_test( str )
+        print_error str.to_s
     end
 
     private
