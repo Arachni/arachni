@@ -14,10 +14,10 @@
     limitations under the License.
 =end
 
-module Arachni
-
 # get some basics from the CLI UI's output interface
-require Options.dir['lib'] + 'ui/cli/output'
+require Arachni::Options.dir['lib'] + 'ui/cli/output'
+
+module Arachni
 
 module UI
 
@@ -70,11 +70,10 @@ module Output
     # circumstances.
     #
     # @param    [String]    str    error string
-    # @return    [void]
     #
     def print_error( str = '' )
+        log_error( str )
         push_to_output_buffer( :error => str )
-        print_color( '[-]', 31, str, $stderr )
     end
     def print_error_backtrace( e )
         e.backtrace.each { |line| print_error( line ) }
@@ -100,7 +99,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_status( str = '' )
         return if only_positives?
@@ -115,7 +113,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_info( str = '' )
         return if only_positives?
@@ -142,7 +139,6 @@ module Output
     # @see #debug
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_debug( str = '' )
         return if !debug?
@@ -162,7 +158,6 @@ module Output
     # @see #verbose
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_verbose( str = '' )
         return if !verbose?
@@ -177,7 +172,6 @@ module Output
     # @see #only_positives
     #
     # @param    [String]    str
-    # @return    [void]
     #
     def print_line( str = '' )
         return if only_positives?

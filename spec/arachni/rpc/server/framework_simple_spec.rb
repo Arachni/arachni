@@ -30,6 +30,24 @@ describe Arachni::RPC::Server::Framework do
         @framework_clean = @instance_clean.framework
     end
 
+    describe '#errors' do
+        context 'when no argument has been provided' do
+            it 'should return all logged errors' do
+                test = 'Test'
+                @instance.framework.error_test test
+                @instance.framework.errors.last.should end_with test
+            end
+        end
+        context 'when a start line-range has been provided' do
+            it 'should return all logged errors after that line' do
+                initial_errors = @instance.framework.errors
+                errors = @instance.framework.errors( 10 )
+
+                initial_errors[10..-1].should == errors
+            end
+        end
+    end
+
     describe '#busy?' do
         context 'when the scan is not running' do
             it 'should return false' do
@@ -272,14 +290,44 @@ describe Arachni::RPC::Server::Framework do
                 data['messages'].is_a?( Array ).should be_true
                 data['issues'].should be_any
                 data['instances'].should be_empty
+                data.should_not include 'errors'
             end
         end
 
         context 'when called with option' do
+            describe :errors do
+                context 'when set to true' do
+                    it 'should include all error messages' do
+                        @instance_clean.framework.
+                            progress( errors: true )['errors'].should be_empty
+
+                        test = 'Test'
+                        @instance_clean.framework.error_test test
+
+                        @instance_clean.framework.
+                            progress( errors: true )['errors'].last.
+                            should end_with test
+                    end
+                end
+                context 'when set to an Integer' do
+                    it 'should return all logged errors after that line' do
+                        initial_errors = @instance_clean.framework.
+                            progress( errors: true )['errors']
+
+                        errors = @instance_clean.framework.
+                            progress( errors: 10 )['errors']
+
+                        ap initial_errors.size
+                        ap errors.size
+
+                        errors.should == initial_errors[10..-1]
+                    end
+                end
+            end
             describe :messages do
                 context 'when set to false' do
                     it 'should exclude messages' do
-                        keys = @instance_clean.framework. progress( messages: false ).
+                        keys = @instance_clean.framework.progress( messages: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "messages" )
@@ -290,21 +338,10 @@ describe Arachni::RPC::Server::Framework do
             describe :issue do
                 context 'when set to false' do
                     it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( issues: false ).
+                        keys = @instance_clean.framework.progress( issues: false ).
                             keys.sort
                         pk = @progress_keys.dup
                         pk.delete( "issues" )
-                        keys.should == pk
-                    end
-                end
-            end
-            describe :slaves do
-                context 'when set to false' do
-                    it 'should exclude issues' do
-                        keys = @instance_clean.framework. progress( slaves: false ).
-                            keys.sort
-                        pk = @progress_keys.dup
-                        pk.delete( "instances" )
                         keys.should == pk
                     end
                 end
