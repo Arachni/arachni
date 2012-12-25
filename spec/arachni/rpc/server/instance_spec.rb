@@ -234,8 +234,8 @@ describe Arachni::RPC::Server::Instance do
                         raised = false
                         begin
                             instance.service.scan(
-                                url:         server_url_for( :framework_simple ),
-                                grid:        true
+                                url:  server_url_for( :framework_simple ),
+                                grid: true
                             )
                         rescue => e
                             raised = e.rpc_exception?

@@ -221,6 +221,8 @@ describe Arachni::RPC::Server::Framework do
 
             sleep 1 while instance.framework.busy?
 
+            instance_count = instance.framework.progress['instances'].size
+
             instance.framework.clean_up
 
             auditstore = instance.framework.auditstore
@@ -231,7 +233,7 @@ describe Arachni::RPC::Server::Framework do
             results.should be_any
             results['wait'].should be_any
             results['wait'][:results].should == { stuff: true }
-            results['distributable'][:results].should == { stuff: 2 }
+            results['distributable'][:results].should == { stuff: instance_count }
         end
     end
     describe '#progress' do
