@@ -311,14 +311,13 @@ describe Arachni::RPC::Server::Framework do
                 end
                 context 'when set to an Integer' do
                     it 'should return all logged errors after that line' do
+                        @instance_clean.framework.error_test 'test'
+
                         initial_errors = @instance_clean.framework.
                             progress( errors: true )['errors']
 
                         errors = @instance_clean.framework.
                             progress( errors: 10 )['errors']
-
-                        ap initial_errors.size
-                        ap errors.size
 
                         errors.should == initial_errors[10..-1]
                     end
