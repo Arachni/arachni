@@ -14,6 +14,7 @@
       - ```service``` -- Updated with the following convenience methods in order
             to provide a simpler interface for users who don't wish to bother with
             the more specialised handlers (```opts```,```modules```, ```framework```, etc.):
+          - ```#errors``` -- Returns the contents of the error log.
           - ```#scan``` -- Configures and runs the scan.
           - ```#progress``` -- Aggregates progress information.
           - ```#busy?``` -- Checks whether the scan is still in progress.
