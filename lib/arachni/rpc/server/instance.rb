@@ -259,7 +259,11 @@ class Instance
         slaves  = opts[:slaves] || []
 
         spawn_count = opts[:spawns].to_i
-        spawn_count -= 1 if has_dispatcher? && !opts[:grid]
+
+        # If the Dispatchers are in a Grid config but the user has not requested
+        # a Grid scan force the framework to ignore the Grid and work with
+        # the instances we give it.
+        @framework.ignore_grid if has_dispatcher? && !opts[:grid]
 
         if opts[:grid] && spawn_count <= 0
             raise ArgumentError, 'Spawn count (:spawns) must be more than 1 for Grid scans.'

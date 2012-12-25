@@ -192,7 +192,7 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  +false+ if already running, +true+ otherwise.
     #
-    def run
+    def run( type = nil )
         # return if we're already running
         return false if extended_running?
 
@@ -242,6 +242,11 @@ class Framework < ::Arachni::Framework
                 sleep( 0.2 ) while paused?
 
                 each = proc do |d_url, iterator|
+                    if ignore_grid?
+                        iterator.next
+                        next
+                    end
+
                     d_opts = {
                         'rank'   => 'slave',
                         'target' => @opts.url,
@@ -881,6 +886,14 @@ class Framework < ::Arachni::Framework
     # @return   [String]    URL of this instance.
     def self_url
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
+    end
+
+    def ignore_grid
+        @ignore_grid = true
+    end
+
+    def ignore_grid?
+        !!@ignore_grid
     end
 
     # @return   [String]    This instance's RPC token.
