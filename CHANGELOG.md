@@ -48,8 +48,10 @@
 - Plugins
   - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
 - Modules
-  -General
+  - General
       - Updated module names along with some descriptions and issue names.
+  - Removed
+      - ```xss_uri``` compatibility module.
 - Added
   - Buffer classes
       - ```Arachni::Buffer::Base``` -- Buffer base class.
