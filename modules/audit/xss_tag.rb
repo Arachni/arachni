@@ -71,7 +71,7 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in HTML tag.},
+                name:            %q{Cross-Site Scripting (XSS) in HTML tag},
                 description:     %q{Unvalidated user input is being embedded in a HTML element.
     This can lead to a Cross-Site Scripting vulnerability or a form of HTML manipulation.},
                 tags:            %w(xss script tag regexp dom attribute injection),

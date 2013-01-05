@@ -46,7 +46,7 @@ class Arachni::Modules::BlindTimingSQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'Blind (timing) SQL injection',
+            name:        'Blind SQL injection (timing attack)',
             description: %q{Blind SQL Injection module using timing attacks
                 (if the remote server suddenly becomes unresponsive or your network
                 connection suddenly chokes up this module will probably produce false positives).},

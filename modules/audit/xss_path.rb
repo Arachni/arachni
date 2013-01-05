@@ -77,7 +77,7 @@ class Arachni::Modules::XSSPath < Arachni::Module::Base
 
     def self.info
         {
-            name:        'XSSPath',
+            name:        'XSS in path',
             description: %q{Cross-Site Scripting module for path injection},
             elements:    [ Element::PATH ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',

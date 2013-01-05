@@ -43,7 +43,7 @@ class Arachni::Modules::UnvalidatedRedirect < Arachni::Module::Base
 
     def self.info
         {
-            name:        'UnvalidatedRedirect',
+            name:        'Unvalidated redirect',
             description: %q{Injects URLs and checks the Location header field
                 to determnine whether the attack was successful.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],

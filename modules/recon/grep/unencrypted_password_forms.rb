@@ -59,7 +59,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
 
     def self.info
         {
-            name:        'UnencryptedPasswordForms',
+            name:        'Unencrypted password forms',
             description: %q{Looks for password inputs that don't submit data
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::FORM ],
@@ -70,7 +70,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Unencrypted password form.},
+                name:            %q{Unencrypted password form},
                 description:     %q{Transmission of password does not use an encrypted channel.},
                 tags:            %w(unencrypted password form),
                 cwe:             '319',

@@ -46,7 +46,10 @@
   - Updated ```#submit``` and ```#audit``` to default to ```#use_anonymous_auditor```
     when no auditor has been provided.
 - Plugins
-  -- AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+  - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+- Modules
+  -General
+      - Updated module names along with some descriptions and issue names.
 - Added
   - Buffer classes
       - ```Arachni::Buffer::Base``` -- Buffer base class.

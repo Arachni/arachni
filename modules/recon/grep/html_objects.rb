@@ -40,7 +40,7 @@ class Arachni::Modules::HTMLObjects < Arachni::Module::Base
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:     %q{Found an HTML object.},
+                name:     %q{HTML object},
                 cwe:      '200',
                 severity: Severity::INFORMATIONAL
             }

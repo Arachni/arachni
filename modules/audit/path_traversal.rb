@@ -83,7 +83,7 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
 
     def self.info
         {
-            name:        'PathTraversal',
+            name:        'Path Traversal',
             description: %q{It injects paths of common files (/etc/passwd and boot.ini)
                 and evaluates the existence of a path traversal vulnerability
                 based on the presence of relevant content in the HTML responses.},

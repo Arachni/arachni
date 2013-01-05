@@ -51,7 +51,7 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
                 'CWE' => 'http://cwe.mitre.org/data/definitions/200.html'
             },
             issue:       {
-                name:            %q{CVS/SVN user disclosure.},
+                name:            %q{CVS/SVN user disclosure},
                 description:     %q{A CVS or SVN user is disclosed in the body of the HTML page.},
                 cwe:             '200',
                 severity:        Severity::LOW,

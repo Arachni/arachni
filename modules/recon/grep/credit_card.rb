@@ -97,7 +97,7 @@ class Arachni::Modules::CreditCards < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Credit card number disclosure.},
+                name:            %q{Credit card number disclosure},
                 description:     %q{A credit card number is disclosed in the body of the page.},
                 cwe:             '200',
                 severity:        Severity::MEDIUM,

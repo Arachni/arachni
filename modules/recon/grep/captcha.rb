@@ -45,7 +45,7 @@ class Arachni::Modules::CAPTCHA < Arachni::Module::Base
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:        %q{Found a CAPTCHA protected form.},
+                name:        %q{CAPTCHA protected form},
                 description: %q{Arachni can't audit CAPTCHA protected forms, consider auditing manually.},
                 severity:    Severity::INFORMATIONAL
             }

@@ -98,7 +98,7 @@ class Arachni::Modules::DirectoryListing < Arachni::Module::Base
                 'CWE' => 'http://cwe.mitre.org/data/definitions/548.html'
             },
             issue:       {
-                name:        %q{Directory listing is enabled.},
+                name:        %q{Directory listing},
                 description: %q{In most circumstances enabling directory listings is a bad practise
     as it allows an attacker to better grasp the web application's structure.},
                 tags:        %w(path directory listing index),

@@ -39,7 +39,7 @@ class Arachni::Modules::EMails < Arachni::Module::Base
             version:     '0.1.1',
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Disclosed e-mail address.},
+                name:            %q{E-mail address disclosure},
                 description:     %q{An e-mail address is being disclosed.},
                 cwe:             '200',
                 severity:        Severity::INFORMATIONAL,

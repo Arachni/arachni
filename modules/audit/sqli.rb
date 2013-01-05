@@ -58,7 +58,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'SQLInjection',
+            name:        'SQL Injection',
             description: %q{SQL injection recon module},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',

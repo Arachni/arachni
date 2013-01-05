@@ -51,7 +51,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
 
     def self.info
         {
-            name:        'ResponseSplitting',
+            name:        'Response Splitting',
             description: %q{Tries to inject some data into the webapp and figure out
                 if any of them end up in the response header.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
@@ -64,7 +64,7 @@ class Arachni::Modules::ResponseSplitting < Arachni::Module::Base
             targets:     %w(Generic),
 
             issue:       {
-                name:            %q{Response splitting},
+                name:            %q{Response Splitting},
                 description:     %q{The web application includes user input
      in the response HTTP header.},
                 tags:            %w(response splitting injection header),

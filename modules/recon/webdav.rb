@@ -51,7 +51,7 @@ class Arachni::Modules::WebDav < Arachni::Module::Base
 
     def self.info
         {
-            name:        'WebDav',
+            name:        'WebDAV',
             description: %q{Checks for WebDAV enabled directories.},
             elements:    [ Element::SERVER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',

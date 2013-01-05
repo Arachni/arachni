@@ -66,7 +66,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
     def self.info
         {
-            name:        'XSS in HTML "script" tag',
+            name:        'XSS in HTML \'script\' tag',
             description: %q{Injects strings and checks if they appear inside HTML 'script' tags.},
             elements:    [Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
@@ -77,7 +77,7 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in HTML "script" tag.},
+                name:            %q{Cross-Site Scripting in HTML \'script\' tag},
                 description:     %q{Unvalidated user input is being embedded inside a <script> element.
     This makes Cross-Site Scripting attacks much easier to mount since user input lands inside
     a trusted script.},

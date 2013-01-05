@@ -60,7 +60,7 @@ class Arachni::Modules::HTTP_PUT < Arachni::Module::Base
                 'W3' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'
             },
             issue:       {
-                name:            %q{HTTP PUT is enabled.},
+                name:            %q{Publicly writable directory},
                 description:     %q{3rd parties can upload files to the web-server.},
                 tags:            %w(http methods put server),
                 cwe:             '650',

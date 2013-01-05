@@ -91,7 +91,7 @@ class Arachni::Modules::XSSEvent < Arachni::Module::Base
             },
             targets:     %w(Generic),
             issue:       {
-                name:            %q{Cross-Site Scripting in event tag of HTML element.},
+                name:            %q{Cross-Site Scripting in event tag of HTML element},
                 description:     %q{Unvalidated user input is being embedded inside an HMTL event element such as "onmouseover".
     This makes Cross-Site Scripting attacks much easier to mount since the user input
     lands in code waiting to be executed.},

@@ -44,7 +44,7 @@ class Arachni::Modules::PrivateIP < Arachni::Module::Base
                 'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
             },
             issue:       {
-                name:            %q{Private IP address disclosure.},
+                name:            %q{Private IP address disclosure},
                 description:     %q{A private IP address is disclosed in the body of the HTML page},
                 cwe:             '200',
                 severity:        Severity::LOW,

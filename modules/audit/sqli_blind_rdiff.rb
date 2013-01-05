@@ -53,7 +53,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'Blind (rDiff) SQL Injection',
+            name:        'Blind SQL Injection (differential analysis)',
             description: %q{It uses rDiff analysis to decide how different inputs affect
                 the behavior of the the web pages.
                 Using that as a basis it extrapolates about what inputs are vulnerable to blind SQL injection.
@@ -69,7 +69,7 @@ class Arachni::Modules::BlindrDiffSQLInjection < Arachni::Module::Base
             targets:     %w(Generic),
 
             issue:       {
-                name:            %q{Blind SQL Injection},
+                name:            %q{Blind SQL Injection (differential analysis)},
                 description:     %q{SQL code can be injected into the web application
     even though it may not be obvious due to suppression of error messages.},
                 tags:            %w(sql blind rdiff injection database),

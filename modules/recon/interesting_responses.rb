@@ -90,7 +90,7 @@ class Arachni::Modules::InterestingResponses < Arachni::Module::Base
                 'w3.org' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
             },
             issue:       {
-                name:        %q{Interesting server response.},
+                name:        %q{Interesting response},
                 description: %q{The server responded with a non 200 (OK) code. },
                 tags:        %w(interesting response server),
                 severity:    Severity::INFORMATIONAL

@@ -43,7 +43,7 @@ class Arachni::Modules::SSN < Arachni::Module::Base
                 'ssa.gov' => 'http://www.ssa.gov/pubs/10064.html'
             },
             issue:       {
-                name:            %q{Disclosed US Social Security Number.},
+                name:            %q{Disclosed US Social Security Number (SSN)},
                 description:     %q{A US Social Security Number is being disclosed.},
                 cwe:             '200',
                 severity:        Severity::HIGH,

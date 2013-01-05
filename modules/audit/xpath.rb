@@ -42,7 +42,7 @@ class Arachni::Modules::XPathInjection < Arachni::Module::Base
 
     def self.info
         {
-            name:        'XPathInjection',
+            name:        'XPath Injection',
             description: %q{XPath injection module},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
