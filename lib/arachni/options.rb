@@ -64,6 +64,8 @@ class Options
     #
     PROFILE_EXT = '.afp'
 
+    USER_AGENT = 'Arachni/v' + Arachni::VERSION.to_s
+
     #
     # General purpose datastore.
     #
@@ -523,6 +525,9 @@ class Options
         # both as a default configuration and as an inexpensive way to declare
         # their data types for later verification
 
+        @user_agent   = USER_AGENT
+        @http_timeout = 50000
+
         @datastore  = {}
         @redundant  = {}
 
@@ -600,7 +605,7 @@ class Options
     end
 
     def auto_redundant?
-        !!@auto_redundant
+        @auto_redundant == true || @auto_redundant.to_s.to_i > 0
     end
 
     def fuzz_methods?
