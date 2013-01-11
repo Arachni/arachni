@@ -288,7 +288,7 @@ class Spider
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
     def limit_reached?
-        @opts.link_count_limit > 0 && @visited.size >= @opts.link_count_limit
+        @opts.link_count_limit_reached? @visited.size
     end
 
     #

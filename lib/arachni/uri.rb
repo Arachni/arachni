@@ -535,7 +535,7 @@ class URI
     # @return   [Bool]  +true+ if self is deeper than +depth+, +false+ otherwise
     #
     def too_deep?( depth )
-        depth > 0 && (depth + 1) <= path.count( '/' )
+        depth.to_i > 0 && (depth + 1) <= path.count( '/' )
     end
 
     #
