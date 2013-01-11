@@ -55,12 +55,11 @@ class HTTP
     # Default maximum redirect limit.
     REDIRECT_LIMIT  = 20
 
-    # Default user agent (will be appended the current Arachni version).
-    USER_AGENT      = 'Arachni/v'
-
     # Don't let the request queue grow more than this amount, if it does then
     # run the queued requests to unload it
     MAX_QUEUE_SIZE  = 5000
+
+    HTTP_TIMEOUT    = 50000
 
     # @return   [String]    framework seed/target URL
     attr_reader :url
@@ -100,7 +99,7 @@ class HTTP
 
         opts = Options
 
-        req_limit = opts.http_req_limit || 20
+        req_limit = opts.http_req_limit || MAX_CONCURRENCY
 
         hydra_opts = {
             max_concurrency: req_limit,
@@ -124,7 +123,6 @@ class HTTP
         @hydra.disable_memoization
         @hydra_sync.disable_memoization
 
-        opts.user_agent ||= USER_AGENT + VERSION.to_s
         @headers = {
             'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'User-Agent' => opts.user_agent
@@ -150,7 +148,7 @@ class HTTP
             follow_location:               false,
             max_redirects:                 opts.redirect_limit,
             disable_ssl_peer_verification: true,
-            timeout:                       opts.http_timeout || 50000
+            timeout:                       opts.http_timeout || HTTP_TIMEOUT
         }.merge( proxy_opts )
 
         @request_count  = 0

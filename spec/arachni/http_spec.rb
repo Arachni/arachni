@@ -102,8 +102,16 @@ describe Arachni::HTTP do
     end
 
     describe 'Arachni::Options#user_agent' do
+        it 'should use the default user-agent setting' do
+            body = nil
+            @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
+            @http.run
+
+            body.should == @opts.user_agent
+            @opts.user_agent.should == Arachni::Options::USER_AGENT
+        end
         context String do
-            it 'should use it as a user agent' do
+            it 'should use it as a user-agent' do
                 ua = 'my user agent'
                 @opts.user_agent = ua.dup
                 @http.reset
@@ -115,15 +123,15 @@ describe Arachni::HTTP do
             end
         end
         context 'nil' do
-            it 'should use a default user agent setting and update the global setting' do
+            it 'should use an empty user-agent string' do
                 @opts.user_agent = nil
                 @http.reset
 
                 body = nil
                 @http.get( @opts.url + 'user-agent' ) { |res| body = res.body }
                 @http.run
-                body.should == Arachni::HTTP::USER_AGENT + Arachni::VERSION.to_s
-                @opts.user_agent.should == body
+                body.should be_empty
+                @opts.user_agent.should be_nil
             end
         end
     end

@@ -47,6 +47,18 @@ describe Arachni::Options do
         end
     end
 
+    describe '#user_agent' do
+        it "should default to Arachni/v#{Arachni::VERSION}" do
+            Arachni::Options.user_agent.should == 'Arachni/v' + Arachni::VERSION.to_s
+        end
+    end
+
+    describe '#http_timeout' do
+        it "should default to 50000" do
+            Arachni::Options.http_timeout.should == 50000
+        end
+    end
+
     describe '#https_only?' do
         describe 'when the option has been enabled' do
             it 'should return true' do

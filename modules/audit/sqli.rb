@@ -59,9 +59,9 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
     def self.info
         {
             name:        'SQL Injection',
-            description: %q{SQL injection recon module},
+            description: %q{SQL injection module, uses known SQL DB errors to identify vulnerabilities.},
             elements:    [Element::LINK, Element::FORM, Element::COOKIE, Element::HEADER],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.6',
             references:  {
                 'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
