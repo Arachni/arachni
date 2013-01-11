@@ -117,7 +117,8 @@ describe Arachni::Options do
     describe '#crawl' do
         it 'should set the link_count_limit to < 0' do
             Arachni::Options.crawl
-            Arachni::Options.link_count_limit.should < 0
+            Arachni::Options.crawl?.should be_true
+            !Arachni::Options.link_count_limit.should be_nil
         end
     end
 
@@ -142,6 +143,33 @@ describe Arachni::Options do
                 Arachni::Options.crawl?.should be_false
             end
         end
+    end
+
+    describe '#link_count_limit_reached?' do
+        context 'when the link count limit has' do
+
+            context 'not been set' do
+                it 'should return false' do
+                    Arachni::Options.link_count_limit_reached?( 44 ).should be_false
+                end
+            end
+
+            context 'not been reached' do
+                it 'should return false' do
+                    Arachni::Options.link_count_limit = 5
+                    Arachni::Options.link_count_limit_reached?( 2 ).should be_false
+                end
+            end
+
+            context 'been reached' do
+                it 'should return true' do
+                    Arachni::Options.link_count_limit = 5
+                    Arachni::Options.link_count_limit_reached?( 5 ).should be_true
+                    Arachni::Options.link_count_limit_reached?( 6 ).should be_true
+                end
+            end
+        end
+
     end
 
     describe '#audit' do

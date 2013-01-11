@@ -533,8 +533,8 @@ class Options
         @exclude_binaries  = false
         @auto_redundant    = false
 
-        @depth_limit      = -1
-        @link_count_limit = -1
+        @depth_limit      = nil
+        @link_count_limit = nil
         @redirect_limit   = 20
 
         @lsmod      = []
@@ -612,11 +612,15 @@ class Options
     end
 
     def crawl
-        self.link_count_limit = -1
+        self.link_count_limit = nil
     end
 
     def crawl?
-        self.link_count_limit != 0
+        !link_count_limit || link_count_limit != 0
+    end
+
+    def link_count_limit_reached?( count )
+        link_count_limit && link_count_limit.to_i > 0 && count >= link_count_limit
     end
 
     #
