@@ -536,7 +536,7 @@ class Options
         @fuzz_methods      = false
         @audit_cookies_extensively = false
         @exclude_binaries  = false
-        @auto_redundant    = false
+        @auto_redundant    = nil
 
         @depth_limit      = nil
         @link_count_limit = nil
@@ -605,7 +605,7 @@ class Options
     end
 
     def auto_redundant?
-        @auto_redundant == true || @auto_redundant.to_s.to_i > 0
+        !!@auto_redundant
     end
 
     def fuzz_methods?
