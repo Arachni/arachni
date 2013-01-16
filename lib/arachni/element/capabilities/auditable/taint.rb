@@ -104,13 +104,12 @@ module Auditable::Taint
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
 
-        match_data = res.body.scan( regexp )[0]
-        match_data = match_data.to_s
+        match_data = res.body.scan( regexp ).flatten.first.to_s
 
         opts[:verification] = false
 
         # an annoying encoding exception may be thrown by scan()
-        # the sob started occuring again....
+        # the sob started occurring again....
         begin
             opts[:verification] = true if @auditor.page.body.scan( regexp )[0]
         rescue
