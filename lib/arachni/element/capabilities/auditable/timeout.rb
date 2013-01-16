@@ -188,9 +188,9 @@ module Auditable::Timeout
                         next
                     end
 
-                    # all issues logged by timing attacks need manual verification.
+                    # All issues logged by timing attacks need manual verification,
                     # end of story.
-                    # c_opts[:verification] = true
+                    c_opts[:verification] = true
                     elem.auditor.log( c_opts, c_res )
                     elem.responsive?
                 end

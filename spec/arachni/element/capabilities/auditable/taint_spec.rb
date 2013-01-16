@@ -8,9 +8,11 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
 
         @positive = Arachni::Element::Link.new( @url, 'input' => '' )
         @positive.auditor = @auditor
+        @positive.auditor.page = Arachni::Page.from_url( @url )
 
         @negative = Arachni::Element::Link.new( @url, 'inexistent_input' => '' )
         @negative.auditor = @auditor
+        @negative.auditor.page = Arachni::Page.from_url( @url )
     end
 
     describe '.taint' do
@@ -51,6 +53,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             @auditor.http.run
                             issues.size.should == 1
                             issues.first.injected.should == @seed
+                            issues.first.verification.should be_false
                         end
                     end
 
@@ -75,6 +78,22 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             @auditor.http.run
                             issues.size.should == 1
                             issues.first.injected.should == @seed
+                            issues.first.verification.should be_false
+                        end
+                    end
+
+                    context 'when the page matches the regexp even before we audit it' do
+                        it 'should flag the issue as requiring manual verification' do
+                            seed = 'Inject here'
+
+                            @positive.taint_analysis( 'Inject here',
+                                regexp: 'Inject he[er]',
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+                            @auditor.http.run
+                            issues.size.should == 1
+                            issues.first.injected.should == seed
+                            issues.first.verification.should be_true
                         end
                     end
                 end
@@ -87,7 +106,25 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                          )
                         @auditor.http.run
                         issues.size.should == 1
+                        issues.first.injected.should == @seed
+                        issues.first.verification.should be_false
                     end
+
+                    context 'when the page includes the substring even before we audit it' do
+                        it 'should flag the issue as requiring manual verification' do
+                            seed = 'Inject here'
+
+                            @positive.taint_analysis( 'Inject here',
+                                regexp: 'Inject here',
+                                format: [ Arachni::Module::Auditor::Format::STRAIGHT ]
+                            )
+                            @auditor.http.run
+                            issues.size.should == 1
+                            issues.first.injected.should == seed
+                            issues.first.verification.should be_true
+                        end
+                    end
+
                 end
 
                 describe :ignore do
