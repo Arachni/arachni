@@ -60,6 +60,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
                     issues.should be_any
                     issues.first.injected.should == 4.to_s
+                    issues.first.verification.should be_true
                 end
             end
 
@@ -72,12 +73,12 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
                     issues.should be_any
                     issues.first.injected.should == 4000.to_s
+                    issues.first.verification.should be_true
                 end
             end
         end
 
         context 'when a page has a high response time' do
-
             before do
                 @delay_opts = {
                     timeout_divider: 1000,
