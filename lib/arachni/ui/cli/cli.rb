@@ -148,8 +148,7 @@ class CLI
             print_info( restr( "Crawling, discovered #{mapped} pages and counting." ), unmute )
         end
 
-        if @arachni.opts.link_count_limit > 0
-
+        if @arachni.opts.link_count_limit
             feedback = ''
             if @arachni.page_queue_total_size
                 feedback = " -- excluding #{@arachni.page_queue_total_size} pages of Trainer feedback"
