@@ -77,6 +77,11 @@ class Trainer
             return
         end
 
+        if @framework.opts.link_count_limit_reached? @framework.sitemap.size
+            print_info 'Link count limit reached, skipping analysis.'
+            return
+        end
+
         @parser = Parser.new( res )
 
         return false if !@parser.text? ||
