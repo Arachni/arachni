@@ -149,13 +149,9 @@ class CLI
         end
 
         if @arachni.opts.link_count_limit
-            feedback = ''
-            if @arachni.page_queue_total_size
-                feedback = " -- excluding #{@arachni.page_queue_total_size} pages of Trainer feedback"
-            end
-
-            print_info( restr( "Audit limited to a max of #{@arachni.opts.link_count_limit} " +
-                "pages#{feedback}." ),
+            print_info(
+                restr( "Audit limited to a max of #{@arachni.opts.link_count_limit} " +
+                        "pages." ),
                 unmute
             )
         end
