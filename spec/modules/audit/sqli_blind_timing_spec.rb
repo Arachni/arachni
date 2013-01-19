@@ -13,8 +13,8 @@ describe name_from_filename do
 
     def issue_count_per_target
         {
-            mysql:      84,
-            postgresql: 38,
+            mysql:      120,
+            postgresql: 56,
             mssql:      18
         }
     end

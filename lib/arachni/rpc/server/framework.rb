@@ -650,11 +650,10 @@ class Framework < ::Arachni::Framework
         audit_store.to_yaml
     end
 
-    # @return  [Array<Arachni::Issue>]  All discovered issues, albeit without any variations.
+    # @return  [Array<Arachni::Issue>]  First variations of all discovered issues.
     def issues
         (auditstore.issues.deep_clone.map do |issue|
-            issue.variations.clear
-            issue
+            issue.variations.first || issue
         end) | @issue_summaries
     end
 
@@ -961,8 +960,7 @@ class Framework < ::Arachni::Framework
         summaries = AuditStore.new( issues: issues ).issues.map do |i|
             next if @unique_issue_summaries.include?( i.unique_id )
             di = i.deep_clone
-            di.variations.clear
-            di
+            di.variations.first || di
         end.compact
 
         @unique_issue_summaries |= summaries.each { |issue| issue.unique_id }
