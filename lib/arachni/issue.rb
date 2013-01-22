@@ -209,6 +209,11 @@ class Issue
     # @return [Array<String>]
     attr_accessor :tags
 
+    # @return [Hash]
+    #   Holds remarks about the issue, +key+ is the name of the entity which
+    #   made the remark, +value+ is an +Array+ of remarks.
+    attr_accessor :remarks
+
     #
     # Sets up the instance attributes
     #
@@ -254,9 +259,18 @@ class Issue
         @method   = @method.to_s.upcase
         @mod_name = opts[:name]
 
+        @remarks ||= {}
+
         # remove this block because it won't be able to be serialized
         @opts.delete( :each_mutation )
         @tags ||= []
+    end
+
+    def add_remark( author, string )
+        fail ArgumentError, 'Author cannot be blank.' if author.to_s.empty?
+        fail ArgumentError, 'String cannot be blank.' if string.to_s.empty?
+
+        (@remarks[author] ||= []) << string
     end
 
     def match
