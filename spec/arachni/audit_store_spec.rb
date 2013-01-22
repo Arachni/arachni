@@ -136,6 +136,8 @@ describe Arachni::AuditStore do
         organized = Arachni::AuditStore.new( @auditstore_opts.merge( issues: issues.deep_clone ) ).issues
         organized.first.variations.size.should == 3
 
+        organized.first.remarks.should be_nil
+
         organized.first.variations.first.remarks.should == { dd: ['ddddd'] }
         organized.first.variations[1].remarks.should ==
             { dd: ['ddddd'], dd2: ['ddddd2'] }
