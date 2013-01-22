@@ -31,6 +31,9 @@ describe Arachni::Issue do
                      'Set-Cookie' => 'name=value'
                  }
             },
+            remarks: {
+                the_dude: ['Hey!']
+            },
             response: 'HTML response',
             injected: 'injected string',
             id: 'This string was used to identify the vulnerability',
@@ -171,6 +174,9 @@ describe Arachni::Issue do
     end
 
     describe '#remarks' do
+        it 'should return the set remarks as a Hash' do
+            @issue.remarks.should == @issue_data[:remarks]
+        end
         context 'when uninitialised' do
             it 'should be an empty Hash' do
                 i = Arachni::Issue.new
