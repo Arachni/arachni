@@ -77,6 +77,9 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
             issue.add_remark :meta_analysis, REMARK
 
+            # Requires manual verification.
+            issue.verification = true
+
             {
                 'hash'   => issue.digest,
                 'index'  => idx + 1,

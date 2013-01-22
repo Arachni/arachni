@@ -15,7 +15,8 @@ describe name_from_filename do
         framework.auditstore.issues.map.with_index do |issue, idx|
             next if issue.var != 'untrusted_input'
 
-            issue.remarks[:meta_analysis].should be_true
+            issue.variations.map( &:verification ).uniq == [true]
+            issue.variations.first.remarks[:meta_analysis].should be_true
 
             {
                 'hash'   => issue.digest,

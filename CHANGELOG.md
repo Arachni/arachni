@@ -48,6 +48,9 @@
     when no auditor has been provided.
 - Plugins
   - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+  - Meta-analysis
+      - Timing-attacks: Updated to add a remark to affected issues about the
+            suboptimal state of the server while the issue was identified.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
