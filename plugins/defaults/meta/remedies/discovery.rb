@@ -38,6 +38,11 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
     # in common which makes it possible to spot them without much bother
     SIMILARITY_TOLERANCE = 0.25
 
+    REMARK = "This issue was logged by a directory-busting/discovery module but " +
+        "the response for the resource it identified is very similar to responses " +
+        "of other identified resources. This probably means that the server responses " +
+        "were too erratic to be successfully identified as custom 404s and thus ignored."
+
     def prepare
         wait_while_framework_running
     end
@@ -52,22 +57,22 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         # URL path => size of responses
         response_size_per_path  = {}
 
-        framework.auditstore.issues.each_with_index do |issue, idx|
+        framework.modules.issues.each_with_index do |issue, idx|
             next if !issue.tags.includes_tags?( :discovery )
 
             # discovery issues only have 1 variation
-            variation = issue.variations.first
+            #variation = issue.variations.first
 
             # grab the URL path of the issue which will actually be the
             # parent of the logged page because whatever is under the parent path
             # will control the behavior under that path
             #
             # did that make any sense?
-            path = File.dirname( uri_parse( variation.url ).path )
+            path = File.dirname( uri_parse( issue.url ).path )
 
             # gathering total response sizes for issues per path
             response_size_per_path[path] ||= 0
-            response_size_per_path[path] += variation.response.size
+            response_size_per_path[path] += issue.response.size
 
             # categorize issues per path as well
             issues_per_path[path] ||= []
@@ -88,10 +93,10 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             # on the other hand, valid responses will be dissimilar since the
             # discovery modules look for different things.
             diffs_per_path[path] = if !diffs_per_path[path]
-                 variation['response']
-            else
-                diffs_per_path[path].rdiff( variation['response'] )
-            end
+                                       issue['response']
+                                    else
+                                        diffs_per_path[path].rdiff( issue['response'] )
+                                    end
         end
 
         issues = []
@@ -101,6 +106,16 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
 
             # gotcha!
             issues |= issues_per_path[path] if similarity >= SIMILARITY_TOLERANCE
+        end
+
+        issue_digests = issues.map { |i| i['hash'] }
+        framework.modules.issues.each do |issue|
+            next if !issue_digests.include?( issue.digest )
+
+            issue.add_remark :meta_analysis, REMARK
+
+            # Requires manual verification.
+            issue.verification = true
         end
 
         register_results( issues ) if !issues.empty?

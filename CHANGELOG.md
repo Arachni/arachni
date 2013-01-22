@@ -51,6 +51,8 @@
   - Meta-analysis
       - Timing-attacks: Updated to add a remark to affected issues about the
             suboptimal state of the server while the issue was identified.
+      - Discovery: Updated to add a remark to affected issues about the
+            extreme similarities between issues of similar type.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
