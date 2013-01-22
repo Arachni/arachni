@@ -288,7 +288,7 @@ describe Arachni::Module::Auditor do
                 @auditor.log( @log_opts )
 
                 logged_issue = @framework.modules.results.first
-                logged_issue[:remarks][:dude].should be_true
+                logged_issue.remarks[:dude].should be_true
             end
 
             it 'populates and logs an issue with response data' do
