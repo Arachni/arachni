@@ -83,7 +83,7 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                     end
 
                     context 'when the page matches the regexp even before we audit it' do
-                        it 'should flag the issue as requiring manual verification' do
+                        it 'should flag the issue as requiring manual verification and add a remark' do
                             seed = 'Inject here'
 
                             @positive.taint_analysis( 'Inject here',
@@ -92,8 +92,12 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             )
                             @auditor.http.run
                             issues.size.should == 1
-                            issues.first.injected.should == seed
-                            issues.first.verification.should be_true
+
+                            issue = issues.first
+
+                            issue.injected.should == seed
+                            issue.verification.should be_true
+                            issue.remarks[:auditor].should be_any
                         end
                     end
                 end
@@ -120,8 +124,12 @@ describe Arachni::Element::Capabilities::Auditable::Taint do
                             )
                             @auditor.http.run
                             issues.size.should == 1
-                            issues.first.injected.should == seed
-                            issues.first.verification.should be_true
+
+                            issue = issues.first
+
+                            issue.injected.should == seed
+                            issue.verification.should be_true
+                            issue.remarks[:auditor].should be_any
                         end
                     end
 

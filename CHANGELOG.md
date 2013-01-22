@@ -53,6 +53,8 @@
             suboptimal state of the server while the issue was identified.
       - Discovery: Updated to add a remark to affected issues about the
             extreme similarities between issues of similar type.
+- Analysis techniques
+  - Taint -- Updated to add remarks for issues that require verification.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
