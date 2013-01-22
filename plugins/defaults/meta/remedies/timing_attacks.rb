@@ -33,6 +33,9 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     # in order to be considered
     TIME_THRESHOLD = 0.6
 
+    REMARK = "This issue was discovered using a timing-attack but the audited" +
+        " page was exhibiting unusually high response times to begin with."
+
     def prepare
         @times   = {}
         @counter = {}
@@ -68,9 +71,11 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         # calculate average request time for each path
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
-        inconclusive = framework.audit_store.issues.map.with_index do |issue, idx|
+        inconclusive = framework.modules.issues.map.with_index do |issue, idx|
             next if !issue.tags || !issue.tags.includes_tags?( TAG ) ||
                 avg[ uri_parse( issue.url ).up_to_path ] < TIME_THRESHOLD
+
+            issue.add_remark :meta_analysis, REMARK
 
             {
                 'hash'   => issue.digest,
