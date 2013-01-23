@@ -272,6 +272,9 @@ describe Arachni::Module::Auditor do
                 id: 'foo id',
                 regexp: /foo regexp/,
                 match: 'foo regexp match',
+                remarks: {
+                    dude: ['Stuff'],
+                },
                 element: Arachni::Element::LINK
             }
         end
@@ -280,6 +283,13 @@ describe Arachni::Module::Auditor do
         context 'when given a response' do
 
             after { @framework.http.run }
+
+            it 'should preserve the given remarks' do
+                @auditor.log( @log_opts )
+
+                logged_issue = @framework.modules.results.first
+                logged_issue.remarks[:dude].should be_true
+            end
 
             it 'populates and logs an issue with response data' do
                 @framework.http.get( @opts.url.to_s ).on_complete do |res|

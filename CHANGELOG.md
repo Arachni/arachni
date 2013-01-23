@@ -48,10 +48,22 @@
     when no auditor has been provided.
 - Plugins
   - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+  - Meta-analysis
+      - Timing-attacks: Updated to add a remark to affected issues about the
+            suboptimal state of the server while the issue was identified.
+      - Discovery: Updated to add a remark to affected issues about the
+            extreme similarities between issues of similar type.
+- Analysis techniques
+  - Taint -- Updated to add remarks for issues that require verification.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
-  - Removed
+- Issues
+    - Added attribute ```remarks``` holding a ```Hash``` of remarks about
+        that issue with the entity which made the remark as _key_ and an ```Array```
+        of remarks as _value_.
+    - Added method ```#add_remark```, allowing new remarks to be added to the ```Issue```.
+- Removed
       - ```xss_uri``` compatibility module.
 - Added
   - Buffer classes

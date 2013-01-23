@@ -380,6 +380,7 @@ module Auditor
             regexp_match: opts[:match],
             elem:         element,
             verification: !!opts[:verification],
+            remarks:      opts[:remarks],
             method:       method,
             response:     response,
             opts:         opts,

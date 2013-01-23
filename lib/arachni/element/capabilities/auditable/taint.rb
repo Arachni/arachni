@@ -52,6 +52,9 @@ module Auditable::Taint
         ignore:    nil
     }
 
+    REMARK = "This issue was identified by a pattern but the pattern matched " +
+            "the page's response body even before auditing the logged element."
+
     #
     # Performs taint analysis and logs an issue should there be one.
     #
@@ -90,6 +93,8 @@ module Auditable::Taint
         opts[:verification] = @auditor.page && @auditor.page.body &&
             @auditor.page.body.include?( substring )
 
+        opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
+
         if res.body.include?( substring ) && !ignore?( res, opts )
             opts[:regexp] = opts[:id] = opts[:match] = substring.dup
             @auditor.log( opts, res )
@@ -104,6 +109,8 @@ module Auditable::Taint
 
         # An annoying encoding exception may be thrown when matching the regexp.
         opts[:verification] = (@auditor.page && @auditor.page.body.to_s =~ regexp) rescue false
+
+        opts[:remarks] = { auditor: [REMARK] } if opts[:verification]
 
         # fairly obscure condition...pardon me...
         if ( opts[:match] && match_data == opts[:match] ) ||

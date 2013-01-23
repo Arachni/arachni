@@ -1,7 +1,8 @@
 require 'sinatra'
+require File.dirname( __FILE__ ) + '/../../../modules/module_server'
 
-get '/*' do
-    # we add the request path and random number to avoid
-    # being seen as a custom 404 handler
-    env['REQUEST_PATH'] + 'same crap' + rand( 9 ).to_s
+framework.modules[:common_files].filenames.each do |name|
+    get( "/#{name}" ) { 'stuff' }
 end
+
+get( '/' ) {}

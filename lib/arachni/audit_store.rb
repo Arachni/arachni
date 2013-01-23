@@ -252,7 +252,7 @@ class AuditStore
     #                                        with populated {Issue#variations}
     #
     def prepare_variations( issues )
-        variation_keys = %w(injected id regexp regexp_match headers response opts)
+        variation_keys = %w(injected id regexp regexp_match headers response opts remarks)
 
         new_issues = {}
         issues.each do |issue|

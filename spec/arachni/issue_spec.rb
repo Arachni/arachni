@@ -31,6 +31,9 @@ describe Arachni::Issue do
                      'Set-Cookie' => 'name=value'
                  }
             },
+            remarks: {
+                the_dude: ['Hey!']
+            },
             response: 'HTML response',
             injected: 'injected string',
             id: 'This string was used to identify the vulnerability',
@@ -170,6 +173,70 @@ describe Arachni::Issue do
         end
     end
 
+    describe '#remarks' do
+        it 'should return the set remarks as a Hash' do
+            @issue.remarks.should == @issue_data[:remarks]
+        end
+        context 'when uninitialised' do
+            it 'should be an empty Hash' do
+                i = Arachni::Issue.new
+                i.remarks.should == {}
+            end
+        end
+    end
+
+    describe '#add_remark' do
+        it 'should add a remark' do
+            author  = :dude
+            remarks = ['Hey dude!', 'Hey again dude!' ]
+
+            i = Arachni::Issue.new
+            i.add_remark author, remarks.first
+            i.add_remark author, remarks[1]
+
+            i.remarks.should == { author => remarks }
+        end
+
+        context 'when an argument is blank' do
+            it 'should raise an ArgumentError' do
+                i = Arachni::Issue.new
+
+                raised = false
+                begin
+                    i.add_remark '', 'ddd'
+                rescue ArgumentError
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    i.add_remark :dsds, ''
+                rescue ArgumentError
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    i.add_remark '', ''
+                rescue ArgumentError
+                    raised = true
+                end
+                raised.should be_true
+
+                raised = false
+                begin
+                    i.add_remark nil, nil
+                rescue ArgumentError
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+
+    end
+
     describe '#[]' do
         it 'should act as an attr_reader' do
             @issue_data.each do |k, _|
@@ -289,7 +356,7 @@ describe Arachni::Issue do
     end
 
     describe '#digest (and #_hash)' do
-        it 'should return a HERX digest of the issue' do
+        it 'should return a HEX digest of the issue' do
             @issue._hash.should == Digest::SHA2.hexdigest( @issue.unique_id )
             @issue.digest.should == @issue._hash
         end

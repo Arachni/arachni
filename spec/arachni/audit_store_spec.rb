@@ -114,8 +114,17 @@ describe Arachni::AuditStore do
             elem: 'link',
             var: 'varname'
         )
+
+        i3 = i.deep_clone
+        i3.add_remark :dd3, 'ddddd3'
+
+        i.add_remark :dd, 'ddddd'
+
+        i2 = i.deep_clone
+        i2.add_remark :dd2, 'ddddd2'
+
         issues = [
-            i.deep_clone, i.deep_clone,
+            i.deep_clone, i2, i3,
             Arachni::Issue.new(
                 url: url,
                 name: 'blah',
@@ -125,7 +134,14 @@ describe Arachni::AuditStore do
             )
         ]
         organized = Arachni::AuditStore.new( @auditstore_opts.merge( issues: issues.deep_clone ) ).issues
-        organized.first.variations.size.should == 2
+        organized.first.variations.size.should == 3
+
+        organized.first.remarks.should be_nil
+
+        organized.first.variations.first.remarks.should == { dd: ['ddddd'] }
+        organized.first.variations[1].remarks.should ==
+            { dd: ['ddddd'], dd2: ['ddddd2'] }
+        organized.first.variations[2].remarks.should == { dd3: ['ddddd3'] }
 
         identical = %w(name url mod_name elem var)
         organized.first.variations.each do |v|

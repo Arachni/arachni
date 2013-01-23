@@ -386,7 +386,7 @@ class Framework
             revision: revision,
             options:  opts,
             sitemap:  (auditstore_sitemap || []).sort,
-            issues:   @modules.results.deep_clone,
+            issues:   @modules.results,
             plugins:  @plugins.results
         )
     end
