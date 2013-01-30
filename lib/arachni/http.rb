@@ -162,6 +162,9 @@ class HTTP
         @queue_size = 0
 
         @after_run = []
+
+        @_404 ||= Cache::RandomReplacement.new( 100 )
+
         self
     end
 
@@ -508,9 +511,7 @@ class HTTP
     def custom_404?( res, &block )
         precision = 2
 
-        @_404 ||= {}
         path  = get_path( res.effective_url )
-        @_404[path] ||= []
 
         uri = uri_parse( res.effective_url )
         trv_back = File.dirname( uri.path )
@@ -535,31 +536,34 @@ class HTTP
             proc{ path + random_string + '/' }
         ]
 
-        @_404_gathered ||= BloomFilter.new
-
         gathered = 0
         body = res.body
 
-        if !@_404_gathered.include?( path )
+        @_404[path] ||= {
+            analyzed:   false,
+            signatures: []
+        }
+
+        if !@_404[path][:analyzed]
             generators.each.with_index do |generator, i|
-                @_404[path][i] ||= {}
+                @_404[path][:signatures][i] ||= {}
 
                 precision.times {
                     get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
                         if gathered == generators.size * precision
-                            @_404_gathered << path
+                            @_404[path][:analyzed] = true
 
                             # save the hash of the refined responses, no sense
                             # in wasting space
-                            @_404[path].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
+                            @_404[path][:signatures].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
 
                             block.call is_404?( path, body )
                         else
-                            @_404[path][i]['body'] ||= c_res.body
-                            @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
-                            @_404[path][i]['rdiff_words'] = @_404[path][i]['rdiff'].words.map( &:hash )
+                            @_404[path][:signatures][i]['body'] ||= c_res.body
+                            @_404[path][:signatures][i]['rdiff'] = @_404[path][:signatures][i]['body'].rdiff( c_res.body )
+                            @_404[path][:signatures][i]['rdiff_words'] = @_404[path][:signatures][i]['rdiff'].words.map( &:hash )
                         end
                     end
                 }
@@ -673,13 +677,13 @@ class HTTP
     def is_404?( path, body )
         # give the rDiff algo a shot first hoping that a comparison of
         # refined responses will be enough to give us a clear-cut positive
-        @_404[path].each do |_404|
+        @_404[path][:signatures].each do |_404|
             return true if _404['body'].rdiff( body ).hash == _404['rdiff']
         end
 
         # if the comparison of the refinements fails, compare them based on how
         # many words are different between them
-        @_404[path].each do |_404|
+        @_404[path][:signatures].each do |_404|
             rdiff_body_words = _404['body'].rdiff( body ).words.map( &:hash )
             return true if (
                 (_404['rdiff_words'] - rdiff_body_words) -

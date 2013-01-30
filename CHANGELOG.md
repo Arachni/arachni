@@ -39,8 +39,9 @@
       - ```#issues``` now returns the first variation of each issues to provide a more Issue info/context.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
-  - Updated custom-404 page detection to fallback to a word-difference ratio of
-    the refined responses if straight comparison fails.
+  - Custom-404 page detection updated to:
+    - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
+    - Keep a limited cache of signatures to prevent memory exhaustion.
 - ```Arachni::Element::Capabilities::Auditable```
   - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
     a custom auditor when scripting.
