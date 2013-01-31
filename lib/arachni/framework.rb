@@ -278,41 +278,33 @@ class Framework
 
         #
         # There are 2 audit phases:
-        #  * regular analysis attacks
-        #  * timing attacks
+        #  * regular audit
+        #  * verification of timing-attack candidates
+        #       (elements which seemed susceptible to timing attacks)
         #
         # When calculating the progress % we have to take both into account,
         # however each is calculated using different criteria.
         #
-        # Progress of regular attacks is calculated as:
+        # Progress of regular audit is calculated as:
         #     amount of audited pages / amount of all discovered pages
         #
-        # However, the progress of the timing attacks is calculated as:
-        #     amount of called timeout blocks / amount of total blocks
-        #
-        # The timing attack modules are run with the regular ones however
-        # their procedures are piled up into an array of Procs
-        # which are called after the regular attacks.
-        #
-        # So when we reach the point of needing to include their progress in
-        # the overall progress percentage we'll be working with accurate
-        # data regarding the total blocks, etc.
+        # However, the progress of the candidates is calculated as:
+        #     amount of verified candidates / amount of total candidates
         #
 
         #
-        # If we have timing attacks then each phase must account for half
-        # of the progress.
+        # If we have any candidates each phase must account for half of the progress.
         #
         # This is not very granular but it's good enough for now...
         #
-        multi = Module::Auditor.timeout_loaded_modules.size > 0 ? 50 : 100
+        multi = Module::Auditor.timeout_audit_operations_cnt > 0 ? 50 : 100
         progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * multi
 
         if Module::Auditor.running_timeout_attacks?
-            called_blocks = Module::Auditor.timeout_audit_operations_cnt -
+            performed_ops = Module::Auditor.timeout_audit_operations_cnt -
                 Module::Auditor.current_timeout_audit_operations_cnt
 
-            progress += ( Float( called_blocks ) /
+            progress += ( Float( performed_ops ) /
                 Module::Auditor.timeout_audit_operations_cnt ) * multi
         end
 
@@ -682,9 +674,9 @@ class Framework
         audit_queues
 
         exception_jail {
-            if !Module::Auditor.timeout_audit_blocks.empty?
+            if !Module::Auditor.timeout_candidates.empty?
                 print_line
-                print_status 'Running timing attacks.'
+                print_status 'Verifying timeout-analysis candidates.'
                 print_info '---------------------------------------'
                 Module::Auditor.on_timing_attacks do |_, elem|
                     @current_url = elem.action if !elem.action.empty?

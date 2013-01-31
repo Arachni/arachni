@@ -57,6 +57,12 @@
             extreme similarities between issues of similar type.
 - Analysis techniques
   - Taint -- Updated to add remarks for issues that require verification.
+  - Timeout -- Updated to decrease memory usage and improve reliability.
+    - No longer schedules element audits for the end of the scan but looks
+        for candidates along with the other audit requests.
+    - Makes sure that candidates are deduplicated upon discovery.
+    - Added a 3rd phase: Initial candidates which pass verification are verified
+        again on their own.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.

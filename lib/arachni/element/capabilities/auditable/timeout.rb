@@ -71,14 +71,8 @@ module Auditable::Timeout
             @@timeout_loaded_modules
         end
 
-        #
-        # Holds timing-attack performing Procs to be run after all
-        # non-timing-attack modules have finished.
-        #
-        # @return   [Queue]
-        #
-        def @@parent.timeout_audit_blocks
-            @@timeout_audit_blocks
+        def @@parent.timeout_candidates
+            @@timeout_candidates
         end
 
         #
@@ -86,17 +80,17 @@ module Auditable::Timeout
         #                           (audit blocks + candidate elements)
         #
         def @@parent.current_timeout_audit_operations_cnt
-            @@timeout_audit_blocks.size + @@timeout_candidates.size
-        end
-
-        def @@parent.add_timeout_audit_block( &block )
-            @@timeout_audit_operations_cnt += 1
-            @@timeout_audit_blocks << block
+            @@timeout_candidates.size + @@timeout_candidates_phase3.size
         end
 
         def @@parent.add_timeout_candidate( elem )
             @@timeout_audit_operations_cnt += 1
             @@timeout_candidates << elem
+        end
+
+        def @@parent.add_timeout_phase3_candidate( elem )
+            @@timeout_audit_operations_cnt += 1
+            @@timeout_candidates_phase3 << elem
         end
 
         #
@@ -125,18 +119,17 @@ module Auditable::Timeout
         end
 
         #
-        # Runs all blocks in {timeout_audit_blocks} and verifies
-        # and logs the candidate elements.
+        # Verifies and logs candidate elements.
         #
         def @@parent.timeout_audit_run
             @@running_timeout_attacks = true
 
-            while !@@timeout_audit_blocks.empty?
-                @@timeout_audit_blocks.pop.call
-            end
-
             while !@@timeout_candidates.empty?
                 self.timeout_analysis_phase_2( @@timeout_candidates.pop )
+            end
+
+            while !@@timeout_candidates_phase3.empty?
+                self.timeout_analysis_phase_3( @@timeout_candidates_phase3.pop )
             end
         end
 
@@ -155,14 +148,8 @@ module Auditable::Timeout
         # * Stabilize responsiveness: Wait for the effects of the timing attack to wear off
         #
         def @@parent.timeout_analysis_phase_2( elem )
-
-            # reset the audited list since we're going to re-audit the elements
-            # @@timeout_audited = Set.new
-
             opts = elem.opts
-            opts[:timeout] *= 2
-            # opts[:async]    = false
-            # self.audit_timeout_debug_msg( 2, opts[:timeout] )
+            injected_timeout = opts[:timeout] *= 2
 
             str = opts[:timing_string].gsub( '__TIME__',
                 ( opts[:timeout] / opts[:timeout_divider] ).to_s )
@@ -188,9 +175,67 @@ module Auditable::Timeout
                         next
                     end
 
-                    # All issues logged by timing attacks need manual verification,
-                    # end of story.
-                    c_opts[:verification] = true
+                    elem.opts[:timeout] = injected_timeout
+
+                    if @@parent.deduplicate?
+                        next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
+                        @@timeout_candidate_phase3_ids << elem.audit_id
+                    end
+
+                    elem.print_info "Candidate can progress to Phase 3 --" +
+                                        " #{elem.type.capitalize} input " +
+                                        "'#{elem.altered}' at #{elem.action}"
+
+                    @@parent.add_timeout_phase3_candidate( elem )
+                end
+            end
+
+            elem.http.run
+        end
+
+        def @@parent.disable_deduplication
+            @@deduplicate = false
+        end
+
+        def @@parent.enable_deduplication
+            @@deduplicate = true
+        end
+
+        def @@parent.deduplicate?
+            !(!!@@deduplicate)
+        end
+
+        def @@parent.timeout_analysis_phase_3( elem )
+            opts = elem.opts
+            opts[:timeout] *= 2
+
+            str = opts[:timing_string].
+                gsub( '__TIME__', ( opts[:timeout] / opts[:timeout_divider] ).to_s )
+
+            opts[:timeout] *= 0.7
+
+            elem.auditable = elem.orig
+
+            # this is the control; request the URL of the element to make sure
+            # that the web page is alive i.e won't time-out by default
+            elem.submit do |res|
+                self.call_on_timing_blocks( res, elem )
+
+                if res.timed_out?
+                    elem.print_info 'Liveness check failed, bailing out...'
+                    next
+                end
+
+                elem.print_info 'Liveness check was successful, progressing to verification...'
+                elem.audit( str, opts ) do |c_res, c_opts|
+                    if !c_res.timed_out?
+                        elem.print_info 'Verification failed.'
+                        next
+                    end
+
+                    # Not sure about this yet...
+                    #c_opts[:verification] = true
+
                     elem.auditor.log( c_opts, c_res )
                     elem.responsive?
                 end
@@ -204,15 +249,15 @@ module Auditable::Timeout
             @@parent.call_on_timing_blocks( res, elem )
         end
 
-        # holds timing-attack performing Procs to be run after all
-        # non-timing-attack modules have finished.
-        @@timeout_audit_blocks   ||= Queue.new
-
         @@timeout_audit_operations_cnt ||= 0
 
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
-        @@timeout_candidates     ||= Queue.new
+        @@timeout_candidates     ||= []
+        @@timeout_candidate_ids  ||= ::Arachni::BloomFilter.new
+
+        @@timeout_candidates_phase3    ||= []
+        @@timeout_candidate_phase3_ids ||= ::Arachni::BloomFilter.new
 
         # modules which have called the timing attack audit method (audit_timeout)
         # we're interested in the amount, not the names, and is used to
@@ -222,6 +267,22 @@ module Auditable::Timeout
         @@on_timing_attacks      ||= []
 
         @@running_timeout_attacks ||= false
+
+        @@deduplicate = true
+    end
+
+    def self.reset
+        @@timeout_audit_operations_cnt = 0
+
+        @@timeout_candidates.clear
+        @@timeout_candidate_ids.clear
+
+        @@timeout_candidates_phase3.clear
+        @@timeout_candidate_phase3_ids.clear
+
+        @@timeout_loaded_modules.clear
+
+        @@deduplicate = true
     end
 
     #
@@ -236,18 +297,22 @@ module Auditable::Timeout
     def timeout_analysis( strings, opts )
         @@timeout_loaded_modules << @auditor.fancy_name
 
-        @@parent.add_timeout_audit_block {
-            delay = opts[:timeout]
+        delay = opts[:timeout]
 
-            audit_timeout_debug_msg( 1, delay )
-            timing_attack( strings, opts ) do |_, _, elem|
-                elem.auditor = @auditor
+        audit_timeout_debug_msg( 1, delay )
+        timing_attack( strings, opts ) do |_, _, elem|
+            elem.auditor = @auditor
 
-                print_info "Found a candidate -- #{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
-
-                @@parent.add_timeout_candidate( elem ) if elem.responsive?
+            if @@parent.deduplicate?
+                next if @@timeout_candidate_ids.include?( elem.audit_id )
+                @@timeout_candidate_ids << elem.audit_id
             end
-        }
+
+            print_info "Found a candidate for Phase 2 -- " +
+                    "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
+
+            @@parent.add_timeout_candidate( elem ) if elem.responsive?
+        end
     end
 
     #
@@ -322,8 +387,6 @@ module Auditable::Timeout
                 block.call( res, c_opts, elem ) if block && res.timed_out?
             end
         end
-
-        @auditor.http.run
     end
 
 end

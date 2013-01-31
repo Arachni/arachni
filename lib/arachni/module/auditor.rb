@@ -43,10 +43,14 @@ module Auditor
 
     def self.reset
         audited.clear
+        Element::Capabilities::Auditable::Timeout.reset
     end
 
     def self.timeout_audit_blocks
         Element::Capabilities::Auditable.timeout_audit_blocks
+    end
+    def self.timeout_candidates
+        Element::Capabilities::Auditable.timeout_candidates
     end
     def self.timeout_loaded_modules
         Element::Capabilities::Auditable.timeout_loaded_modules
