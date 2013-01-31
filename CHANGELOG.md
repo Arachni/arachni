@@ -73,6 +73,9 @@
 - Removed
       - ```xss_uri``` compatibility module.
 - Added
+  - Cache
+      - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
+        preference determined by a given block.
   - Buffer classes
       - ```Arachni::Buffer::Base``` -- Buffer base class.
       - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
