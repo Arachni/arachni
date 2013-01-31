@@ -10,6 +10,7 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @positive = Arachni::Element::Link.new( @url + '/true', inputs )
         @positive.auditor = @auditor
+        @positive.disable_deduplication
 
         @positive_high_res = Arachni::Element::Link.new(
             @url + '/high_response_time',
@@ -19,10 +20,10 @@ describe Arachni::Element::Capabilities::Auditable::Timeout do
 
         @negative = Arachni::Element::Link.new( @url + '/false', inputs )
         @negative.auditor = @auditor
+        @negative.disable_deduplication
 
         @run = proc do
             Arachni::HTTP.run
-            Arachni::Element::Capabilities::Auditable::Timeout.disable_deduplication
             Arachni::Element::Capabilities::Auditable.timeout_audit_run
         end
     end

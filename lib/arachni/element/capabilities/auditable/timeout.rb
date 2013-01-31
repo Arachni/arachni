@@ -177,7 +177,7 @@ module Auditable::Timeout
 
                     elem.opts[:timeout] = injected_timeout
 
-                    if @@parent.deduplicate?
+                    if deduplicate?
                         next if @@timeout_candidate_phase3_ids.include?( elem.audit_id )
                         @@timeout_candidate_phase3_ids << elem.audit_id
                     end
@@ -285,6 +285,18 @@ module Auditable::Timeout
         @@deduplicate = true
     end
 
+    def disable_deduplication
+        @@parent.disable_deduplication
+    end
+
+    def enable_deduplication
+        @@parent.enable_deduplication
+    end
+
+    def deduplicate?
+        @@parent.deduplicate?
+    end
+
     #
     # Performs timeout/time-delay analysis and logs an issue should there be one.
     #
@@ -303,7 +315,7 @@ module Auditable::Timeout
         timing_attack( strings, opts ) do |_, _, elem|
             elem.auditor = @auditor
 
-            if @@parent.deduplicate?
+            if deduplicate?
                 next if @@timeout_candidate_ids.include?( elem.audit_id )
                 @@timeout_candidate_ids << elem.audit_id
             end
