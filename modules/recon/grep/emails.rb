@@ -45,7 +45,8 @@ class Arachni::Modules::EMails < Arachni::Module::Base
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{E-mail addresses should be presented in such
                     a way that it is hard to process them automatically.}
-            }
+            },
+            max_issues: 25
         }
     end
 

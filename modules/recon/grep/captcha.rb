@@ -48,7 +48,8 @@ class Arachni::Modules::CAPTCHA < Arachni::Module::Base
                 name:        %q{CAPTCHA protected form},
                 description: %q{Arachni can't audit CAPTCHA protected forms, consider auditing manually.},
                 severity:    Severity::INFORMATIONAL
-            }
+            },
+            max_issues: 25
         }
     end
 

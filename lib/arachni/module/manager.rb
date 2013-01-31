@@ -115,6 +115,8 @@ class Manager < Arachni::Component::Manager
     # @return   [Bool]
     #
     def run_module?( mod, page )
+        return false if mod.issue_limit_reached?
+
         elements = mod.info[:elements]
         return true if !elements || elements.empty?
 

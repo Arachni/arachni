@@ -59,6 +59,12 @@
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
+      - Limited the maximum number of issues to 25 for the following recon modules:
+        - Captcha
+        - CVS/SVN users
+        - E-mails
+        - HTML-objects
+        - Interesting Responses
 - Issues
     - Added attribute ```remarks``` holding a ```Hash``` of remarks about
         that issue with the entity which made the remark as _key_ and an ```Array```
