@@ -807,83 +807,92 @@ describe Arachni::Framework do
             loaded = @f.plugins.loaded
 
             @f.list_plugins.should == @f.lsplug
+
             @f.list_plugins.map { |r| r.delete( :path ); r }
                 .sort_by { |e| e[:plug_name] }.should == YAML.load( '
 ---
-- :name: Wait
-  :description: ""
-  :tags: ["wait_string", :wait_sym]
+- :name: \'\'
+  :description: \'\'
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :plug_name: wait
-- :name: SpiderHook
-  :description: ""
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :plug_name: spider_hook
-- :name: ""
-  :description: ""
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :plug_name: bad
-- :name: Component
-  :description: Component with options
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :options:
-  - !ruby/object:Arachni::Component::Options::String
-    default:
-    desc: Required option
-    enums: []
-
-    name: req_opt
-    required: true
-  - !ruby/object:Arachni::Component::Options::String
-    default:
-    desc: Optional option
-    enums: []
-
-    name: opt_opt
-    required: false
-  - !ruby/object:Arachni::Component::Options::String
-    default: value
-    desc: Option with default value
-    enums: []
-
-    name: default_opt
-    required: false
-  :plug_name: with_options
-- :name: Distributable
-  :description: ""
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :plug_name: distributable
-  :issue: {:tags: ["distributable_string", :distributable_sym]}
-- :name: ""
-  :description: ""
-  :author:
-  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
-  :plug_name: loop
+  :version: \'0.1\'
+  :plug_name: !binary |-
+    YmFk
 - :name: Default
   :description: Some description
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-  :version: "0.1"
+  :version: \'0.1\'
   :options:
   - !ruby/object:Arachni::Component::Options::Int
-    default: 4
-    desc: An integer.
-    enums: []
-
     name: int_opt
     required: false
-  :plug_name: default
+    desc: An integer.
+    default: 4
+    enums: []
+  :plug_name: !binary |-
+    ZGVmYXVsdA==
+- :name: Distributable
+  :description: \'\'
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :issue:
+    :tags:
+    - distributable_string
+    - :distributable_sym
+  :plug_name: !binary |-
+    ZGlzdHJpYnV0YWJsZQ==
+- :name: \'\'
+  :description: \'\'
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :plug_name: !binary |-
+    bG9vcA==
+- :name: SpiderHook
+  :description: \'\'
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :plug_name: !binary |-
+    c3BpZGVyX2hvb2s=
+- :name: Wait
+  :description: \'\'
+  :tags:
+  - wait_string
+  - :wait_sym
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :plug_name: !binary |-
+    d2FpdA==
+- :name: Component
+  :description: Component with options
+  :author:
+  - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+  :version: \'0.1\'
+  :options:
+  - !ruby/object:Arachni::Component::Options::String
+    name: req_opt
+    required: true
+    desc: Required option
+    default:
+    enums: []
+  - !ruby/object:Arachni::Component::Options::String
+    name: opt_opt
+    required: false
+    desc: Optional option
+    default:
+    enums: []
+  - !ruby/object:Arachni::Component::Options::String
+    name: default_opt
+    required: false
+    desc: Option with default value
+    default: value
+    enums: []
+  :plug_name: !binary |-
+    d2l0aF9vcHRpb25z
 ' ).sort_by { |e| e[:plug_name] }
             @f.plugins.loaded.should == loaded
         end
