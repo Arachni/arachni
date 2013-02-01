@@ -83,14 +83,24 @@ module Auditable::Timeout
             @@timeout_candidates.size + @@timeout_candidates_phase3.size
         end
 
-        def @@parent.add_timeout_candidate( elem )
+        def @@parent.add_timeout_candidate( auditor_class, elem )
+            # Remove any refs to the auditor so that it'll be GC'ed at some point.
+            elem.remove_auditor
+
             @@timeout_audit_operations_cnt += 1
-            @@timeout_candidates << elem
+
+            @@timeout_candidates[elem.url] ||= {}
+            (@@timeout_candidates[elem.url][auditor_class] ||= []) << elem
         end
 
-        def @@parent.add_timeout_phase3_candidate( elem )
+        def @@parent.add_timeout_phase3_candidate( auditor_class, elem )
+            # Remove any refs to the auditor so that it'll be GC'ed at some point.
+            elem.remove_auditor
+
             @@timeout_audit_operations_cnt += 1
-            @@timeout_candidates_phase3 << elem
+
+            @@timeout_candidates_phase3[elem.url] ||= {}
+            (@@timeout_candidates_phase3[elem.url][auditor_class] ||= []) << elem
         end
 
         #
@@ -124,13 +134,39 @@ module Auditable::Timeout
         def @@parent.timeout_audit_run
             @@running_timeout_attacks = true
 
-            while !@@timeout_candidates.empty?
-                self.timeout_analysis_phase_2( @@timeout_candidates.pop )
+            pages = {}
+
+            @@timeout_candidates.each do |page_url, elems_per_auditor|
+
+                page_has_elements_which_passed = false
+                page = Arachni::Page.from_url( page_url )
+
+                elems_per_auditor.each do |auditor_class, elements|
+                    auditor = auditor_class.new( page )
+
+                    while element = elements.pop
+                        element.auditor = auditor
+                        r = self.timeout_analysis_phase_2( element )
+                        page_has_elements_which_passed ||= r
+                    end
+                end
+
+                pages[page_url] = page if page_has_elements_which_passed
             end
 
-            while !@@timeout_candidates_phase3.empty?
-                self.timeout_analysis_phase_3( @@timeout_candidates_phase3.pop )
+            @@timeout_candidates_phase3.each do |page_url, elems_per_auditor|
+                elems_per_auditor.each do |auditor_class, elements|
+                    next if elements.empty?
+
+                    auditor = auditor_class.new( pages[page_url] )
+
+                    while element = elements.pop
+                        element.auditor = auditor
+                        self.timeout_analysis_phase_3( element )
+                    end
+                end
             end
+
         end
 
         #
@@ -158,6 +194,8 @@ module Auditable::Timeout
 
             elem.auditable = elem.orig
 
+            passed_this_phase = false
+
             # this is the control; request the URL of the element to make sure
             # that the web page is alive i.e won't time-out by default
             elem.submit do |res|
@@ -169,7 +207,7 @@ module Auditable::Timeout
                 end
 
                 elem.print_info 'Liveness check was successful, progressing to verification...'
-                elem.audit( str, opts ) do |c_res, c_opts|
+                elem.audit( str, opts ) do |c_res, _|
                     if !c_res.timed_out?
                         elem.print_info 'Verification failed.'
                         next
@@ -186,23 +224,26 @@ module Auditable::Timeout
                                         " #{elem.type.capitalize} input " +
                                         "'#{elem.altered}' at #{elem.action}"
 
-                    @@parent.add_timeout_phase3_candidate( elem )
+                    passed_this_phase = true
+                    @@parent.add_timeout_phase3_candidate( elem.auditor.class, elem )
                 end
             end
 
             elem.http.run
+
+            passed_this_phase
         end
 
         def @@parent.disable_deduplication
-            @@deduplicate = false
+            @@deduplicate = 'f'
         end
 
         def @@parent.enable_deduplication
-            @@deduplicate = true
+            @@deduplicate = 't'
         end
 
         def @@parent.deduplicate?
-            !(!!@@deduplicate)
+            @@deduplicate == 't'
         end
 
         def @@parent.timeout_analysis_phase_3( elem )
@@ -253,10 +294,10 @@ module Auditable::Timeout
 
         # populated by timing attack phase 1 with
         # candidate elements to be verified by phase 2
-        @@timeout_candidates     ||= []
+        @@timeout_candidates     ||= {}
         @@timeout_candidate_ids  ||= ::Arachni::BloomFilter.new
 
-        @@timeout_candidates_phase3    ||= []
+        @@timeout_candidates_phase3    ||= {}
         @@timeout_candidate_phase3_ids ||= ::Arachni::BloomFilter.new
 
         # modules which have called the timing attack audit method (audit_timeout)
@@ -268,7 +309,7 @@ module Auditable::Timeout
 
         @@running_timeout_attacks ||= false
 
-        @@deduplicate = true
+        @@deduplicate ||= 't'
     end
 
     def self.reset
@@ -323,7 +364,7 @@ module Auditable::Timeout
             print_info "Found a candidate for Phase 2 -- " +
                     "#{elem.type.capitalize} input '#{elem.altered}' at #{elem.action}"
 
-            @@parent.add_timeout_candidate( elem ) if elem.responsive?
+            @@parent.add_timeout_candidate( elem.auditor.class, elem ) if elem.responsive?
         end
     end
 
