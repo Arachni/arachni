@@ -153,6 +153,11 @@ class Base
     end
 
     def outfile
+        if File.directory?( options['outfile'] )
+            return File.expand_path "#{options['outfile']}/" +
+                    "#{self.class.outfile_option.default}"
+        end
+
         options['outfile']
     end
 
@@ -161,8 +166,7 @@ class Base
     end
 
     def self.has_outfile?
-        (info[:options] || {}).each { |opt| return true if opt.name == Options.outfile.name }
-        false
+        !!outfile_option
     end
     def has_outfile?
         self.class.has_outfile?
@@ -187,6 +191,12 @@ class Base
         }
     end
 
+    private
+
+    def self.outfile_option
+        (info[:options] || {}).
+            select { |opt| opt.name == Options.outfile.name }.first
+    end
 end
 
 end
