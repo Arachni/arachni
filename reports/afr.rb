@@ -34,7 +34,7 @@ class Arachni::Reports::AFR < Arachni::Report::Base
 
     def self.info
         {
-            name:        'Arachni Framework',
+            name:        'Arachni',
             description: %q{Exports the audit results as an Arachni Framework Report (.afr) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
