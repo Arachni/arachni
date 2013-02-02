@@ -72,9 +72,11 @@
         - E-mails
         - HTML-objects
         - Interesting Responses
-- Reports -- If a directory has been passed as an ```outfile``` option the
-    report will be written under that directory using the default ```outfile```
-    value as a filename.
+- Reports
+    - If a directory has been passed as an ```outfile``` option the
+        report will be written under that directory using the default ```outfile```
+        value as a filename.
+    - Updated report descriptions.
 - Issues
     - Added attribute ```remarks``` holding a ```Hash``` of remarks about
         that issue with the entity which made the remark as _key_ and an ```Array```
