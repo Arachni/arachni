@@ -134,7 +134,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
     def self.info
         {
             name:        'XML',
-            description: %q{Exports a report as an XML file.},
+            description: %q{Exports the audit results as an XML (.xml) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.3',
             options:     [ Options.outfile( '.xml' ), Options.skip_responses ]

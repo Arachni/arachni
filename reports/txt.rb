@@ -48,7 +48,7 @@ class Arachni::Reports::Text < Arachni::Report::Base
     def self.info
         {
             name:        'Text',
-            description: %q{Exports a report as a plain text file.},
+            description: %q{Exports the audit results as a text (.txt) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             options:     [ Options.outfile( '.txt' ) ]

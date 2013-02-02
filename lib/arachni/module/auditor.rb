@@ -43,10 +43,14 @@ module Auditor
 
     def self.reset
         audited.clear
+        Element::Capabilities::Auditable::Timeout.reset
     end
 
     def self.timeout_audit_blocks
         Element::Capabilities::Auditable.timeout_audit_blocks
+    end
+    def self.timeout_candidates
+        Element::Capabilities::Auditable.timeout_candidates
     end
     def self.timeout_loaded_modules
         Element::Capabilities::Auditable.timeout_loaded_modules
@@ -85,6 +89,38 @@ module Auditor
     #
     def audited?( id )
         Auditor.audited.include?( "#{self.class}-#{id}" )
+    end
+
+    def self.included( m )
+        m.class_eval do
+            def self.issue_counter
+                @issue_counter ||= 0
+            end
+
+            def self.issue_counter=( int )
+                @issue_counter = int
+            end
+
+            def increment_issue_counter
+                self.class.issue_counter += 1
+            end
+
+            def issue_limit_reached?( count = max_issues )
+                self.class.issue_limit_reached?( count )
+            end
+
+            def self.issue_limit_reached?( count = max_issues )
+                issue_counter >= count if !count.nil?
+            end
+
+            def self.max_issues
+                info[:max_issues]
+            end
+        end
+    end
+
+    def max_issues
+        self.class.max_issues
     end
 
     #
@@ -178,6 +214,9 @@ module Auditor
     # @see Arachni::Module::Manager.register_results
     #
     def register_results( issues )
+        return if issue_limit_reached?
+        self.class.issue_counter += issues.size
+
         Module::Manager.register_results( issues )
     end
 

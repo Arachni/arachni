@@ -40,6 +40,10 @@ class Base
         @cache = {}
     end
 
+    def keys
+        @cache.keys
+    end
+
     def max_size=( max )
         @max_size = if !max
             nil

@@ -43,7 +43,8 @@ class Arachni::Modules::HTMLObjects < Arachni::Module::Base
                 name:     %q{HTML object},
                 cwe:      '200',
                 severity: Severity::INFORMATIONAL
-            }
+            },
+            max_issues: 25
         }
     end
 

@@ -24,6 +24,14 @@ describe Arachni::Report::Base do
                               'outfile' => outfile
             ).outfile.should == outfile
         end
+
+        context 'when a directory is provided as an outfile option' do
+            it 'should return the path of default outfile filename under that directory' do
+                @reports.run_one( :with_outfile, @framework.auditstore,
+                                  'outfile' => '.'
+                ).outfile.start_with?( File.expand_path( "." ) ).should be_true
+            end
+        end
     end
 
     describe '#format_plugin_results' do

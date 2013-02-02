@@ -39,8 +39,9 @@
       - ```#issues``` now returns the first variation of each issues to provide a more Issue info/context.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
-  - Updated custom-404 page detection to fallback to a word-difference ratio of
-    the refined responses if straight comparison fails.
+  - Custom-404 page detection updated to:
+    - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
+    - Keep a limited cache of signatures to prevent memory exhaustion.
 - ```Arachni::Element::Capabilities::Auditable```
   - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
     a custom auditor when scripting.
@@ -48,6 +49,7 @@
     when no auditor has been provided.
 - Plugins
   - AutoLogin -- No longer URI escapes the given arguments. [Issue #314]
+  - Profiler -- No longer a member of the default plugins.
   - Meta-analysis
       - Timing-attacks: Updated to add a remark to affected issues about the
             suboptimal state of the server while the issue was identified.
@@ -55,9 +57,26 @@
             extreme similarities between issues of similar type.
 - Analysis techniques
   - Taint -- Updated to add remarks for issues that require verification.
+  - Timeout -- Updated to decrease memory usage and improve reliability.
+    - No longer schedules element audits for the end of the scan but looks
+        for candidates along with the other audit requests.
+    - Makes sure that candidates are deduplicated upon discovery.
+    - Added a 3rd phase: Initial candidates which pass verification are verified
+        again on their own.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
+      - Limited the maximum number of issues to 25 for the following recon modules:
+        - Captcha
+        - CVS/SVN users
+        - E-mails
+        - HTML-objects
+        - Interesting Responses
+- Reports
+    - If a directory has been passed as an ```outfile``` option the
+        report will be written under that directory using the default ```outfile```
+        value as a filename.
+    - Updated report descriptions.
 - Issues
     - Added attribute ```remarks``` holding a ```Hash``` of remarks about
         that issue with the entity which made the remark as _key_ and an ```Array```
@@ -66,6 +85,9 @@
 - Removed
       - ```xss_uri``` compatibility module.
 - Added
+  - Cache
+      - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
+        preference determined by a given block.
   - Buffer classes
       - ```Arachni::Buffer::Base``` -- Buffer base class.
       - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes

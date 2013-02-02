@@ -34,8 +34,8 @@ class Arachni::Reports::AFR < Arachni::Report::Base
 
     def self.info
         {
-            name:        'Arachni Framework Report',
-            description: %q{Saves the file in the default Arachni Framework Report (.afr) format.},
+            name:        'Arachni',
+            description: %q{Exports the audit results as an Arachni Framework Report (.afr) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.1.1',
             options:     [ Arachni::Report::Options.outfile( '.afr' ) ]

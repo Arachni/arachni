@@ -20,7 +20,6 @@ require 'bundler/setup'
 require 'base64'
 
 require 'yaml'
-YAML::ENGINE.yamler = 'syck'
 
 require 'singleton'
 require 'getoptlong'
@@ -1370,7 +1369,21 @@ class Options
     end
 
     def self.method_missing( sym, *args, &block )
-        instance.send( sym, *args, &block )
+        if instance.respond_to?( sym )
+            instance.send( sym, *args, &block )
+        elsif
+            super( sym, *args, &block )
+        end
+    end
+
+    def self.respond_to?( m )
+        super( m ) || instance.respond_to?( m )
+    end
+
+
+    # Ruby 2.0 or YAML doesn't like my class-level method_missing for some reason
+    class <<self
+        public :allocate
     end
 
     private

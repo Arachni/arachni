@@ -162,6 +162,20 @@ class HTTP
         @queue_size = 0
 
         @after_run = []
+
+        @_404 = Cache::Preference.new( 100 )
+        @_404.prefer do
+            preference = nil
+
+            @_404.keys.each do |k|
+                next if !@_404[k][:analyzed]
+                preference = k
+                break
+            end
+
+            preference
+        end
+
         self
     end
 
@@ -508,9 +522,7 @@ class HTTP
     def custom_404?( res, &block )
         precision = 2
 
-        @_404 ||= {}
         path  = get_path( res.effective_url )
-        @_404[path] ||= []
 
         uri = uri_parse( res.effective_url )
         trv_back = File.dirname( uri.path )
@@ -535,31 +547,33 @@ class HTTP
             proc{ path + random_string + '/' }
         ]
 
-        @_404_gathered ||= BloomFilter.new
-
         gathered = 0
         body = res.body
 
-        if !@_404_gathered.include?( path )
+        if !path_analyzed_for_custom_404?( path )
             generators.each.with_index do |generator, i|
-                @_404[path][i] ||= {}
+                _404_signatures_for_path( path )[i] ||= {}
 
                 precision.times {
                     get( generator.call, follow_location: true ) do |c_res|
                         gathered += 1
 
                         if gathered == generators.size * precision
-                            @_404_gathered << path
+                            path_analyzed_for_custom_404( path )
 
                             # save the hash of the refined responses, no sense
                             # in wasting space
-                            @_404[path].each { |c404| c404['rdiff'] = c404['rdiff'].hash }
+                            _404_signatures_for_path( path ).each { |c404| c404[:rdiff] = c404[:rdiff].hash }
 
                             block.call is_404?( path, body )
                         else
-                            @_404[path][i]['body'] ||= c_res.body
-                            @_404[path][i]['rdiff'] = @_404[path][i]['body'].rdiff( c_res.body )
-                            @_404[path][i]['rdiff_words'] = @_404[path][i]['rdiff'].words.map( &:hash )
+                            _404_signatures_for_path( path )[i][:body] ||= c_res.body
+
+                            _404_signatures_for_path( path )[i][:rdiff] =
+                                _404_signatures_for_path( path )[i][:body].rdiff( c_res.body )
+
+                            _404_signatures_for_path( path )[i][:rdiff_words] =
+                                _404_signatures_for_path( path )[i][:rdiff].words.map( &:hash )
                         end
                     end
                 }
@@ -575,6 +589,25 @@ class HTTP
     end
 
     private
+
+    def _404_data_for_path( path )
+        @_404[path] ||= {
+            analyzed:   false,
+            signatures: []
+        }
+    end
+
+    def _404_signatures_for_path( path )
+        _404_data_for_path( path )[:signatures]
+    end
+
+    def path_analyzed_for_custom_404?( path )
+        _404_data_for_path( path )[:analyzed]
+    end
+
+    def path_analyzed_for_custom_404( path )
+        _404_data_for_path( path )[:analyzed] = true
+    end
 
     def hydra_run
         @running = true
@@ -673,17 +706,17 @@ class HTTP
     def is_404?( path, body )
         # give the rDiff algo a shot first hoping that a comparison of
         # refined responses will be enough to give us a clear-cut positive
-        @_404[path].each do |_404|
-            return true if _404['body'].rdiff( body ).hash == _404['rdiff']
+        @_404[path][:signatures].each do |_404|
+            return true if _404[:body].rdiff( body ).hash == _404[:rdiff]
         end
 
         # if the comparison of the refinements fails, compare them based on how
         # many words are different between them
-        @_404[path].each do |_404|
-            rdiff_body_words = _404['body'].rdiff( body ).words.map( &:hash )
+        @_404[path][:signatures].each do |_404|
+            rdiff_body_words = _404[:body].rdiff( body ).words.map( &:hash )
             return true if (
-                (_404['rdiff_words'] - rdiff_body_words) -
-                (rdiff_body_words - _404['rdiff_words'])
+                (_404[:rdiff_words] - rdiff_body_words) -
+                (rdiff_body_words - _404[:rdiff_words])
             ).size < 25
         end
 

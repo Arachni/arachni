@@ -56,7 +56,8 @@ class Arachni::Modules::CvsSvnUsers < Arachni::Module::Base
                 cwe:             '200',
                 severity:        Severity::LOW,
                 remedy_guidance: %q{Remove all CVS and SVN users from the body of the HTML page.},
-            }
+            },
+            max_issues: 25
         }
     end
 

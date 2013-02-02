@@ -147,7 +147,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
     def self.info
         {
             name:        'HTML',
-            description: %q{Exports a report as an HTML document.},
+            description: %q{Exports the audit results as an HTML (.html) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.3.2',
             options:     [
