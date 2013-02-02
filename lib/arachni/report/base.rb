@@ -191,8 +191,6 @@ class Base
         }
     end
 
-    private
-
     def self.outfile_option
         (info[:options] || {}).
             select { |opt| opt.name == Options.outfile.name }.first
