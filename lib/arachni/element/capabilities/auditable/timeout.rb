@@ -62,7 +62,7 @@ module Arachni::Element::Capabilities
 # audit operations.
 #
 # If you want to be notified every time a timeout audit is performed you can pass
-# callback block to {on_timing_attacks}.
+# a callback block to {on_timing_attacks}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
