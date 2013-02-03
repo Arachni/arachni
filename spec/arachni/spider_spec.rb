@@ -40,6 +40,65 @@ describe Arachni::Spider do
         Arachni::Spider.new.run.should == [ @opts.url ]
     end
 
+    context 'when unable to get a response for the given URL' do
+        context 'due to a network error' do
+            it 'should return an empty sitemap and have failures' do
+                @opts.url = 'http://blahaha'
+
+                s = Arachni::Spider.new( @opts )
+
+                s.url.should == @opts.url
+                s.run.should be_empty
+                s.failures.should be_any
+            end
+        end
+
+        context 'due to a server error' do
+            it 'should return an empty sitemap and have failures' do
+                @opts.url = @url + '/fail'
+
+                s = Arachni::Spider.new( @opts )
+
+                s.url.should == @opts.url
+                s.run.should be_empty
+                s.failures.should be_any
+            end
+        end
+
+        it "should retry #{Arachni::Spider::MAX_TRIES} times" do
+            @opts.url = @url + '/fail_4_times'
+
+            s = Arachni::Spider.new( @opts )
+
+            s.url.should == @opts.url
+            s.run.should be_any
+        end
+    end
+
+    describe '#failures' do
+        context 'when there are no failed requests' do
+            it 'should return an empty array' do
+                s = Arachni::Spider.new( @opts )
+                s.run.should be_any
+                s.failures.should be_empty
+            end
+        end
+        context 'when there are failed requests' do
+            it 'should return an array containing the failed URLs' do
+                @opts.url = 'http://blahaha/'
+
+                s = Arachni::Spider.new( @opts )
+
+                s.url.should == @opts.url
+
+                s.run.should be_empty
+                s.failures.should be_any
+                s.failures.should include( @opts.url )
+            end
+        end
+    end
+
+
     describe '#new' do
         it 'should be initialized using the passed options' do
             Arachni::Spider.new( @opts ).url.should == @url

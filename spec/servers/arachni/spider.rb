@@ -1,11 +1,27 @@
 require 'sinatra'
 require 'sinatra/contrib'
-set :logging, false
 
 get '/' do
     <<EOHTML
     <a href='/this_does_not_exist'> 404 </a>
 EOHTML
+end
+
+get '/fail_4_times' do
+    @@tries ||= 0
+    @@tries += 1
+
+    if @@tries <= 5
+        # Return a 0 error code.
+        0
+    else
+        'Stuff'
+    end
+end
+
+get '/fail' do
+    # Return a 0 error code.
+    0
 end
 
 get '/sleep' do

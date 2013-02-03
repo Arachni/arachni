@@ -32,11 +32,19 @@ class Spider
     include UI::Output
     include Utilities
 
+    # How many times to retry failed requests.
+    MAX_TRIES = 5
+
     # @return [Arachni::Options]
     attr_reader :opts
 
     # @return [Array<String>]   URLs that caused redirects
     attr_reader :redirects
+
+    # @return [Array<String>]
+    #   URLs that elicited no response from the server.
+    #   Not determined by HTTP status codes, we're talking network failures here.
+    attr_reader :failures
 
     #
     # Instantiates Spider class with user options.
@@ -57,6 +65,9 @@ class Spider
 
         @pass_pages       = true
         @pending_requests = 0
+
+        @retries  = {}
+        @failures = []
 
         seed_paths
     end
@@ -368,7 +379,28 @@ class Spider
                 push location
             end
 
-            print_status( "[HTTP: #{res.code}] " + effective_url )
+            if res.code == 0
+                @retries[url.hash] ||= 0
+
+                if @retries[url.hash] >= MAX_TRIES
+                    @failures << url
+
+                    print_error "Giving up on: #{effective_url}"
+                    print_bad "Because: Couldn't get a response after #{MAX_TRIES} tries."
+                else
+                    @retries[url.hash] += 1
+                    repush( url )
+
+                    print_info "Retrying for: #{effective_url}"
+                    print_bad "Because: #{res.curl_error_message}"
+                    print_line
+                end
+
+                decrease_pending
+                next
+            end
+
+            print_status "[HTTP: #{res.code}] #{effective_url}"
             @sitemap[effective_url] = res.code
             block.call( res )
 
@@ -387,6 +419,15 @@ class Spider
 
     def visited( url )
         @visited << remove_path_params( url )
+    end
+
+    def repush( url )
+        @visited.delete remove_path_params( url )
+        push url
+    end
+
+    def intercept_print_message( msg )
+        "Spider: #{msg}"
     end
 
 end

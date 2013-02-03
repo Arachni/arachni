@@ -37,6 +37,9 @@
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
       - Slave instances now buffer their logged issues and report them to the Master in batches.
       - ```#issues``` now returns the first variation of each issue to provide more info/context.
+- Spider
+  - Updated to retry a few times when the server fails to respond.
+    - Failed requests returned by ```#failures```.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:
