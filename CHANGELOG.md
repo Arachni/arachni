@@ -36,7 +36,7 @@
       - Updated gathering of slave status -- once a slave is done it reports back to the master.
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
       - Slave instances now buffer their logged issues and report them to the Master in batches.
-      - ```#issues``` now returns the first variation of each issues to provide a more Issue info/context.
+      - ```#issues``` now returns the first variation of each issue to provide more info/context.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:
