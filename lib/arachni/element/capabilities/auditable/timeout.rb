@@ -28,16 +28,18 @@ module Arachni::Element::Capabilities
 # == Methodology
 #
 # Here's how it works:
-# * Loop 1 ({#timeout_analysis}) -- Populates the candidate queue. We're picking the low hanging
+# * Phase 1 ({#timeout_analysis}) -- We're picking the low hanging
 #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
-#   - Initial probing for candidates -- If element times out it is added to a queue.
+#   - Initial probing for candidates -- If element times-out it is added to the Phase 2 queue.
 #   - Stabilization ({#responsive?}) -- The element is submitted with its default values in
 #     order to wait until the effects of the timing attack have worn off.
-# * Loop 2 ({timeout_analysis_phase_2}) -- Verifies the candidates. This is much more delicate so the
+# * Phase 2 ({timeout_analysis_phase_2}) -- Verifies the candidates. This is much more delicate so the
 #   concurrent requests are lowered to pairs.
 #   - Liveness test -- Ensures that the webapp is alive and not just timing-out by default
 #   - Verification using an increased timeout delay -- Any elements that time out again are logged.
 #   - Stabilization ({#responsive?})
+# * Phase 3 ({timeout_analysis_phase_3}) -- Same as phase 2 but with a higher
+#   delay to ensure that false-positives are truly weeded out.
 #
 # Ideally, all requests involved with timing attacks would be run in sync mode
 # but the performance penalties are too high, thus we compromise and make the best of it
@@ -45,15 +47,22 @@ module Arachni::Element::Capabilities
 #
 # == Usage
 #
-# Call {#timeout_analysis} to schedule a timeout audit and execute {timeout_audit_run}
-# to run the scheduled operations.
+# * Call {#timeout_analysis} to schedule requests for Phase 1.
+# * Call {Arachni::HTTP#run} to run the Phase 1 requests which will populate
+#   the Phase 2 queue with candidates -- if there are any.
+# * Call {timeout_audit_run} to filter the candidates through Phases 2 and 3
+#   to ensure that false-positives are weeded out.
+#
+# Be sure to call {timeout_audit_run} as soon as possible after Phase 1 as the
+# candidate elements keep a reference to their auditor which will prevent it
+# from being reaped by the garbage collector.
 #
 # This deviates from the normal framework structure because it is preferable
 # to run timeout audits separately in order to avoid interference by other
 # audit operations.
 #
 # If you want to be notified every time a timeout audit is performed you can pass
-# callback block to {on_timing_attacks}.
+# a callback block to {on_timing_attacks}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
