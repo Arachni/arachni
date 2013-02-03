@@ -386,7 +386,8 @@ class Spider
                     @failures << url
 
                     print_error "Giving up on: #{effective_url}"
-                    print_bad "Because: Couldn't get a response after #{MAX_TRIES} tries."
+                    print_error "Because: Couldn't get a response after #{MAX_TRIES} tries."
+                    print_error "Last error: #{res.curl_error_message}"
                 else
                     @retries[url.hash] += 1
                     repush( url )
