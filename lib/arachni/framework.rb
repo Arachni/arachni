@@ -215,6 +215,15 @@ class Framework
         end
 
         harvest_http_responses
+
+        if !Module::Auditor.timeout_candidates.empty?
+            print_line
+            print_status "Verifying timeout-analysis candidates for: #{page.url}"
+            print_info '---------------------------------------'
+            Module::Auditor.timeout_audit_run
+        end
+
+        true
     end
 
     def on_audit_page( &block )
@@ -266,58 +275,29 @@ class Framework
         avg = 0
         avg = (res_cnt / @opts.delta_time).to_i if res_cnt > 0
 
-        # we need to remove URLs that lead to redirects from the sitemap
+        # We need to remove URLs that lead to redirects from the sitemap
         # when calculating the progress %.
         #
-        # this is because even though these URLs are valid webapp paths
+        # This is because even though these URLs are valid webapp paths
         # they are not actual pages and thus can't be audited;
         # so the sitemap and auditmap will never match and the progress will
         # never get to 100% which may confuse users.
         #
         redir_sz = spider.redirects.size
 
-        #
-        # There are 2 audit phases:
-        #  * regular audit
-        #  * verification of timing-attack candidates
-        #       (elements which seemed susceptible to timing attacks)
-        #
-        # When calculating the progress % we have to take both into account,
-        # however each is calculated using different criteria.
-        #
-        # Progress of regular audit is calculated as:
+        # Progress of audit is calculated as:
         #     amount of audited pages / amount of all discovered pages
-        #
-        # However, the progress of the candidates is calculated as:
-        #     amount of verified candidates / amount of total candidates
-        #
+        progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * 100
 
-        #
-        # If we have any candidates each phase must account for half of the progress.
-        #
-        # This is not very granular but it's good enough for now...
-        #
-        multi = Module::Auditor.timeout_audit_operations_cnt > 0 ? 50 : 100
-        progress = (Float( auditmap_sz ) / ( sitemap_sz - redir_sz ) ) * multi
 
-        if Module::Auditor.running_timeout_attacks?
-            performed_ops = Module::Auditor.timeout_audit_operations_cnt -
-                Module::Auditor.current_timeout_audit_operations_cnt
-
-            progress += ( Float( performed_ops ) /
-                Module::Auditor.timeout_audit_operations_cnt ) * multi
-        end
-
-        begin
-            progress = Float( sprintf( "%.2f", progress ) )
-        rescue
-            progress = 0.0
-        end
+        progress = Float( sprintf( "%.2f", progress ) ) rescue 0.0
 
         # sometimes progress may slightly exceed 100%
         # which can cause a few strange stuff to happen
         progress = 100.0 if progress > 100.0
+
         pb = Mixins::ProgressBar.eta( progress, @opts.start_datetime )
+
         {
             requests:         req_cnt,
             responses:        res_cnt,
@@ -673,19 +653,7 @@ class Framework
         @status = :auditing
         audit_queues
 
-        exception_jail {
-            if !Module::Auditor.timeout_candidates.empty?
-                print_line
-                print_status 'Verifying timeout-analysis candidates.'
-                print_info '---------------------------------------'
-                Module::Auditor.on_timing_attacks do |_, elem|
-                    @current_url = elem.action if !elem.action.empty?
-                end
-                Module::Auditor.timeout_audit_run
-            end
-
-            audit_queues
-        }
+        exception_jail { audit_queues }
     end
 
     #
@@ -702,14 +670,8 @@ class Framework
         # of knowing how big the site will be.
         #
         while !@url_queue.empty?
-            Page.from_url( @url_queue.pop, precision: 2 ) do |page|
-                push_to_page_queue( page )
-            end
-            harvest_http_responses
-
+            push_to_page_queue Page.from_url( @url_queue.pop, precision: 2 )
             audit_page_queue
-
-            harvest_http_responses
         end
 
         audit_page_queue
@@ -722,7 +684,6 @@ class Framework
         # this will run until no new elements appear for the given page
         while !@page_queue.empty?
             audit_page( @page_queue.pop )
-            harvest_http_responses
         end
     end
 
