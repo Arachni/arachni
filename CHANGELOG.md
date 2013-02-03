@@ -41,7 +41,7 @@
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:
     - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
-    - Keep a limited cache of signatures to prevent memory exhaustion.
+    - Keep a limited cache of signatures to lower memory consumption.
 - ```Arachni::Element::Capabilities::Auditable```
   - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
     a custom auditor when scripting.
@@ -57,12 +57,12 @@
             extreme similarities between issues of similar type.
 - Analysis techniques
   - Taint -- Updated to add remarks for issues that require verification.
-  - Timeout -- Updated to decrease memory usage and improve reliability.
+  - Timeout -- Updated to dramatically decrease memory consumption and improve reliability/accuracy.
     - No longer schedules element audits for the end of the scan but looks
         for candidates along with the other audit requests.
+    - Candidates are verified at the end of each page audit.
     - Makes sure that candidates are deduplicated upon discovery.
-    - Added a 3rd phase: Initial candidates which pass verification are verified
-        again on their own.
+    - Added a 3rd phase: Initial candidates which pass verification are verified again.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
