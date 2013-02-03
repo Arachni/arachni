@@ -325,6 +325,10 @@ module Output
 
     private
 
+    def intercept_print_message( message )
+        message
+    end
+
     # Prints a message prefixed with a colored sign.
     #
     # Disregards all flags.
@@ -340,12 +344,13 @@ module Output
     def print_color( sign, color, string, out = $stdout, unmute = false )
         return if muted? && !unmute
 
+        str = intercept_print_message( string )
         # we may get IO errors...freaky stuff...
         begin
             if out.tty?
-                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{string}\n"
+                out.print "\033[1;#{color.to_s}m #{sign}\033[1;00m #{str}\n"
             else
-                out.print "#{sign} #{string}\n"
+                out.print "#{sign} #{str}\n"
             end
         rescue
         end
