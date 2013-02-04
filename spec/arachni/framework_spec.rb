@@ -3,8 +3,10 @@ require_relative '../spec_helper'
 describe Arachni::Framework do
 
     before( :all ) do
-        @url = server_url_for( :auditor )
-        @opts = Arachni::Options.instance
+        @url   = server_url_for( :auditor )
+        @f_url = server_url_for( :framework )
+
+        @opts  = Arachni::Options.instance
     end
 
     before( :each ) do
@@ -28,6 +30,67 @@ describe Arachni::Framework do
             end
 
             Arachni::Modules.constants.include?( :Taint ).should be_false
+        end
+    end
+
+    context 'when unable to get a response for the given URL' do
+        context 'due to a network error' do
+            it 'should return an empty sitemap and have failures' do
+                @opts.url = 'http://blahaha'
+                @opts.do_not_crawl
+
+                @f.push_to_url_queue @opts.url
+                @f.modules.load :taint
+                @f.run
+                @f.failures.should be_any
+            end
+        end
+
+        context 'due to a server error' do
+            it 'should return an empty sitemap and have failures' do
+                @opts.url = @f_url + '/fail'
+                @opts.do_not_crawl
+
+                @f.push_to_url_queue @opts.url
+                @f.modules.load :taint
+                @f.run
+                @f.failures.should be_any
+            end
+        end
+
+        it "should retry #{AUDIT_PAGE_MAX_TRIES} times" do
+            @opts.url = @f_url + '/fail_4_times'
+            @opts.do_not_crawl
+
+            @f.push_to_url_queue @opts.url
+            @f.modules.load :taint
+            @f.run
+            @f.failures.should be_empty
+        end
+    end
+
+    describe '#failures' do
+        context 'when there are no failed requests' do
+            it 'should return an empty array' do
+                @opts.url = @f_url
+                @opts.do_not_crawl
+
+                @f.push_to_url_queue @opts.url
+                @f.modules.load :taint
+                @f.run
+                @f.failures.should be_empty
+            end
+        end
+        context 'when there are failed requests' do
+            it 'should return an array containing the failed URLs' do
+                @opts.url = @f_url + '/fail'
+                @opts.do_not_crawl
+
+                @f.push_to_url_queue @opts.url
+                @f.modules.load :taint
+                @f.run
+                @f.failures.should be_any
+            end
         end
     end
 

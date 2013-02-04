@@ -40,6 +40,10 @@
 - Spider
   - Updated to retry a few times when the server fails to respond.
     - Failed requests returned by ```#failures```.
+- Framework
+  - Updated to retry a few times when the server fails to respond when trying to
+        request a page for an audit.
+    - Failed requests returned by ```#failures```.
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:

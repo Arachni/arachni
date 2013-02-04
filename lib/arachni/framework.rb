@@ -71,6 +71,9 @@ class Framework
     # The version of this class.
     REVISION = '0.2.8'
 
+    # How many times to request a page upon failure.
+    AUDIT_PAGE_MAX_TRIES = 5
+
     # @return [Options] Instance options
     attr_reader :opts
 
@@ -103,6 +106,11 @@ class Framework
 
     # @return   [Integer]   Total number of urls added to their audit queue.
     attr_reader :url_queue_total_size
+
+    # @return [Array<String>]
+    #   Page URLs which elicited no response from the server and were not audited.
+    #   Not determined by HTTP status codes, we're talking network failures here.
+    attr_reader :failures
 
     #
     # @param    [Options]    opts
@@ -148,6 +156,10 @@ class Framework
         @sitemap  = []
 
         @current_url = ''
+
+        # Holds page URLs which returned no response.
+        @failures = []
+        @retries  = {}
 
         if block_given?
             block.call self
@@ -579,6 +591,9 @@ class Framework
     def reset
         @page_queue_total_size = 0
         @url_queue_total_size  = 0
+        @failures.clear
+        @retries.clear
+        @sitemap.clear
 
         # this needs to be first so that the HTTP lib will be reset before
         # the rest
@@ -670,7 +685,26 @@ class Framework
         # of knowing how big the site will be.
         #
         while !@url_queue.empty?
-            push_to_page_queue Page.from_url( @url_queue.pop, precision: 2 )
+            page = Page.from_url( @url_queue.pop, precision: 2 )
+
+            @retries[page.url.hash] ||= 0
+
+            if page.code == 0
+                if @retries[page.url.hash] >= AUDIT_PAGE_MAX_TRIES
+                    @failures << page.url
+
+                    print_error "Giving up trying to audit: #{page.url}"
+                    print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries."
+                else
+                    print_bad "Retrying for: #{page.url}"
+                    @retries[page.url.hash] += 1
+                    @url_queue << page.url
+                end
+
+                next
+            end
+
+            push_to_page_queue Page.from_url( page.url, precision: 2 )
             audit_page_queue
         end
 
@@ -682,9 +716,7 @@ class Framework
     #
     def audit_page_queue
         # this will run until no new elements appear for the given page
-        while !@page_queue.empty?
-            audit_page( @page_queue.pop )
-        end
+        audit_page( @page_queue.pop ) while !@page_queue.empty?
     end
 
     #
