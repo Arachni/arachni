@@ -58,7 +58,7 @@ describe Arachni::Framework do
             end
         end
 
-        it "should retry #{AUDIT_PAGE_MAX_TRIES} times" do
+        it "should retry #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
             @opts.url = @f_url + '/fail_4_times'
             @opts.do_not_crawl
 
