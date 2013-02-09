@@ -21,7 +21,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.1.5
+# @version 0.1.6
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection
 #
@@ -50,7 +50,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
             name = determine_name( input )
             next if !password?( input ) || audited?( input ) || !name
 
-            log( var: name, match: name, element: Element::FORM )
+            log( var: name, match: form.to_html, element: Element::FORM )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
             audited( input )
@@ -64,7 +64,7 @@ class Arachni::Modules::UnencryptedPasswordForms < Arachni::Module::Base
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::FORM ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
             references:  {
                 'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A9-Insufficient_Transport_Layer_Protection'
             },
