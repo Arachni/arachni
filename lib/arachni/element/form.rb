@@ -132,7 +132,13 @@ class Form < Arachni::Element::Base
     # @return   [String, nil]   name of the form if it has one
     #
     def name
-        @raw['attrs']['name'] if @raw['attrs'].is_a?( Hash )
+        return if !@raw['attrs'].is_a?( Hash )
+        @raw['attrs']['name']
+    end
+
+    def name_or_id
+        return if !@raw['attrs'].is_a?( Hash )
+        name || @raw['attrs']['id']
     end
 
     #
