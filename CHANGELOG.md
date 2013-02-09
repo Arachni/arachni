@@ -38,6 +38,7 @@
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).
       - Slave instances now buffer their logged issues and report them to the Master in batches.
       - ```#issues``` now returns the first variation of each issue to provide more info/context.
+- Trainer -- Added a hard-limit for trainings per page to avoid time-consuming loops.
 - Spider
   - Updated to retry a few times when the server fails to respond.
     - Failed requests returned by ```#failures```.
