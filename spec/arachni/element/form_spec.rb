@@ -86,6 +86,52 @@ describe Arachni::Element::Form do
         end
     end
 
+    describe '#node' do
+        it 'should return the original Nokogiri node' do
+            html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+            node = Arachni::Element::Form.from_document( @url, html ).first.node
+            node.is_a?( Nokogiri::XML::Element ).should be_true
+            node.css( 'input' ).first['name'].should == 'my_first_input'
+        end
+    end
+
+    describe '#to_html' do
+        context 'when there is a node' do
+            it 'should return the original form as HTML' do
+                html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=password name="my_first_input" value="my_first_value"" />
+                                <input type=radio name="my_second_input" value="my_second_value"" />
+                            </form>
+
+                        </body>
+                    </html>'
+
+                f1 = Arachni::Element::Form.from_document( @url, html ).first
+                f2 = Arachni::Element::Form.from_document( @url, f1.to_html ).first
+                f2.should == f1
+            end
+        end
+
+        context 'when there is no node' do
+            it 'should return nil' do
+                Arachni::Element::Form.new( @url, @inputs[:inputs] ).to_html.should be_nil
+            end
+        end
+    end
+
     describe '#requires_password?' do
         context 'when the form has a password field' do
             it 'should return true' do

@@ -47,6 +47,9 @@ class Form < Arachni::Element::Base
     # @return [String] the name of the input name that holds the nonce
     attr_reader :nonce_name
 
+    # @return [Nokogiri::XML::Element]
+    attr_accessor :node
+
     #
     # Creates a new Form element from a URL and auditable data.
     #
@@ -102,6 +105,11 @@ class Form < Arachni::Element::Base
 
         @orig = self.auditable.dup
         @orig.freeze
+    end
+
+    def to_html
+        return if !node
+        node.to_html
     end
 
     #
@@ -1169,9 +1177,13 @@ class Form < Arachni::Element::Base
         rescue
             base_url = url
         end
-        document.search( '//form' ).map do |form|
-            next if !(form = form_from_element( base_url, form ))
+        document.search( '//form' ).map do |cform|
+            next if !(form = form_from_element( base_url, cform ))
             form.url = url
+
+            # We do it this way to remove references to parents etc.
+            form.node = Nokogiri::HTML.fragment( cform.to_html ).css( 'form' ).first
+
             form
         end.compact
     end
