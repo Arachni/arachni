@@ -191,6 +191,15 @@ describe Arachni::Spider do
             spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
         end
 
+        context 'Options.exclude_body' do
+            it 'should skip pages which match the configured patterns' do
+                @opts.exclude_body = /skip me/i
+                @opts.url = @url + '/skip'
+
+                Arachni::Spider.new.run.should be_empty
+            end
+        end
+
         context 'Options.do_not_crawl' do
             it 'should not crawl the site' do
                 @opts.do_not_crawl

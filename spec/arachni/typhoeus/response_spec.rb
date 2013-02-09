@@ -2,6 +2,16 @@ require_relative '../../spec_helper'
 
 describe Typhoeus::Response do
 
+    describe '#url' do
+        it 'should be aliased to #effective_url' do
+            url = 'http://stuff'
+            res = Typhoeus::Response.new( effective_url: url )
+
+            res.url.should == url
+            res.url.should == res.effective_url
+        end
+    end
+
     describe '#location' do
         it 'should return the content-type' do
             Typhoeus::Response.new.location.should be_nil
@@ -25,6 +35,22 @@ describe Typhoeus::Response do
 
             h = { headers_hash: { 'Content-Type' => ct } }
             Typhoeus::Response.new( h ).content_type.should == ct
+        end
+    end
+
+    describe '#text?' do
+        context 'when the response is text based' do
+            it 'should return true' do
+                h = { headers_hash: { 'content-type' => 'text/html' } }
+                Typhoeus::Response.new( h ).text?.should be_true
+            end
+        end
+
+        context 'when the response is not text based' do
+            it 'should return false' do
+                h = { headers_hash: { 'content-type' => 'stuff/blah' } }
+                Typhoeus::Response.new( h ).text?.should be_false
+            end
         end
     end
 

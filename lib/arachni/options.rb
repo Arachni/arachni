@@ -369,6 +369,13 @@ class Options
     attr_accessor :exclude
 
     #
+    # Page bodies matching any of these patterns will be are ignored.
+    #
+    # @return    [Array]
+    #
+    attr_accessor :exclude_body
+
+    #
     # Cookies to exclude from the audit
     #
     # @return    [Array]
@@ -551,8 +558,9 @@ class Options
         @reports    = {}
 
         @exclude    = []
-        @exclude_cookies    = []
-        @exclude_vectors    = []
+        @exclude_body   = []
+        @exclude_cookies = []
+        @exclude_vectors = []
 
         @include    = []
 
@@ -587,6 +595,8 @@ class Options
     #
     # @return   [Bool]  true if the url is redundant, false otherwise
     #
+    # @see #redundant
+    #
     def redundant?( url, &block )
         redundant.each do |regexp, count|
             next if !(url =~ regexp)
@@ -596,6 +606,21 @@ class Options
 
             redundant[regexp] -= 1
         end
+        false
+    end
+
+    #
+    # Checks if the given string matches one of the configured {#exclude_body} patterns.
+    #
+    # @param    [String]    body
+    #
+    # @return   [Bool]
+    #   +true+ if +body+ matches an {#exclude_body} pattern, +false+ otherwise.
+    #
+    # @see #exclude_body
+    #
+    def exclude_body?( body )
+        Options.exclude_body.each { |i| return true if body.to_s =~ i }
         false
     end
 
@@ -790,7 +815,7 @@ class Options
     alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+    [ :exclude_body, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -831,6 +856,7 @@ class Options
             [ '--cookie-string'          , GetoptLong::REQUIRED_ARGUMENT ],
             [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-body',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
@@ -1028,6 +1054,9 @@ class Options
 
                     when '--exclude'
                         @exclude << Regexp.new( arg )
+
+                    when '--exclude-body'
+                        @exclude_body << Regexp.new( arg )
 
                     when '--include'
                         @include << Regexp.new( arg )

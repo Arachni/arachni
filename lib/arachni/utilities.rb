@@ -288,7 +288,7 @@ module Utilities
     def skip_path?( path )
         return true if !path
 
-        parsed = uri_parse( path )
+        parsed = uri_parse( path.to_s )
         begin
             return true if !include_path?( parsed )
             return true if exclude_path?( parsed )
@@ -300,6 +300,67 @@ module Utilities
             ap e
             ap e.backtrace
             true
+        end
+    end
+
+    #
+    # Determines whether or not a given {Arachni::Page} or {Typhoeus::Response}
+    # should be ignored based on:
+    #   * {Options#ignore} patterns
+    #   * {Options#exclude_binaries} option
+    #   * Body
+    #   * Content-type
+    #
+    # @param    [Page,Typhoeus::Response,#body]   page_or_response
+    #
+    # @return   [Bool]
+    #   +true+ if the +#body+ of the given object matches any of the
+    #   {Options#ignore} patterns, +false+ otherwise.
+    #
+    # @see Options#ignore
+    # @see Options#ignore?
+    # @see Options#exclude_binaries?
+    #
+    def skip_page?( page_or_response )
+        (Options.exclude_binaries? && !page_or_response.text?) ||
+            skip_path?( page_or_response.url ) ||
+            Options.exclude_body?( page_or_response.body )
+    end
+    alias :skip_response? :skip_page?
+
+    #
+    # Determines whether or not the given +resource+ should be ignored
+    # depending on its type and content.
+    #
+    # @param    [Page,Typhoeus::Response,String]
+    #   If given a:
+    #       * {Page}: both its URL and body will be examined.
+    #       * {Typhoeus::Response}: both its effective URL and body will be examined.
+    #       * {String}: if multi-line it will be treated as a response body,
+    #           otherwise as a path.
+    #
+    # @return   [Bool]
+    #   +true+ if the resource should be ignore,+false+ otherwise.
+    #
+    # @see skip_path?
+    # @see ignore_page?
+    # @see ignore_response?
+    # @see Options#ignore?
+    #
+    def skip_resource?( resource )
+        case resource
+            when Page
+                skip_page?( resource )
+
+            when Typhoeus::Response
+                skip_response?( resource )
+
+            else
+                if (s = resource.to_s) =~ /[\r\n]/
+                    Options.exclude_body? s
+                else
+                    skip_path? s
+                end
         end
     end
 

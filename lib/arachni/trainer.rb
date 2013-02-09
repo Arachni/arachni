@@ -86,7 +86,7 @@ class Trainer
 
         return false if !@parser.text? ||
             @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL ||
-            redundant?( @parser.url ) || skip_path?( @parser.url )
+            redundant?( @parser.url ) || skip_resource?( res )
 
         analyze( res )
         true

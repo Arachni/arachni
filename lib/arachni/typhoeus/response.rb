@@ -17,6 +17,8 @@
 module Typhoeus
 class Response
 
+    alias :url :effective_url
+
     alias :old_initialize :initialize
     def initialize( *args )
         old_initialize( *args )
@@ -33,6 +35,12 @@ class Response
 
     def each( &block )
         headers_hash.each( &block )
+    end
+
+    def text?
+        type = content_type
+        return false if !type
+        type.to_s.start_with?( 'text/' )
     end
 
     def content_type

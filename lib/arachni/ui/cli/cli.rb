@@ -698,6 +698,9 @@ class CLI
     --exclude=<regexp>          Exclude urls matching <regexp>.
                                   (Can be used multiple times.)
 
+    --exclude-body=<regexp>     Exclude pages whose body matches <regexp>.
+                                  (Can be used multiple times.)
+
     -i <regexp>
     --include=<regexp>          Include *only* urls matching <regex>.
                                   (Can be used multiple times.)

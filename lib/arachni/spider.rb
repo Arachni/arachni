@@ -402,8 +402,13 @@ class Spider
             end
 
             print_status "[HTTP: #{res.code}] #{effective_url}"
-            @sitemap[effective_url] = res.code
-            block.call( res )
+
+            if skip_response?( res )
+                print_info 'Ignoring due to exclusion criteria.'
+            else
+                @sitemap[effective_url] = res.code
+                block.call( res )
+            end
 
             decrease_pending
         end

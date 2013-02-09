@@ -3,6 +3,7 @@
 ## _Under development_
 - Options
   - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
+  - Added ```--exclude-body``` to exclude pages whose bodies match the given patterns.
 - Updated exceptions thrown by the framework, removed ```Arachni::Exceptions```
     namespace and replaced it with the ```Arachni::Error``` base exception from
     which all component specific exceptions inherit.
@@ -44,6 +45,10 @@
   - Updated to retry a few times when the server fails to respond when trying to
         request a page for an audit.
     - Failed requests returned by ```#failures```.
+  - The following methods have been updated to enforce scope criteria:
+    - ```#audit_page```
+    - ```#push_to_page_queue```
+    - ```#push_to_url_queue```
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:

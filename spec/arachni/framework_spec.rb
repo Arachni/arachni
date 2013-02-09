@@ -782,29 +782,61 @@ describe Arachni::Framework do
     end
 
     describe '#audit_page' do
-        it 'should audit an individual page' do
-            @f.opts.audit :links, :forms, :cookies
+        context 'when the page does not match exclusion criteria' do
+            it 'should audit it and return true' do
+                @f.opts.audit :links, :forms, :cookies
 
-            @f.modules.load :taint
+                @f.modules.load :taint
 
-            @f.audit_page Arachni::Page.from_url( @url + '/link' )
-            @f.auditstore.issues.size.should == 1
+                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+                @f.auditstore.issues.size.should == 1
+            end
+        end
+        context 'when the page matches exclusion criteria' do
+            it 'should not audit it and return false' do
+                @f.opts.exclude << /link/
+                @f.opts.audit :links, :forms, :cookies
+
+                @f.modules.load :taint
+
+                @f.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                @f.auditstore.issues.size.should == 0
+            end
         end
     end
 
     describe '#push_to_page_queue' do
-        it 'should push a page to the page audit queue' do
-            page = Arachni::Page.from_url( @url + '/train/true' )
+        context 'when the page does not match exclusion criteria' do
+            it 'should push it to the page audit queue and return true' do
+                page = Arachni::Page.from_url( @url + '/train/true' )
 
-            @f.opts.audit :links, :forms, :cookies
-            @f.modules.load :taint
+                @f.opts.audit :links, :forms, :cookies
+                @f.modules.load :taint
 
-            @f.page_queue_total_size.should == 0
-            @f.push_to_page_queue( page )
-            @f.run
-            @f.auditstore.issues.size.should == 3
-            @f.page_queue_total_size.should > 0
-            @f.modules.clear
+                @f.page_queue_total_size.should == 0
+                @f.push_to_page_queue( page ).should be_true
+                @f.run
+                @f.auditstore.issues.size.should == 3
+                @f.page_queue_total_size.should > 0
+                @f.modules.clear
+            end
+        end
+        context 'when the page matches exclusion criteria' do
+            it 'should not push it to the page audit queue and return false' do
+                page = Arachni::Page.from_url( @url + '/train/true' )
+
+                @f.opts.audit :links, :forms, :cookies
+                @f.modules.load :taint
+
+                @f.opts.exclude << /train/
+
+                @f.page_queue_total_size.should == 0
+                @f.push_to_page_queue( page ).should be_false
+                @f.run
+                @f.auditstore.issues.size.should == 0
+                @f.page_queue_total_size.should == 0
+                @f.modules.clear
+            end
         end
     end
 

@@ -203,16 +203,14 @@ class Framework
     def audit_page( page )
         return if !page
 
-        # we may end up ignoring it but being included in the auditmap means that
-        # it has been considered but didn't fit the criteria
+        if skip_page? page
+            print_info "Ignoring page due to exclusion criteria: #{page.url}"
+            return false
+        end
+
         @auditmap << page.url
         @sitemap |= @auditmap
         @sitemap.uniq!
-
-        if Options.exclude_binaries? && !page.text?
-            print_info "Ignoring page due to non text-based content-type: #{page.url}"
-            return
-        end
 
         print_line
         print_status "Auditing: [HTTP: #{page.code}] #{page.url}"
@@ -332,23 +330,41 @@ class Framework
     #
     # Pushes a page to the page audit queue and updates {#page_queue_total_size}
     #
+    # @param    [Page]  page
+    #
+    # @return   [Bool]
+    #   +true+ if push was successful, +false+ if the +page+ matched any
+    #   exclusion criteria.
+    #
     def push_to_page_queue( page )
+        return false if skip_page? page
+
         @page_queue << page
         @page_queue_total_size += 1
 
         @sitemap |= [page.url]
+        true
     end
 
     #
     # Pushes a URL to the URL audit queue and updates {#url_queue_total_size}
     #
+    # @param    [String]  url
+    #
+    # @return   [Bool]
+    #   +true+ if push was successful, +false+ if the +url+ matched any
+    #   exclusion criteria.
+    #
     def push_to_url_queue( url )
+        return false if skip_path? url
+
         abs = to_absolute( url )
 
         @url_queue.push( abs ? abs : url )
         @url_queue_total_size += 1
 
         @sitemap |= [url]
+        false
     end
 
     #

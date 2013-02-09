@@ -181,6 +181,48 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#ignore_page?' do
+        before { @opts.exclude_body << /ignore me/ }
+
+        context 'when the body matches an ignore rule' do
+            it 'should return true' do
+                page = Arachni::Page.new( body: 'ignore me' )
+                @utils.skip_page?( page ).should be_true
+            end
+        end
+
+        context 'when the body does not match an ignore rule' do
+            it 'should return false' do
+                page = Arachni::Page.new(
+                    url: 'http://test/',
+                    body: 'not me'
+                )
+                @utils.skip_page?( page ).should be_false
+            end
+        end
+    end
+
+    describe '#ignore_response?' do
+        before { @opts.exclude_body << /ignore me/ }
+
+        context 'when the body matches an ignore rule' do
+            it 'should return true' do
+                res = Typhoeus::Response.new( body: 'ignore me' )
+                @utils.skip_response?( res ).should be_true
+            end
+        end
+
+        context 'when the body does not match an ignore rule' do
+            it 'should return false' do
+                res = Typhoeus::Response.new(
+                    effective_url: 'http://test/',
+                    body: 'not me'
+                )
+                @utils.skip_response?( res ).should be_false
+            end
+        end
+    end
+
     describe '#include_path?' do
         before { @opts.include << /include_me/ }
 
@@ -199,8 +241,137 @@ describe Arachni::Utilities do
         end
     end
 
-    describe '#follow_protocol?' do
+    describe '#skip_resource?' do
+        before do
+            @opts.exclude_body << /ignore\s+me/m
+            @opts.exclude << /ignore/
+        end
 
+        context 'when passed a' do
+            context Typhoeus::Response do
+
+                context 'whose body matches an ignore rule' do
+                    it 'should return true' do
+                        res = Typhoeus::Response.new(
+                            effective_url: 'http://stuff/here',
+                            body: 'ignore me'
+                        )
+                        @utils.skip_resource?( res ).should be_true
+                    end
+                end
+
+                context 'whose the body does not match an ignore rule' do
+                    it 'should return false' do
+                        res = Typhoeus::Response.new(
+                            effective_url: 'http://stuff/here',
+                            body: 'stuff'
+                        )
+                        @utils.skip_resource?( res ).should be_false
+                    end
+                end
+
+                context 'whose URL matches an exclude rule' do
+                    it 'should return true' do
+                        res = Typhoeus::Response.new(
+                            effective_url: 'http://stuff/here/to/ignore/',
+                            body: 'ignore me'
+                        )
+                        @utils.skip_resource?( res ).should be_true
+                    end
+                end
+
+                context 'whose URL does not match an exclude rule' do
+                    it 'should return false' do
+                        res = Typhoeus::Response.new(
+                            effective_url: 'http://stuff/here',
+                            body: 'stuff'
+                        )
+                        @utils.skip_resource?( res ).should be_false
+                    end
+                end
+            end
+
+            context Arachni::Page do
+                context 'whose the body matches an ignore rule' do
+                    it 'should return true' do
+                        page = Arachni::Page.new(
+                            url:   'http://stuff/here',
+                            body: 'ignore me'
+                        )
+                        @utils.skip_resource?( page ).should be_true
+                    end
+                end
+
+                context 'whose the body does not match an ignore rule' do
+                    it 'should return false' do
+                        page = Arachni::Page.new(
+                            url:   'http://stuff/here',
+                            body: 'stuff'
+                        )
+                        @utils.skip_resource?( page ).should be_false
+                    end
+                end
+
+                context 'whose URL matches an exclude rule' do
+                    it 'should return true' do
+                        res = Arachni::Page.new(
+                            url:   'http://stuff/here/to/ignore/',
+                            body: 'ignore me'
+                        )
+                        @utils.skip_resource?( res ).should be_true
+                    end
+                end
+
+                context 'whose URL does not match an exclude rule' do
+                    it 'should return false' do
+                        res = Arachni::Page.new(
+                            url:  'http://stuff/here',
+                            body: 'stuff'
+                        )
+                        @utils.skip_resource?( res ).should be_false
+                    end
+                end
+
+            end
+
+            context String do
+                context 'with multiple lines' do
+                    context 'which matches an ignore rule' do
+                        it 'should return true' do
+                            s = "ignore \n me"
+                            @utils.skip_resource?( s ).should be_true
+                        end
+                    end
+
+                    context 'which does not match an ignore rule' do
+                        it 'should return false' do
+                            s = "multi \n line \n stuff here"
+                            @utils.skip_resource?( s ).should be_false
+                        end
+                    end
+                end
+
+                context 'with a single line' do
+                    context 'which matches an exclude rule' do
+                        it 'should return true' do
+                            s = "ignore/this/path"
+                            @utils.skip_resource?( s ).should be_true
+                        end
+                    end
+
+                    context 'which does not match an exclude rule' do
+                        it 'should return false' do
+                            s = "stuf/here/"
+                            @utils.skip_resource?( s ).should be_false
+                        end
+                    end
+
+                end
+            end
+        end
+    end
+
+    describe '#follow_protocol?' do
         context 'when the reference URL uses' do
             context 'HTTPS' do
                 context 'and the checked URL uses' do

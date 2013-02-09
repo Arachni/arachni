@@ -24,6 +24,10 @@ get '/fail' do
     0
 end
 
+get '/skip' do
+    'Skip me!'
+end
+
 get '/sleep' do
     sleep 2
     <<EOHTML

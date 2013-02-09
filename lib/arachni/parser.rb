@@ -242,9 +242,7 @@ class Parser
     alias :run :page
 
     def text?
-        type = @response.content_type
-        return false if !type
-        type.to_s.substring?( 'text' )
+        @response.text?
     end
 
     def doc
@@ -266,7 +264,6 @@ class Parser
             'Accept'          => 'text/html,application/xhtml+xml,application' +
                 '/xml;q=0.9,*/*;q=0.8',
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-            'Accept-Language' => 'en-gb,en;q=0.5',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
             'From'       => @opts.authed_by  || '',
             'User-Agent' => @opts.user_agent || '',
