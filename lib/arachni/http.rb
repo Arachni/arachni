@@ -180,6 +180,9 @@ class HTTP
 
             call_after_run_persistent
 
+            # Prune the custom 404 cache after callbacks have been called.
+            prune_custom_404_cache
+
             @curr_res_time = 0
             @curr_res_cnt  = 0
             true
@@ -623,8 +626,6 @@ class HTTP
         @queue_size = 0
         @running = false
         @burst_runtime += Time.now - @burst_runtime_start
-
-        prune_custom_404_cache
     end
 
     #
