@@ -97,8 +97,6 @@
         that issue with the entity which made the remark as _key_ and an ```Array```
         of remarks as _value_.
     - Added method ```#add_remark```, allowing new remarks to be added to the ```Issue```.
-- Removed
-      - ```xss_uri``` compatibility module.
 - Added
   - Cache
       - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
@@ -107,6 +105,11 @@
       - ```Arachni::Buffer::Base``` -- Buffer base class.
       - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
         itself when it gets full or a number of fill-up attempts is reached between flushes.
+- Removed
+      - ```xss_uri``` compatibility module.
+      - Web User Interface -- The new interface is a
+        [project of its own](https://github.com/Arachni/arachni-ui-web) and not
+        part of the framework -- will appear in the packages only, not the Gems.
 
 ## Version 0.4.1.2 _(November 3, 2012)_
 - HTTP
