@@ -22,7 +22,7 @@ To run from source:
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
-    sudo gem install bundler
+    gem install bundler # Use sudo if you get a permission error
     bundle install # to resolve dev dependencies
 
 Then you can run Arachni using the the executables under ```bin/```.<br/>
