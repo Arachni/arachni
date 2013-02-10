@@ -23,7 +23,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 class Arachni::Reports::Stdout < Arachni::Report::Base
 
@@ -157,7 +157,7 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.2'
+            version:     '0.2.3'
         }
     end
 
@@ -174,8 +174,28 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
             print_info "Regular expression: #{var['regexp']}"       if var['regexp']
             print_info "Matched string:     #{var['regexp_match']}" if var['regexp_match']
 
+            next if var.remarks.empty?
+
+            print_line
+            print_info 'Remarks'
+            print_info '-------'
+            var.remarks.each do |logger, remarks|
+                print_info "  By #{logger}:"
+                remarks.each do |remark|
+                    print_info "    *  #{word_wrap remark}"
+                end
+            end
+
             print_line
         end
     end
 
+    # Stolen from Rails.
+    def word_wrap( text, line_width = 80 )
+        return '' if text.to_s.empty?
+        text.split("\n").collect do |line|
+            line.length > line_width ?
+                line.gsub(/(.{1,#{line_width}})(\s+|$)/, "\\1\n").strip : line
+        end * "\n"
+    end
 end
