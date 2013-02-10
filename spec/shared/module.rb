@@ -20,8 +20,6 @@ shared_examples_for "module" do
         # do not dedup, the module tests need to see everything
         current_module.instance_eval { define_method( :skip? ) { |elem| false } }
 
-        options.user_agent = 'arachni_user'
-
         @issues = []
         Arachni::Module::Manager.do_not_store
         Arachni::Module::Manager.on_register_results_raw do |issues|

@@ -1,6 +1,9 @@
 shared_examples_for "component" do
 
-    before( :all ) { Arachni::Options.reset }
+    before( :all ) do
+        Arachni::Options.reset
+        options.user_agent = 'arachni_user'
+    end
     after( :all ) { framework.reset }
 
     def self.use_https
