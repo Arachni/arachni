@@ -61,6 +61,8 @@ class HTTP
 
     HTTP_TIMEOUT    = 50000
 
+    CUSTOM_404_CACHE_SIZE = 250
+
     # @return   [String]    framework seed/target URL
     attr_reader :url
 
@@ -163,19 +165,7 @@ class HTTP
 
         @after_run = []
 
-        @_404 = Cache::Preference.new( 100 )
-        @_404.prefer do
-            preference = nil
-
-            @_404.keys.each do |k|
-                next if !@_404[k][:analyzed]
-                preference = k
-                break
-            end
-
-            preference
-        end
-
+        @_404 = Hash.new
         self
     end
 
@@ -590,6 +580,22 @@ class HTTP
 
     private
 
+    def prune_custom_404_cache
+        return if @_404.size <= CUSTOM_404_CACHE_SIZE
+
+        @_404.keys.each do |path|
+            # If the path hasn't been analyzed yet don't even consider
+            # removing it. Technically, at this point (after #hydra_run) there
+            # should not be any non analyzed paths but better be sure.
+            next if !@_404[path][:analyzed]
+
+            # We've done enough...
+            return if @_404.size < CUSTOM_404_CACHE_SIZE
+
+            @_404.delete( path )
+        end
+    end
+
     def _404_data_for_path( path )
         @_404[path] ||= {
             analyzed:   false,
@@ -617,6 +623,8 @@ class HTTP
         @queue_size = 0
         @running = false
         @burst_runtime += Time.now - @burst_runtime_start
+
+        prune_custom_404_cache
     end
 
     #
