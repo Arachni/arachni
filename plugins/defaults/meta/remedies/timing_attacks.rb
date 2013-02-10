@@ -33,8 +33,9 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
     # in order to be considered
     TIME_THRESHOLD = 0.6
 
-    REMARK = "This issue was discovered using a timing-attack but the audited" +
-        " page was exhibiting unusually high response times to begin with."
+    REMARK = 'This issue was discovered using a timing-attack but the audited ' +
+        'page was exhibiting unusually high response times to begin with. ' +
+        'This could be an indication that the logged issue is a false positive.'
 
     def prepare
         @times   = {}
