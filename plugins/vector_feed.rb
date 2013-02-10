@@ -48,7 +48,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
                 return
             end
 
-            feed = YAML.load_stream( StringIO.new( feed ) ).documents.flatten
+            feed = YAML.load_stream( StringIO.new( feed ) ).flatten
 
             yaml_err = 'Invalid YAML syntax, bailing out..'
             begin
