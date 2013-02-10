@@ -137,7 +137,7 @@ describe name_from_filename do
 
         describe :yaml_string do
             it 'should unserialize the given string and forward the given vectors to the framework to be audited' do
-                options.plugins[name_from_filename] = { 'yaml_string' => vectors.to_yaml}
+                options.plugins[name_from_filename] = { 'yaml_string' => vectors.to_yaml }
                 run_test
             end
         end
