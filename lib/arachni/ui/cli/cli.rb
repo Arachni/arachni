@@ -305,7 +305,7 @@ class CLI
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     #
     def parse_opts
-        if !@opts.repload && !@opts.help
+        if !@opts.repload && !@opts.help && !@opts.show_version?
 
             if !@opts.mods || @opts.mods.empty?
                 print_info 'No modules were specified.'
@@ -334,6 +334,10 @@ class CLI
 
                 when 'help'
                     usage
+                    exit 0
+
+                when 'version'
+                    print_version
                     exit 0
 
                 when 'arachni_verbose'
@@ -416,6 +420,7 @@ class CLI
                     end
                     exit
             end
+
         end
 
         # Check for missing url
@@ -424,6 +429,11 @@ class CLI
             exit 1
         end
 
+    end
+
+    def print_version
+        print_line "Arachni #{Arachni::VERSION} (#{RUBY_ENGINE} #{RUBY_VERSION}" +
+            "p#{RUBY_PATCHLEVEL}) [#{RUBY_PLATFORM}]"
     end
 
     #
@@ -639,6 +649,8 @@ class CLI
 
     -h
     --help                      Output this.
+
+    --version                   Show version information and exit.
 
     -v                          Be verbose.
 

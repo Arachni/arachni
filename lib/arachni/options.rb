@@ -503,6 +503,8 @@ class Options
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
 
+    attr_accessor :version
+
     def initialize
         reset
     end
@@ -577,6 +579,10 @@ class Options
         @min_pages_per_instance = 30
         @max_slaves = 10
         self
+    end
+
+    def show_version?
+        !!@version
     end
 
     def https_only?
@@ -898,6 +904,7 @@ class Options
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
             [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
+            [ '--version',                GetoptLong::NO_ARGUMENT ]
         )
 
         opts.quiet = true
@@ -909,6 +916,9 @@ class Options
 
                     when '--help'
                         @help = true
+
+                    when '--version'
+                        @version = true
 
                     when '--serialized-opts'
                         merge!( unserialize( arg ) )
