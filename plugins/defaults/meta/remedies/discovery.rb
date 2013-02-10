@@ -38,10 +38,10 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
     # in common which makes it possible to spot them without much bother
     SIMILARITY_TOLERANCE = 0.25
 
-    REMARK = "This issue was logged by a directory-busting/discovery module but " +
+    REMARK = "This issue was logged by a discovery module but " +
         "the response for the resource it identified is very similar to responses " +
-        "of other identified resources. This probably means that the server responses " +
-        "were too erratic to be successfully identified as custom 404s and thus ignored."
+        "for other resources of similar type. This is a strong indication that " +
+        "the logged issue is a false positive."
 
     def prepare
         wait_while_framework_running
