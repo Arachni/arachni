@@ -101,7 +101,9 @@ class Arachni::Reports::Stdout < Arachni::Report::Base
 
         auditstore.issues.each_with_index do |issue, i|
 
-            print_ok "[#{i+1}] #{issue.name}"
+            trusted = issue.verification ? 'Untrusted' : 'Trusted'
+
+            print_ok "[#{i+1}] #{trusted} -- #{issue.name}"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
             print_info "ID Hash:  #{issue.digest}"
