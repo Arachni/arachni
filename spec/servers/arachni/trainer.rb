@@ -46,7 +46,7 @@ get '/elems' do
 end
 
 get '/train/redirect' do
-    redirect '/train/redirected?msg=some crap'
+    redirect '/train/redirected?msg=blah'
 end
 
 get '/train/redirected' do
