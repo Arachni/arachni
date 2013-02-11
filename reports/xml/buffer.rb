@@ -44,6 +44,10 @@ module Arachni::Reports::XML::Buffer
         append "<reference name=\"#{name}\" url=\"#{url}\" />"
     end
 
+    def add_remark( commenter, remark )
+        append "<remark by=\"#{commenter}\" text=\"#{escape( remark )}\" />"
+    end
+
     def add_param( name, value )
         append "<param name=\"#{name}\" value=\"#{value}\" />"
     end

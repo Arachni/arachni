@@ -153,6 +153,14 @@ class Arachni::Reports::XML < Arachni::Report::Base
             simple_tag( 'regexp', var['regexp'].to_s ) if var['regexp']
             simple_tag( 'regexp_match', var['regexp_match'] ) if var['regexp_match']
 
+            start_tag 'remarks'
+            var.remarks.each do |commenter, remarks|
+                remarks.each do |remark|
+                    add_remark( commenter, remark )
+                end
+            end
+            end_tag 'remarks'
+
             start_tag 'headers'
             add_headers( 'request', var['headers']['request']  )
             add_headers( 'response', var['headers']['response'] )
