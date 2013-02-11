@@ -21,7 +21,7 @@ require 'base64'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 class Arachni::Reports::XML < Arachni::Report::Base
     load Arachni::Options.dir['reports'] + '/xml/buffer.rb'
@@ -136,7 +136,7 @@ class Arachni::Reports::XML < Arachni::Report::Base
             name:        'XML',
             description: %q{Exports the audit results as an XML (.xml) file.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
-            version:     '0.2.3',
+            version:     '0.2.4',
             options:     [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
