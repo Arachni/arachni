@@ -70,6 +70,9 @@
             suboptimal state of the server while the issue was identified.
       - Discovery: Updated to add a remark to affected issues about the
             extreme similarities between issues of similar type.
+  - Removed
+    - Manual-verification meta-analysis -- That plugin is now redundant, functionality
+      now handled by other components/layers.
 - Analysis techniques
   - Taint -- Updated to add remarks for issues that require verification.
   - Timeout -- Updated to dramatically decrease memory consumption and improve reliability/accuracy.
