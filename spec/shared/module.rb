@@ -35,7 +35,9 @@ shared_examples_for "module" do
 
         # Leave this here, helps us save every kind of issue in order to test
         # the reports.
-        #File.open( '../issues.yml', 'a' ){ |f| f.write @issues.to_yaml }
+        if File.exists?( "#{Dir.tmpdir}/save_issues" )
+            File.open( "#{Dir.tmpdir}/issues.yml", 'a' ){ |f| f.write @issues.to_yaml }
+        end
 
         @issues.clear
 

@@ -15,7 +15,7 @@
 =end
 
 require 'bundler'
-require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
+require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni'
 
 begin
     require 'rspec'
@@ -40,6 +40,48 @@ begin
 
         RSpec::Core::RakeTask.new( :path_extractors ) do |t|
             t.pattern = FileList[ "spec/path_extractors/**/*_spec.rb" ]
+        end
+
+        desc "Generate an AFR report for the report tests"
+        namespace :generate do
+            task :afr do
+
+                # Run the module tests and save all the issues to put them
+                # in our AFR report.
+                FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
+                Rake::Task['spec:modules'].execute rescue nil
+                FileUtils.rm( "#{Dir.tmpdir}/save_issues" )
+
+                issues = []
+                File.open( "#{Dir.tmpdir}/issues.yml" ) do |f|
+                    issues = YAML.load_documents( f ).flatten
+                end
+
+                200.times do |i|
+                    # Add remarks to some issues.
+                    issue = issues[rand( issues.size )]
+                    issue.add_remark( :stuff, 'Blah' )
+                    issue.add_remark( :stuff, 'Blah2' )
+
+                    # Flag some issues are requiring manual verification.
+                    issues[rand( issues.size )].verification = true
+                end
+
+                FileUtils.rm( "#{Dir.tmpdir}/issues.yml" )
+
+                Arachni::Options.url = 'http://test.com'
+                Arachni::Options.audit :forms, :links, :cookies, :headers
+
+                # Make all module constants available because the AuditStore
+                # will need them to make the necessary associations between them
+                # and the issues.
+                Arachni::Framework.new.modules.load_all
+
+                Arachni::AuditStore.new( issues: issues.uniq ).
+                    save( 'spec/fixtures/auditstore.afr' )
+
+                Arachni::Options.reset
+            end
         end
     end
 
