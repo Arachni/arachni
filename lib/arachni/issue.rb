@@ -277,6 +277,18 @@ class Issue
         self.regexp_match
     end
 
+    def requires_verification?
+        !!@verification
+    end
+
+    def trusted?
+        !requires_verification?
+    end
+
+    def untrusted?
+        !trusted?
+    end
+
     def url=( v )
         @url = Utilities.normalize_url( v )
 

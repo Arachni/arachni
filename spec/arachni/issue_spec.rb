@@ -111,6 +111,76 @@ describe Arachni::Issue do
         end
     end
 
+    describe '#requires_verification?' do
+        context 'when the issue requires verification' do
+            it 'should return true' do
+                i = Arachni::Issue.new
+                i.verification = true
+                i.requires_verification?.should be_true
+            end
+        end
+        context 'when the issue does not require verification' do
+            it 'should return false' do
+                i = Arachni::Issue.new
+                i.verification = false
+                i.requires_verification?.should be_false
+            end
+        end
+        context 'by default' do
+            it 'should return false' do
+                i = Arachni::Issue.new
+                i.requires_verification?.should be_false
+            end
+        end
+    end
+
+    describe '#trusted?' do
+        context 'when the issue requires verification' do
+            it 'should return false' do
+                i = Arachni::Issue.new
+                i.verification = true
+                i.trusted?.should be_false
+            end
+        end
+        context 'when the issue does not require verification' do
+            it 'should return true' do
+                i = Arachni::Issue.new
+                i.verification = false
+                i.trusted?.should be_true
+            end
+        end
+        context 'by default' do
+            it 'should return true' do
+                i = Arachni::Issue.new
+                i.trusted?.should be_true
+            end
+        end
+    end
+
+    describe '#untrusted?' do
+        context 'when the issue requires verification' do
+            it 'should return true' do
+                i = Arachni::Issue.new
+                i.verification = true
+                i.untrusted?.should be_true
+            end
+        end
+        context 'when the issue does not require verification' do
+            it 'should return false' do
+                i = Arachni::Issue.new
+                i.verification = false
+                i.untrusted?.should be_false
+            end
+        end
+        context 'by default' do
+            it 'should return false' do
+                i = Arachni::Issue.new
+                i.untrusted?.should be_false
+            end
+        end
+    end
+
+
     describe '#cwe=' do
         it 'should assign a CWE ID and CWE URL based on that ID' do
             i = Arachni::Issue.new
