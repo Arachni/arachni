@@ -191,7 +191,7 @@ describe Arachni::Spider do
             spider.run.select { |url| url.include?( '/something' ) }.size.should == 1
         end
 
-        context 'Options.exclude_body' do
+        context 'Options.exclude_pages' do
             it 'should skip pages which match the configured patterns' do
                 @opts.exclude_body = /skip me/i
                 @opts.url = @url + '/skip'

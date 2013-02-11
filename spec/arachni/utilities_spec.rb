@@ -182,7 +182,7 @@ describe Arachni::Utilities do
     end
 
     describe '#ignore_page?' do
-        before { @opts.exclude_body << /ignore me/ }
+        before { @opts.exclude_pages << /ignore me/ }
 
         context 'when the body matches an ignore rule' do
             it 'should return true' do
@@ -203,7 +203,7 @@ describe Arachni::Utilities do
     end
 
     describe '#ignore_response?' do
-        before { @opts.exclude_body << /ignore me/ }
+        before { @opts.exclude_pages << /ignore me/ }
 
         context 'when the body matches an ignore rule' do
             it 'should return true' do
@@ -243,7 +243,7 @@ describe Arachni::Utilities do
 
     describe '#skip_resource?' do
         before do
-            @opts.exclude_body << /ignore\s+me/m
+            @opts.exclude_pages << /ignore\s+me/m
             @opts.exclude << /ignore/
         end
 

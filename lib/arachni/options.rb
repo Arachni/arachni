@@ -373,7 +373,7 @@ class Options
     #
     # @return    [Array]
     #
-    attr_accessor :exclude_body
+    attr_accessor :exclude_pages
 
     #
     # Cookies to exclude from the audit
@@ -560,7 +560,7 @@ class Options
         @reports    = {}
 
         @exclude    = []
-        @exclude_body   = []
+        @exclude_pages   = []
         @exclude_cookies = []
         @exclude_vectors = []
 
@@ -625,8 +625,8 @@ class Options
     #
     # @see #exclude_body
     #
-    def exclude_body?( body )
-        Options.exclude_body.each { |i| return true if body.to_s =~ i }
+    def exclude_page?( body )
+        Options.exclude_pages.each { |i| return true if body.to_s =~ i }
         false
     end
 
@@ -821,7 +821,7 @@ class Options
     alias :modules= :mods=
 
     # these options need to contain Array<Regexp>
-    [ :exclude_body, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
+    [ :exclude_pages, :include, :exclude, :lsmod, :lsrep, :lsplug ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
             instance_variable_set( "@#{m}".to_sym, arg )
@@ -862,10 +862,10 @@ class Options
             [ '--cookie-string'          , GetoptLong::REQUIRED_ARGUMENT ],
             [ '--user-agent',        '-b', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude',           '-e', GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--exclude-body',            GetoptLong::REQUIRED_ARGUMENT ],
-            [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--exclude-page',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-cookie',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--exclude-vector',          GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--include',           '-i', GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-req-limit',          GetoptLong::REQUIRED_ARGUMENT ],
             [ '--http-timeout',            GetoptLong::REQUIRED_ARGUMENT ],
             [ '--follow-subdomains', '-f', GetoptLong::NO_ARGUMENT ],
@@ -1065,17 +1065,17 @@ class Options
                     when '--exclude'
                         @exclude << Regexp.new( arg )
 
-                    when '--exclude-body'
-                        @exclude_body << Regexp.new( arg )
-
-                    when '--include'
-                        @include << Regexp.new( arg )
+                    when '--exclude-page'
+                        @exclude_pages << Regexp.new( arg )
 
                     when '--exclude-cookie'
                         @exclude_cookies << arg
 
                     when '--exclude-vector'
                         @exclude_vectors << arg
+
+                    when '--include'
+                        @include << Regexp.new( arg )
 
                     when '--follow-subdomains'
                         @follow_subdomains = true

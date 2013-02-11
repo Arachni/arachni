@@ -3,7 +3,7 @@
 ## _Under development_
 - Options
   - Added ```--https-only``` to disallow downgrades to HTTP when the seed URL uses HTTPS.
-  - Added ```--exclude-body``` to exclude pages whose bodies match the given patterns.
+  - Added ```--exclude-page``` to exclude pages whose bodies match the given patterns.
   - Added ```--version``` to show version info.
 - Updated exceptions thrown by the framework, removed ```Arachni::Exceptions```
     namespace and replaced it with the ```Arachni::Error``` base exception from

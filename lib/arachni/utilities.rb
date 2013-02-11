@@ -324,7 +324,7 @@ module Utilities
     def skip_page?( page_or_response )
         (Options.exclude_binaries? && !page_or_response.text?) ||
             skip_path?( page_or_response.url ) ||
-            Options.exclude_body?( page_or_response.body )
+            Options.exclude_page?( page_or_response.body )
     end
     alias :skip_response? :skip_page?
 
@@ -357,7 +357,7 @@ module Utilities
 
             else
                 if (s = resource.to_s) =~ /[\r\n]/
-                    Options.exclude_body? s
+                    Options.exclude_page? s
                 else
                     skip_path? s
                 end
