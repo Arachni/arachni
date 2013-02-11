@@ -47,11 +47,11 @@
 - Framework
   - Updated to retry a few times when the server fails to respond when trying to
         request a page for an audit.
-    - Failed requests returned by ```#failures```.
+      - Failed requests returned by ```#failures```.
   - The following methods have been updated to enforce scope criteria:
-    - ```#audit_page```
-    - ```#push_to_page_queue```
-    - ```#push_to_url_queue```
+      - ```#audit_page```
+      - ```#push_to_page_queue```
+      - ```#push_to_url_queue```
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:
@@ -76,11 +76,11 @@
 - Analysis techniques
   - Taint -- Updated to add remarks for issues that require verification.
   - Timeout -- Updated to dramatically decrease memory consumption and improve reliability/accuracy.
-    - No longer schedules element audits for the end of the scan but looks
+      - No longer schedules element audits for the end of the scan but looks
         for candidates along with the other audit requests.
-    - Candidates are verified at the end of each page audit.
-    - Makes sure that candidates are deduplicated upon discovery.
-    - Added a 3rd phase: Initial candidates which pass verification are verified again.
+      - Candidates are verified at the end of each page audit.
+      - Makes sure that candidates are deduplicated upon discovery.
+      - Added a 3rd phase: Initial candidates which pass verification are verified again.
 - Modules
   - General
       - Updated module names along with some descriptions and issue names.
