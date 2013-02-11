@@ -103,8 +103,8 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         {
             name:        'Timing attack anomalies',
             description: %q{Analyzes the scan results and logs issues that used timing attacks
-                while the affected web pages demonstrated an unusually high response time.
-                A situation which renders the logged issues inconclusive or (possibly) false positives.
+                while the affected web pages demonstrated an unusually high response time;
+                a situation which renders the logged issues inconclusive or (possibly) false positives.
 
                 Pages with high response times usually include heavy-duty processing
                 which makes them prime targets for Denial-of-Service attacks.},
