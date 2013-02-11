@@ -1,5 +1,6 @@
+<% trusted = issue.verification ? 'Untrusted' : 'Trusted' %>
     <div class="issue">
-        <h4>[<%=i+1%>] <%= issue.name %> ( Severity: <%= issue.severity %> )</h4>
+        <h4>[<%=i+1%>] <%= issue.name %> (<%= trusted %> &mdash; Severity: <%= issue.severity %>)</h4>
 
         <p> <em><%= escapeHTML(issue.description) %></em></p>
 

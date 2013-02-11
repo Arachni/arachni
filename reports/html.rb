@@ -244,7 +244,7 @@ class Arachni::Reports::HTML < Arachni::Report::Base
                 end
             end
 
-            if !anomalous?( anomalous_meta_results, issue )
+            if issue.trusted?
                 filtered_hashes << issue.digest
                 graph_data[:trust]['Trusted'] += 1
                 graph_data[:trusted_issues][issue.name]   ||= 0
@@ -260,30 +260,6 @@ class Arachni::Reports::HTML < Arachni::Report::Base
 
         end
 
-        graph_data[:severities].each do |severity, cnt|
-            graph_data[:severities][severity] ||= 0
-            begin
-                graph_data[:severities][severity] = ((cnt / Float( total_severities ) ) * 100).to_i
-            rescue
-            end
-        end
-
-        graph_data[:elements].each do |elem, cnt|
-            graph_data[:elements][elem] ||= 0
-            begin
-                graph_data[:elements][elem] = ((cnt / Float( total_elements ) ) * 100).to_i
-            rescue
-            end
-        end
-
-        graph_data[:verification].each do |verification, cnt|
-            graph_data[:verification][verification] ||= 0
-            begin
-                graph_data[:verification][verification] = ((cnt / Float( total_verifications ) ) * 100).to_i
-            rescue
-            end
-        end
-
         {
             graph_data:             graph_data,
             total_severities:       total_severities,
@@ -295,15 +271,6 @@ class Arachni::Reports::HTML < Arachni::Report::Base
             anomalous_meta_results: anomalous_meta_results
         }
 
-    end
-
-    def anomalous?( anomalous_meta_results, issue )
-        anomalous_meta_results.each_pair do |metaname, data|
-            data[:results].each do |m_issue|
-                return true if m_issue['hash'] == issue._hash
-            end
-        end
-        false
     end
 
 end

@@ -97,6 +97,7 @@
         report will be written under that directory using the default ```outfile```
         value as a filename.
     - Updated report descriptions.
+    - Updated to include Issue remarks.
 - Issues
     - Added attribute ```remarks``` holding a ```Hash``` of remarks about
         that issue with the entity which made the remark as _key_ and an ```Array```
