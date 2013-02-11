@@ -82,8 +82,6 @@
     - Makes sure that candidates are deduplicated upon discovery.
     - Added a 3rd phase: Initial candidates which pass verification are verified again.
 - Modules
-  - Added
-    - Auto-complete for password form fields.
   - General
       - Updated module names along with some descriptions and issue names.
       - Limited the maximum number of issues to 25 for the following recon modules:
@@ -92,6 +90,10 @@
         - E-mails
         - HTML-objects
         - Interesting Responses
+  - Added
+      - Auto-complete for password form fields.
+  - Removed
+      - ```xss_uri``` compatibility module.
 - Reports
     - If a directory has been passed as an ```outfile``` option the
         report will be written under that directory using the default ```outfile```
@@ -112,7 +114,6 @@
       - ```Arachni::Buffer::AutoFlush``` -- A buffer implementation which flushes
         itself when it gets full or a number of fill-up attempts is reached between flushes.
 - Removed
-      - ```xss_uri``` compatibility module.
       - Web User Interface -- The new interface is a
         [project of its own](https://github.com/Arachni/arachni-ui-web) and not
         part of the framework -- will appear in the packages only, not the Gems.
