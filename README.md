@@ -166,7 +166,7 @@ and straight-forward all the while providing power, performance and flexibility.
     expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
  - URL exclusion filter using regular expressions.
- - Page exclusion filter based on content, using on regular expressions.
+ - Page exclusion filter based on content, using regular expressions.
  - URL inclusion filter using regular expressions.
  - Can be forced to only follow HTTPS paths and not downgrade to HTTP.
  - Can optionally follow subdomains.
