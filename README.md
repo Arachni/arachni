@@ -165,9 +165,9 @@ and straight-forward all the while providing power, performance and flexibility.
  - Filters for redundant pages like galleries, catalogs, etc based on regular
     expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
- - URL exclusion filter using on regular expressions.
+ - URL exclusion filter using regular expressions.
  - Page exclusion filter based on content, using on regular expressions.
- - URL inclusion filter using on regular expressions.
+ - URL inclusion filter using regular expressions.
  - Can be forced to only follow HTTPS paths and not downgrade to HTTP.
  - Can optionally follow subdomains.
  - Adjustable link count limit.
