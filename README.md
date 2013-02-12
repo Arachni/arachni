@@ -147,7 +147,7 @@ and straight-forward all the while providing power, performance and flexibility.
  - Highlighted command line output.
  - UI abstraction:
     - Command line UI
-    - Web UI (Utilizing the Client - Dispatcher RPC infrastructure)
+    - [Web UI](https://github.com/Arachni/arachni-ui-web) (Utilizing the Client - Dispatcher RPC infrastructure)
  - Pause/resume functionality.
  - High performance asynchronous HTTP requests.
     - With adjustable concurrency.
@@ -223,7 +223,6 @@ Can extract and analyze:
         - Unvalidated redirects
         - XPath injection (Generic, PHP, Java, dotNET, libXML2)
         - Path XSS
-        - URI XSS
         - XSS
         - XSS in event attributes of HTML elements
         - XSS in HTML tags
@@ -250,6 +249,7 @@ Can extract and analyze:
         - Mixed Resource/Scripting
         - Insecure cookies
         - HttpOnly cookies
+        - Auto-complete for password form fields
 
 ### Report Management
 
@@ -301,8 +301,6 @@ Can extract and analyze:
         discovered issue and a summary at the end of the scan.
     - EmailNotify -- Sends a notification (and optionally a report) over SMTP at
         the end of the scan.
-    - Manual verification -- Flags issues that require manual verification as
-        untrusted in order to reduce the signal-to-noise ratio.
     - Resolver -- Resolves vulnerable hostnames to IP addresses.
     - VectorFeed -- Reads in vector data from which it creates elements to be
         audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
