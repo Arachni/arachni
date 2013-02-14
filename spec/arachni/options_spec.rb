@@ -466,29 +466,29 @@ describe Arachni::Options do
 
     describe '#exclude_pages=' do
         it 'should convert its param to an array of strings' do
-            exclude_body = %w(my_ignore my_other_ignore)
+            exclude_pages = %w(my_ignore my_other_ignore)
 
-            @opts.exclude_body = /test/
+            @opts.exclude_pages = /test/
             @opts.exclude_pages.should == [/test/]
 
-            @opts.exclude_body = exclude_body.first
-            @opts.exclude_pages.should == [Regexp.new( exclude_body.first )]
+            @opts.exclude_pages = exclude_pages.first
+            @opts.exclude_pages.should == [Regexp.new( exclude_pages.first )]
 
-            @opts.exclude_body = exclude_body
-            @opts.exclude_pages.should == exclude_body.map { |p| Regexp.new( p ) }
+            @opts.exclude_pages = exclude_pages
+            @opts.exclude_pages.should == exclude_pages.map { |p| Regexp.new( p ) }
         end
     end
 
     describe '#exclude_pages?' do
         context 'when the string matches one of the #ignore patterns' do
             it 'should return true' do
-                @opts.exclude_body = /test/
+                @opts.exclude_pages = /test/
                 @opts.exclude_page?( 'this is a test test test' ).should be_true
             end
         end
         context 'when the string does not match one of the #ignore patterns' do
             it 'should return false' do
-                @opts.exclude_body = /test/
+                @opts.exclude_pages = /test/
                 @opts.exclude_page?( 'this is a blah blah blah' ).should be_false
             end
         end
