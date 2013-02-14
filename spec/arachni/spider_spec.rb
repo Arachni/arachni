@@ -193,7 +193,7 @@ describe Arachni::Spider do
 
         context 'Options.exclude_pages' do
             it 'should skip pages which match the configured patterns' do
-                @opts.exclude_body = /skip me/i
+                @opts.exclude_pages = /skip me/i
                 @opts.url = @url + '/skip'
 
                 Arachni::Spider.new.run.should be_empty

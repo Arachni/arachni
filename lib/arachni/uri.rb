@@ -169,7 +169,8 @@ class URI
 
     #
     # Performs a parse that is less resource intensive than Ruby's URI lib's
-    # method while normalizing the URL (will also discard the fragment).
+    # method while normalizing the URL (will also discard the fragment and
+    # path parameters).
     #
     # *ATTENTION*: This method's results are cached for performance reasons.
     # If you plan on doing something destructive with its return value duplicate
@@ -290,6 +291,11 @@ class URI
             end
 
             components[:path] ||= components[:scheme] ? '/' : nil
+
+            # Remove path params
+            if components[:path]
+                components[:path] = components[:path].split( ';', 2 ).first
+            end
 
             components.values.each( &:freeze )
 

@@ -280,21 +280,13 @@ class Spider
         false
     end
 
-    def remove_path_params( url )
-        uri = ::Arachni::URI( url ).dup
-        uri.path = uri.path.split( ';' ).first.to_s
-        uri.to_s
-    rescue
-        nil
-    end
-
     #
     # @param    [String]    url
     #
     # @return   [Bool]  true if the url has already been visited, false otherwise
     #
     def visited?( url )
-        @visited.include?( remove_path_params( url ) )
+        @visited.include?( url )
     end
 
     # @return   [Bool]  true if the link-count-limit has been exceeded, false otherwise
@@ -424,11 +416,11 @@ class Spider
     end
 
     def visited( url )
-        @visited << remove_path_params( url )
+        @visited << url
     end
 
     def repush( url )
-        @visited.delete remove_path_params( url )
+        @visited.delete url
         push url
     end
 
