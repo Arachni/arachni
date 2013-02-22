@@ -289,6 +289,8 @@ module Utilities
         return true if !path
 
         parsed = uri_parse( path.to_s )
+        return true if parsed.mailto?
+
         begin
             return true if !include_path?( parsed )
             return true if exclude_path?( parsed )
