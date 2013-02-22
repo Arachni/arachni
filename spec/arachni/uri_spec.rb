@@ -482,4 +482,17 @@ describe Arachni::URI do
             end
         end
     end
+
+    describe '#mailto?' do
+        context 'when the URI has a mailto scheme' do
+            it 'should return true' do
+                @uri.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
+            end
+        end
+        context 'when the URI does not have a mailto scheme' do
+            it 'should return false' do
+                @uri.new( 'blah.com' ).mailto?.should be_false
+            end
+        end
+    end
 end

@@ -591,6 +591,10 @@ class URI
         include_subdomain ? other.host == host : other.domain == domain
     end
 
+    def mailto?
+        scheme == 'mailto'
+    end
+
     # @return   [String]    URL
     def to_s
         @parsed_url.to_s
