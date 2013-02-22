@@ -372,6 +372,41 @@ describe Arachni::Utilities do
     end
 
     describe '#follow_protocol?' do
+        context 'when the scheme is' do
+            context 'HTTP' do
+                it 'should return true' do
+                    @opts.url = 'https://test2.com/blah/ha'
+                    @opts.https_only = true
+
+                    url = 'https://test2.com/blah/ha'
+
+                    @utils.follow_protocol?( url ).should be_true
+                    @utils.skip_path?( url ).should be_false
+                end
+            end
+            context 'HTTPS' do
+                it 'should return true' do
+                    @opts.url = 'https://test2.com/blah/ha'
+                    @opts.https_only = true
+
+                    url = 'https://test2.com/blah/ha'
+
+                    @utils.follow_protocol?( url ).should be_true
+                    @utils.skip_path?( url ).should be_false
+                end
+            end
+            context 'other' do
+                it 'should return false' do
+                    @opts.url = 'http://test2.com/blah/ha'
+                    @opts.https_only = true
+
+                    url = 'stuff://test2.com/blah/ha'
+
+                    @utils.follow_protocol?( url ).should be_false
+                    @utils.skip_path?( url ).should be_true
+                end
+            end
+        end
         context 'when the reference URL uses' do
             context 'HTTPS' do
                 context 'and the checked URL uses' do

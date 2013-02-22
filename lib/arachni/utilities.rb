@@ -262,11 +262,12 @@ module Utilities
     #
     def follow_protocol?( url, reference = Options.url )
         return true if !reference
-        ref_scheme   = uri_parse( reference ).scheme
-
-        return true if ref_scheme && ref_scheme != 'https'
-
         check_scheme = uri_parse( url ).scheme
+
+        return false if !%(http https).include?( check_scheme.to_s.downcase )
+
+        ref_scheme   = uri_parse( reference ).scheme
+        return true if ref_scheme && ref_scheme != 'https'
         return true if ref_scheme == check_scheme
 
         !Options.https_only?
@@ -289,14 +290,13 @@ module Utilities
         return true if !path
 
         parsed = uri_parse( path.to_s )
-        return true if parsed.mailto?
 
         begin
+            return true if !follow_protocol?( parsed )
+            return true if !path_in_domain?( parsed )
+            return true if path_too_deep?( parsed )
             return true if !include_path?( parsed )
             return true if exclude_path?( parsed )
-            return true if path_too_deep?( parsed )
-            return true if !path_in_domain?( parsed )
-            return true if !follow_protocol?( parsed )
             false
         rescue => e
             ap e
