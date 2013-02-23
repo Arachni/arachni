@@ -2,10 +2,10 @@ module Msf
 
 class Plugin::Arachni < Msf::Plugin
 
-	###
+    ###
 	#
 	# This class implements an exploitation platform for web app vulnerabilities
-	# discovered by the Arachni WebApp Security Scaner Framework
+	# discovered by the Arachni WebApp Security Scanner Framework
 	# (http://github.com/Arachni/arachni)
 	#
 	###
@@ -39,20 +39,19 @@ class Plugin::Arachni < Msf::Plugin
 		# exploitable vulnerabilities and suitable exploits.
 		#
 		def cmd_arachni_load( *args )
-
 			metareport = args[0]
 
 			if !metareport
-				print_error( "Usage: arachni_load [metareport]" )
+				print_error "Usage: arachni_load [metareport]"
 				return
 			end
 
 			if !File.exist?( metareport )
-				print_error( "File '#{metareport}' doesn't exist." )
+				print_error "File '#{metareport}' doesn't exist."
 				return
 			end
 
-			print_status( "Loading report..." )
+			print_status "Loading report..."
 
 			@vulns    ||= []
 			@exploits ||= []
@@ -74,21 +73,20 @@ class Plugin::Arachni < Msf::Plugin
 
 			@vulns.uniq!
 
-			print_status( "Loaded #{@vulns.size} vulnerabilities." )
+			print_status "Loaded #{@vulns.size} vulnerabilities."
 
 			print_line
 			cmd_arachni_list_exploits
 			cmd_arachni_list_vulns
 			print_line
 
-			print_status( 'Done!' )
+			print_status 'Done!'
 		end
 
 		#
 		# Exploits all vulnerabilities
 		#
 		def cmd_arachni_autopwn( *args )
-
 			opts = {
 				:meterpreter => false,
 				:reverse     => false,
@@ -99,7 +97,7 @@ class Plugin::Arachni < Msf::Plugin
 
 			args.push( "-h" ) if args.empty?
 
-			while( !args.empty? && flag = args.shift )
+			while !args.empty? && (flag = args.shift)
 
 				case flag
 
@@ -126,60 +124,61 @@ class Plugin::Arachni < Msf::Plugin
 					opts[:regexp] = /.*/
 
 				else
-					print_error( 'Unknown option: ' + flag.to_s )
+					print_error 'Unknown option: ' + flag.to_s
 					return
 				end
 
 			end
 
 			if running?
-				print_error( "#{@jobs.size} pwn-jobs haven't finished yet." )
-				print_error( 'To kill them run: \'arachni_killall\'' )
+				print_error "#{@jobs.size} pwn-jobs haven't finished yet."
+				print_error 'To kill them run: \'arachni_killall\''
 				return
 			end
 
 
 			if !@vulns
-				print_error( 'You must first load a report using \'arachni_load\'.' )
+				print_error 'You must first load a report using \'arachni_load\'.'
 				return
 			end
 
 			if @vulns.empty?
-				print_error( 'No vulnerabilities to exploit.' )
+				print_error 'No vulnerabilities to exploit.'
 			end
 
-			print_status( 'Running pwn-jobs...' )
+			print_status 'Running pwn-jobs...'
 			print_line
 
 			@jobs ||= []
 			@vulns.each do |vuln|
-
 				next if opts[:regexp] && !(vuln[:exploit] =~ opts[:regexp])
 
-				@jobs << Thread.new( vuln, opts ) do |vulnerability, opts|
-					exploit( vulnerability, opts )
+				@jobs << Thread.new( vuln, opts ) do |vulnerability, c_opts|
+					exploit( vulnerability, c_opts )
 				end
 			end
 
 			# Wait on all the jobs we just spawned
-			while( !@jobs.empty? )
+			while !@jobs.empty?
 				# All running jobs are stored in framework.jobs.  If it's
 				# not in this list, it must have completed.
 				@jobs.delete_if { |j| !j.alive? }
 
-				print_status( "[#{framework.sessions.length} established sessions]):" +
-					" Waiting on #{@jobs.length} launched modules to finish execution..." )
+				print_status "[#{framework.sessions.length} established sessions]):" +
+					" Waiting on #{@jobs.length} launched modules to finish execution..."
+
 				::IO.select( nil, nil, nil, 5.0 )
 			end
 
 			print_line
-			print_status( "The autopwn command has completed with #{framework.sessions.length} sessions" )
-			if( framework.sessions.length > 0 )
-				print_status( "Enter sessions -i [ID] to interact with a given session ID" )
-				print_status( "" )
-				print_status( "=" * 80 )
+			print_status "The autopwn command has completed with #{framework.sessions.length} sessions"
+
+			if framework.sessions.length > 0
+				print_status "Enter sessions -i [ID] to interact with a given session ID"
+				print_status
+				print_status "=" * 80
 				driver.run_single( "sessions -l -v" )
-				print_status( "=" * 80 )
+				print_status "=" * 80
 			end
 
 		end
@@ -188,7 +187,7 @@ class Plugin::Arachni < Msf::Plugin
 		# Decides whether or not any pwn-jobs are running
 		#
 		def running?
-			return @jobs && !@jobs.empty?
+			@jobs && !@jobs.empty?
 		end
 
 		#
@@ -197,12 +196,12 @@ class Plugin::Arachni < Msf::Plugin
 		def cmd_arachni_killall
 
 			if !@jobs
-				print_error( "The pwn-job queue hasn't been initialised yet." )
+				print_error "The pwn-job queue hasn't been initialised yet."
 				return
 			end
 
 			if @jobs.empty?
-				print_info( "The pwn-job queue is empty." )
+				print_info "The pwn-job queue is empty."
 				return
 			end
 
@@ -212,8 +211,7 @@ class Plugin::Arachni < Msf::Plugin
 			end
 
 			@jobs.clear
-			print_status( "Killed #{cnt} pwn-jobs." )
-
+			print_status "Killed #{cnt} pwn-jobs."
 		end
 
 		#
@@ -230,12 +228,12 @@ class Plugin::Arachni < Msf::Plugin
 		def cmd_arachni_list_vulns
 
 			if !@vulns
-				print_error( 'You must first load a report using \'arachni_load\'.' )
+				print_error 'You must first load a report using \'arachni_load\'.'
 				return
 			end
 
 			if @vulns.empty?
-				print_error( 'No vulnerabilities to list.' )
+				print_error 'No vulnerabilities to list.'
 			end
 
 			@vulns.uniq!
@@ -254,16 +252,13 @@ class Plugin::Arachni < Msf::Plugin
 				]
 			)
 
-			indent = ""
 			@vulns.each_with_index do |vuln, idx|
-
 				vuln_table << [ idx + 1, vuln[:host], vuln[:path], vuln[:name],
 					vuln[:method], vuln[:params].to_s, vuln[:exploit] ]
 
 			end
 
-			print_line( "\n#{vuln_table.to_s}\n" )
-
+			print_line "\n#{vuln_table.to_s}\n"
 		end
 
 		#
@@ -273,46 +268,45 @@ class Plugin::Arachni < Msf::Plugin
 			idx = args[0]
 
 			if !idx
-				print_error( 'Usage: arachni_manual [ID]' )
-				print_line( 'Use \'arachni_vulns\' to see all available IDs.' )
+				print_error 'Usage: arachni_manual [ID]'
+				print_line 'Use \'arachni_vulns\' to see all available IDs.'
 				return
-			end
+            end
+
 			idx = idx.to_i
 			idx -= 1
 
 			if !@vulns
-				print_error( 'You must first load a report using \'arachni_load\'.' )
+				print_error 'You must first load a report using \'arachni_load\'.'
 				return
 			end
 
 			if @vulns.empty?
-				print_error( 'No vulnerabilities to exploit.' )
+				print_error 'No vulnerabilities to exploit.'
 			end
 
 			vuln = @vulns[idx]
 
 			if !vuln
-				print_error( "Invalid index: #{idx}" )
+				print_error "Invalid index: #{idx}"
 				cmd_arachni_list_vulns
 				return
 			end
 
 
-			print_status( "Using #{vuln[:exploit]} ." )
+			print_status "Using #{vuln[:exploit]} ."
 			driver.run_single( "use #{vuln[:exploit]}" )
 
 			prep_datastore( vuln ).each do |k, v|
-				v = '' if !v
 				driver.run_single( "set #{k} #{v}" )
 			end
 
-			print_status( "Done!" )
+			print_status "Done!"
 
 			begin
-
 				sploit = framework.modules.create( vuln[:exploit] )
+                return if sploit.type != 'exploit'
 				driver.run_single( "set PAYLOAD #{payload( sploit, vuln )}" )
-
 
 				payload_table = Rex::Ui::Text::Table.new(
 					'Header'  => "Compatible payloads",
@@ -324,24 +318,22 @@ class Plugin::Arachni < Msf::Plugin
 					payload_table << [ payload[0], payload[1].new.description ]
 				end
 			rescue
-				print_line( "\n#{payload_table.to_s}\n" )
-				print_line( "Use: set PAYLOAD <name>" )
+				print_line "\n#{payload_table.to_s}\n"
+				print_line "Use: set PAYLOAD <name>"
 			end
-
 		end
 
 		#
 		# Lists all suitable exploits
 		#
 		def cmd_arachni_list_exploits
-
 			if !@exploits
-				print_error( 'You must first load a report using \'arachni_load\'.' )
+				print_error 'You must first load a report using \'arachni_load\'.'
 				return
 			end
 
 			if @exploits.empty?
-				print_error( 'No exploits to list.' )
+				print_error 'No exploits to list.'
 			end
 
 			@exploits.uniq!
@@ -360,47 +352,43 @@ class Plugin::Arachni < Msf::Plugin
 			end
 
 			print_line( "\n#{exploit_table.to_s}\n" )
-
 		end
 
 		def help
-			print_status("Usage: arachni_autopwn [options]")
-			print_line("\t-h          Display this help text")
-			print_line("\t-x [regexp] Only run modules whose name matches the regex")
-			print_line("\t-a          Launch exploits against all matched targets")
-			# print_line("\t-s          Stop on first shell")
-			print_line("\t-r          Use a reverse connect shell")
-			print_line("\t-b          Use a bind shell on a random port (default)")
-			print_line("\t-m          Use a meterpreter shell (if possible)")
-			print_line("\t-q          Disable exploit module output")
-			print_line("")
+			print_status "Usage: arachni_autopwn [options]"
+			print_line "\t-h          Display this help text"
+			print_line "\t-x [regexp] Only run modules whose name matches the regex"
+			print_line "\t-a          Launch exploits against all matched targets"
+			# print_line "\t-s          Stop on first shell"
+			print_line "\t-r          Use a reverse connect shell"
+			print_line "\t-b          Use a bind shell on a random port  default"
+			print_line "\t-m          Use a meterpreter shell  if possible"
+			print_line "\t-q          Disable exploit module output"
+			print_line
 		end
 
 		#
 		# Exploits a vulnerability based on user opts
 		#
 		def exploit( vuln, opts )
+			sploit = framework.modules.create( vuln[:exploit] )
 
-			sploit =  framework.modules.create( vuln[:exploit] )
-
-			print_status( "Running #{sploit.fullname}" )
+			print_status "Running #{sploit.fullname}"
 
 			sploit.datastore.merge!( prep_datastore( vuln ) )
 
 			sploit.exploit_simple(
-			'Payload'        => payload( sploit, opts ),
-			'LocalInput'     => opts[:quiet] ? nil : driver.input,
-			'LocalOutput'    => opts[:quiet] ? nil : driver.output,
-			'RunAsJob'       => false
+                'Payload'        => payload( sploit, opts ),
+                'LocalInput'     => opts[:quiet] ? nil : driver.input,
+                'LocalOutput'    => opts[:quiet] ? nil : driver.output,
+                'RunAsJob'       => false
 			)
-
 		end
 
 		#
 		# Determines the most suitable payload for an exploit based on user opts
 		#
 		def payload( sploit, opts )
-
 			# choose best payloads for a reverse shells
 			if opts[:reverse]
 
@@ -440,7 +428,7 @@ class Plugin::Arachni < Msf::Plugin
 				end
 			end
 
-			return payloads[sploit.fullname]
+			payloads[sploit.fullname]
 		end
 
 		#
@@ -448,14 +436,13 @@ class Plugin::Arachni < Msf::Plugin
 		# based on the provided vulnerability
 		#
 		def prep_datastore( vuln )
-
 			cvuln = vuln.dup
 
 			uri  = cvuln[:host]
 			uri += cvuln[:path]  if cvuln[:path]
 			uri += cvuln[:query] if cvuln[:query]
 
-			print_status( "Preparing datastore for '#{cvuln[:name]}' vulnerability @ #{uri} ..." )
+			print_status "Preparing datastore for '#{cvuln[:name]}' vulnerability @ #{uri} ..."
 
 			datastore = {}
 			datastore["SRVHOST"] = "127.0.0.1"
@@ -468,52 +455,54 @@ class Plugin::Arachni < Msf::Plugin
 			datastore["SSL"]     = cvuln[:ssl]
 
 			case cvuln[:method]
-			when 'GET'
-				datastore["GET"]  = hash_to_query( cvuln[:params] )
-			when 'POST'
-				datastore["POST"] = hash_to_query( cvuln[:params] )
+                when 'GET'
+                    datastore["GET"]  = hash_to_query( cvuln[:params] )
+                when 'POST'
+                    datastore["POST"] = hash_to_query( cvuln[:params] )
 			end
 
 			datastore["METHOD"]   = cvuln[:method]
-
 			datastore["COOKIES"]  = cvuln[:headers]['cookie']
+
 			headers = cvuln[:headers]
 			headers.delete( 'cookie' )
 
 			datastore["HEADERS"] = hash_to_query( headers, '::' )
 			datastore["PATH"]    = cvuln[:path]
 
-			return datastore.dup
+			datastore.dup
 		end
 
 		#
 		# Splits and converts a query string into a hash
 		#
 		def hash_to_query( hash, glue = '&' )
-			return hash.to_a.map do |item|
+			hash.to_a.map do |item|
 				next if !item[1]
 				"#{item[0]}=#{item[1]}"
 			end.reject do |i| !i end.join( glue )
 		end
 
-	end
+    end
 
-	def initialize( framework, opts )
-		super
-		# console dispatcher commands.
-		add_console_dispatcher( ArachniCommandDispatcher )
-		framework.modules.add_module_path(File.join(File.dirname(__FILE__),"arachni","modules")).each do |m|
-                        print_good("Added #{m.last} #{m.first.capitalize} modules for Arachni")
-                end
-	end
+    def initialize( framework, opts )
+        super
+        # console dispatcher commands.
+        add_console_dispatcher( ArachniCommandDispatcher )
+        framework.modules.
+            add_module_path( File.join( File.dirname( __FILE__ ), 'arachni', 'modules' ) ).each do |m|
+            print_good "Added #{m.last} #{m.first.capitalize} modules for Arachni"
+        end
+    end
 
-	def cleanup
+    def cleanup
 		remove_console_dispatcher( 'Arachni' )
-		framework.modules.remove_module_path(File.join(File.dirname(__FILE__),"arachni","modules"))
+		framework.modules.
+            remove_module_path( File.join( File.dirname( __FILE__ ), 'arachni', 'modules' ) )
 	end
 
 	def name
-		"arachni"
+		'arachni'
 	end
 
 	def desc

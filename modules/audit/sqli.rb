@@ -79,8 +79,7 @@ class Arachni::Modules::SQLInjection < Arachni::Module::Base
                 cvssv2:          '9.0',
                 remedy_guidance: 'User inputs must be validated and filtered
     before being included in database queries.',
-                remedy_code:     '',
-                metasploitable:  'unix/webapp/arachni_sqlmap'
+                metasploitable:  'auxiliary/arachni_sqlmap'
             }
         }
     end
