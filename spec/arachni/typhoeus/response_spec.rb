@@ -39,17 +39,67 @@ describe Typhoeus::Response do
     end
 
     describe '#text?' do
-        context 'when the response is text based' do
-            it 'should return true' do
-                h = { headers_hash: { 'content-type' => 'text/html' } }
-                Typhoeus::Response.new( h ).text?.should be_true
+        context 'when the content-type is' do
+            context 'text/*' do
+                it 'should return true' do
+                    h = {
+                        headers_hash: { 'Content-Type' => 'text/stuff' },
+                        body:         "stuff"
+                    }
+                    Typhoeus::Response.new( h ).text?.should be_true
+                end
             end
-        end
 
-        context 'when the response is not text based' do
-            it 'should return false' do
-                h = { headers_hash: { 'content-type' => 'stuff/blah' } }
-                Typhoeus::Response.new( h ).text?.should be_false
+            context 'application/*' do
+                context 'and the response body is' do
+                    context 'binary' do
+                        it 'should return false' do
+                            h = {
+                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                body:         "\00\00\00"
+                            }
+                            Typhoeus::Response.new( h ).text?.should be_false
+                        end
+                    end
+
+                    context 'text' do
+                        it 'should return true' do
+                            h = {
+                                headers_hash: { 'Content-Type' => 'application/stuff' },
+                                body:         "stuff"
+                            }
+                            Typhoeus::Response.new( h ).text?.should be_true
+                        end
+                    end
+                end
+            end
+
+            context 'other' do
+                it 'should return false' do
+                    h = {
+                        headers_hash: { 'Content-Type' => 'blah/stuff' },
+                        body:         "stuff"
+                    }
+                    Typhoeus::Response.new( h ).text?.should be_false
+                end
+            end
+
+            context nil do
+                context 'and the response body is' do
+                    context 'binary' do
+                        it 'should return false' do
+                            h = { body: "\00\00\00" }
+                            Typhoeus::Response.new( h ).text?.should be_false
+                        end
+                    end
+
+                    context 'text' do
+                        it 'should return true' do
+                            h = { body: "stuff" }
+                            Typhoeus::Response.new( h ).text?.should be_true
+                        end
+                    end
+                end
             end
         end
     end

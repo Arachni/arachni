@@ -22,7 +22,7 @@ class Response
     alias :old_initialize :initialize
     def initialize( *args )
         old_initialize( *args )
-        @body = @body.recode if @body && content_type.to_s.start_with?( 'text/' )
+        @body = @body.recode if text?
     end
 
     def []( k )
@@ -38,13 +38,23 @@ class Response
     end
 
     def text?
-        type = content_type
-        return false if !type
-        type.to_s.start_with?( 'text/' )
+        return if !@body
+
+        if type = content_type
+            return true if type.start_with?( 'text/' )
+
+            # Non "application/" content types will surely not be text-based
+            # so bail out early.
+            return false if !type.start_with?( 'application/' )
+        end
+
+        # Last resort, more resource intensive binary detection.
+        !@body.binary?
     end
 
     def content_type
-        find_header_value( 'content-type' )
+        ct = find_header_value( 'content-type' )
+        ct.is_a?( Array ) ? ct.last : ct
     end
 
     def location
@@ -70,6 +80,7 @@ class Response
     end
 
     private
+
     def find_header_value( field )
         return if !headers_hash.is_a?( Hash ) || headers_hash[field].empty?
         headers_hash.to_hash.each { |k, v| return v if k.downcase == field.downcase }
