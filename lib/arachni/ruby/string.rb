@@ -108,4 +108,9 @@ class String
         dup.recode!
     end
 
+    def binary?
+        s = split( // )
+        ((s.size - s.grep( ' '..'~' ).size) / s.size.to_f) > 0.30
+    end
+
 end

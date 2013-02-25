@@ -74,4 +74,19 @@ describe String do
         end
     end
 
+    describe '#binary?' do
+        context 'when the content is' do
+            context 'binary' do
+                it 'should return true' do
+                    "\ff\ff\ff".binary?.should be_true
+                end
+            end
+            context 'text' do
+                it 'should return false' do
+                    'test'.binary?.should be_false
+                end
+            end
+        end
+    end
+
 end
