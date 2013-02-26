@@ -43,7 +43,7 @@
 - Trainer -- Added a hard-limit for trainings per page to avoid time-consuming loops.
 - Spider
   - Updated to retry a few times when the server fails to respond.
-    - Failed requests returned by ```#failures```.
+      - Failed requests returned by ```#failures```.
 - Framework
   - Updated to retry a few times when the server fails to respond when trying to
         request a page for an audit.
@@ -55,8 +55,8 @@
 - HTTP
   - Fixed corruption of binary response bodies due to aggressive sanitization.
   - Custom-404 page detection updated to:
-    - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
-    - Keep a limited cache of signatures to lower memory consumption.
+      - Fallback to a word-difference ratio of the refined responses if straight comparison fails.
+      - Keep a limited cache of signatures to lower memory consumption.
 - ```Arachni::Element::Capabilities::Auditable```
   - Added ```#use_anonymous_auditor``` to alleviate the need of assigning
     a custom auditor when scripting.
@@ -85,14 +85,14 @@
   - General
       - Updated module names along with some descriptions and issue names.
       - Limited the maximum number of issues to 25 for the following recon modules:
-        - Captcha
-        - CVS/SVN users
-        - E-mails
-        - HTML-objects
-        - Interesting Responses
+          - Captcha
+          - CVS/SVN users
+          - E-mails
+          - HTML-objects
+          - Interesting Responses
       - XSS in script tag
-        - Requires manual verification -- Arachni can't inspect the JS runtime.
-        - Added remark to inform users about the above.
+          - Requires manual verification -- Arachni can't inspect the JS runtime.
+          - Added remark to inform users about the above.
   - Added
       - Auto-complete for password form fields.
   - Removed
