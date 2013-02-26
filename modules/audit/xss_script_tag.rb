@@ -28,6 +28,10 @@
 #
 class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
 
+    REMARK = 'Arachni cannot inspect the JavaScript runtime in order to' +
+        'determine the real effects of the injected seed, a human needs to inspect' +
+        'this issue to determine its validity.'
+
     def self.strings
         @strings ||= [
             "arachni_xss_in_script_tag_#{seed}",
@@ -59,7 +63,9 @@ class Arachni::Modules::XSSScriptTag < Arachni::Module::Base
                 return
             end
 
-            opts[:match] = html_elem.to_s
+            opts[:match]        = html_elem.to_s
+            opts[:verification] = true
+            opts[:remarks]      =  { module: [ REMARK ] }
             log( opts, res )
         end
     end

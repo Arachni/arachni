@@ -90,6 +90,9 @@
         - E-mails
         - HTML-objects
         - Interesting Responses
+      - XSS in script tag
+        - Requires manual verification -- Arachni can't inspect the JS runtime.
+        - Added remark to inform users about the above.
   - Added
       - Auto-complete for password form fields.
   - Removed
