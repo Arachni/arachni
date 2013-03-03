@@ -97,6 +97,11 @@
       - Auto-complete for password form fields.
   - Removed
       - ```xss_uri``` compatibility module.
+- Plugin
+    - Proxy
+        - Added the ```session_token``` option allowing users to restrict access
+            to their proxy session using a configurable token.
+        - Updated panel and control URLs.
 - Reports
     - If a directory has been passed as an ```outfile``` option the
         report will be written under that directory using the default ```outfile```
