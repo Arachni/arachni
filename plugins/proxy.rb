@@ -572,7 +572,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                 WARNING:
                     The 'session_token' option is not a way to secure usage of
                     this proxy but rather a way to restrict usage enough to avoid
-                    users from unwittingly interfering with each others' sessions.},
+                    users unwittingly interfering with each others' sessions.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
             version:     '0.2.1',
             options:     [
