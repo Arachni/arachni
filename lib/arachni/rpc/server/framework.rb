@@ -193,23 +193,25 @@ class Framework < ::Arachni::Framework
     # @return   [Bool]  +false+ if already running, +true+ otherwise.
     #
     def run( type = nil )
-        # return if we're already running
+        # Return if we're already running.
         return false if extended_running?
 
         @extended_running = true
 
-        # prepare the local instance (runs plugins and starts the timer)
+        # Prepare the local instance (runs plugins and starts the timer).
         prepare
 
         #
-        # if we're in HPG mode do fancy stuff like distributing and balancing workload
-        # as well as starting slave instances and deal with some lower level
-        # operations of the local instance like running plug-ins etc...
+        # If we're in HPG mode (and we're the master) do fancy stuff like
+        # distributing and balancing workload as well as starting slave
+        # instances and deal with some lower level operations of the local
+        # instance like running plug-ins etc.
         #
-        # otherwise just run the local instance, nothing special...
+        # Otherwise, just run the local instance, nothing special...
         #
         if master?
 
+            # We can't block RPC methods.
             ::Thread.new {
 
                 #
@@ -217,30 +219,32 @@ class Framework < ::Arachni::Framework
                 # things are going to get weird...
                 #
 
-                # we'll need analyze the pages prior to assigning
+                # We'll need analyze the pages prior to assigning
                 # them to each instance at the element level so as to gain
-                # more granular control over the assigned workload
+                # more granular control over the assigned workload.
                 #
-                # put simply, we'll need to perform some magic in order
+                # Put simply, we'll need to perform some magic in order
                 # to prevent different instances from auditing the same elements
-                # and wasting bandwidth
+                # and wasting bandwidth.
                 #
-                # for example: search forms, logout links and the like will
+                # For example: Search forms, logout links and the like will
                 # most likely exist on most pages of the site and since each
                 # instance is assigned a set of URLs/pages to audit they will end up
                 # with common elements so we have to prevent instances from
                 # performing identical checks.
                 #
-                # interesting note: should previously unseen elements dynamically
+                # Interesting note: Should previously unseen elements dynamically
                 # appear during the audit they will override these restrictions
                 # and each instance will audit them at will.
                 #
 
-                # we need to take our cues from the local framework as some
+                # We need to take our cues from the local framework as some
                 # plug-ins may need the system to wait for them to finish
                 # before moving on.
                 sleep( 0.2 ) while paused?
 
+                # Prepare a block to process each Dispatcher and request
+                # slave instances from it.
                 each = proc do |d_url, iterator|
                     if ignore_grid?
                         iterator.next
@@ -259,10 +263,14 @@ class Framework < ::Arachni::Framework
                         end
                 end
 
+                # Prepare a block to process the slave instances and start the scan.
                 after = proc do
                     @status = :crawling
 
                     spider.on_each_page do |page|
+
+                        # We need to restrict the scope of our audit to the
+                        # pages our crawler discovered.
                         update_element_ids_per_page(
                             { page.url => build_elem_list( page ) },
                             @local_token
@@ -271,16 +279,19 @@ class Framework < ::Arachni::Framework
                         @local_sitemap << page.url
                     end
 
-                    # start the crawl and extract all paths
                     spider.on_complete do
+
+                        # Start building a whitelist of elements using their IDs.
                         element_ids_per_page = @element_ids_per_page
 
                         @override_sitemap |= spider.sitemap
 
+
+                        # Guess what we're doing now...
                         @status = :distributing
 
-                        # the plug-ins may have updated the page queue
-                        # so we need to distribute these pages as well
+                        # The plug-ins may have updated the page queue so we
+                        # need to take these pages into account as well.
                         page_a = []
                         while !@page_queue.empty? && page = @page_queue.pop
                             page_a << page
@@ -288,33 +299,33 @@ class Framework < ::Arachni::Framework
                             element_ids_per_page[page.url] |= build_elem_list( page )
                         end
 
-                        # split the URLs of the pages in equal chunks
+                        # Split the URLs of the pages in equal chunks.
                         chunks    = split_urls( element_ids_per_page.keys,
                                                 @instances.size + 1 )
                         chunk_cnt = chunks.size
 
                         if chunk_cnt > 0
-                            # split the page array into chunks that will be
-                            # distributed across the instances
+                            # Split the page array into chunks that will be
+                            # distributed across the instances.
                             page_chunks = page_a.chunk( chunk_cnt )
 
-                            # assign us our fair share of plug-in discovered pages
+                            # Assign us our fair share of plug-in discovered pages.
                             update_page_queue( page_chunks.pop, @local_token )
 
-                            # remove duplicate elements across the (per instance)
-                            # chunks while spreading them out evenly
+                            # Remove duplicate elements across the (per instance)
+                            # chunks while spreading them out evenly.
                             elements = distribute_elements( chunks,
                                                             element_ids_per_page )
 
-                            # restrict the local instance to its assigned elements
+                            # Restrict the local instance to its assigned elements.
                             restrict_to_elements( elements.pop, @local_token )
 
-                            # set the URLs to be audited by the local instance
+                            # Set the URLs to be audited by the local instance.
                             @opts.restrict_paths = chunks.pop
 
                             chunks.each_with_index do |chunk, i|
-                                # spawn a remote instance, assign a chunk of URLs
-                                # and elements to it and run it
+                                # Distribute the audit workload tell the slaves
+                                # to have at it.
                                 distribute_and_run( @instances[i],
                                                    urls:     chunk,
                                                    elements: elements.pop,
@@ -323,7 +334,7 @@ class Framework < ::Arachni::Framework
                             end
                         end
 
-                        # start the local instance
+                        # Start the local instance's audit.
                         Thread.new {
                             audit
 
@@ -333,23 +344,25 @@ class Framework < ::Arachni::Framework
                         }
                     end
 
+                    # Let crawlers know of each other and start the scan.
                     spider.update_peers( @instances ){ spider.run }
                 end
 
-                # get the Dispatchers with unique Pipe IDs
-                # in order to take advantage of line aggregation
+                # Get the Dispatchers with unique Pipe IDs
+                # in order to take advantage of line aggregation.
                 preferred_dispatchers do |pref_dispatchers|
                     iterator_for( pref_dispatchers ).each( each, after )
                 end
 
             }
         else
-            # start the local instance
+            # Start the local instance (we can't block the RPC that's why we're
+            # using a Thread).
             Thread.new {
                 audit
 
                 if slave?
-                    # make sure we've reported all issues
+                    # Make sure we've reported all issues back to the master.
                     flush_issue_buffer do
                         @master.framework.slave_done( self_url, master_priv_token ) do
                             @extended_running = false
