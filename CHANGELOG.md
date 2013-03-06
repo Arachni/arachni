@@ -113,6 +113,8 @@
         that issue with the entity which made the remark as _key_ and an ```Array```
         of remarks as _value_.
     - Added method ```#add_remark```, allowing new remarks to be added to the ```Issue```.
+- Executables
+    - ```arachni_script``` -- Updated to expect a single script and pass ARGV along.
 - Added
   - Cache
       - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
