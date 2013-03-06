@@ -26,18 +26,18 @@ include UI::Output
 
 Options.parse( false )
 
-if Options.help
+if Options.help || ARGV.empty?
     puts <<EOHELP
 #{BANNER}
 
 
-Usage: #{__FILE__} file1 [file2] [..]
+Usage: #{__FILE__} <script>
 
-Pre-loads Arachni's libraries and loads and runs a series of Ruby scripts.
+Pre-loads Arachni's libraries and loads and runs a Ruby script.
 
 (Call the 'mute' method to mute framework output.)
 EOHELP
     exit
 end
 
-ARGV.each { |script| load script }
+load ARGV.shift
