@@ -48,6 +48,27 @@ class Framework < ::Arachni::Framework
     include Utilities
     include Distributor
 
+    #
+    # {RPC::Server::Framework} error namespace.
+    #
+    # All {RPC::Server::Framework} errors inherit from and live under it.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Framework::Error
+
+        #
+        # Raised when an option is nor supported for whatever reason.
+        #
+        # For example, {Options#restrict_paths} isn't supported when in
+        # HPG mode.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+        #
+        class UnsupportedOption < Error
+        end
+    end
+
     # Make these inherited methods visible again.
     private :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
             :list_plugins, :version, :revision, :status, :clean_up!, :report_as
@@ -195,6 +216,11 @@ class Framework < ::Arachni::Framework
     def run( type = nil )
         # Return if we're already running.
         return false if extended_running?
+
+        if master? && @opts.restrict_paths.any?
+            fail Error::UnsupportedOption,
+                 'Option \'restrict_paths\' is not supported when in High-Performance mode.'
+        end
 
         @extended_running = true
 

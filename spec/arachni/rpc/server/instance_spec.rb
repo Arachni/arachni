@@ -198,52 +198,6 @@ describe Arachni::RPC::Server::Instance do
             end
 
             describe :spawns do
-                context 'when it has a Dispatcher who is a Grid member' do
-                    it 'should request its slaves from it' do
-                        instance = @get_grid_instance.call
-
-                        instance.service.scan(
-                            url:         server_url_for( :framework_simple ),
-                            audit_links: true,
-                            audit_forms: true,
-                            modules:     :test,
-                            spawns:      4,
-                            grid:        true
-                        )
-
-                        # if a scan in already running it should just bail out early
-                        instance.service.scan.should be_false
-
-                        sleep 1 while instance.service.busy?
-
-                        # Since we've only got 2 Dispatchers in the Grid.
-                        instance.framework.progress_data['instances'].size.should == 2
-
-                        instance.service.busy?.should  == instance.framework.busy?
-                        instance.service.status.should == instance.framework.status
-
-                        i_report = instance.service.report
-                        f_report = instance.framework.report
-
-                        i_report.should == f_report
-                        i_report['issues'].should be_any
-                    end
-                    it 'should raise an exception when it is less than 1' do
-                        instance = @get_grid_instance.call
-
-                        raised = false
-                        begin
-                            instance.service.scan(
-                                url:  server_url_for( :framework_simple ),
-                                grid: true
-                            )
-                        rescue => e
-                            raised = e.rpc_exception?
-                        end
-
-                        raised.should be_true
-                    end
-                end
                 context 'when it has a Dispatcher' do
                     it 'should request its slaves from it' do
                         instance = @get_grid_instance.call
@@ -271,6 +225,78 @@ describe Arachni::RPC::Server::Instance do
 
                         i_report.should == f_report
                         i_report['issues'].should be_any
+                    end
+
+                    context 'which is a Grid member' do
+                        it 'should request its slaves from it' do
+                            instance = @get_grid_instance.call
+
+                            instance.service.scan(
+                                url:         server_url_for( :framework_simple ),
+                                audit_links: true,
+                                audit_forms: true,
+                                modules:     :test,
+                                spawns:      4,
+                                grid:        true
+                            )
+
+                            # if a scan in already running it should just bail out early
+                            instance.service.scan.should be_false
+
+                            sleep 1 while instance.service.busy?
+
+                            # Since we've only got 2 Dispatchers in the Grid.
+                            instance.framework.progress_data['instances'].size.should == 2
+
+                            instance.service.busy?.should  == instance.framework.busy?
+                            instance.service.status.should == instance.framework.status
+
+                            i_report = instance.service.report
+                            f_report = instance.framework.report
+
+                            i_report.should == f_report
+                            i_report['issues'].should be_any
+                        end
+
+                        context 'when it is less than 1' do
+                            it 'should raise an exception' do
+                                instance = @get_grid_instance.call
+
+                                raised = false
+                                begin
+                                    instance.service.scan(
+                                        url:  server_url_for( :framework_simple ),
+                                        grid: true
+                                    )
+                                rescue => e
+                                    raised = e.rpc_exception?
+                                end
+
+                                raised.should be_true
+                            end
+                        end
+
+                        context 'when Options#restrict_to_paths is set' do
+                            it 'should raise an exception' do
+                                instance = @get_grid_instance.call
+                                url      = server_url_for( :framework_simple )
+
+                                raised = false
+                                begin
+                                    instance.service.scan(
+                                        url:            url,
+                                        grid:           true,
+                                        spawns:         4,
+                                        restrict_paths: [url]
+                                    )
+                                rescue => e
+                                    raised = e.rpc_exception?
+                                end
+
+                                raised.should be_true
+                            end
+                        end
+
                     end
                 end
                 context 'when it does not have a Dispatcher' do

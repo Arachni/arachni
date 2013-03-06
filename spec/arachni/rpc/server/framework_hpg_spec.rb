@@ -153,6 +153,23 @@ describe Arachni::RPC::Server::Framework do
         end
     end
     describe '#run' do
+        context 'when Options#restrict_to_paths is set' do
+            it 'should fail with exception' do
+                instance = @get_instance.call
+                instance.opts.url = server_url_for( :framework_hpg )
+                instance.opts.restrict_paths = [instance.opts.url]
+                instance.modules.load( 'taint' )
+
+                raised = false
+                begin
+                    instance.framework.run
+                rescue Arachni::RPC::Exceptions::RemoteException
+                    raised = true
+                end
+                raised.should be_true
+            end
+        end
+
         it 'should perform a scan' do
             instance = @instance_clean
             instance.opts.url = server_url_for( :framework_hpg )
@@ -175,12 +192,7 @@ describe Arachni::RPC::Server::Framework do
     end
     describe '#stats' do
         it 'should return a hash containing general runtime statistics' do
-            instance = @instance_clean
-            instance.opts.url = server_url_for( :framework_hpg )
-            instance.modules.load( 'taint' )
-            instance.framework.run.should be_true
-
-            stats = instance.framework.stats
+            stats = @instance_clean.framework.stats
             stats.keys.should == @stat_keys
             @stat_keys.each { |k| stats[k].should be_true }
         end

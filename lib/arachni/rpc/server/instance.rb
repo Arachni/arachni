@@ -237,13 +237,26 @@ class Instance
             return false
         end
 
-        @scan_initializing = true
         opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
+        slaves  = opts[:slaves] || []
+        spawn_count = opts[:spawns].to_i
 
         if opts[:plugins] && opts[:plugins].is_a?( Array )
             opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
         end
 
+        if opts[:grid] && spawn_count <= 0
+            fail ArgumentError,
+                 'Spawn count (:spawns) must be more than 1 for Grid scans.'
+        end
+
+        if (opts[:grid] || spawn_count > 0) &&
+            [opts[:restrict_paths]].flatten.compact.any?
+            fail ArgumentError,
+                 'Option \'restrict_paths\' is not supported when in High-Performance mode.'
+        end
+
+        @scan_initializing = true
         @framework.opts.set( opts )
 
         @framework.update_page_queue( opts[:pages] || [] )
@@ -256,18 +269,10 @@ class Instance
         each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
         after = proc { block.call @framework.run; @scan_initializing = false }
 
-        slaves  = opts[:slaves] || []
-
-        spawn_count = opts[:spawns].to_i
-
         # If the Dispatchers are in a Grid config but the user has not requested
         # a Grid scan force the framework to ignore the Grid and work with
         # the instances we give it.
         @framework.ignore_grid if has_dispatcher? && !opts[:grid]
-
-        if opts[:grid] && spawn_count <= 0
-            raise ArgumentError, 'Spawn count (:spawns) must be more than 1 for Grid scans.'
-        end
 
         # If a Grid scan has been selected then just set us as the master
         # and set the spawn count as max slaves.

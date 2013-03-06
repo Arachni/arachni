@@ -68,6 +68,19 @@ class Framework
     include Utilities
     include Mixins::Observable
 
+    #
+    # {Framework} error namespace.
+    #
+    # All {Framework} errors inherit from and live under it.
+    #
+    # When I say Framework I mean the {Framework} class, not the
+    # entire Arachni Framework.
+    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+    #
+    class Error < Arachni::Error
+    end
+
     # The version of this class.
     REVISION = '0.2.8'
 
