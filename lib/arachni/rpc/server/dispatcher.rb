@@ -203,7 +203,7 @@ class Dispatcher
     #   Lower is better.
     #
     def workload_score
-        score = ((sz = running_jobs.size) > 0 ? sz : 1).to_f
+        score = (running_jobs.size + 1).to_f
         score *= @node.info['weight'].to_f if @node.info['weight']
         score
     end

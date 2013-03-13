@@ -114,7 +114,7 @@ describe Arachni::RPC::Server::Dispatcher do
     describe '#workload_score' do
         it 'should return a float signifying the amount of workload' do
             @dispatcher.workload_score.should ==
-                @dispatcher.running_jobs.size * @opts.weight
+                ((@dispatcher.running_jobs.size + 1) * @opts.weight).to_f
         end
     end
 
