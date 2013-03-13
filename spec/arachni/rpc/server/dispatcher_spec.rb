@@ -97,6 +97,27 @@ describe Arachni::RPC::Server::Dispatcher do
         end
     end
 
+    describe '#running_jobs' do
+        it 'should return proc info for running jobs' do
+            @dispatcher.running_jobs.size.should ==
+                @dispatcher.jobs.reject { |job| job['proc'].empty? }.size
+        end
+    end
+
+    describe '#finished_jobs' do
+        it 'should return proc info for finished jobs' do
+            @dispatcher.finished_jobs.size.should ==
+                @dispatcher.jobs.select { |job| job['proc'].empty? }.size
+        end
+    end
+
+    describe '#workload_score' do
+        it 'should return a float signifying the amount of workload' do
+            @dispatcher.workload_score.should ==
+                @dispatcher.running_jobs.size * @opts.weight
+        end
+    end
+
     describe '#stats' do
         it 'should return general statistics' do
             jobs = @dispatcher.jobs
@@ -113,7 +134,7 @@ describe Arachni::RPC::Server::Dispatcher do
 
             stats['neighbours'].is_a?( Array ).should be_true
 
-            stats['node'].delete( 'score' ).is_a?( Float ).should be_true
+            stats['node'].delete( 'score' ).should == @dispatcher.workload_score
             stats['node'].should == @node_info
         end
     end

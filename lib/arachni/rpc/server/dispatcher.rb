@@ -173,38 +173,54 @@ class Dispatcher
         end
     end
 
-    #
-    # Returns proc info for all jobs
-    #
-    # @return   [Array<Hash>]
-    #
+    # @return   [Array<Hash>]   Returns proc info for all jobs.
     def jobs
         @jobs.map { |cjob| job( cjob['pid'] ) }.compact
     end
 
     #
-    # Returns server stats regarding the jobs and pool
+    # @return   [Array<Hash>]   Returns proc info for all running jobs.
     #
-    # @return   [Hash]
+    # @see #jobs
     #
-    def stats
-        cjobs    = jobs( )
-        running  = cjobs.reject { |job| job['proc'].empty? }
-        finished = cjobs - running
+    def running_jobs
+        jobs.reject { |job| job['proc'].empty? }
+    end
 
+    #
+    # @return   [Array<Hash>]   Returns proc info for all finished jobs.
+    #
+    # @see #jobs
+    #
+    def finished_jobs
+        jobs.select { |job| job['proc'].empty? }
+    end
+
+    # @return   [Float]
+    #   Workload score for this Dispatcher, calculated using the number
+    #   of {#running_jobs} and the configured node weight.
+    #
+    #   Lower is better.
+    #
+    def workload_score
+        score = ((sz = running_jobs.size) > 0 ? sz : 1).to_f
+        score *= @node.info['weight'].to_f if @node.info['weight']
+        score
+    end
+
+    # @return   [Hash]
+    #   Returns server stats regarding the jobs and pool.
+    def stats
         stats_h = {
-            'running_jobs'   => running,
-            'finished_jobs'  => finished,
+            'running_jobs'   => running_jobs,
+            'finished_jobs'  => finished_jobs,
             'init_pool_size' => @opts.pool_size,
             'curr_pool_size' => @pool.size,
             'consumed_pids'  => @consumed_pids
         }
 
         stats_h.merge!( 'node' => @node.info, 'neighbours' => @node.neighbours )
-
-        stats_h['node']['score']  = (rs_score = resource_consumption_score) > 0 ? rs_score : 1
-        stats_h['node']['score'] *= stats_h['node']['weight'] if stats_h['node']['weight']
-        stats_h['node']['score'] = Float( stats_h['node']['score'] )
+        stats_h['node']['score']  = workload_score
 
         stats_h
     end
@@ -232,15 +248,6 @@ class Dispatcher
 
     def _handlers
         self.class._handlers
-    end
-
-    def resource_consumption_score
-        cpu = mem = 0.0
-        jobs.each do |job|
-            mem += Float( job['proc']['pctmem'] ) if job['proc']['pctmem']
-            cpu += Float( job['proc']['pctcpu'] ) if job['proc']['pctcpu']
-        end
-        cpu + mem
     end
 
     #
