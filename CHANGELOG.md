@@ -120,6 +120,11 @@
     - Added method ```#add_remark```, allowing new remarks to be added to the ```Issue```.
 - Executables
     - ```arachni_script``` -- Updated to expect a single script and pass ARGV along.
+    - ```arachni_rpc```
+        - Massive code clean-up.
+        - Updated to use the new simplified RPC API.
+        - Updated to support the new high-performance distribution options.
+        - Removed status messages, shows only the issue list.
 - Added
   - Cache
       - ```Arachni::Cache::Preference``` -- Performs soft pruning based on a
