@@ -157,21 +157,23 @@ class DispatcherMonitor
     #
     def usage
         print_line <<USAGE
-  Usage:  arachni_rpcd_monitor host:port
+  Usage:  #{File.basename( $0 )} host:port
 
   Supported options:
 
 
     SSL --------------------------
 
-    --ssl-pkey   <file>         location of the SSL private key (.pem)
-                                    (Used to verify the the client to the servers.)
+    --ssl-pkey=<file>           Location of the SSL private key (.pem)
+                                  (Used to verify the the client to the servers.)
 
-    --ssl-cert   <file>         location of the SSL certificate (.pem)
-                                    (Used to verify the the client to the servers.)
+    --ssl-cert=<file>           Location of the SSL certificate (.pem)
+                                  (Used to verify the the client to the servers.)
 
-    --ssl-ca     <file>         location of the CA certificate (.pem)
-                                    (Used to verify the servers to the client.)
+    --ssl-ca=<file>             Location of the CA certificate (.pem)
+                                  (Used to verify the servers to the client.)
+
+
 USAGE
     end
 
