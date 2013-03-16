@@ -420,13 +420,15 @@ class Framework < ::Arachni::Framework
             block.call false
             return false
         end
+        @cleaned_up = true
+
         r = super
 
         return r if !block_given?
 
         if @instances.empty?
-            block.call( true ) if block_given?
-            return
+            block.call r if block_given?
+            return r
         end
 
         foreach = proc do |instance, iter|
@@ -438,8 +440,6 @@ class Framework < ::Arachni::Framework
         end
         after = proc { |results| @plugins.merge_results( results.compact ); block.call( true ) }
         map_slaves( foreach, after )
-
-        @cleaned_up = true
     end
 
     # Pauses the running scan on a best effort basis.
