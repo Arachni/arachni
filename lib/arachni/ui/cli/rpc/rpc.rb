@@ -252,6 +252,17 @@ class RPC
     end
 
     def prepare_rpc_options
+
+        if @opts.grid && @opts.spawns <= 0
+            print_error "The 'spawns' option needs to be more than 1 for Grid scans."
+            exit 1
+        end
+
+        if (@opts.grid || @opts.spawns > 0) && @opts.restrict_paths.any?
+            print_error "Option 'restrict_paths' is not supported when in High-Performance mode."
+            exit 1
+        end
+
         @opts.reports['stdout'] = {} if @opts.reports.empty?
 
         # No modules have been specified, set the mods to '*' (all).
@@ -378,17 +389,32 @@ class RPC
         super '--server host:port'
 
         print_line <<USAGE
+    Distribution -----------------
+
+    --server=<address:port>     Dispatcher server to use.
+                                  (Used to provide scanner Instances.)
+
+    --slaves=<integer>          How many slaves to spawn for a high-performance distributed scan.
+                                  (Slaves will all be from the same Dispatcher machine.)
+                                  (*WARNING*: This feature is experimental.)
+
+    --grid                      Tell the scanner to use the Grid for a High-Performance scan.
+                                  (Slaves will all be from the Dispatchers running
+                                    on machines with unique bandwidth pipe.)
+                                  (*WARNING*: This feature is experimental.)
+
+
     SSL --------------------------
     (Do *not* use encrypted keys!)
 
-    --ssl-pkey   <file>         location of the SSL private key (.pem)
-                                    (Used to verify the the client to the servers.)
+    --ssl-pkey=<file>           Location of the SSL private key (.pem)
+                                  (Used to verify the the client to the servers.)
 
-    --ssl-cert   <file>         location of the SSL certificate (.pem)
-                                    (Used to verify the the client to the servers.)
+    --ssl-cert=<file>           Location of the SSL certificate (.pem)
+                                  (Used to verify the the client to the servers.)
 
-    --ssl-ca     <file>         location of the CA certificate (.pem)
-                                    (Used to verify the servers to the client.)
+    --ssl-ca=<file>             Location of the CA certificate (.pem)
+                                  (Used to verify the servers to the client.)
 
 
 USAGE

@@ -487,6 +487,9 @@ class Options
     # @return   [Integer]   maximum amount of slave Instances to use
     attr_accessor :max_slaves
 
+    # @return   [Integer]   amount of child Instances to spawn
+    attr_accessor :spawns
+
     attr_accessor :fuzz_methods
 
     attr_accessor :exclude_binaries
@@ -502,6 +505,8 @@ class Options
 
     # @return   [Bool]   Only follow HTTPS links.
     attr_accessor :https_only
+
+    attr_accessor :grid
 
     attr_accessor :version
 
@@ -538,6 +543,8 @@ class Options
 
         @datastore  = {}
         @redundant  = {}
+
+        @grid = false
 
         @https_only        = false
         @obey_robots_txt   = false
@@ -578,6 +585,8 @@ class Options
 
         @min_pages_per_instance = 30
         @max_slaves = 10
+
+        @spawns = 0
         self
     end
 
@@ -903,6 +912,8 @@ class Options
             [ '--auto-redundant',         GetoptLong::OPTIONAL_ARGUMENT ],
             [ '--login-check-url',        GetoptLong::REQUIRED_ARGUMENT ],
             [ '--login-check-pattern',    GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--spawns',                 GetoptLong::REQUIRED_ARGUMENT ],
+            [ '--grid',                   GetoptLong::NO_ARGUMENT ],
             [ '--https-only',             GetoptLong::NO_ARGUMENT ],
             [ '--version',                GetoptLong::NO_ARGUMENT ]
         )
@@ -1153,6 +1164,12 @@ class Options
 
                     when '--login-check-pattern'
                         @login_check_pattern = arg
+
+                    when '--spawns'
+                        @spawns = arg.to_i
+
+                    when '--grid'
+                        @grid = true
 
                     when '--https-only'
                         @https_only = true
