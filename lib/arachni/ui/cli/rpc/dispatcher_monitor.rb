@@ -20,8 +20,10 @@ module Arachni
 
 require Options.dir['lib'] + 'rpc/client/dispatcher'
 require Options.dir['lib'] + 'ui/cli/output'
+require Options.dir['lib'] + 'ui/cli/utilities'
 
 module UI
+class CLI
 
 #
 # Provides an simplistic Dispatcher monitoring user interface.
@@ -32,14 +34,18 @@ module UI
 #
 class DispatcherMonitor
     include Output
+    include Utilities
 
     def initialize( opts )
         @opts = opts
 
         debug if @opts.debug
 
+        clear_screen
+        move_to_home
+
         # print banner message
-        banner
+        print_banner
 
         # if the user needs help, output it and exit
         if opts.help
@@ -48,7 +54,7 @@ class DispatcherMonitor
         end
 
         if !@opts.url
-            print_error "No server specified."
+            print_error 'No server specified.'
             print_line
             usage
             exit
@@ -75,11 +81,11 @@ class DispatcherMonitor
 
         # grab the XMLRPC server output while a scan is running
         loop do
+            move_to_home
             stats        = @dispatcher.stats
             running_jobs = stats['running_jobs']
-            clear_screen
 
-            banner
+            print_banner
             print_stats( stats )
 
             print_line
@@ -121,10 +127,6 @@ class DispatcherMonitor
         print_info 'Current pool size: ' + stats['curr_pool_size'].to_s
     end
 
-    def clear_screen
-        puts "\e[H\e[2J"
-    end
-
     def proc_mem( rss )
         # we assume a page size of 4096
         (rss.to_i * 4096 / 1024 / 1024).to_s + 'MB'
@@ -147,19 +149,6 @@ class DispatcherMonitor
     def secs_to_hms( secs )
         secs = secs.to_i
         [secs/3600, secs/60 % 60, secs % 60].map { |t| t.to_s.rjust( 2, '0' ) }.join(':')
-    end
-
-    #
-    # Outputs Arachni banner.<br/>
-    # Displays version number, revision number, author details etc.
-    #
-    # @see VERSION
-    # @see REVISION
-    #
-    def banner
-        print_line BANNER
-        print_line
-        print_line
     end
 
     #
@@ -188,5 +177,6 @@ USAGE
 
 end
 
+end
 end
 end

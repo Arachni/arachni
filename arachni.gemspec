@@ -86,6 +86,9 @@ Gem::Specification.new do |s|
       # RPC client/server implementation.
       s.add_dependency 'arachni-rpc-em',  '0.1.3.pre2'
 
+      # For CLI interfaces.
+      s.add_dependency 'highline'
+
       s.add_development_dependency 'rake'
       s.add_development_dependency 'rspec'
 
