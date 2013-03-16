@@ -248,7 +248,7 @@ class RPC
     # This method is used during a pause.
     #
     def print_issues
-        super( issues )
+        super issues
     end
 
     def prepare_rpc_options
