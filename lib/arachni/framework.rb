@@ -599,6 +599,8 @@ class Framework
 
         # wait for the plugins to finish
         @plugins.block
+
+        true
     end
     alias :clean_up! :clean_up
 
