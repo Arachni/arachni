@@ -43,7 +43,7 @@ describe Arachni::ElementFilter do
 
     describe '#update_links' do
         context 'when there are new links' do
-            it 'should add them to the DB and return them' do
+            it 'adds them to the DB and return them' do
                 link = Arachni::Element::Link.new(
                     'http://blah.com',
                     :inputs => {
@@ -58,7 +58,7 @@ describe Arachni::ElementFilter do
         end
 
         context 'when there are no new links' do
-            it 'should return empty results' do
+            it 'returns empty results' do
                 new_links, new_link_cnt = @edb.update_links( @page.links )
                 new_link_cnt.should == 0
                 new_links.should be_empty
@@ -68,7 +68,7 @@ describe Arachni::ElementFilter do
 
     describe '#update_forms' do
         context 'when there are new forms' do
-            it 'should add them to the DB and return them' do
+            it 'adds them to the DB and return them' do
                 form = Arachni::Element::Form.new(
                     'http://blah.com',
                     :inputs => {
@@ -83,7 +83,7 @@ describe Arachni::ElementFilter do
         end
 
         context 'when there are no new links' do
-            it 'should return empty results' do
+            it 'returns empty results' do
                 new_forms, new_form_cnt = @edb.update_forms( @page.forms )
                 new_form_cnt.should == 0
                 new_forms.should be_empty
@@ -93,7 +93,7 @@ describe Arachni::ElementFilter do
 
     describe '#update_cookies' do
         context 'when there are new cookies' do
-            it 'should add them to the DB, return all cookies but only return the count of the new ones' do
+            it 'adds them to the DB, return all cookies but only return the count of the new ones' do
                 cookie = Arachni::Element::Cookie.new(
                     'http://blah.com',
                     'new_cookie_input' => 'new_cookie_value'
@@ -106,7 +106,7 @@ describe Arachni::ElementFilter do
         end
 
         context 'when there are cookies with existing names but have different values' do
-            it 'should update the values' do
+            it 'updates the values' do
                 cookie = Arachni::Element::Cookie.new(
                     'http://blah.com',
                     'cookie_input' => 'foo!'
@@ -120,7 +120,7 @@ describe Arachni::ElementFilter do
         end
 
         context 'when there are no new cookies' do
-            it 'should return empty results' do
+            it 'returns empty results' do
                 new_cookies, new_cookie_cnt = @edb.update_cookies( @page.cookies )
                 new_cookie_cnt.should == 0
                 new_cookies.size.should == 2

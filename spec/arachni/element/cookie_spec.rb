@@ -15,7 +15,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe 'Arachni::Element::COOKIE' do
-        it 'should return "cookie"' do
+        it 'returns "cookie"' do
             Arachni::Element::COOKIE.should == 'cookie'
         end
     end
@@ -23,7 +23,7 @@ describe Arachni::Element::Cookie do
     context 'when initialized' do
         context 'with hash key/pair' do
             describe '#simple' do
-                it 'should return name/val as a key/pair' do
+                it 'returns name/val as a key/pair' do
                     raw = { 'name' => 'val' }
                     c = Arachni::Element::Cookie.new( @url, raw )
                     c.simple.should == raw
@@ -32,7 +32,7 @@ describe Arachni::Element::Cookie do
         end
         context 'with attributes' do
             describe '#simple' do
-                it 'should return name/val as a key/pair' do
+                it 'returns name/val as a key/pair' do
                     raw = { 'name' => 'myname', 'value' => 'myvalue' }
                     c = Arachni::Element::Cookie.new( @url, raw )
                     c.simple.should == { raw['name'] => raw['value'] }
@@ -42,7 +42,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#dup' do
-        it 'should preserve its action URL' do
+        it 'preserves its action URL' do
             url = 'http://stuff.net'
             raw = { 'name' => 'myname', 'value' => 'myvalue' }
             c = Arachni::Element::Cookie.new( url, raw )
@@ -55,13 +55,13 @@ describe Arachni::Element::Cookie do
 
     describe '#mutations' do
         describe :param_flip do
-            it 'should create a new cookie' do
+            it 'creates a new cookie' do
                 @c.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
                     %w(seed)
             end
         end
         describe 'Options.audit_cookies_extensively' do
-            it 'should submit the default elements of the page along with the cookie mutations' do
+            it 'submits the default elements of the page along with the cookie mutations' do
                 p = Arachni::Page.from_url( @url + 'with_other_elements' )
                 a = Auditor.new
                 a.page = p
@@ -81,14 +81,14 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#type' do
-        it 'should be "cookie"' do
+        it 'is "cookie"' do
             @c.type.should == 'cookie'
         end
     end
 
     describe '#secure?' do
         context 'when set' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Element::Cookie.new( @url,
                     'name'   => 'mycookie',
                     'value'  => 'myvalue',
@@ -98,7 +98,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when not set' do
-            it 'should return false' do
+            it 'returns false' do
                 @c.secure?.should be_false
             end
         end
@@ -106,7 +106,7 @@ describe Arachni::Element::Cookie do
 
     describe '#httponly?' do
         context 'when set' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Element::Cookie.new( @url,
                     'name'   => 'mycookie',
                     'value'  => 'myvalue',
@@ -116,7 +116,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when not set' do
-            it 'should return false' do
+            it 'returns false' do
                 @c.http_only?.should be_false
             end
         end
@@ -124,7 +124,7 @@ describe Arachni::Element::Cookie do
 
     describe '#session?' do
         context 'when cookie is session cookie' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Element::Cookie.new( @url,
                     'name'   => 'mycookie',
                     'value'  => 'myvalue',
@@ -134,7 +134,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when cookie is not session cookie' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Element::Cookie.new( @url,
                     'name'   => 'mycookie',
                     'value'  => 'myvalue',
@@ -147,7 +147,7 @@ describe Arachni::Element::Cookie do
     describe '#expired?' do
         context 'when expiry date is set' do
             context 'and has expired' do
-                it 'should return true' do
+                it 'returns true' do
                     Arachni::Element::Cookie.new( @url,
                         'name'  => '',
                         'value' => '',
@@ -157,7 +157,7 @@ describe Arachni::Element::Cookie do
             end
 
             context 'and has not expired' do
-                it 'should return false' do
+                it 'returns false' do
                     Arachni::Element::Cookie.new( @url,
                         'name'  => '',
                         'value' => '',
@@ -168,7 +168,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when not set' do
-            it 'should return false' do
+            it 'returns false' do
                 @c.http_only?.should be_false
             end
         end
@@ -176,25 +176,25 @@ describe Arachni::Element::Cookie do
 
 
     describe '#name' do
-        it 'should return the name of the cookie' do
+        it 'returns the name of the cookie' do
             @c.name.should == 'mycookie'
         end
     end
 
     describe '#value' do
-        it 'should return the name of the cookie' do
+        it 'returns the value of the cookie' do
             @c.value.should == 'myvalue'
         end
     end
 
     describe '#encode' do
-        it 'should encode the string in a way that makes is suitable to be included in a cookie header' do
+        it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
             Arachni::Element::Cookie.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25%3D'
         end
     end
 
     describe '#to_s' do
-        it 'should return a string representation of the cookie' do
+        it 'returns a string representation of the cookie' do
             c = Arachni::Element::Cookie.new( @url,
                                                       'name'  => 'blah=ha%',
                                                       'value' => 'some stuff ;',
@@ -204,7 +204,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#auditable=' do
-        it 'should properly encode the value before storing it' do
+        it 'properly encodes the value before storing it' do
             c = Arachni::Element::Cookie.new( @url,
                                                       'name'  => 'blah',
                                                       'value' => 'some stuff ;',
@@ -215,7 +215,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '.from_file' do
-        it 'should parse a Netscape cookiejar file and return an array of cookies' do
+        it 'parses a Netscape cookiejar file into an array of cookies' do
             cookies =  Arachni::Element::Cookie.from_file( @url, spec_path + 'fixtures/cookies.txt' )
             cookies.size.should == 4
 
@@ -275,7 +275,7 @@ describe Arachni::Element::Cookie do
 
     describe '.from_response' do
         context 'when the response contains cookies' do
-            it 'should return an array of cookies' do
+            it 'returns an array of cookies' do
                 response = @http.get( @url + '/set_cookie', async: false ).response
                 cookies = Arachni::Element::Cookie.from_response( response )
                 cookies.size.should == 1
@@ -290,7 +290,7 @@ describe Arachni::Element::Cookie do
     describe '.from_document' do
         context 'when there are any set-cookie attributes in http-equiv' do
             context 'with a String document' do
-                it 'should return an array of cookies' do
+                it 'returns an array of cookies' do
                     html = <<-EOHTML
                     <html>
                     <head>
@@ -320,7 +320,7 @@ describe Arachni::Element::Cookie do
                 end
             end
             context 'with an empty string' do
-                it 'should return an empty array' do
+                it 'returns an empty array' do
                      Arachni::Element::Cookie.from_document( '', '' ).should be_empty
                 end
             end
@@ -330,7 +330,7 @@ describe Arachni::Element::Cookie do
     describe '.from_headers' do
         context 'when there are any set-cookie attributes in http-equiv' do
             context 'with a String document' do
-                it 'should return an array of cookies' do
+                it 'returns an array of cookies' do
                     headers = {
                         'set-cookie' => "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly"
                     }
@@ -342,7 +342,7 @@ describe Arachni::Element::Cookie do
                 end
             end
             context 'with an empty string' do
-                it 'should return an empty array' do
+                it 'returns an empty array' do
                      Arachni::Element::Cookie.from_headers( '', {} ).should be_empty
                 end
             end
@@ -350,7 +350,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '.from_set_cookie' do
-        it 'should parse the contents of the Set-Cookie header field into cookies' do
+        it 'parses the contents of the Set-Cookie header field into cookies' do
             sc = "SomeCookie=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D"
             c1 = Arachni::Element::Cookie.from_set_cookie( 'http://test.com', sc ).first
 
@@ -372,7 +372,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '.from_string' do
-        it 'should parse cookies formatted as a string' do
+        it 'parses cookies formatted as a string' do
              cookies = Arachni::Element::Cookie.from_string( 'http://owner-url.com',
                 "coo%40ki+e2=blah+val2%40;name=value;name2=value2")
              cookies.size.should == 3

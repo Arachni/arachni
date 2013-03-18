@@ -37,19 +37,19 @@ describe Arachni::AuditStore do
     end
 
     describe '#version' do
-        it 'should return the version number' do
+        it 'returns the version number' do
             @auditstore.version.should == '0.1'
         end
     end
 
     describe '#revision' do
-        it 'should return the revision number' do
+        it 'returns the revision number' do
             @auditstore.revision.should == '0.2'
         end
     end
 
     describe '#options' do
-        it 'should return the options as a hash' do
+        it 'returns the options as a hash' do
             h = Arachni::Options.instance.to_h
             h['url'] = h['url'].to_s
             ah = @auditstore.options
@@ -60,52 +60,52 @@ describe Arachni::AuditStore do
     end
 
     describe '#sitemap' do
-        it 'should return the sitemap' do
+        it 'returns the sitemap' do
             @auditstore.sitemap.should == [@opts.url.to_s]
         end
     end
 
     describe '#issues' do
-        it 'should return the issues' do
+        it 'returns the issues' do
             @auditstore.issues.should == [@issue]
         end
     end
 
     describe '#plugins' do
-        it 'should return the plugin results' do
+        it 'returns the plugin results' do
             @auditstore.plugins.should == @plugin_results
         end
     end
 
     describe '#start_datetime' do
-        it 'should return the start datetime of the scan' do
+        it 'returns the start datetime of the scan' do
             Time.parse( @auditstore.start_datetime ).is_a?( Time ).should be_true
         end
         context 'when no start datetime info has been provided' do
-            it 'should revert to Time.now' do
+            it 'falls-back to Time.now' do
                 Time.parse( @clean.start_datetime ).is_a?( Time ).should be_true
             end
         end
     end
 
     describe '#finish_datetime' do
-        it 'should return the start finish of the scan' do
+        it 'returns the start finish of the scan' do
             Time.parse( @auditstore.finish_datetime ).is_a?( Time ).should be_true
         end
         context 'when no start datetime info has been provided' do
-            it 'should revert to Time.now' do
+            it 'falls-back to Time.now' do
                 Time.parse( @clean.finish_datetime ).is_a?( Time ).should be_true
             end
         end
     end
 
     describe '#delta_time' do
-        it 'should return the time difference between start and finish time' do
+        it 'returns the time difference between start and finish time' do
             Time.parse( @auditstore.delta_time ).is_a?( Time ).should be_true
         end
     end
 
-    it 'should organize identical issues into variations' do
+    it 'organizes identical issues into variations' do
         url = 'http://test.com'
         i = Arachni::Issue.new(
             url: url,
@@ -154,7 +154,7 @@ describe Arachni::AuditStore do
         end
     end
 
-    it 'should sort the issues based on severity' do
+    it 'sorts the issues based on severity' do
         url = 'http://test.com'
         opts = {
             url: url,
@@ -184,7 +184,7 @@ describe Arachni::AuditStore do
     end
 
     describe '#save' do
-        it 'should serialize and save the object to a file' do
+        it 'serializes and save the object to a file' do
             filename = 'auditstore'
             auditstore = ::Arachni::AuditStore.new( @auditstore_opts )
             auditstore.save( filename )
@@ -203,7 +203,7 @@ describe Arachni::AuditStore do
     end
 
     describe '#to_hash' do
-        it 'should return the object as a hash' do
+        it 'returns the object as a hash' do
             h = @auditstore.to_hash
             h.is_a?( Hash ).should be_true
 
@@ -222,13 +222,13 @@ describe Arachni::AuditStore do
 
     describe '#==' do
         context 'when the auditstores are equal' do
-            it 'should return true' do
+            it 'returns true' do
                 a = @auditstore.deep_clone
                 a.should == @auditstore
             end
         end
         context 'when the auditstores are not equal' do
-            it 'should return false' do
+            it 'returns false' do
                 a = @auditstore.deep_clone
                 a.options['url'] = ''
                 a.should_not == @auditstore

@@ -11,7 +11,7 @@ describe name_from_filename do
         [ Element::SERVER ]
     end
 
-    it 'should intercept all HTTP responses and log ones with status codes other than 200 or 404' do
+    it 'intercepts all HTTP responses and log ones with status codes other than 200 or 404' do
         run
         current_module.acceptable.each do |code|
             http.get( url + code.to_s )

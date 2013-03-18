@@ -45,32 +45,32 @@ describe Arachni::Issue do
 
     describe Arachni::Issue::Severity do
         describe 'Arachni::Issue::Severity::HIGH' do
-            it 'should return "High"' do
+            it 'returns "High"' do
                 Arachni::Issue::Severity::HIGH.should == 'High'
             end
         end
         describe 'Arachni::Issue::Severity::MEDIUM' do
-            it 'should return "Medium"' do
+            it 'returns "Medium"' do
                 Arachni::Issue::Severity::MEDIUM.should == 'Medium'
             end
         end
         describe 'Arachni::Issue::Severity::LOW' do
-            it 'should return "Low"' do
+            it 'returns "Low"' do
                 Arachni::Issue::Severity::LOW.should == 'Low'
             end
         end
         describe 'Arachni::Issue::Severity::INFORMATIONAL' do
-            it 'should return "Informational"' do
+            it 'returns "Informational"' do
                 Arachni::Issue::Severity::INFORMATIONAL.should == 'Informational'
             end
         end
 
-        it 'should be assigned to Arachni::Severity for easy access' do
+        it 'is assigned to Arachni::Severity for easy access' do
             Arachni::Severity.should == Arachni::Issue::Severity
         end
     end
 
-    it 'should assign the values in opts to the the instance vars' do
+    it 'assigns the values in opts to the the instance vars' do
         @issue_data.each do |k, v|
             next if [ :opts, :regexp ].include?( k )
             @issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
@@ -80,18 +80,18 @@ describe Arachni::Issue do
     end
 
     describe '#tags' do
-        it 'should return the set tags' do
+        it 'returns the set tags' do
             @issue.tags.should == @issue_data[:tags]
         end
         context 'when nil' do
-            it 'should default to an empty array' do
+            it 'defaults to an empty array' do
                 Arachni::Issue.new( url: 'http://test.com' ).tags.should == []
             end
         end
     end
 
     context 'when there\'s an :issue key' do
-        it 'should assign its hash contents to instance vars' do
+        it 'assigns its hash contents to instance vars' do
             issue = Arachni::Issue.new( issue: @issue_data )
             @issue_data.each do |k, v|
                 next if [ :opts, :regexp, :mod_name ].include?( k )
@@ -103,7 +103,7 @@ describe Arachni::Issue do
     end
 
     describe '#url=' do
-        it 'should normalize the URL before assigning it' do
+        it 'normalizes the URL before assigning it' do
             i = Arachni::Issue.new
             url = 'HttP://DomainName.com/stuff here'
             i.url = url
@@ -113,21 +113,21 @@ describe Arachni::Issue do
 
     describe '#requires_verification?' do
         context 'when the issue requires verification' do
-            it 'should return true' do
+            it 'returns true' do
                 i = Arachni::Issue.new
                 i.verification = true
                 i.requires_verification?.should be_true
             end
         end
         context 'when the issue does not require verification' do
-            it 'should return false' do
+            it 'returns false' do
                 i = Arachni::Issue.new
                 i.verification = false
                 i.requires_verification?.should be_false
             end
         end
         context 'by default' do
-            it 'should return false' do
+            it 'returns false' do
                 i = Arachni::Issue.new
                 i.requires_verification?.should be_false
             end
@@ -136,21 +136,21 @@ describe Arachni::Issue do
 
     describe '#trusted?' do
         context 'when the issue requires verification' do
-            it 'should return false' do
+            it 'returns false' do
                 i = Arachni::Issue.new
                 i.verification = true
                 i.trusted?.should be_false
             end
         end
         context 'when the issue does not require verification' do
-            it 'should return true' do
+            it 'returns true' do
                 i = Arachni::Issue.new
                 i.verification = false
                 i.trusted?.should be_true
             end
         end
         context 'by default' do
-            it 'should return true' do
+            it 'returns true' do
                 i = Arachni::Issue.new
                 i.trusted?.should be_true
             end
@@ -159,21 +159,21 @@ describe Arachni::Issue do
 
     describe '#untrusted?' do
         context 'when the issue requires verification' do
-            it 'should return true' do
+            it 'returns true' do
                 i = Arachni::Issue.new
                 i.verification = true
                 i.untrusted?.should be_true
             end
         end
         context 'when the issue does not require verification' do
-            it 'should return false' do
+            it 'returns false' do
                 i = Arachni::Issue.new
                 i.verification = false
                 i.untrusted?.should be_false
             end
         end
         context 'by default' do
-            it 'should return false' do
+            it 'returns false' do
                 i = Arachni::Issue.new
                 i.untrusted?.should be_false
             end
@@ -182,7 +182,7 @@ describe Arachni::Issue do
 
 
     describe '#cwe=' do
-        it 'should assign a CWE ID and CWE URL based on that ID' do
+        it 'assigns a CWE ID and CWE URL based on that ID' do
             i = Arachni::Issue.new
             i.cwe = 20
             i.cwe.should == '20'
@@ -191,14 +191,14 @@ describe Arachni::Issue do
     end
 
     describe '#references=' do
-        it 'should assign a references hash' do
+        it 'assigns a references hash' do
             i = Arachni::Issue.new
             refs = { 'title' => 'url' }
             i.references = refs
             i.references.should == refs
         end
         context 'when nil is passed as a value' do
-            it 'should revert to {}' do
+            it 'falls-back to an empty Hash' do
                 i = Arachni::Issue.new
                 i.references.should == {}
                 i.references = nil
@@ -208,14 +208,14 @@ describe Arachni::Issue do
     end
 
     describe '#regexp=' do
-        it 'should assign a regexp and convert it to a string' do
+        it 'assigns a regexp and convert it to a string' do
             i = Arachni::Issue.new
             rxp = /test/
             i.regexp = rxp
             i.regexp.should == rxp.to_s
         end
         context 'when nil is passed as a value' do
-            it 'should revert to \'\'' do
+            it 'falls-back to an empty string' do
                 i = Arachni::Issue.new
                 i.regexp = nil
                 i.regexp.should == ''
@@ -224,7 +224,7 @@ describe Arachni::Issue do
     end
 
     describe '#opts=' do
-        it 'should assign an opts hash and convert the included :regexp to a string' do
+        it 'assigns an opts hash and convert the included :regexp to a string' do
             i = Arachni::Issue.new
             i.opts = { an: 'opt' }
             i.opts.should == { an: 'opt', regexp: '' }
@@ -234,7 +234,7 @@ describe Arachni::Issue do
             i.opts.should == { an: 'opt', regexp: rxp.to_s }
         end
         context 'when nil is passed as a value' do
-            it 'should revert to {}' do
+            it 'falls-back to an empty Hash' do
                 i = Arachni::Issue.new
                 i.opts.should == { regexp: '' }
                 i.opts = nil
@@ -244,11 +244,11 @@ describe Arachni::Issue do
     end
 
     describe '#remarks' do
-        it 'should return the set remarks as a Hash' do
+        it 'returns the set remarks as a Hash' do
             @issue.remarks.should == @issue_data[:remarks]
         end
         context 'when uninitialised' do
-            it 'should be an empty Hash' do
+            it 'falls-back to an empty Hash' do
                 i = Arachni::Issue.new
                 i.remarks.should == {}
             end
@@ -256,7 +256,7 @@ describe Arachni::Issue do
     end
 
     describe '#add_remark' do
-        it 'should add a remark' do
+        it 'adds a remark' do
             author  = :dude
             remarks = ['Hey dude!', 'Hey again dude!' ]
 
@@ -268,7 +268,7 @@ describe Arachni::Issue do
         end
 
         context 'when an argument is blank' do
-            it 'should raise an ArgumentError' do
+            it 'raises an ArgumentError' do
                 i = Arachni::Issue.new
 
                 raised = false
@@ -308,7 +308,7 @@ describe Arachni::Issue do
     end
 
     describe '#[]' do
-        it 'should act as an attr_reader' do
+        it 'acts as an attr_reader' do
             @issue_data.each do |k, _|
                 @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
             end
@@ -316,7 +316,7 @@ describe Arachni::Issue do
     end
 
     describe '#[]=' do
-        it 'should act as an attr_writer' do
+        it 'acts as an attr_writer' do
             raised = false
             begin
                 @issue_data.each { |k, v| @issue[k] = v }
@@ -328,7 +328,7 @@ describe Arachni::Issue do
     end
 
     describe '#each' do
-        it 'should iterate over the available instance vars' do
+        it 'iterates over the available instance vars' do
             @issue.each do |k, v|
                 @issue[k].should == @issue.send( k )
                 @issue[k].should == v
@@ -337,7 +337,7 @@ describe Arachni::Issue do
     end
 
     describe '#each_pair' do
-        it 'should iterate over the available instance vars' do
+        it 'iterates over the available instance vars' do
             @issue.each_pair do |k, v|
                 @issue[k].should == @issue.send( "#{k}" )
                 @issue[k].should == v
@@ -346,7 +346,7 @@ describe Arachni::Issue do
     end
 
     describe '#to_h' do
-        it 'should convert self to a Hash' do
+        it 'converts self to a Hash' do
             @issue.to_h.is_a?( Hash ).should be_true
             @issue.to_h.each do |k, v|
                 next if [:unique_id, :hash, :_hash, :digest].include? k
@@ -357,7 +357,7 @@ describe Arachni::Issue do
     end
 
     describe '#unique_id' do
-        it 'should return a string uniquely identifying the issue' do
+        it 'returns a string uniquely identifying the issue' do
             @issue.unique_id.should ==
                 "#{@issue.mod_name}::#{@issue.elem}::#{@issue.var}::http://test.com/stuff/test.blah"
         end
@@ -365,7 +365,7 @@ describe Arachni::Issue do
 
     describe '#eql?' do
         context 'when 2 issues are equal' do
-            it 'should return true' do
+            it 'returns true' do
                 @issue.eql?( @issue ).should be_true
 
                 i = @issue.deep_clone
@@ -374,7 +374,7 @@ describe Arachni::Issue do
             end
         end
         context 'when 2 issues are not equal' do
-            it 'should return false' do
+            it 'returns false' do
                 i = @issue.deep_clone
                 i.var = 'stuff'
                 @issue.eql?( i ).should be_false
@@ -396,7 +396,7 @@ describe Arachni::Issue do
 
     describe '#hash' do
         context 'when 2 issues are equal' do
-            it 'should have the same hash' do
+            it 'have the same hash' do
                 @issue.hash.should == @issue.hash
 
                 i = @issue.deep_clone
@@ -405,7 +405,7 @@ describe Arachni::Issue do
             end
         end
         context 'when 2 issues are not equal' do
-            it 'should return false' do
+            it 'returns false' do
                 i = @issue.deep_clone
                 i.var = 'stuff'
                 @issue.hash.should_not == i.hash
@@ -426,14 +426,14 @@ describe Arachni::Issue do
     end
 
     describe '#digest (and #_hash)' do
-        it 'should return a HEX digest of the issue' do
+        it 'returns a HEX digest of the issue' do
             @issue._hash.should == Digest::SHA2.hexdigest( @issue.unique_id )
             @issue.digest.should == @issue._hash
         end
     end
 
     describe '#remove_instance_var' do
-        it 'should remove an instance variable' do
+        it 'removes an instance variable' do
             rxp = @issue.regexp
             rxp.should_not be_nil
             @issue.remove_instance_var( :@regexp )

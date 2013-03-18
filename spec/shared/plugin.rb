@@ -18,7 +18,7 @@ shared_examples_for "plugin" do
     end
 
     def self.easy_test( &block )
-        it "should log the expected results" do
+        it "logs the expected results" do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run

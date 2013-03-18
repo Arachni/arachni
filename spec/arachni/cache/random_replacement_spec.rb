@@ -4,7 +4,7 @@ describe Arachni::Cache::RandomReplacement do
 
     before { @cache = Arachni::Cache::RandomReplacement.new }
 
-    it 'should prune itself by removing random entries (Random Replacement)' do
+    it 'prunes itself by removing random entries (Random Replacement)' do
         @cache.max_size = 3
 
         k = [ :k, :k2, :k3, :k4 ]
@@ -28,12 +28,12 @@ describe Arachni::Cache::RandomReplacement do
     end
 
     describe '#[]=' do
-        it 'should store an object' do
+        it 'stores an object' do
             v = 'val'
             (@cache[:key] = v).should == v
             @cache[:key].should == v
         end
-        it 'should be an alias of #store' do
+        it 'alias of #store' do
             v = 'val2'
             @cache.store( :key2, v ).should == v
             @cache[:key2].should == v

@@ -31,19 +31,19 @@ describe Arachni::RPC::Server::Plugin::Manager do
     end
 
     describe '#available' do
-        it 'should return an array of available plugins' do
+        it 'returns an array of available plugins' do
             @plugins.available.should be_any
         end
     end
 
     describe '#loaded' do
         context 'when there are loaded plugins' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 @plugins.loaded.should be_empty
             end
         end
         context 'when there are loaded plugins' do
-            it 'should return an array of loaded plugins' do
+            it 'returns an array of loaded plugins' do
                 @plugins.load( { 'default' => {}} )
                 @plugins.loaded.should be_any
             end
@@ -51,13 +51,13 @@ describe Arachni::RPC::Server::Plugin::Manager do
     end
 
     describe '#load' do
-        it 'should load plugins by name' do
+        it 'loads plugins by name' do
             @plugins_clean.load( { 'default' => {}} )
             @plugins_clean.loaded.should == ['default']
         end
 
         context 'with invalid options' do
-            it 'should throw an exception' do
+            it 'throws an exception' do
                 raised = false
                 begin
                     @plugins_clean.load( { 'with_options' => {}} )
@@ -70,7 +70,7 @@ describe Arachni::RPC::Server::Plugin::Manager do
     end
 
     describe '#merge_results' do
-        it 'should merge the results of the distributable plugins' do
+        it 'merges the results of the distributable plugins' do
             framework = Arachni::RPC::Server::Framework.new( Arachni::Options.instance )
             plugins = framework.plugins
             plugins.load( { 'distributable' => {}} )

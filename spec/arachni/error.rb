@@ -1,13 +1,23 @@
 require_relative '../spec_helper'
 
 describe Arachni::Error do
-    it 'should inherit from StandardError' do
+    it 'inherits from StandardError' do
         (Arachni::Error <= StandardError).should be_true
 
+        caught = false
         begin
             fail Arachni::Error
-        rescue Arachni::Error => e
-            ap e
+        rescue StandardError => e
+            caught = true
         end
+        caught.should be_true
+
+        caught = false
+        begin
+            fail Arachni::Error
+        rescue
+            caught = true
+        end
+        caught.should be_true
     end
 end

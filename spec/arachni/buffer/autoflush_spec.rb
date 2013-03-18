@@ -8,49 +8,57 @@ describe Arachni::Buffer::AutoFlush do
 
     describe '#initialize' do
         context 'when passed a max_size' do
-            it 'should force the buffer to #flush itself when the buffer reaches that size' do
-                b = @buffer.new( 10 )
+            context 'when the buffer reaches that size' do
+                it 'forces the buffer to #flush itself' do
+                    b = @buffer.new( 10 )
 
-                buffers = []
-                b.on_flush do |buffer|
-                    buffers << buffer
+                    buffers = []
+                    b.on_flush do |buffer|
+                        buffers << buffer
+                    end
+
+                    20.times { |i| b << i }
+
+                    buffers.size.should == 2
+                    buffers.shift.should == (0..9).to_a
+                    buffers.shift.should == (10...20).to_a
+
+                    b.should be_empty
                 end
-
-                20.times { |i| b << i }
-
-                buffers.size.should == 2
-                buffers.shift.should == (0..9).to_a
-                buffers.shift.should == (10...20).to_a
             end
         end
 
         context 'when passed a max_pushes' do
-            it 'should force the buffer to #flush itself when the amount of pushes reaches that size' do
-                b = @buffer.new( 99999, 10 )
+            context 'when the amount of pushes reaches that size' do
+                it 'forces the buffer to #flush itself' do
+                    b = @buffer.new( 99999, 10 )
 
-                buffers = []
-                b.on_flush do |buffer|
-                    buffers << buffer
+                    buffers = []
+                    b.on_flush do |buffer|
+                        buffers << buffer
+                    end
+
+                    20.times { |i| b << i }
+
+                    buffers.size.should == 2
+                    buffers.shift.should == (0..9).to_a
+                    buffers.shift.should == (10...20).to_a
+                    b.should be_empty
+
+                    b = @buffer.new( 99999, 10 )
+
+                    buffers = []
+                    b.on_flush do |buffer|
+                        buffers << buffer
+                    end
+
+                    20.times { |i| b.batch_push (0..1000).to_a }
+
+                    buffers.size.should == 2
+                    buffers.shift.should == (0..1000).to_a
+                    buffers.shift.should == (0..1000).to_a
+                    b.should be_empty
                 end
-
-                20.times { |i| b << i }
-
-                buffers.size.should == 2
-                buffers.shift.should == (0..9).to_a
-                buffers.shift.should == (10...20).to_a
-
-                b = @buffer.new( 99999, 10 )
-
-                buffers = []
-                b.on_flush do |buffer|
-                    buffers << buffer
-                end
-
-                20.times { |i| b.batch_push (0..1000).to_a }
-
-                buffers.size.should == 2
-                buffers.shift.should == (0..1000).to_a
-                buffers.shift.should == (0..1000).to_a
             end
         end
 

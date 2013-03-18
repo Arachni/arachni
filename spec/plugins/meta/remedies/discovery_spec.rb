@@ -10,7 +10,7 @@ describe name_from_filename do
         framework.modules.load :common_files
     end
 
-    it 'should mark issues with too similar response bodies as needing manual verification and add remarks' do
+    it 'marks issues with too similar response bodies as needing manual verification and add remarks' do
         run
         framework.auditstore.issues.each do |issue|
             issue.variations.map( &:verification ).uniq == [true]

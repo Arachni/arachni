@@ -11,7 +11,7 @@ describe name_from_filename do
 
     context 'when the server response times are' do
         context "bellow threshold" do
-            it 'should not affect the max concurrency' do
+            it 'does not touch the max concurrency' do
                 pre = http.max_concurrency
 
                 http.max_concurrency.times { http.get( url ) }
@@ -21,7 +21,7 @@ describe name_from_filename do
             end
         end
         context "above threshold" do
-            it 'should reduce the max concurrency' do
+            it 'reduces the max concurrency' do
                 pre = http.max_concurrency
 
                 http.max_concurrency.times { http.get( url + 'slow' ) }
@@ -30,7 +30,7 @@ describe name_from_filename do
                 http.max_concurrency.should < pre
             end
             context "and then fall bellow threshold" do
-                it 'should increase the max concurrency (without exceeding http_req_limit)' do
+                it 'increases the max concurrency (without exceeding http_req_limit)' do
                     pre = http.max_concurrency
 
                     (10 * http.max_concurrency).times { http.get( url ) }

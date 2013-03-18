@@ -18,7 +18,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
         end
 
         context 'when response behavior suggests a vuln' do
-            it 'should log issue' do
+            it 'logs an issue' do
                 auditable = Arachni::Element::Link.new( @url + '/true', @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )
@@ -32,7 +32,7 @@ describe Arachni::Element::Capabilities::Auditable::RDiff do
         end
 
         context 'when responses are\'t consistent with vuln behavior' do
-            it 'should not log issue' do
+            it 'does not log any issues' do
                 auditable = Arachni::Element::Link.new( @url + '/false', @params )
                 auditable.auditor = @auditor
                 auditable.rdiff_analysis( @opts )

@@ -5,7 +5,7 @@ describe Arachni::Cache::LeastCostReplacement do
     before { @cache = Arachni::Cache::LeastCostReplacement.new }
 
 
-    it 'should prune itself by removing the least costly entries' do
+    it 'prunes itself by removing the least costly entries' do
         @cache.max_size = 3
 
         @cache.store( :k,  '1', :high )
@@ -36,7 +36,12 @@ describe Arachni::Cache::LeastCostReplacement do
     end
 
     describe '#store' do
-        it 'should store an object by key and associate it with a cost' do
+        it 'stores an object by key' do
+            v = 'val'
+            @cache.store( :key, v, :low ).should == v
+            @cache[:key].should == v
+        end
+        it 'assigns cost to object' do
             v = 'val'
             @cache.store( :key, v, :low ).should == v
             @cache[:key].should == v
@@ -44,12 +49,12 @@ describe Arachni::Cache::LeastCostReplacement do
     end
 
     describe '#[]=' do
-        it 'should store an object' do
+        it 'stores an object' do
             v = 'val'
             (@cache[:key] = v).should == v
             @cache[:key].should == v
         end
-        it 'should be an alias of #store' do
+        it 'alias of #store' do
             v = 'val2'
             @cache.store( :key2, v ).should == v
             @cache[:key2].should == v

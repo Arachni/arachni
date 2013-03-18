@@ -14,13 +14,13 @@ describe Arachni::RPC::Server::Base do
 
     describe '#ready?' do
         context 'when the server is not ready' do
-            it 'should be false' do
+            it 'returns false' do
                 @server.ready?.should be_false
             end
         end
 
         context 'when the server is ready' do
-            it 'should be true' do
+            it 'returns true' do
                 Thread.new{ @server.run }
                 raised = false
                 begin

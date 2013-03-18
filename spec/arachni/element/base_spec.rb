@@ -17,7 +17,7 @@ describe Arachni::Element::Base do
     end
 
     describe '#url=' do
-        it 'should normalize the passed URL' do
+        it 'normalizes the passed URL' do
             e = Arachni::Element::Base.new( @url, @raw )
             url = 'http://test.com/some stuff#frag!'
             e.url = url
@@ -26,14 +26,14 @@ describe Arachni::Element::Base do
     end
 
     describe '#action=' do
-        it 'should normalize the passed URL' do
+        it 'normalizes the passed URL' do
             e = Arachni::Element::Base.new( @url, @raw )
             url = 'http://test.com/some stuff#frag!'
             e.action = url
             e.action.should == @utils.normalize_url( url )
         end
 
-        it 'should convert the passed URL to absolute' do
+        it 'converts the passed URL to absolute' do
             e = Arachni::Element::Base.new( @url, @raw )
             url = 'some stuff#frag!'
             e.action = url
@@ -42,7 +42,7 @@ describe Arachni::Element::Base do
     end
 
     describe '#==' do
-        it 'should assert equality based on method, action and inputs' do
+        it 'asserts equality based on method, action and inputs' do
             e = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
             c = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
             c.should == e
@@ -74,7 +74,7 @@ describe Arachni::Element::Base do
         before do
             @elem = Arachni::Element::Link.new( @url, inputs: { 'name' => 'val' } )
         end
-        it 'should duplicate the element' do
+        it 'duplicates the element' do
             e = @elem.dup
             e.should == @elem
             e.url = 'blah'
@@ -82,7 +82,7 @@ describe Arachni::Element::Base do
             @elem.auditable['crap'].should be_nil
             @elem.url.should == @url
         end
-        it 'should maintain the scope override' do
+        it 'maintains the scope override' do
             e = @elem.dup
             e.override_instance_scope?.should be_false
             e.override_instance_scope?.should == @elem.override_instance_scope?
@@ -100,7 +100,7 @@ describe Arachni::Element::Base do
 
     describe '#hash' do
         context 'when the #method is updated' do
-            it 'should be updated too' do
+            it 'gets updated' do
                 e = Arachni::Element::Base.new( @url, @raw )
                 h = e.hash
                 e.method = 'get'
@@ -108,7 +108,7 @@ describe Arachni::Element::Base do
             end
         end
         context 'when the #action is updated' do
-            it 'should be updated too' do
+            it 'gets updated' do
                 e = Arachni::Element::Base.new( @url, @raw )
                 h = e.hash
                 e.action = 'http://stuff.com'
@@ -116,7 +116,7 @@ describe Arachni::Element::Base do
             end
         end
         context 'when the #auditable is updated' do
-            it 'should be updated too' do
+            it 'gets updated' do
                 e = Arachni::Element::Base.new( @url, @raw )
                 h = e.hash
                 e.auditable = { 'stuff' => 'blah' }

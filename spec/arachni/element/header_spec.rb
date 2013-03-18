@@ -11,29 +11,29 @@ describe Arachni::Element::Header do
         @header = Arachni::Element::Header.new( @url, @inputs )
     end
 
-    it 'should be assigned to Arachni::Header for easy access' do
+    it 'is be assigned to Arachni::Header for easy access' do
         Arachni::Header.should == Arachni::Element::Header
     end
 
     describe 'Arachni::Element::HEADER' do
-        it 'should return "header"' do
+        it 'returns "header"' do
             Arachni::Element::HEADER.should == 'header'
         end
     end
 
-    it 'should retain its assigned inputs' do
+    it 'retains its assigned inputs' do
         @header.auditable.should == @inputs
     end
 
     describe '#simple' do
-        it 'should return the inputs as is' do
+        it 'returns the inputs as is' do
             @header.simple.should == @inputs
         end
     end
 
     describe '#mutations' do
         describe :param_flip do
-            it 'should create a new header' do
+            it 'creates a new header' do
                 @header.mutations( 'seed', param_flip: true ).last.auditable.keys.should ==
                     %w(seed)
             end
@@ -41,7 +41,7 @@ describe Arachni::Element::Header do
     end
 
     describe '#type' do
-        it 'should be "header"' do
+        it 'is "header"' do
             @header.type.should == 'header'
         end
     end

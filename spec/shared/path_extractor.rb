@@ -16,7 +16,7 @@ shared_examples_for "path_extractor" do
     end
 
     def self.easy_test( &block )
-        it "should extract the expected paths" do
+        it "extracts the expected paths" do
             raise 'No paths provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             actual_results.sort.should == results.sort

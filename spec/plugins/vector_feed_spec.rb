@@ -129,21 +129,21 @@ describe name_from_filename do
 
     context 'when setting the option' do
         describe :vectors do
-            it 'should forward the given vectors to the framework to be audited' do
+            it 'forwards the given vectors to the framework to be audited' do
                 options.plugins[name_from_filename] = { 'vectors' => vectors.dup }
                 run_test
             end
         end
 
         describe :yaml_string do
-            it 'should unserialize the given string and forward the given vectors to the framework to be audited' do
+            it 'unserializes the given string and forward the given vectors to the framework to be audited' do
                 options.plugins[name_from_filename] = { 'yaml_string' => vectors.to_yaml }
                 run_test
             end
         end
 
         describe :yaml_file do
-            it 'should unserialize the given string and forward the given vectors to the framework to be audited' do
+            it 'unserializes the given string and forward the given vectors to the framework to be audited' do
                 File.open( 'yaml_file.yml', 'w' ){ |f| f.write( YAML.dump( vectors ) ) }
                 options.plugins[name_from_filename] = { 'yaml_file' => 'yaml_file.yml' }
                 run_test

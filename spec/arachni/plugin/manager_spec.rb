@@ -11,13 +11,13 @@ describe Arachni::Plugin::Manager do
     after( :all ) { @plugins.clear }
 
     describe '#load_default' do
-        it 'should load default plugins' do
+        it 'loads default plugins' do
             @plugins.should be_empty
             @plugins.load_default
             @plugins.include?( 'default' ).should be_true
             @plugins.clear
         end
-        it 'should be aliased to #load_defaults' do
+        it 'aliased to #load_defaults' do
             @plugins.should be_empty
             @plugins.load_defaults
             @plugins.include?( 'default' ).should be_true
@@ -25,24 +25,24 @@ describe Arachni::Plugin::Manager do
     end
 
     describe '#default' do
-        it 'should return the default plugins' do
+        it 'returns the default plugins' do
             @plugins.default.include?( 'default' ).should be_true
         end
-        it 'should be aliased to #defaults' do
+        it 'aliased to #defaults' do
             @plugins.defaults.include?( 'default' ).should be_true
         end
     end
 
     describe '#run' do
         context 'when gem dependencies are met' do
-            it 'should run loaded plugins' do
+            it 'runs loaded plugins' do
                 @plugins.run
                 @plugins.block
                 @plugins.results['default'][:results].should be_true
             end
         end
         context 'when gem dependencies are not met' do
-            it 'should raise exception' do
+            it 'raises an exception' do
                 trigger = proc do
                     begin
                         @plugins.load :bad
@@ -82,12 +82,12 @@ describe Arachni::Plugin::Manager do
 
     describe '#sane_env?' do
         context 'when gem dependencies are met' do
-            it 'should return true' do
+            it 'returns true' do
                 @plugins.sane_env?( @plugins['default'] ).should == true
             end
         end
         context 'when gem dependencies are not met' do
-            it 'should raise exception' do
+            it 'raises an exception' do
                 @plugins.sane_env?( @plugins['bad'] ).include?( :gem_errors ).should be_true
                 @plugins.delete( 'bad' )
             end
@@ -95,21 +95,21 @@ describe Arachni::Plugin::Manager do
     end
 
     describe '#create' do
-        it 'should return a plugin instance' do
+        it 'returns a plugin instance' do
             @plugins.create( 'default' ).instance_of?( @plugins['default'] ).should be_true
         end
     end
 
     describe '#busy?' do
         context 'when plugins are running' do
-            it 'should return true' do
+            it 'returns true' do
                 @plugins.run
                 @plugins.busy?.should be_true
                 @plugins.block
             end
         end
         context 'when plugins have finished' do
-            it 'should return false' do
+            it 'returns false' do
                 @plugins.run
                 @plugins.block
                 @plugins.busy?.should be_false
@@ -119,14 +119,14 @@ describe Arachni::Plugin::Manager do
 
     describe '#job_names' do
         context 'when plugins are running' do
-            it 'should return the names of the running plugins' do
+            it 'returns the names of the running plugins' do
                 @plugins.run
                 @plugins.job_names.should == @plugins.keys
                 @plugins.block
             end
         end
         context 'when plugins have finished' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 @plugins.run
                 @plugins.block
                 @plugins.job_names.should be_empty
@@ -136,14 +136,14 @@ describe Arachni::Plugin::Manager do
 
     describe '#jobs' do
         context 'when plugins are running' do
-            it 'should return the names of the running plugins' do
+            it 'returns the names of the running plugins' do
                 @plugins.run
                 @plugins.jobs.first.instance_of?( Thread ).should be_true
                 @plugins.block
             end
         end
         context 'when plugins have finished' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 @plugins.run
                 @plugins.block
                 @plugins.jobs.should be_empty
@@ -153,7 +153,7 @@ describe Arachni::Plugin::Manager do
 
     describe '#kill' do
         context 'when a plugin is running' do
-            it 'should kill a running plugin' do
+            it 'kills a running plugin' do
                 @plugins.load( 'loop' )
                 @plugins.run
                 ret = @plugins.kill( 'loop' )
@@ -165,7 +165,7 @@ describe Arachni::Plugin::Manager do
         end
 
         context 'when plugin is not running' do
-            it 'should return false' do
+            it 'returns false' do
                 @plugins.run
                 @plugins.block
                 @plugins.kill( 'default' ).should be_false
@@ -175,7 +175,7 @@ describe Arachni::Plugin::Manager do
 
     describe '#get' do
         context 'when a plugin is running' do
-            it 'should return its thread' do
+            it 'returns its thread' do
                 @plugins.load( 'loop' )
                 @plugins.run
                 @plugins.get( 'loop' ).is_a?( Thread ).should be_true
@@ -187,7 +187,7 @@ describe Arachni::Plugin::Manager do
         end
 
         context 'when plugin is not running' do
-            it 'should return nil' do
+            it 'returns nil' do
                 @plugins.run
                 @plugins.block
                 @plugins.get( 'default' ).should be_nil

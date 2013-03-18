@@ -10,7 +10,7 @@ describe Arachni::Report::Base do
     end
 
     describe '#auditstore' do
-        it 'should return the provided auditstore' do
+        it 'returns the provided auditstore' do
             auditstore = @framework.auditstore
             @reports.run_one( :with_outfile, auditstore ).auditstore.
                 should == auditstore
@@ -18,7 +18,7 @@ describe Arachni::Report::Base do
     end
 
     describe '#outfile' do
-        it 'should return the outfile in options' do
+        it 'returns the outfile in options' do
             outfile = 'blahfile'
             @reports.run_one( :with_outfile, @framework.auditstore,
                               'outfile' => outfile
@@ -26,7 +26,7 @@ describe Arachni::Report::Base do
         end
 
         context 'when a directory is provided as an outfile option' do
-            it 'should return the path of default outfile filename under that directory' do
+            it 'returns the path of default outfile filename under that directory' do
                 @reports.run_one( :with_outfile, @framework.auditstore,
                                   'outfile' => '.'
                 ).outfile.start_with?( File.expand_path( "." ) ).should be_true
@@ -35,7 +35,7 @@ describe Arachni::Report::Base do
     end
 
     describe '#format_plugin_results' do
-        it 'should run the formatters of appropriate plugin' do
+        it 'runs the formatters of appropriate plugin' do
             store = @framework.auditstore
             store.plugins["foobar"] = { :results => 'Blah!' }
 
@@ -47,12 +47,12 @@ describe Arachni::Report::Base do
 
     describe '.has_outfile?' do
         context 'when the report has an outfile option' do
-            it 'should return true' do
+            it 'returns true' do
                 @reports[:with_outfile].has_outfile?.should be_true
             end
         end
         context 'when the report does not have an outfile option' do
-            it 'should return false' do
+            it 'returns false' do
                 @reports[:without_outfile].has_outfile?.should be_false
             end
         end

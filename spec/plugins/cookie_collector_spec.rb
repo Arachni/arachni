@@ -7,7 +7,7 @@ describe name_from_filename do
         options.url = url
     end
 
-    it 'should log the expected results' do
+    it 'logs the expected results' do
         run
 
         results = results_for( name_from_filename )

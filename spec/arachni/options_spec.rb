@@ -6,7 +6,7 @@ describe Arachni::Options do
         @utils = Arachni::Module::Utilities
     end
 
-    it 'should proxy missing class methods to instance methods' do
+    it 'proxies missing class methods to instance methods' do
         url = 'http://test.com/'
         Arachni::Options.url.should_not == url
         Arachni::Options.url = url
@@ -14,7 +14,7 @@ describe Arachni::Options do
     end
 
     describe '#no_protocol_for_url' do
-        it 'should not require the URL to include a protocol' do
+        it 'allows URLs without a protocol' do
             trigger = proc { Arachni::Options.url = 'stuff:80' }
 
             raised = false
@@ -48,32 +48,32 @@ describe Arachni::Options do
     end
 
     describe '#user_agent' do
-        it "should default to Arachni/v#{Arachni::VERSION}" do
+        it "defaults to Arachni/v#{Arachni::VERSION}" do
             Arachni::Options.user_agent.should == 'Arachni/v' + Arachni::VERSION.to_s
         end
     end
 
     describe '#http_timeout' do
-        it "should default to 50000" do
+        it "defaults to 50000" do
             Arachni::Options.http_timeout.should == 50000
         end
     end
 
     describe '#https_only?' do
         describe 'when the option has been enabled' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Options.https_only = true
                 Arachni::Options.https_only?.should be_true
             end
         end
         describe 'when the option has been disabled' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.https_only = false
                 Arachni::Options.https_only?.should be_false
             end
         end
         describe 'by default' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.https_only?.should be_false
             end
         end
@@ -81,19 +81,19 @@ describe Arachni::Options do
 
     describe '#auto_redundant?' do
         describe 'when the option has been enabled' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Options.auto_redundant = 10
                 Arachni::Options.auto_redundant?.should be_true
             end
         end
         describe 'when the option has been disabled' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.auto_redundant = nil
                 Arachni::Options.auto_redundant?.should be_false
             end
         end
         describe 'by default' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.auto_redundant?.should be_false
             end
         end
@@ -101,33 +101,33 @@ describe Arachni::Options do
 
     describe '#exclude_binaries?' do
         describe 'when the option has been enabled' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Options.exclude_binaries = true
                 Arachni::Options.exclude_binaries?.should be_true
             end
         end
         describe 'when the option has been disabled' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.exclude_binaries = false
                 Arachni::Options.exclude_binaries?.should be_false
             end
         end
         describe 'by default' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.exclude_binaries?.should be_false
             end
         end
     end
 
     describe '#do_not_crawl' do
-        it 'should set the link_count_limit to 0' do
+        it 'sets the link_count_limit to 0' do
             Arachni::Options.do_not_crawl
             Arachni::Options.link_count_limit.should == 0
         end
     end
 
     describe '#crawl' do
-        it 'should set the link_count_limit to < 0' do
+        it 'sets the link_count_limit to < 0' do
             Arachni::Options.crawl
             Arachni::Options.crawl?.should be_true
             !Arachni::Options.link_count_limit.should be_nil
@@ -136,12 +136,12 @@ describe Arachni::Options do
 
     describe '#crawl?' do
         context 'by default' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Options.crawl?.should be_true
             end
         end
         context 'when crawling is enabled' do
-            it 'should return true' do
+            it 'returns true' do
                 Arachni::Options.do_not_crawl
                 Arachni::Options.crawl?.should be_false
                 Arachni::Options.crawl
@@ -149,7 +149,7 @@ describe Arachni::Options do
             end
         end
         context 'when crawling is disabled' do
-            it 'should return false' do
+            it 'returns false' do
                 Arachni::Options.crawl?.should be_true
                 Arachni::Options.do_not_crawl
                 Arachni::Options.crawl?.should be_false
@@ -161,20 +161,20 @@ describe Arachni::Options do
         context 'when the link count limit has' do
 
             context 'not been set' do
-                it 'should return false' do
+                it 'returns false' do
                     Arachni::Options.link_count_limit_reached?( 44 ).should be_false
                 end
             end
 
             context 'not been reached' do
-                it 'should return false' do
+                it 'returns false' do
                     Arachni::Options.link_count_limit = 5
                     Arachni::Options.link_count_limit_reached?( 2 ).should be_false
                 end
             end
 
             context 'been reached' do
-                it 'should return true' do
+                it 'returns true' do
                     Arachni::Options.link_count_limit = 5
                     Arachni::Options.link_count_limit_reached?( 5 ).should be_true
                     Arachni::Options.link_count_limit_reached?( 6 ).should be_true
@@ -185,7 +185,7 @@ describe Arachni::Options do
     end
 
     describe '#audit' do
-        it 'should enable auditing of the given element types' do
+        it 'enables auditing of the given element types' do
             Arachni::Options.audit_links.should be_false
             Arachni::Options.audit_forms.should be_false
             Arachni::Options.audit_cookies.should be_false
@@ -201,7 +201,7 @@ describe Arachni::Options do
     end
 
     describe '#audit=' do
-        it 'should enable auditing of the given element types' do
+        it 'enables auditing of the given element types' do
             Arachni::Options.audit_links.should be_false
             Arachni::Options.audit_forms.should be_false
             Arachni::Options.audit_cookies.should be_false
@@ -217,7 +217,7 @@ describe Arachni::Options do
     end
 
     describe '#dont_audit' do
-        it 'should enable auditing of the given element types' do
+        it 'enables auditing of the given element types' do
             Arachni::Options.audit :links, :forms, :cookies, :headers
 
             Arachni::Options.audit_links.should be_true
@@ -235,7 +235,7 @@ describe Arachni::Options do
     end
 
     describe '#audit?' do
-        it 'should return a boolean value if he given element is to be audited' do
+        it 'returns a boolean value if he given element is to be audited' do
             Arachni::Options.audit_links.should be_false
             Arachni::Options.audit?( :links ).should be_false
             Arachni::Options.audit?( :link ).should be_false
@@ -296,13 +296,13 @@ describe Arachni::Options do
 
 
     describe '#url' do
-        it 'should normalize its param and set it as the target URL' do
+        it 'normalizes its param and set it as the target URL' do
             @opts.url = 'http://test.com/my path'
             @opts.url.should == @utils.normalize_url( @opts.url )
         end
 
         context 'when a relative URL is passed' do
-            it 'should throw an exception' do
+            it 'throws an exception' do
                 raised = false
                 begin
                     @opts.url = '/my path'
@@ -314,7 +314,7 @@ describe Arachni::Options do
         end
 
         context 'when a URL with invalid scheme is passed' do
-            it 'should throw an exception' do
+            it 'throws an exception' do
                 raised = false
                 begin
                     @opts.url = 'httpss://test.com/my path'
@@ -328,7 +328,7 @@ describe Arachni::Options do
 
     describe '#set' do
         context 'when keys are strings' do
-            it 'should set options by hash' do
+            it 'sets options by hash' do
                 opts = {
                     'url'       => 'http://blah.com',
                     'exclude'   => [ 'exclude me' ],
@@ -346,7 +346,7 @@ describe Arachni::Options do
         end
 
         context 'when keys are symbols' do
-            it 'should set options by hash' do
+            it 'sets options by hash' do
                 opts = {
                     url:       'http://blah2.com',
                     exclude:   ['exclude me2'],
@@ -365,7 +365,7 @@ describe Arachni::Options do
     end
 
     describe '#exclude_cookies=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             cookies = %w(my_cookie my_other_cookie)
 
             @opts.exclude_cookies = cookies.first
@@ -377,7 +377,7 @@ describe Arachni::Options do
     end
 
     describe '#exclude_vectors=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             vectors = %w(my_vector my_other_vector)
 
             @opts.exclude_vectors = vectors.first
@@ -389,7 +389,7 @@ describe Arachni::Options do
     end
 
     describe '#mods=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             mods = %w(my_mods my_other_mods)
 
             @opts.mods = mods.first
@@ -399,7 +399,7 @@ describe Arachni::Options do
             @opts.mods.should == mods
         end
 
-        it 'should be aliased to #modules=' do
+        it 'aliased to #modules=' do
             mods = %w(my_mods my_other_mods)
 
             @opts.mods = mods.first
@@ -411,7 +411,7 @@ describe Arachni::Options do
     end
 
     describe '#restrict_paths=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             restrict_paths = %w(my_restrict_paths my_other_restrict_paths)
 
             @opts.restrict_paths = restrict_paths.first
@@ -423,7 +423,7 @@ describe Arachni::Options do
     end
 
     describe '#extend_paths=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             extend_paths = %w(my_extend_paths my_other_extend_paths)
 
             @opts.extend_paths = extend_paths.first
@@ -435,7 +435,7 @@ describe Arachni::Options do
     end
 
     describe '#include=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             include = %w(my_include my_other_include)
 
             @opts.include = /test/
@@ -450,7 +450,7 @@ describe Arachni::Options do
     end
 
     describe '#exclude=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             exclude = %w(my_exclude my_other_exclude)
 
             @opts.exclude = /test/
@@ -465,7 +465,7 @@ describe Arachni::Options do
     end
 
     describe '#exclude_pages=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             exclude_pages = %w(my_ignore my_other_ignore)
 
             @opts.exclude_pages = /test/
@@ -481,13 +481,13 @@ describe Arachni::Options do
 
     describe '#exclude_pages?' do
         context 'when the string matches one of the #ignore patterns' do
-            it 'should return true' do
+            it 'returns true' do
                 @opts.exclude_pages = /test/
                 @opts.exclude_page?( 'this is a test test test' ).should be_true
             end
         end
         context 'when the string does not match one of the #ignore patterns' do
-            it 'should return false' do
+            it 'returns false' do
                 @opts.exclude_pages = /test/
                 @opts.exclude_page?( 'this is a blah blah blah' ).should be_false
             end
@@ -496,7 +496,7 @@ describe Arachni::Options do
 
 
     describe '#lsmod=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             lsmod = %w(my_lsmod my_other_lsmod)
 
             @opts.lsmod = /test/
@@ -511,7 +511,7 @@ describe Arachni::Options do
     end
 
     describe '#lsrep=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             lsrep = %w(my_lsrep my_other_lsrep)
 
             @opts.lsrep = /test/
@@ -526,7 +526,7 @@ describe Arachni::Options do
     end
 
     describe '#lsplug=' do
-        it 'should convert its param to an array of strings' do
+        it 'converts its param to an array of strings' do
             lsplug = %w(my_lsplug my_other_lsplug)
 
             @opts.lsplug = /test/
@@ -541,7 +541,7 @@ describe Arachni::Options do
     end
 
     describe '#redundant=' do
-        it 'should convert its param to properly typed filters' do
+        it 'converts its param to properly typed filters' do
              redundants = [
                 {
                     'regexp'    => /calendar\.php/,
@@ -569,7 +569,7 @@ describe Arachni::Options do
     end
 
     describe '#datastore=' do
-        it 'should try to cast its param to a Hash' do
+        it 'tries to cast its param to a Hash' do
             @opts.datastore = [[ :k, 'val' ]]
             @opts.datastore.should == { k: 'val' }
 
@@ -579,7 +579,7 @@ describe Arachni::Options do
     end
 
     describe '#serialize' do
-        it 'should return an one-line serialized version of self' do
+        it 'returns an one-line serialized version of self' do
             s = @opts.serialize
             s.is_a?( String ).should be_true
             s.include?( "\n" ).should be_false
@@ -587,14 +587,14 @@ describe Arachni::Options do
     end
 
     describe '#unserialize' do
-        it 'should unserialize the return value of #serialize' do
+        it 'unserializes the return value of #serialize' do
             s = @opts.serialize
             @opts.unserialize( s ).should == @opts
         end
     end
 
     describe '#save' do
-        it 'should dump a serialized version of self to a file' do
+        it 'dumps a serialized version of self to a file' do
             f = 'options'
             @opts.save( f )
 
@@ -609,7 +609,7 @@ describe Arachni::Options do
     end
 
     describe '#load' do
-        it 'should dump a serialized version of self to a file (without the directory data)' do
+        it 'dumps a serialized version of self to a file (without the directory data)' do
             f = 'options'
             @opts.save( f )
 
@@ -627,7 +627,7 @@ describe Arachni::Options do
     end
 
     describe '#to_hash' do
-        it 'should convert self to a hash' do
+        it 'converts self to a hash' do
             h = @opts.to_hash
             h.is_a?( Hash ).should be_true
 
@@ -636,19 +636,19 @@ describe Arachni::Options do
     end
 
     describe '#to_h' do
-        it 'should be aliased to to_hash' do
+        it 'aliased to to_hash' do
             @opts.to_hash.should == @opts.to_h
         end
     end
 
     describe '#==' do
         context 'when both objects are equal' do
-            it 'should return true' do
+            it 'returns true' do
                 @opts.should == @opts
             end
         end
         context 'when objects are not equal' do
-            it 'should return true' do
+            it 'returns true' do
                 @opts.should_not == @opts.load( @opts.save( 'test_opts' ) )
                 File.delete( 'test_opts' )
             end
@@ -658,7 +658,7 @@ describe Arachni::Options do
     describe '#merge!' do
         context 'when the param is a' do
             context Arachni::Options do
-                it 'should merge self with the passed object' do
+                it 'merges self with the passed object' do
                     opts = @opts.load( @opts.save( 'test_opts' ) )
                     File.delete( 'test_opts' )
 
@@ -669,7 +669,7 @@ describe Arachni::Options do
                 end
             end
             context Hash do
-                it 'should merge self with the passed object' do
+                it 'merges self with the passed object' do
                     @opts.depth_limit = 20
                     @opts.depth_limit.should == 20
 
@@ -679,7 +679,7 @@ describe Arachni::Options do
             end
         end
 
-        it 'should skip nils and empty Arrays or Hashes' do
+        it 'skips nils and empty Arrays or Hashes' do
             @opts.exclude = 'test'
             @opts.merge!( { 'exclude' => [] } )
             @opts.exclude.should == [ /test/ ]

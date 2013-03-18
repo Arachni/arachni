@@ -145,7 +145,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#map_slaves' do
-        it 'should asynchronously iterate over all slaves' do
+        it 'asynchronously maps all slaves' do
             q = Queue.new
 
             foreach = proc { |instance, iter| instance.service.alive? { |res| iter.return( res ) } }
@@ -164,7 +164,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#each_slave' do
-        it 'should asynchronously iterate over all slaves' do
+        it 'asynchronously iterates over all slaves' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -183,8 +183,9 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
             raised.should be_false
         end
+
         context 'when passed an "after" block' do
-            it 'should call it after the iteration has completed' do
+            it 'calls it after the iteration has completed' do
                 q = Queue.new
 
                 foreach = proc do |instance, iter|
@@ -210,7 +211,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#slave_iterator' do
-        it 'should return an async iterator for the slave instances' do
+        it 'returns an async iterator for the slave instances' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -232,7 +233,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#iterator_for' do
-        it 'should return an async iterator for the provided array' do
+        it 'returns an async iterator for the provided array' do
             q = Queue.new
 
             foreach = proc do |instance, iter|
@@ -254,7 +255,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#split_urls' do
-        it 'should evenly split urls into chunks for each instance' do
+        it 'evenly splits urls into chunks for each instance' do
             @opts.min_pages_per_instance = 10
             splits = @distributor.split_urls( @urls, 4 )
 
@@ -278,7 +279,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#build_elem_list' do
-        it 'should evenly distribute elements across instances' do
+        it 'evenly distributes elements across instances' do
             @opts.url = server_url_for( :parser )
             @opts.audit_links = true
             @opts.audit_forms = true
@@ -297,7 +298,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#distribute_elements' do
-        it 'should evenly distribute elements across instances' do
+        it 'evenly distributes elements across instances' do
             chunks = [[@url], [@url2]]
             elem_ids_per_page = {
                 @url => %w(
@@ -428,7 +429,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#preferred_dispatchers' do
-        it 'should return a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
+        it 'returns a sorted list of dispatchers for HPG use taking into account their pipe IDs and load balancing metrics' do
             @opts.pool_size = 1
             opts = @opts
             port = random_port
@@ -497,7 +498,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     end
 
     describe '#pick_dispatchers' do
-        it 'should return a sorted list of dispatchers based on their load balancing metrics' do
+        it 'returns a sorted list of dispatchers based on their load balancing metrics' do
             dispatchers = []
             dispatchers << { 'node' => { 'score' => 0 } }
             dispatchers << { 'node' => { 'score' => 3 } }
@@ -548,7 +549,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
 
         context 'when called without auditable restrictions' do
-            it 'should let the slave run loose, like a simple instance' do
+            it 'lets the slave run loose, like a simple instance' do
                 q = Queue.new
 
                 @distributor.distribute_and_run( @get_instance_info.call ){ |i| q << i }
@@ -564,7 +565,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
         end
         context 'when called with auditable URL restrictions' do
-            it 'should restrict the audit to these URLs' do
+            it 'restricts the audit to these URLs' do
                 urls = %w(/vulnerable?vulnerable_5=stuff5 /vulnerable?vulnerable_10=stuff10)
 
                 absolute_urls = urls.map { |u| Arachni::Module::Utilities.normalize_url( @url + u ) }
@@ -587,7 +588,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             end
         end
         context 'when called with auditable element restrictions' do
-            it 'should restrict the audit to these elements' do
+            it 'restricts the audit to these elements' do
 
                 ids = []
                 ids << Arachni::Element::Link.new( @url + '/vulnerable',
@@ -615,7 +616,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     sort.uniq
             end
             context 'and new elements appear via the trainer' do
-                it 'should override the restrictions' do
+                it 'soverride the restrictions' do
                     @opts.audit_forms = true
                     @opts.url = server_url_for( :auditor ) + '/train/default'
                     url = @opts.url.to_s
@@ -644,7 +645,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
         end
 
         context 'when called with extra pages' do
-            it 'should include them in the audit' do
+            it 'includes them in the audit' do
 
                 exp_urls = []
                 links = []

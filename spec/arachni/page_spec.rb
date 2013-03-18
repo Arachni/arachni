@@ -46,7 +46,7 @@ describe Arachni::Page do
 
     describe '#text?' do
         context 'when the HTTP response was text based' do
-            it 'should return true' do
+            it 'returns true' do
                 res = Typhoeus::Response.new(
                     effective_url: 'http://test.com',
                     body: '',
@@ -61,7 +61,7 @@ describe Arachni::Page do
         end
 
         context 'when the response is not text based' do
-            it 'should return false' do
+            it 'returns false' do
                 res = Typhoeus::Response.new( effective_url: 'http://test.com',
                                               request: Typhoeus::Request.new( 'http://test.com' ), )
                 Arachni::Parser.new( res, @opts ).page.text?.should be_false
@@ -71,7 +71,7 @@ describe Arachni::Page do
 
     describe '#==' do
         context 'when the pages are different' do
-            it 'should return false' do
+            it 'returns false' do
                 p = Arachni::Page.new( body: 'stuff here' )
                 p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
                 p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
@@ -100,7 +100,7 @@ describe Arachni::Page do
             end
         end
         context 'when the pages are identical' do
-            it 'should return true' do
+            it 'returns true' do
                 p = Arachni::Page.new( body: 'stuff here')
                 p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
                 p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
@@ -129,7 +129,7 @@ describe Arachni::Page do
 
     describe '#eql?' do
         context 'when the pages are different' do
-            it 'should return false' do
+            it 'returns false' do
                 p = Arachni::Page.new( body: 'stuff here')
                 p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
                 p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
@@ -158,7 +158,7 @@ describe Arachni::Page do
             end
         end
         context 'when the pages are identical' do
-            it 'should return true' do
+            it 'returns true' do
                 p = Arachni::Page.new( body: 'stuff here')
                 p.links << Arachni::Element::Link.new( 'http://test.com', 'test' => 'stuff' )
                 p.forms << Arachni::Element::Form.new( 'http://test.com', 'test' => 'stuff' )
@@ -187,7 +187,7 @@ describe Arachni::Page do
 
     describe '#title' do
         context 'when the page has a title' do
-            it 'should return the page title' do
+            it 'returns the page title' do
                 title = 'Stuff here'
                 Arachni::Page.new( body: "<title>#{title}</title>").title.should == title
 
@@ -195,7 +195,7 @@ describe Arachni::Page do
             end
         end
         context 'when the page does not have a title' do
-            it 'should return nil' do
+            it 'returns nil' do
                 Arachni::Page.new.title.should be_nil
                 Arachni::Page.new( body: "" ).title.should be_nil
             end
@@ -203,20 +203,20 @@ describe Arachni::Page do
     end
 
     context 'when called with options' do
-        it 'should retain its options' do
+        it 'retains its options' do
             @page_data.each do |k, v|
                 @page.instance_variable_get( "@#{k}".to_sym ).should == v
             end
         end
 
         describe '#document' do
-            it 'should return a parsed tree' do
+            it 'returns a parsed tree' do
                 @page.document.to_html.should == Nokogiri::HTML( @page.body ).to_html
             end
         end
 
         describe '#to_hash' do
-            it 'should return a hash representation' do
+            it 'returns a hash representation' do
                 @page.to_hash.should == @page_data
             end
         end
@@ -224,68 +224,68 @@ describe Arachni::Page do
 
     context 'when called without options' do
         describe '#links' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.links.should == []
             end
         end
 
         describe '#forms' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.forms.should == []
             end
         end
 
         describe '#cookies' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.cookies.should == []
             end
         end
 
         describe '#headers' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.headers.should == []
             end
         end
 
         describe '#cookiejar' do
-            it 'should default to empty hash' do
+            it 'defaults to empty hash' do
                 @empty_page.cookiejar.should == {}
             end
         end
 
         describe '#paths' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.paths.should == []
             end
         end
 
         describe '#response_headers' do
-            it 'should default to empty array' do
+            it 'defaults to empty array' do
                 @empty_page.paths.should == []
             end
         end
 
         describe '#query_vars' do
-            it 'should default to empty hash' do
+            it 'defaults to empty hash' do
                 @empty_page.query_vars.should == {}
             end
         end
 
         describe '#body' do
-            it 'should default to empty string' do
+            it 'defaults to empty string' do
                 @empty_page.body.should == ''
             end
         end
 
         describe '#document' do
-            it 'should return a parsed tree' do
+            it 'returns a parsed tree' do
                 @empty_page.document.to_html.should == Nokogiri::HTML( @empty_page.body ).to_html
             end
         end
     end
 
     describe '.from_http_response' do
-        it 'should return a page from an HTTP response and opts' do
+        it 'returns a page from an HTTP response and opts' do
             res = Typhoeus::Response.new( effective_url: 'http://url.com',
                                           request: Typhoeus::Request.new( 'http://test.com' ))
             page = Arachni::Page.from_http_response( res, Arachni::Options.instance )

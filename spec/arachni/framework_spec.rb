@@ -20,12 +20,20 @@ describe Arachni::Framework do
     after( :each ) { @f.reset }
 
     context 'when passed a block' do
-        it 'should execute it and then reset the framework' do
+        it 'executes it' do
+            ran = false
+            Arachni::Framework.new do |f|
+                ran = true
+            end
+
+            ran.should be_true
+        end
+
+        it 'resets the framework' do
             Arachni::Modules.constants.include?( :Taint ).should be_false
 
             Arachni::Framework.new do |f|
                 f.modules.load_all.should == %w(taint)
-
                 Arachni::Modules.constants.include?( :Taint ).should be_true
             end
 
@@ -35,7 +43,7 @@ describe Arachni::Framework do
 
     context 'when unable to get a response for the given URL' do
         context 'due to a network error' do
-            it 'should return an empty sitemap and have failures' do
+            it 'returns an empty sitemap and have failures' do
                 @opts.url = 'http://blahaha'
                 @opts.do_not_crawl
 
@@ -47,7 +55,7 @@ describe Arachni::Framework do
         end
 
         context 'due to a server error' do
-            it 'should return an empty sitemap and have failures' do
+            it 'returns an empty sitemap and have failures' do
                 @opts.url = @f_url + '/fail'
                 @opts.do_not_crawl
 
@@ -58,7 +66,7 @@ describe Arachni::Framework do
             end
         end
 
-        it "should retry #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
+        it "retries #{Arachni::Framework::AUDIT_PAGE_MAX_TRIES} times" do
             @opts.url = @f_url + '/fail_4_times'
             @opts.do_not_crawl
 
@@ -71,7 +79,7 @@ describe Arachni::Framework do
 
     describe '#failures' do
         context 'when there are no failed requests' do
-            it 'should return an empty array' do
+            it 'returns an empty array' do
                 @opts.url = @f_url
                 @opts.do_not_crawl
 
@@ -82,7 +90,7 @@ describe Arachni::Framework do
             end
         end
         context 'when there are failed requests' do
-            it 'should return an array containing the failed URLs' do
+            it 'returns an array containing the failed URLs' do
                 @opts.url = @f_url + '/fail'
                 @opts.do_not_crawl
 
@@ -95,12 +103,12 @@ describe Arachni::Framework do
     end
 
     describe '#opts' do
-        it 'should provide access to the framework options' do
+        it 'provides access to the framework options' do
             @f.opts.is_a?( Arachni::Options ).should be_true
         end
 
         describe '#exclude_binaries' do
-            it 'should exclude binary pages from the audit' do
+            it 'excludes binary pages from the audit' do
                 f = Arachni::Framework.new
 
                 f.opts.url = @url + '/binary'
@@ -126,7 +134,7 @@ describe Arachni::Framework do
             end
         end
         describe '#restrict_paths' do
-            it 'should serve as a replacement to crawling' do
+            it 'serves as a replacement to crawling' do
                 f = Arachni::Framework.new
                 f.opts.url = @url
                 f.opts.restrict_paths = %w(/elem_combo /log_remote_file_if_exists/true)
@@ -143,21 +151,21 @@ describe Arachni::Framework do
     end
 
     describe '#reports' do
-        it 'should provide access to the report manager' do
+        it 'provides access to the report manager' do
             @f.reports.is_a?( Arachni::Report::Manager ).should be_true
             @f.reports.available.sort.should == %w(afr foo).sort
         end
     end
 
     describe '#modules' do
-        it 'should provide access to the module manager' do
+        it 'provides access to the module manager' do
             @f.modules.is_a?( Arachni::Module::Manager ).should be_true
             @f.modules.available.should == %w(taint)
         end
     end
 
     describe '#plugins' do
-        it 'should provide access to the plugin manager' do
+        it 'provides access to the plugin manager' do
             @f.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
             @f.plugins.available.sort.should ==
                 %w(wait bad with_options distributable loop default spider_hook).sort
@@ -165,20 +173,20 @@ describe Arachni::Framework do
     end
 
     describe '#http' do
-        it 'should provide access to the HTTP interface' do
+        it 'provides access to the HTTP interface' do
             @f.http.is_a?( Arachni::HTTP ).should be_true
         end
     end
 
     describe '#spider' do
-        it 'should provide access to the Spider' do
+        it 'provides access to the Spider' do
             @f.spider.is_a?( Arachni::Spider ).should be_true
         end
     end
 
     describe '#run' do
 
-        it 'should perform the audit' do
+        it 'performs the audit' do
             @f.opts.url = @url + '/elem_combo'
             @f.opts.audit :links, :forms, :cookies
             @f.modules.load :taint
@@ -228,7 +236,7 @@ describe Arachni::Framework do
             File.delete( 'afr' )
         end
 
-        it 'should handle heavy load' do
+        it 'handles heavy load' do
             @opts.dir['modules']  = fixtures_path + '/taint_module/'
             f = Arachni::Framework.new
 
@@ -244,7 +252,7 @@ describe Arachni::Framework do
 
         context 'when the page has a body which is' do
             context 'not empty' do
-                it 'should run modules that audit the page body' do
+                it 'runs modules that audit the page body' do
                     @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                     f = Arachni::Framework.new
 
@@ -261,7 +269,7 @@ describe Arachni::Framework do
                 end
             end
             context 'empty' do
-                it 'should not run modules that audit the page body' do
+                it 'skips modules that audit the page body' do
                     @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                     f = Arachni::Framework.new
 
@@ -282,7 +290,7 @@ describe Arachni::Framework do
         context 'when auditing links is' do
             context 'enabled' do
                 context 'and the page contains links' do
-                    it 'should run modules that audit links' do
+                    it 'runs modules that audit links' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -298,7 +306,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -314,7 +322,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -334,7 +342,7 @@ describe Arachni::Framework do
 
             context 'disabled' do
                 context 'and the page contains links' do
-                    it 'should not run modules that audit links' do
+                    it 'skips modules that audit links' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -350,7 +358,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -366,7 +374,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -389,7 +397,7 @@ describe Arachni::Framework do
         context 'when auditing forms is' do
             context 'enabled' do
                 context 'and the page contains forms' do
-                    it 'should run modules that audit forms' do
+                    it 'runs modules that audit forms' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -405,7 +413,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -421,7 +429,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -441,7 +449,7 @@ describe Arachni::Framework do
 
             context 'disabled' do
                 context 'and the page contains forms' do
-                    it 'should not run modules that audit forms' do
+                    it 'skips modules that audit forms' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -457,7 +465,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -473,7 +481,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -496,7 +504,7 @@ describe Arachni::Framework do
         context 'when auditing cookies is' do
             context 'enabled' do
                 context 'and the page contains cookies' do
-                    it 'should run modules that audit cookies' do
+                    it 'runs modules that audit cookies' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -512,7 +520,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -528,7 +536,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -548,7 +556,7 @@ describe Arachni::Framework do
 
             context 'disabled' do
                 context 'and the page contains cookies' do
-                    it 'should not run modules that audit cookies' do
+                    it 'skips modules that audit cookies' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -564,7 +572,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -580,7 +588,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -603,7 +611,7 @@ describe Arachni::Framework do
         context 'when auditing headers is' do
             context 'enabled' do
                 context 'and the page contains headers' do
-                    it 'should run modules that audit headers' do
+                    it 'runs modules that audit headers' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -619,7 +627,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -635,7 +643,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -655,7 +663,7 @@ describe Arachni::Framework do
 
             context 'disabled' do
                 context 'and the page contains headers' do
-                    it 'should not run modules that audit headers' do
+                    it 'skips modules that audit headers' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -671,7 +679,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that audit path and server' do
+                    it 'runs modules that audit path and server' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -687,7 +695,7 @@ describe Arachni::Framework do
                         f.modules.clear
                     end
 
-                    it 'should run modules that have not specified any elements' do
+                    it 'runs modules that have not specified any elements' do
                         @opts.dir['modules']  = spec_path + '/fixtures/run_mod/'
                         f = Arachni::Framework.new
 
@@ -708,7 +716,7 @@ describe Arachni::Framework do
         end
 
         context 'when it has log-in capabilities and gets logged out' do
-            it 'should log-in again before continuing with the audit' do
+            it 'logs-in again before continuing with the audit' do
                 f = Arachni::Framework.new
                 url = server_url_for( :framework ) + '/'
                 f.opts.url = "#{url}/congrats"
@@ -750,14 +758,14 @@ describe Arachni::Framework do
         end
 
         context 'when passed a valid report name' do
-            it 'should return the report as a string' do
+            it 'returns the report as a string' do
                 json = @new_framework.report_as( :json )
                 JSON.load( json )['issues'].size.should == @new_framework.auditstore.issues.size
             end
         end
 
         context 'when passed an valid report name which does not support the \'outfile\' option' do
-            it 'should raise an exception' do
+            it 'raises an exception' do
                 raised = false
                 begin
                     @new_framework.report_as( :stdout )
@@ -769,7 +777,7 @@ describe Arachni::Framework do
         end
 
         context 'when passed an invalid report name' do
-            it 'should raise an exception' do
+            it 'raises an exception' do
                 raised = false
                 begin
                     @new_framework.report_as( :blah )
@@ -783,7 +791,7 @@ describe Arachni::Framework do
 
     describe '#audit_page' do
         context 'when the page does not match exclusion criteria' do
-            it 'should audit it and return true' do
+            it 'audits it and returns true' do
                 @f.opts.audit :links, :forms, :cookies
 
                 @f.modules.load :taint
@@ -793,7 +801,7 @@ describe Arachni::Framework do
             end
         end
         context 'when the page matches exclusion criteria' do
-            it 'should not audit it and return false' do
+            it 'does not audit it and returns false' do
                 @f.opts.exclude << /link/
                 @f.opts.audit :links, :forms, :cookies
 
@@ -807,7 +815,7 @@ describe Arachni::Framework do
 
     describe '#push_to_page_queue' do
         context 'when the page does not match exclusion criteria' do
-            it 'should push it to the page audit queue and return true' do
+            it 'pushes it to the page audit queue and returns true' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
                 @f.opts.audit :links, :forms, :cookies
@@ -822,7 +830,7 @@ describe Arachni::Framework do
             end
         end
         context 'when the page matches exclusion criteria' do
-            it 'should not push it to the page audit queue and return false' do
+            it 'does not push it to the page audit queue and returns false' do
                 page = Arachni::Page.from_url( @url + '/train/true' )
 
                 @f.opts.audit :links, :forms, :cookies
@@ -841,7 +849,7 @@ describe Arachni::Framework do
     end
 
     describe '#push_to_url_queue' do
-        it 'should push a URL to the URL audit queue' do
+        it 'pushes a URL to the URL audit queue' do
             @f.opts.audit :links, :forms, :cookies
             @f.modules.load :taint
 
@@ -854,7 +862,7 @@ describe Arachni::Framework do
     end
 
     describe '#stats' do
-        it 'should return a hash with stats' do
+        it 'returns a hash with stats' do
             @f.stats.keys.sort.should == [ :requests, :responses, :time_out_count,
                 :time, :avg, :sitemap_size, :auditmap_size, :progress, :curr_res_time,
                 :curr_res_cnt, :curr_avg, :average_res_time, :max_concurrency, :current_page, :eta ].sort
@@ -862,7 +870,7 @@ describe Arachni::Framework do
     end
 
     describe '#list_modules' do
-        it 'should be aliased to #lsmod return info on all modules' do
+        it 'aliased to #lsmod return info on all modules' do
             @f.modules.load :taint
             info = @f.modules.values.first.info
             loaded = @f.modules.loaded
@@ -885,7 +893,7 @@ describe Arachni::Framework do
         end
 
         context 'when the #lsmod option is set' do
-            it 'should use it to filter out modules that do not match it' do
+            it 'uses it to filter out modules that do not match it' do
                 @f.opts.lsmod = 'boo'
                 @f.list_modules.should == @f.lsmod
                 @f.lsmod.size == 0
@@ -898,7 +906,7 @@ describe Arachni::Framework do
     end
 
     describe '#list_plugins' do
-        it 'should be aliased to #lsplug return info on all plugins' do
+        it 'aliased to #lsplug return info on all plugins' do
             loaded = @f.plugins.loaded
 
             @f.list_plugins.should == @f.lsplug
@@ -993,7 +1001,7 @@ describe Arachni::Framework do
         end
 
         context 'when the #lsplug option is set' do
-            it 'should use it to filter out plugins that do not match it' do
+            it 'uses it to filter out plugins that do not match it' do
                 @f.opts.lsplug = 'bad|foo'
                 @f.list_plugins.should == @f.lsplug
                 @f.lsplug.size == 2
@@ -1006,7 +1014,7 @@ describe Arachni::Framework do
     end
 
     describe '#list_reports' do
-        it 'should return info on all reports' do
+        it 'returns info on all reports' do
             loaded = @f.reports.loaded
             @f.list_reports.should == @f.lsrep
             @f.list_reports.map { |r| r[:options] = []; r.delete( :path ); r }
@@ -1033,7 +1041,7 @@ describe Arachni::Framework do
         end
 
         context 'when the #lsrep option is set' do
-            it 'should use it to filter out reports that do not match it' do
+            it 'uses it to filter out reports that do not match it' do
                 @f.opts.lsrep = 'foo'
                 @f.list_reports.should == @f.lsrep
                 @f.lsrep.size == 1

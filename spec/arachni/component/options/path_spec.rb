@@ -7,24 +7,24 @@ describe Arachni::Component::Options::Path do
 
     describe '#valid?' do
         context 'when the path exists' do
-            it 'should return true' do
+            it 'returns true' do
                 @opt.valid?( __FILE__ ).should be_true
             end
         end
         context 'when the path does not exist' do
-            it 'should return false' do
+            it 'returns false' do
                 @opt.valid?( __FILE__ + '22' ).should be_false
             end
         end
         context 'when required but empty' do
-            it 'should return false' do
+            it 'returns false' do
                 @opt.class.new( '', [true] ).valid?( nil ).should be_false
             end
         end
     end
 
     describe '#type' do
-        it 'should return the option type as a string' do
+        it 'returns the option type as a string' do
             @opt.type.should == 'path'
         end
     end

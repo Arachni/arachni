@@ -62,7 +62,7 @@ describe Arachni::Trainer do
 
     describe 'HTTP requests with "train" set to' do
         describe 'nil' do
-            it 'should not pass the response to the Trainer' do
+            it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
                 Arachni::HTTP.request( @url + '/elems' )
@@ -72,7 +72,7 @@ describe Arachni::Trainer do
             end
         end
         describe false do
-            it 'should not pass the response to the Trainer' do
+            it 'skips the Trainer' do
                 @framework.pages.size.should == 0
 
                 Arachni::HTTP.request( @url + '/elems', train: false )
@@ -82,7 +82,7 @@ describe Arachni::Trainer do
             end
         end
         describe true do
-            it 'should pass the response to the Trainer' do
+            it 'passes the response to the Trainer' do
                 @framework.pages.size.should == 0
 
                 Arachni::HTTP.request( @url + '/elems', train: true )
@@ -92,7 +92,7 @@ describe Arachni::Trainer do
             end
 
             context 'when a redirection leads to new elements' do
-                it 'should pass the response to the Trainer' do
+                it 'passes the response to the Trainer' do
                     @framework.pages.size.should == 0
 
                     Arachni::HTTP.request( @url + '/train/redirect', train: true )
@@ -107,7 +107,7 @@ describe Arachni::Trainer do
 
     context 'when a page' do
         context 'has not changed' do
-            it 'should not be analyzed' do
+            it 'is skipped' do
                 @framework.pages.size.should == 0
 
                 Arachni::HTTP.request( @url, train: true )
@@ -118,7 +118,7 @@ describe Arachni::Trainer do
         end
 
         context 'gets updated more than Trainer::MAX_TRAININGS_PER_URL times' do
-            it 'should ne ignored' do
+            it 'is ignored' do
                 get_response = proc do
                     Typhoeus::Response.new(
                         effective_url: @url,
@@ -140,7 +140,7 @@ describe Arachni::Trainer do
         end
 
         context 'matches excluding criteria' do
-            it 'should ne ignored' do
+            it 'is ignored' do
                 res = Typhoeus::Response.new(
                     effective_url: @url + '/exclude_me'
                 )
@@ -177,7 +177,7 @@ describe Arachni::Trainer do
     end
 
     context 'when the link-count-limit is exceeded, following pages' do
-        it 'should be ignored' do
+        it 'is ignored' do
             Arachni::Options.url = 'http://stuff.com'
 
             framework = TrainerMockFramework.new
@@ -206,14 +206,14 @@ describe Arachni::Trainer do
 
     context 'when the content-type is' do
         context 'text-based' do
-            it 'should return true' do
+            it 'returns true' do
                 @trainer.page = @page
                 @trainer.push( request( @url ) ).should be_true
             end
         end
 
         context 'not text-based' do
-            it 'should return false' do
+            it 'returns false' do
                 ct = @url + '/non_text_content_type'
                 @trainer.push( request( ct ) ).should be_false
             end
@@ -222,7 +222,7 @@ describe Arachni::Trainer do
 
     context 'when the response contains a new' do
         context 'form' do
-            it 'should return a page with the new form' do
+            it 'returns a page with the new form' do
                 url = @url + '/new_form'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
@@ -234,7 +234,7 @@ describe Arachni::Trainer do
         end
 
         context 'link' do
-            it 'should return a page with the new link' do
+            it 'returns a page with the new link' do
                 url = @url + '/new_link'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
@@ -245,7 +245,7 @@ describe Arachni::Trainer do
         end
 
         context 'cookie' do
-            it 'should return a page with the new cookie appended' do
+            it 'returns a page with the new cookie appended' do
                 url = @url + '/new_cookie'
                 @trainer.page = @page
                 @trainer.push( request( url ) ).should be_true
@@ -257,7 +257,7 @@ describe Arachni::Trainer do
     end
 
     context 'when the response is the result of a redirection' do
-        it 'should extract query vars from the effective url' do
+        it 'extracts query vars from the effective url' do
             url = @url + '/redirect?redirected=true'
             @trainer.page = @page
             @trainer.push( request( url ) ).should be_true

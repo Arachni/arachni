@@ -9,7 +9,7 @@ describe name_from_filename do
 
     context 'when malicious requests are' do
         context 'being rejected' do
-            it 'should log that a WAF exists' do
+            it 'logs that a WAF exists' do
                 options.url = "#{url}positive"
                 run
                 results_for( name_from_filename ).should == {
@@ -19,7 +19,7 @@ describe name_from_filename do
         end
 
         context 'being accepted' do
-            it 'should log that a WAF does not exist' do
+            it 'does log a WAF' do
                 options.url = "#{url}negative"
                 run
                 results_for( name_from_filename ).should == {
@@ -30,7 +30,7 @@ describe name_from_filename do
     end
 
     context 'when the webapp behaves erratically' do
-        it 'should log that the tests were inconclusive' do
+        it 'logs that the tests were inconclusive' do
             options.url = "#{url}inconclusive"
             run
             results_for( name_from_filename ).should == {

@@ -63,14 +63,14 @@ describe Arachni::RPC::Server::Instance do
     describe '#service' do
         describe '#errors' do
             context 'when no argument has been provided' do
-                it 'should return all logged errors' do
+                it 'returns all logged errors' do
                     test = 'Test'
                     @instance.service.error_test test
                     @instance.service.errors.last.should end_with test
                 end
             end
             context 'when a start line-range has been provided' do
-                it 'should return all logged errors after that line' do
+                it 'returns all logged errors after that line' do
                     initial_errors = @instance.service.errors
                     errors = @instance.service.errors( 10 )
 
@@ -80,32 +80,32 @@ describe Arachni::RPC::Server::Instance do
         end
 
         describe '#error_logfile' do
-            it 'should return the path to the error logfile' do
+            it 'returns the path to the error logfile' do
                 errors = IO.read( @instance.service.error_logfile ).split( "\n" )
                 errors.should == @instance.service.errors
             end
         end
         describe '#alive?' do
-            it 'should return true' do
+            it 'returns true' do
                 @instance.service.alive?.should == true
             end
         end
 
         describe '#paused?' do
             context 'when not paused' do
-                it 'should return false' do
+                it 'returns false' do
                     @instance.framework.paused?.should be_false
                 end
             end
             context 'when paused' do
-                it 'should return true' do
+                it 'returns true' do
                     @instance.framework.pause
                     @instance.framework.paused?.should be_true
                 end
             end
         end
         describe '#resume' do
-            it 'should resume the scan' do
+            it 'resumes the scan' do
                 @instance.framework.pause
                 @instance.framework.paused?.should be_true
                 @instance.framework.resume.should be_true
@@ -114,57 +114,57 @@ describe Arachni::RPC::Server::Instance do
         end
 
         describe '#busy?' do
-            it 'should delegate to Framework' do
+            it 'delegates to Framework#busy?' do
                 @instance.service.busy?.should == @instance.framework.busy?
             end
         end
 
         describe '#report' do
-            it 'should delegate to Framework' do
+            it 'delegates to Framework#report' do
                 @instance.service.report.should == @instance.framework.report
             end
         end
 
         describe '#abort_and_report' do
             describe 'nil' do
-                it 'should cleanup and return the report as a Hash' do
+                it 'cleans-up and returns the report as a Hash' do
                     @instance.service.abort_and_report.should == @instance.framework.report
                 end
             end
 
             describe :auditstore do
-                it 'should delegate to Framework' do
+                it 'delegates to Framework#auditstore' do
                     @instance.service.abort_and_report( :auditstore ).should == @instance.framework.auditstore
                 end
             end
         end
 
         describe '#abort_and_report_as' do
-            it 'should cleanup and delegate to #report_as' do
+            it 'cleans-up and delegate to #report_as' do
                 Nokogiri::HTML( @instance.service.abort_and_report_as( :html ) ).title.should be_true
             end
         end
 
         describe '#report_as' do
-            it 'should delegate to Framework' do
+            it 'delegates to Framework#report_as' do
                 Nokogiri::HTML( @instance.service.report_as( :html ) ).title.should be_true
             end
         end
 
         describe '#status' do
-            it 'should delegate to Framework' do
+            it 'delegate to Framework#status' do
                 @instance.service.status.should == @instance.framework.status
             end
         end
 
         describe '#output' do
-            it 'should delegate to Framework' do
+            it 'delegates to Framework#output' do
                 @instance.service.output.should be_any
             end
         end
 
         describe '#scan' do
-            it 'should configure and start a scan' do
+            it 'configures and starts a scan' do
                 instance = @get_instance.call
 
                 slave = @get_instance.call
@@ -199,7 +199,7 @@ describe Arachni::RPC::Server::Instance do
 
             describe :spawns do
                 context 'when it has a Dispatcher' do
-                    it 'should request its slaves from it' do
+                    it 'requests its slaves from it' do
                         instance = @get_grid_instance.call
 
                         instance.service.scan(
@@ -228,7 +228,7 @@ describe Arachni::RPC::Server::Instance do
                     end
 
                     context 'which is a Grid member' do
-                        it 'should request its slaves from it' do
+                        it 'requests its slaves from it' do
                             instance = @get_grid_instance.call
 
                             instance.service.scan(
@@ -259,7 +259,7 @@ describe Arachni::RPC::Server::Instance do
                         end
 
                         context 'when it is less than 1' do
-                            it 'should raise an exception' do
+                            it 'raises an exception' do
                                 instance = @get_grid_instance.call
 
                                 raised = false
@@ -277,7 +277,7 @@ describe Arachni::RPC::Server::Instance do
                         end
 
                         context 'when Options#restrict_to_paths is set' do
-                            it 'should raise an exception' do
+                            it 'raises an exception' do
                                 instance = @get_grid_instance.call
                                 url      = server_url_for( :framework_simple )
 
@@ -300,7 +300,7 @@ describe Arachni::RPC::Server::Instance do
                     end
                 end
                 context 'when it does not have a Dispatcher' do
-                    it 'should spawn a number of slaves' do
+                    it 'spawns a number of slaves' do
                         instance = @get_instance.call
 
                         instance.service.scan(
@@ -344,7 +344,7 @@ describe Arachni::RPC::Server::Instance do
                 sleep 1 while @progress_instance.service.busy?
             end
 
-            it 'should return progress information' do
+            it 'returns progress information' do
                 instance = @progress_instance
 
                 p = instance.service.progress
@@ -359,12 +359,12 @@ describe Arachni::RPC::Server::Instance do
 
             describe :without do
                 describe :stats do
-                    it 'should not include stats' do
+                    it 'includes stats' do
                         @progress_instance.service.progress( without: :stats )['stats'].should be_nil
                     end
                 end
                 describe :issues do
-                    it 'should not include issues with the given Issue#digest hashes' do
+                    it 'does not include issues with the given Issue#digest hashes' do
                         p = @progress_instance.service.progress( with: :native_issues )
                         issue = p['issues'].first
                         digest = issue.digest
@@ -389,7 +389,7 @@ describe Arachni::RPC::Server::Instance do
                     end
                 end
                 context 'with an array of things to be excluded'  do
-                    it 'should include those things' do
+                    it 'excludes those things' do
                         instance = @progress_instance
 
                         p = @progress_instance.service.progress( with: :native_issues )
@@ -405,7 +405,7 @@ describe Arachni::RPC::Server::Instance do
 
             describe :with do
                 describe :issues do
-                    it 'should include issues' do
+                    it 'includes issues' do
                         instance = @progress_instance
 
                         issues = instance.service.progress( with: :issues )['issues']
@@ -416,7 +416,7 @@ describe Arachni::RPC::Server::Instance do
                 end
 
                 describe :native_issues do
-                    it 'should include issues as Arachni::Issue objects' do
+                    it 'includes issues as Arachni::Issue objects' do
                         instance = @progress_instance
 
                         issues = instance.service.progress( with: :native_issues )['issues']
@@ -426,7 +426,7 @@ describe Arachni::RPC::Server::Instance do
                 end
 
                 describe :instances do
-                    it 'should include instances' do
+                    it 'includes instances' do
                         instance = @progress_instance
                         p = instance.service.progress( with: :instances )
                         p['instances'].size.should == 2
@@ -435,7 +435,7 @@ describe Arachni::RPC::Server::Instance do
                 end
 
                 context 'with an array of things to be included'  do
-                    it 'should include those things' do
+                    it 'includes those things' do
                         instance = @progress_instance
 
                         p = instance.service.progress( with: [ :issues, :instances ], without: :stats )
@@ -451,7 +451,7 @@ describe Arachni::RPC::Server::Instance do
         end
 
         describe '#shutdown' do
-            it 'should shutdown the instance' do
+            it 'shuts-down the instance' do
                 instance = @get_instance.call
                 instance.service.shutdown.should be_true
                 sleep 4
@@ -468,13 +468,13 @@ describe Arachni::RPC::Server::Instance do
     end
 
     describe '#framework' do
-        it 'should provide access to the framework' do
+        it 'provides access to the Framework' do
             @instance.framework.busy?.should be_false
         end
     end
 
     describe '#opts' do
-        it 'should provide access to the options' do
+        it 'provides access to the Options' do
             url = 'http://blah.com'
             @instance.opts.url = url
             @instance.opts.url.to_s.should == @utils.normalize_url( url )
@@ -482,13 +482,13 @@ describe Arachni::RPC::Server::Instance do
     end
 
     describe '#modules' do
-        it 'should provide access to the module manager' do
+        it 'provides access to the ModuleManager' do
             @instance.modules.available.sort.should == %w(test test2 test3).sort
         end
     end
 
     describe '#plugins' do
-        it 'should provide access to the plugin manager' do
+        it 'provides access to the PluginManager' do
             @instance.plugins.available.sort.should == %w(wait bad distributable loop default with_options spider_hook).sort
         end
     end

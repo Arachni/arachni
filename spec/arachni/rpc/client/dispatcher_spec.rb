@@ -22,17 +22,13 @@ describe Arachni::RPC::Client::Dispatcher do
         FileUtils.rm( "#{@handler_lib}echo.rb" )
     end
 
-    it 'should be able to connect to a dispatcher' do
-        @dispatcher.alive?.should be_true
-    end
-
-    it 'should map the remote handlers to local objects' do
+    it 'maps the remote handlers to local objects' do
         args = [ 'stuff', 'here', { blah: true } ]
         @dispatcher.echo.echo( *args ).should == args
     end
 
     describe '#node' do
-        it 'should provide access to the node data' do
+        it 'provides access to the node data' do
             @dispatcher.node.info.is_a?( Hash ).should be_true
         end
     end

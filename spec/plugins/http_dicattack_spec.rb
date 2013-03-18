@@ -15,7 +15,7 @@ describe name_from_filename do
     end
 
     context "when given the right params" do
-        it 'should locate the form and login successfully' do
+        it 'locates the form and login successfully' do
             options.url = server_url_for( name_from_filename )
             run
             results.should == { username: 'admin', password: 'pass' }
@@ -23,7 +23,7 @@ describe name_from_filename do
     end
 
     context "when being unable to login" do
-        it 'should not log any results' do
+        it 'logs nothing' do
             options.url = server_url_for( "#{name_from_filename}_secure" )
             run
             results.should be_nil
@@ -31,7 +31,7 @@ describe name_from_filename do
     end
 
     context "when the page isn't protected" do
-        it 'should not log anything' do
+        it 'logs nothing' do
             options.url = server_url_for( "#{name_from_filename}_unprotected" )
             run
             results.should be_nil

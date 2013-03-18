@@ -8,7 +8,7 @@ describe Arachni::HTTP::CookieJar do
     end
 
     describe '.from_file' do
-        it 'should load cookies from a Netscape cookie-jar file' do
+        it 'loads cookies from a Netscape cookie-jar file' do
             j = @jar.class.from_file( @file )
             cookies = j.cookies
             cookies.size.should == 4
@@ -16,7 +16,7 @@ describe Arachni::HTTP::CookieJar do
         end
 
         context 'when the provided file does not exist' do
-            it 'should raise an exception' do
+            it 'raises an exception' do
                 trigger = proc { @jar.class.from_file( 'file' ) }
 
                 raised = false
@@ -55,12 +55,12 @@ describe Arachni::HTTP::CookieJar do
     end
 
     describe '#initialize' do
-        it 'should return a new instance' do
+        it 'returns a new instance' do
             Arachni::HTTP::CookieJar.new.is_a?( Arachni::HTTP::CookieJar ).should be_true
         end
 
         context 'when a cookiejer option has been provided' do
-            it 'should load cookies from a Netscape cookie-jar file' do
+            it 'loads cookies from a Netscape cookie-jar file' do
                 j = @jar.class.from_file( @file )
                 cookies = j.cookies
                 cookies.size.should == 4
@@ -69,7 +69,7 @@ describe Arachni::HTTP::CookieJar do
         end
 
         context 'when the provided file does not exist' do
-            it 'should raise an exception' do
+            it 'raises an exception' do
                 raised = false
                 begin
                     j = @jar.class.from_file( 'file' )
@@ -83,7 +83,7 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#<<' do
         context 'when a cookie with that name does not already exist' do
-            it 'should add the cookie to the jar' do
+            it 'adds the cookie to the jar' do
                 cookie = Arachni::Utilities.cookies_from_file( '', @file ).first
                 @jar.empty?.should be_true
 
@@ -94,7 +94,7 @@ describe Arachni::HTTP::CookieJar do
             end
         end
         context 'when a cookie with that name already exists' do
-            it 'should update the jar (i.e. replace the cookie)' do
+            it 'updates the jar (i.e. replace the cookie)' do
                 cookie = Arachni::Utilities.cookies_from_file( '', @file ).first
                 @jar.empty?.should be_true
 
@@ -114,7 +114,7 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#update' do
         context 'when cookies with the same name do not already exist' do
-            it 'should add the cookies to the jar' do
+            it 'adds the cookies to the jar' do
                 cookies = Arachni::Utilities.cookies_from_file( '', @file )
                 @jar.empty?.should be_true
 
@@ -125,7 +125,7 @@ describe Arachni::HTTP::CookieJar do
             end
         end
         context 'when cookies with the same name already exist' do
-            it 'should update the jar (i.e. replace the cookies)' do
+            it 'updates the jar (i.e. replace the cookies)' do
                 cookies = Arachni::Utilities.cookies_from_file( '', @file )
                 @jar.empty?.should be_true
 
@@ -142,7 +142,7 @@ describe Arachni::HTTP::CookieJar do
 
         context 'when passed a' do
             context Arachni::Cookie do
-                it 'should update the cookie jar with it' do
+                it 'updates the cookie jar with it' do
                     c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
 
                     @jar.should be_empty
@@ -154,7 +154,7 @@ describe Arachni::HTTP::CookieJar do
             end
 
             context Hash do
-                it 'should convert it to Cookie and update the cookie jar with it' do
+                it 'converts it to Cookie and update the cookie jar with it' do
                     @jar.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
@@ -165,7 +165,7 @@ describe Arachni::HTTP::CookieJar do
             end
 
             context String do
-                it 'should parse it into a Cookie and update the cookie jar with it' do
+                it 'parses it into a Cookie and update the cookie jar with it' do
                     @jar.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
@@ -176,7 +176,7 @@ describe Arachni::HTTP::CookieJar do
             end
 
             context Array do
-                it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
+                it 'iterates and if necessary parses the entries and update the cookie jar with them' do
                     @jar.should be_empty
 
                     Arachni::Options.url = 'http://test.com'
@@ -208,7 +208,7 @@ describe Arachni::HTTP::CookieJar do
     end
 
     describe '#for_url' do
-        it 'should return all cookies for that particular URL' do
+        it 'returns all cookies for that particular URL' do
             cookies = {}
             cookies[:with_path] = Arachni::Element::Cookie.new( '',
                 'name'  => 'my_cookie',
@@ -296,19 +296,19 @@ describe Arachni::HTTP::CookieJar do
         end
         describe 'include_expired' do
             context true do
-                it 'should return all cookies' do
+                it 'returns all cookies' do
                     @jar.cookies( true ).size.should == 2
                 end
             end
             context false do
-                it 'should return non expired cookies only' do
+                it 'returns non expired cookies only' do
                     c = @jar.cookies( false )
                     c.size.should == 1
                     c.first.name.should == 'my_name'
                 end
             end
             context 'nil' do
-                it 'should return non expired cookies only' do
+                it 'returns non expired cookies only' do
                     c = @jar.cookies( false )
                     c.size.should == 1
                     c.first.name.should == 'my_name'
@@ -318,7 +318,7 @@ describe Arachni::HTTP::CookieJar do
     end
 
     describe '#clear' do
-        it 'should empty the jar' do
+        it 'empties the jar' do
             @jar.load( @file )
             @jar.empty?.should be_false
             @jar.clear
@@ -328,12 +328,12 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#empty?' do
         context 'when the cookie jar is empty' do
-            it 'should return true' do
+            it 'returns true' do
                 @jar.empty?.should be_true
             end
         end
         context 'when the cookie jar is not empty' do
-            it 'should return false' do
+            it 'returns false' do
                 @jar.empty?.should be_true
                 @jar.load( @file )
                 @jar.empty?.should be_false
@@ -343,12 +343,12 @@ describe Arachni::HTTP::CookieJar do
 
     describe '#any?' do
         context 'when the cookie jar is empty' do
-            it 'should return false' do
+            it 'returns false' do
                 @jar.any?.should be_false
             end
         end
         context 'when the cookie jar is not empty' do
-            it 'should return true' do
+            it 'returns true' do
                 @jar.any?.should be_false
                 @jar.load( @file )
                 @jar.any?.should be_true

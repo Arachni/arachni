@@ -48,7 +48,7 @@ shared_examples_for "module" do
     end
 
     describe '.info' do
-        it 'should hold the right targets' do
+        it 'holds the right targets' do
             if current_module.info[:targets]
                 current_module.info[:targets].sort.should == self.class.targets.sort
             else
@@ -56,7 +56,7 @@ shared_examples_for "module" do
             end
         end
 
-        it 'should hold the right elements' do
+        it 'holds the right elements' do
             if current_module.info[:elements]
                 current_module.info[:elements].sort.should == self.class.elements.sort
             else
@@ -81,7 +81,7 @@ shared_examples_for "module" do
                     end
 
                     elements.each do |type|
-                        it "should log vulnerable #{type}s" do
+                        it "logs vulnerable #{type}s" do
                             if !issue_count && !issue_count_per_target && !issue_count_per_element
                                 raise 'No issue count provided via a suitable method.'
                             end

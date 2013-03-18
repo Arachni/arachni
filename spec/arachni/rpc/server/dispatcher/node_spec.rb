@@ -65,7 +65,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             @opts.node_ping_interval = nil
         end
 
-        it 'should be re-added to the neighbours list' do
+        it 'gets re-added to the neighbours list' do
             n = @get_node.call
 
             port = random_port
@@ -93,7 +93,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             @opts.node_ping_interval = nil
         end
 
-        it 'should be removed' do
+        it 'is removed' do
             n = @get_node.call
             c = @get_node.call
 
@@ -112,7 +112,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     end
 
     context 'when initialised with a neighbour' do
-        it 'should add that neighbour and reach convergence' do
+        it 'adds that neighbour and reach convergence' do
             n = @get_node.call
 
             @opts.neighbour = n.url
@@ -143,14 +143,14 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         before( :all ) do
             @n = @get_node.call
         end
-        it 'should add a neighbour' do
+        it 'adds a neighbour' do
             @node.add_neighbour( @n.url )
             sleep 0.5
             @node.neighbours.should == [@n.url]
             @n.neighbours.should == [@node.url]
         end
         context 'when propagate is set to true' do
-            it 'should announce the new neighbour to the existing neighbours' do
+            it 'announces the new neighbour to the existing neighbours' do
                 n = @get_node.call
                 @node.add_neighbour( n.url, true )
                 sleep 0.5
@@ -179,13 +179,13 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     end
 
     describe '#neighbours' do
-        it 'should return an array of neighbours' do
+        it 'returns an array of neighbours' do
             @node.neighbours.is_a?( Array ).should be_true
         end
     end
 
     describe '#neighbours_with_info' do
-        it 'should return all neighbours accompanied by their node info' do
+        it 'returns all neighbours accompanied by their node info' do
             @node.neighbours_with_info.size == @node.neighbours.size
             keys = @node.info.keys.sort
             @node.neighbours_with_info.each do |i|
@@ -195,7 +195,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     end
 
     describe '#info' do
-        it 'should return node info' do
+        it 'returns node info' do
             @opts.pipe_id = 'pipe_id'
             @opts.weight = 10
             @opts.nickname = 'blah'
@@ -213,7 +213,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
     end
 
     describe '#alive?' do
-        it 'should return true' do
+        it 'returns true' do
             @get_node.call.alive?.should be_true
         end
     end

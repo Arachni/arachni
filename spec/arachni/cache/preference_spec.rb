@@ -4,7 +4,7 @@ describe Arachni::Cache::Preference do
 
     before { @cache = Arachni::Cache::Preference.new }
 
-    it 'should prune itself by removing entries returned by the given block' do
+    it 'prunes itself by removing entries returned by the given block' do
         @cache.max_size = 3
 
         @cache.prefer { :k2 }
@@ -21,7 +21,7 @@ describe Arachni::Cache::Preference do
         @cache.clear
     end
 
-    it 'should not remove entries with are not preferred even if the max size has been exceeded' do
+    it 'does not remove entries which are not preferred even if the max size has been exceeded' do
         @cache.prefer { :k2 }
 
         k = [ :k, :k2, :k3, :k4 ]

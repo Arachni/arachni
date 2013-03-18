@@ -18,7 +18,7 @@ describe Arachni::Session do
 
     describe '#opts' do
         describe '#login_check_url and #login_check_pattern' do
-            it 'should be used to set a login check' do
+            it 'sets a login check' do
                 s = new_session
                 s.opts.url = @url
 
@@ -62,7 +62,7 @@ describe Arachni::Session do
     end
 
     describe '#cookies' do
-        it 'should return session cookies' do
+        it 'returns session cookies' do
             s = new_session
             s.http.get @url + '/cookies', async: false, update_cookies: true
 
@@ -185,7 +185,7 @@ describe Arachni::Session do
     end
 
     describe '#login_form=' do
-        it 'should set a login form' do
+        it 'sets a login form' do
             s = new_session
 
             s.can_login?.should be_false
@@ -212,12 +212,12 @@ describe Arachni::Session do
 
     describe '#can_login?' do
         context 'when there are no login sequences' do
-            it 'should return false' do
+            it 'returns false' do
                 new_session.can_login?.should be_false
             end
         end
         context 'when there are login sequences' do
-            it 'should return true' do
+            it 'returns true' do
                 s = new_session
                 s.login_sequence = proc {}
                 s.login_check = proc {}
@@ -228,7 +228,7 @@ describe Arachni::Session do
 
     describe '#login' do
         context 'when there is no login capability' do
-            it 'should return nil' do
+            it 'returns nil' do
                 s = new_session
                 s.can_login?.should be_false
                 s.has_login_sequence?.should be_false
@@ -239,7 +239,7 @@ describe Arachni::Session do
 
     describe '#logged_in?' do
         context 'when there is no login check' do
-            it 'should return nil' do
+            it 'returns nil' do
                 s = new_session
                 s.can_login?.should be_false
                 s.has_login_check?.should be_false
@@ -250,7 +250,7 @@ describe Arachni::Session do
 
     describe '#ensure_logged_in' do
         context 'when there is no login capability' do
-            it 'should return nil' do
+            it 'returns nil' do
                 s = new_session
                 s.can_login?.should be_false
                 s.ensure_logged_in.should be_nil
@@ -260,7 +260,7 @@ describe Arachni::Session do
 
     describe '#login_sequence' do
         context 'when a block is given' do
-            it 'should set it as a login sequence' do
+            it 'sets it as a login sequence' do
                 s = new_session
                 s.login_sequence { :yeah! }
                 s.login_sequence.call.should == :yeah!
@@ -271,7 +271,7 @@ describe Arachni::Session do
 
     describe '#login_check' do
         context 'when a block is given' do
-            it 'should set it as a login sequence' do
+            it 'sets it as a login sequence' do
                 s = new_session
                 s.login_check { :yeah! }
                 s.login_check.call.should == :yeah!
@@ -281,7 +281,7 @@ describe Arachni::Session do
     end
 
     describe '#set_login_check' do
-        it 'should set a login check using a URL and regular expression' do
+        it 'sets a login check using a URL and regular expression' do
             s = new_session
             url = server_url_for( :session ) + '/'
             s.opts.url = "#{url}/congrats"

@@ -39,7 +39,7 @@ describe Arachni::RPC::Server::ActiveOptions do
 
     describe '#set' do
         context 'when keys are strings' do
-            it 'should set options by hash' do
+            it 'sets options by hash' do
                 @instance.service.cookies.should be_empty
 
                 opts = {
@@ -66,7 +66,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         end
 
         context 'when keys are symbols' do
-            it 'should set options by hash' do
+            it 'sets options by hash' do
                 @instance.service.cookies.should be_empty
 
                 opts = {
@@ -95,7 +95,7 @@ describe Arachni::RPC::Server::ActiveOptions do
 
     describe '#exclude=' do
         context 'when passed an array of strings' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = 'exclude'
                 @instance.opts.exclude = [regexp]
                 @instance.opts.exclude.should == [/exclude/]
@@ -103,7 +103,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         end
 
         context 'when passed an array of regular expressions' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = /exclude this/
                 @instance.opts.exclude = [regexp]
                 @instance.opts.exclude.should == [/exclude this/]
@@ -113,7 +113,7 @@ describe Arachni::RPC::Server::ActiveOptions do
 
     describe '#include=' do
         context 'when passed an array of strings' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = 'include'
                 @instance.opts.include = [regexp]
                 @instance.opts.include.should == [/include/]
@@ -121,7 +121,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         end
 
         context 'when passed an array of regular expressions' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = /include this/
                 @instance.opts.include = [regexp]
                 @instance.opts.include.should == [/include this/]
@@ -131,7 +131,7 @@ describe Arachni::RPC::Server::ActiveOptions do
 
     describe '#redundant=' do
         context 'when passed an array of strings' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = {
                     'regexp' => 'this is redundant',
                     'count'  => '3'
@@ -142,7 +142,7 @@ describe Arachni::RPC::Server::ActiveOptions do
         end
 
         context 'when passed an array of regular expressions' do
-            it 'should set exclusion regexps' do
+            it 'sets exclusion regexps' do
                 regexp = {
                     'regexp' => /this is redundant/,
                     'count'  => 5
@@ -156,7 +156,7 @@ describe Arachni::RPC::Server::ActiveOptions do
     describe '#cookies=' do
         context 'when passed a' do
             context Arachni::Cookie do
-                it 'should update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
 
                     @instance.service.cookies.should be_empty
@@ -170,7 +170,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context Hash do
-                it 'should convert it to Cookie and update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -183,7 +183,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context String do
-                it 'should parse it into a Cookie and update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -196,7 +196,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context Array do
-                it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -231,7 +231,7 @@ describe Arachni::RPC::Server::ActiveOptions do
     describe '#cookie_jar=' do
         context 'when passed a' do
             context Arachni::Cookie do
-                it 'should update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     c = Arachni::Cookie.new( 'http://test.com', name: 'value' )
 
                     @instance.service.cookies.should be_empty
@@ -245,7 +245,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context Hash do
-                it 'should convert it to Cookie and update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -258,7 +258,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context String do
-                it 'should parse it into a Cookie and update the cookie jar with it' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -271,7 +271,7 @@ describe Arachni::RPC::Server::ActiveOptions do
             end
 
             context Array do
-                it 'should iterate and if necessary parse the entries and update the cookie jar with them' do
+                it 'updates the cookie-jar' do
                     @instance.service.cookies.should be_empty
 
                     @instance.opts.url = 'http://test.com'
@@ -303,7 +303,7 @@ describe Arachni::RPC::Server::ActiveOptions do
     end
 
     describe '#cookie_string=' do
-        it 'should parse it into a Cookie and update the cookie jar with it' do
+        it 'updates the cookie-jar' do
             @instance.service.cookies.should be_empty
 
             @instance.opts.url = 'http://test.com'

@@ -34,7 +34,7 @@ describe Arachni::RPC::Server::Spider do
 
     context 'when using' do
         context 'multiple nodes' do
-            it 'should perform a crawl using multiple nodes' do
+            it 'performs a crawl using multiple nodes' do
                 instance = @get_instance.call
 
                 instance.service.scan(
@@ -61,7 +61,7 @@ describe Arachni::RPC::Server::Spider do
             end
         end
         context 'a single node' do
-            it 'should perform a crawl' do
+            it 'performs a crawl' do
                 instance = @get_instance.call
 
                 instance.service.scan(

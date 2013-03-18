@@ -14,7 +14,7 @@ describe Arachni::Report::Manager do
 
     describe '#run' do
         context 'without the run_afr opt' do
-            it 'should run loaded reports including the AFR one' do
+            it 'runs loaded reports including the AFR one' do
                 @reports.run( @framework.auditstore )
 
                 File.exist?( 'afr' ).should be_true
@@ -27,7 +27,7 @@ describe Arachni::Report::Manager do
             end
         end
         context 'with the run_afr opt set to true' do
-            it 'should run loaded reports including the AFR one' do
+            it 'runs loaded reports including the AFR one' do
                 @reports.run( @framework.auditstore, true )
                 File.exist?( 'afr' ).should be_true
                 File.delete( 'afr' )
@@ -39,7 +39,7 @@ describe Arachni::Report::Manager do
             end
         end
         context 'with run_afr opt set to false' do
-            it 'should run loaded reports without the AFR one' do
+            it 'runs loaded reports without the AFR one' do
                 @reports.run( @framework.auditstore, false )
                 File.exist?( 'afr' ).should be_false
 
@@ -52,7 +52,7 @@ describe Arachni::Report::Manager do
     end
 
     describe '#run_one' do
-        it 'should run a report by name' do
+        it 'runs a report by name' do
             @reports.run_one( 'foo', @framework.auditstore )
 
             File.exist?( 'foo' ).should be_true
@@ -60,7 +60,7 @@ describe Arachni::Report::Manager do
         end
 
         context 'when passed options' do
-            it 'should override Options.reports' do
+            it 'overrides Options.reports' do
                 Arachni::Options.reports[:foo] = { 'outfile' => 'stuff1' }
                 opts = { 'outfile' => 'stuff' }
                 report = @reports.run_one :foo, @framework.auditstore, opts
@@ -70,7 +70,7 @@ describe Arachni::Report::Manager do
         end
 
         context 'when not passed options' do
-            it 'should fallback to Options.reports' do
+            it 'falls back to Options.reports' do
                 opts = Arachni::Options.reports[:foo] = { 'outfile' => 'stuff2' }
                 report = @reports.run_one :foo, @framework.auditstore
                 report.options.should eq opts

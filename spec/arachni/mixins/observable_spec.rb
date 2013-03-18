@@ -20,14 +20,14 @@ describe Arachni::Mixins::Observable do
 
     before( :each ) { @obs.clear_observers }
 
-    it 'should call single hook without args' do
+    it 'calls a single hook without args' do
         res = false
         @obs.add_a_method { res = true }
         @obs.a_method
         res.should == true
     end
 
-    it 'should call multiple hooks without args' do
+    it 'calls multiple hooks without args' do
         res1 = false
         res2 = false
         @obs.add_a_method { res1 = true }
@@ -37,14 +37,14 @@ describe Arachni::Mixins::Observable do
         res2.should == true
     end
 
-    it 'should call single hook with args' do
+    it 'call a single hook with args' do
         res = false
         @obs.add_a_method { |param| res = param }
         @obs.a_method( true )
         res.should == true
     end
 
-    it 'should call multiple hooks with args' do
+    it 'calls multiple hooks with args' do
         res1 = false
         res2 = false
         @obs.add_a_method { |param| res1 = param }
@@ -54,7 +54,7 @@ describe Arachni::Mixins::Observable do
         res2.should == true
     end
 
-    it 'should raise NoMethodError on invalid method name' do
+    it 'raises NoMethodError on invalid method name' do
         begin
             @obs.blah
         rescue Exception => e
@@ -63,7 +63,7 @@ describe Arachni::Mixins::Observable do
     end
 
     describe 'clear_observers' do
-        it 'should clear all callbacks' do
+        it 'clears all callbacks' do
             @obs.hooks.should be_empty
 
             @obs.on_a_method {}

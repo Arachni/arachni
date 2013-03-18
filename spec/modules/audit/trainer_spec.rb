@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     elements.each do |element|
-        it "should probe #{element}s" do
+        it "probes #{element}s" do
             # audit the current element type but don't expect any issues
             audit element.to_sym, false
 

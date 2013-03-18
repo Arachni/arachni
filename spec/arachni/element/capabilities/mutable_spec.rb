@@ -9,13 +9,13 @@ describe Arachni::Element::Capabilities::Mutable do
 
     describe '#original?' do
         context 'when the element has not been mutated' do
-            it 'should return true' do
+            it 'returns true' do
                 e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
                 e.original?.should be_true
             end
         end
         context 'when the element has been mutated' do
-            it 'should return false' do
+            it 'returns false' do
                 e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
                 e.mutations( @seed ).first.original?.should be_false
             end
@@ -24,13 +24,13 @@ describe Arachni::Element::Capabilities::Mutable do
 
     describe '#mutated?' do
         context 'when the element has not been mutated' do
-            it 'should return true' do
+            it 'returns true' do
                 e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
                 e.mutated?.should be_false
             end
         end
         context 'when the element has been mutated' do
-            it 'should return false' do
+            it 'returns false' do
                 e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
                 e.mutations( @seed ).first.mutated?.should be_true
             end
@@ -38,7 +38,7 @@ describe Arachni::Element::Capabilities::Mutable do
     end
 
     describe '#altered_value' do
-        it 'should return the value of the altered input' do
+        it 'returns the value of the altered input' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             elem = e.mutations_for( @seed ).first
             elem.altered_value.should == @seed
@@ -46,7 +46,7 @@ describe Arachni::Element::Capabilities::Mutable do
     end
 
     describe '#altered_value=' do
-        it 'should set the value of the altered input' do
+        it 'sets the value of the altered input' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             elem = e.mutations_for( @seed ).first
             elem.altered_value = 'stuff'
@@ -56,31 +56,46 @@ describe Arachni::Element::Capabilities::Mutable do
     end
 
     describe '#mutations' do
-        it 'should be aliased to #mutations_for' do
+        it 'aliased to #mutations_for' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.mutations_for( @seed ).should == e.mutations( @seed )
         end
-        it 'should be aliased to #permutations' do
+        it 'aliased to #permutations' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.permutations( @seed ).should == e.mutations( @seed )
         end
-        it 'should be aliased to #permutations_for' do
+        it 'aliased to #permutations_for' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.permutations_for( @seed ).should == e.mutations( @seed )
         end
 
-        it 'should only affect #auditable and #altered' do
+        it 'mutates #auditable' do
             e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
             e.mutations( @seed ).each do |m|
                 e.url.should == m.url
                 e.action.should == m.action
-                e.altered.should_not == m.altered
                 e.auditable.should_not == m.auditable
             end
         end
 
+        it 'sets #altered to the name of the fuzzed input' do
+            e = Arachni::Element::Link.new( 'http://test.com', inputs: @inputs )
+
+            checked = false
+            e.mutations( @seed ).each do |m|
+                e.url.should == m.url
+                e.action.should == m.action
+                e.altered.should_not == m.altered
+                m.auditable[m.altered].should include @seed
+
+                checked = true
+            end
+
+            checked.should be_true
+        end
+
         context 'with no options' do
-            it 'should return all combinatios' do
+            it 'returns all combinatios' do
                 inputs = { inputs: {
                         'param_name' => 'param_value',
                         'email' => nil
@@ -92,7 +107,7 @@ describe Arachni::Element::Capabilities::Mutable do
         end
 
         describe '#immutables' do
-            it 'should skip parameters which is contains' do
+            it 'skips parameters contained parameters' do
                 l = Arachni::Element::Link.new( 'http://test.com',
                     inputs: {
                         'input_one' => 'value 1',
@@ -112,7 +127,7 @@ describe Arachni::Element::Capabilities::Mutable do
         context 'with option' do
             describe :respect_method do
                 describe true do
-                    it 'should not fuzz methods' do
+                    it 'does not fuzz methods' do
                         e = Arachni::Element::Form.new( 'http://test.com',
                             inputs: {
                                         'input_one' => 'value 1',
@@ -127,7 +142,7 @@ describe Arachni::Element::Capabilities::Mutable do
                     end
                 end
                 describe false do
-                    it 'should methods' do
+                    it 'fuzzes methods' do
                         e = Arachni::Element::Form.new( 'http://test.com',
                             inputs: {
                                         'input_one' => 'value 1',
@@ -140,19 +155,27 @@ describe Arachni::Element::Capabilities::Mutable do
 
                         no_respect_method.map{ |m| m.method }.uniq.size.should == 2
                     end
-                    it 'should generate mutations with boh POST and GET methods' do
+                    it 'generates mutations with POST' do
                         inputs = { inputs: { 'param_name' => 'param_value' } }
                         e = Arachni::Element::Form.new( 'http://test.com', inputs )
                         m = e.mutations( 'stuff', respect_method: false )
                         m.size.should == 9
 
                         m.select { |f| f.method.to_s.downcase == 'post' }.size.should == 4
+                    end
+
+                    it 'generates mutations with GET' do
+                        inputs = { inputs: { 'param_name' => 'param_value' } }
+                        e = Arachni::Element::Form.new( 'http://test.com', inputs )
+                        m = e.mutations( 'stuff', respect_method: false )
+                        m.size.should == 9
+
                         m.select { |f| f.method.to_s.downcase == 'get' }.size.should ==
                             m.select { |f| f.method.to_s.downcase == 'post' }.size + 1
                     end
                 end
                 describe 'nil' do
-                    it 'should not fuzz methods' do
+                    it 'does not fuzz methods' do
                         e = Arachni::Element::Form.new( 'http://test.com',
                             inputs: {
                                         'input_one' => 'value 1',
@@ -168,7 +191,7 @@ describe Arachni::Element::Capabilities::Mutable do
                 end
             end
             describe 'Options.fuzz_methods' do
-                it 'should serve as the default value of :respect_method' do
+                it 'serves as the default value of :respect_method' do
                     e = Arachni::Element::Form.new( 'http://test.com',
                         inputs: {
                                     'input_one' => 'value 1',
@@ -192,7 +215,7 @@ describe Arachni::Element::Capabilities::Mutable do
             end
 
             describe :skip do
-                it 'should skip mutation of parameters with these names' do
+                it 'skips mutation of parameters with these names' do
                     Arachni::Element::Form.new( 'http://test.com',
                         inputs: {
                             'input_one' => 'value 1',
@@ -202,7 +225,7 @@ describe Arachni::Element::Capabilities::Mutable do
                 end
             end
             describe :param_flip do
-                it 'should use the seed as a param name' do
+                it 'uses the seed as a param name' do
                     m = @mutable.mutations( @seed,
                         format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
                         param_flip: true ).last
@@ -211,35 +234,35 @@ describe Arachni::Element::Capabilities::Mutable do
             end
             describe :format do
                 describe 'Format::STRAIGHT' do
-                    it 'should inject the seed as is' do
+                    it 'injects the seed as is' do
                         m = @mutable.mutations( @seed,
                             format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT] ).first
                         m.auditable[m.altered].should == @seed
                     end
                 end
                 describe 'Format::APPEND' do
-                    it 'should append the seed to the current value' do
+                    it 'appends the seed to the current value' do
                         m = @mutable.mutations( @seed,
                             format: [Arachni::Element::Capabilities::Mutable::Format::APPEND] ).first
                         m.auditable[m.altered].should == @inputs[m.altered] + @seed
                     end
                 end
                 describe 'Format::NULL' do
-                    it 'should terminate the string with a null character' do
+                    it 'terminates the string with a null character' do
                         m = @mutable.mutations( @seed,
                             format: [Arachni::Element::Capabilities::Mutable::Format::NULL] ).first
                         m.auditable[m.altered].should == @seed + "\0"
                     end
                 end
                 describe 'Format::SEMICOLON' do
-                    it 'should prepend the seed with a semicolon' do
+                    it 'prepends the seed with a semicolon' do
                         m = @mutable.mutations( @seed,
                             format: [Arachni::Element::Capabilities::Mutable::Format::SEMICOLON] ).first
                         m.auditable[m.altered].should == ';' + @seed
                     end
                 end
                 describe 'Format::APPEND | Format::NULL' do
-                    it 'should append the seed and terminate the string with a null character' do
+                    it 'appends the seed and terminate the string with a null character' do
                         format = [Arachni::Element::Capabilities::Mutable::Format::APPEND |
                                      Arachni::Element::Capabilities::Mutable::Format::NULL]
                         m = @mutable.mutations( @seed, format: format ).first
@@ -251,7 +274,7 @@ describe Arachni::Element::Capabilities::Mutable do
     end
 
     describe '#altered' do
-        it 'should return the name of the mutated input' do
+        it 'returns the name of the mutated input' do
             m = @mutable.mutations( @seed,
                 format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT] ).first
             m.auditable[m.altered].should_not == @inputs[m.altered]

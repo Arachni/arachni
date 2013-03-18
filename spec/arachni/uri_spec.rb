@@ -52,7 +52,7 @@ describe Arachni::URI do
     before { @opts = Arachni::Options.instance.reset }
 
     describe '.URI' do
-        it 'should parse and normalize the give string' do
+        it 'parses and normalize the give string' do
             @urls.each do |url|
                 uri = Arachni::URI( url )
                 uri.is_a?( Arachni::URI ).should be_true
@@ -62,27 +62,27 @@ describe Arachni::URI do
     end
 
     describe '.encode' do
-        it 'should decode a URI' do
+        it 'decodes a URI' do
             uri = "my test.asp?name=ståle&car=saab"
             @uri.encode( uri ).should == 'my%20test.asp?name=st%C3%A5le&car=saab'
         end
     end
 
     describe '.decode' do
-        it 'should decode a URI' do
+        it 'decodes a URI' do
             uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
             @uri.decode( uri ).should == "my test.asp?name=ståle&car=saab"
         end
     end
 
     describe '.parser' do
-        it 'should return a URI::Parser' do
+        it 'returns a URI::Parser' do
             @uri.parser.class.should == ::URI::Parser
         end
     end
 
     describe '.parse' do
-        it 'should parse a URI' do
+        it 'parses a URI' do
             scheme   = 'http'
             user     = 'user'
             password = 'password'
@@ -106,7 +106,7 @@ describe Arachni::URI do
     end
 
     describe '.ruby_parse' do
-        it 'should clean the URL' do
+        it 'cleans the URL' do
             @urls.each do |url|
                 @uri.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
             end
@@ -114,7 +114,7 @@ describe Arachni::URI do
     end
 
     describe '.cheap_parse' do
-        it 'should parse a URI and return its components as a hash' do
+        it 'parses a URI and return its components as a hash' do
             scheme   = 'http'
             user     = 'user'
             password = 'password'
@@ -141,7 +141,7 @@ describe Arachni::URI do
             parsed_uri[:query].should == query
         end
 
-        it 'should return a frozen hash (with frozen values)' do
+        it 'returns a frozen hash (with frozen values)' do
             h = @uri.cheap_parse( 'http://test.com/stuff/' )
 
             raised = false
@@ -163,7 +163,7 @@ describe Arachni::URI do
     end
 
     describe '.to_absolute' do
-        it 'should convert a relative path to absolute using the reference URL' do
+        it 'converts a relative path to absolute using the reference URL' do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
@@ -177,7 +177,7 @@ describe Arachni::URI do
     end
 
     describe '.normalize' do
-        it 'should clean the URL' do
+        it 'cleans the URL' do
             @urls.each do |url|
                 @uri.normalize( url ).should == @ref_normalizer.call( url )
             end
@@ -188,7 +188,7 @@ describe Arachni::URI do
 
     describe '#initialize' do
         context String do
-            it 'should normalize and parse the string' do
+            it 'normalizes and parse the string' do
                 @urls.each do |url|
                     uri = @uri.new( url )
                     uri.is_a?( Arachni::URI ).should be_true
@@ -198,7 +198,7 @@ describe Arachni::URI do
         end
 
         context Hash do
-            it 'should normalize and construct a URI from a Hash of components' do
+            it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = @uri.new( @uri.cheap_parse( url ) )
                     uri.is_a?( Arachni::URI ).should be_true
@@ -208,7 +208,7 @@ describe Arachni::URI do
         end
 
         context URI do
-            it 'should normalize and construct a URI from a Hash of components' do
+            it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = ::URI.parse( @uri.normalize( url ) )
                     uri.is_a?( ::URI ).should be_true
@@ -221,7 +221,7 @@ describe Arachni::URI do
         end
 
         context Arachni::URI do
-            it 'should normalize and construct a URI from a Hash of components' do
+            it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = @uri.new( url )
                     a_uri = @uri.new( uri )
@@ -232,7 +232,7 @@ describe Arachni::URI do
         end
 
         context 'else' do
-            it 'should raise a TypeError' do
+            it 'raises a TypeError' do
                 raised = false
                 begin
                     @uri.new( [] )
@@ -245,7 +245,7 @@ describe Arachni::URI do
     end
 
     describe '#==' do
-        it 'should convert both objects to strings and compare them' do
+        it 'converts both objects to strings and compare them' do
             @urls.each do |url|
                 normalized_str = @uri.normalize( url )
                 uri = ::URI.parse( normalized_str )
@@ -262,7 +262,7 @@ describe Arachni::URI do
     end
 
     describe '#to_absolute' do
-        it 'should convert a self to absolute using the reference URL' do
+        it 'converts a self to absolute using the reference URL' do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
@@ -273,7 +273,7 @@ describe Arachni::URI do
     end
 
     describe '#up_p_to_path' do
-        it 'should return the URL up to its path component (no resource name, query, fragment, etc)' do
+        it 'returns the URL up to its path component (no resource name, query, fragment, etc)' do
             url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
             @uri.parse( url ).up_to_path.should == 'http://test.com/path/goes/'
 
@@ -292,7 +292,7 @@ describe Arachni::URI do
     end
 
     describe '#domain' do
-        it 'should remove the deepest subdomain from the host' do
+        it 'removes the deepest subdomain from the host' do
             url = 'http://test.com/'
             @uri.parse( url ).domain.should == 'test.com'
 
@@ -312,7 +312,7 @@ describe Arachni::URI do
 
         context 'when the directory depth of the URL\'s path is' do
             context 'not greater than the provided depth' do
-                it 'should return false' do
+                it 'returns false' do
                     @deep_url.too_deep?( -1 ).should be_false
 
                     @opts.depth_limit = 100
@@ -321,7 +321,7 @@ describe Arachni::URI do
             end
 
             context 'greater than the provided depth' do
-                it 'should return true' do
+                it 'returns true' do
                     @deep_url.too_deep?( 2 ).should be_true
                 end
             end
@@ -332,7 +332,7 @@ describe Arachni::URI do
         before { @exclude_url = @uri.parse( 'http://test.com/exclude/' ) }
 
         context 'when self matches the provided exclude rules' do
-            it 'should return true' do
+            it 'returns true' do
                 rules = [ /exclude/ ]
                 @exclude_url.exclude?( rules ).should be_true
 
@@ -341,7 +341,7 @@ describe Arachni::URI do
         end
 
         context 'when self does not match the provided exclude rules' do
-            it 'should return false' do
+            it 'returns false' do
                 rules = [ /boo/ ]
                 @exclude_url.exclude?( rules ).should be_false
 
@@ -350,7 +350,7 @@ describe Arachni::URI do
         end
 
         context 'when the provided rules are nil' do
-            it 'should raise a TypeError' do
+            it 'raises a TypeError' do
                 raised = false
                 begin
                     @exclude_url.exclude?( nil ).should be_true
@@ -367,7 +367,7 @@ describe Arachni::URI do
         before { @include_url = @uri.parse( 'http://test.com/include/' ) }
 
         context 'when self matches the provided include rules in' do
-            it 'should return true' do
+            it 'returns true' do
                 rules = [ /include/ ]
                 @include_url.include?( rules ).should be_true
 
@@ -376,7 +376,7 @@ describe Arachni::URI do
         end
 
         context 'when self does not match the provided include rules in' do
-            it 'should return false' do
+            it 'returns false' do
                 rules = [ /boo/ ]
                 @include_url.include?( rules ).should be_false
 
@@ -385,13 +385,13 @@ describe Arachni::URI do
         end
 
         context 'when the provided rules are empty' do
-            it 'should return true' do
+            it 'returns true' do
                 @include_url.include?( [] ).should be_true
             end
         end
 
         context 'when the provided rules are nil' do
-            it 'should raise a TypeError' do
+            it 'raise a TypeError' do
                 raised = false
                 begin
                     @include_url.include?( nil ).should be_true
@@ -408,7 +408,7 @@ describe Arachni::URI do
 
         context Arachni::URI do
             context true do
-                it 'should include subdomains in the comparison' do
+                it 'includes subdomains in the comparison' do
                     u = @uri.parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, u ).should be_false
 
@@ -417,7 +417,7 @@ describe Arachni::URI do
                 end
             end
             context false do
-                it 'should not include subdomains in the comparison' do
+                it 'does not include subdomains in the comparison' do
                     u = @uri.parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, u ).should be_true
 
@@ -429,13 +429,13 @@ describe Arachni::URI do
 
         context URI do
             context true do
-                it 'should include subdomains in the comparison' do
+                it 'includes subdomains in the comparison' do
                     u = URI( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, u ).should be_false
                 end
             end
             context false do
-                it 'should not include subdomains in the comparison' do
+                it 'does not include subdomains in the comparison' do
                     u = URI( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, u ).should be_true
                 end
@@ -444,13 +444,13 @@ describe Arachni::URI do
 
         context Hash do
             context true do
-                it 'should include subdomains in the comparison' do
+                it 'includes subdomains in the comparison' do
                     h = @uri.cheap_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( true, h ).should be_false
                 end
             end
             context false do
-                it 'should not include subdomains in the comparison' do
+                it 'does not include subdomains in the comparison' do
                     h = @uri.cheap_parse( 'http://boo.test.com' )
                     @in_domain_url.in_domain?( false, h ).should be_true
                 end
@@ -459,19 +459,19 @@ describe Arachni::URI do
 
         context String do
             context true do
-                it 'should include subdomains in the comparison' do
+                it 'includes subdomains in the comparison' do
                     @in_domain_url.in_domain?( true, 'http://boo.test.com' ).should be_false
                 end
             end
             context false do
-                it 'should not include subdomains in the comparison' do
+                it 'does not include subdomains in the comparison' do
                     @in_domain_url.in_domain?( false, 'http://boo.test.com' ).should be_true
                 end
             end
         end
 
         context 'else' do
-            it 'should raise a TypeError' do
+            it 'raises a TypeError' do
                 raised = false
                 begin
                     @in_domain_url.in_domain?( false, [] ).should be_true
@@ -485,12 +485,12 @@ describe Arachni::URI do
 
     describe '#mailto?' do
         context 'when the URI has a mailto scheme' do
-            it 'should return true' do
+            it 'returns true' do
                 @uri.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
             end
         end
         context 'when the URI does not have a mailto scheme' do
-            it 'should return false' do
+            it 'returns false' do
                 @uri.new( 'blah.com' ).mailto?.should be_false
             end
         end
