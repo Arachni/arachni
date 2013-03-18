@@ -330,11 +330,30 @@ USAGE
     def run
         print_status 'Starting the server...'
         @server.start
+    rescue => e
+        print_error e.to_s
+        print_error_backtrace e
+
+        $stderr.puts "Could not start server, for details see: #{@logfile}"
+
+        # If the server fails to start kill the pool Instances
+        # to prevent zombie processes.
+        @consumed_pids.each { |p| kill p }
+        exit 1
     end
 
     def shutdown
         print_status 'Shutting down...'
         @server.shutdown
+    end
+
+    def kill( pid )
+        begin
+            10.times { Process.kill( 'KILL', pid ) }
+            return false
+        rescue Errno::ESRCH
+            return true
+        end
     end
 
     def add_instance_to_pool
