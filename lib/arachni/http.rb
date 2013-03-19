@@ -479,6 +479,9 @@ class HTTP
     #
     def update_cookies( cookies )
         @cookie_jar.update( cookies )
+
+        # Update framework cookies.
+        Arachni::Options.cookies = @cookie_jar.cookies
     end
     alias :set_cookies :update_cookies
 
@@ -492,9 +495,6 @@ class HTTP
     def parse_and_set_cookies( res )
         cookies = Cookie.from_response( res )
         update_cookies( cookies )
-
-        # update framework cookies
-        Options.cookies = cookies
 
         call_on_new_cookies( cookies, res )
     end

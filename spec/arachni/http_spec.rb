@@ -801,11 +801,21 @@ describe Arachni::HTTP do
     describe '#update_cookies' do
         it 'updates the cookies' do
             cookies = []
-            cookies << Arachni::Element::Cookie.new( @url,
-                'key2' => 'val2' )
+            cookies << Arachni::Element::Cookie.new( @url, 'key2' => 'val2' )
+
             @http.cookies.should be_empty
             @http.update_cookies( cookies )
             @http.cookies.should == cookies
+        end
+
+        it 'updates the Arachni::Options.cookies' do
+            Arachni::Options.cookies.should be_nil
+
+            cookies = []
+            cookies << Arachni::Element::Cookie.new( @url, 'key2' => 'val2' )
+            @http.update_cookies( cookies )
+
+            Arachni::Options.cookies.should == cookies
         end
     end
 

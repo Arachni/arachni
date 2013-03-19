@@ -57,11 +57,12 @@ describe Arachni::RPC::Server::ActiveOptions do
                 @instance.opts.exclude.should == [/exclude me/]
                 @instance.opts.include.should == [/include me/]
                 @instance.opts.datastore.should == opts['datastore']
-                @instance.opts.cookies.should == opts['cookies']
 
                 @instance.service.cookies.should ==
                     [ Arachni::Cookie.new( opts['url'], opts['cookies'] ),
                       Arachni::Cookie.new( opts['url'], { name3: 'value3' } )]
+
+                @instance.opts.cookies.should == @instance.service.cookies
             end
         end
 
@@ -84,11 +85,12 @@ describe Arachni::RPC::Server::ActiveOptions do
                 @instance.opts.exclude.should == [/exclude me2/]
                 @instance.opts.include.should == [/include me2/]
                 @instance.opts.datastore.should == opts[:datastore]
-                @instance.opts.cookies.should == opts[:cookies]
 
                 @instance.service.cookies.should ==
                     [ Arachni::Cookie.new( opts[:url], opts[:cookies] ),
                       Arachni::Cookie.new( opts[:url], { name3: 'value3' } )]
+
+                @instance.opts.cookies.should == @instance.service.cookies
             end
         end
     end

@@ -215,7 +215,6 @@ class AuditStore
         new_options = {}
 
         options = options.to_hash
-        options['url'] = options['url'].to_s
         options.each_pair do |key, val|
             case key
                 when 'redundant'
@@ -230,7 +229,8 @@ class AuditStore
 
                 when 'cookies'
                     next if !val
-                    new_options[key.to_s] = val.inject( {} ){ |h, c| h.merge!( c.simple ) }
+                    new_options[key.to_s] =
+                        val.inject( {} ){ |h, c| h.merge!( c.simple ) }
 
                 else
                     new_options[key.to_s] = val
