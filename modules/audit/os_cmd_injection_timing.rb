@@ -19,7 +19,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
-# @version 0.2.3
+# @version 0.2.4
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -52,7 +52,7 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
             description: %q{Tries to find operating system command injections using timing attacks.},
             elements:    [ Element::FORM, Element::LINK, Element::COOKIE, Element::HEADER ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com> ',
-            version:     '0.2.3',
+            version:     '0.2.4',
             references:  {
                 'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
             },
