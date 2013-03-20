@@ -33,7 +33,9 @@ class Arachni::Modules::PathTraversal < Arachni::Module::Base
         @inputs = {}
         {
             'etc/passwd'      => /root:x:0:0:.+:[0-9a-zA-Z\/]+/im,
-            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im
+            'boot.ini'        => /\[boot loader\](.*)\[operating systems\]/im,
+            'windows/win.ini' => /\[fonts\](.*)\[extensions\]/im,
+            'winnt/win.ini'   => /\[fonts\](.*)\[extensions\]/im
         }.each do |file, regexp|
             [
                 '/',

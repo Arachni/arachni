@@ -98,6 +98,8 @@
       - XSS in script tag
           - Requires manual verification -- Arachni can't inspect the JS runtime.
           - Added remark to inform users about the above.
+      - Path traversal
+            - Added more payloads for Windows.
   - Added
       - Auto-complete for password form fields.
   - Removed

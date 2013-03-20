@@ -7,6 +7,8 @@ end
 
 FILE_TO_PLATFORM = {
     '/boot.ini'        => :windows,
+    '/windows/win.ini' => :windows,
+    '/winnt/win.ini'   => :windows,
     '/etc/passwd'      => :unix,
     '/WEB-INF/web.xml' => :tomcat
 }
@@ -20,6 +22,18 @@ timeout=30
 default=multi(0)disk(0)rdisk(0)partition(1)\WINDOWS
 [operating systems]
 multi(0)disk(0)rdisk(0)partition(1)\WINDOWS="Microsoft Windows XP Professional" /fastdetect
+
+; for 16-bit app support
+[fonts]
+[extensions]
+[mci extensions]
+[files]
+[Mail]
+MAPI=1
+CMC=1
+CMCDLLNAME32=mapi32.dll
+CMCDLLNAME=mapi.dll
+MAPIX=1
 ',
     tomcat: '<?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
