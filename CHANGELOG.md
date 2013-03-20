@@ -100,6 +100,8 @@
           - Added remark to inform users about the above.
       - Path traversal
             - Added more payloads for Windows.
+      - OS command injection
+            - Added more payloads for Windows.
   - Added
       - Auto-complete for password form fields.
   - Removed
