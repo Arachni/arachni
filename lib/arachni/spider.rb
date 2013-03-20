@@ -360,7 +360,7 @@ class Spider
         wrap = proc do |res|
             effective_url = normalize_url( res.effective_url )
 
-            if res.redirection?
+            if res.redirection? && res.location
                 @redirects << res.request.url
                 location = to_absolute( res.location )
                 if hit_redirect_limit? || skip?( location )
