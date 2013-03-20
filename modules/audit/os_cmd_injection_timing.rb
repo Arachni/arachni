@@ -32,7 +32,7 @@ class Arachni::Modules::OSCmdInjectionTiming < Arachni::Module::Base
         @payloads ||= []
         if @payloads.empty?
             read_file( 'payloads.txt' ) do |str|
-                [ '', '&&', '|', ';' ].each { |sep| @payloads << sep + " " + str }
+                [ '', '&', '&&', '|', ';' ].each { |sep| @payloads << sep + " " + str }
                 @payloads << "`" + str + "`"
             end
         end
