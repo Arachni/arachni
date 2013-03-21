@@ -43,7 +43,12 @@ class Dispatcher
         end
     end
 
+    def url
+        @client.url
+    end
+
     private
+
     #
     # Used to provide the illusion of locality for remote methods
     #
@@ -51,9 +56,6 @@ class Dispatcher
         @client.call( "dispatcher.#{sym.to_s}", *args, &block )
     end
 
-    def url
-        @client.url
-    end
 end
 
 end
