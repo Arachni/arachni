@@ -142,7 +142,6 @@ class Framework < ::Arachni::Framework
     def busy?
         !!@extended_running
     end
-    alias :extended_running? :busy?
 
     #
     # Sets this instance as the master.
@@ -215,7 +214,7 @@ class Framework < ::Arachni::Framework
     #
     def run( type = nil )
         # Return if we're already running.
-        return false if extended_running?
+        return false if busy?
 
         if master? && @opts.restrict_paths.any?
             fail Error::UnsupportedOption,
