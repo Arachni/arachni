@@ -46,15 +46,13 @@ class Arachni::Modules::XSSHTMLTag < Arachni::Module::Base
         # context there's no point in parsing the HTML to verify the vulnerability
         return if !res.body || !res.body.include?( TAG_NAME )
 
-        begin
-            # see if we managed to inject a working HTML attribute to any
-            # elements
-            Nokogiri::HTML( res.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
-                next if element[TAG_NAME] != seed
+        # see if we managed to inject a working HTML attribute to any
+        # elements
+        Nokogiri::HTML( res.body ).xpath( "//*[@#{TAG_NAME}]" ).each do |element|
+            next if element[TAG_NAME] != seed
 
-                opts[:match] = element.to_s
-                log( opts, res )
-            end
+            opts[:match] = element.to_s
+            log( opts, res )
         end
     end
 
