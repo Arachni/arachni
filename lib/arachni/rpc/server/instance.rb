@@ -33,13 +33,14 @@ class Server
 #
 # Represents a single Arachni instance and serves as a central point of access
 # to a scanner's components:
+# * {Instance} -- mapped to +service+
 # * {Options} -- mapped to +opts+
 # * {Framework} -- mapped to +framework+
 # * {Module::Manager} -- mapped to +modules+
 # * {Plugin::Manager} -- mapped to +plugins+
 # * {Spider} -- mapped to +spider+
 #
-# It also provides very simple methods for:
+# It also provides convenience methods for:
 # * {#scan Configuring and running a scan};
 # * {#progress Aggregate progress information};
 # * {#busy? Checking whether the scan is still in progress};
@@ -47,8 +48,6 @@ class Server
 # * {#report Grabbing the report as a Hash};
 # * {#report_as Grabbing the report in one of the supported formats};
 # * {#shutdown Shutting down}.
-#
-# These methods are mapped to the +service+ RPC handler.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -129,7 +128,7 @@ class Instance
     # Cleans up and returns the report.
     #
     # @param   [Symbol] report_type
-    #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore.}
+    #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore}.
     #
     def abort_and_report( report_type = :hash, &block )
         @framework.clean_up do
@@ -169,6 +168,7 @@ class Instance
     end
 
     # @see Framework#output
+    # @deprecated
     def output( &block )
         @framework.output( &block )
     end
@@ -291,9 +291,7 @@ class Instance
         true
     end
 
-    #
     # Makes the server go bye-bye...Lights out!
-    #
     def shutdown
         print_status 'Shutting down...'
 
@@ -311,6 +309,7 @@ class Instance
     end
     alias :shutdown! :shutdown
 
+    # @private
     def error_test( str )
         print_error str.to_s
     end

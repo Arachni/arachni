@@ -493,6 +493,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Array<Hash>]
     #
+    # @deprecated
+    #
     def output( &block )
         buffer = flush_buffer
 
@@ -725,6 +727,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
     #
+    # @private
+    #
     def restrict_to_elements( elements, token = nil )
         return false if master? && !valid_token?( token )
         Element::Capabilities::Auditable.restrict_to_elements( elements )
@@ -745,6 +749,8 @@ class Framework < ::Arachni::Framework
     #   the token needn't be provided.
     #
     # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    #
+    # @private
     #
     def update_element_ids_per_page( element_ids_per_page = {}, token = nil,
                                      signal_done_peer_url = nil )
@@ -791,6 +797,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
     #
+    # @private
+    #
     def slave_done( slave_url, token = nil )
         return false if master? && !valid_token?( token )
         @done_slaves << slave_url
@@ -811,6 +819,8 @@ class Framework < ::Arachni::Framework
     #   the token needn't be provided.
     #
     # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    #
+    # @private
     #
     def register_issues( issues, token = nil )
         return false if master? && !valid_token?( token )
@@ -836,6 +846,8 @@ class Framework < ::Arachni::Framework
     #   the token needn't be provided.
     #
     # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    #
+    # @private
     #
     def register_issue_summaries( issues, token = nil )
         return false if master? && !valid_token?( token )
@@ -922,16 +934,14 @@ class Framework < ::Arachni::Framework
     end
 
     # @return   [String]    URL of this instance.
+    # @private
     def self_url
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
     end
 
+    # @private
     def ignore_grid
         @ignore_grid = true
-    end
-
-    def ignore_grid?
-        !!@ignore_grid
     end
 
     # @return   [String]    This instance's RPC token.
@@ -939,11 +949,16 @@ class Framework < ::Arachni::Framework
         @opts.datastore[:token]
     end
 
+    # @private
     def error_test( str )
         print_error str.to_s
     end
 
     private
+
+    def ignore_grid?
+        !!@ignore_grid
+    end
 
     def prepare
         return if @prepared

@@ -307,21 +307,17 @@ module Utilities
 
     #
     # Determines whether or not a given {Arachni::Page} or {Typhoeus::Response}
-    # should be ignored based on:
-    #   * {Options#ignore} patterns
-    #   * {Options#exclude_binaries} option
-    #   * Body
-    #   * Content-type
+    # should be ignored.
     #
     # @param    [Page,Typhoeus::Response,#body]   page_or_response
     #
     # @return   [Bool]
     #   +true+ if the +#body+ of the given object matches any of the
-    #   {Options#ignore} patterns, +false+ otherwise.
+    #   exclusion patterns, +false+ otherwise.
     #
-    # @see Options#ignore
-    # @see Options#ignore?
+    # @see #skip_path?
     # @see Options#exclude_binaries?
+    # @see Options#exclude_page?
     #
     def skip_page?( page_or_response )
         (Options.exclude_binaries? && !page_or_response.text?) ||
@@ -334,7 +330,7 @@ module Utilities
     # Determines whether or not the given +resource+ should be ignored
     # depending on its type and content.
     #
-    # @param    [Page,Typhoeus::Response,String]
+    # @param    [Page,Typhoeus::Response,String]    resource
     #   If given a:
     #       * {Page}: both its URL and body will be examined.
     #       * {Typhoeus::Response}: both its effective URL and body will be examined.

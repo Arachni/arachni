@@ -625,14 +625,14 @@ class Options
     end
 
     #
-    # Checks if the given string matches one of the configured {#exclude_body} patterns.
+    # Checks if the given string matches one of the configured {#exclude_pages} patterns.
     #
     # @param    [String]    body
     #
     # @return   [Bool]
-    #   +true+ if +body+ matches an {#exclude_body} pattern, +false+ otherwise.
+    #   +true+ if +body+ matches an {#exclude_pages} pattern, +false+ otherwise.
     #
-    # @see #exclude_body
+    # @see #exclude_pages
     #
     def exclude_page?( body )
         Options.exclude_pages.each { |i| return true if body.to_s =~ i }

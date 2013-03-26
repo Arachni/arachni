@@ -221,7 +221,6 @@ module Utilities
 
     #
     # Saves options to an Arachni Framework Profile file.
-    # The file will be appended with the {PROFILE_EXT} extension.
     #
     # @param    [String]    filename
     #
