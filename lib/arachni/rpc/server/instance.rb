@@ -31,9 +31,10 @@ module RPC
 class Server
 
 #
-# Represents a single Arachni instance and serves as a central point of access
-# to the scanner's components:
-# * {Instance} -- mapped to +service+
+# Represents an Arachni instance (or multiple instances when running a
+# high-performance scan) and serves as a central point of access to the
+# scanner's components:
+# * {Instance self} -- mapped to +service+
 # * {Options} -- mapped to +opts+
 # * {Framework} -- mapped to +framework+
 # * {Module::Manager} -- mapped to +modules+
@@ -41,13 +42,18 @@ class Server
 # * {Spider} -- mapped to +spider+
 #
 # It also provides convenience methods for:
-# * {#scan Configuring and running a scan};
-# * {#progress Aggregate progress information};
-# * {#busy? Checking whether the scan is still in progress};
-# * {#status Checking the status of the scan};
-# * {#report Grabbing the report as a Hash};
-# * {#report_as Grabbing the report in one of the supported formats};
-# * {#shutdown Shutting down}.
+# * {#scan Configuring and running a scan}
+# * Retrieving progress information
+#   * {#progress in aggregate form} (which includes a multitude of information)
+#   * or simply by:
+#     * {#busy? checking whether the scan is still in progress}
+#     * {#status checking the status of the scan}
+# * {#pause Pausing}, {#resume resuming} or {#abort_and_report aborting} the scan.
+# * Retrieving the scan report
+#   * {#report as a Hash} or a native {#auditstore AuditStore} object
+#   * {#report_as in one of the supported formats} (as made available by the
+#     {Reports report} components)
+# * {#shutdown Shutting down}
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -137,6 +143,13 @@ class Instance
     # @param   [Symbol] report_type
     #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore}.
     #
+    # @note Don't forget to {#shutdown} the instance once you get the report.
+    #
+    # @see Framework#clean_up
+    # @see #abort_and_report
+    # @see #report
+    # @see #auditstore
+    #
     def abort_and_report( report_type = :hash, &block )
         @framework.clean_up do
             block.call report_type == :auditstore ? auditstore : report
@@ -148,6 +161,7 @@ class Instance
     #
     # @note Don't forget to {#shutdown} the instance once you get the report.
     #
+    # @see Framework#clean_up
     # @see #abort_and_report
     # @see #report_as
     #
@@ -244,10 +258,10 @@ class Instance
     end
 
     #
-    # Configures and runs s scan.
+    # Configures and runs a scan.
     #
-    # If you use this method to start the scan use {#busy?} instead of
-    # {Framework#busy?} to check if the scan is still running.
+    # @note If you use this method to start the scan use {#busy?} instead of
+    #   {Framework#busy?} to check if the scan is still running.
     #
     # @param  [Hash]  opts Scan options to be passed to {Options#set}.
     # @option opts [Array<Hash>]  :slaves  Info of Instances to {Framework#enslave enslave}.
