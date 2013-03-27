@@ -366,6 +366,8 @@ need to follow in order to contribute code:
 
 That's all. :)
 
+PS. You may want to setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment) first.
+
 ## Bug reports/Feature requests
 
 Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues).<br/>
