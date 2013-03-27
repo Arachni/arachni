@@ -55,6 +55,14 @@ class Server
 #     {Reports report} components)
 # * {#shutdown Shutting down}
 #
+# @note Ignore +block+ parameters, they are an RPC implementation detail for
+#   methods which perform asynchronous operations.
+#
+# @note Avoid calling methods which return Arachni-specific objects (like {AuditStore},
+#   {Issue}, etc.) when you don't have these objects available on the client-side
+#   (like when working from a non-Ruby platform or not having the Arachni framework
+#   installed).
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
