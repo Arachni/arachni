@@ -17,7 +17,7 @@
 module Arachni
 
 #
-# The namespace under which all modules exist
+# The namespace under which all reports exist.
 #
 module Reports
 end

@@ -17,7 +17,7 @@
 module Arachni
 
 #
-# The namespace under which all plugins exist
+# The namespace under which all plugins exist.
 #
 module Plugins
 end
