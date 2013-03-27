@@ -32,7 +32,7 @@ class Server
 
 #
 # Represents a single Arachni instance and serves as a central point of access
-# to a scanner's components:
+# to the scanner's components:
 # * {Instance} -- mapped to +service+
 # * {Options} -- mapped to +opts+
 # * {Framework} -- mapped to +framework+
@@ -109,16 +109,23 @@ class Instance
         @scan_initializing ? true : @framework.busy?
     end
 
-    # @see Framework#errors
+    # @param (see Arachni::RPC::Server::Framework#errors)
+    # @return (see Arachni::RPC::Server::Framework#errors)
     def errors( starting_line = 0, &block )
         @framework.errors( starting_line, &block )
     end
 
+    #
+    # Pauses the running scan on a best effort basis.
+    #
     # @see Framework#pause
     def pause( &block )
         @framework.pause( &block )
     end
 
+    #
+    # Resumes a paused scan.
+    #
     # @see Framework#resume
     def resume( &block )
         @framework.resume( &block )
@@ -139,6 +146,9 @@ class Instance
     #
     # Cleans up and delegates to {#report_as}.
     #
+    # @note Don't forget to {#shutdown} the instance once you get the report.
+    #
+    # @see #abort_and_report
     # @see #report_as
     #
     def abort_and_report_as( *args, &block )
@@ -147,16 +157,20 @@ class Instance
         end
     end
 
+    # @return (see Arachni::Framework#auditstore)
     # @see Framework#auditstore
     def auditstore
         @framework.auditstore
     end
 
+    # @return (see Arachni::RPC::Server::Framework#report)
     # @see Framework#report
     def report
         @framework.report
     end
 
+    # @param (see Arachni::Framework#report_as)
+    # @return (see Arachni::Framework#report_as)
     # @see Framework#report_as
     def report_as( *args )
         @framework.report_as( *args )
@@ -167,7 +181,9 @@ class Instance
         @framework.status
     end
 
-    # @see Framework#output
+    # @param (see Arachni::RPC::Server::Framework#auditstore)
+    # @return (see Arachni::RPC::Server::Framework#auditstore)
+    #
     # @deprecated
     def output( &block )
         @framework.output( &block )
@@ -180,11 +196,24 @@ class Instance
     # * +stats+ -- General runtime statistics (merged when part of Grid) (enabled by default)
     # * +status+ -- {#status}
     # * +busy+ -- {#busy?}
-    # * +issues+ -- {Framework#issues_as_hash} (disabled by default)
+    # * +issues+ -- {Framework#issues_as_hash} or {Framework#issues} (disabled by default)
     # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
     # * +errors+ -- {#errors} (disabled by default)
     #
-    # @param    [Hash] options +{ with: [ :issues, :instances ], without: :stats }+
+    # @param  [Hash]  options
+    #   Options about what progress data to retrieve and return.
+    # @option options [Array<Symbol, Hash>]  :with
+    #   Specify data to include:
+    #   * :native_issues -- Discovered issues as {Arachni::Issue} objects.
+    #   * :issues -- Discovered issues as {Arachni::Issue#to_h hashes}.
+    #   * :instances -- Statistics and info for slave instances.
+    #   * :errors -- Errors and the line offset to use for {#errors}.
+    #     Pass as a hash, like: +{ errors: 10 }+
+    # @option options [Array<Symbol, Hash>]  :without
+    #   Specify data to exclude:
+    #   * :stats -- Don't include runtime statistics.
+    #   * :issues -- Don't include issues with the given {Arachni::Issue#digest digests}.
+    #     Pass as a hash, like: +{ issues: [...] }+
     #
     def progress( options = {}, &block )
         with    = parse_progress_opts( options, :with )
@@ -220,10 +249,8 @@ class Instance
     # If you use this method to start the scan use {#busy?} instead of
     # {Framework#busy?} to check if the scan is still running.
     #
-    # @param    [Hash]  opts
-    #   Scan options to be passed to {Options#set}. Supports the following
-    #   extra options:
-    # @option opts [Array<Hash>]  :slaves  Each item will be passed to {Framework#enslave}.
+    # @param  [Hash]  opts Scan options to be passed to {Options#set}.
+    # @option opts [Array<Hash>]  :slaves  Info of Instances to {Framework#enslave enslave}.
     # @option opts [Integer]  :spawns The amount of slaves to spawn.
     # @option opts [Array<Page>]  :pages Extra pages to audit.
     # @option opts [Array<String>]  :elements
