@@ -286,26 +286,32 @@ class Instance
             return false
         end
 
+        # Normalize this sucker to have symbols as keys
         opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
-        slaves  = opts[:slaves] || []
-        spawn_count = opts[:spawns].to_i
 
-        if opts[:plugins] && opts[:plugins].is_a?( Array )
-            opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
-        end
+        slaves      = opts[:slaves] || []
+        spawn_count = opts[:spawns].to_i
 
         if opts[:grid] && spawn_count <= 0
             fail ArgumentError,
-                 'Spawn count (:spawns) must be more than 1 for Grid scans.'
+                 'Option \'spawns\' must be greater than 1 for Grid scans.'
         end
 
-        if (opts[:grid] || spawn_count > 0) &&
-            [opts[:restrict_paths]].flatten.compact.any?
+        if (opts[:grid] || spawn_count > 0) && [opts[:restrict_paths]].flatten.compact.any?
             fail ArgumentError,
                  'Option \'restrict_paths\' is not supported when in High-Performance mode.'
         end
 
+        # There may be follow-up/retry calls by the client in cases of network
+        # errors (after the request has reached us) so we need to keep minimal
+        # track of state in order to bail out on subsequent calls.
         @scan_initializing = true
+
+        # Plugins option needs to be a hash...
+        if opts[:plugins] && opts[:plugins].is_a?( Array )
+            opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
+        end
+
         @framework.opts.set( opts )
 
         @framework.update_page_queue( opts[:pages] || [] )
@@ -315,23 +321,35 @@ class Instance
         @framework.modules.load opts[:modules] if opts[:modules]
         @framework.plugins.load opts[:plugins] if opts[:plugins]
 
-        each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
-        after = proc { block.call @framework.run; @scan_initializing = false }
-
         # If the Dispatchers are in a Grid config but the user has not requested
         # a Grid scan force the framework to ignore the Grid and work with
         # the instances we give it.
         @framework.ignore_grid if has_dispatcher? && !opts[:grid]
 
-        # If a Grid scan has been selected then just set us as the master
-        # and set the spawn count as max slaves.
+        # Starts the scan after all necessary options have been set.
+        after = proc { block.call @framework.run; @scan_initializing = false }
+
         if opts[:grid]
+            #
+            # If a Grid scan has been selected then just set us as the master
+            # and set the spawn count as max slaves.
+            #
+            # The Framework and the Grid will sort out the rest...
+            #
             @framework.set_as_master
             @framework.opts.max_slaves = spawn_count
+
+            # Rock n' roll!
             after.call
         else
+            # Handles each spawn, enslaving it for a high-performance distributed scan.
+            each  = proc { |slave, iter| @framework.enslave( slave ){ iter.next } }
+
             spawn( spawn_count ) do |spawns|
+                # Add our spawns to the slaves list which was passed as an option.
                 slaves |= spawns
+
+                # Process the Instances.
                 ::EM::Iterator.new( slaves, slaves.empty? ? 1 : slaves.size ).
                     each( each, after )
             end
@@ -367,9 +385,7 @@ class Instance
 
     def parse_progress_opts( options, key )
         parsed = {}
-        [options.delete( key ) || options.delete( key.to_s )].each do |w|
-            next if !w
-
+        [options.delete( key ) || options.delete( key.to_s )].compact.each do |w|
             case w
                 when Array
                     w.compact.flatten.each do |q|
