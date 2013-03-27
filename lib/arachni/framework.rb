@@ -381,11 +381,9 @@ class Framework
     end
 
     #
-    # Returns the results of the audit as an {AuditStore} instance
+    # @return    [AuditStore]   Scan results.
     #
     # @see AuditStore
-    #
-    # @return    [AuditStore]
     #
     def audit_store
         opts = @opts.to_hash.deep_clone
@@ -410,10 +408,13 @@ class Framework
     #
     # Only accepts reports which support an +outfile+ option.
     #
-    # @param    [String]    name    Name of the report component to run.
-    # @param    [AuditStore]    external_report    Report to use.
+    # @param    [String]    name
+    #   Name of the report component to run as presented by
+    #   {Arachni::Framework#list_reports} +:rep_name+ key.
+    # @param    [AuditStore]    external_report
+    #   Report to use -- defaults to the local one.
     #
-    # @return   [String]    Report content.
+    # @return   [String]    Scan report.
     #
     # @raise    [Component::Error::NotFound]
     #   If the given report name doesn't correspond to a valid report component.
