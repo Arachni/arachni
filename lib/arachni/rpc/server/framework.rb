@@ -178,8 +178,9 @@ class Framework < ::Arachni::Framework
     #
     # @param    [Hash]  instance_info   { 'url' => '<host>:<port>', 'token' => 's3cr3t' }
     #
-    # @return   [Bool]  +true+ on success, +false+ is this instance is a slave.
-    #   Slaves can't have slaves of their own.
+    # @return   [Bool]
+    #   +true+ on success, +false+ is this instance is a slave (slaves can't have
+    #   slaves of their own).
     #
     def enslave( instance_info, opts = {}, &block )
         if slave?
@@ -212,7 +213,7 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Bool]  +false+ if already running, +true+ otherwise.
     #
-    def run( type = nil )
+    def run
         # Return if we're already running.
         return false if busy?
 
@@ -668,9 +669,7 @@ class Framework < ::Arachni::Framework
     alias :progress_data :progress
 
     #
-    # Returns the results of the audit as a hash.
-    #
-    # @return   [Hash]  {AuditStore#to_h}
+    # @return   [Hash]  {AuditStore#to_h}   Audit results as a hash.
     #
     # @see AuditStore#to_h
     #
