@@ -25,10 +25,13 @@ module Mixins
 # using simple dynamic programming with the help of "method_missing()".
 #
 # The observable classes (those which include this module) use:
+#
 #    * call_<hookname>( *args )
+#
 # to call specific hooks.
 #
 # The observers set hooks using:
+#
 #    * observer_instance.add_<hookname>( &block )
 #    * observer_instance.on_<hookname>( &block )
 #

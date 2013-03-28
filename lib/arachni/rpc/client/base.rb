@@ -27,12 +27,14 @@ class Base < ::Arachni::RPC::EM::Client
     attr_reader :url
 
     #
-    # @param    [Arachni::Options]   opts   relevant options:
-    #                                          * ssl_ca -- CA file (.pem)
-    #                                          * node_ssl_pkey OR ssl_pkey -- private key file (.pem)
-    #                                          * node_ssl_cert OR ssl_cert -- cert file file (.pem)
-    # @param    [String]    url       server URL in <host>:<port> format
-    # @param    [String]    token     optional authentication token
+    # @param    [Arachni::Options]   opts
+    #   Relevant options:
+    #
+    #     * `ssl_ca` -- CA file (.pem).
+    #     * `node_ssl_pkey` OR `ssl_pkey` -- Private key file (.pem).
+    #     * `node_ssl_cert` OR `ssl_cert` -- Cert file file (.pem).
+    # @param    [String]    url       Server URL in `address:port` format.
+    # @param    [String]    token     Optional authentication token.
     #
     def initialize( opts, url, token = nil )
         @url = url

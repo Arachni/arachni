@@ -21,16 +21,16 @@ require Options.dir['lib'] + 'rpc/server/output'
 module RPC
 
 #
-# Dispatcher node class, helps maintain a list of all available Dispatchers in the grid
-# and announce itself to neighbouring Dispatchers.
+# Dispatcher node class, helps maintain a list of all available Dispatchers in
+# the grid and announce itself to neighbouring Dispatchers.
 #
 # As soon as a new Node is fired up it checks-in with its neighbour and grabs
 # a list of all available peers.
 #
 # As soon as it receives the peer list it then announces itself to them.
 #
-# Upon convergence there will be a grid of Dispatchers each one with its own copy
-# of all available Dispatcher URLs.
+# Upon convergence there will be a grid of Dispatchers each one with its own
+# copy of all available Dispatcher URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -41,12 +41,14 @@ class Server::Dispatcher::Node
 
     #
     # Initializes the node by:
-    # * Adding the neighbour (if the user has supplied one) to the peer list
-    # * Getting the neighbour's peer list and appending them to its own
-    # * Announces itself to the neighbour and instructs it to propagate our URL to the others
+    #
+    #   * Adding the neighbour (if the user has supplied one) to the peer list.
+    #   * Getting the neighbour's peer list and appending them to its own.
+    #   * Announces itself to the neighbour and instructs it to propagate our URL
+    #     to the others.
     #
     # @param    [Arachni::Options]    opts
-    # @param    [String]              logfile   were to send the output
+    # @param    [String]              logfile   Where to send the output.
     #
     def initialize( opts, logfile = nil )
         @opts = opts
@@ -84,11 +86,11 @@ class Server::Dispatcher::Node
     end
 
     #
-    # Adds a neighbour to the peer list
+    # Adds a neighbour to the peer list.
     #
-    # @param    [String]    node_url    URL of a neighbouring node
-    # @param    [Boolean]   propagate   wether or not to announce the new node
-    #                                    to the ones in the peer list
+    # @param    [String]    node_url    URL of a neighbouring node.
+    # @param    [Boolean]   propagate
+    #   Whether or not to announce the new node to the peers.
     #
     def add_neighbour( node_url, propagate = false )
         # we don't want ourselves in the Set
@@ -109,11 +111,7 @@ class Server::Dispatcher::Node
         true
     end
 
-    #
-    # Returns all neighbour/node/peer URLs
-    #
-    # @return   [Array]
-    #
+    # @return   [Array] Neighbour/node/peer URLs.
     def neighbours
         @neighbours.to_a
     end
@@ -151,15 +149,12 @@ class Server::Dispatcher::Node
         end
     end
 
-    #
-    # Returns node specific info:
-    # * Bandwidth Pipe ID
-    # * Weight
-    # * Nickname
-    # * Cost
-    #
     # @return    [Hash]
-    #
+    #   * `:url` -- This node's URL.
+    #   * `:pipe_id` -- Bandwidth Pipe ID
+    #   * `:weight` -- Weight
+    #   * `:nickname` -- Nickname
+    #   * `:cost` -- Cost
     def info
         {
             'url'      => @url,

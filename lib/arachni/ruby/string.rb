@@ -25,19 +25,19 @@ class String
     # Gets the reverse diff between self and str on a word level.
     #
     #
-    #   str = <<END
-    #   This is the first test.
-    #   Not really sure what else to put here...
-    #   END
+    #     str = <<END
+    #     This is the first test.
+    #     Not really sure what else to put here...
+    #     END
     #
-    #   str2 = <<END
-    #   This is the second test.
-    #   Not really sure what else to put here...
-    #   Boo-Yah!
-    #   END
+    #     str2 = <<END
+    #     This is the second test.
+    #     Not really sure what else to put here...
+    #     Boo-Yah!
+    #     END
     #
-    #   str.rdiff( str2 )
-    #   # => "This is the test.\nNot really sure what else to put here...\n"
+    #     str.rdiff( str2 )
+    #     # => "This is the test.\nNot really sure what else to put here...\n"
     #
     #
     # @param [String] other

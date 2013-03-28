@@ -53,37 +53,47 @@ module Auditable::RDiff
     #
     # Performs differential analysis and logs an issue should there be one.
     #
-    #    opts = {
-    #        :precision => 3,
-    #        :faults    => [ 'fault injections' ],
-    #        :bools     => [ 'boolean injections' ]
-    #    }
+    #     opts = {
+    #         :precision => 3,
+    #         :faults    => [ 'fault injections' ],
+    #         :bools     => [ 'boolean injections' ]
+    #     }
     #
-    #    element.rdiff_analysis( opts )
+    #     element.rdiff_analysis( opts )
     #
     # Here's how it goes:
-    # * let _default_ be the default/original response
-    # * let _fault_   be the response of the fault injection
-    # * let _bool_    be the response of the boolean injection
+    #
+    # * let `default` be the default/original response
+    # * let `fault`   be the response of the fault injection
+    # * let `bool`    be the response of the boolean injection
     #
     # A vulnerability is logged if:
+    #
     #     default == bool AND bool.code == 200 AND fault != bool
     #
-    # The "bool" response is also checked in order to determine if it's a custom 404, if it is it'll be skipped.
+    # The `bool` response is also checked in order to determine if it's a custom
+    # 404, if it is it'll be skipped.
     #
     # If a block has been provided analysis and logging will be delegated to it.
     #
-    # @param    [Hash]      opts        available options:
-    #                                   * :format -- as seen in {Arachni::Element::Mutable::MUTATION_OPTIONS}
-    #                                   * :precision -- amount of rdiff iterations
-    #                                   * :faults -- array of fault injection strings (these are supposed to force erroneous conditions when interpreted)
-    #                                   * :bools -- array of boolean injection strings (these are supposed to not alter the webapp behavior when interpreted)
-    # @param    [Block]     block      block to be used for custom analysis of responses; will be passed the following:
-    #                                   * injected string
-    #                                   * audited element
-    #                                   * default response body
-    #                                   * boolean response
-    #                                   * fault injection response body
+    # @param    [Hash]  opts
+    # @option   opts    [Integer]       :format
+    #   As seen in {Arachni::Element::Capabilities::Mutable::Format}.
+    # @option   opts    [Integer]       :precision
+    #   Amount of {String#rdiff refinement} iterations to perform.
+    # @option   opts    [Array<String>] :faults
+    #   Array of fault injection strings (these are supposed to force erroneous
+    #   conditions when interpreted).
+    # @option   opts    [Array<String>] :bools
+    #   Array of boolean injection strings (these are supposed to not alter the
+    #   webapp behavior when interpreted).
+    # @param    [Block]     block
+    #   To be used for custom analysis of responses; will be passed the following:
+    #     * injected string
+    #     * audited element
+    #     * default response body
+    #     * boolean response
+    #     * fault injection response body
     #
     def rdiff_analysis( opts = {}, &block )
         opts = self.class::MUTATION_OPTIONS.merge( RDIFF_OPTIONS.merge( opts ) )

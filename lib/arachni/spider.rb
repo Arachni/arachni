@@ -76,10 +76,10 @@ class Spider
         @opts.url
     end
 
-    # @return   [Array<String>]  Working paths, paths that haven't yet been followed.
-    #                                You'll actually get a copy of the working paths
-    #                                and not the actual object itself;
-    #                                if you want to add more paths use {#push}.
+    # @return   [Array<String>]
+    #   Working paths, paths that haven't yet been followed.
+    #   You'll actually get a copy of the working paths and not the actual
+    #   object itself; if you want to add more paths use {#push}.
     def paths
         @paths.clone
     end
@@ -97,9 +97,10 @@ class Spider
     #
     # Runs the Spider and passes the requested object to the block.
     #
-    # @param [Bool] pass_pages_to_block  decides weather the block should be passed [Arachni::Page]s
-    #                           or [Typhoeus::Response]s
-    # @param [Block] block  to be passed each page as visited
+    # @param [Bool] pass_pages_to_block
+    #   Decides weather the block should be passed {Arachni::Page}s or
+    #   {Typhoeus::Response}s.
+    # @param [Block] block  To be passed each page as visited.
     #
     # @return [Array<String>]   sitemap
     #
@@ -182,12 +183,14 @@ class Spider
     # Pushes new paths for the crawler to follow; if the crawler has finished
     # it will be awaken when new paths are pushed.
     #
-    # The paths will be sanitized and normalized (cleaned up and converted to absolute ones).
+    # The paths will be sanitized and normalized (cleaned up and converted to
+    # absolute ones).
     #
     # @param    [String, Array<String>] paths
     #
-    # @return   [Bool]  true if push was successful,
-    #                       false otherwise (provided empty or paths that must be skipped)
+    # @return   [Bool]
+    #   `true` if push was successful, `false` otherwise (provided empty or
+    #   paths that must be skipped).
     #
     def push( paths, wakeup = true )
         paths = dedup( paths )
@@ -201,29 +204,29 @@ class Spider
         true
     end
 
-    # @return [TrueClass, FalseClass] true if crawl is done, false otherwise
+    # @return [TrueClass, FalseClass] `true` if crawl is done, `false` otherwise.
     def done?
         idle? || limit_reached?
     end
 
-    # @return [TrueClass, FalseClass] true if the queue is empty and no
-    #                                           requests are pending, false otherwise
+    # @return [TrueClass, FalseClass]
+    #   `true` if the queue is empty and no requests are pending, `false` otherwise.
     def idle?
         @paths.empty? && @pending_requests == 0
     end
 
-    # @return [TrueClass] pauses the system on a best effort basis
+    # @return [TrueClass] Pauses the system on a best effort basis.
     def pause
         @pause = true
     end
 
-    # @return [TrueClass] resumes the system on a best effort basis
+    # @return [TrueClass] Resumes the system.
     def resume
         @pause = false
         true
     end
 
-    # @return [Bool] true if the system it paused, false otherwise
+    # @return [Bool] `true` if the system it paused, `false` otherwise.
     def paused?
         @pause ||= false
     end
@@ -258,6 +261,7 @@ class Spider
 
     #
     # Decides if a URL should be skipped based on weather it:
+    #
     # * has previously been {#visited?}
     # * matches a {#redundant?} filter
     # * matches universal {#skip_path?} options like inclusion and exclusion filters

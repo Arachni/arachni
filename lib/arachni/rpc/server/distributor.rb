@@ -47,8 +47,9 @@ module Distributor
     #
     # Connects to a remote Instance.
     #
-    # @param    [Hash]  instance    the hash must hold the 'url' and the 'token'.
-    #                                   In subsequent calls the 'token' can be omitted.
+    # @param    [Hash]  instance
+    #   The hash must hold the `'url'` and the `'token'`. In subsequent calls
+    #  the `'token'` can be omitted.
     #
     def connect_to_instance( instance )
         @tokens  ||= {}
@@ -59,9 +60,9 @@ module Distributor
     private
 
     #
-    # @param    [Proc]  foreach     invoked once for each slave instance and
-    #                                 creates an array from the returned values
-    # @param    [Proc]  after       to handle the resulting array
+    # @param    [Proc]  foreach
+    #   Invoked once for each slave instance and an array from the returned values.
+    # @param    [Proc]  after  To handle the resulting array.
     #
     def map_slaves( foreach, after )
         wrap = proc do |instance, iterator|
@@ -70,11 +71,9 @@ module Distributor
         slave_iterator.map( wrap, after )
     end
 
-    #
-    # @param    [Proc]  foreach     invoked once for each slave instance
-    # @param    [Proc]  after       invoked after the iteration has completed
-    # @param    [Proc]  block       invoked once for each slave instance
-    #
+    # @param    [Proc]  foreach     Invoked once for each slave instance.
+    # @param    [Proc]  after       Invoked after the iteration has completed.
+    # @param    [Proc]  block       Invoked once for each slave instance.
     def each_slave( foreach = nil, after = nil, &block )
         foreach ||= block
         wrapped_foreach = proc do |instance, iterator|
@@ -83,7 +82,7 @@ module Distributor
         slave_iterator.each( *[wrapped_foreach, after] )
     end
 
-    # @return   <::EM::Iterator>  iterator for all slave instances
+    # @return   <::EM::Iterator>  Iterator for all slave instances.
     def slave_iterator
         iterator_for( @instances )
     end
@@ -91,21 +90,22 @@ module Distributor
     #
     # @param    [Array]    arr
     #
-    # @return   [::EM::Iterator]  iterator for the provided array
+    # @return   [::EM::Iterator]  Iterator for the provided array.
     #
     def iterator_for( arr )
         ::EM::Iterator.new( arr, MAX_CONCURRENCY )
     end
 
     #
-    # Returns an array containing unique and evenly distributed elements per chunk
-    # for each instance.
+    # @param    [Array<Array<String>>]     chunks
+    #   Chunks of URLs, each chuck corresponds to each slave.
+    # @param    [Hash<String,Array>]     element_ids_per_page
+    #   Hash with page urls for keys and arrays of element scope IDs
+    #   ({Arachni::Element::Capabilities::Auditable#scope_audit_id}) for
+    #   values.
     #
-    # @param    [Array<Array<String>>]     chunks   of URLs, each chuck corresponds to each slave
-    # @param    [Hash<Array>]     element_ids_per_page   hash with page urls for
-    #                                                        keys and arrays of element scope IDs
-    #                                                        ({Arachni::Element::Capabilities::Auditable#scope_audit_id})
-    #                                                        for values
+    # @return [Array<Array>]
+    #   Unique and evenly distributed elements/chunk for each instance.
     #
     def distribute_elements( chunks, element_ids_per_page )
         #
@@ -161,7 +161,7 @@ module Distributor
         unique_chunks.reverse
     end
 
-    # @return   [Array<String>]  scope IDs of all page elements
+    # @return   [Array<String>]  Scope IDs of all page elements.
     def build_elem_list( page )
         list = []
 
@@ -174,10 +174,8 @@ module Distributor
         list
     end
 
-    #
     # Returns the dispatchers that have different Pipe IDs i.e. can be setup
     # in HPG mode; pretty simple at this point.
-    #
     def preferred_dispatchers( &block )
         if !dispatcher
             block.call []
@@ -230,10 +228,10 @@ module Distributor
     # Splits URLs into chunks for each instance while taking into account a
     # minimum amount of URLs per instance.
     #
-    # @param    [Array<String>]    urls     to split into chunks
-    # @param    [Integer]    max_chunks     maximum amount of chunks, must be > 1
+    # @param    [Array<String>]    urls  URL to split into chunks.
+    # @param    [Integer]    max_chunks  Maximum amount of chunks, must be > 1.
     #
-    # @return   [Array<Array<String>>]      array of chunks of URLS
+    # @return   [Array<Array<String>>]   Array of chunks of URLS.
     #
     def split_urls( urls, max_chunks )
         # figure out the min amount of pages per chunk
@@ -273,10 +271,8 @@ module Distributor
         chunks
     end
 
-    #
     # Picks the dispatchers to use based on their load balancing metrics and
     # the instructed maximum amount of slaves.
-    #
     def pick_dispatchers( dispatchers )
         d = dispatchers.sort do |dispatcher_1, dispatcher_2|
             dispatcher_1['node']['score'] <=> dispatcher_2['node']['score']
@@ -296,9 +292,12 @@ module Distributor
     #
     # @param    [Hash]      instance_hash   as returned by {Dispatcher#dispatch}
     # @param    [Hash]      auditables
-    #                        * urls:     Array<String>    urls to audit -- will be passed to restrict_paths
-    #                        * elements: Array<String>    scope IDs of elements to audit
-    #                        * pages:    Array<Arachni::Page>    pages to audit
+    # @option   auditables    [Array<String>] :urls
+    #   URLs to audit -- will be passed as a `restrict_paths` option.
+    # @option   auditables    [Array<String>] :elements
+    #   Scope IDs of elements to audit.
+    # @option   auditables    [Array<String>] :pages
+    #   Pages to audit.
     #
     def distribute_and_run( instance_hash, auditables = {}, &block )
         opts = cleaned_up_opts

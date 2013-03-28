@@ -302,10 +302,12 @@ module Auditable::Timeout
     # @param   [Array]     strings
     #   Injection strings (`__TIME__` will be substituted with `timeout / timeout_divider`).
     # @param   [Hash]      opts
-    #   Options as described in {Arachni::Element::Mutable::OPTIONS} with the following extra:
-    #
-    #     * `:timeout` -- Milliseconds to wait for the request to complete.
-    #     * `:timeout_divider` -- `__TIME__ = timeout / timeout_divider`
+    #   Options as described in {Arachni::Element::Mutable::OPTIONS} with the
+    #   specified extras.
+    # @option   opts    [Integer] :timeout
+    #   Milliseconds to wait for the request to complete.
+    # @option   opts    [Integer] :timeout_divider
+    #   `__TIME__ = timeout / timeout_divider`
     #
     def timeout_analysis( strings, opts )
         @@timeout_loaded_modules << @auditor.fancy_name
