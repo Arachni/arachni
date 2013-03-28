@@ -19,7 +19,7 @@ require 'digest/sha2'
 module Arachni
 
 #
-# Represents a detected issues.
+# Represents a detected issue.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
