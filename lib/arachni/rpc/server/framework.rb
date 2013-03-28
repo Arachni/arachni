@@ -30,15 +30,16 @@ module RPC
 class Server
 
 #
-# Wraps the framework of the local instance and the frameworks of all
-# its slaves (when it is as Master in High Performance Grid mode) into a neat,
-# little, easy to handle package.
+# Wraps the framework of the local instance and the frameworks of all its slaves
+# (when it is as Master in High Performance Grid mode) into a neat, easy to
+# handle package.
 #
-# Disregard all:
-# * 'block' parameters, they are there for internal processing reasons and
-#   cannot be accessed via the RPC API.
-# * Inherited methods and attributes -- only public methods of this class
-#   are accessible over RPC.
+# @note Ignore:
+#
+#   * Inherited methods and attributes -- only public methods of this class are
+#       accessible over RPC.
+#   * `block` parameters, they are an RPC implementation detail for methods which
+#       perform asynchronous operations.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -137,8 +138,9 @@ class Framework < ::Arachni::Framework
     end
     alias :lsplug :list_plugins
 
-    # @return   [Bool] +true+ If the system is scanning, +false+ if {#run}
-    #   hasn't been called yet or if the scan has finished.
+    # @return   [Bool]
+    #   `true` If the system is scanning, `false` if {#run} hasn't been called
+    #   yet or if the scan has finished.
     def busy?
         !!@extended_running
     end
@@ -147,7 +149,7 @@ class Framework < ::Arachni::Framework
     # Sets this instance as the master.
     #
     # @return   [Bool]
-    #   +true+ on success, +false+ if this instance is not a {#solo? solo} one.
+    #   `true` on success, `false` if this instance is not a {#solo? solo} one.
     #
     def set_as_master
         return false if !solo?
@@ -155,20 +157,22 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    # @return   [Bool]    true if running in HPG (High Performance Grid) mode
-    #                       and instance is the master, false otherwise.
+    # @return   [Bool]
+    #   `true` if running in HPG (High Performance Grid) mode and instance is
+    #   the master, false otherwise.
     def master?
         @opts.grid_mode == 'high_performance'
     end
     alias :high_performance? :master?
 
-    # @return   [Bool]  +true+ if this instance is a slave, +false+ otherwise.
+    # @return   [Bool]  `true` if this instance is a slave, `false` otherwise.
     def slave?
         !!@master
     end
 
-    # @return   [Bool]  +true+ if this instance is running solo
-    #   (i.e. not a member of a grid operation), +false+ otherwise.
+    # @return   [Bool]
+    #   `true` if this instance is running solo (i.e. not a member of a grid
+    #   operation), `false` otherwise.
     def solo?
         !master? && !slave?
     end
@@ -176,11 +180,12 @@ class Framework < ::Arachni::Framework
     #
     # Enslaves another instance and subsequently becomes the master of the group.
     #
-    # @param    [Hash]  instance_info   { 'url' => '<host>:<port>', 'token' => 's3cr3t' }
+    # @param    [Hash]  instance_info
+    #   `{ 'url' => '<host>:<port>', 'token' => 's3cr3t' }`
     #
     # @return   [Bool]
-    #   +true+ on success, +false+ is this instance is a slave (slaves can't have
-    #   slaves of their own).
+    #   `true` on success, `false` is this instance is a slave (slaves can't
+    #   have slaves of their own).
     #
     def enslave( instance_info, opts = {}, &block )
         if slave?
@@ -211,7 +216,7 @@ class Framework < ::Arachni::Framework
     #
     # Starts the scan.
     #
-    # @return   [Bool]  +false+ if already running, +true+ otherwise.
+    # @return   [Bool]  `false` if already running, `true` otherwise.
     #
     def run
         # Return if we're already running.
@@ -482,14 +487,14 @@ class Framework < ::Arachni::Framework
     #   ]
     #
     # Possible message types are:
-    # * +status+  -- Status messages, usually to denote progress.
-    # * +info+  -- Informational messages, like notices.
-    # * +ok+  -- Denotes a successful operation or a positive result.
-    # * +verbose+ -- Verbose messages, extra information about whatever.
-    # * +bad+  -- Opposite of :ok, an operation didn't go as expected,
+    # * `status`  -- Status messages, usually to denote progress.
+    # * `info`  -- Informational messages, like notices.
+    # * `ok`  -- Denotes a successful operation or a positive result.
+    # * `verbose` -- Verbose messages, extra information about whatever.
+    # * `bad`  -- Opposite of :ok, an operation didn't go as expected,
     #   something has failed but it's recoverable.
-    # * +error+  -- An error has occurred, this is not good.
-    # * +line+  -- Generic message, no type.
+    # * `error`  -- An error has occurred, this is not good.
+    # * `line`  -- Generic message, no type.
     #
     # @return   [Array<Hash>]
     #
@@ -550,6 +555,7 @@ class Framework < ::Arachni::Framework
     #
     # Returns aggregated progress data and helps to limit the amount of calls
     # required in order to get an accurate depiction of a scan's progress and includes:
+    #
     # * output messages
     # * discovered issues
     # * overall statistics
@@ -562,8 +568,8 @@ class Framework < ::Arachni::Framework
     # @option opts [Bool] :issues   (true) Issue summaries.
     # @option opts [Bool] :stats   (true) Master/merged statistics.
     # @option opts [Integer] :errors   (false) Logged errors.
-    # @option opts [Bool] :as_hash  (false) If set to +true+, will convert
-    #   issues to hashes before returning them.
+    # @option opts [Bool] :as_hash  (false)
+    #   If set to `true`, will convert issues to hashes before returning them.
     #
     # @return    [Hash]  Progress data.
     #
@@ -689,20 +695,35 @@ class Framework < ::Arachni::Framework
         audit_store.to_yaml
     end
 
-    # @return  [Array<Arachni::Issue>]  First variations of all discovered issues.
+    # @return  [Array<Arachni::Issue>]
+    #   First variations of all discovered issues.
     def issues
         (auditstore.issues.deep_clone.map do |issue|
             issue.variations.first || issue
         end) | @issue_summaries
     end
 
-    #
     # @return   [Array<Hash>]   {#issues} as an array of Hashes.
-    #
     # @see #issues
-    #
     def issues_as_hash
         issues.map( &:to_h )
+    end
+
+    #
+    # Updates the page queue with the provided pages.
+    #
+    # @param    [Array<Arachni::Page>]     pages   List of pages.
+    # @param    [String]    token
+    #   Privileged token, prevents this method from being called by 3rd parties
+    #   when this instance is a master. If this instance is not a master one
+    #   the token needn't be provided.
+    #
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
+    #
+    def update_page_queue( pages, token = nil )
+        return false if master? && !valid_token?( token )
+        [pages].flatten.each { |page| push_to_page_queue( page )}
+        true
     end
 
     #
@@ -723,7 +744,7 @@ class Framework < ::Arachni::Framework
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
     #
@@ -746,7 +767,7 @@ class Framework < ::Arachni::Framework
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
     #
@@ -767,23 +788,6 @@ class Framework < ::Arachni::Framework
     end
 
     #
-    # Updates the page queue with the provided pages.
-    #
-    # @param    [Array<Arachni::Page>]     pages   List of pages.
-    # @param    [String]    token
-    #   Privileged token, prevents this method from being called by 3rd parties
-    #   when this instance is a master. If this instance is not a master one
-    #   the token needn't be provided.
-    #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
-    #
-    def update_page_queue( pages, token = nil )
-        return false if master? && !valid_token?( token )
-        [pages].flatten.each { |page| push_to_page_queue( page )}
-        true
-    end
-
-    #
     # Signals that a slave has finished auditing -- each slave must call this
     # when it finishes its job.
     #
@@ -793,7 +797,7 @@ class Framework < ::Arachni::Framework
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
     #
@@ -816,7 +820,7 @@ class Framework < ::Arachni::Framework
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
     #
@@ -843,7 +847,7 @@ class Framework < ::Arachni::Framework
     #   when this instance is a master. If this instance is not a master one
     #   the token needn't be provided.
     #
-    # @return   [Bool]  +true+ on success, +false+ on invalid +token+.
+    # @return   [Bool]  `true` on success, `false` on invalid `token`.
     #
     # @private
     #
@@ -857,11 +861,14 @@ class Framework < ::Arachni::Framework
     # Sets the URL and authentication token required to connect to the
     # instance's master.
     #
-    # @param    [String]    url     Master's URL in +hostname:port+ form.
+    # @param    [String]    url     Master's URL in `hostname:port` form.
     # @param    [String]    token   Master's authentication token.
     #
-    # @return   [Bool]  +true+ on success, +false+ if the current instance is
-    #   already part of the grid.
+    # @return   [Bool]
+    #   `true` on success, `false` if the current instance is already part of
+    #   the grid.
+    #
+    # @private
     #
     def set_master( url, token )
         return false if !solo?
@@ -931,7 +938,7 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    # @return   [String]    URL of this instance.
+    # @return   [String]  URL of this instance.
     # @private
     def self_url
         @self_url ||= "#{@opts.rpc_address}:#{@opts.rpc_port}"
@@ -942,7 +949,7 @@ class Framework < ::Arachni::Framework
         @ignore_grid = true
     end
 
-    # @return   [String]    This instance's RPC token.
+    # @return   [String]  This instance's RPC token.
     def token
         @opts.datastore[:token]
     end

@@ -21,7 +21,7 @@ require 'cgi'
 module Arachni
 
 #
-# Includes some useful methods for the system, the modules etc...
+# Includes some useful methods for the system, the modules etc.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -32,43 +32,43 @@ module Utilities
         @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
     end
 
-    # @see Form.from_response
+    # @see Arachni::Element::Form.from_response
     def forms_from_response( *args )
         Form.from_response( *args )
     end
 
-    # @see Form.from_document
+    # @see Arachni::Element::Form.from_document
     def forms_from_document( *args )
         Form.from_document( *args )
     end
 
-    # @see Form.encode
+    # @see Arachni::Element::Form.encode
     def form_encode( *args )
         Form.encode( *args )
     end
 
-    # @see Form.decode
+    # @see Arachni::Element::Form.decode
     def form_decode( *args )
         Form.decode( *args )
     end
 
-    # @see Form.parse_request_body
+    # @see Arachni::Element::Form.parse_request_body
     def form_parse_request_body( *args )
         Form.parse_request_body( *args )
     end
     alias :parse_request_body :form_parse_request_body
 
-    # @see Link.from_response
+    # @see Arachni::Element::Link.from_response
     def links_from_response( *args )
         Link.from_response( *args )
     end
 
-    # @see Link.from_document
+    # @see Arachni::Element::Link.from_document
     def links_from_document( *args )
         Link.from_document( *args )
     end
 
-    # @see Link.parse_query_vars
+    # @see Arachni::Element::Link.parse_query_vars
     def parse_url_vars( *args )
         Link.parse_query_vars( *args )
     end
@@ -76,26 +76,27 @@ module Utilities
         Link.parse_query_vars( *args )
     end
 
-    # @see Cookie.from_response
+    # @see Arachni::Element::Cookie.from_response
     def cookies_from_response( *args )
         Cookie.from_response( *args )
     end
 
-    # @see Cookie.from_document
+    # @see Arachni::Element::Cookie.from_document
     def cookies_from_document( *args )
         Cookie.from_document( *args )
     end
 
+    # @see Arachni::Element::Cookie.parse_set_cookie
     def parse_set_cookie( *args )
         Cookie.parse_set_cookie( *args )
     end
 
-    # @see Cookie.from_file
+    # @see Arachni::Element::Cookie.from_file
     def cookies_from_file( *args )
         Cookie.from_file( *args )
     end
 
-    # @see Cookie.encode
+    # @see Arachni::Element::Cookie.encode
     def cookie_encode( *args )
         Cookie.encode( *args )
     end
@@ -158,7 +159,8 @@ module Utilities
     #
     # @param   [String]   url
     #
-    # @return  [String]   path  full URL up to the path component (no resource, query etc.)
+    # @return  [String]   path
+    #   Full URL up to the path component (no resource, query etc.).
     #
     # @see URI.up_to_path
     #
@@ -169,7 +171,7 @@ module Utilities
     #
     # @param    [String] url
     #
-    # @return   [String]  domain name
+    # @return   [String]  Domain name.
     #
     # @see URI.domain
     #
@@ -180,7 +182,8 @@ module Utilities
     #
     # @param    [String] url
     #
-    # @return   [Bool]  +true+ is the path exceeds the framework limit, +false+ otherwise
+    # @return   [Bool]
+    #   `true` is the path exceeds the framework limit, `false` otherwise.
     #
     # @see URI.too_deep?
     # @see Options#depth_limit
@@ -195,8 +198,8 @@ module Utilities
     # @param    [String]    url
     # @param    [String]    reference
     #
-    # @return   [Bool]  +true+ if self is in the same domain as the +reference+ URL,
-    #                       false otherwise
+    # @return   [Bool]
+    #   `true` if self is in the same domain as the `reference` URL, false otherwise.
     #
     # @see URI.in_domain?
     # @see Options#follow_subdomains
@@ -206,7 +209,7 @@ module Utilities
     end
 
     #
-    # Decides whether the given +url+ matches any framework exclusion rules.
+    # Decides whether the given `url` matches any framework exclusion rules.
     #
     # @param    [String]    url
     #
@@ -220,7 +223,7 @@ module Utilities
     end
 
     #
-    # Decides whether the given +url+ matches any framework inclusion rules.
+    # Decides whether the given `url` matches any framework inclusion rules.
     #
     # @param    [String]    url
     #
@@ -241,7 +244,7 @@ module Utilities
     #
     # @param    [String]  url
     #
-    # @return   [Bool]    +true+ if the +url+ is redundant, +false+ otherwise.
+    # @return   [Bool]    `true` if the `url` is redundant, `false` otherwise.
     #
     # @see Options#redundant?
     #
@@ -250,7 +253,7 @@ module Utilities
     end
 
     #
-    # Decides whether the given +url+ has an acceptable protocol.
+    # Decides whether the given `url` has an acceptable protocol.
     #
     # @param    [String]    url
     # @param    [String]    reference   Reference URL.
@@ -274,13 +277,14 @@ module Utilities
     end
 
     #
-    # Decides whether or not the provided +path+ should be skipped based on:
+    # Decides whether or not the provided `path` should be skipped based on:
+    #
     # * {#include_path?}
     # * {#exclude_path?}
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # Does **not** call {#redundant?}.
+    # @note Does **not** call {#redundant?}.
     #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #
@@ -312,8 +316,8 @@ module Utilities
     # @param    [Page,Typhoeus::Response,#body]   page_or_response
     #
     # @return   [Bool]
-    #   +true+ if the +#body+ of the given object matches any of the
-    #   exclusion patterns, +false+ otherwise.
+    #   `true` if the `#body` of the given object matches any of the exclusion
+    #   patterns, `false` otherwise.
     #
     # @see #skip_path?
     # @see Options#exclude_binaries?
@@ -327,18 +331,19 @@ module Utilities
     alias :skip_response? :skip_page?
 
     #
-    # Determines whether or not the given +resource+ should be ignored
+    # Determines whether or not the given `resource` should be ignored
     # depending on its type and content.
     #
     # @param    [Page,Typhoeus::Response,String]    resource
     #   If given a:
+    #
     #       * {Page}: both its URL and body will be examined.
     #       * {Typhoeus::Response}: both its effective URL and body will be examined.
     #       * {String}: if multi-line it will be treated as a response body,
     #           otherwise as a path.
     #
     # @return   [Bool]
-    #   +true+ if the resource should be ignore,+false+ otherwise.
+    #   `true` if the resource should be ignore,`false` otherwise.
     #
     # @see skip_path?
     # @see ignore_page?
@@ -362,23 +367,14 @@ module Utilities
         end
     end
 
-    #
-    # Returns a random available port
-    #
-    # @return   Fixnum  port number
-    #
+    # @return   [Fixnum]  Random available port number.
     def available_port
         nil while !port_available?( port = rand_port )
         port
     end
 
-    #
-    # Returns a random port within the user specified range.
-    #
-    # @return   [Integer]   Port number.
-    #
+    # @return   [Integer]   Random port within the user specified range.
     # @see Options#rpc_instance_port_range
-    #
     def rand_port
         first, last = Options.rpc_instance_port_range
         range = (first..last).to_a
@@ -393,7 +389,7 @@ module Utilities
     end
 
     #
-    # Checks whether the port number is available
+    # Checks whether the port number is available.
     #
     # @param    [Fixnum]  port
     #
@@ -411,7 +407,7 @@ module Utilities
     end
 
     #
-    # Recursively converts a Hash's keys to strings
+    # Recursively converts a Hash's keys to strings.
     #
     # @param    [Hash]  hash
     #

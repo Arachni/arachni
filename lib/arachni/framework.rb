@@ -181,12 +181,10 @@ class Framework
     end
 
     #
-    # Runs the system
+    # Starts the scan.
     #
-    # It parses the instance options, {#prepare}, runs the {#audit} and {#clean_up!}.
-    #
-    # @param   [Block]  block  a block to call after the audit has finished
-    #                                   but before running the reports
+    # @param   [Block]  block
+    #   A block to call after the audit has finished but before running the reports.
     #
     def run( &block )
         prepare
@@ -206,9 +204,9 @@ class Framework
     end
 
     #
-    # Runs loaded modules against a given +page+.
+    # Runs loaded modules against a given `page`
     #
-    # It will audit just the given page and not use the [Trainer] -- i.e. ignore
+    # It will audit just the given page and not use the {Trainer} -- i.e. ignore
     # any new elements that might appear as a result.
     #
     # @param    [Page]    page
@@ -257,21 +255,21 @@ class Framework
     #
     # Returns the following framework stats:
     #
-    # *  :requests         -- HTTP request count
-    # *  :responses        -- HTTP response count
-    # *  :time_out_count   -- Amount of timed-out requests
-    # *  :time             -- Amount of running time
-    # *  :avg              -- Average requests per second
-    # *  :sitemap_size     -- Number of discovered pages
-    # *  :auditmap_size    -- Number of audited pages
-    # *  :progress         -- Progress percentage
-    # *  :curr_res_time    -- Average response time for the current burst of requests
-    # *  :curr_res_cnt     -- Amount of responses for the current burst
-    # *  :curr_avg         -- Average requests per second for the current burst
-    # *  :average_res_time -- Average response time
-    # *  :max_concurrency  -- Current maximum concurrency of HTTP requests
-    # *  :current_page     -- URL of the currently audited page
-    # *  :eta              -- Estimated time of arrival i.e. estimated remaining time
+    # *  `:requests`         -- HTTP request count
+    # *  `:responses`        -- HTTP response count
+    # *  `:time_out_count`   -- Amount of timed-out requests
+    # *  `:time`             -- Amount of running time
+    # *  `:avg`              -- Average requests per second
+    # *  `:sitemap_size`     -- Number of discovered pages
+    # *  `:auditmap_size`    -- Number of audited pages
+    # *  `:progress`         -- Progress percentage
+    # *  `:curr_res_time`    -- Average response time for the current burst of requests
+    # *  `:curr_res_cnt`     -- Amount of responses for the current burst
+    # *  `:curr_avg`         -- Average requests per second for the current burst
+    # *  `:average_res_time` -- Average response time
+    # *  `:max_concurrency`  -- Current maximum concurrency of HTTP requests
+    # *  `:current_page`     -- URL of the currently audited page
+    # *  `:eta`              -- Estimated time of arrival i.e. estimated remaining time
     #
     # @param    [Bool]  refresh_time    updates the running time of the audit
     #                                       (usefully when you want stats while paused without messing with the clocks)
@@ -346,7 +344,7 @@ class Framework
     # @param    [Page]  page
     #
     # @return   [Bool]
-    #   +true+ if push was successful, +false+ if the +page+ matched any
+    #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria.
     #
     def push_to_page_queue( page )
@@ -365,7 +363,7 @@ class Framework
     # @param    [String]  url
     #
     # @return   [Bool]
-    #   +true+ if push was successful, +false+ if the +url+ matched any
+    #   `true` if push was successful, `false` if the `url` matched any
     #   exclusion criteria.
     #
     def push_to_url_queue( url )
@@ -406,11 +404,11 @@ class Framework
     #
     # Runs a report component and returns the contents of the generated report.
     #
-    # Only accepts reports which support an +outfile+ option.
+    # Only accepts reports which support an `outfile` option.
     #
     # @param    [String]    name
     #   Name of the report component to run as presented by
-    #   {Arachni::Framework#list_reports} +:rep_name+ key.
+    #   {Arachni::Framework#list_reports} `rep_name` key.
     # @param    [AuditStore]    external_report
     #   Report to use -- defaults to the local one.
     #
@@ -419,7 +417,7 @@ class Framework
     # @raise    [Component::Error::NotFound]
     #   If the given report name doesn't correspond to a valid report component.
     #
-    # @raise    [Component::Error::InvalidOptions]
+    # @raise    [Component::Options::Error::Invalid]
     #   If the requested report doesn't format the scan results as a String.
     #
     def report_as( name, external_report = auditstore )
@@ -523,14 +521,15 @@ class Framework
     # Returns the status of the instance as a string.
     #
     # Possible values are (in order):
-    # * ready -- Just initialised and waiting for instructions
-    # * preparing -- Getting ready to start (i.e. initing plugins etc.)
-    # * crawling -- The instance is crawling the target webapp
-    # * auditing-- The instance is currently auditing the webapp
-    # * paused -- The instance has posed (if applicable)
-    # * cleanup -- The scan has completed and the instance is cleaning up
-    #   after itself (i.e. waiting for plugins to finish etc.).
-    # * done -- The scan has completed
+    #
+    # * `ready` -- Just initialised and waiting for instructions
+    # * `preparing` -- Getting ready to start (i.e. initing plugins etc.)
+    # * `crawling` -- The instance is crawling the target webapp
+    # * `auditing` -- The instance is currently auditing the webapp
+    # * `paused` -- The instance has posed (if applicable)
+    # * `cleanup` -- The scan has completed and the instance is cleaning up
+    #       after itself (i.e. waiting for plugins to finish etc.).
+    # * `done` -- The scan has completed
     #
     # @return   [String]
     #
@@ -539,12 +538,12 @@ class Framework
         @status.to_s
     end
 
-    # @return   [Bool]  +true+ if the framework is running.
+    # @return   [Bool]  `true` if the framework is running, `false` otherwise.
     def running?
         @running
     end
 
-    # @return   [Bool]  +true+ if the framework is paused or in the process of.
+    # @return   [Bool]  `true` if the framework is paused or in the process of.
     def paused?
         !@paused.empty?
     end
@@ -580,10 +579,7 @@ class Framework
     # Cleans up the framework; should be called after running the audit or
     # after canceling a running scan.
     #
-    # It stops the clock, waits for the plugins to finish up, registers
-    # their results and also refreshes the auditstore.
-    #
-    # It also runs {#audit_queues} in case any new pages have been added by the plugins.
+    # It stops the clock and waits for the plugins to finish up.
     #
     def clean_up
         @status = :cleanup

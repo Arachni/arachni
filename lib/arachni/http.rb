@@ -198,19 +198,22 @@ class HTTP
         exception_jail { @hydra.abort }
     end
 
-    # @return   [Integer]   amount of time (in seconds) that the current burst has been running
+    # @return   [Integer]
+    #   Amount of time (in seconds) that the current burst has been running.
     def burst_runtime
         @burst_runtime.to_i > 0 ?
             @burst_runtime : Time.now - (@burst_runtime_start || Time.now)
     end
 
-    # @return   [Integer]   average response time for the running requests (i.e. the current burst)
+    # @return   [Integer]
+    #   Average response time for the running requests (i.e. the current burst).
     def average_res_time
         return 0 if @curr_res_cnt == 0
         @curr_res_time / @curr_res_cnt
     end
 
-    # @return   [Integer]   responses/second for the running requests (i.e. the current burst)
+    # @return   [Integer]
+    #   Responses/second for the running requests (i.e. the current burst).
     def curr_res_per_second
         if @curr_res_cnt > 0 && burst_runtime > 0
             return (@curr_res_cnt / burst_runtime).to_i
@@ -227,12 +230,12 @@ class HTTP
         @hydra.max_concurrency = concurrency
     end
 
-    # @return   [Integer]   current maximum concurrency of HTTP requests
+    # @return   [Integer]   Current maximum concurrency of HTTP requests.
     def max_concurrency
         @hydra.max_concurrency
     end
 
-    # @return   [Array<Arachni::Element::Cookie>]   all cookies in the jar
+    # @return   [Array<Arachni::Element::Cookie>]   All cookies in the jar.
     def cookies
         @cookie_jar.cookies
     end
@@ -258,11 +261,16 @@ class HTTP
     end
 
     #
-    # Makes a generic request
+    # Makes a generic request.
     #
-    # @param  [URI]  url
-    # @param  [Hash] opts
-    # @param  [Block] block     callback
+    # @param  [URI]   url
+    # @param  [Hash]  opts    Request options.
+    # @option opts [Hash]  :params ({}) Request parameters.
+    # @option opts [Hash]  :train   (false)
+    #   Force Arachni to analyze the HTML code looking for new elements.
+    # @option opts [Hash]  :async   (true) Make the request async?
+    # @option opts [Hash]  :headers ({}) Extra HTTP request headers.
+    # @param  [Block] block  Callback to be passed the response.
     #
     # @return [Typhoeus::Request]
     #
@@ -281,10 +289,10 @@ class HTTP
         follow_location = opts[:follow_location] || false
 
         #
-        # the exception jail function wraps the block passed to it
-        # in exception handling and runs it
+        # The exception jail function wraps the block passed to it
+        # in exception handling and runs it.
         #
-        # how cool is Ruby? Seriously....
+        # How cool is Ruby? Seriously....
         #
         exception_jail( false ) {
 
@@ -350,57 +358,38 @@ class HTTP
     end
 
     #
-    # Gets a URL passing the provided query parameters
+    # Gets a URL passing the provided query parameters.
     #
-    # @param  [URI]  url     URL to GET
-    # @param  [Hash] opts    request options
-    #                         * :params  => request parameters || {}
-    #                         * :train   => force Arachni to analyze the HTML code || false
-    #                         * :async   => make the request async? || true
-    #                         * :headers => HTTP request headers  || {}
-    #                         * :follow_location => follow redirects || false
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def get( url = @url, opts = { }, &block )
+    def get( url = @url, opts = {}, &block )
         request( url, opts, &block )
     end
 
     #
-    # Posts a form to a URL with the provided query parameters
+    # Posts a form to a URL with the provided query parameters.
     #
-    # @param  [URI]   url     URL to POST
-    # @param  [Hash]  opts    request options
-    #                          * :params  => request parameters || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def post( url = @url, opts = { }, &block )
+    def post( url = @url, opts = {}, &block )
         request( url, opts.merge( method: :post ), &block )
     end
 
     #
     # Sends an HTTP TRACE request to "url".
     #
-    # @param  [URI]   url     URL to POST
-    # @param  [Hash]  opts    request options
-    #                          * :params  => request parameters || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def trace( url = @url, opts = { }, &block )
+    def trace( url = @url, opts = {}, &block )
         request( url, opts.merge( method: :trace ), &block )
     end
 
@@ -408,18 +397,12 @@ class HTTP
     #
     # Gets a url with cookies and url variables
     #
-    # @param  [URI]   url      URL to GET
-    # @param  [Hash]  opts    request options
-    #                          * :params  => cookies || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
-    #                          * :headers => HTTP request headers  || {}
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def cookie( url = @url, opts = { }, &block )
+    def cookie( url = @url, opts = {}, &block )
         opts[:cookies] = (opts[:params] || {}).dup
         opts[:params]  = nil
         request( url, opts, &block )
@@ -428,31 +411,28 @@ class HTTP
     #
     # Gets a url with optional url variables and modified headers
     #
-    # @param  [URI]   url      URL to GET
-    # @param  [Hash]  opts    request options
-    #                          * :params  => headers || {}
-    #                          * :train   => force Arachni to analyze the HTML code || false
-    #                          * :async   => make the request async? || true
+    # @param  (see #request)
+    # @return (see #request)
     #
-    # @param    [Block] block   callback to be passed the response
+    # @see #request
     #
-    # @return [Typhoeus::Request]
-    #
-    def header( url = @url, opts = { }, &block )
-        opts[:headers] = (opts[:params] || {}).dup
+    def header( url = @url, opts = {}, &block )
+        opts[:headers] ||= {}
+        opts[:headers].merge! ((opts[:params] || {}).dup )
+
         opts[:params]  = nil
         request( url, opts, &block )
     end
 
     #
-    # Executes a +block+ under a sandbox.
+    # Executes a `block` under a sandbox.
     #
     # Cookies or new callbacks set as a result of the block won't affect the
     # HTTP singleton.
     #
     # @param    [Block] block
     #
-    # @return   [Object]    return value of the block
+    # @return   [Object]    Return value of the block.
     #
     def sandbox( &block )
         h = {}
@@ -473,7 +453,7 @@ class HTTP
     end
 
     #
-    # Updates the cookie-jar with the passed cookies
+    # Updates the cookie-jar with the passed cookies.
     #
     # @param    [Array<String, Hash, Arachni::Element::Cookie>]   cookies
     #
@@ -486,9 +466,9 @@ class HTTP
     alias :set_cookies :update_cookies
 
     #
-    # Extracts cookies from an HTTP response and updates the cookie-jar
+    # Extracts cookies from an HTTP response and updates the cookie-jar.
     #
-    # It also executes callbacks added with "add_on_new_cookies( &block )".
+    # It also executes callbacks added with `add_on_new_cookies( &block )`.
     #
     # @param    [Typhoeus::Response]    res
     #
@@ -499,9 +479,8 @@ class HTTP
         call_on_new_cookies( cookies, res )
     end
 
-    #
-    # @param    [Block] block   to be passed the new cookies and the response that set them
-    #
+    # @param    [Block] block
+    #   To be passed the new cookies and the response that set them
     def on_new_cookies( &block )
         add_on_new_cookies( &block )
     end
@@ -509,8 +488,9 @@ class HTTP
     #
     # Checks whether or not the provided response is a custom 404 page
     #
-    # @param  [Typhoeus::Response]  res  the response to check
-    # @param  [Block]   block   to be passed true or false depending on the result
+    # @param  [Typhoeus::Response]  res  The response to check.
+    # @param  [Block]   block
+    #   To be passed true or false depending on the result.
     #
     def custom_404?( res, &block )
         precision = 2

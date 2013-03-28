@@ -15,7 +15,7 @@
 =end
 
 #
-# Overloads the {Object} class providing a deep_clone() method
+# Overloads the {Object} class providing a {#deep_clone} method.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
@@ -24,7 +24,7 @@ class Object
     #
     # Deep-clones self using a Marshal dump-load.
     #
-    # @return   [Object]    duplicate of self
+    # @return   [Object]    Duplicate of self.
     #
     def deep_clone
         begin
@@ -38,9 +38,10 @@ class Object
     # Attempts to approximate the real size of self by summing up the size of
     # all its instance variables' values and names.
     #
-    # @param    [Bool]  invoke_size     whether or not to include self's +size+ return value
+    # @param    [Bool]  invoke_size
+    #   Whether or not to include self's `size` in the return value.
     #
-    # @return   [Integer]  size of self
+    # @return   [Integer]  Size of self.
     #
     def realsize( invoke_size = true )
         return 1 if nil?

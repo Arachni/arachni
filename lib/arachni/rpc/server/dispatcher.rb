@@ -32,15 +32,16 @@ class Server
 # for multiple clients and allows for extensive process monitoring.
 #
 # The process goes something like this:
-# * on init the Dispatcher populates an Instance pool
-# * a client issues a 'dispatch' call
-# * the Dispatcher pops an Instance from the pool
-#   * asynchronously replenishes the pool
-#   * gives the Instance credentials to the client (url, auth token, etc.)
-# * the client connects to the Instance using these credentials
 #
-# Once the client finishes using the RPC Instance he *must* shut it down otherwise
-# the system will be eaten away by zombie RPC Instance processes.
+# * On initialization the Dispatcher populates the Instance pool.
+# * A client issues a {#dispatch} call.
+# * The Dispatcher pops an Instance from the pool
+#   * Asynchronously replenishes the pool
+#   * Gives the Instance credentials to the client (url, auth token, etc.)
+# * The client connects to the Instance using these credentials.
+#
+# Once the client finishes using the RPC Instance he *must* shut it down
+# otherwise the system will be eaten away by zombie RPC Instance processes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #

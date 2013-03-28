@@ -39,7 +39,7 @@ class Arachni::Cache::LeastCostReplacement < Arachni::Cache::Base
     # @param    [Object]    v   object to store
     # @param    [Symbol]    cost
     #
-    # @return   [Object]    +v+
+    # @return   [Object]    `v`
     #
     # @see VALID_COSTS
     #

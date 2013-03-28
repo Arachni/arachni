@@ -18,7 +18,7 @@ module Arachni
 module Report
 
 #
-# Provides some common options for the reports
+# Provides some common options for the reports.
 #
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>

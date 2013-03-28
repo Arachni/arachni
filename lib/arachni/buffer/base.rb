@@ -69,12 +69,12 @@ class Base
         @buffer.size
     end
 
-    # @return   [Bool]  +true+ if the buffer is empty, +false+ otherwise
+    # @return   [Bool]  `true` if the buffer is empty, `false` otherwise
     def empty?
         @buffer.empty?
     end
 
-    # @return   [Bool]  +true+ if the buffer is full, +false+ otherwise
+    # @return   [Bool]  `true` if the buffer is full, `false` otherwise
     def full?
         !!(max_size && size >= max_size)
     end

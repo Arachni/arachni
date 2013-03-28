@@ -55,11 +55,11 @@ class String
     end
 
     #
-    # Calculates the difference ratio (at a word level) between +self+ and +other+.
+    # Calculates the difference ratio (at a word level) between `self` and `other`
     #
     # @param    [String]    other
     #
-    # @return   [Float]     +0.0+ (identical strings) to +1.0+ (completely different)
+    # @return   [Float]     `0.0` (identical strings) to `1.0` (completely different)
     #
     def diff_ratio( other )
         return 0.0 if self == other
@@ -74,7 +74,7 @@ class String
     end
 
     #
-    # Returns the words in +self+.
+    # Returns the words in `self`.
     #
     # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
     #

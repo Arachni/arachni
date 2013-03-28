@@ -81,9 +81,10 @@ class Options
 
     #
     # Supported values:
+    #
     # * high_performance
     #
-    # If +nil+, it won't make use of the Grid.
+    # If `nil`, it won't make use of the Grid.
     #
     # @return   [String]    current grid mode
     attr_accessor :grid_mode
@@ -431,7 +432,7 @@ class Options
     #   first element should be the lowest port number, last the max port number.
     attr_accessor :rpc_instance_port_range
 
-    # @return   [Bool]  +true+ if SSL should be enabled, +false+ otherwise.
+    # @return   [Bool]  `true` if SSL should be enabled, `false` otherwise.
     attr_accessor :ssl
 
     # @return   [String]  path to a PEM private key
@@ -452,8 +453,8 @@ class Options
     # @return   [String]  URL of an RPC dispatcher (used by the CLI RPC client interface)
     attr_accessor :server
 
-    # @return   [Bool]  +true+ if the output of the RPC instances should be
-    #                       redirected to a file, +false+ otherwise
+    # @return   [Bool]  `true` if the output of the RPC instances should be
+    #                       redirected to a file, `false` otherwise
     attr_accessor :reroute_to_logfile
 
     # @return   [Integer]   amount of Instances to keep in the pool
@@ -630,7 +631,7 @@ class Options
     # @param    [String]    body
     #
     # @return   [Bool]
-    #   +true+ if +body+ matches an {#exclude_pages} pattern, +false+ otherwise.
+    #   `true` if `body` matches an {#exclude_pages} pattern, `false` otherwise.
     #
     # @see #exclude_pages
     #
@@ -668,13 +669,13 @@ class Options
     end
 
     #
-    # Normalizes and sets +url+ as the target URL.
+    # Normalizes and sets `url` as the target URL.
     #
     # @param    [String]    url     absolute URL of the targeted web app
     #
-    # @return   [String]    normalized +url+
+    # @return   [String]    normalized `url`
     #
-    # @raise    [Error::InvalidURL]     If the given +url+ is not valid.
+    # @raise    [Error::InvalidURL]     If the given `url` is not valid.
     #
     def url=( url )
         return if !url
@@ -1228,7 +1229,7 @@ class Options
     end
 
     #
-    # Saves 'self' to +file+.
+    # Saves 'self' to `file`
     #
     # @param    [String]    file
     #
@@ -1315,18 +1316,19 @@ class Options
     #
     # @param    [Arachni::Options]  other
     #
-    # @return   [Bool]  +true+ if +self == other+, +false+ otherwise
+    # @return   [Bool]  `true` if `self == other` `false` otherwise
     #
     def ==( other )
         to_hash == other.to_hash
     end
 
     #
-    # Merges +self+ with the object in +options+, skipping +nils+ and empty +Array+s or +Hash+es.
+    # Merges `self` with the object in `options` skipping `nils` and empty
+    # `Array`s or `Hash`es.
     #
     # @param    [Arachni::Options, #to_hash]   options
     #
-    # @return   [Arachni::Options]   updated +self+
+    # @return   [Arachni::Options]   Updated `self`.
     #
     def merge!( options )
         options.to_hash.each_pair do |k, v|

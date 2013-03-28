@@ -34,20 +34,22 @@ class Server
 # Represents an Arachni instance (or multiple instances when running a
 # high-performance scan) and serves as a central point of access to the
 # scanner's components:
-# * {Instance self} -- mapped to +service+
-# * {Options} -- mapped to +opts+
-# * {Framework} -- mapped to +framework+
-# * {Module::Manager} -- mapped to +modules+
-# * {Plugin::Manager} -- mapped to +plugins+
-# * {Spider} -- mapped to +spider+
+#
+# * {Instance self} -- mapped to `service`
+# * {Options} -- mapped to `opts`
+# * {Framework} -- mapped to `framework`
+# * {Module::Manager} -- mapped to `modules`
+# * {Plugin::Manager} -- mapped to `plugins`
+# * {Spider} -- mapped to `spider`
 #
 # It also provides convenience methods for:
+#
 # * {#scan Configuring and running a scan}
 # * Retrieving progress information
 #   * {#progress in aggregate form} (which includes a multitude of information)
 #   * or simply by:
-#     * {#busy? checking whether the scan is still in progress}
-#     * {#status checking the status of the scan}
+#       * {#busy? checking whether the scan is still in progress}
+#       * {#status checking the status of the scan}
 # * {#pause Pausing}, {#resume resuming} or {#abort_and_report aborting} the scan.
 # * Retrieving the scan report
 #   * {#report as a Hash} or a native {#auditstore AuditStore} object
@@ -55,8 +57,15 @@ class Server
 #     {Reports report} components)
 # * {#shutdown Shutting down}
 #
-# @note Ignore +block+ parameters, they are an RPC implementation detail for
-#   methods which perform asynchronous operations.
+# The above operations should be enough to cover your needs so you needn't
+# concern yourself with the more specialized components of the system.
+#
+# @note Ignore:
+#
+#   * Inherited methods and attributes -- only public methods of this class are
+#       accessible over RPC.
+#   * `block` parameters, they are an RPC implementation detail for methods which
+#       perform asynchronous operations.
 #
 # @note Avoid calling methods which return Arachni-specific objects (like {AuditStore},
 #   {Issue}, etc.) when you don't have these objects available on the client-side
@@ -116,7 +125,7 @@ class Instance
     end
 
     # @return   [Bool]
-    #   +true+ if the scan is initializing or running, +false+ otherwise.
+    #   `true` if the scan is initializing or running, `false` otherwise.
     #   If a scan is started by {#scan} then this method should be used
     #   instead of {Framework#busy?}.
     def busy?
@@ -149,7 +158,8 @@ class Instance
     # Cleans up and returns the report.
     #
     # @param   [Symbol] report_type
-    #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore}.
+    #   Report type to return, `:hash` for {#report} or `:audistore` for
+    #   {#auditstore}.
     #
     # @return  [Hash,AuditStore]
     #
@@ -198,7 +208,7 @@ class Instance
 
     # @param    [String]    name
     #   Name of the report component to run as presented by
-    #   {Framework#list_reports} +:rep_name+ key.
+    #   {Framework#list_reports} `:rep_name` key.
     #
     # @return (see Arachni::Framework#report_as)
     # @see Framework#report_as
@@ -223,27 +233,33 @@ class Instance
     # Simplified version of {Framework#progress}.
     #
     # Returns the following information:
-    # * +stats+ -- General runtime statistics (merged when part of Grid) (enabled by default)
-    # * +status+ -- {#status}
-    # * +busy+ -- {#busy?}
-    # * +issues+ -- {Framework#issues_as_hash} or {Framework#issues} (disabled by default)
-    # * +instances+ -- Raw +stats+ for each running instance (only when part of Grid) (disabled by default)
-    # * +errors+ -- {#errors} (disabled by default)
+    #
+    # * `stats` -- General runtime statistics (merged when part of Grid)
+    #   (enabled by default)
+    # * `status` -- {#status}
+    # * `busy` -- {#busy?}
+    # * `issues` -- {Framework#issues_as_hash} or {Framework#issues}
+    #   (disabled by default)
+    # * `instances` -- Raw `stats` for each running instance (only when part
+    #   of Grid) (disabled by default)
+    # * `errors` -- {#errors} (disabled by default)
     #
     # @param  [Hash]  options
     #   Options about what progress data to retrieve and return.
     # @option options [Array<Symbol, Hash>]  :with
     #   Specify data to include:
+    #
     #   * :native_issues -- Discovered issues as {Arachni::Issue} objects.
     #   * :issues -- Discovered issues as {Arachni::Issue#to_h hashes}.
     #   * :instances -- Statistics and info for slave instances.
     #   * :errors -- Errors and the line offset to use for {#errors}.
-    #     Pass as a hash, like: +{ errors: 10 }+
+    #     Pass as a hash, like: `{ errors: 10 }`
     # @option options [Array<Symbol, Hash>]  :without
     #   Specify data to exclude:
+    #
     #   * :stats -- Don't include runtime statistics.
     #   * :issues -- Don't include issues with the given {Arachni::Issue#digest digests}.
-    #     Pass as a hash, like: +{ issues: [...] }+
+    #     Pass as a hash, like: `{ issues: [...] }`
     #
     def progress( options = {}, &block )
         with    = parse_progress_opts( options, :with )

@@ -19,8 +19,9 @@ class Array
     #
     # @param    [#to_s, Array<#to_s>]  tags
     #
-    # @return [Bool]    +true+ if +self+ contains any of the +tags+ when
-    #                       objects of both +self+ and +tags+ are converted to +String+.
+    # @return [Bool]
+    #   `true` if `self` contains any of the `tags` when objects of both `self`
+    #   and `tags` are converted to `String`.
     #
     def includes_tags?( tags )
         return false if !tags

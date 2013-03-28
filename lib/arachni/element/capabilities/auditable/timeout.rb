@@ -25,9 +25,10 @@ module Arachni::Element::Capabilities
 # It takes into account unstable network conditions and server-side failures and
 # verifies the results before logging.
 #
-# == Methodology
+# # Methodology
 #
 # Here's how it works:
+#
 # * Phase 1 ({#timeout_analysis}) -- We're picking the low hanging
 #   fruit here so we can run this in larger concurrent bursts which cause *lots* of noise.
 #   - Initial probing for candidates -- If element times-out it is added to the Phase 2 queue.
@@ -45,7 +46,7 @@ module Arachni::Element::Capabilities
 # but the performance penalties are too high, thus we compromise and make the best of it
 # by running as little an amount of concurrent requests as possible for any given phase.
 #
-# == Usage
+# # Usage
 #
 # * Call {#timeout_analysis} to schedule requests for Phase 1.
 # * Call {Arachni::HTTP#run} to run the Phase 1 requests which will populate
@@ -71,11 +72,8 @@ module Auditable::Timeout
     def self.included( mod )
         @@parent = mod
 
-        #
-        # Returns the names of all loaded modules that use timing attacks.
-        #
         # @return   [Set]
-        #
+        #   Names of all loaded modules that use timing attacks.
         def @@parent.timeout_loaded_modules
             @@timeout_loaded_modules
         end
@@ -84,10 +82,8 @@ module Auditable::Timeout
             @@timeout_candidates
         end
 
-        #
         # @return   [Integer]    amount of timeout-audit related operations
         #                           (audit blocks + candidate elements)
-        #
         def @@parent.current_timeout_audit_operations_cnt
             @@timeout_candidates.size + @@timeout_candidates_phase3.size
         end
@@ -102,23 +98,19 @@ module Auditable::Timeout
             @@timeout_candidates_phase3 << elem
         end
 
-        #
-        # @return   [Bool]  true if timeout attacks are currently running
-        #
+        # @return   [Bool]
+        #   `true` if timeout attacks are currently running, `false` otherwise.
         def @@parent.running_timeout_attacks?
             @@running_timeout_attacks
         end
 
-        #
-        # Adds a block to be executed every time a timing attack is performed
-        #
+        # @param    [Block] block
+        #   Block to be executed every time a timing attack is performed.
         def @@parent.on_timing_attacks( &block )
             @@on_timing_attacks << block
         end
 
-        #
-        # @return   [Integer]    amount of timeout-audit operations
-        #
+        # @return   [Integer]    Amount of timeout-audit operations.
         def @@parent.timeout_audit_operations_cnt
             @@timeout_audit_operations_cnt
         end
@@ -127,9 +119,7 @@ module Auditable::Timeout
             @@on_timing_attacks.each { |block| block.call( res, elem ) }
         end
 
-        #
         # Verifies and logs candidate elements.
-        #
         def @@parent.timeout_audit_run
             @@running_timeout_attacks = true
 
@@ -309,11 +299,13 @@ module Auditable::Timeout
     #
     # Performs timeout/time-delay analysis and logs an issue should there be one.
     #
-    # @param   [Array]     strings     injection strings
-    #                                       __TIME__ will be substituted with (timeout / timeout_divider)
-    # @param   [Hash]      opts        options as described in {Arachni::Element::Mutable::OPTIONS} with the following extra:
-    #                                   * :timeout -- milliseconds to wait for the request to complete
-    #                                   * :timeout_divider -- __TIME__ = timeout / timeout_divider
+    # @param   [Array]     strings
+    #   Injection strings (`__TIME__` will be substituted with `timeout / timeout_divider`).
+    # @param   [Hash]      opts
+    #   Options as described in {Arachni::Element::Mutable::OPTIONS} with the following extra:
+    #
+    #     * `:timeout` -- Milliseconds to wait for the request to complete.
+    #     * `:timeout_divider` -- `__TIME__ = timeout / timeout_divider`
     #
     def timeout_analysis( strings, opts )
         @@timeout_loaded_modules << @auditor.fancy_name
@@ -341,9 +333,10 @@ module Auditable::Timeout
     #
     # That is to make sure that responsiveness has been restored before progressing further.
     #
-    # @param    [Float] limit   how much time to afford the server to respond
+    # @param    [Float] limit   How much time to afford the server to respond.
     #
-    # @return   [Bool] +true+ if server responds within the given time limit, +false+ otherwise
+    # @return   [Bool]
+    #   `true` if server responds within the given time limit, `false` otherwise.
     #
     def responsive?( limit = 120.0 )
         d_opts = {
@@ -388,11 +381,14 @@ module Auditable::Timeout
     # 'opts' needs to contain a :timeout value in milliseconds.</br>
     # Optionally, you can add a :timeout_divider.
     #
-    # @param   [Array]     strings     injection strings
-    #                                       '__TIME__' will be substituted with (timeout / timeout_divider)
-    # @param    [Hash]      opts       options as described in {Arachni::Element::Mutable::OPTIONS}
-    # @param    [Block]     block      block to call if a timeout occurs,
-    #                                       it will be passed the response and opts
+    # @param   [Array]     strings
+    #   Injection strings (`__TIME__` will be substituted with
+    #   `timeout / timeout_divider`).
+    # @param    [Hash]      opts
+    #   Options as described in {Arachni::Element::Mutable::OPTIONS}.
+    # @param    [Block]     block
+    #   Block to call if a timeout occurs, it will be passed the
+    #   {Typhoeus::Response response} and `opts`.
     #
     def timing_attack( strings, opts, &block )
         opts[:timeout_divider] ||= 1

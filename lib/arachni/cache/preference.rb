@@ -30,7 +30,7 @@ class Arachni::Cache::Preference < Arachni::Cache::Base
     # @param    [Object]    k   entry key
     # @param    [Object]    v   object to store
     #
-    # @return   [Object]    +v+
+    # @return   [Object]    `v`
     #
     def store( k, v )
         prune if capped? && (size > max_size - 1)

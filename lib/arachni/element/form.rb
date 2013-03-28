@@ -53,29 +53,33 @@ class Form < Arachni::Element::Base
     #
     # Creates a new Form element from a URL and auditable data.
     #
-    # @param    [String]    url     owner URL -- URL of the page which contained the
+    # @param    [String]    url
+    #   Owner URL -- URL of the page which contains the form.
     # @param    [Hash]    raw
     #   If empty, the element will be initialized without auditable inputs.
     #
-    #   If a full +Hash+ is passed, it will look for an actionable URL
-    #   +String+ in the following keys:
-    #   * 'href'
-    #   * :href
-    #   * 'action'
-    #   * :action
+    #   If a full `Hash` is passed, it will look for an actionable URL
+    #   `String` in the following keys:
     #
-    #   For an method +String+ in:
-    #   * 'method'
-    #   * :method
+    #   * `'href'`
+    #   * `:href`
+    #   * `'action'`
+    #   * `:action`
+    #
+    #   For an method `String` in:
+    #
+    #   * `'method'`
+    #   * `:method`
     #
     #   Method defaults to 'get'.
     #
-    #   For an auditable inputs +Hash+ in:
-    #   * 'inputs'
-    #   * :inputs
-    #   * 'auditable'
+    #   For an auditable inputs `Hash` in:
     #
-    #   these should contain inputs in name=>value pairs.
+    #   * `'inputs'`
+    #   * `:inputs`
+    #   * `'auditable'`
+    #
+    #   these should contain inputs in `name => value` pairs.
     #
     def initialize( url, raw = {} )
         super( url, raw )
@@ -129,7 +133,7 @@ class Form < Arachni::Element::Base
     #    p Form.new( 'http://stuff.com' ).name
     #    #=> nil
     #
-    # @return   [String, nil]   name of the form if it has one
+    # @return   [String, nil]   Name of the form, if it has one.
     #
     def name
         return if !@raw['attrs'].is_a?( Hash )
@@ -158,7 +162,7 @@ class Form < Arachni::Element::Base
     #    p f.id
     #    #=> "http://stuff.com/::post::[\"name\"]"
     #
-    # @return   [String]    unique form ID
+    # @return   [String]    Unique form ID.
     #
     def id
         id_from :auditable
@@ -315,7 +319,7 @@ class Form < Arachni::Element::Base
     #    p original.original?
     #    #=> true
     #
-    # @return   [Bool]  +true+ if the element has not been mutated, +false+ otherwise.
+    # @return   [Bool]  `true` if the element has not been mutated, `false` otherwise.
     #
     def original?
         self.altered == ORIGINAL_VALUES
@@ -375,8 +379,9 @@ class Form < Arachni::Element::Base
     #    #=> true
     #
     #
-    # @return   [Bool]  +true+ if the element has been populated with sample ({Module::KeyFiller}) values,
-    #                     +false+ otherwise.
+    # @return   [Bool]
+    #   `true` if the element has been populated with sample
+    #   ({Module::KeyFiller}) values, `false` otherwise.
     #
     # @see Arachni::Module::KeyFiller.fill
     #
@@ -401,9 +406,11 @@ class Form < Arachni::Element::Base
     #
     # Overrides {Arachni::Element::Mutable#mutations} adding support
     # for mutations with:
-    # * sample values (filled by {Arachni::Module::KeyFiller.fill})
-    # * original values
-    # * password fields requiring identical values (in order to pass server-side validation)
+    #
+    # * Sample values (filled by {Arachni::Module::KeyFiller.fill})
+    # * Original values
+    # * Password fields requiring identical values (in order to pass
+    #   server-side validation)
     #
     # @example Default
     #    ap Form.new( 'http://stuff.com', { name: '' } ).mutations( 'seed' )
@@ -878,11 +885,11 @@ class Form < Arachni::Element::Base
     #    #    >
     #    #]
     #
-    # @param    [String]    seed    seed to inject
-    # @param    [Hash]      opts    mutation options
-    # @option   opts    [Bool]  :skip_orig  Whether or not to skip adding a
-    #                               mutation holding original values and sample
-    #                               values
+    # @param    [String]    seed    Seed to inject.
+    # @param    [Hash]      opts    Mutation options.
+    # @option   opts    [Bool]  :skip_orig
+    #   Whether or not to skip adding a mutation holding original values and
+    #   sample values.
     #
     # @return   [Array<Form>]
     #
@@ -945,8 +952,8 @@ class Form < Arachni::Element::Base
     #    p Form.from_document( 'http://stuff.com', html_form ).first.requires_password?
     #    #=> false
     #
-    # @return   [Bool]  +true+ if the form contains passwords fields,
-    #                       +false+ otherwise.
+    # @return   [Bool]
+    #   `true` if the form contains passwords fields, `false` otherwise.
     #
     def requires_password?
         return if !self.raw.is_a?( Hash ) || !self.raw['input'].is_a?( Array )
@@ -963,28 +970,28 @@ class Form < Arachni::Element::Base
     #    p f.has_nonce?
     #    #=> true
     #
-    # @return   [Bool]  +true+ if the form contains a nonce, +false+ otherwise.
+    # @return   [Bool]  `true` if the form contains a nonce, `false` otherwise.
     #
     def has_nonce?
         !!nonce_name
     end
 
     #
-    # When +nonce_name+ is set the value of the equivalent input will be
+    # When `nonce_name` is set the value of the equivalent input will be
     # refreshed every time the form is to be submitted.
     #
     # Use only when strictly necessary because it comes with a hefty performance
     # penalty as the operation will need to be in blocking mode.
     #
-    # Will raise an exception if +field_name+ could not be found in the form's inputs.
+    # Will raise an exception if `field_name` could not be found in the form's inputs.
     #
     # @example
     #   Form.new( 'http://stuff.com', { nonce_input: '' } ).nonce_name = 'blah'
     #   #=> #<RuntimeError: Could not find field named 'blah'.>
     #
-    # @param    [String]    field_name name of the field holding the nonce
+    # @param    [String]    field_name  Name of the field holding the nonce.
     #
-    # @raise    [Error::FieldNotFound]  If +field_name+ is not a form input.
+    # @raise    [Error::FieldNotFound]  If `field_name` is not a form input.
     #
     def nonce_name=( field_name )
         if !has_inputs?( field_name )
@@ -994,7 +1001,7 @@ class Form < Arachni::Element::Base
     end
 
     #
-    # Retrieves a field type for the given field +name+.
+    # Retrieves a field type for the given field `name`.
     #
     # @example
     #    html_form = <<-HTML
@@ -1016,7 +1023,7 @@ class Form < Arachni::Element::Base
     #    p f.field_type_for 'cant-see-this'
     #    #=> "hidden"
     #
-    # @param    [String]    name    field name
+    # @param    [String]    name    Field name.
     #
     # @return   [String]
     #
@@ -1035,7 +1042,7 @@ class Form < Arachni::Element::Base
     end
 
     #
-    # Returns an array of forms by parsing the body of an HTTP response.
+    # Extracts forms by parsing the body of an HTTP response.
     #
     # @example
     #    body = <<-HTML
@@ -1090,7 +1097,7 @@ class Form < Arachni::Element::Base
     end
 
     #
-    # Returns an array of forms from an HTML document.
+    # Extracts forms from an HTML document.
     #
     # @example
     #    html_form = <<-HTML
@@ -1170,7 +1177,8 @@ class Form < Arachni::Element::Base
     #    #>
     #
     #
-    # @param    [String]    url     request URL
+    # @param    [String]    url
+    #   URL of the document -- used for path normalization purposes.
     # @param    [String, Nokogiri::HTML::Document]    document
     #
     # @return   [Array<Form>]
@@ -1209,7 +1217,7 @@ class Form < Arachni::Element::Base
     #
     # @param    [String]    body
     #
-    # @return   [Hash]      key=>value parameter pairs
+    # @return   [Hash]      Parameters.
     #
     def self.parse_request_body( body )
         body.to_s.split( '&' ).inject( {} ) do |h, pair|
@@ -1233,7 +1241,7 @@ class Form < Arachni::Element::Base
     #
     # @param    [String]    str
     #
-    # @return   [String]    the encoded string
+    # @return   [String]
     #
     def self.encode( str )
         ::URI.encode( ::URI.encode( str, '+%' ).recode.gsub( ' ', '+' ), ";&\\=\0" )
@@ -1252,7 +1260,7 @@ class Form < Arachni::Element::Base
     #
     # @param    [String]    str
     #
-    # @return   [String]    the decoded string
+    # @return   [String]
     #
     def self.decode( str )
         URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
@@ -1263,9 +1271,7 @@ class Form < Arachni::Element::Base
     end
 
     def dup
-        f = super
-        f.nonce_name = nonce_name.dup if nonce_name
-        f
+        super.tap { |f| f.nonce_name = nonce_name.dup if nonce_name }
     end
 
     private

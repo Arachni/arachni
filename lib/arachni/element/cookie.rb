@@ -157,12 +157,14 @@ class Cookie < Arachni::Element::Base
     #    #=> 1970-01-01 02:00:01 +0200
     #
     #
-    # @return   [Time, NilClass]    expiration +Time+ of the cookie or +nil+ if it
-    #                               doesn't have one (i.e. is a session cookie)
+    # @return   [Time, NilClass]
+    #   Expiration `Time` of the cookie or `nil` if it doesn't have one
+    #   (i.e. is a session cookie).
     #
     def expires_at
         expires
     end
+
     #
     # Indicates whether or not the cookie has expired.
     #
@@ -196,7 +198,7 @@ class Cookie < Arachni::Element::Base
     #    p Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff; Expires=Thu, 01 Jan 1970 00:00:01 GMT' ).first.expired?( future_time )
     #    #=> true
     #
-    # @param    [Time]    time    to compare against
+    # @param    [Time]    time    To compare against.
     #
     # @return [Boolean]
     #
@@ -210,25 +212,23 @@ class Cookie < Arachni::Element::Base
     #    #=> {"session"=>"stuffstuffstuff"}
     #
     #
-    # @return   [Hash]    simple representation of the cookie as a hash with the
-    #                     cookie name as key and the cookie value as value.
+    # @return   [Hash]
+    #   Simple representation of the cookie as a hash -- with the cookie name as
+    #   `key` and the cookie value as `value`.
     def simple
         self.auditable.dup
     end
 
-    # @return   [String]    name of the current element, 'cookie' in this case.
+    # @return   [String]    Name of the current element, 'cookie' in this case.
+    # @see Arachni::Element::COOKIE
     def type
         Arachni::Element::COOKIE
     end
 
     def dup
-        d = super
-        d.action = self.action
-        d
+        super.tap { |d| d.action = self.action }
     end
 
-    #
-    # Sets auditable inputs as a key=>value pair.
     #
     # @example
     #    p c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
@@ -244,7 +244,7 @@ class Cookie < Arachni::Element::Base
     #    #=> new-name=new-value
     #
     #
-    # @param    [Hash]  inputs   name => value pair
+    # @param    [Hash]  inputs   Sets auditable inputs.
     #
     def auditable=( inputs )
         k = inputs.keys.first.to_s
@@ -264,8 +264,8 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific limitations
-    # and the {Arachni::Options#audit_cookies_extensively} option.
+    # Overrides {Capabilities::Mutable#mutations} to handle cookie-specific
+    # limitations and the {Arachni::Options#audit_cookies_extensively} option.
     #
     #     c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
     #
@@ -474,14 +474,14 @@ class Cookie < Arachni::Element::Base
     #    #=> "%25+%3B+freaky+name=freaky+value%3B%25"
     #
     #
-    # @return   [String]    to be used in a 'Cookie' request header. (name=value)
+    # @return   [String]    To be used in a `Cookie` HTTP request header.
     #
     def to_s
         "#{encode( name )}=#{encode( value )}"
     end
 
     #
-    # Returns an array of cookies from an Netscape HTTP cookiejar file.
+    # Parses a Netscape Cookie-jar into an Array of {Cookie}.
     #
     # @example Parsing a Netscape HTTP cookiejar file
     #
@@ -593,6 +593,8 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
+    # @see http://curl.haxx.se/rfc/cookie_spec.html
+    #
     def self.from_file( url, filepath )
         File.open( filepath, 'r' ).map do |line|
             # skip empty lines
@@ -616,7 +618,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Converts a cookie's expiration date to a Ruby +Time+ object.
+    # Converts a cookie's expiration date to a Ruby `Time` object.
     #
     # @example String time format
     #    p Cookie.expires_to_time "Tue, 02 Oct 2012 19:25:57 GMT"
@@ -639,8 +641,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from an HTTP response.
-    #
+    # Extracts cookies from an HTTP {Typhoeus::Response response}.
     #
     # @example
     #    body = <<-HTML
@@ -755,8 +756,8 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see from_document
-    # @see from_headers
+    # @see .from_document
+    # @see .from_headers
     #
     def self.from_response( response )
         ( from_document( response.effective_url, response.body ) |
@@ -764,7 +765,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from a document based on +Set-Cookie+ http-equiv meta tags.
+    # Extracts cookies from a document based on `Set-Cookie` `http-equiv` meta tags.
     #
     # @example
     #
@@ -843,12 +844,12 @@ class Cookie < Arachni::Element::Base
     #    #     >
     #    # ]
     #
-    # @param    [String]    url     owner URL
+    # @param    [String]    url     Owner URL.
     # @param    [String, Nokogiri::HTML::Document]    document
     #
     # @return   [Array<Cookie>]
     #
-    # @see parse_set_cookie
+    # @see .parse_set_cookie
     #
     def self.from_document( url, document )
         # optimizations in case there are no cookies in the doc,
@@ -872,7 +873,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Returns an array of cookies from the +Set-Cookie+ header field.
+    # Extracts cookies from the `Set-Cookie` HTTP response header field.
     #
     # @example
     #    p Cookie.from_headers 'http://owner-url.com', { 'Set-Cookie' => "coo%40ki+e2=blah+val2%40" }
@@ -915,7 +916,7 @@ class Cookie < Arachni::Element::Base
     #
     # @return   [Array<Cookie>]
     #
-    # @see forms_set_cookie
+    # @see .forms_set_cookie
     #
     def self.from_headers( url, headers )
         set_strings = []
@@ -928,7 +929,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Parses the +Set-Cookie+ header value into cookie elements.
+    # Parses the `Set-Cookie` header value into cookie elements.
     #
     # @example
     #    p Cookie.from_set_cookie 'http://owner-url.com', "coo%40ki+e2=blah+val2%40"
@@ -967,8 +968,8 @@ class Cookie < Arachni::Element::Base
     #    # ]
     #
     #
-    # @param    [String]    url     request URL
-    # @param    [Hash]      str     +Set-Cookie+ string
+    # @param    [String]    url     Request URL.
+    # @param    [Hash]      str     `Set-Cookie` string
     #
     # @return   [Array<Cookie>]
     #
@@ -991,7 +992,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Parses a string formatted for the +Cookie+ HTTP request header field
+    # Parses a string formatted for the `Cookie` HTTP request header field
     # into cookie elements.
     #
     # @example
@@ -1089,8 +1090,8 @@ class Cookie < Arachni::Element::Base
     #     #     ]
     #
     #
-    # @param    [String]    url     request URL
-    # @param    [Hash]      string  +Set-Cookie+ string
+    # @param    [String]    url     Request URL.
+    # @param    [Hash]      string  `Set-Cookie` string.
     #
     # @return   [Array<Cookie>]
     #
@@ -1103,15 +1104,15 @@ class Cookie < Arachni::Element::Base
 
     #
     # Encodes a {String}'s reserved characters in order to prepare it for
-    # the 'Cookie' header field.
+    # the `Cookie` header field.
     #
-    # #example
+    # @example
     #    p Cookie.encode "+;%=\0 "
     #    #=> "%2B%3B%25%3D%00+"
     #
     # @param    [String]    str
     #
-    # @return   [String]    the encoded string
+    # @return   [String]
     #
     def self.encode( str )
         URI.encode( str, "+;%=\0" ).gsub( ' ', '+' )
@@ -1122,7 +1123,7 @@ class Cookie < Arachni::Element::Base
     end
 
     #
-    # Decodes a {String} encoded for the +Cookie+ header field.
+    # Decodes a {String} encoded for the `Cookie` header field.
     #
     # @example
     #    p Cookie.decode "%2B%3B%25%3D%00+"
@@ -1130,7 +1131,7 @@ class Cookie < Arachni::Element::Base
     #
     # @param    [String]    str
     #
-    # @return   [String]    the decoded string
+    # @return   [String]
     #
     def self.decode( str )
         URI.decode( str.gsub( '+', ' ' ) )
