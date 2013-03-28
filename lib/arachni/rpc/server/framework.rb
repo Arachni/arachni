@@ -674,11 +674,8 @@ class Framework < ::Arachni::Framework
     end
     alias :progress_data :progress
 
-    #
-    # @return   [Hash]  {AuditStore#to_h}   Audit results as a hash.
-    #
+    # @return   [Hash]  Audit results as a {AuditStore#to_h hash}.
     # @see AuditStore#to_h
-    #
     def report
         audit_store.to_h
     end
