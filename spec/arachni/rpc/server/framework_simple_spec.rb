@@ -252,7 +252,7 @@ describe Arachni::RPC::Server::Framework do
     describe '#clean_up' do
         it 'sets the framework state to finished and wait for plugins to finish' do
             instance = @get_instance.call
-            instance.opts.url = server_url_for( :framework_simple )
+            instance.opts.url = server_url_for( :framework_hpg )
             instance.modules.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
             instance.framework.run.should be_true
