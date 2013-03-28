@@ -151,6 +151,8 @@ class Instance
     # @param   [Symbol] report_type
     #   Report type to return, +:hash+ for {#report} or +:audistore+ for {#auditstore}.
     #
+    # @return  [Hash,AuditStore]
+    #
     # @note Don't forget to {#shutdown} the instance once you get the report.
     #
     # @see Framework#clean_up
@@ -167,15 +169,18 @@ class Instance
     #
     # Cleans up and delegates to {#report_as}.
     #
+    # @param (see #report_as)
+    # @return (see #report_as)
+    #
     # @note Don't forget to {#shutdown} the instance once you get the report.
     #
     # @see Framework#clean_up
     # @see #abort_and_report
     # @see #report_as
     #
-    def abort_and_report_as( *args, &block )
+    def abort_and_report_as( name, &block )
         @framework.clean_up do
-            block.call report_as( *args )
+            block.call report_as( name )
         end
     end
 
@@ -191,11 +196,14 @@ class Instance
         @framework.report
     end
 
-    # @param (see Arachni::Framework#report_as)
+    # @param    [String]    name
+    #   Name of the report component to run as presented by
+    #   {Framework#list_reports} +:rep_name+ key.
+    #
     # @return (see Arachni::Framework#report_as)
     # @see Framework#report_as
-    def report_as( *args )
-        @framework.report_as( *args )
+    def report_as( name )
+        @framework.report_as( name )
     end
 
     # @see Framework#status
