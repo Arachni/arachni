@@ -221,14 +221,6 @@ class Instance
         @framework.status
     end
 
-    # @param (see Arachni::RPC::Server::Framework#auditstore)
-    # @return (see Arachni::RPC::Server::Framework#auditstore)
-    #
-    # @deprecated
-    def output( &block )
-        @framework.output( &block )
-    end
-
     #
     # Simplified version of {Framework#progress}.
     #
@@ -399,6 +391,14 @@ class Instance
         true
     end
     alias :shutdown! :shutdown
+
+    # @param (see Arachni::RPC::Server::Framework#auditstore)
+    # @return (see Arachni::RPC::Server::Framework#auditstore)
+    #
+    # @deprecated
+    def output( &block )
+        @framework.output( &block )
+    end
 
     # @private
     def error_test( str )
