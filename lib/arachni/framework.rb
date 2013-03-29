@@ -527,7 +527,7 @@ class Framework
     #   * `preparing` -- Getting ready to start (i.e. initing plugins etc.).
     #   * `crawling` -- The instance is crawling the target webapp.
     #   * `auditing` -- The instance is currently auditing the webapp.
-    #   * `paused` -- The instance has paused (if applicable).
+    #   * `paused` -- The instance has been paused (if applicable).
     #   * `cleanup` -- The scan has completed and the instance is cleaning up
     #           after itself (i.e. waiting for plugins to finish etc.).
     #   * `done` -- The scan has completed, you can grab the report and shutdown.
