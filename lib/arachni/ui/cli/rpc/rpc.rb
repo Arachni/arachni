@@ -32,17 +32,19 @@ module UI
 class CLI
 
 #
-# Provides an self sufficient Arachni RPC client.
+# Provides a command-line RPC client and uses a Dispatcher to provide an Instance
+# in order to perform a scan.
 #
-# It mimics the standard CLI interface's functionality albeit in a client-server fashion.
+# This interface should be your first stop when looking into using/creating your own
+# RPC client.
 #
-# This should be your first stop when looking into creating your own RPC client.
-# Of course you don't need to instantiate the framework or any other Arachni
-# related classes in your own client, this is just to provide some other info to the user.
+# Of course, you don't need to have access to the framework or any other Arachni
+# class for your own client, this is used here just to provide some other info
+# to the user.
 #
 # However, in contrast with everywhere else in the system (where RPC operations
-# are asynchronous) this interface will operating in blocking mode as its simplicity
-# does not warrant the extra complexity.
+# are asynchronous), this interface operates in blocking mode as its simplicity
+# does not warrant the extra complexity of asynchronous calls.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
