@@ -574,6 +574,17 @@ class Instance
         parsed
     end
 
+    #
+    # Provides `num` Instances.
+    #
+    # If this Instance has a Dispatcher, all Instances will be requested
+    # from it. Otherwise, new Instance processes will be directly spawned
+    # and immediately detached.
+    #
+    # @param    [Integer]   num Amount of Instances to return.
+    #
+    # @return   [Array<Hash>]   Instance info (urls and tokens).
+    #
     def spawn( num, &block )
         if num <= 0
             block.call []
@@ -637,9 +648,7 @@ class Instance
         end
     end
 
-    #
     # Starts the HTTPS server and the RPC service.
-    #
     def run
         print_status 'Starting the server...'
         @server.run
