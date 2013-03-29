@@ -70,15 +70,15 @@ class Framework < ::Arachni::Framework
         end
     end
 
-    # Make these inherited methods visible again.
-    private :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
-            :list_plugins, :version, :revision, :status, :clean_up!, :report_as
+    # Make these inherited methods public again (i.e. accessible over RPC).
+    [ :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
+      :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
+      :clean_up!, :report_as ].each do |m|
+        private m
+        public m
+    end
 
-    public  :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
-            :list_plugins, :lsplug, :version, :revision, :status, :clean_up!,
-            :report_as
-
-    alias :auditstore   :audit_store
+    alias :auditstore :audit_store
 
     # Buffer issues and only report them to the master instance when the buffer
     # reaches (or exceeds) this size.
