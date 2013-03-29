@@ -60,6 +60,44 @@ class Server
 # The above operations should be enough to cover your needs so you needn't
 # concern yourself with the more specialized components of the system.
 #
+# (A nice simple example can be found in the {UI::CLI::RPC RPC command-line client}
+# interface.)
+#
+# @example A minimalistic example -- assumes Arachni is installed and available.
+#    require 'arachni'
+#    require 'arachni/rpc/client'
+#
+#    include Arachni
+#
+#    # Get an Instance from the Dispatcher
+#    instance_info = RPC::Client::Dispatcher.new( Options.instance, 'localhost:7331' ).dispatch
+#    instance      = RPC::Client::Instance.new( Options.instance, instance_info['url'], instance_info['token'] )
+#
+#    instance.service.scan url: 'http://testfire.net',
+#                          audit_links: true,
+#                          audit_forms: true,
+#                          # load all XSS modules
+#                          modules: 'xss*'
+#
+#    print 'Running.'
+#    while instance.service.busy?
+#        print '.'
+#        sleep 1
+#    end
+#
+#    # Grab the report as a native AuditStore object
+#    report = instance.service.auditstore
+#
+#    # Kill the instance and its process, no zombies please...
+#    instance.service.shutdown
+#
+#    puts
+#    puts
+#    puts 'Logged issues:'
+#    report.issues.each do |issue|
+#        puts "  * #{issue.name} for input '#{issue.var}' at '#{issue.url}'."
+#    end
+#
 # @note Ignore:
 #
 #   * Inherited methods and attributes -- only public methods of this class are
@@ -306,11 +344,11 @@ class Instance
     #   Enable auditing of cookie inputs.
     # @option opts [Boolean] :audit_headers (false)
     #   Enable auditing of header inputs.
-    # @option opts [Array<String>] :modules ([])
+    # @option opts [String,Array<String>] :modules ([])
     #   Modules to load, by name.
     #
     #       # To load all modules use the wildcard on its own
-    #       [ '*' ]
+    #       '*'
     #
     #       # To load all XSS and SQLi modules:
     #       [ 'xss*', 'sqli*' ]
