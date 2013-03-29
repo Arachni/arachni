@@ -407,8 +407,8 @@ class Framework
     # Only accepts reports which support an `outfile` option.
     #
     # @param    [String]    name
-    #   Name of the report component to run as presented by
-    #   {Arachni::Framework#list_reports} `rep_name` key.
+    #   Name of the report component to run, as presented by {#list_reports}'s
+    #   `:shortname` key.
     # @param    [AuditStore]    external_report
     #   Report to use -- defaults to the local one.
     #

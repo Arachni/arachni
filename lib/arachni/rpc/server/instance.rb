@@ -44,11 +44,13 @@ class Server
 #
 # # Convenience methods
 #
-# The `service` RPC handler (which is this class) provides a few convenience
-# methods which allow you to perform the most common tasks so that you won't
-# have to go looking through each component's API individually.
+# The `service` RPC handler (which is this class) provides convenience
+# methods which cover the most commonly used functionality so that you
+# won't have to concern yourself with any other RPC handler.
 #
-# It allows:
+# This should be the only RPC API you'll ever need.
+#
+# Provided methods for:
 #
 # * Retrieving available components
 #   * {#list_modules Modules}
@@ -264,8 +266,8 @@ class Instance
     end
 
     # @param    [String]    name
-    #   Name of the report component to run as presented by
-    #   {Framework#list_reports} `:rep_name` key.
+    #   Name of the report component to run, as presented by {#list_reports}'s
+    #   `:shortname` key.
     #
     # @return (see Arachni::Framework#report_as)
     # @see Framework#report_as
