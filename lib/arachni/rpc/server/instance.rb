@@ -67,11 +67,7 @@ class Server
 #    require 'arachni'
 #    require 'arachni/rpc/client'
 #
-#    include Arachni
-#
-#    # Get an Instance from the Dispatcher
-#    instance_info = RPC::Client::Dispatcher.new( Options.instance, 'localhost:7331' ).dispatch
-#    instance      = RPC::Client::Instance.new( Options.instance, instance_info['url'], instance_info['token'] )
+#    instance = Arachni::RPC::Client::Instance.new( Options.instance, 'localhost:1111', 's3cr3t' )
 #
 #    instance.service.scan url: 'http://testfire.net',
 #                          audit_links: true,
