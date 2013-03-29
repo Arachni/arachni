@@ -113,15 +113,11 @@ describe Arachni::RPC::Server::Instance do
             end
         end
 
-        describe '#busy?' do
-            it 'delegates to Framework#busy?' do
-                @instance.service.busy?.should == @instance.framework.busy?
-            end
-        end
-
-        describe '#report' do
-            it 'delegates to Framework#report' do
-                @instance.service.report.should == @instance.framework.report
+        [:list_modules, :list_plugins, :list_reports, :busy?, :report].each do |m|
+            describe "##{m}" do
+                it "delegates to Framework##{m}" do
+                    @instance.service.send(m).should == @instance.framework.send(m)
+                end
             end
         end
 

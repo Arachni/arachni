@@ -42,8 +42,18 @@ class Server
 # * {Plugin::Manager} -- mapped to `plugins`
 # * {Spider} -- mapped to `spider`
 #
-# It also provides convenience methods for:
+# # Convenience methods
 #
+# The `service` RPC handler (which is this class) provides a a few convenience
+# methods which allow you to perform the most common tasks so that you won't
+# have to go looking through each component's API individually.
+#
+# It allows:
+#
+# * Retrieving available components
+#   * {#list_modules Modules}
+#   * {#list_plugins Plugins}
+#   * {#list_reports Reports}
 # * {#scan Configuring and running a scan}
 # * Retrieving progress information
 #   * {#progress in aggregate form} (which includes a multitude of information)
@@ -57,9 +67,6 @@ class Server
 #     {Reports report} components)
 # * {#shutdown Shutting down}
 #
-# The above operations should be enough to cover your needs so you needn't
-# concern yourself with the more specialized components of the system.
-#
 # (A nice simple example can be found in the {UI::CLI::RPC RPC command-line client}
 # interface.)
 #
@@ -67,7 +74,8 @@ class Server
 #    require 'arachni'
 #    require 'arachni/rpc/client'
 #
-#    instance = Arachni::RPC::Client::Instance.new( Options.instance, 'localhost:1111', 's3cr3t' )
+#    instance = Arachni::RPC::Client::Instance.new( Arachni::Options.instance,
+#                                                   'localhost:1111', 's3cr3t' )
 #
 #    instance.service.scan url: 'http://testfire.net',
 #                          audit_links: true,
@@ -170,6 +178,21 @@ class Instance
     # @return (see Arachni::RPC::Server::Framework#errors)
     def errors( starting_line = 0, &block )
         @framework.errors( starting_line, &block )
+    end
+
+    # @return (see Arachni::Framework#list_modules)
+    def list_modules
+        @framework.list_modules
+    end
+
+    # @return (see Arachni::Framework#list_plugins)
+    def list_plugins
+        @framework.list_plugins
+    end
+
+    # @return (see Arachni::Framework#list_reports)
+    def list_reports
+        @framework.list_reports
     end
 
     #
