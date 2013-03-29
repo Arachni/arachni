@@ -287,11 +287,108 @@ class Instance
     # @note If you use this method to start the scan use {#busy?} instead of
     #   {Framework#busy?} to check if the scan is still running.
     #
-    # @param  [Hash]  opts Scan options to be passed to {Options#set}.
-    # @option opts [Array<Hash>]  :slaves  Info of Instances to {Framework#enslave enslave}.
-    # @option opts [Integer]  :spawns The amount of slaves to spawn.
-    # @option opts [Array<Page>]  :pages Extra pages to audit.
-    # @option opts [Array<String>]  :elements
+    # @note Options marked with an asterisk are required.
+    # @note Options which expect patterns will interpret their arguments as
+    #   regular expressions regardless of their type.
+    #
+    # @param  [Hash]  opts
+    #   Scan options to be passed to {Options#set}, along with some extra ones
+    #   to makes things simpler.
+    #   The options presented here are the most common ones, you can use any
+    #   {Options} attribute.
+    # @option opts [String]  *:url
+    #   Target URL to audit.
+    # @option opts [Boolean] :audit_links (false)
+    #   Enable auditing of link inputs.
+    # @option opts [Boolean] :audit_forms (false)
+    #   Enable auditing of form inputs.
+    # @option opts [Boolean] :audit_cookies (false)
+    #   Enable auditing of cookie inputs.
+    # @option opts [Boolean] :audit_headers (false)
+    #   Enable auditing of header inputs.
+    # @option opts [Array<String>] :modules ([])
+    #   Modules to load, by name.
+    #
+    #       # To load all modules use the wildcard on its own
+    #       [ '*' ]
+    #
+    #       # To load all XSS and SQLi modules:
+    #       [ 'xss*', 'sqli*' ]
+    #
+    # @option opts [Hash<Hash>] :plugins ({})
+    #   Plugins to load, by name, along with their options.
+    #
+    #       {
+    #           'proxy'      => {}, # empty options
+    #           'autologin'  => {
+    #               'url'    => 'http://demo.testfire.net/bank/login.aspx',
+    #               'params' => 'uid=jsmith&passw=Demo1234',
+    #               'check'  => 'MY ACCOUNT'
+    #           },
+    #       }
+    # @option opts [Integer] :link_count_limit (nil)
+    #   Limit the amount of pages to be crawled and audited.
+    # @option opts [Array<String, Regexp>] :exclude ([])
+    #   URLs that match any of the given patterns will be ignored.
+    #
+    #       [ 'logout', /skip.*.me too/i ]
+    #
+    # @option opts [Array<String, Regexp>] :exclude_pages ([])
+    #   Exclude pages from the crawl and audit processes based on their
+    #   content (i.e. HTTP response bodies).
+    #
+    #       [ /.*forbidden.*/, "I'm a weird 404 and I should be ignored" ]
+    #
+    # @option opts [Array<String>] :exclude_vectors ([])
+    #   Exclude input vectors from the audit, by name.
+    #
+    #       [ 'sessionid', 'please_dont_audit_me' ]
+    #
+    # @option opts [Array<String, Regexp>] :include ([])
+    #   Only URLs that match any of the given patterns will be followed and audited.
+    #
+    #       [ 'only-follow-me', 'follow-me-as-well' ]
+    #
+    # @option opts [Hash<<String, Regexp>,Integer>] :redundant ({})
+    #   Redundancy patterns to limit how many times certain paths should be
+    #   followed. Useful when scanning pages that create an large number of
+    #   pages like galleries and calendars.
+    #
+    #       { "follow_me_3_times" => 3, /follow_me_5_times/ => 5 }
+    #
+    # @option opts [Hash<String, String>] :cookies ({})
+    #   Cookies to use for the HTTP requests.
+    #
+    #       {
+    #           'userid' => '1',
+    #           'sessionid' => 'fdfdfDDfsdfszdf'
+    #       }
+    #
+    # @option opts [Integer] :http_req_limit (20)
+    #   HTTP request concurrency limit.
+    # @option opts [String] :user_agent ('Arachni/v<version>')
+    #   User agent to use.
+    # @option opts [String] :authed_by (nil)
+    #   The person who authorized the scan.
+    #
+    #       John Doe <john.doe@bigscanners.com>
+    #
+    # @option opts [Array<Hash>]  :slaves   **(Experimental)**
+    #   Info of Instances to {Framework#enslave enslave}.
+    #
+    #       [
+    #           { 'url' => 'address:port', 'token' => 's3cr3t' },
+    #           { 'url' => 'anoaddress:port', 'token' => 'e3nm0r3s3cr3t' }
+    #       ]
+    #
+    # @option opts [Bool]  :grid    (false) **(Experimental)**
+    #   Utilise the Dispatcher Grid to obtain slave instances for a
+    #   high-performance distributed scan.
+    # @option opts [Integer]  :spawns   (0) **(Experimental)**
+    #   The amount of slaves to spawn.
+    # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
+    #   Extra pages to audit.
+    # @option opts [Array<String>]  :elements   ([])    **(Experimental)**
     #   Elements to which to restrict the audit (using elements IDs as returned
     #   by {Element::Capabilities::Auditable#scope_audit_id}).
     #
@@ -329,6 +426,10 @@ class Instance
         end
 
         @framework.opts.set( opts )
+
+        if @framework.opts.url.to_s.empty?
+            fail ArgumentError, 'Option \'url\' is mandatory.'
+        end
 
         @framework.update_page_queue( opts[:pages] || [] )
         @framework.restrict_to_elements( opts[:elements] || [] )
