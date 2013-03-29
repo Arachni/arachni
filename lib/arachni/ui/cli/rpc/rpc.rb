@@ -69,6 +69,12 @@ class RPC
             exit 1
         end
 
+        # Check for missing Dispatcher
+        if !@opts.server
+            print_error 'Missing server argument.'
+            exit 1
+        end
+
         # If we have a profile option load it and merge it with the user
         # supplied options.
         load_profile( @opts.load_profile ) if @opts.load_profile
@@ -144,6 +150,8 @@ class RPC
             lsmod modules
             exit
         end
+
+        @issues ||= []
     end
 
     def run
@@ -210,13 +218,15 @@ class RPC
     end
 
     def refresh_progress
-        @error_messages_cnt = 0
-        @issue_digests      = []
+        @error_messages_cnt ||= 0
+        @issue_digests      ||= []
 
         @progress = @instance.service.
             progress( with:    [ :instances, :native_issues,
                                  errors: @error_messages_cnt ],
                       without: [ issues: @issue_digests ] )
+
+        @issues |= @progress['issues']
 
         # Keep issue digests and error messages in order to ask not to retrieve
         # them on subsequent progress calls in order to save bandwidth.
@@ -238,17 +248,13 @@ class RPC
         !!progress['busy']
     end
 
-    def issues
-        progress['issues']
-    end
-
     #
     # Laconically output the discovered issues.
     #
     # This method is used during a pause.
     #
     def print_issues
-        super issues
+        super @issues
     end
 
     def prepare_rpc_options
