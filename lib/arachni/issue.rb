@@ -287,7 +287,9 @@ class Issue
         "#{@mod_name}::#{@elem}::#{@var}::#{@url.split( '?' ).first}"
     end
 
-    # @return   [String]    A SHA2 hash uniquely identifying this issue.
+    # @return   [String]
+    #   A SHA2 hash (of {#unique_id}) uniquely identifying this issue.
+    #
     # @see #unique_id
     def digest
         Digest::SHA2.hexdigest( unique_id )
