@@ -362,6 +362,8 @@ class Instance
     #       }
     # @option opts [Integer] :link_count_limit (nil)
     #   Limit the amount of pages to be crawled and audited.
+    # @option opts [Integer] :depth_limit (nil)
+    #   Directory depth limit. How deep Arachni should go into the website structure.
     # @option opts [Array<String, Regexp>] :exclude ([])
     #   URLs that match any of the given patterns will be ignored.
     #
@@ -390,6 +392,11 @@ class Instance
     #
     #       { "follow_me_3_times" => 3, /follow_me_5_times/ => 5 }
     #
+    # @option opts [Array<String>] :restrict_paths ([])
+    #   Restrict the audit to the provided paths. It basically skips the crawl
+    #   phase and uses these paths instead.
+    # @option opts [Array<String>] :extend_paths ([])
+    #   Extend the scope of the crawl and audit with the provided paths.
     # @option opts [Hash<String, String>] :cookies ({})
     #   Cookies to use for the HTTP requests.
     #
