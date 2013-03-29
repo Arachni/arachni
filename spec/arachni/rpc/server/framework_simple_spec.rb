@@ -118,7 +118,7 @@ describe Arachni::RPC::Server::Framework do
         end
     end
     describe '#list_modules' do
-        it 'lists all available plugins' do
+        it 'lists all available modules' do
             @framework_clean.lsmod.should be_any
         end
         it 'aliased to #lsmod' do
