@@ -127,7 +127,7 @@ class Framework < ::Arachni::Framework
         @issue_summaries = []
     end
 
-    # @return  [Array<Hash>]  Information about all available plug-ins.
+    # @return (see Arachni::Framework#list_plugins)
     def list_plugins
         super.map do |plugin|
             plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
@@ -137,6 +137,17 @@ class Framework < ::Arachni::Framework
         end
     end
     alias :lsplug :list_plugins
+
+    # @return (see Arachni::Framework#list_reports)
+    def list_reports
+        super.map do |report|
+            report[:options] = [report[:options]].flatten.compact.map do |opt|
+                opt.to_h.merge( 'type' => opt.type )
+            end
+            report
+        end
+    end
+    alias :lsrep :list_reports
 
     # @return   [Bool]
     #   `true` If the system is scanning, `false` if {#run} hasn't been called

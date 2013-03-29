@@ -117,6 +117,18 @@ describe Arachni::RPC::Server::Framework do
             @framework_clean.list_plugins.should == @framework_clean.lsplug
         end
     end
+    describe '#list_reports' do
+        it 'lists all available plugins' do
+            reports = @framework_clean.list_reports
+            reports.should be_any
+            report_with_opts = reports.select{ |r| r[:options].any? }.first
+            report_with_opts[:options].first.should be_kind_of( Hash )
+        end
+        it 'aliased to #lsplug' do
+            @framework_clean.list_reports.should == @framework_clean.lsrep
+        end
+    end
+
     describe '#list_modules' do
         it 'lists all available modules' do
             @framework_clean.lsmod.should be_any
