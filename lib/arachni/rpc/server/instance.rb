@@ -44,7 +44,7 @@ class Server
 #
 # # Convenience methods
 #
-# The `service` RPC handler (which is this class) provides a a few convenience
+# The `service` RPC handler (which is this class) provides a few convenience
 # methods which allow you to perform the most common tasks so that you won't
 # have to go looking through each component's API individually.
 #
