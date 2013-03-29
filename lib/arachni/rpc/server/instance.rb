@@ -283,17 +283,66 @@ class Instance
     #
     # Simplified version of {Framework#progress}.
     #
-    # Returns the following information:
+    # # Recommended usage
     #
-    # * `stats` -- General runtime statistics (merged when part of Grid)
-    #   (enabled by default)
-    # * `status` -- {#status}
-    # * `busy` -- {#busy?}
-    # * `issues` -- {Framework#issues_as_hash} or {Framework#issues}
-    #   (disabled by default)
-    # * `instances` -- Raw `stats` for each running instance (only when part
-    #   of Grid) (disabled by default)
-    # * `errors` -- {#errors} (disabled by default)
+    #   Please request from the method only the things you are going to actually
+    #   use, otherwise you'll just be wasting bandwidth.
+    #   In addition, ask to **not** be served data you already have, like issues
+    #   or error messages.
+    #
+    #   To be kept completely up to date on the progress of a scan (i.e. receive
+    #   new issues and error messages asap) in an efficient manner, you will need
+    #   to keep track of the issues and error messages you already have and
+    #   explicitly tell the method to not send the same data back to you on
+    #   subsequent calls.
+    #
+    # ## Retrieving errors (`:errors` option) without duplicate data
+    #
+    #   This is done by telling the method how many error messages you already
+    #   have and you will be served the errors from the error-log that are past
+    #   that line.
+    #   So, if you were to use a loop to get fresh progress data it would look
+    #   like so:
+    #
+    #     error_cnt = 0
+    #     i = 0
+    #     while sleep 1
+    #         # Test method, triggers an error log...
+    #         instance.service.error_test "BOOM! #{i+=1}"
+    #
+    #         # Only request errors we don't already have
+    #         errors = instance.service.progress( with: { errors: error_cnt } )['errors']
+    #         error_cnt += errors.size
+    #
+    #         # You will only see new errors
+    #         puts errors.join("\n")
+    #     end
+    #
+    # ## Retrieving issues without duplicate data
+    #
+    #   In order to be served only new issues you will need to let the method
+    #   know which issues you already have. This is done by providing a list
+    #   of {Issue#digest digests} for the issues you already know about.
+    #
+    #     issue_digests = []
+    #     while sleep 1
+    #         issues = instance.service.progress(
+    #                      # Ask for native Arachni::Issue object instead of hashes
+    #                      with: :native_issues,
+    #                      # Only request issues we don't already have
+    #                      without: { issues: issue_digests  }
+    #                  )['issues']
+    #
+    #         issue_digests |= issues.map( &:digest )
+    #
+    #         # You will only see new issues
+    #         issues.each do |issue|
+    #             puts "  * #{issue.name} for input '#{issue.var}' at '#{issue.url}'."
+    #         end
+    #     end
+    #
+    #   _If your client is on a platform that has no access to native Arachni
+    #   objects, you'll have to calculate the {Issue#digest digests} yourself._
     #
     # @param  [Hash]  options
     #   Options about what progress data to retrieve and return.
@@ -311,6 +360,17 @@ class Instance
     #   * :stats -- Don't include runtime statistics.
     #   * :issues -- Don't include issues with the given {Arachni::Issue#digest digests}.
     #     Pass as a hash, like: `{ issues: [...] }`
+    #
+    # @return [Hash]
+    #   * `stats` -- General runtime statistics (merged when part of Grid)
+    #       (enabled by default)
+    #   * `status` -- {#status}
+    #   * `busy` -- {#busy?}
+    #   * `issues` -- {Framework#issues_as_hash} or {Framework#issues}
+    #       (disabled by default)
+    #   * `instances` -- Raw `stats` for each running instance (only when part
+    #       of Grid) (disabled by default)
+    #   * `errors` -- {#errors} (disabled by default)
     #
     def progress( options = {}, &block )
         with    = parse_progress_opts( options, :with )
