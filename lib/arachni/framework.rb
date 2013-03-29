@@ -456,10 +456,11 @@ class Framework
                 next if !lsmod_match?( path )
 
                 @modules[name].info.merge(
-                    mod_name: name,
-                    author:   [@modules[name].info[:author]].
-                                  flatten.map { |a| a.strip },
-                    path:     path.strip
+                    mod_name:  name,
+                    shortname: name,
+                    author:    [@modules[name].info[:author]].
+                                   flatten.map { |a| a.strip },
+                    path:      path.strip
                 )
             end.compact
         ensure
@@ -480,10 +481,11 @@ class Framework
                 next if !lsrep_match?( path )
 
                 @reports[report].info.merge(
-                    rep_name: report,
-                    path:     path,
-                    author:   [@reports[report].info[:author]].
-                                  flatten.map { |a| a.strip }
+                    rep_name:  report,
+                    shortname: report,
+                    path:      path,
+                    author:    [@reports[report].info[:author]].
+                                   flatten.map { |a| a.strip }
                 )
             end.compact
         ensure
@@ -505,6 +507,7 @@ class Framework
 
                 @plugins[plugin].info.merge(
                     plug_name: plugin,
+                    shortname: plugin,
                     path:      path,
                     author:    [@plugins[plugin].info[:author]].
                                    flatten.map { |a| a.strip }

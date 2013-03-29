@@ -884,6 +884,7 @@ describe Arachni::Framework do
             mod = mods.first
             mod[:name].should == info[:name]
             mod[:mod_name].should == 'taint'
+            mod[:shortname].should == mod[:mod_name]
             mod[:description].should == info[:description]
             mod[:author].should == [info[:author]].flatten
             mod[:version].should == info[:version]
@@ -921,6 +922,8 @@ describe Arachni::Framework do
   :version: \'0.1\'
   :plug_name: !binary |-
     YmFk
+  :shortname: !binary |-
+    YmFk
 - :name: Default
   :description: Some description
   :author:
@@ -935,6 +938,8 @@ describe Arachni::Framework do
     enums: []
   :plug_name: !binary |-
     ZGVmYXVsdA==
+  :shortname: !binary |-
+    ZGVmYXVsdA==
 - :name: Distributable
   :description: \'\'
   :author:
@@ -946,6 +951,8 @@ describe Arachni::Framework do
     - :distributable_sym
   :plug_name: !binary |-
     ZGlzdHJpYnV0YWJsZQ==
+  :shortname: !binary |-
+    ZGlzdHJpYnV0YWJsZQ==
 - :name: \'\'
   :description: \'\'
   :author:
@@ -953,12 +960,16 @@ describe Arachni::Framework do
   :version: \'0.1\'
   :plug_name: !binary |-
     bG9vcA==
+  :shortname: !binary |-
+    bG9vcA==
 - :name: SpiderHook
   :description: \'\'
   :author:
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
   :plug_name: !binary |-
+    c3BpZGVyX2hvb2s=
+  :shortname: !binary |-
     c3BpZGVyX2hvb2s=
 - :name: Wait
   :description: \'\'
@@ -969,6 +980,8 @@ describe Arachni::Framework do
   - Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
   :version: \'0.1\'
   :plug_name: !binary |-
+    d2FpdA==
+  :shortname: !binary |-
     d2FpdA==
 - :name: Component
   :description: Component with options
@@ -995,6 +1008,8 @@ describe Arachni::Framework do
     default: value
     enums: []
   :plug_name: !binary |-
+    d2l0aF9vcHRpb25z
+  :shortname: !binary |-
     d2l0aF9vcHRpb25z
 ' ).sort_by { |e| e[:plug_name] }
             @f.plugins.loaded.should == loaded
@@ -1028,6 +1043,7 @@ describe Arachni::Framework do
   - zapotek
   :version: 0.1.1
   :rep_name: afr
+  :shortname: afr
 - :name: Report abstract class.
   :options: []
 
@@ -1036,6 +1052,7 @@ describe Arachni::Framework do
   - zapotek
   :version: 0.1.1
   :rep_name: foo
+  :shortname: foo
 ').sort_by { |e| e[:rep_name] }
             @f.reports.loaded.should == loaded
         end
