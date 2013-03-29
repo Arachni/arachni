@@ -275,6 +275,7 @@ class Instance
         @framework.report_as( name )
     end
 
+    # @return (see Framework#status)
     # @see Framework#status
     def status
         @framework.status
