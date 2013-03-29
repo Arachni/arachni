@@ -378,7 +378,7 @@ class Instance
     #
     #       [
     #           { 'url' => 'address:port', 'token' => 's3cr3t' },
-    #           { 'url' => 'anoaddress:port', 'token' => 'e3nm0r3s3cr3t' }
+    #           { 'url' => 'anotheraddress:port', 'token' => 'e3nm0r3s3cr3t' }
     #       ]
     #
     # @option opts [Bool]  :grid    (false) **(Experimental)**
