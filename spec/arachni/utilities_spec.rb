@@ -614,6 +614,26 @@ describe Arachni::Utilities do
         end
     end
 
+    describe '#hash_keys_to_sym' do
+        it 'should recursively convert a Hash\'s keys to strings' do
+            h1 = {
+                key1: 'val1',
+                hash: {
+                    lvl2: 'val2',
+                }
+            }
+
+            h2 = {
+                'key1' => 'val1',
+                'hash' => {
+                    'lvl2' => 'val2',
+                }
+            }
+
+            @utils.hash_keys_to_sym( h2 ).should == h1
+        end
+    end
+
     describe '#exception_jail' do
         context 'when raise_exception = true' do
             it 'should forward exceptions' do
