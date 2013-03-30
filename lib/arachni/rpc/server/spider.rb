@@ -86,7 +86,7 @@ class Spider < Arachni::Spider
     def update_peers( peers, &block )
         @peers_array = peers
         sorted_peers = @peers_array.inject( {} ) do |h, p|
-            h[p['url']] = framework.connect_to_instance( p )
+            h[p[:url]] = framework.connect_to_instance( p )
             h
         end.sort
 
@@ -176,7 +176,7 @@ class Spider < Arachni::Spider
     end
 
     def slaves_done?
-        !@peers.reject{ |url, _| url == self_instance_info['url'] }.keys.
+        !@peers.reject{ |url, _| url == self_instance_info[:url] }.keys.
             map { |peer_url| @done_signals[peer_url] }.include?( false )
     end
 
@@ -194,8 +194,8 @@ class Spider < Arachni::Spider
 
     def self_instance_info
         {
-            'url'   => framework.self_url,
-            'token' => framework.token
+            url:   framework.self_url,
+            token: framework.token
         }
     end
 
@@ -280,7 +280,7 @@ class Spider < Arachni::Spider
 
     def peer_iterator
         ::EM::Iterator.new(
-            @peers.reject{ |url, _| url == self_instance_info['url']}.values,
+            @peers.reject{ |url, _| url == self_instance_info[:url]}.values,
             Framework::Distributor::MAX_CONCURRENCY
         )
     end

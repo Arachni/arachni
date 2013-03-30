@@ -26,6 +26,7 @@ class Framework
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 module Distributor
+    include Utilities
 
     #
     # Maximum concurrency when communicating with instances.
@@ -52,9 +53,11 @@ module Distributor
     #  the `'token'` can be omitted.
     #
     def connect_to_instance( instance )
+        instance = hash_keys_to_sym( instance )
+
         @tokens  ||= {}
-        @tokens[instance['url']] = instance['token'] if instance['token']
-        Client::Instance.new( @opts, instance['url'], @tokens[instance['url']] )
+        @tokens[instance[:url]] = instance[:token] if instance[:token]
+        Client::Instance.new( @opts, instance[:url], @tokens[instance[:url]] )
     end
 
     private
@@ -312,7 +315,7 @@ module Distributor
 
         connect_to_instance( instance_hash ).
             service.scan( opts ) do |r|
-                @running_slaves << instance_hash['url']
+                @running_slaves << instance_hash[:url]
                 block.call( instance_hash ) if block_given?
             end
     end

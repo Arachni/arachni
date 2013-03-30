@@ -193,6 +193,41 @@ describe Arachni::RPC::Server::Instance do
                 i_report['issues'].should be_any
             end
 
+            context 'when the options Hash uses Strings instead of Symbols' do
+                it 'makes no difference' do
+                    instance = @get_instance.call
+                    slave    = @get_instance.call
+
+                    instance.service.busy?.should  == instance.framework.busy?
+                    instance.service.status.should == instance.framework.status
+
+                    instance.service.scan(
+                        'url'         => server_url_for( :framework_simple ),
+                        'audit_links '=> true,
+                        'audit_forms' => true,
+                        'modules'     => 'test',
+                        'slaves'      => [ { 'url' => slave.url, 'token' => @token } ]
+                    )
+
+                    # if a scan in already running it should just bail out early
+                    instance.service.scan.should be_false
+
+                    sleep 1 while instance.service.busy?
+
+                    instance.framework.progress_data['instances'].size.should == 2
+
+                    instance.service.busy?.should  == instance.framework.busy?
+                    instance.service.status.should == instance.framework.status
+
+                    i_report = instance.service.report
+                    f_report = instance.framework.report
+
+                    i_report.should == f_report
+                    i_report['issues'].should be_any
+
+                end
+            end
+
             describe :spawns do
                 context 'when it has a Dispatcher' do
                     it 'requests its slaves from it' do

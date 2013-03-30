@@ -116,6 +116,17 @@ class Server
 #   (like when working from a non-Ruby platform or not having the Arachni framework
 #   installed).
 #
+# @note Methods which expect `Symbol` type parameters will also accept `String`
+#   types as well.
+#
+#   For example, the following:
+#
+#       instance.service.scan url: 'http://testfire.net'
+#
+#   Is the same as:
+#
+#       instance.service.scan 'url' => 'http://testfire.net'
+#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
 #
 class Instance
@@ -231,7 +242,7 @@ class Instance
     #
     def abort_and_report( report_type = :hash, &block )
         @framework.clean_up do
-            block.call report_type == :auditstore ? auditstore : report
+            block.call report_type.to_sym == :auditstore ? auditstore : report
         end
     end
 
@@ -412,10 +423,11 @@ class Instance
     #   regular expressions regardless of their type.
     #
     # @param  [Hash]  opts
-    #   Scan options to be passed to {Options#set}, along with some extra ones
-    #   to makes things simpler.
-    #   The options presented here are the most common ones, you can use any
-    #   {Options} attribute.
+    #   Scan options to be passed to {Options#set} (along with some extra ones
+    #   to keep configuration in one place).
+    #
+    #   _The options presented here are the most commonly used ones, in
+    #   actuality, you can use any {Options} attribute._
     # @option opts [String]  *:url
     #   Target URL to audit.
     # @option opts [Boolean] :audit_links (false)
@@ -449,7 +461,9 @@ class Instance
     # @option opts [Integer] :link_count_limit (nil)
     #   Limit the amount of pages to be crawled and audited.
     # @option opts [Integer] :depth_limit (nil)
-    #   Directory depth limit. How deep Arachni should go into the website structure.
+    #   Directory depth limit.
+    #
+    #   How deep Arachni should go into the website structure.
     # @option opts [Array<String, Regexp>] :exclude ([])
     #   URLs that match any of the given patterns will be ignored.
     #
@@ -473,14 +487,17 @@ class Instance
     #
     # @option opts [Hash<<String, Regexp>,Integer>] :redundant ({})
     #   Redundancy patterns to limit how many times certain paths should be
-    #   followed. Useful when scanning pages that create an large number of
-    #   pages like galleries and calendars.
+    #   followed.
     #
     #       { "follow_me_3_times" => 3, /follow_me_5_times/ => 5 }
     #
+    #   Useful when scanning pages that create an large number of
+    #   pages like galleries and calendars.
+    #
     # @option opts [Array<String>] :restrict_paths ([])
-    #   Restrict the audit to the provided paths. It basically skips the crawl
-    #   phase and uses these paths instead.
+    #   Restrict the audit to the provided paths.
+    #
+    #   The crawl phase gets skipped and these paths are used instead.
     # @option opts [Array<String>] :extend_paths ([])
     #   Extend the scope of the crawl and audit with the provided paths.
     # @option opts [Hash<String, String>] :cookies ({})
@@ -504,8 +521,8 @@ class Instance
     #   Info of Instances to {Framework#enslave enslave}.
     #
     #       [
-    #           { 'url' => 'address:port', 'token' => 's3cr3t' },
-    #           { 'url' => 'anotheraddress:port', 'token' => 'e3nm0r3s3cr3t' }
+    #           { url: 'address:port', token: 's3cr3t' },
+    #           { url: 'anotheraddress:port', token: '3v3nm0r3s3cr3t' }
     #       ]
     #
     # @option opts [Bool]  :grid    (false) **(Experimental)**
@@ -516,18 +533,19 @@ class Instance
     # @option opts [Array<Page>]  :pages    ([])    **(Experimental)**
     #   Extra pages to audit.
     # @option opts [Array<String>]  :elements   ([])    **(Experimental)**
-    #   Elements to which to restrict the audit (using elements IDs as returned
-    #   by {Element::Capabilities::Auditable#scope_audit_id}).
+    #   Elements to which to restrict the audit.
+    #
+    #   <em>Using elements IDs as returned by {Element::Capabilities::Auditable#scope_audit_id}.</em>
     #
     def scan( opts = {}, &block )
-        # if the instance isn't clean bail out now
+        # If the instance isn't clean bail out now.
         if @scan_initializing || @framework.busy?
             block.call false
             return false
         end
 
-        # Normalize this sucker to have symbols as keys
-        opts = opts.to_hash.inject( {} ) { |h, (k, v)| h[k.to_sym] = v; h }
+        # Normalize this sucker to have symbols as keys.
+        opts = hash_keys_to_sym( opts, false )
 
         slaves      = opts[:slaves] || []
         spawn_count = opts[:spawns].to_i
@@ -645,7 +663,7 @@ class Instance
                             when String, Symbol
                                 parsed[q.to_sym] = nil
                             when Hash
-                                parsed.merge!( q )
+                                parsed.merge!( hash_keys_to_sym( q ) )
                         end
                     end
 
@@ -653,7 +671,7 @@ class Instance
                     parsed[w.to_sym] = nil
 
                 when Hash
-                    parsed.merge!( w )
+                    parsed.merge!( hash_keys_to_sym( w ) )
             end
         end
 

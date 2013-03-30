@@ -204,11 +204,10 @@ class Framework < ::Arachni::Framework
             return false
         end
 
-        instance_info = instance_info.to_hash.
-            inject( {} ) { |h, (k, v)| h[k.to_s] = v; h }
+        instance_info = hash_keys_to_sym( instance_info )
 
-        fail "Instance info does not contain a 'url' key."   if !instance_info['url']
-        fail "Instance info does not contain a 'token' key." if !instance_info['token']
+        fail "Instance info does not contain a 'url' key."   if !instance_info[:url]
+        fail "Instance info does not contain a 'token' key." if !instance_info[:token]
 
         # since we have slaves we must be a master...
         set_as_master
@@ -585,6 +584,8 @@ class Framework < ::Arachni::Framework
     # @return    [Hash]  Progress data.
     #
     def progress( opts = {}, &block )
+        opts = hash_keys_to_sym( opts )
+
         include_stats    = opts[:stats].nil? ? true : opts[:stats]
         include_messages = opts[:messages].nil? ? true : opts[:messages]
         include_slaves   = opts[:slaves].nil? ? true : opts[:slaves]
