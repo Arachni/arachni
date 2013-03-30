@@ -65,18 +65,6 @@ class RPC
 
         print_banner
 
-        # Check for missing url
-        if !@opts.url
-            print_error 'Missing url argument.'
-            exit 1
-        end
-
-        # Check for missing Dispatcher
-        if !@opts.server
-            print_error 'Missing server argument.'
-            exit 1
-        end
-
         # If we have a profile option load it and merge it with the user
         # supplied options.
         load_profile( @opts.load_profile ) if @opts.load_profile
@@ -91,6 +79,18 @@ class RPC
         if opts.help
             usage
             exit 0
+        end
+
+        # Check for missing url
+        if !@opts.url
+            print_error 'Missing url argument.'
+            exit 1
+        end
+
+        # Check for missing Dispatcher
+        if !@opts.server
+            print_error 'Missing server argument.'
+            exit 1
         end
 
         # If the user wants to see the available reports, output them and exit.
