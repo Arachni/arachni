@@ -37,7 +37,7 @@ class Server < WEBrick::HTTPProxyServer
     # @param    [#[]=]    dst     headers of the forwarded/proxy response
     #
     def choose_header( src, dst )
-        connections = split_field( src['connection'] )
+        connections = split_field( [src['connection']].flatten.first )
 
         src.each do |key, value|
             key = key.downcase
