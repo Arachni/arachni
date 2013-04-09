@@ -599,6 +599,8 @@ class URI
 
         other = self.class.new( other ) if !other.is_a?( Arachni::URI )
         include_subdomain ? other.host == host : other.domain == domain
+    rescue
+        false
     end
 
     def mailto?
