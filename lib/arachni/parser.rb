@@ -183,7 +183,7 @@ class Parser
 
         # if there's a Netscape cookiejar file load cookies from it but only new ones,
         # i.e. only if they weren't in the response
-        if @opts.cookie_jar
+        if @opts.cookie_jar.is_a?( String ) && File.exists?( @opts.cookie_jar )
             from_jar |= cookies_from_file( @url, @opts.cookie_jar )
                 .reject { |c| cookie_names.include?( c.name ) }
         end
