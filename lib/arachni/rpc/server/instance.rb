@@ -570,7 +570,7 @@ class Instance
             opts[:plugins] = opts[:plugins].inject( {} ) { |h, n| h[n] = {}; h }
         end
 
-        @framework.opts.set( opts )
+        @active_options.set( opts )
 
         if @framework.opts.url.to_s.empty?
             fail ArgumentError, 'Option \'url\' is mandatory.'
@@ -785,11 +785,12 @@ class Instance
             method.parameters.flatten.include?( :block )
         end
 
-        @framework = Server::Framework.new( Options.instance )
+        @framework      = Server::Framework.new( Options.instance )
+        @active_options = Server::ActiveOptions.new( @framework )
 
         @server.add_handler( 'service',   self )
         @server.add_handler( 'framework', @framework )
-        @server.add_handler( "opts",      Server::ActiveOptions.new( @framework ) )
+        @server.add_handler( "opts",      @active_options )
         @server.add_handler( 'spider',    @framework.spider )
         @server.add_handler( 'modules',   @framework.modules )
         @server.add_handler( 'plugins',   @framework.plugins )
