@@ -96,8 +96,8 @@ class HTTP
     #
     # @return   [Arachni::HTTP] self
     #
-    def reset
-        clear_observers
+    def reset( hooks_too = true )
+        clear_observers if hooks_too
 
         opts = Options
 

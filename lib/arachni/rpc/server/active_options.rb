@@ -29,6 +29,19 @@ class ActiveOptions
     def initialize( framework )
         @opts = framework.opts
 
+        %w( url http_req_limit http_timeout user_agent redirect_limit proxy_username
+            proxy_password proxy_type proxy_host proxy_port authed_by cookies
+            cookie_string ).each do |m|
+            m = "#{m}=".to_sym
+            self.class.class_eval do
+                define_method m do |v|
+                    @opts.send( m, v )
+                    HTTP.reset false
+                    v
+                end
+            end
+        end
+
         (@opts.public_methods( false ) - public_methods( false ) ).each do |m|
             self.class.class_eval do
                 define_method m do |*args|
@@ -37,18 +50,6 @@ class ActiveOptions
             end
         end
 
-        %w( url http_req_limit http_timeout user_agent redirect_limit proxy_username
-            proxy_password proxy_type proxy_host proxy_port authed_by cookies
-            cookie_string ).each do |m|
-            m = "#{m}=".to_sym
-            self.class.class_eval do
-                define_method m do |v|
-                    @opts.send( m, v )
-                    HTTP.reset
-                    v
-                end
-            end
-        end
     end
 
     # @see Arachni::Options#set
@@ -62,7 +63,7 @@ class ActiveOptions
             end
         end
 
-        HTTP.reset
+        HTTP.reset false
         true
     end
 
