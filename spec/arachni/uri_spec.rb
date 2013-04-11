@@ -471,14 +471,8 @@ describe Arachni::URI do
         end
 
         context 'else' do
-            it 'raises a TypeError' do
-                raised = false
-                begin
-                    @in_domain_url.in_domain?( false, [] ).should be_true
-                rescue TypeError
-                    raised = true
-                end
-                raised.should be_true
+            it 'returns false' do
+                @in_domain_url.in_domain?( false, [] ).should be_false
             end
         end
     end
