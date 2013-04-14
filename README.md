@@ -102,7 +102,8 @@ fast scans. Thus, you’ll only be limited by the responsiveness of the server u
 
 Finally, it is versatile enough to cover a great deal of use cases, ranging from
 a simple command line scanner utility, to a global high performance grid of
-scanners, to a Ruby library allowing for scripted audits.
+scanners, to a Ruby library allowing for scripted audits, to a multi-user
+multi-scan web collaboration platform.
 
 **Note**: Despite the fact that Arachni is mostly targeted towards web application
 security, it can easily be used for  general purpose scraping, data-mining, etc
